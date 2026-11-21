@@ -52,6 +52,7 @@
 
 1. 確認欲宣告的遊戲功能已在 `index.html` 真正實作。
 2. 更新 `CHANGELOG.md`，只描述玩家現在可體驗的功能，繁體中文與英文並列。
+   - 將選角畫面 `index.html` 的 `#gameVersion` 文字設為即將發布的版本（例如 `v0.0.4`）。`node scripts/check-release.mjs` 與音訊測試必須通過；兩者會確認 UI 版本符合更新紀錄。
 3. 執行 `/release <版本>`：提交 changelog、推送 `main`（觸發部署）、建立標籤與 GitHub Release。
 4. 確認該次 `main` 的 **Verify and publish Eclipse Survivors** 成功。
 5. 使用桌面與手機確認「開始冒險」、移動、升級選單、音效及暫停能正常運作。
@@ -60,5 +61,5 @@
 
 - 公開網址回傳 404：檢查 Pages 設定是否正確、最近一次部署是否成功，以及 `main` 根目錄是否含 `index.html`。
 - Actions 工作流程失敗：查看 [Actions](https://github.com/weskao/eclipse-survivors/actions) 的實際錯誤紀錄，勿宣告已上線。
-- 無背景音樂：瀏覽器通常必須先收到使用者互動；請按「開始冒險」後確認音樂選項。
+- 無背景音樂：瀏覽器通常必須先收到使用者互動；選角畫面可點擊任意位置以啟動配樂，再按「開始冒險」切至戰鬥配樂。請確認背景音樂與音效兩組開關均符合預期。
 - 重要視覺原則：任何設計概念圖都不能當作已完成的真實遊戲截圖使用。
