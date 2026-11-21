@@ -1,4 +1,3 @@
-import { MAX_MOBS } from '../constants'
 import { damageHero } from '../combat'
 import { dist } from '../math'
 import { summonBossMinions, updateBossPhase } from '../bosses/phases'
@@ -62,7 +61,8 @@ function resolveStrike(s: GameState, e: Mob, hooks: GameHooks): void {
     const radius = e.type === 'boss' ? 103 : e.elite ? 87 : 74
     if (dist(hero.x - ai.aimX, hero.y - ai.aimY) <= radius + 14) damageHero(s, e.dmg, hooks)
   } else if (ai.attack === 'pounce' || ai.attack === 'jab') {
-    const length = ai.attack === 'pounce' ? 63 : 69
+    const maxDistance = ai.attack === 'pounce' ? 63 : 69
+    const length = Math.min(maxDistance, dist(ai.aimX - e.x, ai.aimY - e.y))
     e.x += ai.dirX * length
     e.y += ai.dirY * length
     if (dist(hero.x - e.x, hero.y - e.y) < e.r + 19) damageHero(s, e.dmg, hooks)
