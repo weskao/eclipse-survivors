@@ -1,4 +1,5 @@
 import { UP } from '../game/constants'
+import { EVOLUTIONS } from '../game/evolutions'
 import type { MobType } from '../game/types'
 import type { Profile } from './types'
 
@@ -13,6 +14,6 @@ export const MONSTER_ENTRIES: ReadonlyArray<{ id: MobType; icon: string; label: 
 export function encyclopedia(profile: Profile) {
   return {
     monsters: MONSTER_ENTRIES.map(e => ({ ...e, count: profile.discoveredMonsters[e.id] ?? 0 })),
-    abilities: UP.map(e => ({ ...e, discovered: profile.discoveredAbilities.includes(e.id) })),
+    abilities: [...UP, ...EVOLUTIONS].map(e => ({ ...e, discovered: profile.discoveredAbilities.includes(e.id) })),
   }
 }

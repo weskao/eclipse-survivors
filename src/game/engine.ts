@@ -156,7 +156,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       kills: s.kill, level: h?.level ?? 1, remainingHp: Math.max(0, Math.ceil(h?.hp ?? 0)),
       damageDealt: Math.round(s.damageDealt), damageTaken: Math.round(s.damageTaken),
       bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
-      abilities: Object.keys(h?.skills ?? {}) as UpgradeId[],
+      abilities: [
+        ...(Object.keys(h?.skills ?? {}) as UpgradeId[]),
+        ...(Object.entries(h?.evolutions ?? {}).filter(([, active]) => active).map(([id]) => id as EvolutionId)),
+      ],
     }
     ui.runResult = stats
     ui.rewards = profileStore.recordRun(stats)

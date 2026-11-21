@@ -1,4 +1,4 @@
-import type { JobId, MobType, UpgradeId } from '../game/types'
+import type { AbilityId, JobId, MobType } from '../game/types'
 
 export type RunModeId = 'quick' | 'standard' | 'endless' | 'challenge'
 export type PermanentUpgrade = 'power' | 'vitality'
@@ -19,7 +19,7 @@ export interface RunStats {
   remainingHp: number
   bossDefeated: boolean
   enemies: Partial<Record<MobType, number>>
-  abilities: UpgradeId[]
+  abilities: AbilityId[]
 }
 export interface RunBest { seconds: number; kills: number; level: number; victory: boolean }
 export interface Profile {
@@ -31,7 +31,7 @@ export interface Profile {
   achievements: string[]
   recentRunIds: string[]
   discoveredMonsters: Partial<Record<MobType, number>>
-  discoveredAbilities: UpgradeId[]
+  discoveredAbilities: AbilityId[]
   heroesPlayed: JobId[]
   unlockedCosmetics: CosmeticId[]
   equippedCosmetics: Record<JobId, CosmeticId>

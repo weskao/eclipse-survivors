@@ -1,4 +1,5 @@
-import type { JobId, MobType, UpgradeId } from '../game/types'
+import type { AbilityId, JobId, MobType } from '../game/types'
+import { EVOLUTIONS } from '../game/evolutions'
 import { ACHIEVEMENTS, newlyEarned } from './achievements'
 import { modeIds } from './modes'
 import type { CosmeticId, PermanentUpgrade, Profile, RunBest, RunRewards, RunStats } from './types'
@@ -6,7 +7,7 @@ import type { CosmeticId, PermanentUpgrade, Profile, RunBest, RunRewards, RunSta
 export const SAVE_KEY = 'eclipse-survivors.profile.v2'
 const jobs: JobId[] = ['knight', 'ranger', 'wizard']
 const monsters: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'warlock', 'boss']
-const abilities: UpgradeId[] = ['damage', 'speed', 'haste', 'maxhp', 'multi', 'orb', 'magnet', 'heal', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain']
+const abilities: AbilityId[] = ['damage', 'speed', 'haste', 'maxhp', 'multi', 'orb', 'magnet', 'heal', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain', ...EVOLUTIONS.map(e => e.id)]
 const cosmetics: CosmeticId[] = ['knight-default', 'ranger-default', 'wizard-default', 'knight-gilded', 'ranger-moonlit', 'wizard-astral']
 const defaults: Record<JobId, CosmeticId> = { knight: 'knight-default', ranger: 'ranger-default', wizard: 'wizard-default' }
 const isObj = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v)
@@ -72,7 +73,7 @@ export function migrateProfile(raw: unknown): Profile | null {
   p.embers = raw.embers
   p.achievements = [...new Set(raw.achievements as string[])]
   p.recentRunIds = [...new Set(raw.recentRunIds as string[])].slice(-128)
-  p.discoveredAbilities = [...new Set(raw.discoveredAbilities as UpgradeId[])]
+  p.discoveredAbilities = [...new Set(raw.discoveredAbilities as AbilityId[])]
   p.heroesPlayed = [...new Set(raw.heroesPlayed as JobId[])]
   p.unlockedCosmetics = [...new Set(raw.unlockedCosmetics as CosmeticId[])]
   p.upgrades = { power: raw.upgrades.power, vitality: raw.upgrades.vitality }
