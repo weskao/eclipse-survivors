@@ -18,7 +18,7 @@ export function createFakeCtx(): FakeCtx {
   const gradient = (): CanvasGradient => ({ addColorStop: () => {} })
   const ctx: Ctx2D = {
     save: note('save'), restore: note('restore'), translate: note('translate'), rotate: note('rotate'),
-    scale: note('scale'), setTransform: note('setTransform'), setLineDash: note('setLineDash'),
+    scale: note('scale'), transform: note('transform'), setTransform: note('setTransform'), setLineDash: note('setLineDash'),
     drawImage: (...args: unknown[]): void => {
       calls.push('drawImage')
       drawn.push(args[0])

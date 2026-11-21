@@ -35,24 +35,38 @@ export function drawRigSprite(
   const rows = 12
   const cw = sx / columns
   const ch = sy / rows
-  const posed = sampleWeaponRig(job, hero, anim)
-  const rest = sampleWeaponRig(job, hero, { ...anim, pose: 'idle', phase: 0 })
-  const elbowX = posed.elbow.x - rest.elbow.x
-  const elbowY = posed.elbow.y - rest.elbow.y
-  const wristX = posed.hand.x - rest.hand.x
-  const wristY = posed.hand.y - rest.hand.y
-  const supportX = posed.supportHand.x - rest.supportHand.x
-  const supportY = posed.supportHand.y - rest.supportHand.y
-  const supportElbowX = posed.supportElbow.x - rest.supportElbow.x
-  const supportElbowY = posed.supportElbow.y - rest.supportElbow.y
-  const supportTurn = Math.atan2(posed.supportElbow.y - posed.supportShoulder.y, posed.supportElbow.x - posed.supportShoulder.x)
-    - Math.atan2(rest.supportElbow.y - rest.supportShoulder.y, rest.supportElbow.x - rest.supportShoulder.x)
-  const upperTurn = Math.atan2(posed.elbow.y - posed.shoulder.y, posed.elbow.x - posed.shoulder.x)
-    - Math.atan2(rest.elbow.y - rest.shoulder.y, rest.elbow.x - rest.shoulder.x)
-  const bladeTurn = posed.bladeAngle - ((anim.pose === 'attack' || anim.pose === 'cast') ? 0 : rest.bladeAngle)
+  if (anim.pose === 'attack' || anim.pose === 'cast') {
+    const posed = sampleWeaponRig(job, hero, anim)
+    const rest = sampleWeaponRig(job, hero, { ...anim, pose: 'idle', phase: 0 })
+    // Map each vertical edge once. Neighbouring strips meet along that same
+    // edge, keeping the painted weapon and costume continuous through the cut.
+    const strips = 32
+    const width = sx / strips
+    const turn = posed.bladeAngle - rest.bladeAngle + posed.aim * Math.sin(Math.PI * anim.phase) * 0.35
+    let previousX = 0
+    let previousY = 0
+    for (let edge = 0; edge <= strips; edge++) {
+      const u = edge / strips
+      const weaponSide = job === 'ranger' ? u : 1 - u
+      const grip = ease((weaponSide - 0.50) / 0.32)
+      const support = ease((0.48 - weaponSide) / 0.30)
+      const x = left + width * edge
+      const shiftedX = x + grip * (posed.hand.x - rest.hand.x) * 0.65
+        + support * (posed.supportHand.x - rest.supportHand.x) * 0.6
+      const shiftedY = top + grip * (posed.hand.y - rest.hand.y + (x - rest.hand.x) * turn)
+        + support * (posed.supportHand.y - rest.supportHand.y) * 0.6
+      if (edge > 0) {
+        ctx.save()
+        ctx.transform((shiftedX - previousX) / width, (shiftedY - previousY) / width, 0, 1, previousX, previousY)
+        ctx.drawImage(img, (edge - 1) * srcW / strips, 0, srcW / strips, srcH, 0, 0, width + 0.35, sy)
+        ctx.restore()
+      }
+      previousX = shiftedX
+      previousY = shiftedY
+    }
+    return
+  }
   const walk = Math.sin(hero.step) * Math.max(0, Math.min(1, hero.moveAmount))
-  const action = anim.pose === 'attack' || anim.pose === 'cast'
-  const recoil = action ? Math.sin(Math.PI * anim.phase) : 0
 
   for (let row = 0; row < rows; row++) {
     const v = (row + 0.5) / rows
@@ -62,37 +76,14 @@ export function drawRigSprite(
     for (let col = 0; col < columns; col++) {
       const u = (col + 0.5) / columns
       const side = 1 - u * 2
-      // The image's weapon and casting arms occupy DIFFERENT sides by hero.
-      // Skin original pixels once, so no extra sword / duplicate bow appears.
-      const right = ease((u - 0.53) / 0.23) * ease((v - 0.16) / 0.15)
-        * (1 - ease((v - 0.77) / 0.17))
-      const leftArm = (1 - ease((u - 0.19) / 0.25)) * ease((v - 0.20) / 0.16)
-        * (1 - ease((v - 0.73) / 0.15))
-      const mainRight = job === 'ranger'
-      const mainWeight = mainRight ? right : leftArm
-      const supportWeight = mainRight ? leftArm : right
-      const mainWrist = mainRight ? ease((u - 0.70) / 0.24) : 1 - ease((u - 0.14) / 0.27)
-      const supportWrist = mainRight ? 1 - ease((u - 0.14) / 0.27) : ease((u - 0.70) / 0.24)
-      const weapon = mainRight
-        ? ease((u - 0.71) / 0.23) * ease((v - 0.08) / 0.13) * (1 - ease((v - 0.86) / 0.12))
-        : (1 - ease((u - (job === 'wizard' ? 0.32 : 0.20)) / 0.21))
-          * (job === 'wizard' ? 1 : ease((v - 0.26) / 0.17))
-      let dx = mainWeight * (elbowX * (1 - mainWrist) + wristX * mainWrist) + weapon * wristX * 0.35
-        + supportWeight * (supportElbowX * (1 - supportWrist) + supportX * supportWrist) * 0.55
-      let dy = mainWeight * (elbowY * (1 - mainWrist) + wristY * mainWrist) + weapon * wristY * 0.35
-        + supportWeight * (supportElbowY * (1 - supportWrist) + supportY * supportWrist) * 0.55
-      const rotation = mainWeight * (upperTurn * (1 - mainWrist) + bladeTurn * mainWrist) * 0.55
-        + weapon * bladeTurn * 0.28 + supportWeight * supportTurn * 0.35
-
+      let dx = 0
+      let dy = 0
       if (anim.pose === 'run') {
         dx += legs * side * walk * 4.3 - chest * walk * 1.6
         dy += legs * side * walk * 3.2 - (chest + head) * Math.abs(walk) * 1.1
       } else if (anim.pose === 'idle') {
         dx += Math.sin(anim.phase * TAU) * chest * 0.5
         dy -= Math.sin(anim.phase * TAU) * chest * 0.5
-      } else if (action) {
-        dx += chest * recoil * 2.4
-        dy -= chest * recoil * 1.7
       } else if (anim.pose === 'dash') {
         dx += (1 - anim.phase) * (head * 5.6 + chest * 4.6)
         dy -= Math.sin(anim.phase * Math.PI) * (head + chest) * 2.8
@@ -105,20 +96,8 @@ export function drawRigSprite(
         dx += Math.sin(anim.phase * TAU) * (head * 1.3 + chest * 1.7)
         dy -= Math.sin(anim.phase * Math.PI) * chest * 3.6
       }
-      // Rotate each skinned cell around its own center; the overlapping tiles
-      // smoothly connect the bend while keeping source texels and transparency.
-      if (Math.abs(rotation) < 0.001) {
-        // Most cells are stationary: avoid Canvas save/rotate/restore on mobile.
-        ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
-          left + col * cw + dx - 0.45, top + row * ch + dy - 0.45, cw + 0.9, ch + 0.9)
-      } else {
-        ctx.save()
-        ctx.translate(left + (col + 0.5) * cw + dx, top + (row + 0.5) * ch + dy)
-        ctx.rotate(rotation)
-        ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
-          -cw / 2 - 0.45, -ch / 2 - 0.45, cw + 0.9, ch + 0.9)
-        ctx.restore()
-      }
+      ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
+        left + col * cw + dx - 0.45, top + row * ch + dy - 0.45, cw + 0.9, ch + 0.9)
     }
   }
 }
@@ -150,7 +129,7 @@ function drawPoseAccents(
     // Bow-string recoil stays anchored to the bow hand and points downrange.
     ctx.save(); ctx.translate(grip.x, grip.y); ctx.rotate(rig.aim)
     ctx.strokeStyle = '#ffdf9b'; ctx.lineWidth = 1.2; ctx.globalAlpha = power * 0.55
-    ctx.beginPath(); ctx.moveTo(-8 - power * 5, -18); ctx.lineTo(0, 0); ctx.lineTo(-8 - power * 5, 18); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(-8, -18); ctx.lineTo(-10 + (rig.supportHand.x + 18) * 2, 0); ctx.lineTo(-8, 18); ctx.stroke()
     ctx.restore()
   } else if (anim.pose === 'attack' && kind === 'knight') {
     ctx.save()

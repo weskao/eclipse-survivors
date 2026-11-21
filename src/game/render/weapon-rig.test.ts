@@ -83,17 +83,24 @@ describe('physical two-bone animation', () => {
 })
 
 describe('articulated texture rendering', () => {
-  it('rotates the weapon-bearing source cells during a swing but not a static idle', () => {
+  it('shears the weapon-bearing sprite strips during a swing but not a static idle', () => {
     const s = setup('knight')
     const { ctx } = createFakeCtx()
-    const turn = vi.spyOn(ctx, 'rotate')
+    const turn = vi.spyOn(ctx, 'transform')
     drawRigSprite(ctx, fakeImage(true), 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight')
     expect(turn).not.toHaveBeenCalled()
     s.hero!.strike = 0.16
     s.hero!.aimAngle = 0.65
     turn.mockClear()
     drawRigSprite(ctx, fakeImage(true), 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight')
-    expect(turn.mock.calls.some(([angle]) => Math.abs(angle) > 0.01)).toBe(true)
+    expect(turn.mock.calls.some(([, shear]) => Math.abs(shear) > 0.01)).toBe(true)
+    const stripWidth = 108 / turn.mock.calls.length
+    for (let i = 1; i < turn.mock.calls.length; i++) {
+      const [scale, shear, , , x, y] = turn.mock.calls[i - 1]!
+      const next = turn.mock.calls[i]!
+      expect(x + scale * stripWidth).toBeCloseTo(next[4])
+      expect(y + shear * stripWidth).toBeCloseTo(next[5])
+    }
   })
 })
 
@@ -104,13 +111,24 @@ describe('aim-dependent weapon mesh', () => {
     const rotations = (angle: number): number[] => {
       s.hero!.aimAngle = angle
       const { ctx } = createFakeCtx()
-      const spy = vi.spyOn(ctx, 'rotate')
+      const spy = vi.spyOn(ctx, 'transform')
       drawRigSprite(ctx, fakeImage(true), 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), job)
-      return spy.mock.calls.map(([theta]) => theta)
+      return spy.mock.calls.map(([, shear]) => shear)
     }
     const up = rotations(-0.8)
     const down = rotations(0.8)
     expect(up).toHaveLength(down.length)
     expect(up.some((n, i) => Math.abs(n - down[i]!) > 0.02)).toBe(true)
   })
+})
+
+it.each(['knight', 'ranger', 'wizard'] as const)('%s loads back before extending into the stroke', job => {
+  const hero = createHero(job)
+  const handAt = (phase: number) => {
+    const rig = sampleWeaponRig(job, hero, { pose: job === 'wizard' ? 'cast' : 'attack', phase, frame: 0, count: 6, reducedMotion: false })
+    return job === 'ranger' ? rig.supportHand : rig.hand
+  }
+  expect(handAt(0.3).x).toBeLessThan(handAt(0).x)
+  expect(handAt(0.6).x).toBeGreaterThan(handAt(0.3).x)
+  expect(handAt(1)).toEqual(handAt(0))
 })
