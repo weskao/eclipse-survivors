@@ -23,7 +23,7 @@ describe('raster spell artwork animation', () => {
   })
 
   it('serves the animated WebP in upgrade cards but swaps to still art on reduced motion', () => {
-    const u: UpgradeDef = { id: 'blaze', title: 'Flame', desc: 'Fire', icon: '🔥', rarity: 'rare' }
+    const u: UpgradeDef = { id: 'blaze', title: 'Flame', desc: 'Fire', icon: '🔥', rarity: 'rare', maxLevel: 5 }
     const screen = mount(LevelUpOverlay, { props: { active: true, upgrades: [u] } })
     expect(screen.find('picture source[media="(prefers-reduced-motion: reduce)"]').attributes('srcset')).toContain('blaze@3x.webp')
     expect(screen.find('picture img.skill-art').attributes('src')).toContain('blaze@3x-animated.webp')
