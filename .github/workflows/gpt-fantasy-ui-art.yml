@@ -5,11 +5,13 @@ on:
       - feature/gpt-fantasy-ui-art-polish
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   verify:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
@@ -17,11 +19,39 @@ jobs:
         with:
           node-version: '24'
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate actual animated raster WebP art
+        run: |
+          python -m pip install --disable-pip-version-check "Pillow==11.1.0" "numpy>=2,<3"
+          python scripts/generate-animated-skill-art.py
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
       - run: pnpm check-release
+      - name: Commit and push generated animated artwork into feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'assets/skill-icons/*@3x-animated.webp' src/assets/ui/skill-art-atlas@3x-animated.webp
+          if git diff --cached --quiet; then
+            echo "Animated WebP assets already current"
+          else
+            git commit -m "art(ui): commit ten transparent animated WebPs and one HUD atlas"
+            git push origin HEAD:refs/heads/feature/gpt-fantasy-ui-art-polish
+          fi
+      - name: Export animated artworks for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eclipse-survivors-real-animated-webp
+          path: |
+            assets/skill-icons/*@3x-animated.webp
+            src/assets/ui/skill-art-atlas@3x-animated.webp
+          retention-days: 14
+          if-no-files-found: warn
 
   screenshot-evidence:
     needs: verify
@@ -31,6 +61,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feature/gpt-fantasy-ui-art-polish
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
       - uses: actions/setup-node@v4
         with:
@@ -42,7 +74,7 @@ jobs:
       - run: pnpm install --frozen-lockfile && pnpm build
       - name: Install headless Chromium
         run: |
-          python -m pip install --disable-pip-version-check playwright==1.58.0 Pillow==11.1.0
+          python -m pip install --disable-pip-version-check "playwright==1.58.0" "Pillow==11.1.0"
           python -m playwright install --with-deps chromium
       - name: Verify menu selection and upgrade visuals in actual browser
         run: python scripts/capture-fantasy-ui.py
