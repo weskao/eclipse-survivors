@@ -13,7 +13,7 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
 export function newlyEarned(profile: Profile, run: RunStats): Achievement[] {
   const isEarned = (id: string): boolean => {
     switch (id) {
-      case 'first-blood': return profile.runs > 0 && run.kills > 0 || run.kills > 0
+      case 'first-blood': return run.kills > 0
       case 'first-victory': return run.victory
       case 'monster-hunter': return run.kills >= 100
       case 'boss-slayer': return run.bossDefeated

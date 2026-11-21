@@ -57,6 +57,14 @@ describe('versioned local progress', () => {
     expect(store.get().upgrades.power).toBe(1)
     expect(store.get().equippedCosmetics.knight).toBe('knight-gilded')
   })
+  it('falls back to an in-memory profile when storage throws', () => {
+    const broken = { getItem() { throw new Error('blocked') }, setItem() { throw new Error('blocked') }, removeItem() { throw new Error('blocked') } }
+    const store = createProfileStore(broken)
+    store.recordRun(run('blocked-1'))
+    expect(store.get().runs).toBe(1)
+    store.reset()
+    expect(store.get().runs).toBe(0)
+  })
   it('reset clears all earned records and unlocks, even after reload', () => {
     const store = createProfileStore(localStorage)
     store.recordRun(run())

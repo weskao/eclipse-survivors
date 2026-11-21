@@ -8,7 +8,13 @@ const BASE_HP: Record<MobType, number> = { slime: 32, bat: 27, goblin: 55, golem
 
 export function spawnMob(s: GameState, type?: 'boss'): void {
   const hero = s.hero
-  if (!hero || s.mobs.length >= MAX_MOBS) return
+  if (!hero) return
+  if (s.mobs.length >= MAX_MOBS) {
+    if (!type) return
+    const removable = s.mobs.findIndex(e => e.type !== 'boss')
+    if (removable < 0) return
+    s.mobs.splice(removable, 1) // Reserve a slot for the mandatory boss encounter.
+  }
   const boss = type === 'boss'
   const r = Math.max(200, Math.min(s.W, s.H) * 0.38) + rand(15, 65)
   const a = rand(0, TAU)

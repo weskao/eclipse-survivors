@@ -47,13 +47,8 @@ export function migrateProfile(raw: unknown): Profile | null {
   const names = ACHIEVEMENTS.map(a => a.id)
   if (!listOf(raw.achievements, names) || !listOf(raw.discoveredAbilities, abilities)
     || !listOf(raw.heroesPlayed, jobs) || !listOf(raw.unlockedCosmetics, cosmetics)
-    || !listOf(raw.recentRunIds, [] as string[])) {
-    // Run ids are opaque, not a fixed enum, so validate separately below.
-    if (!Array.isArray(raw.recentRunIds) || raw.recentRunIds.length > 128
-      || !raw.recentRunIds.every((id: unknown) => typeof id === 'string' && id.length < 128)
-      || !listOf(raw.achievements, names) || !listOf(raw.discoveredAbilities, abilities)
-      || !listOf(raw.heroesPlayed, jobs) || !listOf(raw.unlockedCosmetics, cosmetics)) return null
-  }
+    || !Array.isArray(raw.recentRunIds) || raw.recentRunIds.length > 128
+    || !raw.recentRunIds.every((id: unknown) => typeof id === 'string' && id.length > 0 && id.length < 128)) return null
   for (const key of modeIds) {
     if (raw.best[key] !== undefined) {
       if (!validBest(raw.best[key])) return null
@@ -69,7 +64,7 @@ export function migrateProfile(raw: unknown): Profile | null {
   for (const hero of jobs) {
     const skin = raw.equippedCosmetics[hero]
     if (!cosmetics.includes(skin as CosmeticId) || !String(skin).startsWith(hero + '-')
-      || !raw.unlockedCosmetics.includes(skin)) return null
+      || !raw.unlockedCosmetics.includes(skin as CosmeticId)) return null
     p.equippedCosmetics[hero] = skin as CosmeticId
   }
   p.runs = raw.runs
@@ -94,7 +89,11 @@ export interface ProfileStore {
 type Store = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 const copy = (p: Profile): Profile => JSON.parse(JSON.stringify(p)) as Profile
 
-export function createProfileStore(storage: Store | null = typeof localStorage === 'undefined' ? null : localStorage): ProfileStore {
+function defaultStorage(): Store | null {
+  try { return typeof localStorage === 'undefined' ? null : localStorage } catch { return null }
+}
+
+export function createProfileStore(storage: Store | null = defaultStorage()): ProfileStore {
   let profile = emptyProfile()
   try {
     const content = storage?.getItem(SAVE_KEY)

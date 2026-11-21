@@ -19,7 +19,7 @@ const emit = defineEmits<{ select: [mode: RunModeId] }>()
       >
         <span class="mode-icon" aria-hidden="true">{{ id === 'quick' ? '✦' : id === 'standard' ? '♜' : id === 'endless' ? '∞' : '⚡' }}</span>
         <span class="mode-copy"><strong>{{ MODES[id].label }}</strong><small>{{ MODES[id].description }}</small></span>
-        <span class="mode-duration">{{ MODES[id].duration === null ? '∞' : Math.ceil(MODES[id].duration! / 60) + ' MIN' }}</span>
+        <span class="mode-duration">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
       </button>
     </div>
   </section>
