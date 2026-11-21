@@ -114,3 +114,14 @@ describe('aim-dependent weapon mesh', () => {
     expect(up.some((n, i) => Math.abs(n - down[i]!) > 0.02)).toBe(true)
   })
 })
+
+describe('hero animation drawing budget', () => {
+  it('bounds animation texture draws to 72 cells per frame', () => {
+    const s = setup('knight')
+    s.hero!.strike = 0.15
+    const { ctx } = createFakeCtx()
+    const spy = vi.spyOn(ctx, 'drawImage')
+    drawRigSprite(ctx, fakeImage(true), 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight')
+    expect(spy.mock.calls.length).toBeLessThanOrEqual(72)
+  })
+})
