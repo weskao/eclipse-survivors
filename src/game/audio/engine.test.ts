@@ -323,3 +323,26 @@ describe('dispose', () => {
     expect(created).toBe(2)
   })
 })
+
+describe('interruption edge cases', () => {
+  it('restarts a stuck media element after the context suspends without a visibility event', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    expect(bgm.playCalls).toBe(1)
+    // Some mobile browsers report media as still playing while sound is silent.
+    ctx.state = 'suspended'
+    bgm.paused = false
+    audio.wake()
+    expect(bgm.pauseCalls).toBeGreaterThan(0)
+    expect(bgm.playCalls).toBe(2)
+  })
+
+  it('avoids duplicate suspension when both blur and visibilitychange fire', () => {
+    const audio = make()
+    audio.wake()
+    audio.interrupt()
+    audio.interrupt()
+    expect(ctx.suspendCalls).toBe(1)
+  })
+})
