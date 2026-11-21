@@ -49,7 +49,7 @@ export function drawRigSprite(
     - Math.atan2(rest.supportElbow.y - rest.supportShoulder.y, rest.supportElbow.x - rest.supportShoulder.x)
   const upperTurn = Math.atan2(posed.elbow.y - posed.shoulder.y, posed.elbow.x - posed.shoulder.x)
     - Math.atan2(rest.elbow.y - rest.shoulder.y, rest.elbow.x - rest.shoulder.x)
-  const bladeTurn = posed.bladeAngle - rest.bladeAngle
+  const bladeTurn = posed.bladeAngle - ((anim.pose === 'attack' || anim.pose === 'cast') ? 0 : rest.bladeAngle)
   const walk = Math.sin(hero.step) * Math.max(0, Math.min(1, hero.moveAmount))
   const action = anim.pose === 'attack' || anim.pose === 'cast'
   const recoil = action ? Math.sin(Math.PI * anim.phase) : 0
