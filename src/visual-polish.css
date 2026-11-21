@@ -70,15 +70,15 @@
 :is([data-skill="orb"], [data-up="orb"]) .skill-sigil img.skill-art,
 :is([data-skill="shield"], [data-up="shield"]) .skill-sigil img.skill-art,
 :is([data-skill="heal"], [data-up="heal"]) .skill-sigil img.skill-art{visibility:hidden}
-:is([data-skill="damage"], [data-up="damage"]) .skill-sigil,
-:is([data-skill="multi"], [data-up="multi"]) .skill-sigil,
-:is([data-skill="blaze"], [data-up="blaze"]) .skill-sigil,
-:is([data-skill="frost"], [data-up="frost"]) .skill-sigil,
-:is([data-skill="chain"], [data-up="chain"]) .skill-sigil,
-:is([data-skill="vortex"], [data-up="vortex"]) .skill-sigil,
-:is([data-skill="meteor"], [data-up="meteor"]) .skill-sigil,
-:is([data-skill="orb"], [data-up="orb"]) .skill-sigil,
-:is([data-skill="shield"], [data-up="shield"]) .skill-sigil,
+:is([data-skill="damage"], [data-up="damage"]) .skill-sigil::after,
+:is([data-skill="multi"], [data-up="multi"]) .skill-sigil::after,
+:is([data-skill="blaze"], [data-up="blaze"]) .skill-sigil::after,
+:is([data-skill="frost"], [data-up="frost"]) .skill-sigil::after,
+:is([data-skill="chain"], [data-up="chain"]) .skill-sigil::after,
+:is([data-skill="vortex"], [data-up="vortex"]) .skill-sigil::after,
+:is([data-skill="meteor"], [data-up="meteor"]) .skill-sigil::after,
+:is([data-skill="orb"], [data-up="orb"]) .skill-sigil::after,
+:is([data-skill="shield"], [data-up="shield"]) .skill-sigil::after,
 :is([data-skill="heal"], [data-up="heal"]) .skill-sigil::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:6px;background-image:url('./assets/ui/arcana-atlas.svg');background-size:500% 200%;background-position:var(--arcana-x) var(--arcana-y);background-repeat:no-repeat}
 #level .upgrade .portrait.skill-sigil::after{inset:4px;border-radius:9px;box-shadow:0 0 12px #05080d77}
 .skill-slots .skill{border-radius:7px;box-shadow:inset 0 1px 0 #fff4,0 5px 11px #000a}
