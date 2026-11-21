@@ -14,11 +14,18 @@ describe('generated WebP art integration', () => {
       const content = read(`assets/skill-icons/${id}@3x.webp`)
       expect(content.subarray(0, 4).toString()).toBe('RIFF')
       expect(content.subarray(8, 12).toString()).toBe('WEBP')
+      expect(content.subarray(12, 16).toString()).toBe('VP8X')
+      expect(content[20]! & 0x10).toBe(0x10) // Alpha flag: transparency is preserved.
+      expect(1 + content.readUIntLE(24, 3)).toBe(288) // @3x for 96px upgrades.
+      expect(1 + content.readUIntLE(27, 3)).toBe(288)
       expect(content.length).toBeGreaterThan(2500)
     }
     const atlas = read('src/assets/ui/skill-art-atlas@3x.webp')
     expect(atlas.subarray(0, 4).toString()).toBe('RIFF')
     expect(atlas.subarray(8, 12).toString()).toBe('WEBP')
+    expect(atlas[20]! & 0x10).toBe(0x10)
+    expect(1 + atlas.readUIntLE(24, 3)).toBe(720)
+    expect(1 + atlas.readUIntLE(27, 3)).toBe(288)
   })
 
   it('uses the new WebP in upgrade cards and keeps the SVG fallback for other skills', () => {
