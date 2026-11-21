@@ -21,6 +21,8 @@ const distance = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y
 // not retain every cell ever visited; evicting only costs regeneration.
 const obstacleCells = new Map<string, WorldObstacle | null>()
 const MAX_OBSTACLE_CELLS = 1024
+const hazardCells = new Map<string, WorldHazard | null>()
+const MAX_HAZARD_CELLS = 1024
 
 function obstacleInCell(scene: number, i: number, j: number): WorldObstacle | null {
   const key = `${scene}:${i}:${j}`
@@ -76,17 +78,41 @@ export function resolveObstacleCollision(scene: number, x: number, y: number, ra
   return point
 }
 
+/** Hazard geometry is time-invariant; only hazardPhase() needs per-frame evaluation. */
+function hazardInCell(scene: number, i: number, j: number): WorldHazard | null {
+  const key = `${scene}:${i}:${j}`
+  const cached = hazardCells.get(key)
+  if (cached !== undefined) return cached
+
+  let hazard: WorldHazard | null = null
+  if (hash(i + 100 + scene * 13, j + 15) >= 0.33) {
+    const x = (i + 0.4) * HAZARD_GRID + (hash(i + 29, j + scene) - 0.5) * 120
+    const y = (j + 0.45) * HAZARD_GRID + (hash(i + scene * 7, j + 30) - 0.5) * 120
+    const r = 38 + hash(i + 4, j + scene * 17) * 18
+    if (x * x + y * y >= 210 * 210 && !nearbyObstacles(scene, x, y, r + 48).some(o => {
+      const dx = o.x - x, dy = o.y - y, reach = r + o.r + 20
+      return dx * dx + dy * dy < reach * reach
+    })) {
+      hazard = { x, y, r, phase: hash(i + scene, j + 59) }
+    }
+  }
+  if (hazardCells.size >= MAX_HAZARD_CELLS) {
+    const oldest = hazardCells.keys().next()
+    if (!oldest.done) hazardCells.delete(oldest.value)
+  }
+  hazardCells.set(key, hazard)
+  return hazard
+}
+
 export function nearbyHazards(scene: number, x: number, y: number, radius: number): WorldHazard[] {
   const result: WorldHazard[] = []
   for (let i = Math.floor((x - radius - 100) / HAZARD_GRID); i <= Math.ceil((x + radius + 100) / HAZARD_GRID); i++) {
     for (let j = Math.floor((y - radius - 100) / HAZARD_GRID); j <= Math.ceil((y + radius + 100) / HAZARD_GRID); j++) {
-      if (hash(i + 100 + scene * 13, j + 15) < 0.33) continue
-      const px = (i + 0.4) * HAZARD_GRID + (hash(i + 29, j + scene) - 0.5) * 120
-      const py = (j + 0.45) * HAZARD_GRID + (hash(i + scene * 7, j + 30) - 0.5) * 120
-      const r = 38 + hash(i + 4, j + scene * 17) * 18
-      if (Math.hypot(px, py) < 210 || Math.hypot(px - x, py - y) > radius + r) continue
-      if (nearbyObstacles(scene, px, py, r + 48).some(o => distance(o, { x: px, y: py }) < r + o.r + 20)) continue
-      result.push({ x: px, y: py, r, phase: hash(i + scene, j + 59) })
+      const h = hazardInCell(scene, i, j)
+      if (!h) continue
+      const dx = h.x - x, dy = h.y - y, reach = radius + h.r
+      if (dx * dx + dy * dy > reach * reach) continue
+      result.push(h)
     }
   }
   return result

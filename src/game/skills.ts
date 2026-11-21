@@ -20,7 +20,8 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
       const ox = hero.x + Math.cos(a) * 71
       const oy = hero.y + Math.sin(a) * 71
       for (const e of s.mobs) {
-        if (e.hp > 0 && dist(e.x - ox, e.y - oy) < e.r + 11 && e.hit <= 0) {
+        const dx = e.x - ox, dy = e.y - oy, reach = e.r + 11
+        if (e.hp > 0 && e.hit <= 0 && dx * dx + dy * dy < reach * reach) {
           hit(s, e, 10 + hero.damage * 0.25, hooks)
           e.hit = 0.28
         }

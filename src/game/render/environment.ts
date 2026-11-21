@@ -10,6 +10,14 @@ import { biomePalette, hazardPhase, nearbyHazards, nearbyObstacles } from '../wo
 
 const ready = (img: HTMLImageElement): boolean => img.complete && img.naturalWidth > 0
 
+// Procedural particle anchors do not depend on time or viewport size.
+// Compute hashes exactly once, then animate the resulting positions.
+const STORM_SAMPLES = Array.from({ length: 85 }, (_, i) => [hash(i, 91), hash(i, 37)] as const)
+const SNOW_SAMPLES = Array.from({ length: 70 }, (_, i) => [hash(i, 51), hash(i, 18)] as const)
+const EMBER_SAMPLES = Array.from({ length: 68 }, (_, i) => [hash(i, 25), hash(i, 65)] as const)
+const SUN_SAMPLES = Array.from({ length: 26 }, (_, i) => [hash(i, 72), hash(i, 12)] as const)
+const AMBIENT_SAMPLES = Array.from({ length: 37 }, (_, i) => [hash(i, 7), hash(i, 13)] as const)
+
 export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number): void {
   const { W, H } = s
   const biome = biomes[s.currentScene] ?? biomes[0]!
@@ -110,8 +118,9 @@ function weatherLayer(ctx: Ctx2D, weather: string, W: number, H: number, q: numb
     ctx.fillStyle = 'rgba(18,28,48,.18)'
     ctx.fillRect(0, 0, W, H)
     for (let i = 0; i < 85; i++) {
-      const x = (hash(i, 91) * W + q * 340 + i * 19) % (W + 80) - 40
-      const y = (hash(i, 37) * (H + 180) + q * 610 + i * 11) % (H + 120) - 60
+      const [nx, ny] = STORM_SAMPLES[i]!
+      const x = (nx * W + q * 340 + i * 19) % (W + 80) - 40
+      const y = (ny * (H + 180) + q * 610 + i * 11) % (H + 120) - 60
       ctx.strokeStyle = 'rgba(179,220,255,.22)'
       ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 10, y + 24); ctx.stroke()
@@ -121,8 +130,9 @@ function weatherLayer(ctx: Ctx2D, weather: string, W: number, H: number, q: numb
     ctx.fillStyle = 'rgba(198,225,255,.08)'
     ctx.fillRect(0, 0, W, H)
     for (let i = 0; i < 70; i++) {
-      const x = (hash(i, 51) * W + q * 30 + i * 7) % (W + 40) - 20
-      const y = (hash(i, 18) * (H + 70) + q * (35 + (i % 3) * 14)) % (H + 50) - 25
+      const [nx, ny] = SNOW_SAMPLES[i]!
+      const x = (nx * W + q * 30 + i * 7) % (W + 40) - 20
+      const y = (ny * (H + 70) + q * (35 + (i % 3) * 14)) % (H + 50) - 25
       const flake = 1 + (i % 5 === 0 ? 2 : 0)
       ctx.fillStyle = 'rgba(245,251,255,.72)'
       ctx.beginPath(); ctx.arc(x + Math.sin(q + i) * 8, y, flake, 0, TAU); ctx.fill()
@@ -131,15 +141,17 @@ function weatherLayer(ctx: Ctx2D, weather: string, W: number, H: number, q: numb
     ctx.fillStyle = 'rgba(45,12,6,.09)'
     ctx.fillRect(0, 0, W, H)
     for (let i = 0; i < 68; i++) {
-      const x = hash(i, 25) * W + Math.sin(q * 0.4 + i) * 12
-      const y = (hash(i, 65) * (H + 80) - q * (50 + (i % 4) * 10)) % (H + 60)
+      const [nx, ny] = EMBER_SAMPLES[i]!
+      const x = nx * W + Math.sin(q * 0.4 + i) * 12
+      const y = (ny * (H + 80) - q * (50 + (i % 4) * 10)) % (H + 60)
       ctx.fillStyle = i % 3 ? `rgba(255,145,76,${0.25 + 0.25 * Math.sin(q * 2 + i)})` : `rgba(255,222,166,${0.18 + 0.18 * Math.sin(q * 1.6 + i)})`
       ctx.beginPath(); ctx.arc(x, y, 1.5 + (i % 7 === 0 ? 2 : 0), 0, TAU); ctx.fill()
     }
   } else {
     for (let i = 0; i < 26; i++) {
-      const x = hash(i, 72) * W + Math.sin(q * 0.7 + i) * 18
-      const y = (hash(i, 12) * (H + 60) + q * (20 + (i % 4) * 7)) % (H + 35) - 18
+      const [nx, ny] = SUN_SAMPLES[i]!
+      const x = nx * W + Math.sin(q * 0.7 + i) * 18
+      const y = (ny * (H + 60) + q * (20 + (i % 4) * 7)) % (H + 35) - 18
       ctx.fillStyle = i % 4 === 0 ? 'rgba(255,223,239,.45)' : 'rgba(255,241,205,.22)'
       ctx.beginPath(); ctx.ellipse(x, y, 4, 2, Math.sin(i), 0, TAU); ctx.fill()
     }
@@ -151,8 +163,9 @@ export function drawAmbient(ctx: Ctx2D, s: GameState, ox: number, oy: number): v
   const q = s.worldClock
   const scene = currentSceneInfo(s)
   for (let i = 0; i < 37; i++) {
-    const x = (hash(i, 7) - 0.5) * 2100 + ox + Math.sin(q * 0.32 + i) * 13
-    const y = (hash(i, 13) - 0.5) * 1080 + oy + Math.sin(q * 0.6 + i * 2.1) * 13
+    const [nx, ny] = AMBIENT_SAMPLES[i]!
+    const x = (nx - 0.5) * 2100 + ox + Math.sin(q * 0.32 + i) * 13
+    const y = (ny - 0.5) * 1080 + oy + Math.sin(q * 0.6 + i * 2.1) * 13
     if (x < -20 || x > W + 20 || y < -20 || y > H + 20) continue
     const a = 0.17 + 0.3 * (0.5 + 0.5 * Math.sin(q * 1.6 + i * 6))
     ctx.fillStyle = i % 5 === 0 ? `rgba(238,180,126,${a})` : `rgba(183,227,182,${a * 0.83})`
