@@ -5,6 +5,16 @@ import assert from 'node:assert/strict';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 assert.match(html, /<!doctype html>/i, 'index.html must be an HTML document');
 assert.match(html, /id="start"/, 'start control is required');
+assert.match(html, /<h1 class="game-title">[\s\S]*?ECLIPSE[\s\S]*?SURVIVORS[\s\S]*?<\/h1>/,
+  'the character selection screen must show the Eclipse Survivors game title');
+assert.match(html, /<svg[^>]*class="menu-scene-art"/, 'the menu must contain original illustrated scenery');
+assert.match(html, /id="heroSpotlight"/, 'selected hero must have a showcase image');
+assert.match(html, /id="spotlightName"/, 'selected hero must have a readable name');
+assert.match(html, /aria-pressed="true"/, 'selected hero button must expose its selection state');
+assert.match(html, /prefers-reduced-motion/, 'decorative animations must respect reduced-motion preferences');
+for (const job of ['knight', 'ranger', 'wizard']) {
+  assert.match(html, new RegExp(`data-job="${job}"`), `${job} must remain selectable`);
+}
 assert.match(html, /id="game"/, 'game canvas is required');
 assert.match(html, /id="upgrades"/, 'upgrade UI is required');
 assert.match(html, /id="music"/, 'music control is required');
