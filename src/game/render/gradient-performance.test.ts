@@ -28,6 +28,8 @@ describe('high-density visual-effect performance contracts', () => {
       r: 9, kind: 'magic' as const,
     }))
     const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    expect(assets.magicGlow?.width).toBe(168)
+    expect(assets.magicGlow?.height).toBe(168)
     const { ctx, drawn } = createFakeCtx()
     const original = ctx.createRadialGradient
     let created = 0
