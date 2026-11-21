@@ -6,6 +6,9 @@ export type MobType = 'slime' | 'bat' | 'goblin' | 'golem' | 'boss'
 export type UpgradeId =
   | 'damage' | 'speed' | 'haste' | 'maxhp' | 'multi' | 'orb' | 'magnet' | 'heal'
   | 'bolt' | 'frost' | 'meteor' | 'blaze' | 'vortex' | 'shield' | 'chain'
+export type EvolutionId = 'frozen-thunderstorm' | 'infernal-singularity' | 'apocalypse-rain' | 'blade-tempest' | 'guardian-sanctuary'
+export type AbilityId = UpgradeId | EvolutionId
+export type SkillRarity = 'common' | 'rare' | 'legendary'
 export type Weather = 'sunshower' | 'storm' | 'snow' | 'embers'
 export type ArtKey = JobId | MobType | 'ground' | 'courtyard'
 
@@ -17,7 +20,11 @@ export type SfxCue =
 
 export interface JobDef { label: string; hp: number; speed: number; damage: number; delay: number; range: number }
 /** Original tuple `[id, icon, title, desc]` as a named record. */
-export interface UpgradeDef { id: UpgradeId; icon: string; title: string; desc: string }
+export interface UpgradeDef {
+  id: AbilityId; icon: string; title: string; desc: string; rarity: SkillRarity
+  maxLevel: number; level?: number; requirements?: string; isEvolution?: boolean
+}
+export interface BaseUpgradeDef extends UpgradeDef { id: UpgradeId }
 export interface SceneDef { name: string; weather: Weather; label: string }
 
 export type Skills = Partial<Record<UpgradeId, number>>
@@ -27,6 +34,8 @@ export interface Hero {
   damage: number; delay: number; speed: number; range: number
   attack: number; inv: number; dash: number; dashCd: number; face: 1 | -1
   skills: Skills
+  evolutions: Partial<Record<EvolutionId, boolean>>
+  evolutionCd: Partial<Record<EvolutionId, number>>
   orbit: number; bolt: number; chainCd: number; frostCd: number; meteorCd: number
   blazeTick: number; vortexCd: number; shieldPulse: number
   step: number; moveAmount: number; strike: number; poseSeed: number; levelAnim: number

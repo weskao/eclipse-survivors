@@ -1,8 +1,9 @@
-// XP, level-ups and upgrade effects (original addXp / chooseUpgrade item pick / applyUpgrade stat part).
-import { UP } from './constants'
+// XP, level-ups, weighted blessings and evolution upgrades.
+import { MAX_LEVEL, UP } from './constants'
+import { EVOLUTIONS, eligibleEvolutions } from './evolutions'
 import { burst, impact } from './fx'
 import { random } from './math'
-import type { GameHooks, GameState, UpgradeDef, UpgradeId } from './types'
+import type { AbilityId, GameHooks, GameState, Hero, SkillRarity, UpgradeDef, UpgradeId } from './types'
 
 export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
@@ -21,7 +22,27 @@ export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   if (s.levelQueue && s.mode === 'play') hooks.offerUpgrades()
 }
 
-export const pickUpgrades = (): UpgradeDef[] => [...UP].sort(() => random() - 0.5).slice(0, 3)
+const WEIGHT: Record<SkillRarity, number> = { common: 14, rare: 5, legendary: 1 }
+
+/** Seedable weighted sampling without replacement. Unlocked evolutions get one guaranteed slot. */
+export function pickUpgrades(hero?: Hero, rng: () => number = random): UpgradeDef[] {
+  const candidates: UpgradeDef[] = hero
+    ? UP.filter(u => (hero.skills[u.id] ?? 0) < MAX_LEVEL[u.id]).map(u => ({ ...u, level: hero.skills[u.id] ?? 0 }))
+    : [...UP]
+  const available = hero ? eligibleEvolutions(hero) : []
+  const selected: UpgradeDef[] = []
+  if (available.length) {
+    const index = Math.min(available.length - 1, Math.floor(rng() * available.length))
+    selected.push({ ...available[index]!, level: 0 })
+  }
+  while (selected.length < 3 && candidates.length) {
+    const total = candidates.reduce((sum, u) => sum + WEIGHT[u.rarity], 0)
+    let roll = Math.min(1 - Number.EPSILON, Math.max(0, rng())) * total
+    const index = candidates.findIndex(u => (roll -= WEIGHT[u.rarity]) < 0)
+    selected.push(candidates.splice(index < 0 ? candidates.length - 1 : index, 1)[0]!)
+  }
+  return selected
+}
 
 const MESSAGES: Partial<Record<UpgradeId, string>> = {
   magnet: '水晶磁力增強！',
@@ -32,21 +53,32 @@ const MESSAGES: Partial<Record<UpgradeId, string>> = {
   chain: '連鎖雷擊激活！',
 }
 
-/** Stat effects only; the caller switches screens, re-offers, plays 'upgrade' and refreshes the HUD. */
-export function applyUpgrade(s: GameState, id: UpgradeId, hooks: GameHooks): void {
+/** Invalid or capped picks do not change state, stats, or the pending level queue. */
+export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks): boolean {
   const hero = s.hero
-  if (!hero) return
-  hero.skills[id] = (hero.skills[id] ?? 0) + 1
-  if (id === 'damage') hero.damage *= 1.25
-  if (id === 'speed') hero.speed *= 1.12
-  if (id === 'haste') hero.delay *= 0.85
-  if (id === 'maxhp') {
-    hero.max += 35
-    hero.hp = Math.min(hero.max, hero.hp + 55)
+  if (!hero) return false
+  const evolution = EVOLUTIONS.find(e => e.id === id)
+  if (evolution) {
+    if (!eligibleEvolutions(hero).some(e => e.id === id)) return false
+    hero.evolutions[evolution.id] = true
+    hero.evolutionCd[evolution.id] = 0
+    hooks.message(`✦ ${evolution.title} · 傳說進化！`)
+  } else {
+    const up = UP.find(u => u.id === id)
+    if (!up || (hero.skills[up.id] ?? 0) >= MAX_LEVEL[up.id]) return false
+    hero.skills[up.id] = (hero.skills[up.id] ?? 0) + 1
+    if (id === 'damage') hero.damage *= 1.25
+    if (id === 'speed') hero.speed *= 1.12
+    if (id === 'haste') hero.delay *= 0.85
+    if (id === 'maxhp') {
+      hero.max += 35
+      hero.hp = Math.min(hero.max, hero.hp + 55)
+    }
+    if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 25)
+    const msg = MESSAGES[up.id]
+    if (msg) hooks.message(msg)
   }
-  if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 25)
-  const msg = MESSAGES[id]
-  if (msg) hooks.message(msg)
-  s.levelQueue--
+  s.levelQueue = Math.max(0, s.levelQueue - 1)
   hero.levelAnim = Math.max(hero.levelAnim, 0.8)
+  return true
 }

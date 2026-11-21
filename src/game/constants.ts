@@ -1,4 +1,4 @@
-import type { JobDef, JobId, SceneDef, UpgradeDef, UpgradeId } from './types'
+import type { BaseUpgradeDef, JobDef, JobId, SceneDef, SkillRarity, UpgradeId } from './types'
 
 export const TAU = 2 * Math.PI
 export const MAX_MOBS = 130
@@ -15,8 +15,17 @@ export const JOB: Record<JobId, JobDef> = {
 }
 export const JOB_IDS = Object.keys(JOB) as JobId[]
 
-const up = (id: UpgradeId, icon: string, title: string, desc: string): UpgradeDef => ({ id, icon, title, desc })
-export const UP: readonly UpgradeDef[] = [
+export const MAX_LEVEL: Record<UpgradeId, number> = {
+  damage: 5, speed: 5, haste: 5, maxhp: 5, multi: 3, orb: 5, magnet: 4, heal: 5,
+  bolt: 5, frost: 5, meteor: 5, blaze: 5, vortex: 5, shield: 4, chain: 5,
+}
+const RARE_SKILLS: readonly UpgradeId[] = ['orb', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain']
+const up = (id: UpgradeId, icon: string, title: string, desc: string): BaseUpgradeDef => ({
+  id, icon, title, desc,
+  rarity: (RARE_SKILLS.includes(id) ? 'rare' : 'common') as SkillRarity,
+  maxLevel: MAX_LEVEL[id],
+})
+export const UP: readonly BaseUpgradeDef[] = [
   up('damage', '⚔', '銳利祝福', '所有傷害 +25%'),
   up('speed', '✣', '疾風腳步', '移動速度 +12%'),
   up('haste', 'ϟ', '迅捷之星', '攻擊速度 +15%'),
