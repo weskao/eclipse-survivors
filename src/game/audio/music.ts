@@ -1,3 +1,5 @@
+import type { CombatIntensity } from './types'
+
 /** Schedules one oscillator note (the engine's `audioTone`). */
 export type ToneFn = (midi: number, at: number, dur: number, vol: number, wave: OscillatorType, bus: 'sfx' | 'music') => void
 
@@ -6,6 +8,10 @@ export interface Score {
   setClock(t: number): void
   /** Queue notes that fall inside the lookahead window starting at `now`. */
   schedule(now: number, tone: ToneFn): void
+}
+
+export interface BattleScore extends Score {
+  setIntensity(intensity: CombatIntensity): void
 }
 
 export interface MenuScore extends Score {
@@ -49,11 +55,13 @@ export const BATTLE_TUNE: ReadonlyArray<number | null> = [
 const BATTLE_ROOTS = [48, 46, 43, 45]
 
 /** Battle melody used while the MP3 score is paused/unavailable (original `music`, minus the gate). */
-export function createBattleScore(): Score {
+export function createBattleScore(): BattleScore {
   let noteTime = 0
   let step = 0
+  let intensity: CombatIntensity = 'calm'
   return {
     setClock(t) { noteTime = t },
+    setIntensity(next) { intensity = next },
     schedule(now, tone) {
       if (noteTime < now - 0.2) noteTime = now + 0.04
       let count = 0
@@ -61,14 +69,16 @@ export function createBattleScore(): Score {
         const i = step % 32
         if (i % 8 === 0) {
           const root = BATTLE_ROOTS[Math.floor(i / 8)]
-          tone(root, noteTime, 1.15, 0.034, 'sine', 'sfx')
-          tone(root + 12, noteTime, 0.92, 0.015, 'triangle', 'sfx')
-          tone(root + 19, noteTime, 1.1, 0.012, 'sine', 'sfx')
+          tone(root, noteTime, 1.15, 0.034, 'sine', 'music')
+          tone(root + 12, noteTime, 0.92, 0.015, 'triangle', 'music')
+          tone(root + 19, noteTime, 1.1, 0.012, 'sine', 'music')
+          if (intensity === 'boss') tone(root - 12, noteTime, 0.78, 0.038, 'sawtooth', 'music')
         }
         const melody = BATTLE_TUNE[i]
-        if (melody != null) tone(melody, noteTime, 0.32, 0.024, 'triangle', 'sfx')
-        if (i % 4 === 2) tone(60 + Math.floor(i / 8) * 2, noteTime, 0.14, 0.013, 'sine', 'sfx')
-        noteTime += 0.34
+        if (melody != null) tone(melody + (intensity === 'boss' ? -12 : 0), noteTime, 0.32, intensity === 'boss' ? 0.028 : 0.024, 'triangle', 'music')
+        if (i % 4 === 2) tone(60 + Math.floor(i / 8) * 2, noteTime, 0.14, 0.013, 'sine', 'music')
+        if (intensity !== 'calm' && i % 4 === 0) tone(36, noteTime, 0.1, intensity === 'boss' ? 0.032 : 0.015, 'triangle', 'music')
+        noteTime += intensity === 'boss' ? 0.26 : 0.34
         step++
       }
     },

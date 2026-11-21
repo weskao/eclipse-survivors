@@ -9,9 +9,13 @@ class SpyAudio implements AudioSystem {
   cues: SfxCue[] = []
   screens: GameMode[] = []
   unlocked = false
+  wakeCalls = 0
+  interruptions = 0
   musicOn = true
   sfxOn = true
-  wake(): void { this.unlocked = true }
+  wake(): void { this.unlocked = true; this.wakeCalls++ }
+  interrupt(): void { this.interruptions++ }
+  setCombatIntensity(): void {}
   playSfx(cue: SfxCue): void { this.cues.push(cue) }
   tick(): void {}
   onScreen(mode: GameMode): void { this.screens.push(mode) }

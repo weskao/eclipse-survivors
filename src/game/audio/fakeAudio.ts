@@ -54,6 +54,9 @@ export class FakeAudioContext implements AudioContextLike {
   readonly oscillators: FakeOscillator[] = []
   readonly gains: FakeGain[] = []
   readonly sources: FakeBufferSource[] = []
+  readonly buffers: FakeBuffer[] = []
+  suspendCalls = 0
+  suspend(): Promise<void> { this.suspendCalls++; this.state = 'suspended'; return Promise.resolve() }
   readonly filters: FakeFilter[] = []
   resumeCalls = 0
   resume(): Promise<void> {
@@ -67,7 +70,7 @@ export class FakeAudioContext implements AudioContextLike {
   }
   createOscillator(): FakeOscillator { const n = new FakeOscillator(); this.oscillators.push(n); return n }
   createGain(): FakeGain { const n = new FakeGain(); this.gains.push(n); return n }
-  createBuffer(_channels: number, length: number, sampleRate: number): FakeBuffer { return new FakeBuffer(length, sampleRate) }
+  createBuffer(_channels: number, length: number, sampleRate: number): FakeBuffer { const b = new FakeBuffer(length, sampleRate); this.buffers.push(b); return b }
   createBufferSource(): FakeBufferSource { const n = new FakeBufferSource(); this.sources.push(n); return n }
   createBiquadFilter(): FakeFilter { const n = new FakeFilter(); this.filters.push(n); return n }
 }
