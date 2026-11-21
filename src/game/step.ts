@@ -1,5 +1,5 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
-import { attack, damageHero, hit, victoryConditionMet } from './combat'
+import { attack, hit, victoryConditionMet } from './combat'
 import { tickEnemies, tickEnemyProjectiles } from './enemies/ai'
 import { dist, minmax } from './math'
 import { moveHero } from './movement'
