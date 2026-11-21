@@ -13,7 +13,7 @@ const emit = defineEmits<{ select: [mode: RunModeId] }>()
       <button
         v-for="id in modeIds" :key="id"
         type="button" role="radio"
-        class="mode-choice" :class="{ selected: id === value }"
+        :data-mode="id" class="mode-choice" :class="{ selected: id === value }"
         :aria-checked="id === value"
         @click="emit('select', id)"
       >
