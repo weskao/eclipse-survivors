@@ -13,8 +13,8 @@ import { setScene } from './scene'
 import { spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
-import { emptyHud, type GameCommands, type UiState } from './store'
-import type { GameHooks, GameMode, GameState, JobId, MoveInput, Point, UpgradeId } from './types'
+import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
+import type { AbilityId, GameHooks, GameMode, GameState, JobId, MoveInput, Point } from './types'
 
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
@@ -113,12 +113,21 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
       timer: `${pad2(Math.floor(s.time / 60))}:${pad2(Math.floor(s.time % 60))}`,
       bossPct: boss ? Math.max(0, boss.hp / boss.max * 100) : null,
       quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
+      skills: equippedSkillHud(hero),
     }
   }
 
   function offerUpgrades(): void {
+    const choices = pickUpgrades(s.hero ?? undefined)
+    if (!choices.length) {
+      // With every upgrade maxed, pending level-ups must never trap the player.
+      s.levelQueue = 0
+      screen('play')
+      message('所有祝福已達到最高等級')
+      return
+    }
+    ui.upgrades = choices
     screen('level')
-    ui.upgrades = pickUpgrades()
     audio.playSfx('level')
   }
 
@@ -142,9 +151,9 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     hud()
   }
 
-  function chooseUpgrade(id: UpgradeId): void {
-    if (s.mode !== 'level' || !s.hero) return
-    applyUpgrade(s, id, hooks)
+  function chooseUpgrade(id: AbilityId): void {
+    if (s.mode !== 'level' || !s.hero || !ui.upgrades.some(up => up.id === id)) return
+    if (!applyUpgrade(s, id, hooks)) return
     screen('play')
     if (s.levelQueue) offerUpgrades()
     audio.playSfx('upgrade')

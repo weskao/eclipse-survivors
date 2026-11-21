@@ -102,3 +102,38 @@ h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(29px,4vw,48px);lett
 @media(max-width:390px){#menu .menu-brand{padding-top:16px}#menu .game-title{font-size:clamp(38px,11vw,45px)}#menu .menu-lede br{display:none}#menu .menu-selection{padding:12px 7px}#menu #jobs{gap:4px}#menu .job strong{font-size:11px}#menu .job-mark{font-size:6px}#menu .menu-controls{font-size:8px}}
 @media(max-height:680px) and (min-width:701px){#menu .menu-panel{min-height:0}#menu .menu-brand{padding-top:20px}#menu .game-title{margin:16px 0 7px;font-size:clamp(42px,5vw,65px)}#menu .menu-lede{margin:5px 0}#menu .menu-showcase img{height:190px}#menu .menu-section-heading{margin:10px 0 0}#menu .job{min-height:174px}#menu .job .portrait{height:95px}#menu .menu-selection{padding-top:16px;padding-bottom:16px}}
 @media(prefers-reduced-motion:reduce){#menu .menu-scene-art,#menu .menu-showcase img,#menu .start-spark{animation:none}#menu .job{transition:none}}
+
+/* Unified arcane sigils, ability inventory and rarity-aware level-up cards. */
+.skill-slots{max-width:min(88vw,760px);display:flex;justify-content:safe center;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#e6c88a66 transparent;padding:7px 4px}
+.bottom-ui{width:min(820px,90vw);pointer-events:none}
+.skill-slots{pointer-events:auto}
+.skill-slots .skill{flex:0 0 48px;width:48px;height:49px;overflow:hidden;border-radius:9px;isolation:isolate;background:radial-gradient(circle at 38% 28%,#49556a,#121928 68%);box-shadow:inset 0 1px 0 #fff5,0 2px 12px #000b}
+.skill-slots .skill:before,.upgrade .skill-sigil:before{content:'';position:absolute;inset:3px;border:1px solid #fff4;transform:rotate(45deg) scale(.65);pointer-events:none}
+.skill-slots .skill.rare{border-color:#72b9f5;box-shadow:0 0 12px #3995d657,inset 0 1px #fff5}
+.skill-slots .skill.legendary,.skill-slots .skill.evolved{border-color:#f1b96d;box-shadow:0 0 17px #edaa5872,inset 0 1px #fff7}
+.skill-sigil{display:grid;place-items:center;position:relative;z-index:1;font-family:Georgia,serif;font-size:25px;font-weight:900;color:#f4e4ba;text-shadow:0 2px 4px #000,0 0 13px #f5c679;filter:drop-shadow(0 1px 3px #000)}
+.skill-slots .skill.rare .skill-sigil{color:#c9f4ff;text-shadow:0 0 12px #80d8ff}
+.skill-slots .skill.legendary .skill-sigil{color:#fff2c5;text-shadow:0 0 15px #ffb65b}
+.skill-slots .skill .skill-cooldown{position:absolute;z-index:3;bottom:0;left:0;right:0;background:#080e1dd1;border-top:1px solid #e8e8e840;pointer-events:none;transition:height .1s linear}
+.skill-slots .skill small.skill-level{z-index:4;bottom:0;right:2px;min-width:14px;padding:1px 3px;border-radius:4px;background:#101a28dd;color:#fff5e1;font-size:10px}
+.skill-slots .skill .skill-evolved{position:absolute;z-index:4;top:-3px;right:1px;color:#ffd37e;font-size:11px;text-shadow:0 0 8px #ffba65}
+#level .panel{max-width:860px;background:radial-gradient(ellipse at 50% 0,#38405277,transparent 56%),linear-gradient(150deg,#1c2332,#0b111b 70%);box-shadow:0 24px 90px #000e,0 0 70px #c59c4c1a}
+#level .cards{align-items:stretch;gap:clamp(8px,1.8vw,18px)}
+#level .upgrade{min-height:260px;padding:18px 12px 14px;border:1px solid #9b967e;border-radius:12px;background:radial-gradient(circle at 50% 23%,#7b685c2b,transparent 57%),linear-gradient(155deg,#2b303a,#111826);animation:blessing-arrive .42s both ease-out}
+#level .upgrade:nth-child(2){animation-delay:.08s}#level .upgrade:nth-child(3){animation-delay:.16s}
+#level .upgrade.rare{border-color:#6eace5;background:radial-gradient(circle at 50% 23%,#367f9c5c,transparent 58%),linear-gradient(#202e45,#101824)}
+#level .upgrade.legendary{border-color:#f0bd66;background:radial-gradient(circle at 50% 24%,#bb7c3c80,transparent 65%),linear-gradient(#443141,#171522);box-shadow:inset 0 0 25px #faab4b1b,0 0 21px #f0a8584b}
+#level .upgrade:hover,#level .upgrade:focus-visible{transform:translateY(-7px) scale(1.015);box-shadow:0 12px 33px #000d,0 0 28px #bfa97879}
+#level .upgrade.legendary:hover{box-shadow:0 12px 35px #000d,0 0 36px #ffa95c96}
+#level .upgrade-rarity{display:block;color:#d6c5a9;font-size:10px;letter-spacing:2px;font-weight:900}
+#level .upgrade.rare .upgrade-rarity{color:#9ee7ff}#level .upgrade.legendary .upgrade-rarity{color:#ffd68b}
+#level .upgrade .portrait.skill-sigil{height:83px;width:83px;margin:9px auto 13px;border-radius:50%;border:2px solid #b8a377;background:radial-gradient(circle at 37% 26%,#62718e,#1a2533 65%,#0a1120);font-size:47px;box-shadow:inset 0 0 18px #fff2,0 0 25px #ab9b6562}
+#level .upgrade.rare .portrait{border-color:#83d7ee;box-shadow:0 0 24px #4bbee67b}
+#level .upgrade.legendary .portrait{border-color:#ffd28e;background:radial-gradient(circle at 38% 28%,#875d80,#412e53 55%,#181321);box-shadow:0 0 30px #f7b45ba1}
+#level .upgrade .upgrade-level{display:block;margin:8px 0 5px;color:#e8c88e;font-size:12px;font-weight:800}
+#level .upgrade small.upgrade-desc{font-size:12px;line-height:1.6;color:#d4d8db}
+#level .upgrade small.upgrade-requirements{margin-top:7px;color:#e8c896;font-weight:700}
+#level .upgrade small.upgrade-key{margin-top:12px;color:#f6e8cd;opacity:.68;font-size:10px}
+@keyframes blessing-arrive{from{opacity:0;transform:translateY(18px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:760px){.skill-slots .skill{flex-basis:35px;width:35px;height:38px;border-radius:7px}.skill-slots .skill-sigil{font-size:20px}#level .upgrade{min-height:205px;padding:13px 5px}#level .upgrade .portrait.skill-sigil{width:54px;height:54px;font-size:30px}#level .upgrade .upgrade-rarity{font-size:9px;letter-spacing:0}#level .upgrade small.upgrade-desc{font-size:10px}#level .upgrade strong{font-size:12px}}
+@media(prefers-reduced-motion:reduce){#level .upgrade{animation:none;transition:none}.skill-slots .skill .skill-cooldown{transition:none}}
