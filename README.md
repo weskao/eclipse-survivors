@@ -1,12 +1,12 @@
 <p align="center">
   <a href="https://weskao.github.io/eclipse-survivors/" title="Play Eclipse Survivors">
-    <img src="assets/og-cover.svg" alt="Eclipse Survivors — cinematic fantasy adventure cover artwork" width="100%">
+    <img src="assets/screenshots/gameplay.webp" alt="Actual Eclipse Survivors gameplay captured in the browser: an armored knight facing goblins, slimes, bats, and stone golems in a grassy ruined courtyard" width="100%">
   </a>
 </p>
 
 # Eclipse Survivors
 
-**An atmospheric fantasy survival-action game.** Choose your hero, fight through waves of dangerous creatures, collect experience gems, and discover increasingly powerful skill combinations. Defeat monstrous bosses, brave changing weather, and survive in a richly illustrated fantasy world — directly in your browser.
+**A playable fantasy survival-action browser game.** Choose your hero, fight through waves of dangerous creatures, collect experience gems, and discover increasingly powerful skill combinations. Defeat monstrous bosses, brave changing weather, and survive in a richly illustrated fantasy world — directly in your browser.
 
 <p align="center">
   <a href="https://weskao.github.io/eclipse-survivors/"><strong>▶ PLAY THE GAME</strong></a>
@@ -14,16 +14,30 @@
   &nbsp;•&nbsp; <a href="docs/release-process.md">Releases</a>
 </p>
 
-> **Playable prototype:** The current game is a self-contained browser adventure. The cover artwork is promotional illustration, not an in-game screenshot. The gameplay images below are captured from the actual game by the artwork workflow. They appear when that workflow completes successfully.
+> **Real gameplay images:** All screenshots in this README are captured from the actual `index.html` using a headless browser. The app icon and social preview are composed exclusively from art assets already embedded in the game, rather than unrelated concept images.
 
-## Gameplay
+## Actual Gameplay Screenshots
 
-<p align="center">
-  <img src="assets/screenshots/gameplay.webp" alt="Actual gameplay screenshot: armored hero surrounded by fantasy monsters in a grassy ruin" width="67%">
-  <img src="assets/screenshots/mobile.webp" alt="Actual gameplay screenshot on a phone-sized display with touch controls" width="30%">
-</p>
+The images below show the current game as it runs in Chromium, not promotional mockups or artwork from another game.
 
-Fight, move, dodge, and level up. Your hero attacks automatically, leaving you free to concentrate on positioning and building a powerful combination of abilities.
+<table>
+<tr>
+<td width="66%">
+  <img src="assets/screenshots/gameplay.webp" alt="Real desktop gameplay featuring the in-game knight, goblins, slimes, bats and stone golems on a grassy stone path" width="100%">
+  <small><strong>Survival combat</strong> — automatic attacks, enemy waves, experience, and HUD.</small>
+</td>
+<td width="34%" rowspan="2">
+  <img src="assets/screenshots/mobile.webp" alt="Real mobile browser gameplay captured at a 390 by 844 pixel viewport" width="100%">
+  <small><strong>Mobile play</strong> — the actual touch-screen layout.</small>
+</td>
+</tr>
+<tr>
+<td>
+  <img src="assets/screenshots/upgrade.webp" alt="Actual Eclipse Survivors level-up screen showing three selectable ability cards" width="100%">
+  <small><strong>Level-up choices</strong> — select one of three upgrades during a run.</small>
+</td>
+</tr>
+</table>
 
 ## Game Features
 
@@ -61,7 +75,7 @@ Fight, move, dodge, and level up. Your hero attacks automatically, leaving you f
 
 **Android:** Open the website in Chrome, open the browser menu, and choose **Add to Home screen** or **Install app** if available.
 
-The home-screen icon and social preview are derived from the project's own fantasy branding, with SVG artwork kept as the editable source.
+The home-screen icon uses the knight sprite from the game. The social preview combines a live gameplay screenshot with the original knight and mage sprites. Both are generated from the game's own assets.
 
 ## Technology
 
@@ -69,7 +83,7 @@ The home-screen icon and social preview are derived from the project's own fanta
 - Self-contained game with no required runtime CDN or game server
 - Embedded original sound and visual assets
 - GitHub Pages distribution
-- Mobile app icons and social previews generated from original SVG artwork
+- Mobile app icons and social previews generated from actual in-game character art and gameplay
 - Automated real-game browser screenshot capture for the README
 
 ## Project Layout
@@ -77,12 +91,10 @@ The home-screen icon and social preview are derived from the project's own fanta
 ```text
 index.html                       Standalone playable game
 manifest.webmanifest             Home-screen web app metadata
-assets/app-icon.svg              Editable app icon artwork
-assets/og-cover.svg              Editable cover artwork
+assets/icon-192.png              App icon based on in-game knight sprite (generated)
 assets/apple-touch-icon.png      iOS home-screen icon (generated)
-assets/icon-192.png              Home-screen icon (generated)
 assets/icon-512.png              High-resolution home-screen icon (generated)
-assets/og-cover.png              Open Graph preview image (generated)
+assets/og-cover.png              Social preview: real gameplay and in-game sprites
 assets/screenshots/              Screenshots captured from actual gameplay
 scripts/export-brand-assets.py   Generate raster assets and capture screenshots
 .github/workflows/brand-assets.yml Artwork generation workflow
@@ -93,7 +105,7 @@ docs/release-process.md          Publishing and version guidelines
 
 ## Status and Artwork
 
-Eclipse Survivors is an evolving **playable prototype**. Promotional artwork conveys the intended visual direction; it should not be mistaken for footage of features that have not been implemented. For the current experience, use the gameplay screenshots and play the live build.
+Eclipse Survivors is an evolving **playable prototype**. All images displayed above are captured directly from the running game. The installed app icon and share cover use original embedded game sprites; no external fantasy-game screenshots or concept art are presented as gameplay.
 
 ## License
 
