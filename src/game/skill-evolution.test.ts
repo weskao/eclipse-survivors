@@ -4,6 +4,7 @@ import { MAX_LEVEL, UP } from './constants'
 import { applyUpgrade, pickUpgrades } from './progression'
 import { createHero, createState } from './state'
 import { seeded } from './math'
+import { tickSkills } from './skills'
 import type { GameHooks, Mob } from './types'
 
 const hooks = (): GameHooks => ({ sfx: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), end: vi.fn() })
@@ -107,6 +108,23 @@ describe('five recipe-based evolutions', () => {
       expect(s.hero!.evolutionCd[id]).toBeGreaterThan(0)
     }
   })
+  it('blade tempest increases real orbit blade collisions, not just decorative blade count', () => {
+    const normal = setup()
+    normal.hero!.skills.orb = 3
+    normal.mobs = [mob(36, 62)]
+    tickSkills(normal, 0.016, hooks())
+    expect(normal.mobs[0]!.hp).toBe(1200)
+
+    const evolved = setup()
+    evolved.hero!.skills.orb = 3
+    evolved.hero!.skills.haste = 3
+    evolved.hero!.evolutions['blade-tempest'] = true
+    evolved.hero!.evolutionCd['blade-tempest'] = 10
+    evolved.mobs = [mob(36, 62)]
+    tickSkills(evolved, 0.016, hooks())
+    expect(evolved.mobs[0]!.hp).toBeLessThan(1200)
+  })
+
   it('guardian sanctuary heals, protects, and never exceeds max health', () => {
     const s = setup()
     s.hero!.skills.shield = 3
