@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://weskao.github.io/survivor-game/" title="Play Eclipse Survivors">
+  <a href="https://weskao.github.io/eclipse-survivors/" title="Play Eclipse Survivors">
     <img src="assets/og-cover.svg" alt="Eclipse Survivors — cinematic fantasy adventure cover artwork" width="100%">
   </a>
 </p>
@@ -9,7 +9,7 @@
 **An atmospheric fantasy survival-action game.** Choose your hero, fight through waves of dangerous creatures, collect experience gems, and discover increasingly powerful skill combinations. Defeat monstrous bosses, brave changing weather, and survive in a richly illustrated fantasy world — directly in your browser.
 
 <p align="center">
-  <a href="https://weskao.github.io/survivor-game/"><strong>▶ PLAY THE GAME</strong></a>
+  <a href="https://weskao.github.io/eclipse-survivors/"><strong>▶ PLAY THE GAME</strong></a>
   &nbsp;•&nbsp; <a href="CHANGELOG.md">What's New</a>
   &nbsp;•&nbsp; <a href="docs/release-process.md">Releases</a>
 </p>
@@ -39,7 +39,7 @@ Fight, move, dodge, and level up. Your hero attacks automatically, leaving you f
 
 ## Quick Start
 
-**Play online:** [weskao.github.io/survivor-game](https://weskao.github.io/survivor-game/)
+**Play online:** [weskao.github.io/eclipse-survivors](https://weskao.github.io/eclipse-survivors/)
 
 **Play offline:** Download `index.html` and open it in a modern browser. No build tools, extra packages, or server are needed.
 

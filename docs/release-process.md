@@ -4,10 +4,10 @@
 
 ## GitHub 儲存庫資訊
 
-- **儲存庫**：<https://github.com/weskao/survivor-game>
+- **儲存庫**：<https://github.com/weskao/eclipse-survivors>
 - **目前可見性**：Public
 - **預設分支**：`main`
-- **網站網址**：<https://weskao.github.io/survivor-game/>
+- **網站網址**：<https://weskao.github.io/eclipse-survivors/>
 - **遊戲入口**：根目錄 `index.html`
 
 ### GitHub About 建議內容
@@ -20,7 +20,7 @@
 
 **Website**
 
-`https://weskao.github.io/survivor-game/`
+`https://weskao.github.io/eclipse-survivors/`
 
 **Topics**
 
@@ -46,19 +46,19 @@
 - 工作流程：`.github/workflows/release.yml`，單一工作完成驗證與部署。
 - Push 至 `main`（唯一部署觸發）：檢查入口檔案、內嵌 JavaScript 語法、音訊與資源路徑；發布 `index.html`、`manifest.webmanifest`、`assets/`；最後確認公開網址回傳遊戲入口。
 - `v*` tag 不會觸發部署；版本標籤與 GitHub Release 由 `/release` 建立。
-- 手動重部署：**Actions → Verify and publish Survivor Game → Run workflow**，分支選 `main`。
+- 手動重部署：**Actions → Verify and publish Eclipse Survivors → Run workflow**，分支選 `main`。
 
 ## 版本發布 / Versioned Release
 
 1. 確認欲宣告的遊戲功能已在 `index.html` 真正實作。
 2. 更新 `CHANGELOG.md`，只描述玩家現在可體驗的功能，繁體中文與英文並列。
 3. 執行 `/release <版本>`：提交 changelog、推送 `main`（觸發部署）、建立標籤與 GitHub Release。
-4. 確認該次 `main` 的 **Verify and publish Survivor Game** 成功。
+4. 確認該次 `main` 的 **Verify and publish Eclipse Survivors** 成功。
 5. 使用桌面與手機確認「開始冒險」、移動、升級選單、音效及暫停能正常運作。
 
 ## 常見問題 / Troubleshooting
 
 - 公開網址回傳 404：檢查 Pages 設定是否正確、最近一次部署是否成功，以及 `main` 根目錄是否含 `index.html`。
-- Actions 工作流程失敗：查看 [Actions](https://github.com/weskao/survivor-game/actions) 的實際錯誤紀錄，勿宣告已上線。
+- Actions 工作流程失敗：查看 [Actions](https://github.com/weskao/eclipse-survivors/actions) 的實際錯誤紀錄，勿宣告已上線。
 - 無背景音樂：瀏覽器通常必須先收到使用者互動；請按「開始冒險」後確認音樂選項。
 - 重要視覺原則：任何設計概念圖都不能當作已完成的真實遊戲截圖使用。

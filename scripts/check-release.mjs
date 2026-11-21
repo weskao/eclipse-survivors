@@ -15,5 +15,5 @@ new Script(scripts[0][1], { filename: 'index.html:inline.js' });
 assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\s*=\s*["'](?:https?:)?\/\//i,
   'release must not rely on third-party scripts/images/music');
 assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\s*=\s*["']\//i,
-  'site must work at /survivor-game/, not depend on root-absolute asset paths');
+  'site must work at /eclipse-survivors/, not depend on root-absolute asset paths');
 console.log('Static release checks passed: entry point, UI, offline audio, inline JS syntax and relative URLs.');

@@ -30,7 +30,7 @@
 - Publish manifest and icons with the game; document single deploy path
 # 更新紀錄 / Changelog
 
-這份更新紀錄描述已加入專案的功能。網站是否已公開發布，以 [GitHub Pages 部署狀態](https://github.com/weskao/survivor-game/actions) 為準。
+這份更新紀錄描述已加入專案的功能。網站是否已公開發布，以 [GitHub Pages 部署狀態](https://github.com/weskao/eclipse-survivors/actions) 為準。
 
 ## v0.0.1 — 2026-11-21
 

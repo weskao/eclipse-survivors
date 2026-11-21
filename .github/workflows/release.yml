@@ -1,4 +1,4 @@
-name: Verify and publish Survivor Game
+name: Verify and publish Eclipse Survivors
 
 # One path: every push to main is checked and published. Tags/Releases come from scripts/release.sh.
 on:
