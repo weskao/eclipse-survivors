@@ -1,3 +1,12 @@
+## [Unreleased]
+
+### 🎼 Audio / 音訊
+
+- Add an original dark-fantasy menu motif that begins after a browser-permitted interaction, while preserving the embedded gameplay soundtrack.
+- Add distinct musical cues and sound effects for hero selection, UI buttons, knight/ranger/wizard attacks, spells, dash, upgrades, experience pickups, damage, bosses, and win/loss.
+- Provide independent music and SFX switches with saved preferences and cooldowns to avoid repeated loud cues during large enemy waves.
+- Display the current released version (v0.0.3) on the hero selection screen and verify it against the changelog before release.
+
 ## [0.0.3] - 2026-11-21
 
 ### ⚙️ Miscellaneous Tasks
