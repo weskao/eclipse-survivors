@@ -13,9 +13,11 @@ const vignetteGradients = new WeakMap<Ctx2D, { W: number; H: number; gradient: C
 
 /** Rasterize the local-space bolt glow once; drawing the image preserves its position after translate(). */
 export function buildMagicGlow(makeCanvas: MakeCanvas): HTMLCanvasElement | null {
-  const canvas = makeCanvas(56, 56)
+  // Paint at 3x resolution; the 56 CSS-pixel bolt stays crisp on high-DPI displays.
+  const canvas = makeCanvas(168, 168)
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
+  ctx.scale(3, 3)
   const glow = ctx.createRadialGradient(28, 28, 0, 28, 28, 28)
   glow.addColorStop(0, '#f2eaff')
   glow.addColorStop(0.2, '#a6d8ff')
