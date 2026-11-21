@@ -76,11 +76,25 @@ def social_cover(images,screenshot):
             edge=min(65,int(110*abs(y-315)/315))
             p[x,y]=(6,13,22,min(250,dark+edge))
     bg.alpha_composite(gradient)
-    radial_glow(bg,(919,268),256,(121,188,181),.31)
-    radial_glow(bg,(1018,500),235,(239,149,93),.20)
-    add_sprite(bg,images['wizard'],(792,145,278,397),.82)
-    add_sprite(bg,images['knight'],(900,118,352,470))
+    # Three ORIGINAL playable heroes, including the ranger previously omitted.
+    # Keep the title area free, fit every portrait entirely inside 1200 × 630,
+    # and draw the foreground knight last for a natural layered composition.
+    radial_glow(bg,(765,301),170,(88,174,123),.30)
+    radial_glow(bg,(1087,296),192,(151,125,217),.36)
+    radial_glow(bg,(926,276),235,(239,183,102),.30)
+    add_sprite(bg,images['ranger'],(674,168,202,396),.98)
+    add_sprite(bg,images['wizard'],(982,147,208,403),.98)
+    add_sprite(bg,images['knight'],(804,88,260,488))
     d=ImageDraw.Draw(bg,'RGBA')
+    hero_label=ImageFont.truetype(SANS,15)
+    for label,x,accent in (
+        ('RANGER',715,(143,213,160,255)),
+        ('KNIGHT',887,(248,209,142,255)),
+        ('MAGE',1070,(190,170,244,255)),
+    ):
+        d.rounded_rectangle((x-11,581,x+86,609),radius=5,
+                            fill=(9,19,30,224),outline=(*accent[:3],130),width=1)
+        d.text((x,586),label,font=hero_label,fill=accent)
     d.rounded_rectangle((43,46,76,50),radius=2,fill=(227,185,111,240))
     d.text((48,69),'FANTASY SURVIVAL ACTION',font=ImageFont.truetype(SANS,21),fill=(222,194,144,255))
     draw_title(d,(42,169),'ECLIPSE',86,(250,244,228,255),2)
