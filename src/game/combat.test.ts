@@ -273,7 +273,7 @@ describe('hitbox-based melee targeting', () => {
     expect(boss.hp).toBe(68)
   })
   it('prioritizes reachable enemy edges over center distance', () => {
-    const { s, hero } = setup()
+    const { hero } = setup()
     const small = mob(105, 0)
     const boss = mob(130, 0, { type: 'boss', r: 48 })
     expect(nearestAlive([small, boss], hero)[0]).toBe(boss)
