@@ -3,7 +3,7 @@ import { createEngine, type Engine } from './engine'
 import type { AudioSystem } from './audio/types'
 import { DURATION } from './constants'
 import { seeded, setRandom } from './math'
-import type { GameMode, SfxCue } from './types'
+import type { GameMode, SfxCue, UpgradeId } from './types'
 
 class SpyAudio implements AudioSystem {
   cues: SfxCue[] = []
@@ -75,6 +75,28 @@ describe('engine commands fire the original cues', () => {
     expect(audio.cues.at(-1)).toBe('upgrade')
   })
 
+  it('handles three queued level-ups, rejects a hidden choice and updates equipped HUD skills', () => {
+    engine.start()
+    engine.testApi.level()
+    engine.testApi.level()
+    engine.testApi.level()
+    expect(engine.state.levelQueue).toBe(3)
+    expect(engine.ui.mode).toBe('level')
+    engine.chooseUpgrade('guardian-sanctuary')
+    expect(engine.state.levelQueue).toBe(3)
+    for (let i = 0; i < 3; i++) {
+      const choices = engine.ui.upgrades
+      expect(new Set(choices.map(item => item.id)).size).toBe(choices.length)
+      engine.chooseUpgrade(choices[0]!.id)
+      expect(engine.state.levelQueue).toBe(2 - i)
+      expect(engine.ui.mode).toBe(i < 2 ? 'level' : 'play')
+    }
+    expect(engine.ui.hud.skills.length).toBeGreaterThan(0)
+    expect(engine.ui.hud.skills.every(item =>
+      item.id in engine.state.hero!.skills || item.id in engine.state.hero!.evolutions,
+    )).toBe(true)
+  })
+
   it('surviving to DURATION after boss defeat ends in victory', () => {
     engine.start()
     engine.state.mobs = []
@@ -138,7 +160,7 @@ describe('keyboard and focus', () => {
     const first = engine.ui.upgrades[0]!.id
     key('Digit1')
     expect(engine.ui.mode).toBe('play')
-    expect(engine.state.hero!.skills[first]).toBe(1)
+    expect(engine.state.hero!.skills[first as UpgradeId]).toBe(1)
   })
 
   it('window blur pauses a running game', () => {

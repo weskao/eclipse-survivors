@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-label="meteor">
+<defs><radialGradient id="bg" cx="36%" cy="22%" r="90%"><stop stop-color="#4c8ca6"/><stop offset=".45" stop-color="#202a43"/><stop offset="1" stop-color="#0d101b"/></radialGradient>
+<linearGradient id="metal" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fffce9"/><stop offset=".42" stop-color="#98daff"/><stop offset="1" stop-color="#a3adff"/></linearGradient>
+<filter id="g"><feGaussianBlur stdDeviation="1.9" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="128" height="128" rx="24" fill="url(#bg)"/>
+<circle cx="64" cy="64" r="55" fill="none" stroke="#98daff" stroke-width="1.7" stroke-opacity=".72"/>
+<circle cx="64" cy="64" r="48" fill="none" stroke="#98daff" stroke-width="1.1" stroke-opacity=".38" stroke-dasharray="2 9"/>
+<path d="M64 5l4 8-4 8-4-8zM64 107l4 8-4 8-4-8zM5 64l8-4 8 4-8 4zM107 64l8-4 8 4-8 4z" fill="#98daff" opacity=".8"/>
+<g stroke="url(#metal)" stroke-linejoin="round" stroke-linecap="round" fill="#98daff" fill-opacity=".14" filter="url(#g)"><path d="M103 17L56 67M93 13l-29 9M112 38L83 58" stroke-width="7"/><path d="M66 60q28-1 30 22 2 25-25 29-27 1-30-23-2-20 25-28z" stroke-width="6"/><path d="M57 81l13-11 14 15-13 14-17-5z" stroke-width="3"/></g>
+<path d="M18 31q0-13 13-13M97 110q13 0 13-13" fill="none" stroke="#98daff" stroke-width="2.5" opacity=".8"/>
+</svg>

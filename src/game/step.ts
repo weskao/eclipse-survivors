@@ -23,6 +23,9 @@ function tickTimers(s: GameState, hero: Hero, dt: number): void {
   hero.blazeTick -= dt
   hero.vortexCd -= dt
   hero.shieldPulse -= dt
+  for (const id of Object.keys(hero.evolutionCd) as (keyof typeof hero.evolutionCd)[]) {
+    hero.evolutionCd[id] = (hero.evolutionCd[id] ?? 0) - dt
+  }
   hero.strike = Math.max(0, hero.strike - dt)
   hero.levelAnim = Math.max(0, hero.levelAnim - dt * 0.9)
   s.cameraKick = Math.max(0, s.cameraKick - dt * 27)

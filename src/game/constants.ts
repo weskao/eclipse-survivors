@@ -1,4 +1,4 @@
-import type { JobDef, JobId, SceneDef, UpgradeDef, UpgradeId } from './types'
+import type { BaseUpgradeDef, JobDef, JobId, SceneDef, SkillRarity, UpgradeId } from './types'
 
 export const TAU = 2 * Math.PI
 export const MAX_MOBS = 130
@@ -11,26 +11,35 @@ export const SCENE = { width: 2200, height: 1238 } as const
 export const JOB: Record<JobId, JobDef> = {
   knight: { label: '曙鋼騎士', hp: 175, speed: 190, damage: 32, delay: 0.57, range: 112 },
   ranger: { label: '夜痕遊俠', hp: 115, speed: 218, damage: 22, delay: 0.36, range: 430 },
-  wizard: { label: '虛空術士', hp: 110, speed: 196, damage: 46, delay: 0.68, range: 390 },
+  wizard: { label: '虛空術士', hp: 110, speed: 196, damage: 39, delay: 0.68, range: 390 },
 }
 export const JOB_IDS = Object.keys(JOB) as JobId[]
 
-const up = (id: UpgradeId, icon: string, title: string, desc: string): UpgradeDef => ({ id, icon, title, desc })
-export const UP: readonly UpgradeDef[] = [
+export const MAX_LEVEL: Record<UpgradeId, number> = {
+  damage: 5, speed: 5, haste: 5, maxhp: 5, multi: 3, orb: 5, magnet: 4, heal: 5,
+  bolt: 5, frost: 5, meteor: 5, blaze: 5, vortex: 5, shield: 4, chain: 5,
+}
+const RARE_SKILLS: readonly UpgradeId[] = ['orb', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain']
+const up = (id: UpgradeId, icon: string, title: string, desc: string): BaseUpgradeDef => ({
+  id, icon, title, desc,
+  rarity: (RARE_SKILLS.includes(id) ? 'rare' : 'common') as SkillRarity,
+  maxLevel: MAX_LEVEL[id],
+})
+export const UP: readonly BaseUpgradeDef[] = [
   up('damage', '⚔', '銳利祝福', '所有傷害 +25%'),
   up('speed', '✣', '疾風腳步', '移動速度 +12%'),
-  up('haste', 'ϟ', '迅捷之星', '攻擊速度 +15%'),
-  up('maxhp', '✚', '生命之光', '生命上限 +35 並治療'),
-  up('multi', '❖', '雙重魔力', '每次額外攻擊一次'),
+  up('haste', 'ϟ', '迅捷之星', '攻擊間隔縮短 15%（可疊加）'),
+  up('maxhp', '✚', '生命之光', '生命上限 +35，立即恢復最多 55 生命'),
+  up('multi', '❖', '雙重魔力', '每級增加一次同時攻擊（最多四擊）'),
   up('orb', '◈', '旋轉護符', '增加一枚環繞飛刃'),
   up('magnet', '✧', '水晶磁力', '吸取經驗的範圍增加'),
-  up('heal', '❀', '自然治癒', '每秒恢復少量生命'),
+  up('heal', '❀', '自然治癒', '每級每秒恢復 0.9 生命'),
   up('bolt', 'ϟ', '落雷祝福', '週期落雷打擊魔物'),
   up('frost', '❄', '極寒新星', '定期釋放冰霜衝擊並減速敵人'),
   up('meteor', '☄', '殞星轟擊', '召喚隕石砸落在敵群中央'),
   up('blaze', '🔥', '焚天烈環', '在周身噴發火焰造成持續傷害'),
   up('vortex', '🌀', '虛空渦流', '吸引周圍敵人並造成範圍傷害'),
-  up('shield', '🛡', '聖光障壁', '減少受到的傷害並獲得護盾光環'),
+  up('shield', '🛡', '聖光障壁', '減少 12% 受到的傷害，立即恢復最多 25 生命'),
   up('chain', '⚡', '連鎖雷擊', '定期在敵群間彈跳閃電'),
 ]
 

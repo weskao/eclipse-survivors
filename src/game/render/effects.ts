@@ -49,6 +49,18 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.restore()
   }
   const shield = hero.skills.shield
+  if (hero.evolutions['guardian-sanctuary']) {
+    ctx.save()
+    ctx.globalAlpha = 0.32 + 0.1 * Math.sin(q * 3)
+    ctx.strokeStyle = '#8dffdf'
+    ctx.shadowColor = '#84ffe1'
+    ctx.shadowBlur = 18
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.ellipse(hero.x + ox, hero.y + oy - 13, 94, 39, 0, 0, TAU)
+    ctx.stroke()
+    ctx.restore()
+  }
   if (shield) {
     ctx.save(); ctx.globalAlpha = 0.24 + 0.09 * Math.sin(q * 4); ctx.strokeStyle = '#9fd4ff'; ctx.lineWidth = 2.6
     ctx.beginPath(); ctx.ellipse(hero.x + ox, hero.y + oy - 14, 62 + shield * 4, 24 + shield * 2, 0, 0, TAU); ctx.stroke()
@@ -139,13 +151,14 @@ export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: n
   const orb = hero.skills.orb
   if (!orb) return
   const q = s.worldClock
-  const n = Math.min(orb + 1, 6)
+  const evolved = !!hero.evolutions['blade-tempest']
+  const n = Math.min(orb + 1 + (evolved ? 2 : 0), 8)
   for (let k = 0; k < n; k++) {
     const a = q * 2.7 + k * TAU / n
     const x = hero.x + ox + Math.cos(a) * 71
     const y = hero.y + oy + Math.sin(a) * 71
     ctx.save(); ctx.translate(x, y); ctx.rotate(q * 3)
-    ctx.shadowColor = '#a6eaff'; ctx.shadowBlur = 15; ctx.strokeStyle = '#e1f3ff'; ctx.lineWidth = 2.5
+    ctx.shadowColor = evolved ? '#f3baff' : '#a6eaff'; ctx.shadowBlur = evolved ? 23 : 15; ctx.strokeStyle = evolved ? '#fff0f9' : '#e1f3ff'; ctx.lineWidth = evolved ? 3.5 : 2.5
     ctx.strokeRect(-8, -8, 16, 16)
     ctx.restore()
   }

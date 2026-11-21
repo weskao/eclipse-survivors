@@ -2,6 +2,7 @@
 import { TAU } from './constants'
 import { hit, nearestAlive } from './combat'
 import { impact, zigzag } from './fx'
+import { tickEvolutions } from './evolutions'
 import { dist, rand, random } from './math'
 import type { GameHooks, GameState } from './types'
 
@@ -13,7 +14,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
   const sk = hero.skills
 
   if (sk.orb) {
-    const n = Math.min(sk.orb + 1, 6)
+    const n = Math.min(sk.orb + 1 + (hero.evolutions['blade-tempest'] ? 2 : 0), 8)
     for (let k = 0; k < n; k++) {
       const a = s.worldClock * 2.7 + (k * TAU) / n
       const ox = hero.x + Math.cos(a) * 71
@@ -113,4 +114,5 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
     hero.shieldPulse = Math.max(0.4, 2.8 - sk.shield * 0.18)
     impact(s, hero.x, hero.y, 66, '#9ad3ff', 0.25)
   }
+  tickEvolutions(s, hooks)
 }

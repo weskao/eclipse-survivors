@@ -5,6 +5,7 @@ import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB } from './constants'
 import { impact } from './fx'
+import { EVOLUTIONS } from './evolutions'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
 import { minmax } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
@@ -13,8 +14,8 @@ import { setScene } from './scene'
 import { spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
-import { emptyHud, type GameCommands, type UiState } from './store'
-import type { GameHooks, GameMode, GameState, JobId, MoveInput, Point, UpgradeId } from './types'
+import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
+import type { AbilityId, EvolutionId, GameHooks, GameMode, GameState, JobId, MoveInput, Point } from './types'
 
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
@@ -24,6 +25,8 @@ export interface TestApi {
   readonly music: boolean
   readonly time: number
   level(): void
+  /** Stage an evolution for browser capture without changing normal play. */
+  prepareEvolution(id: EvolutionId): void
   readonly hp: number | undefined
   readonly active: boolean
   readonly sceneArtLoaded: boolean
@@ -118,12 +121,20 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
       timer: `${pad2(Math.floor(s.time / 60))}:${pad2(Math.floor(s.time % 60))}`,
       bossPct: boss ? Math.max(0, boss.hp / boss.max * 100) : null,
       quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
+      skills: equippedSkillHud(hero),
     }
   }
 
   function offerUpgrades(): void {
+    const choices = pickUpgrades(s.hero ?? undefined)
+    if (!choices.length) {
+      s.levelQueue = 0
+      screen('play')
+      message('所有祝福已達到最高等級')
+      return
+    }
+    ui.upgrades = choices
     screen('level')
-    ui.upgrades = pickUpgrades()
     audio.playSfx('level')
   }
 
@@ -150,9 +161,9 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     hud()
   }
 
-  function chooseUpgrade(id: UpgradeId): void {
-    if (s.mode !== 'level' || !s.hero) return
-    applyUpgrade(s, id, hooks)
+  function chooseUpgrade(id: AbilityId): void {
+    if (s.mode !== 'level' || !s.hero || !ui.upgrades.some(up => up.id === id)) return
+    if (!applyUpgrade(s, id, hooks)) return
     screen('play')
     if (s.levelQueue) offerUpgrades()
     audio.playSfx('upgrade')
@@ -193,6 +204,25 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     get music() { return audio.musicOn },
     get time() { return s.time },
     level() { if (s.hero) addXp(s, s.hero.need, hooks) },
+    prepareEvolution(id: EvolutionId) {
+      if (!s.hero || s.mode !== 'play') return
+      const evo = EVOLUTIONS.find(e => e.id === id)
+      if (!evo) return
+      for (const required of evo.requires) {
+        s.hero.skills[required] = Math.max(3, s.hero.skills[required] ?? 0)
+      }
+      // Stable, visible targets for the capture harness; no game-rule changes.
+      for (const [i, mob] of s.mobs.slice(0, 5).entries()) {
+        mob.x = s.hero.x + 45 + i * 25
+        mob.y = s.hero.y + (i % 2 ? 35 : -35)
+        mob.speed = 0
+        mob.dmg = 0
+        mob.hp = mob.max = 3000
+      }
+      s.hero.attack = 1
+      s.hero.hp = Math.min(s.hero.max, s.hero.hp)
+      hud()
+    },
     get hp() { return s.hero?.hp },
     get active() { return s.hero != null },
     get sceneArtLoaded() { return !!art?.courtyard.complete && art.courtyard.naturalWidth > 0 },
