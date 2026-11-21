@@ -1,5 +1,6 @@
 // Mob spawning (original spawnMob + the spawn/boss section of update()).
-import { BOSS_TIME, MAX_MOBS, TAU } from './constants'
+import { MAX_MOBS, TAU } from './constants'
+import { getMode } from '../meta/modes'
 import { rand, random } from './math'
 import type { GameHooks, GameState, MobType } from './types'
 
@@ -13,7 +14,8 @@ export function spawnMob(s: GameState, type?: 'boss'): void {
   const a = rand(0, TAU)
   const t: MobType = boss ? 'boss' : random() < 0.43 ? 'slime' : random() < 0.54 ? 'bat' : random() < 0.84 ? 'goblin' : 'golem'
   const lvl = Math.floor(s.time / 22)
-  const hp = BASE_HP[t] + lvl * (t === 'boss' ? 120 : 9)
+  const mod = getMode(s.runMode).modifiers
+  const hp = Math.round((BASE_HP[t] + lvl * (t === 'boss' ? 120 : 9)) * mod.enemyHp)
   s.mobs.push({
     x: hero.x + Math.cos(a) * r,
     y: hero.y + Math.sin(a) * r,
@@ -22,7 +24,7 @@ export function spawnMob(s: GameState, type?: 'boss'): void {
     max: hp,
     r: t === 'boss' ? 48 : t === 'golem' ? 30 : t === 'goblin' ? 20 : 18,
     speed: t === 'boss' ? 51 : t === 'bat' ? 108 + lvl * 3 : t === 'golem' ? 48 + lvl * 2 : t === 'goblin' ? 69 + lvl * 3 : 77 + lvl * 3,
-    dmg: t === 'boss' ? 32 : 11 + lvl * 2,
+    dmg: Math.round((t === 'boss' ? 32 : 11 + lvl * 2) * mod.enemyDamage),
     phase: rand(0, 8),
     hit: 0,
     slow: 0,
@@ -34,18 +36,18 @@ export function spawnMob(s: GameState, type?: 'boss'): void {
 
 export const sceneBonus = (currentScene: number): number => (currentScene === 1 ? 0.05 : currentScene === 3 ? 0.08 : 0)
 
-export const spawnInterval = (time: number, currentScene: number): number =>
-  Math.max(0.18, 0.75 - time * 0.003 - sceneBonus(currentScene))
+export const spawnInterval = (time: number, currentScene: number, frequency = 1): number =>
+  Math.max(0.18, 0.75 - time * 0.003 - sceneBonus(currentScene)) / frequency
 
 /** Counts down `spawnT`, spawns the wave (plus a 32%+ extra after 38s) and the boss after 92s. */
 export function tickSpawning(s: GameState, dt: number, hooks: GameHooks): void {
   s.spawnT -= dt
   if (s.spawnT <= 0) {
-    s.spawnT = spawnInterval(s.time, s.currentScene)
+    s.spawnT = spawnInterval(s.time, s.currentScene, getMode(s.runMode).modifiers.spawnFrequency)
     spawnMob(s)
     if (s.time > 38 && random() < 0.32 + sceneBonus(s.currentScene)) spawnMob(s)
   }
-  if (!s.bossSpawned && s.time > BOSS_TIME) {
+  if (!s.bossSpawned && s.time > getMode(s.runMode).bossAt) {
     s.bossSpawned = true
     spawnMob(s, 'boss')
     hooks.sfx('boss')

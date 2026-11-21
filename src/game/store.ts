@@ -1,4 +1,5 @@
 import type { GameMode, JobId, UpgradeDef, UpgradeId } from './types'
+import type { Profile, RunModeId, RunRewards, RunStats, PermanentUpgrade, CosmeticId } from '../meta/types'
 
 /** Pre-formatted HUD text/percentages, rebuilt by the engine at the original 8 Hz `hud()` cadence. */
 export interface HudView {
@@ -31,6 +32,10 @@ export interface UiState {
   /** `#ending` / `#summary` text. */
   ending: string
   summary: string
+  runMode: RunModeId
+  profile: Profile
+  runResult: RunStats | null
+  rewards: RunRewards | null
   /** `(pointer:coarse)` matched: show touch controls while playing. */
   coarsePointer: boolean
 }
@@ -38,6 +43,10 @@ export interface UiState {
 export interface GameCommands {
   selectJob(job: JobId): void
   start(): void
+  selectRunMode(mode: RunModeId): void
+  buyPermanentUpgrade(upgrade: PermanentUpgrade): void
+  selectCosmetic(hero: JobId, skin: CosmeticId): void
+  resetProgress(): void
   chooseUpgrade(id: UpgradeId): void
   /** Original `pause()`: play → paused, paused → play. */
   togglePause(): void

@@ -1,4 +1,7 @@
 import { shallowReactive } from 'vue'
+import { createProfileStore, type ProfileStore } from '../meta/profile'
+import { getMode } from '../meta/modes'
+import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
 import type { AudioSystem } from './audio/types'
@@ -64,16 +67,19 @@ function createBgm(): HTMLAudioElement {
 
 const pad2 = (n: number): string => String(n).padStart(2, '0')
 
-export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
+export function createEngine(opts: { audio?: AudioSystem; profileStore?: ProfileStore } = {}): Engine {
   const s = createState()
+  const profileStore = opts.profileStore ?? createProfileStore()
   const audio = opts.audio ?? createAudioSystem({ bgm: createBgm() })
   const ui = shallowReactive<UiState>({
     mode: 'menu', choice: s.choice, musicOn: audio.musicOn, sfxOn: audio.sfxOn, hud: emptyHud(),
     upgrades: [], toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
+    runMode: 'quick', profile: profileStore.get(), runResult: null, rewards: null,
   })
   let toastTimer = 0
   let keys: KeyState = {}
   let stick: MoveInput = { x: 0, y: 0 }
+  let runSequence = 0
   let frameDrawn = 0
   let art: Artwork | null = null
 
@@ -123,6 +129,19 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
   }
 
   function end(win: boolean): void {
+    if (s.mode === 'result') return
+    const h = s.hero
+    const stats: RunStats = {
+      id: `${Date.now()}-${++runSequence}-${Math.random().toString(36).slice(2)}`,
+      mode: s.runMode, hero: s.choice, victory: win, seconds: Math.floor(s.time),
+      kills: s.kill, level: h?.level ?? 1, remainingHp: Math.max(0, Math.ceil(h?.hp ?? 0)),
+      damageDealt: Math.round(s.damageDealt), damageTaken: Math.round(s.damageTaken),
+      bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
+      abilities: Object.keys(h?.skills ?? {}) as UpgradeId[],
+    }
+    ui.runResult = stats
+    ui.rewards = profileStore.recordRun(stats)
+    ui.profile = profileStore.get()
     screen('result')
     audio.playSfx(win ? 'victory' : 'defeat')
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
@@ -132,6 +151,15 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
 
   function start(): void {
     resetRun(s)
+    s.runMode = ui.runMode
+    const permanent = profileStore.get().upgrades
+    if (s.hero) {
+      s.hero.damage *= 1 + 0.04 * permanent.power
+      s.hero.max += 12 * permanent.vitality
+      s.hero.hp += 12 * permanent.vitality
+    }
+    ui.runResult = null
+    ui.rewards = null
     audio.wake()
     screen('play')
     audio.playSfx('start')
@@ -291,6 +319,18 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     advance,
     listen,
     mount,
+    selectRunMode(mode: RunModeId) { if (getMode(mode)) ui.runMode = mode },
+    buyPermanentUpgrade(id: PermanentUpgrade) {
+      if (s.mode === 'menu' && profileStore.buyUpgrade(id)) ui.profile = profileStore.get()
+    },
+    selectCosmetic(hero: JobId, skin: CosmeticId) {
+      if (s.mode === 'menu' && profileStore.selectCosmetic(hero, skin)) ui.profile = profileStore.get()
+    },
+    resetProgress() {
+      if (s.mode !== 'menu') return
+      profileStore.reset()
+      ui.profile = profileStore.get()
+    },
     selectJob(job: JobId) {
       s.choice = job
       ui.choice = job

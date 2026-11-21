@@ -1,5 +1,5 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
-import { DURATION } from './constants'
+import { hasWonRun } from '../meta/modes'
 import { attack, damageHero, hit } from './combat'
 import { dist, minmax } from './math'
 import { moveHero } from './movement'
@@ -139,5 +139,5 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)
   s.cam.y += (hero.y - s.cam.y) * minmax(dt * 9, 0, 1)
   s.sceneFxClock += dt
-  if (s.time >= DURATION) hooks.end(true)
+  if (s.mode === 'play' && hasWonRun(s.runMode, { seconds: s.time, bossSpawned: s.bossSpawned, bossDefeated: s.bossDefeated })) hooks.end(true)
 }

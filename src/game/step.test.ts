@@ -48,6 +48,8 @@ describe('step', () => {
   it('ends the run as a victory at DURATION', () => {
     const { s } = setup()
     s.time = DURATION - 0.01
+    s.bossSpawned = true
+    s.bossDefeated = true
     const hooks = spyHooks()
     step(s, 0.005, still, hooks)
     expect(hooks.end).not.toHaveBeenCalled()

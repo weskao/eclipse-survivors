@@ -74,6 +74,8 @@ describe('engine commands fire the original cues', () => {
   it('surviving to DURATION ends in victory', () => {
     engine.start()
     engine.state.mobs = []
+    engine.state.bossSpawned = true
+    engine.state.bossDefeated = true
     engine.state.time = DURATION - 0.01
     engine.advance(0.033)
     expect(engine.ui.mode).toBe('result')
