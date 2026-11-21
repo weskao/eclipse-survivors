@@ -132,6 +132,11 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     o.stop(at + dur + 0.03)
   }
 
+  // When the MP3 is playing, keep only subtle rhythmic accents from the synth.
+  const combatPercussion = (midi: number, at: number, dur: number, vol: number, wave: OscillatorType, bus: 'sfx' | 'music'): void => {
+    if (midi === 36) tone(midi, at, dur, vol, wave, bus)
+  }
+
   const noiseBurst = (now: number): void => {
     if (!ac || !master) return
     const duration = 0.065
@@ -228,6 +233,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (mode === 'menu') { menu.schedule(ctx.currentTime, tone); return }
       if (mode !== 'play') return
       if (bgm.paused || intensity === 'boss') battle.schedule(ctx.currentTime, tone)
+      else if (intensity === 'combat') battle.schedule(ctx.currentTime, combatPercussion)
       if (!bgm.paused) {
         const target = intensity === 'boss' ? 0.27 : intensity === 'combat' ? 0.35 : 0.38
         const delta = target - bgm.volume
