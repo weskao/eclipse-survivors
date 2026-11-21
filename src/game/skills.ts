@@ -3,7 +3,7 @@ import { TAU } from './constants'
 import { hit, nearestAlive } from './combat'
 import { impact, zigzag } from './fx'
 import { tickEvolutions } from './evolutions'
-import { dist, rand, random } from './math'
+import { rand, random } from './math'
 import type { GameHooks, GameState } from './types'
 
 const EMBER_COLORS = ['#ffd29f', '#ffa847', '#ff7c41']
@@ -32,7 +32,8 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
   if (sk.bolt && hero.bolt <= 0) {
     hero.bolt = Math.max(0.45, 2 - sk.bolt * 0.16)
     for (const e of nearestAlive(s.mobs, hero).slice(0, Math.min(2 + sk.bolt, 6))) {
-      if (dist(e.x - hero.x, e.y - hero.y) < 450) {
+      const dx = e.x - hero.x, dy = e.y - hero.y
+      if (dx * dx + dy * dy < 450 * 450) {
         hit(s, e, hero.damage * 1.3, hooks)
         zigzag(s, e.x + rand(-28, 28), e.y - 160, e.x, e.y)
         impact(s, e.x, e.y, 52, '#bdf4ff', 0.5)
@@ -51,9 +52,10 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
         life: 0.7, max: 0.7, color: '#d8f7ff', r: 2 + random() * 5, type: 'ice',
       })
     }
+    const reach = 170 + sk.frost * 14
     for (const e of s.mobs) {
-      const d = dist(e.x - hero.x, e.y - hero.y)
-      if (d < 170 + sk.frost * 14) {
+      const dx = e.x - hero.x, dy = e.y - hero.y
+      if (dx * dx + dy * dy < reach * reach) {
         hit(s, e, hero.damage * (0.55 + 0.12 * sk.frost), hooks)
         e.slow = 0.9 + 0.16 * sk.frost
       }
@@ -66,8 +68,10 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
     for (const e of nearestAlive(s.mobs, hero).slice(0, Math.min(1 + sk.meteor, 5))) {
       s.fx.push({ x: e.x, y: e.y, life: 0.8, max: 0.8, color: '#ffba7c', r: 18, type: 'meteor' })
       impact(s, e.x, e.y, 84, '#ffb26b', 1.1)
+      const reach = 110 + sk.meteor * 8
       for (const m of s.mobs) {
-        if (m.hp > 0 && dist(m.x - e.x, m.y - e.y) < 110 + sk.meteor * 8) hit(s, m, hero.damage * (1.15 + 0.18 * sk.meteor), hooks)
+        const dx = m.x - e.x, dy = m.y - e.y
+        if (m.hp > 0 && dx * dx + dy * dy < reach * reach) hit(s, m, hero.damage * (1.15 + 0.18 * sk.meteor), hooks)
       }
     }
     hooks.sfx('meteor')
@@ -76,9 +80,10 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
   if (sk.blaze) {
     if (hero.blazeTick <= 0) {
       hero.blazeTick = Math.max(0.18, 0.48 - sk.blaze * 0.03)
+      const reach = 95 + sk.blaze * 14
       for (const e of s.mobs) {
-        const d = dist(e.x - hero.x, e.y - hero.y)
-        if (d < 95 + sk.blaze * 14) hit(s, e, hero.damage * (0.18 + 0.04 * sk.blaze), hooks)
+        const dx = e.x - hero.x, dy = e.y - hero.y
+        if (dx * dx + dy * dy < reach * reach) hit(s, e, hero.damage * (0.18 + 0.04 * sk.blaze), hooks)
       }
     }
     if (random() < dt * 10) {
@@ -100,9 +105,10 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
     }
     const reach = 220 + sk.vortex * 12
     for (const e of s.mobs) {
-      const d = dist(e.x - hero.x, e.y - hero.y)
-      if (d < reach) {
-        const pull = Math.max(0, 1 - d / reach)
+      const dx = e.x - hero.x, dy = e.y - hero.y
+      const squared = dx * dx + dy * dy
+      if (squared < reach * reach) {
+        const pull = Math.max(0, 1 - Math.sqrt(squared) / reach)
         e.x += (hero.x - e.x) * 0.18 * pull
         e.y += (hero.y - e.y) * 0.18 * pull
         hit(s, e, hero.damage * (0.4 + 0.08 * sk.vortex), hooks)

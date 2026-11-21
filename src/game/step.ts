@@ -4,7 +4,7 @@ import { hasWonRun } from '../meta/modes'
 import { tickWorld } from './events'
 import { resolveObstacleCollision } from './world'
 import { tickEnemies, tickEnemyProjectiles } from './enemies/ai'
-import { dist, minmax } from './math'
+import { minmax } from './math'
 import { moveHero } from './movement'
 import { addXp } from './progression'
 import { sceneIndexAt, setScene } from './scene'
@@ -88,12 +88,15 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
     star.t += dt
     const dx = hero.x - star.x
     const dy = hero.y - star.y
-    const d = Math.max(1, dist(dx, dy))
-    if (d < 115 + (hero.skills.magnet ?? 0) * 55) {
+    const squared = dx * dx + dy * dy
+    const reach = 115 + (hero.skills.magnet ?? 0) * 55
+    if (squared < reach * reach) {
+      // Only crystal attraction needs a true distance for normalization.
+      const d = Math.max(1, Math.sqrt(squared))
       star.x += (dx / d) * Math.min(d, 450 * dt)
       star.y += (dy / d) * Math.min(d, 450 * dt)
     }
-    if (d < 23) {
+    if (squared < 23 * 23) {
       star.dead = true
       addXp(s, star.value, hooks)
       hooks.sfx('pickup')
