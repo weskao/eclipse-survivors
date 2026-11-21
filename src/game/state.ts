@@ -7,7 +7,7 @@ export function createState(): GameState {
     mobs: [], shots: [], stars: [], fx: [], swipes: [],
     numberFx: [], impactWaves: [], lightningFx: [], motionEchoes: [],
     cameraKick: 0, time: 0, kill: 0, spawnT: 0, bossSpawned: false, bossDefeated: false,
-    runMode: 'quick', damageDealt: 0, damageTaken: 0, defeatedTypes: {},
+    runMode: 'quick', cosmetic: 'knight-default', damageDealt: 0, damageTaken: 0, defeatedTypes: {},
     worldClock: 0, sceneFxClock: 0, cam: { x: 0, y: 0 }, levelQueue: 0, currentScene: 0,
     W: 0, H: 0,
   }

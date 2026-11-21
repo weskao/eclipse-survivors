@@ -31,6 +31,7 @@ describe('progression engine integration', () => {
     engine.selectRunMode('endless')
     engine.start()
     expect(engine.state.hero!.damage).toBeCloseTo(32 * 1.04)
+    expect(engine.state.cosmetic).toBe('knight-default')
     engine.state.time = 700
     engine.state.bossSpawned = true
     engine.state.bossDefeated = true

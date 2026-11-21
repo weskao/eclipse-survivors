@@ -1,6 +1,6 @@
 // Shared engine types. Field names mirror the original single-file game (index.html at c60536c).
 
-import type { RunModeId } from '../meta/types'
+import type { RunModeId, CosmeticId } from '../meta/types'
 
 export type GameMode = 'menu' | 'play' | 'level' | 'paused' | 'result'
 export type JobId = 'knight' | 'ranger' | 'wizard'
@@ -81,6 +81,7 @@ export interface GameState {
   bossSpawned: boolean
   bossDefeated: boolean
   runMode: RunModeId
+  cosmetic: CosmeticId
   damageDealt: number
   damageTaken: number
   defeatedTypes: Partial<Record<MobType, number>>

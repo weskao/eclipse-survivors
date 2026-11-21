@@ -152,6 +152,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   function start(): void {
     resetRun(s)
     s.runMode = ui.runMode
+    s.cosmetic = profileStore.get().equippedCosmetics[s.choice]
     const permanent = profileStore.get().upgrades
     if (s.hero) {
       s.hero.damage *= 1 + 0.04 * permanent.power
@@ -334,6 +335,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     selectJob(job: JobId) {
       s.choice = job
       ui.choice = job
+      s.cosmetic = profileStore.get().equippedCosmetics[job]
       audio.wake()
       audio.playSfx('select')
     },
