@@ -18,11 +18,14 @@ export interface RenderAssets {
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
+  /** Reused every frame instead of allocating per-mob sorting wrappers. */
+  depthOrder: (Hero | Mob)[]
+  weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
 /** Eager, like the original startup: fallback sprites and cached props are painted once. */
 export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCanvas): RenderAssets {
-  return { art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas) }
+  return { art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas), depthOrder: [] }
 }
 
 function weatherGrade(ctx: Ctx2D, W: number, H: number, weather: string): CanvasGradient {
@@ -54,7 +57,11 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   paintEnvironment(ctx, s, assets.art, assets.props, ox, oy)
   const scene = currentSceneInfo(s)
-  ctx.fillStyle = weatherGrade(ctx, W, H, scene.weather)
+  const cached = assets.weatherCache
+  if (!cached || cached.ctx !== ctx || cached.width !== W || cached.height !== H || cached.weather !== scene.weather) {
+    assets.weatherCache = { ctx, width: W, height: H, weather: scene.weather, gradient: weatherGrade(ctx, W, H, scene.weather) }
+  }
+  ctx.fillStyle = assets.weatherCache.gradient
   ctx.fillRect(0, 0, W, H)
   drawAmbient(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
@@ -69,10 +76,12 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   drawStars(ctx, s, ox, oy)
   drawEchoes(ctx, s, ox, oy)
-  const objects: { y: number; obj: Hero | Mob }[] = s.mobs.map((e) => ({ y: e.y, obj: e }))
-  objects.push({ y: hero.y, obj: hero })
+  const objects = assets.depthOrder
+  objects.length = 0
+  for (const mob of s.mobs) objects.push(mob)
+  objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
-  for (const { obj } of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy)
+  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy)
   drawHeroAuras(ctx, s, hero, ox, oy)
   drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, watch } from 'vue'
+import { onBeforeUnmount, shallowRef, watch } from 'vue'
 import { stickVector } from '../game/input'
 
 const props = defineProps<{ active: boolean }>()
@@ -7,10 +7,10 @@ const emit = defineEmits<{ stick: [v: { x: number; y: number } | null]; dash: []
 
 const pad = shallowRef<HTMLElement | null>(null)
 const knobStyle = shallowRef('translate(0,0)')
-// Active pointer id; not reactive (never rendered).
 let stickId: number | null = null
 
 function resetStick(): void {
+  if (stickId === null) return
   stickId = null
   knobStyle.value = 'translate(0,0)'
   emit('stick', null)
@@ -18,7 +18,7 @@ function resetStick(): void {
 
 function movePad(e: PointerEvent): void {
   const el = pad.value
-  if (!el || e.pointerId !== stickId) return
+  if (!props.active || !el || e.pointerId !== stickId) return
   const r = el.getBoundingClientRect()
   const v = stickVector(e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2)
   knobStyle.value = `translate(${v.knobX}px,${v.knobY}px)`
@@ -26,9 +26,9 @@ function movePad(e: PointerEvent): void {
 }
 
 function downPad(e: PointerEvent): void {
-  if (stickId !== null) return
+  if (!props.active || stickId !== null) return
   stickId = e.pointerId
-  pad.value?.setPointerCapture(e.pointerId)
+  try { pad.value?.setPointerCapture(e.pointerId) } catch { /* capture unsupported: release on pointerup/cancel */ }
   movePad(e)
 }
 
@@ -36,10 +36,19 @@ function upPad(e: PointerEvent): void {
   if (e.pointerId === stickId) resetStick()
 }
 
-// Original screen(): any non-play mode calls resetStick().
-watch(() => props.active, on => { if (!on) resetStick() })
+function dash(): void {
+  if (props.active) emit('dash')
+}
+
+watch(() => props.active, active => { if (!active) resetStick() })
+onBeforeUnmount(resetStick)
 </script>
 
 <template>
-  <div id="touch" :class="{ active }"><div id="stick" ref="pad" @pointerdown="downPad" @pointermove="movePad" @pointerup="upPad" @pointercancel="upPad"><div id="knob" :style="{ transform: knobStyle }"></div></div><button id="dash" @pointerdown.prevent="emit('dash')">衝刺</button></div>
+  <div id="touch" :class="{ active }" aria-label="行動裝置遊戲控制">
+    <div id="stick" ref="pad" aria-label="方向搖桿" @pointerdown.prevent="downPad" @pointermove="movePad" @pointerup="upPad" @pointercancel="upPad" @lostpointercapture="upPad">
+      <div id="knob" :style="{ transform: knobStyle }"></div>
+    </div>
+    <button id="dash" type="button" :disabled="!active" aria-label="衝刺" @click="dash">衝刺</button>
+  </div>
 </template>

@@ -16,7 +16,10 @@ export function moveVector(keys: KeyState, stick: MoveInput): MoveInput {
 
 /** Joystick offset from the pad centre → normalised input and the clamped knob offset. */
 export function stickVector(dx: number, dy: number): MoveInput & { knobX: number; knobY: number } {
-  const d = dist(dx, dy), factor = Math.min(d, STICK_RADIUS) / Math.max(1, d)
+  // A small dead zone prevents accidental drift from the center of a touch pad.
+  const d = dist(dx, dy)
+  if (d < 4) return { x: 0, y: 0, knobX: 0, knobY: 0 }
+  const factor = Math.min(d, STICK_RADIUS) / Math.max(1, d)
   return { x: dx / Math.max(STICK_RADIUS, d), y: dy / Math.max(STICK_RADIUS, d), knobX: dx * factor, knobY: dy * factor }
 }
 
