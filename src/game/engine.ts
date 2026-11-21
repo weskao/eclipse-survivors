@@ -5,6 +5,7 @@ import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB } from './constants'
 import { impact } from './fx'
+import { EVOLUTIONS } from './evolutions'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
 import { minmax } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
@@ -14,7 +15,7 @@ import { spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
-import type { AbilityId, GameHooks, GameMode, GameState, JobId, MoveInput, Point } from './types'
+import type { AbilityId, EvolutionId, GameHooks, GameMode, GameState, JobId, MoveInput, Point } from './types'
 
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
@@ -24,6 +25,8 @@ export interface TestApi {
   readonly music: boolean
   readonly time: number
   level(): void
+  /** Stage one evolution recipe for automated screenshots, not normal play. */
+  prepareEvolution(id: EvolutionId): void
   readonly hp: number | undefined
   readonly active: boolean
   readonly sceneArtLoaded: boolean
@@ -190,6 +193,25 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     get music() { return audio.musicOn },
     get time() { return s.time },
     level() { if (s.hero) addXp(s, s.hero.need, hooks) },
+    prepareEvolution(id: EvolutionId) {
+      if (!s.hero || s.mode !== 'play') return
+      const evo = EVOLUTIONS.find(e => e.id === id)
+      if (!evo) return
+      for (const required of evo.requires) {
+        s.hero.skills[required] = Math.max(3, s.hero.skills[required] ?? 0)
+      }
+      // Stable, visible targets for the capture harness; no game-rule changes.
+      for (const [i, mob] of s.mobs.slice(0, 5).entries()) {
+        mob.x = s.hero.x + 45 + i * 25
+        mob.y = s.hero.y + (i % 2 ? 35 : -35)
+        mob.speed = 0
+        mob.dmg = 0
+        mob.hp = mob.max = 3000
+      }
+      s.hero.attack = 1
+      s.hero.hp = Math.min(s.hero.max, s.hero.hp)
+      hud()
+    },
     get hp() { return s.hero?.hp },
     get active() { return s.hero != null },
     get sceneArtLoaded() { return !!art?.courtyard.complete && art.courtyard.naturalWidth > 0 },

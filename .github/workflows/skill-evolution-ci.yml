@@ -16,6 +16,39 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm test
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Unit and component tests
+        run: pnpm test
+      - name: Production build
+        run: pnpm build
+
+  capture:
+    needs: verify
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Install browser and video capture tools
+        run: |
+          python -m pip install --disable-pip-version-check "playwright==1.58.0"
+          python -m playwright install --with-deps chromium
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Capture original upgrade UI, dynamic HUD and five evolution effects
+        run: python scripts/capture-skill-evolutions.py
+      - name: Upload screenshot PNGs and gameplay MP4
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-evolution-captures
+          path: artifacts/skill-evolution/
+          if-no-files-found: warn
