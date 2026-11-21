@@ -63,9 +63,9 @@ describe('battle tune', () => {
     // step 0: root 48 chord (3) + tune[0] 72; i%4===2 false
     expect(notes.slice(0, 4).map(n => [n.midi, n.dur, n.vol, n.wave, n.bus])).toEqual([
       [48, 1.15, 0.034, 'sine', 'music'],
-      [60, 0.92, 0.015, 'triangle', 'sfx'],
-      [67, 1.1, 0.012, 'sine', 'sfx'],
-      [72, 0.32, 0.024, 'triangle', 'sfx'],
+      [60, 0.92, 0.015, 'triangle', 'music'],
+      [67, 1.1, 0.012, 'sine', 'music'],
+      [72, 0.32, 0.024, 'triangle', 'music'],
     ])
     // step 1 would start at .34, beyond the .17s lookahead
     expect(notes).toHaveLength(4)
