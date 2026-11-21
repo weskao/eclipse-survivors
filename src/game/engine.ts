@@ -3,7 +3,8 @@ import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
 import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
-import { JOB } from './constants'
+import { JOB, SCENE_SECONDS } from './constants'
+import { trySpawnEvent } from './events'
 import { impact } from './fx'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
 import { minmax } from './math'
@@ -36,6 +37,8 @@ export interface TestApi {
   readonly frames: number
   readonly scene: string
   forceAttack(): void
+  /** Capture-only scene preview; requires ?showcase=1. */
+  previewBiome(index: number): void
 }
 
 declare global {
@@ -192,6 +195,22 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     get vfxCount() { return s.impactWaves.length + s.lightningFx.length + s.swipes.length + s.fx.length },
     get frames() { return frameDrawn },
     get scene() { return currentSceneInfo(s).name },
+    previewBiome(index: number) {
+      if (window.location.search.indexOf('showcase=1') < 0 || s.mode !== 'play' ||
+          !s.hero || !Number.isInteger(index) || index < 0 || index > 3) return
+      s.hero.x = 0; s.hero.y = 0; s.hero.hp = s.hero.max; s.hero.inv = 999
+      s.hero.attack = 0.45
+      s.cam.x = 0; s.cam.y = 0
+      s.time = index * SCENE_SECONDS + 2
+      s.worldClock = s.time
+      s.spawnT = 999; s.bossSpawned = true
+      s.mobs = []; s.shots = []; s.stars = []; s.fx = []
+      setScene(s, index, false, hooks)
+      s.nextEventAt = Infinity
+      for (let i = 0; i < 8; i++) spawnMob(s)
+      trySpawnEvent(s, index % 2 ? 'shrine' : 'chest')
+      hud()
+    },
     forceAttack() {
       const hero = s.hero
       if (!hero) return
