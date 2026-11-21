@@ -205,7 +205,7 @@
 .progression-upgrade:has(button:not(:disabled)){border-color:#d7b97d78}
 .progression-upgrade button:not(:disabled){box-shadow:inset 0 1px 0 #fff3,0 3px 8px #0005}
 .cosmetic-list button[aria-pressed="true"]{box-shadow:0 0 0 1px #e7bc6c66,0 0 17px #a9833d3a,inset 0 0 18px #e7be6333}
-.cosmetic-list button:disabled::before{content:"🔒";position:absolute;right:8px;top:9px;filter:grayscale(1);opacity:.8;font-size:12px}
+/* Locked cosmetics already show a text lock; do not draw a duplicate badge. */
 .achievement:not(.locked){box-shadow:inset 0 0 12px #eac96b20,0 0 9px #dca94b1f}
 .achievement.locked,.codex-entry.locked{filter:saturate(.35);opacity:.62}
 .reset-confirm{box-shadow:0 8px 26px #0008,inset 0 1px 0 #e8a1a125}
@@ -242,4 +242,20 @@
   .progression-drawer[open] .progression-content{animation:none!important}
   #menu .start-adventure::after{display:none}
   #level .upgrade,.result-actions :is(.cta,.ghost){transition:none!important;transform:none!important}
+}
+
+/* Touch controls: tactile fantasy metal but no additional gameplay interaction. */
+#stick{border-color:#f2d7a29c;background:radial-gradient(circle at 45% 36%,#3e4c5e7d,#101923b8 73%);box-shadow:0 0 0 8px #ddbd6920,0 6px 17px #0007,inset 0 0 18px #000b}
+#knob{border-color:#f4dbab;background:radial-gradient(circle at 30% 24%,#73808c,#222b3a 70%);box-shadow:0 3px 12px #000b,inset 0 1px 0 #fff7}
+#dash{border-color:#f4dba7;background:radial-gradient(circle at 40% 24%,#5f6880,#252b38 72%);box-shadow:0 0 0 7px #f3cc811a,0 6px 18px #000a,inset 0 1px 0 #ffe8b25a;transition:transform .13s,filter .13s}
+#dash:active{transform:scale(.94);filter:brightness(1.21)}
+#dash:focus-visible{outline:3px solid #ffe6a4;outline-offset:5px}
+@media(max-width:700px){
+  .mode-copy strong{font-size:12px}
+  .mode-copy small{font-size:10px;line-height:1.35}
+  #level.overlay{backdrop-filter:blur(5px)}
+  .progression-upgrade button,.cosmetic-list button{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){
+  #dash{transition:none}
 }
