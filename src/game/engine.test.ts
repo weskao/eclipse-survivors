@@ -71,10 +71,12 @@ describe('engine commands fire the original cues', () => {
     expect(audio.cues.at(-1)).toBe('upgrade')
   })
 
-  it('surviving to DURATION ends in victory', () => {
+  it('surviving to DURATION after boss defeat ends in victory', () => {
     engine.start()
     engine.state.mobs = []
     engine.state.time = DURATION - 0.01
+    engine.state.bossSpawned = true
+    engine.state.bossDefeated = true
     engine.advance(0.033)
     expect(engine.ui.mode).toBe('result')
     expect(audio.cues).toContain('victory')
@@ -148,5 +150,20 @@ describe('keyboard and focus', () => {
     expect(audio.unlocked).toBe(true)
     expect(audio.cues).toContain('ui')
     b.remove()
+  })
+})
+
+describe('engine victory integration', () => {
+  it('keeps playing beyond the deadline until the required boss has been killed', () => {
+    engine.start()
+    engine.state.time = DURATION - 0.01
+    engine.state.bossSpawned = true
+    engine.state.mobs = [{ x: 500, y: 0, type: 'boss', hp: 1, max: 1, r: 48, speed: 0, dmg: 32, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }]
+    engine.advance(0.033)
+    expect(engine.ui.mode).toBe('play')
+    engine.state.mobs[0]!.hp = 0
+    // A corpse removed externally is not proof that the boss was defeated by the player.
+    engine.advance(0.033)
+    expect(engine.ui.mode).toBe('play')
   })
 })

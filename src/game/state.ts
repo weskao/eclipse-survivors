@@ -6,7 +6,7 @@ export function createState(): GameState {
     mode: 'menu', choice: 'knight', hero: null,
     mobs: [], shots: [], stars: [], fx: [], swipes: [],
     numberFx: [], impactWaves: [], lightningFx: [], motionEchoes: [],
-    cameraKick: 0, time: 0, kill: 0, spawnT: 0, bossSpawned: false,
+    cameraKick: 0, time: 0, kill: 0, spawnT: 0, bossSpawned: false, bossDefeated: false,
     worldClock: 0, sceneFxClock: 0, cam: { x: 0, y: 0 }, levelQueue: 0, currentScene: 0,
     W: 0, H: 0,
   }
@@ -27,7 +27,7 @@ export function createHero(job: JobId): Hero {
 export function resetRun(s: GameState): void {
   s.hero = createHero(s.choice)
   s.mobs = []; s.shots = []; s.stars = []; s.fx = []; s.swipes = []
-  s.time = 0; s.kill = 0; s.spawnT = 0; s.bossSpawned = false
+  s.time = 0; s.kill = 0; s.spawnT = 0; s.bossSpawned = false; s.bossDefeated = false
   s.numberFx = []; s.impactWaves = []; s.lightningFx = []; s.motionEchoes = []
   s.cameraKick = 0; s.cam.x = s.cam.y = 0; s.levelQueue = 0; s.currentScene = 0
 }

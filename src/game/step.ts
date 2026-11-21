@@ -1,6 +1,5 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
-import { DURATION } from './constants'
-import { attack, damageHero, hit } from './combat'
+import { attack, damageHero, hit, victoryConditionMet } from './combat'
 import { dist, minmax } from './math'
 import { moveHero } from './movement'
 import { addXp } from './progression'
@@ -30,17 +29,19 @@ function tickTimers(s: GameState, hero: Hero, dt: number): void {
 
 function moveMobs(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
   for (const e of s.mobs) {
+    if (e.hp <= 0) continue
     const dx = hero.x - e.x
     const dy = hero.y - e.y
     const d = Math.max(1, dist(dx, dy))
     e.stagger = Math.max(0, e.stagger - dt)
     e.slow = Math.max(0, e.slow - dt)
     const speedFactor = (e.stagger > 0 ? 0.23 : 1) * (e.slow > 0 ? 0.46 : 1)
-    e.x += (dx / d) * e.speed * dt * speedFactor + e.kx * e.stagger * 75 * dt
-    e.y += (dy / d) * e.speed * dt * speedFactor + e.ky * e.stagger * 75 * dt
+    const knockback = e.stagger > 0 ? (e.type === 'boss' ? 45 : 150) * dt : 0
+    e.x += (dx / d) * e.speed * dt * speedFactor + e.kx * knockback
+    e.y += (dy / d) * e.speed * dt * speedFactor + e.ky * knockback
     e.phase += dt * 5
     e.hit -= dt
-    if (d < e.r + 15) damageHero(s, e.dmg, hooks)
+    if (dist(e.x - hero.x, e.y - hero.y) < e.r + 15) damageHero(s, e.dmg, hooks)
   }
 }
 
@@ -48,19 +49,44 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void
   for (const b of s.shots) {
     b.prevX = b.x
     b.prevY = b.y
-    b.x += b.vx * dt
-    b.y += b.vy * dt
+    const travel = Math.min(dt, Math.max(0, b.life))
+    b.x += b.vx * travel
+    b.y += b.vy * travel
     b.life -= dt
+    if (travel <= 0) continue
+    const dx = b.x - b.prevX
+    const dy = b.y - b.prevY
+    const lengthSquared = dx * dx + dy * dy
+    let closest: typeof s.mobs[number] | null = null
+    let firstContact = Infinity
     for (const e of s.mobs) {
-      if (b.life > 0 && e.hp > 0 && dist(b.x - e.x, b.y - e.y) < e.r + b.r) {
-        hit(s, e, b.d, hooks)
-        b.life = 0
-        break
+      if (e.hp <= 0) continue
+      const ox = b.prevX - e.x
+      const oy = b.prevY - e.y
+      const reach = e.r + b.r
+      const c = ox * ox + oy * oy - reach * reach
+      let t = 0
+      if (c > 0) {
+        if (lengthSquared === 0) continue
+        const projection = ox * dx + oy * dy
+        const discriminant = projection * projection - lengthSquared * c
+        if (discriminant < 0) continue
+        t = (-projection - Math.sqrt(discriminant)) / lengthSquared
+        if (t < 0 || t > 1) continue
       }
+      if (t < firstContact) {
+        closest = e
+        firstContact = t
+      }
+    }
+    if (closest) {
+      hit(s, closest, b.d, hooks)
+      b.life = 0
     }
   }
   s.shots = s.shots.filter((b) => b.life > 0)
-  s.mobs = s.mobs.filter((e) => e.hp > 0 && dist(e.x - hero.x, e.y - hero.y) < 1700)
+  // The required boss must never disappear just because the player moved far away.
+  s.mobs = s.mobs.filter((e) => e.hp > 0 && (e.type === 'boss' || dist(e.x - hero.x, e.y - hero.y) < 1700))
 }
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
@@ -120,7 +146,7 @@ function ageEffects(s: GameState, hero: Hero, dt: number): void {
 
 export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks): void {
   const hero = s.hero
-  if (!hero) return
+  if (!hero || s.mode !== 'play') return
   tickTimers(s, hero, dt)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
@@ -131,6 +157,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
     hero.attack = hero.delay
   }
   moveMobs(s, hero, dt, hooks)
+  if (hero.hp <= 0 || s.mode !== 'play') return
   tickSkills(s, dt, hooks)
   moveShots(s, hero, dt, hooks)
   collectStars(s, hero, dt, hooks)
@@ -139,5 +166,5 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)
   s.cam.y += (hero.y - s.cam.y) * minmax(dt * 9, 0, 1)
   s.sceneFxClock += dt
-  if (s.time >= DURATION) hooks.end(true)
+  if (s.mode === 'play' && victoryConditionMet(s)) hooks.end(true)
 }

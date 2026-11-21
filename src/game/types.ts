@@ -77,6 +77,7 @@ export interface GameState {
   kill: number
   spawnT: number
   bossSpawned: boolean
+  bossDefeated: boolean
   worldClock: number
   sceneFxClock: number
   cam: Point
