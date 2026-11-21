@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+<title id="title">Eclipse Survivors – armored knight app icon</title><defs>
+<linearGradient id="night" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#070e1c"/><stop offset=".55" stop-color="#16334d"/><stop offset="1" stop-color="#34192a"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#d7e8eb"/><stop offset=".3" stop-color="#53667b"/><stop offset=".58" stop-color="#222b3c"/><stop offset=".82" stop-color="#95a9ba"/><stop offset="1" stop-color="#252739"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fff5c2"/><stop offset=".35" stop-color="#f6cb77"/><stop offset=".7" stop-color="#b67937"/><stop offset="1" stop-color="#f2d49c"/></linearGradient>
+<radialGradient id="sky"><stop stop-color="#4296b6" stop-opacity=".65"/><stop offset="1" stop-color="#0d1a34" stop-opacity="0"/></radialGradient>
+<radialGradient id="fire"><stop stop-color="#f69f51" stop-opacity=".8"/><stop offset="1" stop-color="#ea601e" stop-opacity="0"/></radialGradient>
+<filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="soft"><feGaussianBlur stdDeviation="23"/></filter>
+</defs>
+<defs><clipPath id="rounded"><rect width="512" height="512" rx="80"/></clipPath></defs>
+<g clip-path="url(#rounded)">
+<rect width="512" height="512" fill="url(#night)"/><circle cx="168" cy="230" r="240" fill="url(#sky)"/><circle cx="431" cy="385" r="200" fill="url(#fire)"/>
+<path d="M-30 342 L65 188 116 294 191 166 244 276 337 182 465 340 543 240 550 512 -50 512Z" fill="#0b1825" opacity=".7"/>
+<path d="M96 249 A163 163 0 1 1 416 249" fill="none" stroke="#a47b48" stroke-width="18" opacity=".65"/>
+<path d="M107 246 A150 150 0 1 1 405 246" fill="none" stroke="#e6d29d" stroke-width="3" opacity=".8"/>
+<path d="M256 41 Q262 76.2 296 81 Q262 86.2 256 121 Q250 86.2 216 81 Q250 76.2 256 41Z" fill="#f9d990"/>
+<g transform="translate(256 291) scale(.85)"><g>
+<path d="M-140 210 Q-116 85 -64 68 L0 103 64 68 Q116 85 140 210 L103 286 -103 286Z" fill="url(#steel)" stroke="#d7bd89" stroke-width="8"/>
+<path d="M-125 139 L-53 104 0 165 53 104 125 139 98 201 0 245 -98 201Z" fill="#151f31" stroke="#c5ac81" stroke-width="7"/>
+<path d="M-126 138 Q-184 99 -201 169 L-171 241 -109 212 -78 162Z" fill="url(#steel)" stroke="#ecc68a" stroke-width="7"/>
+<path d="M126 138 Q184 99 201 169 L171 241 109 212 78 162Z" fill="url(#steel)" stroke="#ecc68a" stroke-width="7"/>
+<path d="M-92 187 Q-11 207 128 250 L218 339 Q86 304 -52 265Z" fill="#981e37" stroke="#ce6a55" stroke-width="4" opacity=".94"/>
+<path d="M-94 -39 Q-86 -119 -29 -145 L0 -168 29 -145 Q86 -119 94 -39 L84 46 43 106 -43 106 -84 46Z" fill="url(#steel)" stroke="#efca8e" stroke-width="10"/>
+<path d="M-80 -49 L-34 -104 0 -164 34 -104 80 -49 -48 -37Z" fill="#a3b6c0" opacity=".55"/>
+<path d="M0 -168 L-26 -102 0 -45 26 -102Z" fill="url(#gold)" stroke="#f8e2a1" stroke-width="4"/>
+<path d="M-82 -25 Q-39 -40 -8 -10 L-12 14 -76 3Z" fill="#101521" stroke="#dbb67d" stroke-width="5"/>
+<path d="M82 -25 Q39 -40 8 -10 L12 14 76 3Z" fill="#101521" stroke="#dbb67d" stroke-width="5"/>
+<path d="M-74 -4 L-12 6 -13 13 -73 17Z M74 -4 L12 6 13 13 73 17Z" fill="#ffc87e" filter="url(#glow)"/>
+<path d="M-56 38 L0 13 56 38 24 88 0 108 -24 88Z" fill="#172333" stroke="#d8b67c" stroke-width="6"/>
+<path d="M0 14 L-14 84 0 109 14 84Z" fill="url(#gold)"/>
+<path d="M-68 106 L-35 98 0 127 35 98 68 106 0 156Z" fill="#725f59" stroke="#f2cf92" stroke-width="5"/>
+<path d="M0 148 Q4.5 174.4 30 178 Q4.5 181.9 0 208 Q-4.5 181.9 -30 178 Q-4.5 174.4 0 148Z" fill="#f9d990"/>
+</g></g>
+<path d="M0 484 Q94 451 143 482 Q263 518 375 484 L512 514 512 551 0 551Z" fill="#081121" opacity=".75"/>
+<rect x="10" y="10" width="492" height="492" rx="72" fill="none" stroke="#e3bd78" stroke-width="8" opacity=".82"/>
+</g></svg>
