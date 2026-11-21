@@ -4,6 +4,8 @@ import { moveHero } from '../movement'
 import { createHero, createState } from '../state'
 import type { GameState, JobId, Mob } from '../types'
 import { sampleHeroAnimation } from './animation'
+import { drawRigSprite } from './characters'
+import { createFakeCtx, fakeImage } from './fakes'
 import { sampleWeaponRig } from './weapon-rig'
 import { getFiringOrigin } from '../weapon-geometry'
 
@@ -76,5 +78,20 @@ describe('physical two-bone animation', () => {
       expect(rig.hand.y).toBeCloseTo(origin.y)
       expect(Math.cos(rig.aim)).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('articulated texture rendering', () => {
+  it('rotates the weapon-bearing source cells during a swing but not a static idle', () => {
+    const s = setup('knight')
+    const { ctx } = createFakeCtx()
+    const turn = vi.spyOn(ctx, 'rotate')
+    drawRigSprite(ctx, fakeImage(true), 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight')
+    expect(turn).not.toHaveBeenCalled()
+    s.hero!.strike = 0.16
+    s.hero!.aimAngle = 0.65
+    turn.mockClear()
+    drawRigSprite(ctx, fakeImage(true), 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight')
+    expect(turn.mock.calls.some(([angle]) => Math.abs(angle) > 0.01)).toBe(true)
   })
 })

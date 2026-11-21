@@ -32,7 +32,7 @@ export function drawRigSprite(
   const srcW = ('naturalWidth' in img ? img.naturalWidth : img.width) || img.width || sx
   const srcH = ('naturalHeight' in img ? img.naturalHeight : img.height) || img.height || sy
   const columns = 8
-  const rows = 14
+  const rows = 12
   const cw = sx / columns
   const ch = sy / rows
   const posed = sampleWeaponRig(job, hero, anim)
@@ -43,6 +43,10 @@ export function drawRigSprite(
   const wristY = posed.hand.y - rest.hand.y
   const supportX = posed.supportHand.x - rest.supportHand.x
   const supportY = posed.supportHand.y - rest.supportHand.y
+  const supportElbowX = posed.supportElbow.x - rest.supportElbow.x
+  const supportElbowY = posed.supportElbow.y - rest.supportElbow.y
+  const supportTurn = Math.atan2(posed.supportElbow.y - posed.supportShoulder.y, posed.supportElbow.x - posed.supportShoulder.x)
+    - Math.atan2(rest.supportElbow.y - rest.supportShoulder.y, rest.supportElbow.x - rest.supportShoulder.x)
   const upperTurn = Math.atan2(posed.elbow.y - posed.shoulder.y, posed.elbow.x - posed.shoulder.x)
     - Math.atan2(rest.elbow.y - rest.shoulder.y, rest.elbow.x - rest.shoulder.x)
   const bladeTurn = posed.bladeAngle - rest.bladeAngle
@@ -65,11 +69,13 @@ export function drawRigSprite(
       const weapon = ease((u - 0.80) / 0.18) * (1 - ease((v - 0.61) / 0.23))
       const leftArm = (1 - ease((u - 0.19) / 0.25)) * ease((v - 0.20) / 0.16)
         * (1 - ease((v - 0.73) / 0.15))
+      const leftWrist = 1 - ease((u - 0.14) / 0.27)
       let dx = right * (elbowX * (1 - wrist) + wristX * wrist) + weapon * wristX * 0.35
-        + leftArm * supportX * 0.55
+        + leftArm * (supportElbowX * (1 - leftWrist) + supportX * leftWrist) * 0.55
       let dy = right * (elbowY * (1 - wrist) + wristY * wrist) + weapon * wristY * 0.35
-        + leftArm * supportY * 0.55
-      let rotation = right * (upperTurn * (1 - wrist) + bladeTurn * wrist) * 0.55 + weapon * bladeTurn * 0.28
+        + leftArm * (supportElbowY * (1 - leftWrist) + supportY * leftWrist) * 0.55
+      const rotation = right * (upperTurn * (1 - wrist) + bladeTurn * wrist) * 0.55
+        + weapon * bladeTurn * 0.28 + leftArm * supportTurn * 0.35
 
       if (anim.pose === 'run') {
         dx += legs * side * walk * 4.3 - chest * walk * 1.6
@@ -94,12 +100,18 @@ export function drawRigSprite(
       }
       // Rotate each skinned cell around its own center; the overlapping tiles
       // smoothly connect the bend while keeping source texels and transparency.
-      ctx.save()
-      ctx.translate(left + (col + 0.5) * cw + dx, top + (row + 0.5) * ch + dy)
-      ctx.rotate(rotation)
-      ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
-        -cw / 2 - 0.45, -ch / 2 - 0.45, cw + 0.9, ch + 0.9)
-      ctx.restore()
+      if (Math.abs(rotation) < 0.001) {
+        // Most cells are stationary: avoid Canvas save/rotate/restore on mobile.
+        ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
+          left + col * cw + dx - 0.45, top + row * ch + dy - 0.45, cw + 0.9, ch + 0.9)
+      } else {
+        ctx.save()
+        ctx.translate(left + (col + 0.5) * cw + dx, top + (row + 0.5) * ch + dy)
+        ctx.rotate(rotation)
+        ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
+          -cw / 2 - 0.45, -ch / 2 - 0.45, cw + 0.9, ch + 0.9)
+        ctx.restore()
+      }
     }
   }
 }
