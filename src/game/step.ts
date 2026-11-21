@@ -1,5 +1,7 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { DURATION } from './constants'
+import { tickWorld } from './events'
+import { resolveObstacleCollision } from './world'
 import { attack, damageHero, hit } from './combat'
 import { dist, minmax } from './math'
 import { moveHero } from './movement'
@@ -38,6 +40,8 @@ function moveMobs(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void 
     const speedFactor = (e.stagger > 0 ? 0.23 : 1) * (e.slow > 0 ? 0.46 : 1)
     e.x += (dx / d) * e.speed * dt * speedFactor + e.kx * e.stagger * 75 * dt
     e.y += (dy / d) * e.speed * dt * speedFactor + e.ky * e.stagger * 75 * dt
+    const free = resolveObstacleCollision(s.currentScene, e.x, e.y, e.r * 0.65)
+    e.x = free.x; e.y = free.y
     e.phase += dt * 5
     e.hit -= dt
     if (d < e.r + 15) damageHero(s, e.dmg, hooks)
@@ -126,6 +130,8 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
   tickSpawning(s, dt, hooks)
   moveHero(s, input, dt)
+  const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
+  hero.x = free.x; hero.y = free.y
   if (hero.attack <= 0) {
     attack(s, hooks)
     hero.attack = hero.delay
@@ -134,6 +140,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   tickSkills(s, dt, hooks)
   moveShots(s, hero, dt, hooks)
   collectStars(s, hero, dt, hooks)
+  tickWorld(s, dt, hooks)
   if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * 0.9 * dt)
   ageEffects(s, hero, dt)
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)

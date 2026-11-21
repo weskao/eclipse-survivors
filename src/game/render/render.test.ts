@@ -58,7 +58,7 @@ describe('createRenderAssets', () => {
     expect(assets.props.tree.width).toBe(230)
     expect(assets.props.ruin.width).toBe(148)
     expect(assets.props.crystal.width).toBe(120)
-    expect(made).toHaveLength(9 + 3)
+    expect(made).toHaveLength(9 + 3 + 8)
     expect(made.every((m) => m.fake.calls.includes('fill') || m.fake.calls.includes('stroke'))).toBe(true)
   })
 })
@@ -72,8 +72,9 @@ describe('drawFrame', () => {
     expect(calls[0]).toBe('setTransform')
     expect(calls).toContain('fillText')
     expect(calls).not.toContain('strokeText')
-    const props = Object.values(assets.props)
-    expect(drawn.every((d) => d === assets.art.ground || d === assets.art.courtyard || props.includes(d as HTMLCanvasElement))).toBe(true)
+    const biomeTiles = assets.biomes.map(b => b.tile)
+    const landmarks = assets.biomes.map(b => b.landmark)
+    expect(drawn.every(d => d === assets.art.courtyard || biomeTiles.includes(d as HTMLCanvasElement) || landmarks.includes(d as HTMLCanvasElement))).toBe(true)
     expect(calls.at(-1)).toBe('fillRect')
   })
 
@@ -128,5 +129,35 @@ describe('drawMiniMap', () => {
     const { ctx, calls } = createFakeCtx()
     drawMiniMap(ctx, menuState(), assets())
     expect(calls).toHaveLength(0)
+  })
+})
+
+
+describe('biome renderer contracts', () => {
+  it('uses different cached world tiles and landmarks across scenes', () => {
+    const { make } = fakeCanvasFactory()
+    const assets = createRenderAssets(fakeArtwork(true), make)
+    const drawn = [0, 1, 2, 3].map(scene => {
+      const s = busyState()
+      s.currentScene = scene
+      const f = createFakeCtx()
+      drawFrame(f.ctx, s, 1, assets)
+      return f.drawn
+    })
+    for (let i = 0; i < 4; i++) expect(drawn[i]).toContain(assets.biomes[i]!.tile)
+    expect(drawn[0]).toContain(assets.art.courtyard)
+    for (let i = 1; i < 4; i++) expect(drawn[i]).not.toContain(assets.art.courtyard)
+  })
+  it('shows spawned event symbols on minimap and in world without affecting combat', () => {
+    const s = busyState()
+    s.events.push({ id: 1, kind: 'chest', x: 50, y: 20, expiresAt: 50 })
+    const { make } = fakeCanvasFactory()
+    const assets = createRenderAssets(fakeArtwork(true), make)
+    const mini = createFakeCtx()
+    drawMiniMap(mini.ctx, s, assets)
+    expect(mini.calls).toContain('fillText')
+    const world = createFakeCtx()
+    drawFrame(world.ctx, s, 1, assets)
+    expect(world.calls.filter(x => x === 'fillText').length).toBeGreaterThan(1)
   })
 })

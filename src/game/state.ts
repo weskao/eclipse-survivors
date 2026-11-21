@@ -8,6 +8,8 @@ export function createState(): GameState {
     numberFx: [], impactWaves: [], lightningFx: [], motionEchoes: [],
     cameraKick: 0, time: 0, kill: 0, spawnT: 0, bossSpawned: false,
     worldClock: 0, sceneFxClock: 0, cam: { x: 0, y: 0 }, levelQueue: 0, currentScene: 0,
+    events: [], eventSerial: 0, nextEventAt: 7, sceneEnteredAt: 0,
+    hazardLastHitAt: -Infinity, blessingUntil: 0, challengeUntil: 0, challengePoint: null,
     W: 0, H: 0,
   }
 }
@@ -30,6 +32,8 @@ export function resetRun(s: GameState): void {
   s.time = 0; s.kill = 0; s.spawnT = 0; s.bossSpawned = false
   s.numberFx = []; s.impactWaves = []; s.lightningFx = []; s.motionEchoes = []
   s.cameraKick = 0; s.cam.x = s.cam.y = 0; s.levelQueue = 0; s.currentScene = 0
+  s.events = []; s.eventSerial = 0; s.nextEventAt = 7; s.sceneEnteredAt = 0
+  s.hazardLastHitAt = -Infinity; s.blessingUntil = 0; s.challengeUntil = 0; s.challengePoint = null
 }
 
 export const currentSceneInfo = (s: GameState): SceneDef =>

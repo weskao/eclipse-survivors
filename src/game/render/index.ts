@@ -1,9 +1,10 @@
 import type { Artwork } from '../art'
 import { currentSceneInfo } from '../state'
+import { buildBiomeArt, type BiomeArt } from './biome-art'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
 import type { Ctx2D } from './ctx'
-import { drawAmbient, paintEnvironment } from './environment'
+import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
   drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
@@ -18,11 +19,12 @@ export interface RenderAssets {
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
+  biomes: BiomeArt[]
 }
 
 /** Eager, like the original startup: fallback sprites and cached props are painted once. */
 export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCanvas): RenderAssets {
-  return { art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas) }
+  return { art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas), biomes: buildBiomeArt(makeCanvas) }
 }
 
 function weatherGrade(ctx: Ctx2D, W: number, H: number, weather: string): CanvasGradient {
@@ -52,11 +54,12 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
-  paintEnvironment(ctx, s, assets.art, assets.props, ox, oy)
+  paintEnvironment(ctx, s, assets.art, assets.biomes, ox, oy)
   const scene = currentSceneInfo(s)
   ctx.fillStyle = weatherGrade(ctx, W, H, scene.weather)
   ctx.fillRect(0, 0, W, H)
   drawAmbient(ctx, s, ox, oy)
+  drawWorldMarkers(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
   ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
   ctx.restore()
