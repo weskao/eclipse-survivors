@@ -31,7 +31,7 @@ export function drawRigSprite(
   }
   const srcW = ('naturalWidth' in img ? img.naturalWidth : img.width) || img.width || sx
   const srcH = ('naturalHeight' in img ? img.naturalHeight : img.height) || img.height || sy
-  const columns = 8
+  const columns = 6
   const rows = 12
   const cw = sx / columns
   const ch = sy / rows
@@ -83,6 +83,10 @@ export function drawRigSprite(
         + supportWeight * (supportElbowY * (1 - supportWrist) + supportY * supportWrist) * 0.55
       const rotation = mainWeight * (upperTurn * (1 - mainWrist) + bladeTurn * mainWrist) * 0.55
         + weapon * bladeTurn * 0.28 + supportWeight * supportTurn * 0.35
+        // Aim rotates the illustrated bow or staff (not just its floating VFX).
+        // The local angle already accounts for mirroring on a left-facing hero.
+        + (action ? posed.aim * (weapon * (job === 'ranger' ? 0.65 : 0.34)
+          + supportWeight * (job === 'wizard' ? 0.10 : 0)) : 0)
 
       if (anim.pose === 'run') {
         dx += legs * side * walk * 4.3 - chest * walk * 1.6
