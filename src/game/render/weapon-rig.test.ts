@@ -96,3 +96,21 @@ describe('articulated texture rendering', () => {
     expect(turn.mock.calls.some(([angle]) => Math.abs(angle) > 0.01)).toBe(true)
   })
 })
+
+describe('aim-dependent weapon mesh', () => {
+  it.each(['ranger', 'wizard'] as const)('%s visibly angles the weapon toward enemies above and below', (job) => {
+    const s = setup(job)
+    s.hero!.strike = 0.14
+    const rotations = (angle: number): number[] => {
+      s.hero!.aimAngle = angle
+      const { ctx } = createFakeCtx()
+      const spy = vi.spyOn(ctx, 'rotate')
+      drawRigSprite(ctx, fakeImage(true), 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), job)
+      return spy.mock.calls.map(([theta]) => theta)
+    }
+    const up = rotations(-0.8)
+    const down = rotations(0.8)
+    expect(up).toHaveLength(down.length)
+    expect(up.some((n, i) => Math.abs(n - down[i]!) > 0.02)).toBe(true)
+  })
+})
