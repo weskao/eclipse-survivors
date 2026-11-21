@@ -1,0 +1,111 @@
+/* Eclipse Survivors: original dark-fantasy UI art direction.
+   The generated SVG sprite carries only artwork; text and interactive states stay live HTML/CSS.
+   Inspired by the readable card hierarchies of action RPGs, not their copyrighted assets. */
+
+#menu .menu-panel{--ui-gold:#e9c888;--ui-pale:#f9e9c5}
+#menu .job{isolation:isolate;overflow:hidden;border-color:#8e806d;background:linear-gradient(150deg,#253342ed,#0d1523f5 73%);transition:transform .2s ease,border-color .2s ease,filter .2s ease,box-shadow .2s ease}
+#menu .job:not(.selected){filter:saturate(.77) brightness(.88)}
+#menu .job:not(.selected) .portrait img{opacity:.86}
+#menu .job:not(.selected):hover{filter:saturate(1) brightness(1.06);border-color:#ebcb8a}
+#menu .job.selected{filter:none;border-color:#ffdf9b;background:radial-gradient(ellipse at 50% 18%,#bf94504b,transparent 60%),linear-gradient(150deg,#333748ed,#111d2d);box-shadow:0 0 0 1px #ffe5a25a,0 0 25px #d9a95c59,inset 0 1px 0 #fff7cc45}
+#menu .job:focus-visible{outline:3px solid #fff0ba;outline-offset:3px;filter:none}
+#menu .job:active{transform:translateY(-1px) scale(.99)}
+#menu .job .job-choose{opacity:1;color:#bfc9c9;letter-spacing:.7px}
+#menu .job.selected .job-choose{color:#ffe5a6;font-weight:900;text-shadow:0 0 9px #dda358}
+#menu .job.selected .portrait:after{content:"";position:absolute;left:15%;right:15%;bottom:-3px;height:2px;background:linear-gradient(90deg,transparent,#ffe0a1,transparent);box-shadow:0 0 11px #dba550;pointer-events:none}
+#menu .start-adventure{background:linear-gradient(180deg,#fff4ca,#f2c97d 46%,#b67830);border-color:#ffe9b6;box-shadow:0 4px 0 #63421f,0 12px 31px #000a,inset 0 2px 1px #fff9e3}
+#menu .start-adventure:focus-visible{outline:3px solid #fff4cb;outline-offset:4px}
+#menu .start-adventure:active{transform:translateY(2px);box-shadow:0 1px 0 #63421f,0 5px 15px #000b}
+#menu :is(#menuMusic,#menuSfx)[aria-pressed="true"]{color:#f5e4bb;border-color:#daba79;background:linear-gradient(#344051,#202c3b)}
+#menu :is(#menuMusic,#menuSfx)[aria-pressed="false"]{color:#b0bac2;border-color:#707983;background:#171d27}
+#menu :is(#menuMusic,#menuSfx):focus-visible{outline:3px solid #ffdfa0;outline-offset:3px}
+
+.mode-choice{isolation:isolate;overflow:hidden;min-height:75px;padding-right:26px;border-radius:7px;border-color:#8b8490;background:linear-gradient(125deg,#293446,#141b29 80%);transition:transform .18s,border-color .18s,box-shadow .18s,filter .18s}
+.mode-choice[aria-checked="false"]{filter:saturate(.82);color:#d8d7d2}
+.mode-choice[aria-checked="false"]:hover{filter:none;border-color:#e3c488}
+.mode-choice[aria-checked="true"]{filter:none;border-color:#ffde9b;background:radial-gradient(ellipse at 0 0,#896d3c66,transparent 80%),linear-gradient(120deg,#354252,#1a2232);box-shadow:0 0 0 1px #ffe1a466,inset 0 0 17px #e7bd6436,0 0 17px #d8ae4b33}
+.mode-choice[aria-checked="true"] .mode-icon{color:#fff0be;text-shadow:0 0 12px #eac478}
+.mode-choice[aria-checked="true"]::after{content:"✓";position:absolute;right:7px;bottom:8px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;color:#181c23;background:#f9d88e;font-size:11px;font-weight:900}
+.mode-choice:focus-visible{outline:3px solid #ffe5ad;outline-offset:3px}
+.mode-choice:active{transform:scale(.99)}
+
+#level .upgrade{isolation:isolate;overflow:hidden;border-radius:10px;border-color:#aaafb9;background:radial-gradient(circle at 50% 18%,#4c5a7663,transparent 68%),linear-gradient(160deg,#282c39,#111722);box-shadow:inset 0 1px 0 #d5dbeb38,0 9px 22px #0009}
+#level .upgrade.rare{border-color:#87c9e9;background:radial-gradient(circle at 50% 16%,#406f9f74,transparent 66%),linear-gradient(#1b3046,#111621)}
+#level .upgrade.legendary{border-color:#ffd185;background:radial-gradient(circle at 50% 16%,#b984456b,transparent 66%),linear-gradient(#45342e,#1d1824);box-shadow:inset 0 1px 0 #ffe4a65c,0 0 22px #dda45d63}
+#level .upgrade:focus-visible{outline:3px solid #fff0c1;outline-offset:3px}
+#level .upgrade:hover{filter:brightness(1.08)}
+#level .upgrade .portrait.skill-sigil{border-radius:15px;background:linear-gradient(#1b2431,#10141d);border-color:#bba57b}
+#level .upgrade.rare .portrait.skill-sigil{border-color:#a8e6f7}
+#level .upgrade.legendary .portrait.skill-sigil{border-color:#ffda98}
+
+/* Ten GPT-authored illustrated ability tiles, packed into one scalable SVG sprite.
+   Existing vector skills remain intact for ability IDs not yet illustrated. */
+:is([data-skill="damage"], [data-up="damage"]) .skill-sigil{--arcana-x:0%;--arcana-y:0%}
+:is([data-skill="multi"], [data-up="multi"]) .skill-sigil{--arcana-x:25%;--arcana-y:0%}
+:is([data-skill="blaze"], [data-up="blaze"]) .skill-sigil{--arcana-x:50%;--arcana-y:0%}
+:is([data-skill="frost"], [data-up="frost"]) .skill-sigil{--arcana-x:75%;--arcana-y:0%}
+:is([data-skill="chain"], [data-up="chain"]) .skill-sigil{--arcana-x:100%;--arcana-y:0%}
+:is([data-skill="vortex"], [data-up="vortex"]) .skill-sigil{--arcana-x:0%;--arcana-y:100%}
+:is([data-skill="meteor"], [data-up="meteor"]) .skill-sigil{--arcana-x:25%;--arcana-y:100%}
+:is([data-skill="orb"], [data-up="orb"]) .skill-sigil{--arcana-x:50%;--arcana-y:100%}
+:is([data-skill="shield"], [data-up="shield"]) .skill-sigil{--arcana-x:75%;--arcana-y:100%}
+:is([data-skill="heal"], [data-up="heal"]) .skill-sigil{--arcana-x:100%;--arcana-y:100%}
+:is([data-skill="damage"], [data-up="damage"]) .skill-sigil,
+:is([data-skill="multi"], [data-up="multi"]) .skill-sigil,
+:is([data-skill="blaze"], [data-up="blaze"]) .skill-sigil,
+:is([data-skill="frost"], [data-up="frost"]) .skill-sigil,
+:is([data-skill="chain"], [data-up="chain"]) .skill-sigil,
+:is([data-skill="vortex"], [data-up="vortex"]) .skill-sigil,
+:is([data-skill="meteor"], [data-up="meteor"]) .skill-sigil,
+:is([data-skill="orb"], [data-up="orb"]) .skill-sigil,
+:is([data-skill="shield"], [data-up="shield"]) .skill-sigil,
+:is([data-skill="heal"], [data-up="heal"]) .skill-sigil{position:relative;isolation:isolate;overflow:hidden}
+:is([data-skill="damage"], [data-up="damage"]) .skill-sigil img.skill-art,
+:is([data-skill="multi"], [data-up="multi"]) .skill-sigil img.skill-art,
+:is([data-skill="blaze"], [data-up="blaze"]) .skill-sigil img.skill-art,
+:is([data-skill="frost"], [data-up="frost"]) .skill-sigil img.skill-art,
+:is([data-skill="chain"], [data-up="chain"]) .skill-sigil img.skill-art,
+:is([data-skill="vortex"], [data-up="vortex"]) .skill-sigil img.skill-art,
+:is([data-skill="meteor"], [data-up="meteor"]) .skill-sigil img.skill-art,
+:is([data-skill="orb"], [data-up="orb"]) .skill-sigil img.skill-art,
+:is([data-skill="shield"], [data-up="shield"]) .skill-sigil img.skill-art,
+:is([data-skill="heal"], [data-up="heal"]) .skill-sigil img.skill-art{visibility:hidden}
+:is([data-skill="damage"], [data-up="damage"]) .skill-sigil,
+:is([data-skill="multi"], [data-up="multi"]) .skill-sigil,
+:is([data-skill="blaze"], [data-up="blaze"]) .skill-sigil,
+:is([data-skill="frost"], [data-up="frost"]) .skill-sigil,
+:is([data-skill="chain"], [data-up="chain"]) .skill-sigil,
+:is([data-skill="vortex"], [data-up="vortex"]) .skill-sigil,
+:is([data-skill="meteor"], [data-up="meteor"]) .skill-sigil,
+:is([data-skill="orb"], [data-up="orb"]) .skill-sigil,
+:is([data-skill="shield"], [data-up="shield"]) .skill-sigil,
+:is([data-skill="heal"], [data-up="heal"]) .skill-sigil::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:6px;background-image:url('./assets/ui/arcana-atlas.svg');background-size:500% 200%;background-position:var(--arcana-x) var(--arcana-y);background-repeat:no-repeat}
+#level .upgrade .portrait.skill-sigil::after{inset:4px;border-radius:9px;box-shadow:0 0 12px #05080d77}
+.skill-slots .skill{border-radius:7px;box-shadow:inset 0 1px 0 #fff4,0 5px 11px #000a}
+.skill-slots .skill.legendary{box-shadow:0 0 11px #e6a85299,inset 0 1px 0 #ffe2a0}
+.skill-slots .skill.evolved{border-color:#fbe4a4}
+.skill-slots .skill .skill-cooldown{background:#08121ec4}
+
+.progression-upgrade button,.cosmetic-list button{min-height:42px;border-radius:6px;transition:border-color .18s,background .18s,box-shadow .18s,transform .18s}
+.progression-upgrade button:not(:disabled):hover,.cosmetic-list button:not(:disabled):hover{transform:translateY(-1px);border-color:#ffe0a0;background:#444038}
+.progression-upgrade button:focus-visible,.cosmetic-list button:focus-visible,.progression-drawer>summary:focus-visible{outline:3px solid #f9d78d;outline-offset:3px}
+.progression-upgrade button:disabled,.cosmetic-list button:disabled{opacity:.73;filter:saturate(.35);background:#222832;color:#b5b8ba;cursor:not-allowed;border-color:#717783}
+.cosmetic-list button{position:relative;padding-right:30px}
+.cosmetic-list button[aria-pressed="true"]{border-color:#ffdc8a;background:linear-gradient(#443b31,#1c2933);box-shadow:0 0 0 1px #eacc7a66,inset 0 0 18px #e7be6333}
+.cosmetic-list button[aria-pressed="true"]::after{content:"✓";position:absolute;top:9px;right:8px;color:#f7d587;font-weight:900}
+.achievement.locked,.codex-entry.locked{opacity:.72;filter:saturate(.4)}
+.achievement:not(.locked){border-color:#dabb81;box-shadow:inset 0 0 12px #cf9f5340}
+.result-victory .result-emblem{filter:drop-shadow(0 0 16px #f1d08055)}
+.result-defeat .result-emblem{filter:drop-shadow(0 0 13px #bd5e7860)}
+.result-actions :is(button,.cta,.ghost):focus-visible{outline:3px solid #fff0bd;outline-offset:3px}
+
+@media(max-width:700px){
+  .mode-choice{min-height:76px;padding-right:23px}
+  .mode-choice[aria-checked="true"]::after{right:5px;bottom:6px}
+  #level .upgrade .portrait.skill-sigil::after{inset:2px}
+  #menu .job.selected{transform:translateY(-2px)}
+}
+@media(prefers-reduced-motion:reduce){
+  #menu .job,.mode-choice,#level .upgrade,.progression-upgrade button,.cosmetic-list button{transition:none!important;animation:none!important;transform:none!important}
+  #menu .job.selected{transform:none}
+}
