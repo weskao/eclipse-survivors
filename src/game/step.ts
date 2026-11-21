@@ -75,7 +75,12 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void
   }
   s.shots = s.shots.filter((b) => b.life > 0)
   // The required boss must never disappear just because the player moved far away.
-  s.mobs = s.mobs.filter((e) => e.hp > 0 && (e.type === 'boss' || dist(e.x - hero.x, e.y - hero.y) < 1700))
+  s.mobs = s.mobs.filter((e) => {
+    if (e.hp <= 0) return false
+    if (e.type === 'boss') return true
+    const dx = e.x - hero.x, dy = e.y - hero.y
+    return dx * dx + dy * dy < 1700 * 1700
+  })
 }
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {

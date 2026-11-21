@@ -18,6 +18,11 @@ const EMBER_SAMPLES = Array.from({ length: 68 }, (_, i) => [hash(i, 25), hash(i,
 const SUN_SAMPLES = Array.from({ length: 26 }, (_, i) => [hash(i, 72), hash(i, 12)] as const)
 const AMBIENT_SAMPLES = Array.from({ length: 37 }, (_, i) => [hash(i, 7), hash(i, 13)] as const)
 
+// Gradients use local coordinates, so equivalent glows can move without
+// rebuilding GPU paint objects. Weak context keys and bounded entries avoid
+// retaining canvases or unlimited color/radius variants.
+const glowGradients = new WeakMap<Ctx2D, Map<string, CanvasGradient>>()
+
 export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number): void {
   const { W, H } = s
   const biome = biomes[s.currentScene] ?? biomes[0]!
@@ -101,14 +106,29 @@ export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: numbe
 }
 
 export function softGlow(ctx: Ctx2D, x: number, y: number, r: number, col: string, power = 1): void {
+  let gradients = glowGradients.get(ctx)
+  if (!gradients) {
+    gradients = new Map()
+    glowGradients.set(ctx, gradients)
+  }
+  const key = `${r}:${col}`
+  let gradient = gradients.get(key)
+  if (!gradient) {
+    gradient = ctx.createRadialGradient(0, 0, 1, 0, 0, r)
+    gradient.addColorStop(0, col)
+    gradient.addColorStop(1, '#00000000')
+    if (gradients.size >= 48) {
+      const oldest = gradients.keys().next()
+      if (!oldest.done) gradients.delete(oldest.value)
+    }
+    gradients.set(key, gradient)
+  }
   ctx.save()
+  ctx.translate(x, y)
   ctx.globalAlpha = power
-  const g = ctx.createRadialGradient(x, y, 1, x, y, r)
-  g.addColorStop(0, col)
-  g.addColorStop(1, '#00000000')
-  ctx.fillStyle = g
+  ctx.fillStyle = gradient
   ctx.beginPath()
-  ctx.arc(x, y, r, 0, TAU)
+  ctx.arc(0, 0, r, 0, TAU)
   ctx.fill()
   ctx.restore()
 }
