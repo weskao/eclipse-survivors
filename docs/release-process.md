@@ -1,18 +1,18 @@
-# 發布流程與 GitHub About / Release Process and Repository About
+# Release Process and Repository About
 
-本專案為 Vue 3 + TypeScript + Vite 應用程式，以 pnpm 建置成多檔案靜態網站 `dist/`。發布流程參考 [Skyline Rush](https://github.com/weskao/skyline-rush) 的核心原則：**先驗證、再部署、最後確認公開網址能載入遊戲**；建置產物由 GitHub Actions 上傳至 GitHub Pages。
+This project is a Vue 3 + TypeScript + Vite application built with pnpm as a multi-file static site in `dist/`. Its release process follows the core principle used by [Skyline Rush](https://github.com/weskao/skyline-rush): **verify first, deploy second, and finally confirm that the public URL loads the game**. GitHub Actions uploads the build output to GitHub Pages.
 
-## GitHub 儲存庫資訊
+## GitHub repository information
 
-- **儲存庫**：<https://github.com/weskao/eclipse-survivors>
-- **目前可見性**：Public
-- **預設分支**：`main`
-- **網站網址**：<https://weskao.github.io/eclipse-survivors/>
-- **遊戲入口**：`index.html`（Vite 入口）→ `src/main.ts`；建置輸出為 `dist/`
+- **Repository**: <https://github.com/weskao/eclipse-survivors>
+- **Current visibility**: Public
+- **Default branch**: `main`
+- **Website URL**: <https://weskao.github.io/eclipse-survivors/>
+- **Game entry point**: `index.html` (Vite entry point) → `src/main.ts`; build output is `dist/`
 
-### GitHub About 建議內容
+### Suggested GitHub About content
 
-在儲存庫首頁右側 **About → 編輯（齒輪）** 中使用下列資訊。**文件內容不會自動修改 GitHub About 欄位**。
+Use the following information in **About → Edit (gear icon)** on the right side of the repository homepage. **This document does not automatically update the GitHub About fields.**
 
 **Description**
 
@@ -26,39 +26,39 @@
 
 `survivor-game`, `browser-game`, `html5-game`, `javascript`, `canvas`, `fantasy-game`, `action-game`, `roguelite`, `offline-game`, `mobile-friendly`
 
-## GitHub Pages 設定
+## GitHub Pages settings
 
-目前採用 **B. GitHub Actions**（唯一部署路徑）；A 已不再適用，勿與 B 同時啟用，否則兩條部署會互相排隊或取消。
+The project currently uses **B. GitHub Actions** as its only deployment path. Option A no longer applies; do not enable both, or the deployments may queue behind or cancel each other.
 
-### A. Deploy from a branch（不適用）
+### A. Deploy from a branch (not applicable)
 
-- **Source**：Deploy from a branch
-- 已不可使用：根目錄 `index.html` 只是 Vite 入口，需經 `pnpm build` 產生 `dist/` 才能執行，不能直接發布。
+- **Source**: Deploy from a branch
+- This option no longer works: the root `index.html` is only a Vite entry point. The application must be built with `pnpm build` to produce `dist/` before it can run, so it cannot be published directly.
 
-**注意**：Branch 部署在推送後可能直接更新公開頁面，不會等待自訂驗證工作完成。若必須嚴格遵守「測試成功才發布」，應採用 GitHub Actions 作為 Pages 發布來源。
+**Note**: Branch deployment may update the public site immediately after a push without waiting for custom verification jobs. To ensure that publication happens only after tests pass, use GitHub Actions as the Pages source.
 
-### B. GitHub Actions（目前使用，具驗證關卡）
+### B. GitHub Actions (current, with verification gate)
 
-- **Source**：GitHub Actions
-- 工作流程：`.github/workflows/release.yml`，單一工作完成驗證與部署。
-- Push 至 `main`（唯一部署觸發）：依序執行 `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm check-release`，檢查 `dist/` 的入口、`manifest.webmanifest` 與圖示、截圖資源；上傳 `dist/` 作為 Pages artifact 後部署；最後確認公開網址回傳遊戲入口（HTML 內含 `id="app"`）。
-- `v*` tag 不會觸發部署；版本標籤與 GitHub Release 由 `/release` 建立。
-- 手動重部署：**Actions → Verify and publish Eclipse Survivors → Run workflow**，分支選 `main`。
+- **Source**: GitHub Actions
+- Workflow: `.github/workflows/release.yml`; a single job handles verification and deployment.
+- A push to `main` (the only deployment trigger) runs `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` in order. It checks the `dist/` entry point, `manifest.webmanifest`, icons, and screenshot assets; uploads `dist/` as a Pages artifact and deploys it; then confirms the public URL returns the game entry point (HTML containing `id="app"`).
+- A `v*` tag does not trigger deployment; `/release` creates version tags and GitHub Releases.
+- To redeploy manually: select **Actions → Verify and publish Eclipse Survivors → Run workflow**, and choose the `main` branch.
 
-## 版本發布 / Versioned Release
+## Versioned release
 
-1. 確認欲宣告的遊戲功能已在 `src/` 真正實作。
-2. 更新 `CHANGELOG.md`，只描述玩家現在可體驗的功能，繁體中文與英文並列。
-   - 將 `package.json` 的 `version` 設為即將發布的版本（例如 `0.0.4`）。此值經由 Vite `define`（`__APP_VERSION__`）顯示在選角畫面的版本列。
-   - `package.json` 的 `version` 必須等於 `CHANGELOG.md` 中最新的 `## [x.y.z]`；Vitest 測試會強制檢查，`pnpm check-release` 會檢查 `dist/` 的建置結果。
-   - 提交前於本機依序執行 `pnpm install --frozen-lockfile`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm check-release`，全部通過。
-3. 執行 `/release <版本>`：提交 changelog、推送 `main`（觸發部署）、建立標籤與 GitHub Release。
-4. 確認該次 `main` 的 **Verify and publish Eclipse Survivors** 成功。
-5. 使用桌面與手機確認「開始冒險」、移動、升級選單、音效及暫停能正常運作。
+1. Confirm that the game features being announced are actually implemented in `src/`.
+2. Update `CHANGELOG.md` to describe only features players can currently experience, in both Traditional Chinese and English.
+   - Set the `version` in `package.json` to the upcoming release version (for example, `0.0.4`). Vite's `define` (`__APP_VERSION__`) displays this value in the version bar on the character selection screen.
+   - The `version` in `package.json` must match the latest `## [x.y.z]` entry in `CHANGELOG.md`. A Vitest test enforces this, and `pnpm check-release` checks the built output in `dist/`.
+   - Before committing, run `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` locally in that order, and ensure they all pass.
+3. Run `/release <version>` to commit the changelog, push `main` (triggering deployment), and create a tag and GitHub Release.
+4. Confirm that **Verify and publish Eclipse Survivors** succeeds for that `main` push.
+5. On both desktop and mobile, confirm that starting an adventure, movement, the upgrade menu, sound effects, and pause work correctly.
 
-## 常見問題 / Troubleshooting
+## Troubleshooting
 
-- 公開網址回傳 404：檢查 Pages 來源是否為 GitHub Actions、最近一次部署是否成功，以及該次工作是否已上傳 `dist/`。
-- Actions 工作流程失敗：查看 [Actions](https://github.com/weskao/eclipse-survivors/actions) 的實際錯誤紀錄，勿宣告已上線。
-- 無背景音樂：瀏覽器通常必須先收到使用者互動；選角畫面可點擊任意位置以啟動配樂，再按「開始冒險」切至戰鬥配樂。請確認背景音樂與音效兩組開關均符合預期。
-- 重要視覺原則：任何設計概念圖都不能當作已完成的真實遊戲截圖使用。
+- The public URL returns 404: check that the Pages source is GitHub Actions, the latest deployment succeeded, and that workflow uploaded `dist/`.
+- An Actions workflow fails: inspect the actual error logs in [Actions](https://github.com/weskao/eclipse-survivors/actions); do not claim the site is live.
+- No background music: browsers usually require user interaction first. Click anywhere on the character selection screen to start the music, then select “Start Adventure” to switch to the battle music. Confirm that both the background music and sound effects toggles are set as expected.
+- Important visual principle: design concept images must not be presented as real screenshots of the finished game.
