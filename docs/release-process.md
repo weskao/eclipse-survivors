@@ -28,9 +28,9 @@
 
 ## GitHub Pages 設定
 
-可選擇任一種發布來源；請以 **Settings → Pages** 中實際啟用的方式為準。
+目前採用 **B. GitHub Actions**（唯一部署路徑）；A 僅作為備案說明，勿與 B 同時啟用，否則兩條部署會互相排隊或取消。
 
-### A. Deploy from a branch
+### A. Deploy from a branch（未使用）
 
 - **Source**：Deploy from a branch
 - **Branch**：`main`
@@ -40,29 +40,21 @@
 
 **注意**：Branch 部署在推送後可能直接更新公開頁面，不會等待自訂驗證工作完成。若必須嚴格遵守「測試成功才發布」，應採用 GitHub Actions 作為 Pages 發布來源。
 
-### B. GitHub Actions（具驗證關卡）
+### B. GitHub Actions（目前使用，具驗證關卡）
 
 - **Source**：GitHub Actions
-- 工作流程：`.github/workflows/release.yml`
-- PR：檢查入口檔案、內嵌 JavaScript 語法、音訊與資源路徑，不發布。
-- Push 至 `main`：完成驗證後上傳 Pages artifact 並部署，接著檢查公開網址是否回傳遊戲入口。
-- `v*` tag：驗證標籤對應的提交來自 `main`，部署成功後才建立 GitHub Release。
+- 工作流程：`.github/workflows/release.yml`，單一工作完成驗證與部署。
+- Push 至 `main`（唯一部署觸發）：檢查入口檔案、內嵌 JavaScript 語法、音訊與資源路徑；發布 `index.html`、`manifest.webmanifest`、`assets/`；最後確認公開網址回傳遊戲入口。
+- `v*` tag 不會觸發部署；版本標籤與 GitHub Release 由 `/release` 建立。
 - 手動重部署：**Actions → Verify and publish Survivor Game → Run workflow**，分支選 `main`。
 
 ## 版本發布 / Versioned Release
 
 1. 確認欲宣告的遊戲功能已在 `index.html` 真正實作。
 2. 更新 `CHANGELOG.md`，只描述玩家現在可體驗的功能，繁體中文與英文並列。
-3. 合併或推送至 `main`，確認驗證工作成功。
-4. 建立新版本標籤，例如：
-
-```bash
-git tag -a v0.0.2 -m "Eclipse Survivors v0.0.2"
-git push origin v0.0.2
-```
-
-5. 觀察發布工作流程，確認 GitHub Release 與 Pages 網址均成功；若採 Branch 發布，須另外檢查公開網站。
-6. 使用桌面與手機確認「開始冒險」、移動、升級選單、音效及暫停能正常運作。
+3. 執行 `/release <版本>`：提交 changelog、推送 `main`（觸發部署）、建立標籤與 GitHub Release。
+4. 確認該次 `main` 的 **Verify and publish Survivor Game** 成功。
+5. 使用桌面與手機確認「開始冒險」、移動、升級選單、音效及暫停能正常運作。
 
 ## 常見問題 / Troubleshooting
 

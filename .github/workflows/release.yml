@@ -27,7 +27,7 @@ jobs:
       - name: Validate entry point, game logic and offline audio
         run: node scripts/check-release.mjs
       - name: Assemble site
-        run: mkdir site && cp index.html site/ && touch site/.nojekyll
+        run: mkdir site && cp -r index.html manifest.webmanifest assets site/ && touch site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
