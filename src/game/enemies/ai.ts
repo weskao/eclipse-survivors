@@ -115,13 +115,17 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
     if (ai.state === 'windup') {
       ai.timer -= dt
       if (ai.timer <= 0) {
-        if (ai.attack === 'dive') { ai.state = 'attack'; ai.timer = 0.38 }
+        if (ai.attack === 'dive' || ai.attack === 'pounce') {
+          ai.state = 'attack'; ai.timer = ai.attack === 'dive' ? 0.38 : 0.26
+        }
         else resolveStrike(s, e, hooks)
       }
       continue
     }
     if (ai.state === 'attack') {
-      const distance = 295 * dt * (e.slow > 0 ? 0.46 : 1)
+      const speed = ai.attack === 'pounce' ? 180 : 295
+      const distance = Math.min(speed * dt * (e.slow > 0 ? 0.46 : 1),
+        ai.attack === 'pounce' ? dist(ai.aimX - e.x, ai.aimY - e.y) : Infinity)
       const oldX = e.x, oldY = e.y
       e.x += ai.dirX * distance
       e.y += ai.dirY * distance
