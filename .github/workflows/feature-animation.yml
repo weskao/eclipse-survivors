@@ -5,6 +5,10 @@ on:
     branches: [feature/character-animation-combat-vfx]
   workflow_dispatch:
 
+concurrency:
+  group: character-animation-combat-vfx
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
