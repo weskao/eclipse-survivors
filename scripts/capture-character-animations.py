@@ -99,11 +99,31 @@ def capture(page, url, hero, tag, record=False):
     page.evaluate("window.__test.forceAttack()")
     page.wait_for_timeout(90)
     page.screenshot(path=str(OUT / f"{tag}-{hero}-attack.png"))
+    page.keyboard.press("Space")
+    page.wait_for_timeout(70)
+    page.screenshot(path=str(OUT / f"{tag}-{hero}-dash.png"))
+    # Profile an unmodified, un-upgraded run for before/after fairness.
+    page.wait_for_timeout(400)
+    perf = metrics(page)
+    # After measurement, capture an actual acquired ability in action if available.
+    if tag == "after" and page.evaluate("window.__test.mode") == "play":
+        for _ in range(5):
+            page.evaluate("window.__test.level()")
+            if page.evaluate("window.__test.mode") != "level":
+                break
+            choices = page.locator("#upgrades .upgrade")
+            ids = choices.evaluate_all("(nodes) => nodes.map(node => node.dataset.up)")
+            active = next((skill for skill in ("frost", "bolt", "meteor", "vortex", "blaze", "orb", "chain") if skill in ids), None)
+            chosen = active or ids[0]
+            page.locator(f'#upgrades .upgrade[data-up="{chosen}"]').click()
+            if active:
+                page.wait_for_timeout(110)
+                page.screenshot(path=str(OUT / f"after-{hero}-skill.png"))
+                page.wait_for_timeout(500)
+                break
     if errors:
         raise RuntimeError(f"{tag}-{hero} page errors: {errors[:3]}")
-    # Do not profile while moving screenshots are being captured.
-    page.wait_for_timeout(400)
-    return metrics(page)
+    return perf
 
 def before_after():
     left = OUT / "before-knight-attack.png"
