@@ -56,7 +56,16 @@ def capture(browser, url, name, width, height, mobile):
             drawer.scroll_into_view_if_needed()
             page.wait_for_timeout(380)
             page.screenshot(path=str(OUTPUT / f"{name}-progression.png"), animations="disabled")
-            drawer.locator("summary").click()
+            # Reset browser-capture setup directly. After opening the long drawer,
+            # its summary scrolls beyond the clipped menu panel, so a second
+            # Playwright click would hit the parent surface instead of the summary.
+            drawer.evaluate("(element) => { element.open = false }")
+            page.evaluate("""() => {
+                const panel = document.querySelector('#menu .menu-panel');
+                const selection = document.querySelector('#menu .menu-selection');
+                if (panel) panel.scrollTop = 0;
+                if (selection) selection.scrollTop = 0;
+            }""")
 
         ranger = page.locator('[data-job="ranger"]')
         ranger.click()
