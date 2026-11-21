@@ -20,12 +20,29 @@ function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number): void {
     ctx.beginPath(); ctx.arc(x, y, radius, 0, TAU); ctx.stroke()
     ctx.globalAlpha = 0.1 + (1 - time) * 0.17
     ctx.beginPath(); ctx.arc(x, y, radius, 0, TAU); ctx.fill()
+  } else if (ai.attack === 'summon') {
+    const x = mob.x + ox, y = mob.y + oy
+    ctx.beginPath(); ctx.arc(x, y, 145, 0, TAU); ctx.stroke()
+    ctx.font = '700 15px system-ui'; ctx.textAlign = 'center'
+    ctx.fillText('召喚', x, y - 158)
   } else {
     const x = mob.x + ox, y = mob.y + oy
     const far = ai.attack === 'dive' ? 320 : 380
-    const targetX = x + ai.dirX * far, targetY = y + ai.dirY * far
-    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(targetX, targetY); ctx.stroke()
-    ctx.beginPath(); ctx.arc(targetX, targetY, ai.attack === 'dive' ? 19 : 13, 0, TAU); ctx.stroke()
+    const bossShots = mob.type === 'boss' ? (mob.bossPhase === 3 ? 5 : 3) : mob.elite ? 3 : 1
+    const count = ai.attack === 'dive' ? 1 : bossShots
+    const angle = Math.atan2(ai.dirY, ai.dirX)
+    for (let i = 0; i < count; i++) {
+      const a = angle + (i - (count - 1) / 2) * (mob.type === 'boss' ? 0.18 : 0.14)
+      const targetX = x + Math.cos(a) * far, targetY = y + Math.sin(a) * far
+      ctx.setLineDash([])
+      ctx.globalAlpha = 0.13 + (1 - time) * 0.13
+      ctx.lineWidth = ai.attack === 'dive' ? mob.r * 2 + 34 : mob.type === 'boss' ? 54 : 46
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(targetX, targetY); ctx.stroke()
+      ctx.setLineDash([8, 5])
+      ctx.globalAlpha = 0.75
+      ctx.lineWidth = 2
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(targetX, targetY); ctx.stroke()
+    }
   }
   ctx.restore()
 }
