@@ -6,6 +6,10 @@ const generatedIcons = new Set<AbilityId>([
   'vortex', 'meteor', 'orb', 'shield', 'heal',
 ])
 
+export function hasGeneratedSkillArt(id: AbilityId): boolean {
+  return generatedIcons.has(id)
+}
+
 export function skillImageSrc(id: AbilityId): string {
-  return `./assets/skill-icons/${id}${generatedIcons.has(id) ? '@3x.webp' : '.svg'}`
+  return `./assets/skill-icons/${id}${hasGeneratedSkillArt(id) ? '@3x.webp' : '.svg'}`
 }
