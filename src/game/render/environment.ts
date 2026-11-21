@@ -60,6 +60,8 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
 
 export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
   const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎' }
+  const titles = { chest: '古代寶箱', shrine: '魔法祭壇', invasion: '菁英入侵',
+    blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉' }
   const colors = { chest: '#ffcc75', shrine: '#b9d9ff', invasion: '#ff8176',
     blessing: '#a8ffc9', bargain: '#d6a9ff', challenge: '#ffc288' }
   for (const e of s.events) {
@@ -73,6 +75,9 @@ export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: numbe
     ctx.beginPath(); ctx.ellipse(x, y, 27 + Math.sin(s.worldClock * 3) * 3, 10, 0, 0, TAU); ctx.stroke()
     ctx.textAlign = 'center'; ctx.font = 'bold 25px Georgia'; ctx.fillStyle = '#fff6e2'
     ctx.fillText(symbols[e.kind], x, y - 14)
+    ctx.fillStyle = '#101a23db'; ctx.fillRect(x - 49, y + 11, 98, 20)
+    ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = glow
+    ctx.fillText(titles[e.kind], x, y + 25)
     ctx.restore()
   }
   if (!s.challengePoint) return

@@ -198,7 +198,7 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     previewBiome(index: number) {
       if (window.location.search.indexOf('showcase=1') < 0 || s.mode !== 'play' ||
           !s.hero || !Number.isInteger(index) || index < 0 || index > 3) return
-      s.hero.x = 0; s.hero.y = 0; s.hero.hp = s.hero.max; s.hero.inv = 999
+      s.hero.x = 0; s.hero.y = 0; s.hero.hp = s.hero.max; s.hero.inv = 0; s.hero.need = 99999
       s.hero.attack = 0.45
       s.cam.x = 0; s.cam.y = 0
       s.time = index * SCENE_SECONDS + 2
