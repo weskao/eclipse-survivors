@@ -1,66 +1,100 @@
-# 暮境遠征 · Eclipse Survivors
+<p align="center">
+  <a href="https://weskao.github.io/survivor-game/" title="Play Eclipse Survivors">
+    <img src="assets/og-cover.svg" alt="Eclipse Survivors — cinematic fantasy adventure cover artwork" width="100%">
+  </a>
+</p>
 
-**一款可在瀏覽器直接遊玩的奇幻生存動作遊戲。** 在幽暮遺跡中選擇冒險職業，穿梭於怪物群間，自動施放攻擊、蒐集經驗、組合技能，挑戰逐步升高的生存難度。
+# Eclipse Survivors
 
-*An atmospheric fantasy survival-action game featuring automatic combat, evolving abilities, boss encounters, and original music. Play instantly on desktop or mobile.*
+**An atmospheric fantasy survival-action game.** Choose your hero, fight through waves of dangerous creatures, collect experience gems, and discover increasingly powerful skill combinations. Defeat monstrous bosses, brave changing weather, and survive in a richly illustrated fantasy world — directly in your browser.
 
-[**開啟線上遊戲 / Play Online**](https://weskao.github.io/survivor-game/) · [檢視更新紀錄 / Changelog](CHANGELOG.md) · [發布流程 / Release Process](docs/release-process.md)
+<p align="center">
+  <a href="https://weskao.github.io/survivor-game/"><strong>▶ PLAY THE GAME</strong></a>
+  &nbsp;•&nbsp; <a href="CHANGELOG.md">What's New</a>
+  &nbsp;•&nbsp; <a href="docs/release-process.md">Releases</a>
+</p>
 
-> 線上網址由 GitHub Pages 提供；若無法開啟，請確認儲存庫的 Pages 部署已成功。遊戲原型也能下載 `index.html` 離線遊玩。
+> **Playable prototype:** The current game is a self-contained browser adventure. The cover artwork is promotional illustration, not an in-game screenshot. The gameplay images below are captured from the actual game by the artwork workflow. They appear when that workflow completes successfully.
 
-## 遊戲特色 / Features
+## Gameplay
 
-- **三種冒險職業**：騎士、遊俠、法師，各自具有不同的攻擊方式與初始能力。
-- **割草生存戰鬥**：面對持續出現的怪物，移動閃避、自動攻擊、拾取經驗結晶。
-- **持續成長**：升級時從三項強化中選擇一項，累積並組合多達 15 種能力。
-- **元素技能特效**：落雷、連鎖雷擊、冰霜、隕石、火焰、渦流與護盾等技能。
-- **動態戰場氛圍**：不同時間階段呈現晨光、暴雨、飛雪與灰燼環境效果。
-- **精英與首領挑戰**：在不斷增強的敵群中設法存活。
-- **原創音樂與音效**：音訊和遊戲圖片都內嵌於單一 HTML 檔案。
-- **跨裝置遊玩**：支援桌面瀏覽器與手機觸控操作，無需安裝額外套件。
+<p align="center">
+  <img src="assets/screenshots/gameplay.webp" alt="Actual gameplay screenshot: armored hero surrounded by fantasy monsters in a grassy ruin" width="67%">
+  <img src="assets/screenshots/mobile.webp" alt="Actual gameplay screenshot on a phone-sized display with touch controls" width="30%">
+</p>
 
-## 開始遊玩 / Getting Started
+Fight, move, dodge, and level up. Your hero attacks automatically, leaving you free to concentrate on positioning and building a powerful combination of abilities.
 
-### 線上遊玩 / Online
+## Game Features
 
-直接開啟：**https://weskao.github.io/survivor-game/**
+- **Three hero classes:** Knight, Ranger, and Mage, each with different starting attributes and attacks.
+- **Survival combat:** Move through enemy waves, avoid incoming threats, and earn experience from defeated monsters.
+- **Choose your build:** Pick one of three upgrades each time you level up. Mix and strengthen up to 15 available abilities.
+- **Elemental abilities:** Lightning, chain lightning, frost novas, meteors, flaming auras, vortexes, and shields.
+- **Evolving atmosphere:** Explore an ancient battlefield through morning light, thunderstorms, snowfall, and drifting embers.
+- **Boss encounters:** Survive long enough to challenge powerful enemies.
+- **Grounded movement:** Smoother acceleration and more stable character proportions replace exaggerated pseudo-skeletal animation.
+- **Original music and sound effects:** All essential game audio and artwork are embedded in the HTML.
+- **Desktop and mobile:** Play with a keyboard or touch controls.
 
-### 離線遊玩 / Offline
+## Quick Start
 
-1. 下載專案中的 `index.html`。
-2. 使用 Chrome、Edge 或其他支援現代 JavaScript 的瀏覽器開啟。
-3. 選擇職業，點選 **「開始冒險」**。
+**Play online:** [weskao.github.io/survivor-game](https://weskao.github.io/survivor-game/)
 
-不需要 Node.js、後端服務或網路連線。瀏覽器通常要求使用者先點擊按鈕才能播放音樂，因此遊戲背景音樂會在開始冒險後啟動。
+**Play offline:** Download `index.html` and open it in a modern browser. No build tools, extra packages, or server are needed.
 
-## 操作方式 / Controls
+> Browsers normally require a user interaction before playing audio. Background music starts after you select a class and press **Start Adventure**.
 
-| 裝置 | 操作 |
-| --- | --- |
-| 電腦 | `WASD` / 方向鍵移動 |
-| 電腦 | `Space` 衝刺 |
-| 電腦 | `P` / `Esc` 暫停或繼續 |
-| 電腦 | 升級選單按 `1`、`2`、`3` 選擇 |
-| 手機 | 虛擬搖桿移動、畫面上的衝刺按鈕 |
-| 全平台 | 自動尋敵與攻擊；移動拾取經驗結晶 |
+### Controls
 
-## 專案結構 / Project Structure
+| Action | Desktop | Mobile |
+| --- | --- | --- |
+| Move | `WASD` or arrow keys | On-screen joystick |
+| Dash | `Space` | Dash button |
+| Pause / resume | `P` or `Esc` | Pause button |
+| Choose level-up ability | `1`, `2`, `3` or click | Tap your choice |
+| Attack | Automatic | Automatic |
+
+### Add the Game to Your Home Screen
+
+**iPhone / iPad:** Open the website in Safari, use **Share → Add to Home Screen**, and add **Eclipse Survivors**.
+
+**Android:** Open the website in Chrome, open the browser menu, and choose **Add to Home screen** or **Install app** if available.
+
+The home-screen icon and social preview are derived from the project's own fantasy branding, with SVG artwork kept as the editable source.
+
+## Technology
+
+- HTML5 Canvas, JavaScript, and CSS
+- Self-contained game with no required runtime CDN or game server
+- Embedded original sound and visual assets
+- GitHub Pages distribution
+- Mobile app icons and social previews generated from original SVG artwork
+- Automated real-game browser screenshot capture for the README
+
+## Project Layout
 
 ```text
-index.html                    # 遊戲、介面、圖片及音樂（單一檔案）
-README.md                     # 專案介紹與操作方式
-CHANGELOG.md                  # 玩家可讀的版本更新紀錄
-.github/workflows/release.yml # 發布檢查及 GitHub Pages 工作流程
-scripts/check-release.mjs     # 離線完整性與 JavaScript 語法檢查
-docs/release-process.md       # 發布與 GitHub About 維護說明
+index.html                       Standalone playable game
+manifest.webmanifest             Home-screen web app metadata
+assets/app-icon.svg              Editable app icon artwork
+assets/og-cover.svg              Editable cover artwork
+assets/apple-touch-icon.png      iOS home-screen icon (generated)
+assets/icon-192.png              Home-screen icon (generated)
+assets/icon-512.png              High-resolution home-screen icon (generated)
+assets/og-cover.png              Open Graph preview image (generated)
+assets/screenshots/              Screenshots captured from actual gameplay
+scripts/export-brand-assets.py   Generate raster assets and capture screenshots
+.github/workflows/brand-assets.yml Artwork generation workflow
+.github/workflows/release.yml    GitHub Pages publishing
+CHANGELOG.md                     Player-facing changes
+docs/release-process.md          Publishing and version guidelines
 ```
 
-## 開發狀態 / Development Status
+## Status and Artwork
 
-本專案仍處於**可玩原型**階段，角色動畫、場景表現與技能演出會持續改進。設計討論中的高精緻度概念圖不代表目前遊戲已具備相同視覺品質。遊戲進度以儲存庫內的 `index.html` 為準。
+Eclipse Survivors is an evolving **playable prototype**. Promotional artwork conveys the intended visual direction; it should not be mistaken for footage of features that have not been implemented. For the current experience, use the gameplay screenshots and play the live build.
 
-*This is a playable prototype. Visual concepts shared during development are not necessarily implemented in the current game.*
+## License
 
-## 授權 / License
-
-此儲存庫目前未提供開放原始碼授權條款；除非另行授權，所有權利均予保留。
+No open-source license has been granted for this repository. All rights are reserved unless explicitly stated otherwise.
