@@ -1,3 +1,26 @@
+## [0.0.1] - 2026-11-21
+
+### 🐛 Bug Fixes
+
+- Use grounded character movement without sprite distortion
+
+### 💼 Other
+
+- Support GitHub Pages branch publishing from main root
+
+### 📚 Documentation
+
+- Add honest bilingual player release notes
+- Describe gated Pages and tag-release workflow
+
+### 🧪 Testing
+
+- Verify the standalone game before publishing
+
+### ⚙️ Miscellaneous Tasks
+
+- Initial commit
+- Gate and publish standalone game to GitHub Pages
 # Changelog / 更新紀錄
 
 ## Unreleased / 尚未發布
