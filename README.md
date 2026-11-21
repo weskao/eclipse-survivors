@@ -6,6 +6,8 @@
 
 # Eclipse Survivors
 
+**Version 1.0.0 — integrated game systems (release candidate).** All seven development branches now converge in this Vue 3 + TypeScript build. The active milestone introduces four selectable modes, persistent achievements and hero cosmetics, real skill evolutions, telegraphed multi-phase bosses, distinct biomes and world events, animated heroes, and interruption-safe audio.
+
 **A playable fantasy survival-action browser game.** Choose your hero, fight through waves of dangerous creatures, collect experience gems, and discover increasingly powerful skill combinations. Defeat monstrous bosses, brave changing weather, and survive in a richly illustrated fantasy world — directly in your browser.
 
 <p align="center">
@@ -41,6 +43,11 @@ The images below show the current game as it runs in Chromium, not promotional m
 
 ## Game Features
 
+- **Four game modes:** Quick Run (150 seconds), Standard Adventure (8 minutes), Endless Survival, and Challenge Mode; timed wins require the appropriate boss to be defeated.
+- **Persistent progression:** Personal records, achievements, cosmetic unlocks, permanent upgrades, encyclopedia entries and run statistics.
+- **Five legendary evolutions:** Frozen Thunderstorm, Infernal Singularity, Apocalypse Rain, Blade Tempest and Guardian Sanctuary, with equipment-aware HUD.
+- **Advanced enemy encounters:** Differentiated AI, ranged warlocks, elite enemies and multi-phase boss attacks with readable warnings.
+- **Four distinct biomes and events:** Dawn Ruins, Thunder Sanctuary, Frozen Corridor and Ashen Battlefield, with interactive events and hazards.
 - **Three hero classes:** Knight, Ranger, and Mage, each with different starting attributes and attacks.
 - **Survival combat:** Move through enemy waves, avoid incoming threats, and earn experience from defeated monsters.
 - **Choose your build:** Pick one of three upgrades each time you level up. Mix and strengthen up to 15 available abilities.
@@ -88,6 +95,12 @@ The home-screen icon uses the knight sprite from the game. The social preview co
 - GitHub Pages distribution
 - Mobile app icons and social previews generated from actual in-game character art and gameplay
 - Automated real-game browser screenshot capture for the README
+
+## Integration Verification
+
+The seven feature histories were merged into `feature/eclipse-survivors-v1-integration` without force pushing. The dedicated GitHub Actions workflow runs installation, TypeScript checks, Vitest, production build, release validation and Pages asset checks. A separate browser workflow records **actual running-game** screenshots on desktop, phone portrait and phone landscape, plus character, evolved-skill, biome and boss recordings. Media is uploaded as Actions artifacts rather than replaced by illustration mockups.
+
+For the latest evidence, see [integration checks](https://github.com/weskao/eclipse-survivors/actions/workflows/v1-integration.yml) and [gameplay captures](https://github.com/weskao/eclipse-survivors/actions/workflows/v1-visual-evidence.yml). The existing screenshot gallery above remains an authentic Chromium capture of the game, while additional v1 captures are supplied in the CI artifacts.
 
 ## Development
 

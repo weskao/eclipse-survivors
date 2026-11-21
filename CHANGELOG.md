@@ -1,3 +1,22 @@
+## [1.0.0] - 2026-11-22
+
+### Gameplay and balance
+- Integrate correctness fixes for single-award deaths, accurate projectile hits, boss-gated victories and class balance.
+- Add elite and ranged enemies, distinct AI actions, hit telegraphs and three-stage boss fights.
+- Provide five legendary skill evolutions, weighted upgrades, level caps and an equipped-skill HUD.
+- Add four unique playable biomes, environmental collision/hazards and random world events.
+- Add configurable Quick, Standard, Endless and Challenge modes with explicit victory requirements.
+
+### Player experience
+- Introduce versioned persistent profiles, records, achievements, hero cosmetics, modest permanent progression, encyclopedia and end-of-run statistics.
+- Improve hero movement/attack effects, mobile controls, audio-interruption recovery and rendering work.
+- Preserve the game's Vue 3, TypeScript, Vite and pnpm architecture.
+
+### Verification
+- Merge seven independently developed feature branches while retaining original functionality.
+- Add cross-feature regression tests and automated real-game desktop/mobile screenshots and MP4 gameplay evidence.
+- Keep GitHub Pages deployment subject to successful verification after promotion to main.
+
 ## [Unreleased]
 
 ### ⚠️ Breaking / 破壞性變更
