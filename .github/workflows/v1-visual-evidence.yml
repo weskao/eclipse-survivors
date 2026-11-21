@@ -1,0 +1,58 @@
+name: V1 actual-game screenshot and video evidence
+
+on:
+  push:
+    branches: [feature/eclipse-survivors-v1-integration]
+  workflow_dispatch:
+
+concurrency:
+  group: eclipse-v1-gameplay-capture
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  browser-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck && pnpm test && pnpm build && pnpm check-release
+      - name: Install headless Chromium for real browser evidence
+        run: |
+          python -m pip install --disable-pip-version-check "playwright==1.58.0" "Pillow==11.1.0"
+          python -m playwright install --with-deps chromium
+          command -v ffmpeg
+      - name: Test desktop, phone portrait and phone landscape with real screenshots
+        run: python scripts/capture-v1-responsive.py
+      - name: Capture four environments and real gameplay video
+        run: python scripts/capture-biomes.py
+      - name: Capture boss stages and real gameplay video
+        run: python scripts/capture-enemy-showcase.py
+      - name: Capture ability evolutions and real gameplay video
+        run: python scripts/capture-skill-evolutions.py
+      - name: Capture all hero animations and gameplay recordings
+        run: python scripts/capture-character-animations.py
+      - name: Upload actual game screenshots and MP4 recordings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eclipse-survivors-v1-actual-game-evidence
+          path: |
+            artifacts/v1-responsive/
+            artifacts/biomes/
+            artifacts/advanced-enemies/
+            artifacts/skill-evolution/
+            artifacts/character-animation/
+          retention-days: 14
+          if-no-files-found: warn
