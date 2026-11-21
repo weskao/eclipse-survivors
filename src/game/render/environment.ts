@@ -4,43 +4,92 @@ import { hash } from '../math'
 import { currentSceneInfo } from '../state'
 import type { GameState } from '../types'
 import type { Ctx2D } from './ctx'
+import type { BiomeArt } from './biome-art'
 import type { Props } from './sprites'
+import { biomePalette, hazardPhase, nearbyHazards, nearbyObstacles } from '../world'
 
 const ready = (img: HTMLImageElement): boolean => img.complete && img.naturalWidth > 0
 
-export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, ox: number, oy: number): void {
+export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number): void {
   const { W, H } = s
-  const tex = art.ground
-  if (ready(tex)) {
-    const size = 768
-    const px = ((ox % size) + size) % size
-    const py = ((oy % size) + size) % size
-    for (let x = px - size; x < W; x += size) for (let y = py - size; y < H; y += size) ctx.drawImage(tex, x, y, size, size)
-  } else {
-    ctx.fillStyle = '#333f35'
-    ctx.fillRect(0, 0, W, H)
+  const biome = biomes[s.currentScene] ?? biomes[0]!
+  const tile = biome.tile
+  const size = 384
+  const px = ((ox % size) + size) % size
+  const py = ((oy % size) + size) % size
+  for (let x = px - size; x < W; x += size) for (let y = py - size; y < H; y += size) {
+    ctx.drawImage(tile, x, y, size, size)
   }
-  const map = art.courtyard
-  if (ready(map)) ctx.drawImage(map, ox - SCENE.width / 2, oy - SCENE.height / 2, SCENE.width, SCENE.height)
-  // Outside the illustrated courtyard: cached 2.5D world props, sparsely scattered.
-  const size = 290
-  const x0 = Math.floor(-ox / size) - 1
-  const x1 = Math.ceil((W - ox) / size) + 1
-  const y0 = Math.floor(-oy / size) - 1
-  const y1 = Math.ceil((H - oy) / size) + 1
-  for (let i = x0; i <= x1; i++) {
-    for (let j = y0; j <= y1; j++) {
-      const wx = i * size + (hash(i + 91, j) - 0.5) * size * 0.65
-      const wy = j * size + (hash(i, j + 52) - 0.5) * size * 0.66
-      if (Math.abs(wx) < 1020 && Math.abs(wy) < 565) continue
-      const xx = wx + ox
-      const yy = wy + oy
-      const k = hash(i, j)
-      if (k > 0.75) ctx.drawImage(props.tree, xx - 90, yy - 207, 181, 216)
-      else if (k > 0.65) ctx.drawImage(props.ruin, xx - 46, yy - 114, 92, 121)
-      else if (k > 0.56) ctx.drawImage(props.crystal, xx - 25, yy - 52, 56, 65)
+  // Only the sunlit ruins retain the authored courtyard illustration.
+  if (s.currentScene === 0 && ready(art.courtyard)) {
+    ctx.drawImage(art.courtyard, ox - SCENE.width / 2, oy - SCENE.height / 2, SCENE.width, SCENE.height)
+  }
+  const centerX = W / 2 - ox
+  const centerY = H / 2 - oy
+  const extent = Math.hypot(W, H) / 2 + 180
+  for (const h of nearbyHazards(s.currentScene, centerX, centerY, extent)) {
+    const x = h.x + ox
+    const y = h.y + oy
+    const phase = hazardPhase(s.currentScene, h, s.worldClock)
+    const palette = biomePalette[s.currentScene] ?? biomePalette[0]!
+    ctx.save()
+    ctx.globalAlpha = phase === 'idle' ? .24 : phase === 'warning' ? .58 : .78
+    ctx.fillStyle = s.currentScene === 3 ? '#ff642d7a' : s.currentScene === 1 ? '#70a6f37a' :
+      s.currentScene === 2 ? '#b8f0ff72' : '#a4c37951'
+    ctx.beginPath(); ctx.ellipse(x, y, h.r, h.r * .58, 0, 0, TAU); ctx.fill()
+    ctx.strokeStyle = phase === 'active' ? '#fff2bc' : palette.accent
+    ctx.lineWidth = phase === 'warning' ? 4 : 2
+    ctx.beginPath(); ctx.ellipse(x, y, h.r + 4, h.r * .6 + 3, 0, 0, TAU); ctx.stroke()
+    if (phase === 'warning') {
+      ctx.fillStyle = '#fff5d7'; ctx.font = 'bold 19px sans-serif'; ctx.textAlign = 'center'
+      ctx.fillText('!', x, y + 6)
     }
+    ctx.restore()
   }
+  for (const o of nearbyObstacles(s.currentScene, centerX, centerY, extent)) {
+    const x = o.x + ox
+    const y = o.y + oy
+    if (x < -110 || x > W + 110 || y < -180 || y > H + 80) continue
+    if (s.currentScene === 0 && o.variant === 0) ctx.drawImage(props.tree, x - 90, y - 207, 181, 216)
+    else if (s.currentScene === 0 && o.variant === 1) ctx.drawImage(props.ruin, x - 46, y - 114, 92, 121)
+    else if (s.currentScene === 1 && o.variant === 1) ctx.drawImage(props.crystal, x - 34, y - 90, 68, 95)
+    else if (s.currentScene === 2 && o.variant === 2) ctx.drawImage(props.crystal, x - 38, y - 105, 76, 110)
+    else ctx.drawImage(biome.landmark, x - 72, y - 156, 144, 176)
+  }
+}
+
+export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+  const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎' }
+  const titles = { chest: '古代寶箱', shrine: '魔法祭壇', invasion: '菁英入侵',
+    blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉' }
+  const colors = { chest: '#ffcc75', shrine: '#b9d9ff', invasion: '#ff8176',
+    blessing: '#a8ffc9', bargain: '#d6a9ff', challenge: '#ffc288' }
+  for (const e of s.events) {
+    const x = e.x + ox
+    const y = e.y + oy
+    if (x < -45 || x > s.W + 45 || y < -45 || y > s.H + 45) continue
+    const glow = colors[e.kind]
+    softGlow(ctx, x, y - 11, 46, glow, .43)
+    ctx.save()
+    ctx.strokeStyle = glow; ctx.lineWidth = 3
+    ctx.beginPath(); ctx.ellipse(x, y, 27 + Math.sin(s.worldClock * 3) * 3, 10, 0, 0, TAU); ctx.stroke()
+    ctx.textAlign = 'center'; ctx.font = 'bold 25px Georgia'; ctx.fillStyle = '#fff6e2'
+    ctx.fillText(symbols[e.kind], x, y - 14)
+    ctx.fillStyle = '#101a23db'; ctx.fillRect(x - 49, y + 11, 98, 20)
+    ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = glow
+    ctx.fillText(titles[e.kind], x, y + 25)
+    ctx.restore()
+  }
+  if (!s.challengePoint) return
+  const x = s.challengePoint.x + ox
+  const y = s.challengePoint.y + oy
+  ctx.save()
+  ctx.strokeStyle = s.time % 3 > 2.15 ? '#ff6c58' : '#e8baff'
+  ctx.lineWidth = 7
+  ctx.beginPath(); ctx.ellipse(x, y, 130, 76, 0, 0, TAU); ctx.stroke()
+  ctx.strokeStyle = '#dfc6ff88'; ctx.lineWidth = 2
+  ctx.beginPath(); ctx.ellipse(x, y, 250, 145, 0, 0, TAU); ctx.stroke()
+  ctx.restore()
 }
 
 export function softGlow(ctx: Ctx2D, x: number, y: number, r: number, col: string, power = 1): void {
@@ -109,9 +158,10 @@ export function drawAmbient(ctx: Ctx2D, s: GameState, ox: number, oy: number): v
     ctx.fillStyle = i % 5 === 0 ? `rgba(238,180,126,${a})` : `rgba(183,227,182,${a * 0.83})`
     ctx.beginPath(); ctx.arc(x, y, i % 6 === 0 ? 2.4 : 1.1, 0, TAU); ctx.fill()
   }
-  const moon = Math.max(0, 0.5 + 0.5 * Math.sin(q * 0.45))
-  softGlow(ctx, ox + 765, oy - 408, 120, '#6ab6fe77', 0.18 + 0.2 * moon)
-  softGlow(ctx, ox - 825, oy - 392, 80, '#ffaf5b7b', 0.3 + moon * 0.25)
+  const pulse = Math.max(0, 0.5 + 0.5 * Math.sin(q * 0.45))
+  const colors = ['#f5db9c77', '#70adff77', '#c9f3ff77', '#ff804a77']
+  softGlow(ctx, ox + 765, oy - 408, 120, colors[s.currentScene] ?? colors[0]!, 0.18 + 0.2 * pulse)
+  softGlow(ctx, ox - 825, oy - 392, 80, colors[s.currentScene] ?? colors[0]!, 0.23 + pulse * 0.2)
   const rx = ox + 875
   const ry = oy + 355
   for (let i = 0; i < 4; i++) {

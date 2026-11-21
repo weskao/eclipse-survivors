@@ -1,10 +1,11 @@
 import type { Artwork } from '../art'
+import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
-import { drawAmbient, paintEnvironment } from './environment'
+import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
   drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
@@ -20,6 +21,7 @@ export interface RenderAssets {
   sprites: Record<string, HTMLCanvasElement>
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
+  biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
@@ -33,6 +35,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     prefersReducedMotion: () => query?.matches ?? false,
     depthOrder: [],
+    biomes: buildBiomeArt(makeCanvas),
   }
 }
 
@@ -64,7 +67,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
-  paintEnvironment(ctx, s, assets.art, assets.props, ox, oy)
+  paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy)
   const scene = currentSceneInfo(s)
   const cached = assets.weatherCache
   if (!cached || cached.ctx !== ctx || cached.width !== W || cached.height !== H || cached.weather !== scene.weather) {
@@ -73,6 +76,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
   if (!reduced) drawAmbient(ctx, s, ox, oy)
+  drawWorldMarkers(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
   ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
   ctx.restore()

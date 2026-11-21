@@ -13,6 +13,12 @@ export function setScene(s: GameState, index: number, announce: boolean, hooks: 
   index = Math.max(0, Math.min(SCENES.length - 1, index))
   if (index === s.currentScene && announce) return
   s.currentScene = index
+  s.events = []
+  s.nextEventAt = s.time + 6
+  s.sceneEnteredAt = s.time
+  s.challengeUntil = 0
+  s.challengePoint = null
+  s.hazardLastHitAt = -Infinity
   const hero = s.hero
   if (!announce || !hero) return
   const scene = SCENES[index]!

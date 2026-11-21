@@ -22,6 +22,8 @@ describe('setScene', () => {
     const hooks = spyHooks()
     setScene(s, 1, true, hooks)
     expect(s.currentScene).toBe(1)
+    expect(s.nextEventAt).toBe(6)
+    expect(s.events).toHaveLength(0)
     expect(hooks.sfx).toHaveBeenCalledWith('scene')
     expect(hooks.message).toHaveBeenCalledWith('✦ 場景轉換：蒼雷聖域 · 暴風雷雨')
     expect(s.impactWaves[0]).toMatchObject({ size: 95, color: '#93c5ff' })

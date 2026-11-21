@@ -85,6 +85,9 @@ export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
 export interface MotionEcho { x: number; y: number; kind: JobId; frame: number; angle: number; life: number; max: number }
 
+export type WorldEventKind = 'chest' | 'shrine' | 'invasion' | 'blessing' | 'bargain' | 'challenge'
+export interface WorldEvent extends Point { id: number; kind: WorldEventKind; expiresAt: number }
+
 /** Everything the original kept in IIFE-level `let`s that gameplay and rendering read. */
 export interface GameState {
   mode: GameMode
@@ -111,6 +114,14 @@ export interface GameState {
   cam: Point
   levelQueue: number
   currentScene: number
+  events: WorldEvent[]
+  eventSerial: number
+  nextEventAt: number
+  sceneEnteredAt: number
+  hazardLastHitAt: number
+  blessingUntil: number
+  challengeUntil: number
+  challengePoint: Point | null
   /** Viewport in CSS pixels (original `W`, `H`); spawn radius depends on it. */
   W: number
   H: number

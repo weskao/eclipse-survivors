@@ -1,5 +1,7 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { attack, hit, victoryConditionMet } from './combat'
+import { tickWorld } from './events'
+import { resolveObstacleCollision } from './world'
 import { tickEnemies, tickEnemyProjectiles } from './enemies/ai'
 import { dist, minmax } from './math'
 import { moveHero } from './movement'
@@ -138,16 +140,25 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
   tickSpawning(s, dt, hooks)
   moveHero(s, input, dt)
+  const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
+  hero.x = free.x; hero.y = free.y
   if (hero.attack <= 0) {
     attack(s, hooks)
     hero.attack = hero.delay
   }
   tickEnemies(s, dt, hooks)
+  for (const e of s.mobs) {
+    if (e.hp <= 0) continue
+    const safe = resolveObstacleCollision(s.currentScene, e.x, e.y, e.r * 0.65)
+    e.x = safe.x; e.y = safe.y
+  }
   tickEnemyProjectiles(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
   tickSkills(s, dt, hooks)
   moveShots(s, hero, dt, hooks)
   collectStars(s, hero, dt, hooks)
+  tickWorld(s, dt, hooks)
+  if (hero.hp <= 0 || s.mode !== 'play') return
   if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * 0.9 * dt)
   ageEffects(s, hero, dt)
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)
