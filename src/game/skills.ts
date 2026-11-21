@@ -14,7 +14,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
   const sk = hero.skills
 
   if (sk.orb) {
-    const n = Math.min(sk.orb + 1, 6)
+    const n = Math.min(sk.orb + 1 + (hero.evolutions['blade-tempest'] ? 2 : 0), 8)
     for (let k = 0; k < n; k++) {
       const a = s.worldClock * 2.7 + (k * TAU) / n
       const ox = hero.x + Math.cos(a) * 71
