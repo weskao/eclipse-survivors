@@ -18,7 +18,7 @@ export interface WeaponRig {
 const clamp = (v: number): number => Math.max(0, Math.min(1, v))
 const ease = (v: number): number => { const t = clamp(v); return t * t * (3 - 2 * t) }
 
-/** Two rigid bone lengths, a joint that bends, and an unreachable-target clamp. */
+/** Solve the elbow geometrically, retaining both rigid bone lengths. */
 function elbowFor(shoulder: Point, hand: Point, upper: number, fore: number, bend: 1 | -1): Point {
   const dx = hand.x - shoulder.x
   const dy = hand.y - shoulder.y
@@ -31,41 +31,54 @@ function elbowFor(shoulder: Point, hand: Point, upper: number, fore: number, ben
   return { x: shoulder.x + ux * along - uy * away, y: shoulder.y + uy * along + ux * away }
 }
 
-/** All points use right-facing screen coordinates (the renderer mirrors exactly once). */
+/**
+ * Reference artwork: knight sword LEFT; ranger bow RIGHT; wizard staff LEFT,
+ * spell-emitting hand RIGHT. Coordinates are right-facing and relative to feet.
+ * A negative world-facing direction is mirrored once by drawCharacter.
+ */
 export function sampleWeaponRig(job: JobId, hero: Hero, anim: HeroAnimation): WeaponRig {
   const action = !anim.reducedMotion && (anim.pose === 'attack' || anim.pose === 'cast')
   const phase = action ? clamp(anim.phase) : 1
   const aim = Math.atan2(Math.sin(hero.aimAngle), Math.cos(hero.aimAngle) * hero.face)
   const pulse = action ? Math.sin(Math.PI * phase) : 0
-  const shoulder: Point = { x: 10 + (job === 'knight' ? 0 : pulse * 4), y: -81 - pulse * 2 }
+  const rightHandWeapon = job === 'ranger'
+  const shoulder: Point = rightHandWeapon
+    ? { x: 10 + pulse * 3, y: -81 - pulse * 2 }
+    : { x: -15, y: -80 - pulse * 2 }
   const upperLength = 25
   const foreLength = 26
-  let hand: Point = getFiringOrigin(job, 1)
+  const restHand: Point = job === 'ranger' ? getFiringOrigin('ranger', 1)
+    : job === 'wizard' ? { x: -29, y: -56 } : { x: -29, y: -54 }
+  let hand: Point = restHand
   let bladeAngle = aim
 
   if (job === 'knight' && action) {
-    // Raise the arm for anticipation, strike through the aim direction, then recover.
-    const turn = -1.18 + 2.13 * ease((phase - 0.08) / 0.68) + aim * 0.32
-    hand = { x: shoulder.x + Math.cos(turn) * 35, y: shoulder.y + Math.sin(turn) * 35 }
-    bladeAngle = turn - 0.67
+    // A cross-body cut around the LEFT shoulder; continuity at start and end
+    // avoids teleporting the sword between consecutive combat cycles.
+    const restAngle = Math.atan2(restHand.y + 80, restHand.x + 15)
+    const stroke = phase < 0.6 ? ease(phase / 0.6) : 1 - ease((phase - 0.6) / 0.4)
+    const turn = restAngle - stroke * (1.8 - aim * 0.20)
+    const reach = Math.hypot(restHand.x + 15, restHand.y + 80)
+    hand = { x: shoulder.x + Math.cos(turn) * reach, y: shoulder.y + Math.sin(turn) * reach }
+    bladeAngle += turn - restAngle
   } else if (job === 'wizard' && action) {
-    // Staff hand stays at the spell emission point; the elbow and shoulder drive the thrust.
-    shoulder.x += Math.sin(phase * Math.PI * 1.5) * 3
-    bladeAngle = aim + (1 - ease(phase)) * -0.55
+    // The staff rises and thrusts; the OTHER hand keeps the spell origin fixed.
+    hand = { x: restHand.x + pulse * 13, y: restHand.y - pulse * 15 }
+    bladeAngle -= (1 - ease(phase)) * 0.35
   } else if (job === 'ranger' && action) {
-    // Release and follow-through, keeping the drawn bow grip and arrow exit coincident.
+    // The bow hand is fixed; recoil and string tension change the arm joints.
     shoulder.y -= Math.sin(phase * Math.PI * 1.5) * 3
   }
 
-  const supportShoulder: Point = { x: -13, y: -82 }
+  const supportShoulder: Point = { x: rightHandWeapon ? -13 : 12, y: -82 + pulse * 2 }
   const supportHand: Point = job === 'ranger'
-    ? { x: 22 - pulse * 17, y: -60 + pulse * 4 }
+    ? { x: -18 + pulse * 13, y: -60 - pulse * 4 }
     : job === 'wizard'
-      ? { x: -32 + pulse * 7, y: -60 - pulse * 10 }
-      : { x: -28 + pulse * 5, y: -63 - pulse * 8 }
+      ? getFiringOrigin('wizard', 1)
+      : { x: 29 - pulse * 5, y: -63 - pulse * 7 }
   return {
-    shoulder, elbow: elbowFor(shoulder, hand, upperLength, foreLength, -1), hand,
-    supportShoulder, supportElbow: elbowFor(supportShoulder, supportHand, 24, 27, 1), supportHand,
+    shoulder, elbow: elbowFor(shoulder, hand, upperLength, foreLength, rightHandWeapon ? -1 : 1), hand,
+    supportShoulder, supportElbow: elbowFor(supportShoulder, supportHand, 24, 27, rightHandWeapon ? 1 : -1), supportHand,
     upperLength, foreLength, aim, bladeAngle,
   }
 }

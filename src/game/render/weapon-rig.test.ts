@@ -65,7 +65,7 @@ describe('physical two-bone animation', () => {
     expect(release.elbow).not.toEqual(windup.elbow)
   })
 
-  it('aims the wizard and ranger in the same facing-local coordinates as the shot origin', () => {
+  it('matches the real bow grip or wizard casting hand to the shot origin', () => {
     for (const job of ['ranger', 'wizard'] as const) {
       const s = setup(job)
       const hero = s.hero!
@@ -74,8 +74,9 @@ describe('physical two-bone animation', () => {
       hero.aimAngle = Math.PI * 0.75
       const rig = sampleWeaponRig(job, hero, sampleHeroAnimation(s, hero))
       const origin = getFiringOrigin(job, hero.face)
-      expect(rig.hand.x * hero.face).toBeCloseTo(origin.x)
-      expect(rig.hand.y).toBeCloseTo(origin.y)
+      const emitter = job === 'wizard' ? rig.supportHand : rig.hand
+      expect(emitter.x * hero.face).toBeCloseTo(origin.x)
+      expect(emitter.y).toBeCloseTo(origin.y)
       expect(Math.cos(rig.aim)).toBeGreaterThan(0)
     }
   })

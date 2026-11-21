@@ -62,20 +62,27 @@ export function drawRigSprite(
     for (let col = 0; col < columns; col++) {
       const u = (col + 0.5) / columns
       const side = 1 - u * 2
-      // Localized continuous skin weights, never a duplicate arm pasted on top.
-      const right = ease((u - 0.53) / 0.23) * ease((v - 0.18) / 0.15)
+      // The image's weapon and casting arms occupy DIFFERENT sides by hero.
+      // Skin original pixels once, so no extra sword / duplicate bow appears.
+      const right = ease((u - 0.53) / 0.23) * ease((v - 0.16) / 0.15)
         * (1 - ease((v - 0.77) / 0.17))
-      const wrist = ease((u - 0.70) / 0.24)
-      const weapon = ease((u - 0.80) / 0.18) * (1 - ease((v - 0.61) / 0.23))
       const leftArm = (1 - ease((u - 0.19) / 0.25)) * ease((v - 0.20) / 0.16)
         * (1 - ease((v - 0.73) / 0.15))
-      const leftWrist = 1 - ease((u - 0.14) / 0.27)
-      let dx = right * (elbowX * (1 - wrist) + wristX * wrist) + weapon * wristX * 0.35
-        + leftArm * (supportElbowX * (1 - leftWrist) + supportX * leftWrist) * 0.55
-      let dy = right * (elbowY * (1 - wrist) + wristY * wrist) + weapon * wristY * 0.35
-        + leftArm * (supportElbowY * (1 - leftWrist) + supportY * leftWrist) * 0.55
-      const rotation = right * (upperTurn * (1 - wrist) + bladeTurn * wrist) * 0.55
-        + weapon * bladeTurn * 0.28 + leftArm * supportTurn * 0.35
+      const mainRight = job === 'ranger'
+      const mainWeight = mainRight ? right : leftArm
+      const supportWeight = mainRight ? leftArm : right
+      const mainWrist = mainRight ? ease((u - 0.70) / 0.24) : 1 - ease((u - 0.14) / 0.27)
+      const supportWrist = mainRight ? 1 - ease((u - 0.14) / 0.27) : ease((u - 0.70) / 0.24)
+      const weapon = mainRight
+        ? ease((u - 0.71) / 0.23) * ease((v - 0.08) / 0.13) * (1 - ease((v - 0.86) / 0.12))
+        : (1 - ease((u - (job === 'wizard' ? 0.32 : 0.20)) / 0.21))
+          * (job === 'wizard' ? 1 : ease((v - 0.26) / 0.17))
+      let dx = mainWeight * (elbowX * (1 - mainWrist) + wristX * mainWrist) + weapon * wristX * 0.35
+        + supportWeight * (supportElbowX * (1 - supportWrist) + supportX * supportWrist) * 0.55
+      let dy = mainWeight * (elbowY * (1 - mainWrist) + wristY * mainWrist) + weapon * wristY * 0.35
+        + supportWeight * (supportElbowY * (1 - supportWrist) + supportY * supportWrist) * 0.55
+      const rotation = mainWeight * (upperTurn * (1 - mainWrist) + bladeTurn * mainWrist) * 0.55
+        + weapon * bladeTurn * 0.28 + supportWeight * supportTurn * 0.35
 
       if (anim.pose === 'run') {
         dx += legs * side * walk * 4.3 - chest * walk * 1.6
@@ -133,6 +140,10 @@ function drawPoseAccents(
       ctx.fillStyle = i % 2 ? '#c5ecff' : '#e7ceff'
       ctx.fillRect(18 + Math.cos(a) * 20, Math.sin(a) * 10, 2.5, 2.5)
     }
+    ctx.restore()
+    ctx.save()
+    ctx.globalAlpha = power * 0.6; ctx.strokeStyle = '#d5b6ff'; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.arc(rig.hand.x, rig.hand.y, 13, rig.bladeAngle - 1, rig.bladeAngle + 0.7); ctx.stroke()
     ctx.restore()
   } else if (anim.pose === 'attack' && kind === 'ranger') {
     const grip = getFiringOrigin('ranger', 1)
