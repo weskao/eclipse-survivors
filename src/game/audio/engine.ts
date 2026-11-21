@@ -71,7 +71,7 @@ const defaultStorage = (): SettingsStorage | null => {
 
 const MUSIC_GAIN = 0.65
 const MAX_SFX_PER_100MS = 8
-const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'hurt', 'boss', 'bossDefeat', 'victory', 'defeat'])
+const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'boss', 'bossDefeat', 'victory', 'defeat'])
 
 export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const { bgm } = opts
