@@ -65,6 +65,15 @@ def capture(browser, url, name, width, height, mobile):
         page.wait_for_function("window.__test?.mode === 'play'")
         page.evaluate("window.__test.level()")
         page.wait_for_function("window.__test?.mode === 'level'")
+        page.wait_for_function("document.querySelectorAll('#level.active .upgrade').length === 3")
+        page.wait_for_timeout(550)  # Ensure entrance animations and loaded artwork have settled.
+        if height <= 500:
+            cards = page.locator("#level.active .upgrade").evaluate_all(
+                "(nodes) => nodes.map((node) => { const r = node.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; })"
+            )
+            assert all(card["top"] >= 0 and card["bottom"] <= height for card in cards), (
+                f"{name}: upgrade options extend outside the short landscape viewport: {cards}"
+            )
         page.screenshot(path=str(OUTPUT / f"{name}-level-up.png"), animations="disabled")
         assert not errors, f"{name}: browser errors: {errors[:3]}"
     finally:
