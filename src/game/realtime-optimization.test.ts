@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { nearbyHazards } from './world'
 import { createHero, createState } from './state'
 import { tickSkills } from './skills'
-import { drawAmbient } from './render/environment'
+import { tickEnemies } from './enemies/ai'
+import { nearestAlive } from './combat'
+import { step } from './step'
+import { drawAmbient, softGlow } from './render/environment'
 import { createFakeCtx } from './render/fakes'
 import type { GameHooks, Mob } from './types'
 
@@ -58,4 +61,66 @@ describe('realtime computation budgets', () => {
       sin.mockRestore()
     }
   })
+  it('sorts nearest enemies by hitbox-edge distance without recomputing distance on each comparison', () => {
+    const hero = createHero('knight')
+    const mobs = Array.from({ length: 130 }, (_, i) => mob(150 + ((i * 53) % 130) * 6, i % 3))
+    mobs[0]!.hp = 0
+    const hypot = vi.spyOn(Math, 'hypot')
+    try {
+      const sorted = nearestAlive(mobs, hero)
+      expect(sorted).toHaveLength(129)
+      expect(sorted[0]).toBe(mobs.slice(1).reduce((a, b) =>
+        Math.hypot(a.x - hero.x, a.y - hero.y) - a.r <
+        Math.hypot(b.x - hero.x, b.y - hero.y) - b.r ? a : b))
+      expect(hypot.mock.calls.length).toBeLessThan(150)
+    } finally {
+      hypot.mockRestore()
+    }
+  })
+
+  it('updates every distant enemy with at most one distance root per movement step', () => {
+    const s = createState()
+    s.hero = createHero('knight')
+    s.mode = 'play'
+    s.mobs = Array.from({ length: 130 }, (_, i) => ({ ...mob(600 + i * 2, 40), speed: 90 }))
+    const hypot = vi.spyOn(Math, 'hypot')
+    try {
+      tickEnemies(s, 1 / 60, hooks)
+      expect(s.mobs.every(e => e.x < 600 + s.mobs.indexOf(e) * 2)).toBe(true)
+      expect(hypot.mock.calls.length).toBeLessThan(150)
+    } finally {
+      hypot.mockRestore()
+    }
+  })
+
+  it('does not take an additional root per enemy just for distant-mob despawn checks', () => {
+    const s = createState()
+    s.hero = createHero('knight')
+    s.hero.attack = 1000
+    s.hero.inv = 1000
+    s.mode = 'play'
+    s.W = 960
+    s.H = 540
+    s.spawnT = 1000
+    s.mobs = Array.from({ length: 130 }, (_, i) => ({ ...mob(600 + i * 2, 40), speed: 90 }))
+    const hypot = vi.spyOn(Math, 'hypot')
+    try {
+      step(s, 1 / 60, { x: 0, y: 0 }, hooks)
+      expect(s.mobs).toHaveLength(130)
+      expect(hypot.mock.calls.length).toBeLessThan(220)
+    } finally {
+      hypot.mockRestore()
+    }
+  })
+
+  it('reuses a soft glow gradient when equivalent glows move onscreen', () => {
+    const { ctx } = createFakeCtx()
+    const original = ctx.createRadialGradient
+    let creations = 0
+    ctx.createRadialGradient = (...args) => { creations++; return original(...args) }
+    softGlow(ctx, 10, 20, 46, '#ffffff', 0.4)
+    softGlow(ctx, 90, 60, 46, '#ffffff', 0.7)
+    expect(creations).toBe(1)
+  })
+
 })
