@@ -1,5 +1,14 @@
 ## [1.0.0] - 2026-11-22
 
+### 繁體中文重點
+
+- 完整整合七個功能分支，保留 Vue 3、TypeScript、Vite 架構。
+- 修正戰鬥重複擊殺獎勵與 Boss 勝利判定，加入遠程、精英敵人及多階段 Boss 戰。
+- 新增五種傳說技能進化、裝備中技能 HUD 與更公平的升級選項。
+- 加入四種場景、生態障礙與隨機事件，提供四種遊戲模式。
+- 加入持久化進度、成就、個人最佳紀錄、角色造型、圖鑑及詳細結算。
+- 改善角色動畫、音樂與音效中斷恢復、手機操作及渲染效能。
+
 ### Gameplay and balance
 - Integrate correctness fixes for single-award deaths, accurate projectile hits, boss-gated victories and class balance.
 - Add elite and ranged enemies, distinct AI actions, hit telegraphs and three-stage boss fights.
