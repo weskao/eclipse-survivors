@@ -36,6 +36,8 @@ export interface TestApi {
   readonly frames: number
   readonly scene: string
   forceAttack(): void
+  /** Browser-capture scenario, isolated from normal play. */
+  showcaseBoss(phase?: 1 | 2 | 3): void
 }
 
 declare global {
@@ -208,6 +210,25 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
       hero.strike = 0.29
       s.swipes.push({ x: hero.x, y: hero.y, a: 0, life: 0.29, max: 0.29, r: 75 })
       impact(s, hero.x + 80, hero.y, 45)
+    },
+    showcaseBoss(phase: 1 | 2 | 3 = 1) {
+      const hero = s.hero
+      if (!hero || s.mode !== 'play') return
+      s.mobs = []
+      s.enemyShots = []
+      s.time = 96
+      s.spawnT = 10000
+      s.bossSpawned = true
+      hero.inv = 120
+      hero.attack = 10000
+      spawnMob(s, 'boss')
+      const boss = s.mobs.find(e => e.type === 'boss')
+      if (!boss) return
+      boss.x = hero.x + 165
+      boss.y = hero.y - 8
+      boss.hp = boss.max * (phase === 1 ? 1 : phase === 2 ? 0.56 : 0.25)
+      s.cam.x = hero.x
+      s.cam.y = hero.y
     },
   }
 

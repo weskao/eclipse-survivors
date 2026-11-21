@@ -3,7 +3,7 @@ import { BOSS_TIME, MAX_MOBS, TAU } from './constants'
 import { rand, random } from './math'
 import type { GameHooks, GameState, MobType } from './types'
 
-const BASE_HP: Record<MobType, number> = { slime: 32, bat: 27, goblin: 55, golem: 155, boss: 2000 }
+const BASE_HP: Record<MobType, number> = { slime: 32, bat: 27, goblin: 55, golem: 155, warlock: 72, boss: 2000 }
 
 export function spawnMob(s: GameState, type?: 'boss'): void {
   const hero = s.hero
@@ -12,18 +12,20 @@ export function spawnMob(s: GameState, type?: 'boss'): void {
   const boss = type === 'boss'
   const r = Math.max(200, Math.min(s.W, s.H) * 0.38) + rand(15, 65)
   const a = rand(0, TAU)
-  const t: MobType = boss ? 'boss' : random() < 0.43 ? 'slime' : random() < 0.54 ? 'bat' : random() < 0.84 ? 'goblin' : 'golem'
+  const t: MobType = boss ? 'boss' : s.time >= 28 && random() < 0.12 ? 'warlock' : random() < 0.43 ? 'slime' : random() < 0.54 ? 'bat' : random() < 0.84 ? 'goblin' : 'golem'
   const lvl = Math.floor(s.time / 22)
-  const hp = BASE_HP[t] + lvl * (t === 'boss' ? 120 : 9)
+  const elite = !boss && s.time >= 42 && random() < 0.085
+  const hp = Math.round((BASE_HP[t] + lvl * (t === 'boss' ? 120 : 9)) * (elite ? 1.7 : 1))
   s.mobs.push({
     x: hero.x + Math.cos(a) * r,
     y: hero.y + Math.sin(a) * r,
     type: t,
     hp,
     max: hp,
-    r: t === 'boss' ? 48 : t === 'golem' ? 30 : t === 'goblin' ? 20 : 18,
-    speed: t === 'boss' ? 51 : t === 'bat' ? 108 + lvl * 3 : t === 'golem' ? 48 + lvl * 2 : t === 'goblin' ? 69 + lvl * 3 : 77 + lvl * 3,
-    dmg: t === 'boss' ? 32 : 11 + lvl * 2,
+    r: t === 'boss' ? 48 : t === 'golem' ? 30 : t === 'warlock' ? 22 : t === 'goblin' ? 20 : 18,
+    speed: t === 'boss' ? 51 : t === 'bat' ? 108 + lvl * 3 : t === 'golem' ? 48 + lvl * 2 : t === 'warlock' ? 66 + lvl * 2 : t === 'goblin' ? 69 + lvl * 3 : 77 + lvl * 3,
+    dmg: t === 'boss' ? 32 : Math.round((11 + lvl * 2) * (elite ? 1.35 : 1)),
+    elite,
     phase: rand(0, 8),
     hit: 0,
     slow: 0,

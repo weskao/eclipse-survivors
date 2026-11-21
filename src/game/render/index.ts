@@ -2,6 +2,7 @@ import type { Artwork } from '../art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
 import { drawAmbient, paintEnvironment } from './environment'
 import {
@@ -83,6 +84,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     return
   }
   drawStars(ctx, s, ox, oy, reduced)
+  drawEnemyTelegraphs(ctx, s, ox, oy)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   const objects = assets.depthOrder
   objects.length = 0
@@ -93,12 +95,14 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy)
+  drawEnemyProjectiles(ctx, s, ox, oy)
   drawOrbs(ctx, s, hero, ox, oy)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
   drawNumbers(ctx, s, ox, oy)
   drawVignette(ctx, s)
+  drawBossPhaseIndicator(ctx, s)
 }
 
 export function drawMiniMap(p: Ctx2D, s: GameState, assets: RenderAssets): void {

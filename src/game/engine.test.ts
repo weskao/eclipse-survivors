@@ -91,7 +91,7 @@ describe('engine commands fire the original cues', () => {
     engine.start()
     const hero = engine.state.hero!
     hero.hp = 1
-    engine.state.mobs = [{ x: hero.x, y: hero.y, type: 'slime', hp: 30, max: 30, r: 18, speed: 0, dmg: 50, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }]
+    engine.state.mobs = [{ x: hero.x, y: hero.y, type: 'slime', hp: 30, max: 30, r: 18, speed: 0, dmg: 50, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0, ai: { state: 'attack', timer: 0.1, attack: 'pounce', aimX: hero.x, aimY: hero.y, dirX: 0, dirY: 0, cycle: 0 } }]
     hero.attack = 10
     engine.advance(0.016)
     expect(engine.ui.mode).toBe('result')

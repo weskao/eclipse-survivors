@@ -130,7 +130,9 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
   const a = e.phase || s.worldClock
   if (e.type === 'slime') {
     const v = Math.sin(a * 2.2)
-    ctx.translate(0, Math.max(-5, -Math.abs(v) * 5))
+    const jumping = e.ai?.state === 'attack' && e.ai.attack === 'pounce'
+    const lift = jumping ? Math.sin(Math.PI * (1 - Math.max(0, e.ai!.timer) / 0.26)) * 20 : Math.abs(v) * 5
+    ctx.translate(0, -lift)
     ctx.scale(1 + v * 0.05, 1 - v * 0.07)
   } else if (e.type === 'bat') {
     ctx.translate(0, Math.sin(a * 1.9) * 9 - 4)
@@ -138,6 +140,8 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
   } else if (e.type === 'goblin') {
     ctx.rotate(Math.sin(a * 1.3) * 0.065)
     ctx.translate(Math.sin(a * 1.8) * 2, -Math.abs(Math.sin(a * 1.8)) * 2)
+  } else if (e.type === 'warlock') {
+    ctx.translate(0, Math.sin(a * 1.4) * 5 - 5)
   } else if (e.type === 'golem') {
     ctx.rotate(Math.sin(a * 0.6) * 0.02)
     ctx.scale(1 + Math.sin(a * 0.72) * 0.012, 1 - Math.sin(a * 0.72) * 0.015)
@@ -151,7 +155,7 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
 
 const DIMS: Record<string, [number, number]> = {
   knight: [108, 134], ranger: [111, 144], wizard: [117, 147], slime: [87, 75],
-  bat: [114, 92], goblin: [92, 108], golem: [139, 134], boss: [236, 246],
+  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [236, 246],
 }
 
 export function drawCharacter(
@@ -176,7 +180,7 @@ export function drawCharacter(
   ctx.ellipse(x + 5, y + 5, sx * 0.32 * (1 + 0.12 * move), sy * 0.095, 0, 0, TAU)
   ctx.fill()
   if (mob?.type === 'boss') {
-    // Contact-radius danger marker only: there is no boss wind-up event in the AI yet.
+    // The persistent boss footprint complements the timed, dodgeable AI telegraphs.
     ctx.strokeStyle = '#ed9e7155'; ctx.lineWidth = 2
     ctx.beginPath(); ctx.ellipse(x, y + 5, mob.r + 15, (mob.r + 15) * 0.48, 0, 0, TAU); ctx.stroke()
   }
@@ -193,9 +197,12 @@ export function drawCharacter(
   ctx.save(); ctx.translate(x, y)
   if (hero && hero.face < 0) ctx.scale(-1, 1)
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
+  if (mob && mob.elite) ctx.filter = 'hue-rotate(75deg) saturate(1.5) brightness(1.1)'
+  if (mob && mob.type === 'warlock') ctx.filter = 'hue-rotate(15deg) saturate(1.2)'
   if (mob && mob.hit > 0 && !reducedMotion) ctx.filter = 'brightness(1.3) sepia(.25)'
-  const im = art[kind]
-  const drawable = im && im.complete && im.naturalWidth ? im : sprites[kind === 'golem' ? 'goblin' : kind]
+  const im = art[kind === 'warlock' ? 'wizard' : kind]
+  const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
+  const drawable = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   if (drawable) {
     if (hero && anim) {
       drawRigSprite(ctx, drawable, sx, sy, hero, anim)

@@ -1,5 +1,6 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { attack, damageHero, hit, victoryConditionMet } from './combat'
+import { tickEnemies, tickEnemyProjectiles } from './enemies/ai'
 import { dist, minmax } from './math'
 import { moveHero } from './movement'
 import { addXp } from './progression'
@@ -25,24 +26,6 @@ function tickTimers(s: GameState, hero: Hero, dt: number): void {
   hero.strike = Math.max(0, hero.strike - dt)
   hero.levelAnim = Math.max(0, hero.levelAnim - dt * 0.9)
   s.cameraKick = Math.max(0, s.cameraKick - dt * 27)
-}
-
-function moveMobs(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
-  for (const e of s.mobs) {
-    if (e.hp <= 0) continue
-    const dx = hero.x - e.x
-    const dy = hero.y - e.y
-    const d = Math.max(1, dist(dx, dy))
-    e.stagger = Math.max(0, e.stagger - dt)
-    e.slow = Math.max(0, e.slow - dt)
-    const speedFactor = (e.stagger > 0 ? 0.23 : 1) * (e.slow > 0 ? 0.46 : 1)
-    const knockback = e.stagger > 0 ? (e.type === 'boss' ? 45 : 150) * dt : 0
-    e.x += (dx / d) * e.speed * dt * speedFactor + e.kx * knockback
-    e.y += (dy / d) * e.speed * dt * speedFactor + e.ky * knockback
-    e.phase += dt * 5
-    e.hit -= dt
-    if (dist(e.x - hero.x, e.y - hero.y) < e.r + 15) damageHero(s, e.dmg, hooks)
-  }
 }
 
 function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
@@ -156,7 +139,8 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
     attack(s, hooks)
     hero.attack = hero.delay
   }
-  moveMobs(s, hero, dt, hooks)
+  tickEnemies(s, dt, hooks)
+  tickEnemyProjectiles(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
   tickSkills(s, dt, hooks)
   moveShots(s, hero, dt, hooks)
