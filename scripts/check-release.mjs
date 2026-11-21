@@ -1,38 +1,39 @@
-import { readFileSync } from 'node:fs';
-import { Script } from 'node:vm';
-import assert from 'node:assert/strict';
+// Static checks on the built site (run after `pnpm build`): local-only assets, relative URLs, bundled BGM.
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import assert from 'node:assert/strict'
 
-const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-assert.match(html, /<!doctype html>/i, 'index.html must be an HTML document');
-assert.match(html, /id="start"/, 'start control is required');
-assert.match(html, /<h1 class="game-title">[\s\S]*?ECLIPSE[\s\S]*?SURVIVORS[\s\S]*?<\/h1>/,
-  'the character selection screen must show the Eclipse Survivors game title');
-assert.match(html, /<svg[^>]*class="menu-scene-art"/, 'the menu must contain original illustrated scenery');
-assert.match(html, /id="heroSpotlight"/, 'selected hero must have a showcase image');
-assert.match(html, /id="spotlightName"/, 'selected hero must have a readable name');
-assert.match(html, /\$\('heroSpotlight'\)\.src=artSources\[choice\]/, 'switching classes must refresh spotlight art');
-assert.match(html, /x\.setAttribute\('aria-pressed',String\(selected\)\)/, 'switching classes must refresh the accessibility state');
-assert.match(html, /aria-pressed="true"/, 'selected hero button must expose its selection state');
-assert.match(html, /prefers-reduced-motion/, 'decorative animations must respect reduced-motion preferences');
-for (const job of ['knight', 'ranger', 'wizard']) {
-  assert.match(html, new RegExp(`data-job="${job}"`), `${job} must remain selectable`);
-}
-assert.match(html, /id="game"/, 'game canvas is required');
-assert.match(html, /id="upgrades"/, 'upgrade UI is required');
-assert.match(html, /id="music"/, 'music control is required');
-assert.match(html, /id="sfx"/, 'sound effects toggle is required');
-assert.match(html, /id="menuSfx"/, 'menu sound effects toggle is required');
-const changelog = readFileSync(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
-const currentVersion = changelog.match(/^## \[([0-9]+\.[0-9]+\.[0-9]+)\]/m)?.[1];
-assert.ok(currentVersion, 'CHANGELOG must declare a version');
-assert.match(html, new RegExp('id="gameVersion"[^>]*>v' + currentVersion.replace(/\./g, '\\.') + '<'),
-  'menu version must match the current published changelog version');
-assert.match(html, /audio\/mpeg|audio\/mp3|data:audio/i, 'music must be embedded for offline play');
-const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
-assert.equal(scripts.length, 1, 'the self-contained game must have one inline game script');
-new Script(scripts[0][1], { filename: 'index.html:inline.js' });
+const dist = new URL('../dist/', import.meta.url)
+assert.ok(existsSync(new URL('index.html', dist)), 'dist/index.html missing: run `pnpm build` first')
+const html = readFileSync(new URL('index.html', dist), 'utf8')
+assert.match(html, /<!doctype html>/i, 'index.html must be an HTML document')
+assert.match(html, /<div id="app">/, 'Vue mount point is required')
+assert.match(html, /<script type="module"[^>]+src="\.\/assets\/[^"]+\.js"/, 'game bundle must be a relative module script')
 assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\s*=\s*["'](?:https?:)?\/\//i,
-  'release must not rely on third-party scripts/images/music');
+  'release must not rely on third-party scripts/images/music')
 assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\s*=\s*["']\//i,
-  'site must work at /eclipse-survivors/, not depend on root-absolute asset paths');
-console.log('Static release checks passed: entry point, UI, offline audio, current version, inline JS syntax and relative URLs.');
+  'site must work at /eclipse-survivors/, not depend on root-absolute asset paths')
+
+const files = readdirSync(new URL('assets/', dist))
+const js = files.filter(f => f.endsWith('.js')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
+const css = files.filter(f => f.endsWith('.css')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
+const mp3 = files.find(f => /^bgm-.*\.mp3$/.test(f))
+assert.ok(mp3, 'background music must ship as a local mp3 file')
+assert.ok(js.includes(mp3), 'the game bundle must reference the bundled mp3')
+for (const art of ['knight', 'ranger', 'wizard', 'slime', 'bat', 'goblin', 'golem', 'boss', 'ground', 'courtyard']) {
+  assert.ok(files.some(f => f.startsWith(`${art}-`) && f.endsWith('.webp')), `${art} art must be bundled locally`)
+}
+assert.doesNotMatch(js, /\bimport\s*\(\s*["']https?:|from\s*["']https?:/, 'no remote module imports')
+assert.doesNotMatch(css, /url\(\s*["']?(?:https?:)?\/\//, 'no remote CSS assets (fonts/images)')
+assert.ok(existsSync(new URL('manifest.webmanifest', dist)), 'manifest must ship with the site')
+assert.ok(existsSync(new URL('assets/icon-192.png', dist)), 'manifest icons must ship with the site')
+// Every local <link href> and the linked manifest's icon srcs must resolve inside dist/.
+for (const [, href] of html.matchAll(/<link\b[^>]*\bhref="(?!https?:)([^"?#]+)/g)) {
+  assert.ok(existsSync(new URL(href, dist)), `linked file ${href} is missing from dist/`)
+}
+const manifestHref = html.match(/<link\b[^>]*\brel="manifest"[^>]*\bhref="([^"]+)"/)?.[1]
+assert.ok(manifestHref, 'index.html must link the web manifest')
+const manifestUrl = new URL(manifestHref, dist)
+for (const { src } of JSON.parse(readFileSync(manifestUrl, 'utf8')).icons) {
+  assert.ok(existsSync(new URL(src, manifestUrl)), `manifest icon ${src} does not resolve next to ${manifestHref}`)
+}
+console.log('Release checks passed: relative module entry, local art + mp3, no remote URLs, manifest + icons.')

@@ -29,24 +29,37 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      # ubuntu-latest ships Node, so no setup-node step is needed.
-      - name: Validate entry point, game logic and offline audio
+      # pnpm version is read from the packageManager field in package.json.
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck and unit tests
         run: |
-          node scripts/check-release.mjs
-          node --test tests/audio-ui.test.mjs
+          pnpm typecheck
+          pnpm test
+      - name: Build static site
+        run: pnpm build
+      - name: Validate release metadata and built output
+        run: pnpm check-release
       - name: Check branded assets and actual gameplay screenshots
         run: |
-          test -s assets/icon-192.png
-          test -s assets/apple-touch-icon.png
-          test -s assets/og-cover.png
-          test -s assets/screenshots/gameplay.webp
-          test -s assets/screenshots/mobile.webp
-          test -s assets/screenshots/upgrade.webp
-      - name: Assemble site
-        run: mkdir site && cp -r index.html manifest.webmanifest assets site/ && touch site/.nojekyll
+          test -s dist/index.html
+          test -s dist/manifest.webmanifest
+          test -s dist/assets/icon-192.png
+          test -s dist/assets/apple-touch-icon.png
+          test -s dist/assets/og-cover.png
+          test -s dist/assets/screenshots/gameplay.webp
+          test -s dist/assets/screenshots/mobile.webp
+          test -s dist/assets/screenshots/upgrade.webp
+      - name: Disable Jekyll processing
+        run: touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: dist
       - uses: actions/deploy-pages@v4
         id: deployment
       - name: Verify the public game URL
@@ -54,7 +67,8 @@ jobs:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           for attempt in 1 2 3 4 5 6; do
-            if curl -fsSL "$PAGE_URL" | grep -q 'id="start"'; then
+            # The game UI renders client-side; the static shell always carries the Vue mount point.
+            if curl -fsSL "$PAGE_URL" | grep -q 'id="app"'; then
               echo "Published game verified: $PAGE_URL"; exit 0
             fi
             sleep 10
