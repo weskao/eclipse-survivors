@@ -1,3 +1,8 @@
+## [0.0.3] - 2026-11-21
+
+### ⚙️ Miscellaneous Tasks
+
+- Rename project to eclipse-survivors
 ## [0.0.2] - 2026-11-21
 
 ### 🚀 Features
