@@ -64,6 +64,16 @@ describe('mobile interruption and recovery', () => {
 })
 
 describe('adaptive battle audio and allocation bounds', () => {
+  it('layers restrained combat percussion over MP3 without duplicating the full melody', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.setCombatIntensity('combat')
+    audio.tick('play')
+    expect(ctx.oscillators).toHaveLength(1)
+    expect(ctx.oscillators[0]!.frequency.value).toBeCloseTo(440 * 2 ** ((36 - 69) / 12))
+  })
+
   it('boss mode adds music-layer notes even over a playing MP3, calm mode does not', () => {
     const audio = make()
     audio.wake()
