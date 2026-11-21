@@ -20,6 +20,13 @@ for (const job of ['knight', 'ranger', 'wizard']) {
 assert.match(html, /id="game"/, 'game canvas is required');
 assert.match(html, /id="upgrades"/, 'upgrade UI is required');
 assert.match(html, /id="music"/, 'music control is required');
+assert.match(html, /id="sfx"/, 'sound effects toggle is required');
+assert.match(html, /id="menuSfx"/, 'menu sound effects toggle is required');
+const changelog = readFileSync(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
+const currentVersion = changelog.match(/^## \\[([0-9]+\\.[0-9]+\\.[0-9]+)\\]/m)?.[1];
+assert.ok(currentVersion, 'CHANGELOG must declare a version');
+assert.match(html, new RegExp('id="gameVersion"[^>]*>v' + currentVersion.replace(/\\./g, '\\\\.') + '<'),
+  'menu version must match the current published changelog version');
 assert.match(html, /audio\/mpeg|audio\/mp3|data:audio/i, 'music must be embedded for offline play');
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
 assert.equal(scripts.length, 1, 'the self-contained game must have one inline game script');
@@ -28,4 +35,4 @@ assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\
   'release must not rely on third-party scripts/images/music');
 assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\s*=\s*["']\//i,
   'site must work at /eclipse-survivors/, not depend on root-absolute asset paths');
-console.log('Static release checks passed: entry point, UI, offline audio, inline JS syntax and relative URLs.');
+console.log('Static release checks passed: entry point, UI, offline audio, current version, inline JS syntax and relative URLs.');
