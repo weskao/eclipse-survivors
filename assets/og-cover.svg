@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title">
+<title id="title">Eclipse Survivors – fantasy survival action cover artwork</title><defs>
+<linearGradient id="night" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#070e1c"/><stop offset=".55" stop-color="#16334d"/><stop offset="1" stop-color="#34192a"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#d7e8eb"/><stop offset=".3" stop-color="#53667b"/><stop offset=".58" stop-color="#222b3c"/><stop offset=".82" stop-color="#95a9ba"/><stop offset="1" stop-color="#252739"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fff5c2"/><stop offset=".35" stop-color="#f6cb77"/><stop offset=".7" stop-color="#b67937"/><stop offset="1" stop-color="#f2d49c"/></linearGradient>
+<radialGradient id="sky"><stop stop-color="#4296b6" stop-opacity=".65"/><stop offset="1" stop-color="#0d1a34" stop-opacity="0"/></radialGradient>
+<radialGradient id="fire"><stop stop-color="#f69f51" stop-opacity=".8"/><stop offset="1" stop-color="#ea601e" stop-opacity="0"/></radialGradient>
+<filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="soft"><feGaussianBlur stdDeviation="23"/></filter>
+</defs>
+<rect width="1200" height="630" fill="url(#night)"/>
+<circle cx="834" cy="213" r="420" fill="url(#sky)"/><circle cx="1100" cy="434" r="310" fill="url(#fire)"/>
+<circle cx="1083" cy="94" r="69" fill="#d8e2e5" opacity=".21"/>
+<circle cx="41" cy="63" r="3" fill="#97e7ff" opacity=".6"/><circle cx="254" cy="212" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="467" cy="361" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="680" cy="510" r="1.25" fill="#97e7ff" opacity=".6"/><circle cx="893" cy="69" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="1106" cy="218" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="139" cy="367" r="3" fill="#97e7ff" opacity=".6"/><circle cx="352" cy="516" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="565" cy="75" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="778" cy="224" r="1.25" fill="#97e7ff" opacity=".6"/><circle cx="991" cy="373" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="24" cy="522" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="237" cy="81" r="3" fill="#97e7ff" opacity=".6"/><circle cx="450" cy="230" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="663" cy="379" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="876" cy="528" r="1.25" fill="#97e7ff" opacity=".6"/><circle cx="1089" cy="87" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="122" cy="236" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="335" cy="385" r="3" fill="#97e7ff" opacity=".6"/><circle cx="548" cy="534" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="761" cy="93" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="974" cy="242" r="1.25" fill="#97e7ff" opacity=".6"/><circle cx="7" cy="391" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="220" cy="540" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="433" cy="99" r="3" fill="#97e7ff" opacity=".6"/><circle cx="646" cy="248" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="859" cy="397" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="1072" cy="546" r="1.25" fill="#97e7ff" opacity=".6"/><circle cx="105" cy="105" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="318" cy="254" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="531" cy="403" r="3" fill="#97e7ff" opacity=".6"/><circle cx="744" cy="552" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="957" cy="111" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="1170" cy="260" r="1.25" fill="#97e7ff" opacity=".6"/><circle cx="203" cy="409" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="416" cy="558" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="629" cy="117" r="3" fill="#97e7ff" opacity=".6"/><circle cx="842" cy="266" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="1055" cy="415" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="88" cy="564" r="1.25" fill="#97e7ff" opacity=".6"/><circle cx="301" cy="123" r="1.25" fill="#f8d6a5" opacity=".42"/><circle cx="514" cy="272" r="1.25" fill="#f8d6a5" opacity=".42"/>
+<path d="M0 444 L130 291 188 359 287 216 420 400 532 262 704 425 826 247 931 345 1065 212 1200 351 1200 630 0 630Z" fill="#101c2d" opacity=".7"/>
+<path d="M-20 479 L107 408 159 466 282 367 370 448 483 388 633 480 721 388 819 452 921 346 1043 420 1139 328 1240 400 1240 630 -20 630Z" fill="#0b1924"/>
+<path d="M772 380 L794 281 838 281 848 380 894 380 894 191 912 155 928 191 928 380 949 380 949 236 971 205 996 236 996 380 1050 380 1050 293 1065 275 1081 293 1081 380 1106 380 1106 498 748 498 748 380Z" fill="#0a1421" opacity=".8"/>
+<path d="M0 552 C198 510 385 576 553 528 C721 478 936 587 1200 517 L1200 630 0 630Z" fill="#121923"/>
+<path d="M865 500 L776 250 762 260 826 528Z" fill="#b8c8d2" stroke="#d6b47e" stroke-width="8" opacity=".72"/>
+<g transform="translate(917 283) scale(1.27)"><g>
+<path d="M-140 210 Q-116 85 -64 68 L0 103 64 68 Q116 85 140 210 L103 286 -103 286Z" fill="url(#steel)" stroke="#d7bd89" stroke-width="8"/>
+<path d="M-125 139 L-53 104 0 165 53 104 125 139 98 201 0 245 -98 201Z" fill="#151f31" stroke="#c5ac81" stroke-width="7"/>
+<path d="M-126 138 Q-184 99 -201 169 L-171 241 -109 212 -78 162Z" fill="url(#steel)" stroke="#ecc68a" stroke-width="7"/>
+<path d="M126 138 Q184 99 201 169 L171 241 109 212 78 162Z" fill="url(#steel)" stroke="#ecc68a" stroke-width="7"/>
+<path d="M-92 187 Q-11 207 128 250 L218 339 Q86 304 -52 265Z" fill="#981e37" stroke="#ce6a55" stroke-width="4" opacity=".94"/>
+<path d="M-94 -39 Q-86 -119 -29 -145 L0 -168 29 -145 Q86 -119 94 -39 L84 46 43 106 -43 106 -84 46Z" fill="url(#steel)" stroke="#efca8e" stroke-width="10"/>
+<path d="M-80 -49 L-34 -104 0 -164 34 -104 80 -49 -48 -37Z" fill="#a3b6c0" opacity=".55"/>
+<path d="M0 -168 L-26 -102 0 -45 26 -102Z" fill="url(#gold)" stroke="#f8e2a1" stroke-width="4"/>
+<path d="M-82 -25 Q-39 -40 -8 -10 L-12 14 -76 3Z" fill="#101521" stroke="#dbb67d" stroke-width="5"/>
+<path d="M82 -25 Q39 -40 8 -10 L12 14 76 3Z" fill="#101521" stroke="#dbb67d" stroke-width="5"/>
+<path d="M-74 -4 L-12 6 -13 13 -73 17Z M74 -4 L12 6 13 13 73 17Z" fill="#ffc87e" filter="url(#glow)"/>
+<path d="M-56 38 L0 13 56 38 24 88 0 108 -24 88Z" fill="#172333" stroke="#d8b67c" stroke-width="6"/>
+<path d="M0 14 L-14 84 0 109 14 84Z" fill="url(#gold)"/>
+<path d="M-68 106 L-35 98 0 127 35 98 68 106 0 156Z" fill="#725f59" stroke="#f2cf92" stroke-width="5"/>
+<path d="M0 148 Q4.5 174.4 30 178 Q4.5 181.9 0 208 Q-4.5 181.9 -30 178 Q-4.5 174.4 0 148Z" fill="#f9d990"/>
+</g></g>
+<path d="M0 0 L716 0 703 630 0 630Z" fill="#06111b" opacity=".53"/>
+<path d="M63 88 L410 88" stroke="#c69b5b" stroke-width="2"/>
+<text x="64" y="71" fill="#ecd6ac" font-family="Georgia, serif" font-size="19" letter-spacing="6">FANTASY SURVIVAL ACTION</text>
+<text x="61" y="229" fill="#f9eddd" font-family="Georgia, serif" font-size="85" font-weight="bold" letter-spacing="-2">ECLIPSE</text>
+<text x="59" y="335" fill="url(#gold)" font-family="Georgia, serif" font-size="80" font-weight="bold" letter-spacing="-2">SURVIVORS</text>
+<path d="M63 370 L600 370" stroke="#d4ab68" stroke-width="3"/>
+<text x="65" y="423" fill="#d2e0e4" font-family="Arial, sans-serif" font-size="23" letter-spacing="2.1">CHOOSE YOUR HERO. SURVIVE THE NIGHT.</text>
+<rect x="65" y="461" width="329" height="67" rx="13" fill="#122432" stroke="#d8b77c" stroke-width="2"/>
+<text x="92" y="505" fill="#f0d6a6" font-family="Arial, sans-serif" font-size="24" font-weight="bold">PLAY FREE IN BROWSER</text>
+<text x="65" y="580" fill="#9ab2c5" font-family="Arial, sans-serif" font-size="20">Automatic combat · Evolving skills · Original music</text>
+<rect x="14" y="14" width="1172" height="602" rx="9" fill="none" stroke="#d6b478" stroke-opacity=".44" stroke-width="3"/>
+</svg>
