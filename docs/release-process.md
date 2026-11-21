@@ -41,8 +41,9 @@ The project currently uses **B. GitHub Actions** as its only deployment path. Op
 
 - **Source**: GitHub Actions
 - Workflow: `.github/workflows/release.yml`; a single job handles verification and deployment.
-- A push to `main` (the only deployment trigger) runs `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` in order. It checks the `dist/` entry point, `manifest.webmanifest`, icons, and screenshot assets; uploads `dist/` as a Pages artifact and deploys it; then confirms the public URL returns the game entry point (HTML containing `id="app"`).
-- A `v*` tag does not trigger deployment; `/release` creates version tags and GitHub Releases.
+- A push to `main` (or manual workflow dispatch) runs `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` in order. It checks the `dist/` entry point, `manifest.webmanifest`, icons, and screenshot assets; uploads `dist/` as a Pages artifact and deploys it; then confirms the public URL returns the game entry point (HTML containing `id="app"`).
+- A `v*` tag does not trigger Pages deployment. After a **successful** `main` push deployment and live-site verification, the same workflow automatically creates the `vX.Y.Z` tag and GitHub Release (only if absent). No `scripts/release.sh` file is required.
+- The upload-to-deploy handoff waits until the Pages artifact is visible to GitHub Actions. Avoid rerunning an old failed Pages workflow attempt: reruns can create duplicate `github-pages` artifacts. Use a fresh `main` run instead.
 - To redeploy manually: select **Actions → Verify and publish Eclipse Survivors → Run workflow**, and choose the `main` branch.
 
 ## Versioned release
@@ -52,9 +53,10 @@ The project currently uses **B. GitHub Actions** as its only deployment path. Op
    - Set the `version` in `package.json` to the upcoming release version (for example, `0.0.4`). Vite's `define` (`__APP_VERSION__`) displays this value in the version bar on the character selection screen.
    - The `version` in `package.json` must match the latest `## [x.y.z]` entry in `CHANGELOG.md`. A Vitest test enforces this, and `pnpm check-release` checks the built output in `dist/`.
    - Before committing, run `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` locally in that order, and ensure they all pass.
-3. Run `/release <version>` to commit the changelog, push `main` (triggering deployment), and create a tag and GitHub Release.
-4. Confirm that **Verify and publish Eclipse Survivors** succeeds for that `main` push.
-5. On both desktop and mobile, confirm that starting an adventure, movement, the upgrade menu, sound effects, and pause work correctly.
+3. Commit the version/changelog updates to `main`, after the full checks pass, without force-pushing. A push to `main` starts the deployment workflow; no PR is required for this release procedure.
+4. Confirm **Verify and publish Eclipse Survivors** has two successful jobs: **Verify and deploy game to GitHub Pages** and **Publish versioned GitHub Release**. The Release job runs only after the published game URL has been verified and only for a `main` push.
+5. Confirm the versioned GitHub Release and tag point to the deployed commit at <https://github.com/weskao/eclipse-survivors/releases>.
+6. On desktop and mobile, confirm starting an adventure, movement, the upgrade menu, sound effects, and pause work correctly.
 
 ## Troubleshooting
 
