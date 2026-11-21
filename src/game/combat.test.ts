@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { attack, damageHero, dash, hit, victoryConditionMet } from './combat'
+import { attack, damageHero, dash, hit, nearestAlive, victoryConditionMet } from './combat'
 import { DURATION, JOB } from './constants'
 import { seeded, setRandom } from './math'
 import { createHero, createState, resetRun } from './state'
@@ -261,5 +261,21 @@ describe('combat fairness regressions', () => {
     expect(s.bossSpawned).toBe(false)
     expect(s.kill).toBe(0)
     expect(s.hero!.inv).toBe(0)
+  })
+})
+
+describe('hitbox-based melee targeting', () => {
+  it('hits a boss whose near edge is in sword reach although its center is outside', () => {
+    const { s } = setup()
+    const boss = mob(150, 0, { type: 'boss', r: 48 })
+    s.mobs.push(boss)
+    attack(s, spyHooks())
+    expect(boss.hp).toBe(68)
+  })
+  it('prioritizes reachable enemy edges over center distance', () => {
+    const { s, hero } = setup()
+    const small = mob(105, 0)
+    const boss = mob(130, 0, { type: 'boss', r: 48 })
+    expect(nearestAlive([small, boss], hero)[0]).toBe(boss)
   })
 })

@@ -183,3 +183,32 @@ describe('simulation correctness regressions', () => {
     expect(hooks.end).toHaveBeenCalledWith(false)
   })
 })
+
+describe('projectile collision precision', () => {
+  it('strikes the first hitbox surface rather than the nearest center', () => {
+    const { s } = setup()
+    const small = mob(65, 0)
+    const boss = mob(88, 0, { type: 'boss', r: 48 })
+    s.mobs.push(small, boss)
+    s.shots.push({ x: 0, y: 0, vx: 540, vy: 0, life: 1, d: 22, kind: 'arrow', r: 5 })
+    step(s, 0.2, still, spyHooks())
+    expect(boss.hp).toBe(78)
+    expect(small.hp).toBe(100)
+  })
+  it('hits an overlapping target even when the projectile has zero velocity', () => {
+    const { s } = setup()
+    const target = mob(60, 0)
+    s.mobs.push(target)
+    s.shots.push({ x: 60, y: 0, vx: 0, vy: 0, life: 1, d: 22, kind: 'magic', r: 9 })
+    step(s, 0.016, still, spyHooks())
+    expect(target.hp).toBe(78)
+  })
+  it('can hit during the final fraction of a projectile lifetime', () => {
+    const { s } = setup()
+    const target = mob(20, 0)
+    s.mobs.push(target)
+    s.shots.push({ x: 0, y: 0, vx: 540, vy: 0, life: 0.05, d: 22, kind: 'arrow', r: 5 })
+    step(s, 0.2, still, spyHooks())
+    expect(target.hp).toBe(78)
+  })
+})
