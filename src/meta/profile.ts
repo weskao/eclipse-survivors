@@ -5,7 +5,7 @@ import type { CosmeticId, PermanentUpgrade, Profile, RunBest, RunRewards, RunSta
 
 export const SAVE_KEY = 'eclipse-survivors.profile.v2'
 const jobs: JobId[] = ['knight', 'ranger', 'wizard']
-const monsters: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'boss']
+const monsters: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'warlock', 'boss']
 const abilities: UpgradeId[] = ['damage', 'speed', 'haste', 'maxhp', 'multi', 'orb', 'magnet', 'heal', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain']
 const cosmetics: CosmeticId[] = ['knight-default', 'ranger-default', 'wizard-default', 'knight-gilded', 'ranger-moonlit', 'wizard-astral']
 const defaults: Record<JobId, CosmeticId> = { knight: 'knight-default', ranger: 'ranger-default', wizard: 'wizard-default' }

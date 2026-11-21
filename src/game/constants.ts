@@ -11,7 +11,7 @@ export const SCENE = { width: 2200, height: 1238 } as const
 export const JOB: Record<JobId, JobDef> = {
   knight: { label: '曙鋼騎士', hp: 175, speed: 190, damage: 32, delay: 0.57, range: 112 },
   ranger: { label: '夜痕遊俠', hp: 115, speed: 218, damage: 22, delay: 0.36, range: 430 },
-  wizard: { label: '虛空術士', hp: 110, speed: 196, damage: 39, delay: 0.68, range: 390 },
+  wizard: { label: '虛空術士', hp: 110, speed: 196, damage: 46, delay: 0.68, range: 390 },
 }
 export const JOB_IDS = Object.keys(JOB) as JobId[]
 

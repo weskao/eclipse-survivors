@@ -30,8 +30,8 @@ describe('enemy AI', () => {
     expect(e.x).toBe(35)
     expect(s.hero!.hp).toBe(s.hero!.max)
     tickEnemies(s, 0.1, h)
-    expect(e.x).toBeLessThan(35)
-    expect(e.x).toBeGreaterThan(0)
+    // After the jump lands, combat disperses the enemy to avoid overlapping contact damage.
+    expect(e.x).toBeGreaterThan(35)
     expect(s.hero!.hp).toBeLessThan(s.hero!.max)
     tickEnemies(s, 0.2, h)
     expect(e.ai?.state).toBe('recover')
