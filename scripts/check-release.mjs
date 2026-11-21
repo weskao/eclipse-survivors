@@ -10,6 +10,8 @@ assert.match(html, /<h1 class="game-title">[\s\S]*?ECLIPSE[\s\S]*?SURVIVORS[\s\S
 assert.match(html, /<svg[^>]*class="menu-scene-art"/, 'the menu must contain original illustrated scenery');
 assert.match(html, /id="heroSpotlight"/, 'selected hero must have a showcase image');
 assert.match(html, /id="spotlightName"/, 'selected hero must have a readable name');
+assert.match(html, /\$\('heroSpotlight'\)\.src=artSources\[choice\]/, 'switching classes must refresh spotlight art');
+assert.match(html, /x\.setAttribute\('aria-pressed',String\(selected\)\)/, 'switching classes must refresh the accessibility state');
 assert.match(html, /aria-pressed="true"/, 'selected hero button must expose its selection state');
 assert.match(html, /prefers-reduced-motion/, 'decorative animations must respect reduced-motion preferences');
 for (const job of ['knight', 'ranger', 'wizard']) {
