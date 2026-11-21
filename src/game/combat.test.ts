@@ -213,6 +213,8 @@ describe('combat fairness regressions', () => {
     expect(victoryConditionMet(s, 'survival')).toBe(true)
     expect(victoryConditionMet(s, 'boss')).toBe(false)
     s.bossDefeated = true
+    expect(victoryConditionMet(s)).toBe(false)
+    s.mobs[0]!.hp = 0
     expect(victoryConditionMet(s)).toBe(true)
     expect(victoryConditionMet(s, 'boss')).toBe(true)
     s.time = DURATION - 1

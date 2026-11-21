@@ -1,6 +1,7 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { burst, impact, pushEcho, zigzag } from './fx'
 import { dist, rand } from './math'
+import { DURATION } from './constants'
 import type { GameHooks, GameState, Hero, Mob } from './types'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
@@ -9,11 +10,11 @@ export const nearestAlive = (mobs: Mob[], hero: Hero): Mob[] =>
 
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
-  if (!hero) return
+  if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
   const boss = e.type === 'boss'
-  e.hp -= d
+  e.hp = Math.max(0, e.hp - d)
   e.hit = 0.16
-  e.stagger = Math.min(0.18, e.stagger + 0.07)
+  e.stagger = Math.min(0.22, e.stagger + (boss ? 0.04 : 0.12))
   const knock = dist(e.x - hero.x, e.y - hero.y) || 1
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
@@ -21,13 +22,14 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: 0.62, value: Math.round(d), boss })
   if (s.numberFx.length > 80) s.numberFx.shift()
   burst(s, e.x, e.y, '#fff3c4', 2)
-  if (e.hp <= 0) {
+  if (e.hp === 0) {
     s.kill++
     const value = boss ? 45 : e.type === 'golem' ? 9 : e.type === 'goblin' ? 5 : 3
     s.stars.push({ x: e.x, y: e.y, value, t: rand(0, 6) })
     burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
     if (boss) {
+      s.bossDefeated = true
       hooks.message('🏆 擊敗森林魔王！')
       impact(s, e.x, e.y, 210, '#ffdca4', 3)
     }
@@ -71,8 +73,10 @@ export function attack(s: GameState, hooks: GameHooks): void {
     hooks.sfx('knight')
   } else {
     const ranger = choice === 'ranger'
+    // Aim from the projectile origin, not the hero's feet.
+    const shotAngle = Math.atan2(target.y - (hero.y - 13), target.x - hero.x)
     for (let j = 0; j < multi; j++) {
-      const a = angle + (j - (multi - 1) / 2) * 0.18
+      const a = shotAngle + (j - (multi - 1) / 2) * 0.18
       const speed = ranger ? 540 : 340
       s.shots.push({
         x: hero.x, y: hero.y - 13, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
@@ -96,13 +100,27 @@ export function attack(s: GameState, hooks: GameHooks): void {
   }
 }
 
+/** Independent victory predicates for timed, boss-rush, and combined modes. */
+export function victoryConditionMet(
+  s: GameState,
+  rule: 'survival' | 'boss' | 'survival-boss' = 'survival-boss',
+): boolean {
+  if (!s.hero || s.hero.hp <= 0) return false
+  const survived = s.time >= DURATION
+  // Never mistake a despawned boss, an unspawned boss, or a second live boss for a kill.
+  const bossDefeated = s.bossDefeated && !s.mobs.some((e) => e.type === 'boss' && e.hp > 0)
+  if (rule === 'survival') return survived
+  if (rule === 'boss') return bossDefeated
+  return survived && bossDefeated
+}
+
 export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
-  if (!hero || hero.inv > 0 || hero.dash > 0) return
+  if (!hero || s.mode !== 'play' || hero.hp <= 0 || hero.inv > 0 || hero.dash > 0 || !Number.isFinite(n) || n <= 0) return
   const shield = hero.skills.shield ?? 0
   const reduce = 1 - Math.min(0.52, shield * 0.12)
-  hero.hp -= n * reduce
-  hero.inv = 0.8
+  hero.hp = Math.max(0, hero.hp - n * reduce)
+  hero.inv = 1
   s.cameraKick = Math.min(12, s.cameraKick + 4)
   impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
   if (shield) {
@@ -110,9 +128,25 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
     burst(s, hero.x, hero.y, '#bbdcff', 10)
   }
   burst(s, hero.x, hero.y, '#ff9d9e', 14)
-  hooks.sfx('hurt')
-  if (hero.hp <= 0) {
-    hero.hp = 0
-    hooks.end(false)
+  // Create breathing room after a contact hit, including when mobs overlap exactly.
+  for (const [i, e] of s.mobs.entries()) {
+    if (e.hp <= 0) continue
+    const dx = e.x - hero.x
+    const dy = e.y - hero.y
+    const distance = dist(dx, dy)
+    const boss = e.type === 'boss'
+    const clearance = e.r + 15 + (boss ? 10 : 30)
+    if (distance >= clearance) continue
+    const a = i * 2.4
+    const kx = distance > 0.001 ? dx / distance : Math.cos(a)
+    const ky = distance > 0.001 ? dy / distance : Math.sin(a)
+    const push = (clearance - distance) * (boss ? 0.45 : 1)
+    e.x += kx * push
+    e.y += ky * push
+    e.kx = kx
+    e.ky = ky
+    e.stagger = Math.max(e.stagger, boss ? 0.04 : 0.14)
   }
+  hooks.sfx('hurt')
+  if (hero.hp === 0) hooks.end(false)
 }
