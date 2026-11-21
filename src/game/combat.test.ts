@@ -227,7 +227,9 @@ describe('combat fairness regressions', () => {
     s.mobs.push(mob(100, 60))
     attack(s, spyHooks())
     const shot = s.shots[0]!
-    const travel = 100 / shot.vx
+    // Time to cross the enemy's x-coordinate is measured from the hand,
+    // not from the hero's ground-contact x-coordinate.
+    const travel = (100 - shot.x) / shot.vx
     expect(shot.y + shot.vy * travel).toBeCloseTo(60)
   })
   it('keeps all three roles distinct and wizard burst competitive with ranger', () => {
