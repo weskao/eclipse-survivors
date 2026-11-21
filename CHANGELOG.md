@@ -1,3 +1,54 @@
+## [0.1.0] - 2026-11-21
+
+### 🚀 Features
+
+- Cinematic Eclipse Survivors character selection
+- Cinematic menu audio, battle sound cues and current version
+- Add dark-fantasy menu soundtrack, gameplay audio cues and visible version
+
+### 🐛 Bug Fixes
+
+- Declare correct PNG MIME type for the in-game knight favicon
+- Show all three heroes in Eclipse Survivors social cover
+- Feature knight, ranger and mage in authentic OG cover art
+
+### 💼 Other
+
+- Generate authentic in-game app icons, social cover and gameplay screenshots
+- Use real in-game knight app icon and actual-game social preview
+- Use the actual knight PNG icon, not the unrelated SVG placeholder
+- Refresh authentic game icons, social image and gameplay captures
+- Refresh authentic game icons, social image and gameplay captures
+- Refresh authentic game icons, social image and gameplay captures
+- Refresh authentic game icons, social image and gameplay captures
+- Refresh authentic game icons, social image and gameplay captures
+
+### 📚 Documentation
+
+- Replace misleading concept art with actual desktop, mobile and level-up screenshots
+- Explain cinematic menu audio, controls and version label
+- Record menu soundtrack and gameplay SFX as unreleased
+- Include displayed game version in release SOP
+
+### 🧪 Testing
+
+- Require real in-game artwork for mobile icon and social cover
+- Cover menu version, soundtrack and event-specific audio
+- Correct test regexes before implementation
+- Fail releases when displayed game version diverges from changelog
+- Correctly parse semver from changelog for menu release guard
+- Require all three playable heroes on social cover
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix unsupported Playwright runner and export real-game visuals
+- Publish only when true screenshots and branded icons are available
+- Stop tracking retired mismatched SVG marketing assets
+- Remove obsolete non-game app icon SVG
+- Remove obsolete non-game OG artwork SVG
+- Validate standalone soundtrack and menu version
+- Enforce audio and version tests before publishing
+- Set menu version label to v0.1.0
 ## [Unreleased]
 
 ### 🎼 Audio / 音訊
