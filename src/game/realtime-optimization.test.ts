@@ -124,4 +124,81 @@ describe('realtime computation budgets', () => {
     expect(creations).toBe(1)
   })
 
+  it('does not measure distant XP crystals with square roots every tick', () => {
+    const s = createState()
+    s.hero = createHero('knight')
+    s.hero.attack = 1000
+    s.mode = 'play'
+    s.spawnT = 1000
+    s.W = 960
+    s.H = 540
+    s.stars = [
+      { x: 100, y: 0, t: 0, value: 3 },
+      ...Array.from({ length: 200 }, (_, i) => ({ x: 3000 + i * 50, y: 500, t: 0, value: 3 })),
+    ]
+    const hypot = vi.spyOn(Math, 'hypot')
+    try {
+      step(s, 1 / 60, { x: 0, y: 0 }, hooks)
+      expect(s.stars).toHaveLength(201)
+      expect(s.stars[0]!.x).toBeCloseTo(92.5)
+      expect(s.stars[1]!.x).toBe(3000)
+      expect(hypot.mock.calls.length).toBeLessThan(30)
+    } finally {
+      hypot.mockRestore()
+    }
+  })
+
+  it('keeps frost and blaze damage while skipping roots for far-away mobs', () => {
+    const s = createState()
+    s.hero = createHero('knight')
+    s.mode = 'play'
+    s.hero.skills.frost = 1
+    s.hero.skills.blaze = 1
+    const near = mob(90, 0)
+    s.mobs = [near, ...Array.from({ length: 129 }, (_, i) => mob(2000 + i * 50, 2000))]
+    const hypot = vi.spyOn(Math, 'hypot')
+    try {
+      tickSkills(s, 1 / 60, hooks)
+      expect(near.hp).toBeLessThan(100)
+      expect(s.mobs.slice(1).every(e => e.hp === 100)).toBe(true)
+      expect(hypot.mock.calls.length).toBeLessThan(20)
+    } finally {
+      hypot.mockRestore()
+    }
+  })
+
+  it('does not compute square roots for all splash candidates during meteor casts', () => {
+    const s = createState()
+    s.hero = createHero('knight')
+    s.mode = 'play'
+    s.hero.skills.meteor = 1
+    const near = mob(80, 0)
+    s.mobs = [near, ...Array.from({ length: 129 }, (_, i) => mob(2000 + i * 350, 300))]
+    const hypot = vi.spyOn(Math, 'hypot')
+    try {
+      tickSkills(s, 1 / 60, hooks)
+      expect(near.hp).toBeLessThan(100)
+      expect(hypot.mock.calls.length).toBeLessThan(160)
+    } finally {
+      hypot.mockRestore()
+    }
+  })
+
+  it('skips distant vortex falloff roots but retains nearby pulling', () => {
+    const s = createState()
+    s.hero = createHero('knight')
+    s.mode = 'play'
+    s.hero.skills.vortex = 1
+    const near = mob(100, 0)
+    s.mobs = [near, ...Array.from({ length: 129 }, (_, i) => mob(2000 + i * 50, 2000))]
+    const hypot = vi.spyOn(Math, 'hypot')
+    try {
+      tickSkills(s, 1 / 60, hooks)
+      expect(near.x).toBeLessThan(100)
+      expect(hypot.mock.calls.length).toBeLessThan(20)
+    } finally {
+      hypot.mockRestore()
+    }
+  })
+
 })
