@@ -1,3 +1,33 @@
+## [0.0.2] - 2026-11-21
+
+### 🚀 Features
+
+- Add installable browser game manifest and home-screen icons
+- Add mobile home-screen icon, web manifest and social preview metadata
+
+### 🐛 Bug Fixes
+
+- Keep scalable app-icon fallback available before PNG export
+
+### 💼 Other
+
+- Add scalable branded game icon
+- Add cinematic cover artwork for README and social
+- Export home-screen icons, social cover and true gameplay screenshots
+
+### 📚 Documentation
+
+- Present Eclipse Survivors as an original fantasy game
+- Polish bilingual changelog and release availability
+- Refresh Pages publishing options and GitHub About copy
+- English-first README with key art and real gameplay screenshot gallery
+
+### ⚙️ Miscellaneous Tasks
+
+- Generate and commit mobile icons, OG PNG and screenshots
+- Generate branding against current main and avoid stale-run push conflicts
+- Deploy Pages from a single main-push job
+- Publish manifest and icons with the game; document single deploy path
 # 更新紀錄 / Changelog
 
 這份更新紀錄描述已加入專案的功能。網站是否已公開發布，以 [GitHub Pages 部署狀態](https://github.com/weskao/survivor-game/actions) 為準。
