@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { mount } from '@vue/test-utils'
 import LevelUpOverlay from './LevelUpOverlay.vue'
+import GameHud from './GameHud.vue'
+import { emptyHud } from '../game/store'
 import { UP } from '../game/constants'
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path))
@@ -33,6 +35,19 @@ describe('generated WebP art integration', () => {
     const wrapper = mount(LevelUpOverlay, { props: { active: true, upgrades } })
     expect(wrapper.find('[data-up="damage"] .skill-art').attributes('src')).toContain('damage@3x.webp')
     expect(wrapper.find('[data-up="speed"] .skill-art').attributes('src')).toContain('speed.svg')
+  })
+
+  it('renders generated HUD skills from the atlas without fetching duplicate images', () => {
+    const skill = (id: 'frost' | 'speed') => ({
+      id, icon: '✶', title: id, rarity: 'rare' as const,
+      level: 1, maxLevel: 5, cooldown: 0, cooldownPct: 0, evolved: false,
+    })
+    const wrapper = mount(GameHud, { props: {
+      active: true, hud: { ...emptyHud(), skills: [skill('frost'), skill('speed')] },
+      choice: 'knight', musicOn: true, sfxOn: true, toastText: '', toastVisible: false,
+    } })
+    expect(wrapper.find('[data-skill="frost"] .skill-art').exists()).toBe(false)
+    expect(wrapper.find('[data-skill="speed"] .skill-art').attributes('src')).toContain('speed.svg')
   })
 
   it('keeps game UI states readable and supports reduced motion and narrow screens', () => {
