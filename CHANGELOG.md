@@ -1,3 +1,93 @@
+## [1.1.0] - 2026-11-21
+
+### 🚀 Features
+
+- **art:** Add original scalable fantasy spell sigil atlas
+- **ui:** Apply fantasy rarity, selection, focus and icon art styles
+- **ui:** Load gothic visual art layer
+- **ui:** Label selected and unselected heroes visibly
+- **art:** Add ten genuine transparent 3x generated skill WebPs and optimized atlas
+- **ui:** Share generated WebP icon path mapping with SVG fallback
+- **ui:** Display generated transparent WebP abilities in upgrade cards
+- **ui:** Display generated transparent WebP abilities in combat HUD
+- **ui:** Integrate generated WebP art and cinematic responsive fantasy UI motion
+- **ui:** Expose mode identity for thematic card styling
+- **combat:** Use shared hand origin and articulated two-bone weapon kinematics
+- **render:** Animate original artwork with aim-aware two-bone skinning and weapon recoil
+- **ui:** Render native animated WebP skills with accessible static fallback
+- **ui:** Render native animated WebP skills with accessible static fallback
+- **ui:** Render native animated WebP skills with accessible static fallback
+- **art:** Reproducible 12-frame transparent WebP animations for ten skills and HUD atlas
+
+### 🐛 Bug Fixes
+
+- **ui:** Target generated sprite pseudo-element for every ability
+- **ui:** Fit all three upgrade cards on mobile landscape screens
+- **animation:** Match articulated weapon joints to each hero's actual illustrated grip
+- **render:** Preserve weapon aim in attack animation
+
+### 💼 Other
+
+- Refresh authentic game icons, social image and gameplay captures
+- **ui:** Commit ten transparent animated WebPs and one HUD atlas
+- Refresh authentic game icons, social image and gameplay captures
+
+### 🚜 Refactor
+
+- **ui:** Improve mobile label readability and tactile touch controls without duplicate lock icons
+- **art:** Remove unused vector draft after real WebP artwork integration
+- **art:** Expose shared generated art detection
+
+### 📚 Documentation
+
+- **animation:** Record per-hero grip mapping, physics and visual limitations
+- Enforce reusable real-time performance policy in Claude Code rules
+
+### ⚡ Performance
+
+- **ui:** Avoid per-frame backdrop filters over moving game canvas
+- **hud:** Draw generated skills from atlas without loading redundant image files
+- Cache terrain cells and cull mobs before depth sorting (GREEN)
+- **render:** Prepaint magic glow, cache vignette, cull offscreen effects (GREEN)
+- Render bolt glow at 3x and document crowd stress-test evidence (GREEN)
+- Cache static hazard cells and weather noise; avoid orbit distance square roots
+- Reuse distance calculations and gradient paint; document realtime rules
+- Broad-phase star and AoE checks without unnecessary distance roots
+
+### 🧪 Testing
+
+- **ui:** Define selected-state and generated art acceptance checks
+- **ui:** Validate scalable generated arcana sprite asset
+- **ui:** Capture real selected hero, mode and upgrade states
+- **ui:** Verify three upgrade choices fit short landscape viewports
+- **ui:** Require @3x transparent WebP art and richer interactive overlays
+- **ui:** Assert optimized WebP atlas instead of original vector draft
+- **ui:** Capture progression windows and confirm real WebP artwork loads in browser
+- **art:** Verify genuine 3x WebP dimensions and alpha transparency
+- **ui:** Prevent duplicate per-icon image fetches when HUD uses WebP atlas
+- **animation:** Specify joint constraints and projectile aim before implementation
+- **render:** Verify articulated weapon cells; optimize transforms and record video evidence
+- **combat:** Measure projectile intercept from its new weapon-hand origin
+- **render:** Prove aimed bow and staff change visual direction vertically
+- **ui:** Require genuine multi-frame raster spell animations and reduced-motion stills
+- **ui:** Complete UpgradeDef fixture in animated skill test
+- **ui:** Assert native WebP motion and reduced-motion still without breaking SVG fallbacks
+- **ui:** Reset open progression drawer without clicking a clipped-offscreen summary
+- **perf:** Reproduce crowd cache and render overwork (RED)
+- **perf:** Reproduce avoidable per-frame canvas allocations and offscreen effects (RED)
+- **perf:** Require sprite-cached bolt glow with correct per-shot positioning (RED)
+- **perf:** Require high-density glow cache to preserve retina clarity (RED)
+- **perf:** RED contracts for cached hazards, storm samples and orb distances
+- **perf:** RED budgets for nearest sorting, enemy motion, despawn and cached glow
+- **perf:** Isolate measured nearest sort from expected-value setup
+- **perf:** RED budgets for star pickup, AoE and vortex distance work
+
+### ⚙️ Miscellaneous Tasks
+
+- **ui:** Verify new fantasy art branch with full Vue checks
+- **ui:** Capture desktop and mobile real-game visual evidence
+- Verify physical hero attack animations on feature branch
+- **ui:** Generate, test, commit animated WebPs and verify in actual Chromium
 ## [1.0.0] - 2026-11-22
 
 ### 繁體中文重點
