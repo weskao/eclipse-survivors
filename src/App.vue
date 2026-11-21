@@ -8,6 +8,7 @@ import PauseOverlay from './components/PauseOverlay.vue'
 import ResultOverlay from './components/ResultOverlay.vue'
 import TouchControls from './components/TouchControls.vue'
 import './meta/ui.css'
+import './visual-polish.css'
 
 const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
