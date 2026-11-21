@@ -2,18 +2,11 @@
 
 This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Preserve this stack, existing game art, combat mechanics, accessibility, and mobile support. Follow the existing architecture and work on a dedicated branch; do not create a PR, merge, or modify `main` unless asked.
 
-## Mandatory performance-first development
+## Mandatory real-time performance rules
 
-**Prefer eliminating computation over making repeated computation faster.** Inspect hot loops in `src/game/step.ts`, `src/game/enemies/`, `src/game/skills.ts`, `src/game/combat.ts`, `src/game/world.ts`, and `src/game/render/` before changing them.
+**Always read and follow [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md)** when modifying game simulation, mob AI, combat, skills, collisions, procedural environments, rendering, effects, or performance-critical UI.
 
-1. **Move invariant work out of frames.** Precompute static spawn tables, deterministic world cells, environment particle seeds, image geometry, and reusable draw resources during initialization or first use. Never recalculate `hash()` or other fixed procedural positions per frame.
-2. **Cache safely.** Use bounded caches for procedurally generated infinite-world cells. Include scene/biome and all relevant inputs in the cache key; preserve the original geometry, invalidation on changed dimensions/scenes, and deterministic re-generation after eviction. Never cache time-dependent collision, hazard activation, enemy state, or mutable damage values.
-3. **Minimize hot-path math.** Prefer squared-distance comparisons and axis-aligned broad-phase rejection before `Math.hypot` / `Math.sqrt` for pure range checks. Only compute true distances when needed for normalization, falloff, ordering, or exact intersection.
-4. **Avoid redundant crowd work.** Compute an actor's distance once per operation when sorting or selecting targets. Avoid unnecessary `sort()`, `filter()`, `map()`, object creation, repeated full-crowd scans, and closures inside per-enemy/per-frame loops. Reuse existing buffers and helpers when appropriate; do not introduce speculative complexity.
-5. **Render only what is visible.** Cull dead and offscreen sprites and effects *before* expensive sorting, transforms, gradients or draw calls. Reuse Canvas gradients and prepainted sprites when equivalently positioned, preserving DPI quality and original effects. Keep render and simulation concerns separate.
-6. **Do not sacrifice combat correctness to save CPU.** Never skip critical simulation solely because a mob is offscreen. Preserve boss persistence, AI telegraphs and attack cadence, hitboxes, skill and XP rewards, obstacle collision, event timing, damage, victory rules, and seeded reproducibility.
-7. **Never let degraded FPS change rules.** Maintain correct frame-time handling, pause/resume behavior, and mobile inputs. Do not silently lower enemy counts, cooldown precision, visual quality or difficulty as a shortcut. Adaptive rendering or AI throttling requires independently measured evidence and explicit tests proving fairness.
-8. **Prefer platform-native code.** Reuse browser APIs and existing dependencies; do not add a custom scheduler, worker, physics engine, spatial index or caching library unless profiling shows a concrete benefit.
+The order of preference is **eliminate unnecessary work → precompute immutable data → reuse bounded/valid caches → reject out-of-range work cheaply → optimize only measured bottlenecks**. Never trade off combat correctness, deterministic simulation, mobile compatibility, visual readability, or player fairness for speed.
 
 ## Mandatory TDD and measurable verification
 
