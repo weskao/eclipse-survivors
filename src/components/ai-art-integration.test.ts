@@ -33,7 +33,8 @@ describe('generated WebP art integration', () => {
   it('uses the new WebP in upgrade cards and keeps the SVG fallback for other skills', () => {
     const upgrades = [UP.find((u) => u.id === 'damage')!, UP.find((u) => u.id === 'speed')!]
     const wrapper = mount(LevelUpOverlay, { props: { active: true, upgrades } })
-    expect(wrapper.find('[data-up="damage"] .skill-art').attributes('src')).toContain('damage@3x.webp')
+    expect(wrapper.find('[data-up="damage"] .skill-art').attributes('src')).toContain('damage@3x-animated.webp')
+    expect(wrapper.find('[data-up="damage"] source[media="(prefers-reduced-motion: reduce)"]').attributes('srcset')).toContain('damage@3x.webp')
     expect(wrapper.find('[data-up="speed"] .skill-art').attributes('src')).toContain('speed.svg')
   })
 
