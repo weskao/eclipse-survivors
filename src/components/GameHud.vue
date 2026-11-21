@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { skillImageSrc } from '../game/ui-art'
 import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
 import type { HudView } from '../game/store'
@@ -54,7 +55,7 @@ defineExpose({ minimap })
         <div v-for="skill in hud.skills" :key="skill.id" class="skill" :class="[skill.rarity, { evolved: skill.evolved }]"
           :data-skill="skill.id" :title="`${skill.title} · Lv.${skill.level}/${skill.maxLevel}${skill.cooldown > 0 ? ' · 冷卻 ' + skill.cooldown.toFixed(1) + ' 秒' : ''}`"
           :aria-label="`${skill.title} 等級 ${skill.level}，${skill.cooldown > 0 ? '冷卻 ' + skill.cooldown.toFixed(1) + ' 秒' : '可用'}`">
-          <span class="skill-sigil" aria-hidden="true"><img class="skill-art" :src="`./assets/skill-icons/${skill.id}.svg`" alt="" />{{ skill.icon }}</span>
+          <span class="skill-sigil" aria-hidden="true"><img class="skill-art" draggable="false" decoding="async" :src="skillImageSrc(skill.id)" alt="" />{{ skill.icon }}</span>
           <span class="skill-cooldown" :style="{ height: skill.cooldownPct + '%' }"></span>
           <small class="skill-level">{{ skill.level }}</small>
           <span v-if="skill.evolved" class="skill-evolved" aria-hidden="true">✦</span>
