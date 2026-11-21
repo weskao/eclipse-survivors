@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createEngine, type Engine } from './engine'
 import type { AudioSystem } from './audio/types'
 import { DURATION } from './constants'
@@ -9,9 +9,13 @@ class SpyAudio implements AudioSystem {
   cues: SfxCue[] = []
   screens: GameMode[] = []
   unlocked = false
+  wakeCalls = 0
+  interruptions = 0
   musicOn = true
   sfxOn = true
-  wake(): void { this.unlocked = true }
+  wake(): void { this.unlocked = true; this.wakeCalls++ }
+  interrupt(): void { this.interruptions++ }
+  setCombatIntensity(): void {}
   playSfx(cue: SfxCue): void { this.cues.push(cue) }
   tick(): void {}
   onScreen(mode: GameMode): void { this.screens.push(mode) }
@@ -165,5 +169,51 @@ describe('engine victory integration', () => {
     // A corpse removed externally is not proof that the boss was defeated by the player.
     engine.advance(0.033)
     expect(engine.ui.mode).toBe('play')
+  })
+})
+
+describe('interruption and input lifecycle', () => {
+  it('clears held movement when leaving a run and starting again', () => {
+    const stop = engine.listen(window)
+    engine.start()
+    key('KeyD')
+    engine.advance(0.05)
+    expect(engine.state.hero!.x).toBeGreaterThan(0)
+    engine.goMenu()
+    engine.start()
+    engine.advance(0.05)
+    expect(engine.state.hero!.x).toBe(0)
+    stop()
+  })
+
+  it('pauses on hidden or pagehide, never silently resumes on visibility return', () => {
+    const stop = engine.listen(window)
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+    engine.start()
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(engine.ui.mode).toBe('paused')
+    expect(audio.interruptions).toBe(1)
+    hidden.mockReturnValue(false)
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(engine.ui.mode).toBe('paused')
+    engine.togglePause()
+    expect(engine.ui.mode).toBe('play')
+    window.dispatchEvent(new Event('pagehide'))
+    expect(engine.ui.mode).toBe('paused')
+    expect(audio.interruptions).toBe(2)
+    hidden.mockRestore()
+    stop()
+  })
+
+  it('wakes audio from gameplay keyboard input, and pause clears held keys', () => {
+    const stop = engine.listen(window)
+    engine.start()
+    key('KeyD')
+    engine.togglePause()
+    engine.togglePause()
+    engine.advance(0.05)
+    expect(engine.state.hero!.x).toBe(0)
+    expect(audio.wakeCalls).toBeGreaterThan(1)
+    stop()
   })
 })

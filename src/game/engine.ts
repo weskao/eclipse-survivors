@@ -89,7 +89,10 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
     audio.onScreen(name)
-    if (name !== 'play') stick = { x: 0, y: 0 }
+    if (name !== 'play') {
+      keys = {}
+      stick = { x: 0, y: 0 }
+    }
   }
 
   function message(text: string): void {
@@ -132,6 +135,9 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
 
   function start(): void {
     resetRun(s)
+    keys = {}
+    stick = { x: 0, y: 0 }
+    audio.setCombatIntensity('calm')
     audio.wake()
     screen('play')
     audio.playSfx('start')
@@ -167,6 +173,10 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     s.worldClock += s.mode === 'play' ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks)
+    if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
+      const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
+      audio.setCombatIntensity(bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
+    }
     if (toastTimer > 0) {
       toastTimer -= dt
       if (toastTimer <= 0) ui.toastVisible = false
@@ -204,11 +214,11 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
   function listen(win: Window = window): () => void {
     const doc = win.document
     const onKeyDown = (e: KeyboardEvent): void => {
-      if (s.mode === 'menu' && audio.musicOn) audio.wake()
-      if (PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
-      keys[e.code] = true
+      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') audio.wake()
+      if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
+      if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
-      if (e.code === 'Space') heroDash(s, hooks)
+      if (e.code === 'Space' && s.mode === 'play') heroDash(s, hooks)
       if (e.code === 'KeyP' || e.code === 'Escape') togglePause()
       const n = upgradeKeyIndex(e.code)
       const pick = ui.upgrades[n]
@@ -217,9 +227,14 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     const onKeyUp = (e: KeyboardEvent): void => { keys[e.code] = false }
     const onBlur = (): void => {
       keys = {}
+      stick = { x: 0, y: 0 }
+      audio.interrupt()
       if (s.mode === 'play') screen('paused')
     }
-    const onVisibility = (): void => { if (doc.hidden && s.mode === 'play') screen('paused') }
+    const onVisibility = (): void => {
+      if (doc.hidden) onBlur()
+      // Visibility alone must never restart audio or unpause gameplay.
+    }
     const onPointerDown = (e: PointerEvent): void => {
       audio.wake()
       if (e.target instanceof Element && e.target.closest('button')) audio.playSfx('ui')
@@ -230,6 +245,7 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
     win.addEventListener('keydown', onKeyDown)
     win.addEventListener('keyup', onKeyUp)
     win.addEventListener('blur', onBlur)
+    win.addEventListener('pagehide', onBlur)
     doc.addEventListener('visibilitychange', onVisibility)
     doc.addEventListener('pointerdown', onPointerDown)
     doc.addEventListener('pointerover', onPointerOver)
@@ -237,6 +253,7 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
       win.removeEventListener('keydown', onKeyDown)
       win.removeEventListener('keyup', onKeyUp)
       win.removeEventListener('blur', onBlur)
+      win.removeEventListener('pagehide', onBlur)
       doc.removeEventListener('visibilitychange', onVisibility)
       doc.removeEventListener('pointerdown', onPointerDown)
       doc.removeEventListener('pointerover', onPointerOver)
@@ -256,8 +273,10 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
       s.W = innerWidth
       s.H = innerHeight
       dpr = Math.min(devicePixelRatio || 1, 1.5)
-      canvas.width = Math.round(s.W * dpr)
-      canvas.height = Math.round(s.H * dpr)
+      const width = Math.round(s.W * dpr)
+      const height = Math.round(s.H * dpr)
+      if (canvas.width !== width) canvas.width = width
+      if (canvas.height !== height) canvas.height = height
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     const frame = (t: number): void => {

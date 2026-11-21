@@ -23,9 +23,9 @@ describe('sfx tables', () => {
   it('spot-checks tone tuples [pitch, delay, duration, gain, wave]', () => {
     expect(SFX_CUES.ui).toEqual([[72, 0, 0.07, 0.02, 'sine']])
     expect(SFX_CUES.start).toEqual([[48, 0, 0.47, 0.085, 'sawtooth'], [55, 0.11, 0.65, 0.05, 'triangle'], [72, 0.18, 0.77, 0.055, 'sine']])
-    expect(SFX_CUES.victory).toEqual([[60, 0, 0.4, 0.08, 'triangle'], [64, 0.15, 0.52, 0.057, 'sine'], [67, 0.28, 0.68, 0.05, 'triangle'], [72, 0.5, 0.92, 0.05, 'sine']])
+    expect(SFX_CUES.victory).toEqual([[60, 0, 0.4, 0.08, 'triangle'], [64, 0.15, 0.52, 0.057, 'sine'], [67, 0.28, 0.68, 0.05, 'triangle'], [72, 0.5, 0.92, 0.05, 'sine'], [84, 0.7, 0.8, 0.026, 'sine']])
     expect(SFX_CUES.vortex).toEqual([[52, 0, 0.5, 0.06, 'triangle'], [59, 0.16, 0.5, 0.033, 'sine']])
-    expect(SFX_CUES.hurt).toEqual([[42, 0, 0.2, 0.07, 'sawtooth'], [35, 0.06, 0.19, 0.05, 'triangle']])
+    expect(SFX_CUES.hurt).toEqual([[42, 0, 0.2, 0.07, 'sawtooth'], [35, 0.06, 0.19, 0.05, 'triangle'], [30, 0.12, 0.13, 0.022, 'sine']])
     expect(SFX_CUES.defeat).toEqual([[52, 0, 0.44, 0.06, 'triangle'], [47, 0.2, 0.52, 0.05, 'sawtooth'], [40, 0.44, 0.74, 0.05, 'sine']])
   })
 

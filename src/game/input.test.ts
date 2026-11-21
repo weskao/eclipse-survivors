@@ -33,3 +33,10 @@ describe('upgradeKeyIndex', () => {
     expect(upgradeKeyIndex('KeyP')).toBe(-1)
   })
 })
+
+describe('joystick center stability', () => {
+  it('ignores sub-4px finger jitter without reducing full-speed movement', () => {
+    expect(stickVector(2, 2)).toEqual({ x: 0, y: 0, knobX: 0, knobY: 0 })
+    expect(stickVector(STICK_RADIUS, 0).x).toBe(1)
+  })
+})

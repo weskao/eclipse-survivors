@@ -2,7 +2,7 @@ import { random } from '../math'
 import type { GameMode, SfxCue } from '../types'
 import { createBattleScore, createMenuScore } from './music'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
-import type { AudioSystem, BgmElement, SettingsStorage } from './types'
+import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
 export interface AudioParamLike {
@@ -35,6 +35,7 @@ export interface AudioContextLike {
   readonly sampleRate: number
   readonly destination: object
   resume(): Promise<void>
+  suspend(): Promise<void>
   close(): Promise<void>
   createOscillator(): OscillatorLike
   createGain(): GainLike
@@ -69,6 +70,8 @@ const defaultStorage = (): SettingsStorage | null => {
 }
 
 const MUSIC_GAIN = 0.65
+const MAX_SFX_PER_100MS = 8
+const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'boss', 'bossDefeat', 'victory', 'defeat'])
 
 export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const { bgm } = opts
@@ -79,6 +82,11 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let musicBus: GainLike | null = null
   let musicOn = true
   let sfxOn = true
+  let interrupted = false
+  let mode: GameMode = 'menu'
+  let intensity: CombatIntensity = 'calm'
+  let noiseBuffer: BufferLike | null = null
+  const recentSfx: number[] = []
   const menu = createMenuScore()
   const battle = createBattleScore()
   const sfxLast = new Map<SfxCue, number>()
@@ -100,7 +108,13 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   }
 
   const playScore = (): void => {
-    if (musicOn && bgm.paused) Promise.resolve(bgm.play()).catch(() => {})
+    if (!musicOn || interrupted || mode !== 'play' || !bgm.paused) return
+    // play() must run directly inside the input gesture to satisfy mobile browser policies.
+    try {
+      Promise.resolve(bgm.play()).then(() => {
+        if (mode !== 'play' || !musicOn || interrupted) bgm.pause()
+      }).catch(() => { /* The synth score remains available until the next gesture. */ })
+    } catch { /* Unsupported/blocked media playback: retain the synth fallback. */ }
   }
 
   const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): void => {
@@ -118,17 +132,24 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     o.stop(at + dur + 0.03)
   }
 
+  // When the MP3 is playing, keep only subtle rhythmic accents from the synth.
+  const combatPercussion = (midi: number, at: number, dur: number, vol: number, wave: OscillatorType, bus: 'sfx' | 'music'): void => {
+    if (midi === 36) tone(midi, at, dur, vol, wave, bus)
+  }
+
   const noiseBurst = (now: number): void => {
     if (!ac || !master) return
     const duration = 0.065
     const length = Math.ceil(ac.sampleRate * duration)
-    const buf = ac.createBuffer(1, length, ac.sampleRate)
-    const samples = buf.getChannelData(0)
-    for (let i = 0; i < length; i++) samples[i] = (random() * 2 - 1) * (1 - i / length)
+    if (!noiseBuffer) {
+      noiseBuffer = ac.createBuffer(1, length, ac.sampleRate)
+      const samples = noiseBuffer.getChannelData(0)
+      for (let i = 0; i < length; i++) samples[i] = (random() * 2 - 1) * (1 - i / length)
+    }
     const source = ac.createBufferSource()
     const filter = ac.createBiquadFilter()
     const volume = ac.createGain()
-    source.buffer = buf
+    source.buffer = noiseBuffer
     filter.type = 'highpass'
     filter.frequency.value = 500
     volume.gain.setValueAtTime(0.016, now)
@@ -141,11 +162,17 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   }
 
   const wake = (): void => {
+    const recovering = interrupted || (ac !== null && ac.state !== 'running' && ac.state !== 'closed')
+    interrupted = false
     try {
-      if (!ac) {
+      // Mobile media can remain unpaused yet silent after an OS interruption.
+      // Re-establish the HTMLMediaElement path on the next trusted gesture.
+      if (recovering && mode === 'play' && musicOn && !bgm.paused) bgm.pause()
+      if (!ac || ac.state === 'closed') {
         const created = createContext()
-        if (!created) return
+        if (!created) { playScore(); return }
         ac = created
+        noiseBuffer = null
         master = ac.createGain()
         master.gain.value = 0.52
         master.connect(ac.destination)
@@ -153,7 +180,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         musicBus.gain.value = musicOn ? MUSIC_GAIN : 0
         musicBus.connect(ac.destination)
       }
-      if (ac.state === 'suspended') ac.resume().catch(() => {})
+      if (ac.state !== 'running' && ac.state !== 'closed') {
+        void ac.resume().catch(() => { /* Browsers may require another gesture. */ })
+      }
+      playScore()
     } catch {
       ac = null
       master = null
@@ -161,34 +191,61 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     }
   }
 
-  const running = (): AudioContextLike | null => (ac && ac.state === 'running' ? ac : null)
+  const interrupt = (): void => {
+    if (interrupted) return
+    interrupted = true
+    bgm.pause()
+    if (ac && ac.state === 'running') {
+      void ac.suspend().catch(() => { /* Visibility can change during suspension. */ })
+    }
+  }
+
+  const running = (): AudioContextLike | null =>
+    (!interrupted && ac && ac.state === 'running' ? ac : null)
 
   return {
     get unlocked() { return ac !== null },
     get musicOn() { return musicOn },
     get sfxOn() { return sfxOn },
     wake,
+    interrupt,
+    setCombatIntensity(next) {
+      if (intensity === next) return
+      intensity = next
+      battle.setIntensity(next)
+      if (next === 'boss') battle.setClock(ac ? ac.currentTime + 0.04 : 0)
+    },
     playSfx(cue) {
       const ctx = running()
       if (!sfxOn || !ctx) return
       const now = ctx.currentTime
       if (now - (sfxLast.get(cue) ?? -100) < SFX_COOLDOWN[cue]) return
+      while (recentSfx.length && now - recentSfx[0]! >= 0.1) recentSfx.shift()
+      if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
+      recentSfx.push(now)
       sfxLast.set(cue, now)
       for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) tone(pitch, now + delay, duration, gain, wave)
       if (NOISE_CUES.has(cue)) noiseBurst(now)
     },
     tick(mode) {
       const ctx = running()
-      if (mode === 'menu') {
-        if (musicOn && ctx) menu.schedule(ctx.currentTime, tone)
-        return
+      if (!musicOn || !ctx) return
+      if (mode === 'menu') { menu.schedule(ctx.currentTime, tone); return }
+      if (mode !== 'play') return
+      if (bgm.paused || intensity === 'boss') battle.schedule(ctx.currentTime, tone)
+      else if (intensity === 'combat') battle.schedule(ctx.currentTime, combatPercussion)
+      if (!bgm.paused) {
+        const target = intensity === 'boss' ? 0.27 : intensity === 'combat' ? 0.35 : 0.38
+        const delta = target - bgm.volume
+        if (Math.abs(delta) > 0.001) bgm.volume += Math.sign(delta) * Math.min(Math.abs(delta), 0.012)
       }
-      if (!musicOn || mode !== 'play' || !ctx || !bgm.paused) return
-      battle.schedule(ctx.currentTime, tone)
     },
-    onScreen(mode: GameMode) {
+    onScreen(nextMode: GameMode) {
+      mode = nextMode
       if (mode === 'menu' || mode === 'paused' || mode === 'result') bgm.pause()
       if (mode === 'menu') {
+        intensity = 'calm'
+        battle.setIntensity('calm')
         bgm.currentTime = 0
         menu.setClock(ac ? ac.currentTime + 0.06 : 0)
         menu.resetStep()
@@ -221,11 +278,15 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       return sfxOn
     },
     dispose() {
+      interrupted = true
       bgm.pause()
       ac?.close().catch(() => {})
       ac = null
       master = null
       musicBus = null
+      noiseBuffer = null
+      sfxLast.clear()
+      recentSfx.length = 0
     },
   }
 }

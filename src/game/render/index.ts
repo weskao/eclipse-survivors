@@ -19,6 +19,8 @@ export interface RenderAssets {
   sprites: Record<string, HTMLCanvasElement>
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
+  depthOrder: (Hero | Mob)[]
+  weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
 /** Eagerly paint cheap fallback assets once; preference updates are read live. */
@@ -29,6 +31,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     prefersReducedMotion: () => query?.matches ?? false,
+    depthOrder: [],
   }
 }
 
@@ -62,7 +65,11 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   paintEnvironment(ctx, s, assets.art, assets.props, ox, oy)
   const scene = currentSceneInfo(s)
-  ctx.fillStyle = weatherGrade(ctx, W, H, scene.weather)
+  const cached = assets.weatherCache
+  if (!cached || cached.ctx !== ctx || cached.width !== W || cached.height !== H || cached.weather !== scene.weather) {
+    assets.weatherCache = { ctx, width: W, height: H, weather: scene.weather, gradient: weatherGrade(ctx, W, H, scene.weather) }
+  }
+  ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
   if (!reduced) drawAmbient(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
@@ -77,10 +84,12 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   drawStars(ctx, s, ox, oy, reduced)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
-  const objects: { y: number; obj: Hero | Mob }[] = s.mobs.map((e) => ({ y: e.y, obj: e }))
-  objects.push({ y: hero.y, obj: hero })
+  const objects = assets.depthOrder
+  objects.length = 0
+  for (const mob of s.mobs) objects.push(mob)
+  objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
-  for (const { obj } of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced)
+  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced)
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy)

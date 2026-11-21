@@ -11,6 +11,7 @@ export interface BgmElement {
 
 /** Minimal Storage surface for the saved toggles. */
 export type SettingsStorage = Pick<Storage, 'getItem' | 'setItem'>
+export type CombatIntensity = 'calm' | 'combat' | 'boss'
 
 /**
  * Port of the original audio globals and functions (`ac`, `master`, `musicBus`, `wakeAudio`,
@@ -23,6 +24,10 @@ export interface AudioSystem {
   readonly sfxOn: boolean
   /** Original `wakeAudio()`: lazily create + resume the AudioContext. */
   wake(): void
+  /** Suspend playback on focus, visibility and operating-system interruptions. */
+  interrupt(): void
+  /** Adapt the score without modifying gameplay rules. */
+  setCombatIntensity(intensity: CombatIntensity): void
   playSfx(cue: SfxCue): void
   /** Original `music()`, called once per animation frame with the current mode. */
   tick(mode: GameMode): void
