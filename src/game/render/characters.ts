@@ -1,25 +1,129 @@
 import { TAU } from '../constants'
 import type { Artwork } from '../art'
 import type { GameState, Hero, Mob } from '../types'
+import { sampleHeroAnimation, type HeroAnimation } from './animation'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 
 type Drawable = HTMLImageElement | HTMLCanvasElement
+const ease = (n: number): number => {
+  const t = Math.max(0, Math.min(1, n))
+  return t * t * (3 - 2 * t)
+}
 
-// Single, rigid sprite. The original segmented sprite bands tore at the waist
-// and rotated armour/heads independently without a matching skeletal rig.
-// Keep proportions, scale and ground contact consistent in every state.
-export function drawRigSprite(ctx: Ctx2D, img: Drawable, sx: number, sy: number, e: Hero): void {
-  const motion = Math.max(0, Math.min(1, e.moveAmount || 0))
-  const stride = e.step || 0
-  // A human walk has small vertical centre-of-mass movement; never bob in idle.
-  const footLift = Math.abs(Math.sin(stride)) * 1.05 * motion
-  const attackPhase = e.strike > 0 ? 1 - Math.min(1, e.strike / 0.29) : 0
-  const recoil = e.strike > 0 ? Math.sin(attackPhase * Math.PI) * 1.1 : 0
-  ctx.save()
-  ctx.translate(-recoil, -footLift)
-  ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy)
-  ctx.restore()
+/**
+ * Deform the original character illustration as a continuous, 2D mesh.
+ * Neighboring cells overlap slightly and displacement is a smooth function
+ * of their position; faces, costume and weapons never become separate limbs.
+ * It is deliberately not a scale or bounce of a rigid full-body sprite.
+ */
+export function drawRigSprite(
+  ctx: Ctx2D, img: Drawable, sx: number, sy: number, hero: Hero, anim: HeroAnimation,
+): void {
+  const left = -sx / 2
+  const top = -sy + 4
+  if (anim.reducedMotion) {
+    ctx.drawImage(img, left, top, sx, sy)
+    return
+  }
+  const srcW = ('naturalWidth' in img ? img.naturalWidth : img.width) || img.width || sx
+  const srcH = ('naturalHeight' in img ? img.naturalHeight : img.height) || img.height || sy
+  const bands = 12
+  const columns = 4
+  const cycle = Math.sin(anim.frame / anim.count * TAU)
+  const contact = Math.max(0, Math.min(1, hero.moveAmount))
+  const peak = Math.sin(Math.PI * anim.phase)
+  for (let row = 0; row < bands; row++) {
+    const v = (row + 0.5) / bands
+    const boot = ease((v - 0.60) / 0.38)
+    const chest = ease((v - 0.12) / 0.27) * (1 - ease((v - 0.68) / 0.22))
+    const head = 1 - ease((v - 0.1) / 0.27)
+    for (let col = 0; col < columns; col++) {
+      const u = (col + 0.5) / columns
+      const side = 1 - u * 2
+      let dx = 0
+      let dy = 0
+      switch (anim.pose) {
+        case 'idle':
+          dx = Math.sin(anim.phase * TAU) * (chest * 0.6 + boot * side * 0.35)
+          dy = -Math.sin(anim.phase * TAU) * chest * 0.5
+          break
+        case 'run':
+          dx = cycle * contact * (boot * side * 3.5 - chest * 1.4)
+          dy = boot * side * cycle * 3.0 - (chest + head) * Math.abs(cycle) * contact * 1.2
+          break
+        case 'attack':
+          dx = peak * (chest * 4.2 + head * 1.8 - boot * 0.4)
+          dy = -peak * chest * 2.6
+          break
+        case 'cast':
+          dx = peak * (side * chest * 2.3 - boot * 0.4)
+          dy = -peak * (head * 1.7 + chest * 2.4)
+          break
+        case 'dash':
+          dx = (1 - anim.phase) * (head * 5.6 + chest * 4.6) - boot * 0.9
+          dy = -Math.sin(anim.phase * Math.PI) * (head + chest) * 2.8
+          break
+        case 'hurt':
+          dx = (1 - anim.phase) * (head * 4.0 + chest * 3.6)
+          dy = anim.phase * head * 1.2
+          break
+        case 'death':
+          dx = anim.phase * (head * 9 + chest * 4.5)
+          dy = anim.phase * (head * 11 + chest * 5.5)
+          break
+        case 'victory':
+          dx = Math.sin(anim.phase * TAU) * (head * 1.3 + chest * 1.7)
+          dy = -Math.sin(anim.phase * Math.PI) * chest * 3.6
+          break
+      }
+      ctx.drawImage(
+        img,
+        srcW * col / columns, srcH * row / bands, srcW / columns, srcH / bands,
+        left + sx * col / columns + dx, top + sy * row / bands + dy,
+        sx / columns + 0.8, sy / bands + 0.7,
+      )
+    }
+  }
+}
+
+/** Tiny in-hand effects follow the action; there are no extra ghost limbs. */
+function drawPoseAccents(ctx: Ctx2D, kind: string, sx: number, sy: number, anim: HeroAnimation): void {
+  if (anim.reducedMotion || (anim.pose !== 'attack' && anim.pose !== 'cast' && anim.pose !== 'victory')) return
+  const phase = anim.phase
+  const power = Math.max(0, Math.sin(Math.PI * phase))
+  if (anim.pose === 'cast') {
+    ctx.save()
+    ctx.strokeStyle = '#b6aaffb8'
+    ctx.lineWidth = 1.6
+    ctx.globalAlpha = power * 0.85
+    const cy = -sy * 0.54
+    ctx.beginPath(); ctx.ellipse(sx * 0.31, cy, 14 + power * 6, 6 + power * 2, phase * TAU, 0, TAU); ctx.stroke()
+    for (let i = 0; i < 4; i++) {
+      const a = phase * TAU + i * TAU / 4
+      ctx.fillStyle = i % 2 ? '#c5ecff' : '#e7ceff'
+      ctx.fillRect(sx * 0.31 + Math.cos(a) * 20, cy + Math.sin(a) * 10, 2.5, 2.5)
+    }
+    ctx.restore()
+  } else if (anim.pose === 'attack') {
+    ctx.save()
+    ctx.globalAlpha = power * (kind === 'knight' ? 0.68 : 0.32)
+    ctx.strokeStyle = kind === 'knight' ? '#ffdb9c' : '#d3f6d6'
+    ctx.lineWidth = 2.2
+    ctx.beginPath()
+    ctx.arc(sx * 0.26, -sy * 0.49, 17, -1.9 + phase, 0.75 + phase)
+    ctx.stroke()
+    ctx.restore()
+  } else if (anim.pose === 'victory') {
+    ctx.save()
+    ctx.globalAlpha = 0.20 + power * 0.24
+    ctx.strokeStyle = '#f5dfa8'
+    ctx.lineWidth = 1.2
+    ctx.beginPath()
+    ctx.ellipse(0, -sy * 0.45, sx * 0.39, sy * 0.53, 0, 0, TAU)
+    ctx.stroke()
+    ctx.restore()
+  }
 }
 
 export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx: number, sy: number): void {
@@ -52,7 +156,7 @@ const DIMS: Record<string, [number, number]> = {
 
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
-  e: Hero | Mob, ox: number, oy: number,
+  e: Hero | Mob, ox: number, oy: number, reducedMotion = false,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -65,26 +169,38 @@ export function drawCharacter(
   const sx = dims[0]!
   const sy = dims[1]!
   const move = hero ? hero.moveAmount : 1
-  ctx.save(); ctx.fillStyle = '#02070b70'; ctx.beginPath(); ctx.ellipse(x + 5, y + 5, sx * 0.32 * (1 + 0.12 * move), sy * 0.095, 0, 0, TAU); ctx.fill(); ctx.restore()
+  // Ground shadow is painted before the y-sorted body and never jumps with it.
+  ctx.save()
+  ctx.fillStyle = '#02070b70'
+  ctx.beginPath()
+  ctx.ellipse(x + 5, y + 5, sx * 0.32 * (1 + 0.12 * move), sy * 0.095, 0, 0, TAU)
+  ctx.fill()
+  if (mob?.type === 'boss') {
+    // Contact-radius danger marker only: there is no boss wind-up event in the AI yet.
+    ctx.strokeStyle = '#ed9e7155'; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.ellipse(x, y + 5, mob.r + 15, (mob.r + 15) * 0.48, 0, 0, TAU); ctx.stroke()
+  }
+  ctx.restore()
+  const anim = hero ? sampleHeroAnimation(s, hero, reducedMotion) : null
   if (hero) {
-    softGlow(ctx, x, y, 72, '#efd69d30', 0.8)
+    softGlow(ctx, x, y, 72, '#efd69d30', reducedMotion ? 0.4 : 0.8)
     ctx.strokeStyle = '#f4de9d9f'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(x, y + 2, 35, 11, 0, 0, TAU); ctx.stroke()
-    if (hero.dash > 0) {
+    if (hero.dash > 0 && !reducedMotion) {
       ctx.save(); ctx.strokeStyle = '#c9effa99'; ctx.lineWidth = 2; ctx.beginPath()
       ctx.ellipse(x, y + 2, 50 + Math.sin(s.worldClock * 28) * 4, 13, 0, 0, TAU); ctx.stroke(); ctx.restore()
     }
   }
   ctx.save(); ctx.translate(x, y)
   if (hero && hero.face < 0) ctx.scale(-1, 1)
-  if (hero && hero.inv > 0 && Math.floor(s.worldClock * 17) % 2 === 0) ctx.globalAlpha = 0.55
-  if (mob && mob.hit > 0) ctx.filter = 'brightness(1.45) sepia(.35)'
+  if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
+  if (mob && mob.hit > 0 && !reducedMotion) ctx.filter = 'brightness(1.3) sepia(.25)'
   const im = art[kind]
-  if (im && im.complete && im.naturalWidth) {
-    if (hero) drawRigSprite(ctx, im, sx, sy, hero)
-    else if (mob) drawMobBody(ctx, s, mob, im, sx, sy)
-  } else {
-    const fall = sprites[kind === 'golem' ? 'goblin' : kind]
-    if (fall) ctx.drawImage(fall, -sx / 2, -sy + 4, sx, sy)
+  const drawable = im && im.complete && im.naturalWidth ? im : sprites[kind === 'golem' ? 'goblin' : kind]
+  if (drawable) {
+    if (hero && anim) {
+      drawRigSprite(ctx, drawable, sx, sy, hero, anim)
+      drawPoseAccents(ctx, kind, sx, sy, anim)
+    } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
   }
   ctx.restore()
   if (mob && mob.hp < mob.max && mob.type !== 'boss') {

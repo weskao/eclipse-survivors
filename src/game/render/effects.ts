@@ -8,14 +8,14 @@ const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
 
 // Magical gems have faceted highlights and small animated coronae.
-export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   const { W, H } = s
   for (const star of s.stars) {
     const x = star.x + ox
     const y = star.y + oy
     if (x < -25 || x > W + 25 || y < -25 || y > H + 25) continue
-    const bob = Math.sin(star.t * 4) * 3
-    ctx.save(); ctx.translate(x, y + bob - 7); ctx.rotate(Math.sin(star.t * 2) * 0.11)
+    const bob = reducedMotion ? 0 : Math.sin(star.t * 4) * 3
+    ctx.save(); ctx.translate(x, y + bob - 7); if (!reducedMotion) ctx.rotate(Math.sin(star.t * 2) * 0.11)
     ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
     ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(7, -1); ctx.lineTo(0, 10); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill()
     ctx.shadowBlur = 0; ctx.fillStyle = '#ffffffb8'
@@ -35,8 +35,8 @@ export function drawEchoes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 /** Blaze ring, shield aura and level-up burst around the hero. */
-export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number): void {
-  const q = s.worldClock
+export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+  const q = reducedMotion ? 0 : s.worldClock
   const blaze = hero.skills.blaze
   if (blaze) {
     ctx.save(); ctx.translate(hero.x + ox, hero.y + oy); ctx.globalAlpha = 0.55
@@ -77,12 +77,12 @@ export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
     const x = sw.x + ox
     const y = sw.y + oy
     const r = sw.r + easing(t) * 32
-    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 0.75); ctx.lineCap = 'round'; ctx.shadowBlur = 22; ctx.shadowColor = '#ffc56c'
+    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 0.75); ctx.lineCap = 'round'; ctx.shadowBlur = 13; ctx.shadowColor = '#ffc56c'
     for (let k = 0; k < 3; k++) {
       ctx.strokeStyle = ribbon[k]!; ctx.lineWidth = widths[k]! * (1 - t * 0.55)
       ctx.beginPath(); ctx.arc(x, y, r - k * 5, sw.a - 1.02 - t * 0.23, sw.a + 1.2 + t * 0.18); ctx.stroke()
     }
-    for (let j = 0; j < 7; j++) {
+    for (let j = 0; j < 5; j++) {
       const a = sw.a - 1 + t * 2 + j * 0.11
       ctx.fillStyle = '#ffefc8'
       ctx.fillRect(x + Math.cos(a) * (r + 5 + j * 2), y + Math.sin(a) * (r + 5 + j * 2), 2.5, 2.5)
@@ -99,6 +99,22 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number): voi
     const y = b.y + oy
     const a = Math.atan2(b.vy, b.vx)
     if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue
+    // Motion history is drawn in world space to avoid faking a longer shaft.
+    const tx = (b.prevX ?? b.x) + ox
+    const ty = (b.prevY ?? b.y) + oy
+    const history = Math.hypot(x - tx, y - ty)
+    if (history > 2) {
+      ctx.save()
+      ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
+      ctx.strokeStyle = b.kind === 'arrow' ? '#f6d6a4' : '#a9a1ff'
+      ctx.lineWidth = b.kind === 'arrow' ? 1.6 : 3
+      ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y); ctx.stroke()
+      // A short taper keeps the trail visible without extra particle objects.
+      ctx.globalAlpha *= 0.45
+      ctx.beginPath(); ctx.moveTo(tx - (x - tx) * 0.35, ty - (y - ty) * 0.35); ctx.lineTo(tx, ty); ctx.stroke()
+      ctx.restore()
+    }
     ctx.save(); ctx.translate(x, y); ctx.rotate(a)
     if (b.kind === 'arrow') {
       ctx.shadowBlur = 13; ctx.shadowColor = '#ffc474'; ctx.strokeStyle = '#ffeac2'; ctx.lineWidth = 3
@@ -149,11 +165,11 @@ export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number
 }
 
 // Branching lightning, layered core + glow, short lived to avoid clutter.
-export function drawLightning(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawLightning(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   for (const l of s.lightningFx) {
     ctx.save(); ctx.globalAlpha = l.life / l.max
-    for (const [w, col, blur] of LIGHTNING_LAYERS) {
-      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.shadowColor = col; ctx.shadowBlur = blur
+    for (const [w, col, blur] of reducedMotion ? [LIGHTNING_LAYERS[2]!] : LIGHTNING_LAYERS) {
+      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.shadowColor = col; ctx.shadowBlur = reducedMotion ? 0 : blur
       ctx.beginPath()
       l.pts.forEach((p, i) => (i ? ctx.lineTo(p.x + ox, p.y + oy) : ctx.moveTo(p.x + ox, p.y + oy)))
       ctx.stroke()
@@ -163,9 +179,12 @@ export function drawLightning(ctx: Ctx2D, s: GameState, ox: number, oy: number):
 }
 
 // Subpixel glowing debris, capped pool and reusable shape geometry.
-export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   const { W, H } = s
+  let painted = 0
   for (const f of s.fx) {
+    if (reducedMotion && (f.type === 'footstep' || f.type === 'ember' || f.type === 'spark' || !f.type)) continue
+    if (reducedMotion && painted++ >= 40) break
     const x = f.x + ox
     const y = f.y + oy
     if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue
@@ -180,10 +199,10 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
       ctx.strokeStyle = f.color; ctx.lineWidth = 2.2; ctx.shadowColor = f.color; ctx.shadowBlur = 8
       ctx.beginPath(); ctx.arc(x, y, 8 + Math.sin(f.life * 9) * 6, 0, TAU); ctx.stroke()
     } else if (f.type === 'ice') {
-      ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = 10
+      ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = reducedMotion ? 0 : 10
       ctx.beginPath(); ctx.moveTo(x, y - f.r); ctx.lineTo(x + f.r * 0.55, y + f.r); ctx.lineTo(x - f.r * 0.55, y + f.r); ctx.closePath(); ctx.fill()
     } else {
-      ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = 7
+      ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = reducedMotion ? 0 : 7
       ctx.beginPath(); ctx.arc(x, y, f.r, 0, TAU); ctx.fill()
     }
     ctx.restore()

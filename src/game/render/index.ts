@@ -18,11 +18,18 @@ export interface RenderAssets {
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
+  prefersReducedMotion: () => boolean
 }
 
-/** Eager, like the original startup: fallback sprites and cached props are painted once. */
+/** Eagerly paint cheap fallback assets once; preference updates are read live. */
 export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCanvas): RenderAssets {
-  return { art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas) }
+  const query = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null
+  return {
+    art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
+    prefersReducedMotion: () => query?.matches ?? false,
+  }
 }
 
 function weatherGrade(ctx: Ctx2D, W: number, H: number, weather: string): CanvasGradient {
@@ -39,16 +46,17 @@ function weatherGrade(ctx: Ctx2D, W: number, H: number, weather: string): Canvas
   return grade
 }
 
-/** Original `draw()` minus the frame counter and the minimap call (the engine owns both). */
+/** Original `draw()` minus frame counter and minimap call (engine owns both). */
 export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderAssets): void {
   const { W, H } = s
   const hero = s.hero
+  const reduced = assets.prefersReducedMotion()
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.fillStyle = '#27352d'
   ctx.fillRect(0, 0, W, H)
   let ox = W * 0.5 - (hero ? s.cam.x : 0)
   let oy = H * 0.53 - (hero ? s.cam.y : 0)
-  if (hero && s.cameraKick > 0) {
+  if (hero && s.cameraKick > 0 && !reduced) {
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
@@ -56,7 +64,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const scene = currentSceneInfo(s)
   ctx.fillStyle = weatherGrade(ctx, W, H, scene.weather)
   ctx.fillRect(0, 0, W, H)
-  drawAmbient(ctx, s, ox, oy)
+  if (!reduced) drawAmbient(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
   ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
   ctx.restore()
@@ -67,19 +75,19 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ctx.fillRect(0, 0, W, H)
     return
   }
-  drawStars(ctx, s, ox, oy)
-  drawEchoes(ctx, s, ox, oy)
+  drawStars(ctx, s, ox, oy, reduced)
+  if (!reduced) drawEchoes(ctx, s, ox, oy)
   const objects: { y: number; obj: Hero | Mob }[] = s.mobs.map((e) => ({ y: e.y, obj: e }))
   objects.push({ y: hero.y, obj: hero })
   objects.sort((a, b) => a.y - b.y)
-  for (const { obj } of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy)
-  drawHeroAuras(ctx, s, hero, ox, oy)
-  drawSwipes(ctx, s, ox, oy)
+  for (const { obj } of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced)
+  drawHeroAuras(ctx, s, hero, ox, oy, reduced)
+  if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy)
   drawOrbs(ctx, s, hero, ox, oy)
   drawImpactWaves(ctx, s, ox, oy)
-  drawLightning(ctx, s, ox, oy)
-  drawFx(ctx, s, ox, oy)
+  drawLightning(ctx, s, ox, oy, reduced)
+  drawFx(ctx, s, ox, oy, reduced)
   drawNumbers(ctx, s, ox, oy)
   drawVignette(ctx, s)
 }
