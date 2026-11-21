@@ -18,6 +18,8 @@ class SpyAudio implements AudioSystem {
   resetBattleClock(): void {}
   toggleMusic(): boolean { return (this.musicOn = !this.musicOn) }
   toggleSfx(): boolean { return (this.sfxOn = !this.sfxOn) }
+  disposed = 0
+  dispose(): void { this.disposed++ }
 }
 
 let audio: SpyAudio

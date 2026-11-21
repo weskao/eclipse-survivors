@@ -34,4 +34,6 @@ export interface AudioSystem {
   toggleMusic(mode: GameMode): boolean
   /** Original `toggleSfx()`. Returns new sfxOn. */
   toggleSfx(): boolean
+  /** Stop bgm and close the AudioContext (unmount / HMR); a later wake() starts fresh. */
+  dispose(): void
 }

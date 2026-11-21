@@ -280,6 +280,7 @@ export function createEngine(opts: { audio?: AudioSystem } = {}): Engine {
       removeEventListener('resize', resize)
       unlisten()
       delete window.__test
+      audio.dispose()
     }
   }
 

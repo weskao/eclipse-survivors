@@ -35,6 +35,7 @@ export interface AudioContextLike {
   readonly sampleRate: number
   readonly destination: object
   resume(): Promise<void>
+  close(): Promise<void>
   createOscillator(): OscillatorLike
   createGain(): GainLike
   createBuffer(channels: number, length: number, sampleRate: number): BufferLike
@@ -218,6 +219,13 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       save('starSfx', sfxOn)
       if (sfxOn) wake()
       return sfxOn
+    },
+    dispose() {
+      bgm.pause()
+      ac?.close().catch(() => {})
+      ac = null
+      master = null
+      musicBus = null
     },
   }
 }
