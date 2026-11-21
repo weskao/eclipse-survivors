@@ -183,10 +183,10 @@
 /* Compact HUD: stronger depth and legible cooldown overlays without extra frame work. */
 #hud .status{border-radius:9px;border-color:#d4b97f9c;background:linear-gradient(135deg,#142233f4,#0b131eec);box-shadow:0 7px 24px #000b,inset 0 1px 0 #f5dc8a26}
 #hud .hud-face{border-radius:6px;border-color:#d8bb81;box-shadow:inset 0 0 18px #1111,0 0 12px #c5a27435}
-#hud .chip{border-color:#bcab87a6;border-radius:7px;backdrop-filter:blur(4px)}
+#hud .chip{border-color:#bcab87a6;border-radius:7px}
 #hud .chip button[aria-pressed="false"]{color:#919baa}
 #hud .chip button:focus-visible{outline:3px solid #fff0bb;outline-offset:3px}
-#hud .skill-slots{padding:4px 7px;border:1px solid #b99f7555;border-radius:10px;background:#101826b0;box-shadow:0 3px 15px #0008;backdrop-filter:blur(5px)}
+#hud .skill-slots{padding:4px 7px;border:1px solid #b99f7555;border-radius:10px;background:#101826b0;box-shadow:0 3px 15px #0008}
 #hud .skill-slots .skill{isolation:isolate;overflow:hidden;border-color:#d5bd8ac7;box-shadow:inset 0 1px 0 #fff4,0 3px 10px #000c}
 #hud .skill-slots .skill.evolved{border-color:#ffd18d;box-shadow:0 0 14px #f7ba568c,inset 0 1px 0 #fff9}
 #hud .skill-slots .skill::before{content:"";position:absolute;inset:2px;border:1px solid #e8f6ff12;border-radius:4px;pointer-events:none;z-index:1}
