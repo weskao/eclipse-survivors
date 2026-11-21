@@ -103,6 +103,21 @@ describe('drawFrame', () => {
     expect(f.calls.filter((c) => c === 'lineTo').length).toBeGreaterThan(0)
   })
 
+  it('applies a live reduced-motion preference change on the next frame', () => {
+    const s = busyState()
+    const { make } = fakeCanvasFactory()
+    const assets = createRenderAssets(fakeArtwork(true), make)
+    let reducedMotion = false
+    assets.prefersReducedMotion = () => reducedMotion
+    const normal = createFakeCtx()
+    drawFrame(normal.ctx, s, 1, assets)
+    reducedMotion = true
+    const reduced = createFakeCtx()
+    drawFrame(reduced.ctx, s, 1, assets)
+    expect(normal.calls.filter((name) => name === 'drawImage').length)
+      .toBeGreaterThan(reduced.calls.filter((name) => name === 'drawImage').length)
+  })
+
   it.each([0, 1, 2, 3])('scene %i draws', (scene) => {
     const s = busyState()
     s.currentScene = scene
