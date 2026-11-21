@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createState } from '../state'
-import { createFakeCtx } from './fakes'
+import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from './fakes'
+import { createRenderAssets } from './index'
 import { drawImpactWaves, drawNumbers, drawShots, drawVignette } from './effects'
 
 describe('high-density visual-effect performance contracts', () => {
@@ -19,20 +20,22 @@ describe('high-density visual-effect performance contracts', () => {
     expect(created).toBe(2)
   })
 
-  it('shares a single magic-bolt glow gradient across projectiles and frames', () => {
+  it('reuses a prepainted magic-bolt glow rather than creating a gradient for each shot', () => {
     const s = createState()
     s.W = 960; s.H = 540
     s.shots = Array.from({ length: 30 }, (_, i) => ({
       x: i * 16, y: 100, vx: 200, vy: 0, d: 20, life: 1,
       r: 9, kind: 'magic' as const,
     }))
-    const { ctx } = createFakeCtx()
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const { ctx, drawn } = createFakeCtx()
     const original = ctx.createRadialGradient
     let created = 0
     ctx.createRadialGradient = (...args) => { created++; return original(...args) }
-    drawShots(ctx, s, 0, 0)
-    drawShots(ctx, s, 0, 0)
-    expect(created).toBe(1)
+    drawShots(ctx, s, 0, 0, assets.magicGlow)
+    drawShots(ctx, s, 0, 0, assets.magicGlow)
+    expect(created).toBe(0)
+    expect(drawn.filter(image => image === assets.magicGlow)).toHaveLength(60)
   })
 
   it('does not paint damage numbers outside the viewport', () => {
