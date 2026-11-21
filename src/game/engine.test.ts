@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createEngine, type Engine } from './engine'
 import type { AudioSystem } from './audio/types'
 import { DURATION } from './constants'
