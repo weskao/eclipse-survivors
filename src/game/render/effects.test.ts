@@ -19,7 +19,7 @@ describe('restrained combat feedback', () => {
     ]
     const { ctx, calls } = createFakeCtx()
     drawShots(ctx, s, 0, 0)
-    expect(calls.filter((c) => c === 'lineTo').length).toBeGreaterThan(4)
+    expect(calls.filter((c) => c === 'moveTo').length).toBeGreaterThan(4)
   })
 
   it('uses one low-glow lightning stroke instead of three when motion is reduced', () => {
