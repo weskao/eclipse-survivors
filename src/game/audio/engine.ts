@@ -157,8 +157,12 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   }
 
   const wake = (): void => {
+    const recovering = interrupted || (ac !== null && ac.state !== 'running' && ac.state !== 'closed')
     interrupted = false
     try {
+      // Mobile media can remain unpaused yet silent after an OS interruption.
+      // Re-establish the HTMLMediaElement path on the next trusted gesture.
+      if (recovering && mode === 'play' && musicOn && !bgm.paused) bgm.pause()
       if (!ac || ac.state === 'closed') {
         const created = createContext()
         if (!created) { playScore(); return }
@@ -183,6 +187,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   }
 
   const interrupt = (): void => {
+    if (interrupted) return
     interrupted = true
     bgm.pause()
     if (ac && ac.state === 'running') {
