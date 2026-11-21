@@ -4,8 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - assets/app-icon.svg
-      - assets/og-cover.svg
       - index.html
       - tests/test_brand_assets.py
       - manifest.webmanifest
