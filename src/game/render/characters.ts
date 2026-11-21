@@ -26,7 +26,9 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
   const a = e.phase || s.worldClock
   if (e.type === 'slime') {
     const v = Math.sin(a * 2.2)
-    ctx.translate(0, Math.max(-5, -Math.abs(v) * 5))
+    const jumping = e.ai?.state === 'attack' && e.ai.attack === 'pounce'
+    const lift = jumping ? Math.sin(Math.PI * (1 - Math.max(0, e.ai!.timer) / 0.26)) * 20 : Math.abs(v) * 5
+    ctx.translate(0, -lift)
     ctx.scale(1 + v * 0.05, 1 - v * 0.07)
   } else if (e.type === 'bat') {
     ctx.translate(0, Math.sin(a * 1.9) * 9 - 4)
