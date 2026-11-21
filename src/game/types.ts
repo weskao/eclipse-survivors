@@ -2,12 +2,12 @@
 
 export type GameMode = 'menu' | 'play' | 'level' | 'paused' | 'result'
 export type JobId = 'knight' | 'ranger' | 'wizard'
-export type MobType = 'slime' | 'bat' | 'goblin' | 'golem' | 'boss'
+export type MobType = 'slime' | 'bat' | 'goblin' | 'golem' | 'warlock' | 'boss'
 export type UpgradeId =
   | 'damage' | 'speed' | 'haste' | 'maxhp' | 'multi' | 'orb' | 'magnet' | 'heal'
   | 'bolt' | 'frost' | 'meteor' | 'blaze' | 'vortex' | 'shield' | 'chain'
 export type Weather = 'sunshower' | 'storm' | 'snow' | 'embers'
-export type ArtKey = JobId | MobType | 'ground' | 'courtyard'
+export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard'
 
 /** Every SFX cue name in the original `sfxCues` / `sfxCooldown` tables. */
 export type SfxCue =
@@ -36,6 +36,24 @@ export interface Hero {
 export interface Mob {
   x: number; y: number; type: MobType; hp: number; max: number; r: number; speed: number; dmg: number
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
+  ai?: EnemyBrain
+  elite?: boolean
+  bossPhase?: 1 | 2 | 3
+  summonedByBoss?: boolean
+}
+
+export type EnemyAttack = 'pounce' | 'dive' | 'jab' | 'slam' | 'bolt' | 'summon'
+export interface EnemyBrain {
+  state: 'approach' | 'windup' | 'attack' | 'recover'
+  timer: number
+  attack: EnemyAttack
+  aimX: number; aimY: number; dirX: number; dirY: number
+  cycle: number
+  hitThisAttack?: boolean
+}
+export interface EnemyProjectile {
+  x: number; y: number; vx: number; vy: number
+  radius: number; damage: number; life: number
 }
 
 export interface Shot {
@@ -65,6 +83,7 @@ export interface GameState {
   hero: Hero | null
   mobs: Mob[]
   shots: Shot[]
+  enemyShots: EnemyProjectile[]
   stars: Star[]
   fx: Fx[]
   swipes: Swipe[]
