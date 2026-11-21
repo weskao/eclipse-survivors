@@ -69,15 +69,18 @@ describe('step', () => {
     step(s, 0.1, still, spyHooks())
     expect(s.stars[0]!.x).toBeCloseTo(55)
   })
-  it('mobs walk toward the hero and deal contact damage', () => {
+  it('moving mobs approach while close slimes warn before contact damage', () => {
     const { s, hero } = setup()
     const far = mob(100, 0, { speed: 77 })
     const touching = mob(0, 20)
     s.mobs.push(far, touching)
     const hooks = spyHooks()
     step(s, 0.1, still, hooks)
-    expect(far.x).toBeCloseTo(92.3)
-    expect(hero.hp).toBe(175 - 11)
+    expect(far.x).toBeLessThan(100)
+    expect(touching.ai?.state).toBe('windup')
+    expect(hero.hp).toBe(hero.max)
+    step(s, 0.5, still, hooks)
+    expect(hero.hp).toBe(hero.max - 11)
     expect(hooks.sfx).toHaveBeenCalledWith('hurt')
   })
   it('auto-attacks when the attack timer runs out', () => {
