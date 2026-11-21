@@ -1,46 +1,26 @@
-## [0.0.1] - 2026-11-21
+# 更新紀錄 / Changelog
 
-### 🐛 Bug Fixes
+這份更新紀錄描述已加入專案的功能。網站是否已公開發布，以 [GitHub Pages 部署狀態](https://github.com/weskao/survivor-game/actions) 為準。
 
-- Use grounded character movement without sprite distortion
+## v0.0.1 — 2026-11-21
 
-### 💼 Other
+### 遊戲內容 / Gameplay
 
-- Support GitHub Pages branch publishing from main root
+- **三種職業**：騎士、遊俠與法師，具備各自的初始戰鬥能力。
+- **生存玩法**：怪物群、自動攻擊、經驗拾取、三選一升級與首領遭遇。
+- **多樣化能力**：15 種可持續強化的技能與被動能力，包括雷擊、冰霜、隕石、火焰及護盾。
+- **場景氛圍**：晨光、暴風雨、雪景與灰燼等動態環境效果。
+- **原創音訊**：背景配樂與戰鬥音效可在離線遊戲中播放。
+- **角色動作調整**：減少不自然的分段變形，採用完整人物圖像與較平滑的加速、減速及貼地步態。
 
-### 📚 Documentation
+### 發布與可用性 / Availability
 
-- Add honest bilingual player release notes
-- Describe gated Pages and tag-release workflow
+- 支援桌面鍵盤與手機觸控操作。
+- 單一 `index.html` 即可離線執行，無須安裝套件。
+- 加入 GitHub Pages 發布工作流程與離線完整性檢查。
 
-### 🧪 Testing
+### Notes
 
-- Verify the standalone game before publishing
-
-### ⚙️ Miscellaneous Tasks
-
-- Initial commit
-- Gate and publish standalone game to GitHub Pages
-# Changelog / 更新紀錄
-
-## Unreleased / 尚未發布
-
-The public deployment status is determined by the GitHub Pages workflow, not by this file. / 是否正式公開，以 GitHub Pages 工作流程結果為準。
-
-### 繁體中文
-
-- 在奇幻遺跡中挑選劍士、遊俠或法師，迎戰魔物與首領。
-- 擊敗魔物並收集經驗，升級時從多種能力中選擇強化。
-- 使用落雷、冰霜、隕石、火焰、渦流等技能；體驗不同氣候與場景氛圍。
-- 人物移動改為更自然、穩定的重心與腳步表現，減少不合理的身體變形。
-- 使用桌面鍵盤或手機觸控操作，享受遊戲中的原創配樂與音效。
-
-### English
-
-- Choose a knight, ranger, or mage and survive waves of monsters and a boss encounter.
-- Collect experience and select upgrades as you level up.
-- Fight with lightning, frost, meteors, fire, and vortex skills across changing atmospheric conditions.
-- Enjoy steadier character movement, grounded footsteps, and fewer unnatural sprite distortions.
-- Play using keyboard or touch controls with original background music and sound effects.
-
-> The detailed anime RPG screenshot shown during design exploration is concept artwork, not an implemented game scene.
+- Desktop and mobile controls are included in the playable prototype.
+- Gameplay features and visual quality should be assessed from the actual game, not from concept illustrations.
+- Public website availability depends on a successful GitHub Pages deployment.
