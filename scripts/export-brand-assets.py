@@ -15,8 +15,9 @@ DIST=ROOT/'dist'
 ART_NAMES=('knight','ranger','wizard','slime','bat','goblin','golem','boss','ground','courtyard')
 SHOTS=ASSETS/'screenshots'
 RESAMPLE=Image.Resampling.LANCZOS
-SERIF='/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf'
-SANS='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+# DejaVu (CI/Ubuntu) first so committed art stays identical; macOS fonts only for local runs.
+SERIF=next((p for p in ('/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf','/System/Library/Fonts/Supplemental/Georgia Bold.ttf') if os.path.exists(p)),'DejaVuSerif-Bold.ttf')
+SANS=next((p for p in ('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf','/System/Library/Fonts/Supplemental/Arial.ttf') if os.path.exists(p)),'DejaVuSans.ttf')
 
 def get_game_images(art_dir=SRC_ASSETS):
     images={}
