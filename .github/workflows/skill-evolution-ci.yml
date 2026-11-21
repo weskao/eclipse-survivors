@@ -3,6 +3,9 @@ on:
   push:
     branches: [feature/skill-evolution-system]
   workflow_dispatch:
+concurrency:
+  group: skill-evolution-feature
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
