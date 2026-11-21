@@ -2,6 +2,8 @@ import { TAU } from '../constants'
 import type { Artwork } from '../art'
 import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
+import { getFiringOrigin } from '../weapon-geometry'
+import { sampleWeaponRig } from './weapon-rig'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 
@@ -12,13 +14,14 @@ const ease = (n: number): number => {
 }
 
 /**
- * Deform the original character illustration as a continuous, 2D mesh.
- * Neighboring cells overlap slightly and displacement is a smooth function
- * of their position; faces, costume and weapons never become separate limbs.
- * It is deliberately not a scale or bounce of a rigid full-body sprite.
+ * Articulate the original transparent illustration using shoulder/elbow/wrist
+ * constraints rather than one rigid full-body translation. Small texture cells
+ * preserve the face, costume, and original weapon while the weighted arm and
+ * staff regions track the same joint pose used by the projectile origin.
+ * The expensive per-frame work is bounded to the single playable hero.
  */
 export function drawRigSprite(
-  ctx: Ctx2D, img: Drawable, sx: number, sy: number, hero: Hero, anim: HeroAnimation,
+  ctx: Ctx2D, img: Drawable, sx: number, sy: number, hero: Hero, anim: HeroAnimation, job: 'knight' | 'ranger' | 'wizard' = 'knight',
 ): void {
   const left = -sx / 2
   const top = -sy + 4
@@ -28,100 +31,113 @@ export function drawRigSprite(
   }
   const srcW = ('naturalWidth' in img ? img.naturalWidth : img.width) || img.width || sx
   const srcH = ('naturalHeight' in img ? img.naturalHeight : img.height) || img.height || sy
-  const bands = 12
-  const columns = 4
-  const cycle = Math.sin(anim.frame / anim.count * TAU)
-  const contact = Math.max(0, Math.min(1, hero.moveAmount))
-  const peak = Math.sin(Math.PI * anim.phase)
-  for (let row = 0; row < bands; row++) {
-    const v = (row + 0.5) / bands
-    const boot = ease((v - 0.60) / 0.38)
-    const chest = ease((v - 0.12) / 0.27) * (1 - ease((v - 0.68) / 0.22))
-    const head = 1 - ease((v - 0.1) / 0.27)
+  const columns = 8
+  const rows = 14
+  const cw = sx / columns
+  const ch = sy / rows
+  const posed = sampleWeaponRig(job, hero, anim)
+  const rest = sampleWeaponRig(job, hero, { ...anim, pose: 'idle', phase: 0 })
+  const elbowX = posed.elbow.x - rest.elbow.x
+  const elbowY = posed.elbow.y - rest.elbow.y
+  const wristX = posed.hand.x - rest.hand.x
+  const wristY = posed.hand.y - rest.hand.y
+  const supportX = posed.supportHand.x - rest.supportHand.x
+  const supportY = posed.supportHand.y - rest.supportHand.y
+  const upperTurn = Math.atan2(posed.elbow.y - posed.shoulder.y, posed.elbow.x - posed.shoulder.x)
+    - Math.atan2(rest.elbow.y - rest.shoulder.y, rest.elbow.x - rest.shoulder.x)
+  const bladeTurn = posed.bladeAngle - rest.bladeAngle
+  const walk = Math.sin(hero.step) * Math.max(0, Math.min(1, hero.moveAmount))
+  const action = anim.pose === 'attack' || anim.pose === 'cast'
+  const recoil = action ? Math.sin(Math.PI * anim.phase) : 0
+
+  for (let row = 0; row < rows; row++) {
+    const v = (row + 0.5) / rows
+    const legs = ease((v - 0.60) / 0.34)
+    const chest = ease((v - 0.20) / 0.19) * (1 - ease((v - 0.68) / 0.16))
+    const head = 1 - ease((v - 0.08) / 0.25)
     for (let col = 0; col < columns; col++) {
       const u = (col + 0.5) / columns
       const side = 1 - u * 2
-      let dx = 0
-      let dy = 0
-      switch (anim.pose) {
-        case 'idle':
-          dx = Math.sin(anim.phase * TAU) * (chest * 0.6 + boot * side * 0.35)
-          dy = -Math.sin(anim.phase * TAU) * chest * 0.5
-          break
-        case 'run':
-          dx = cycle * contact * (boot * side * 3.5 - chest * 1.4)
-          dy = boot * side * cycle * 3.0 - (chest + head) * Math.abs(cycle) * contact * 1.2
-          break
-        case 'attack':
-          dx = peak * (chest * 4.2 + head * 1.8 - boot * 0.4)
-          dy = -peak * chest * 2.6
-          break
-        case 'cast':
-          dx = peak * (side * chest * 2.3 - boot * 0.4)
-          dy = -peak * (head * 1.7 + chest * 2.4)
-          break
-        case 'dash':
-          dx = (1 - anim.phase) * (head * 5.6 + chest * 4.6) - boot * 0.9
-          dy = -Math.sin(anim.phase * Math.PI) * (head + chest) * 2.8
-          break
-        case 'hurt':
-          dx = (1 - anim.phase) * (head * 4.0 + chest * 3.6)
-          dy = anim.phase * head * 1.2
-          break
-        case 'death':
-          dx = anim.phase * (head * 9 + chest * 4.5)
-          dy = anim.phase * (head * 11 + chest * 5.5)
-          break
-        case 'victory':
-          dx = Math.sin(anim.phase * TAU) * (head * 1.3 + chest * 1.7)
-          dy = -Math.sin(anim.phase * Math.PI) * chest * 3.6
-          break
+      // Localized continuous skin weights, never a duplicate arm pasted on top.
+      const right = ease((u - 0.53) / 0.23) * ease((v - 0.18) / 0.15)
+        * (1 - ease((v - 0.77) / 0.17))
+      const wrist = ease((u - 0.70) / 0.24)
+      const weapon = ease((u - 0.80) / 0.18) * (1 - ease((v - 0.61) / 0.23))
+      const leftArm = (1 - ease((u - 0.19) / 0.25)) * ease((v - 0.20) / 0.16)
+        * (1 - ease((v - 0.73) / 0.15))
+      let dx = right * (elbowX * (1 - wrist) + wristX * wrist) + weapon * wristX * 0.35
+        + leftArm * supportX * 0.55
+      let dy = right * (elbowY * (1 - wrist) + wristY * wrist) + weapon * wristY * 0.35
+        + leftArm * supportY * 0.55
+      let rotation = right * (upperTurn * (1 - wrist) + bladeTurn * wrist) * 0.55 + weapon * bladeTurn * 0.28
+
+      if (anim.pose === 'run') {
+        dx += legs * side * walk * 4.3 - chest * walk * 1.6
+        dy += legs * side * walk * 3.2 - (chest + head) * Math.abs(walk) * 1.1
+      } else if (anim.pose === 'idle') {
+        dx += Math.sin(anim.phase * TAU) * chest * 0.5
+        dy -= Math.sin(anim.phase * TAU) * chest * 0.5
+      } else if (action) {
+        dx += chest * recoil * 2.4
+        dy -= chest * recoil * 1.7
+      } else if (anim.pose === 'dash') {
+        dx += (1 - anim.phase) * (head * 5.6 + chest * 4.6)
+        dy -= Math.sin(anim.phase * Math.PI) * (head + chest) * 2.8
+      } else if (anim.pose === 'hurt') {
+        dx += (1 - anim.phase) * (head * 4 + chest * 3.6)
+      } else if (anim.pose === 'death') {
+        dx += anim.phase * (head * 9 + chest * 4.5)
+        dy += anim.phase * (head * 11 + chest * 5.5)
+      } else if (anim.pose === 'victory') {
+        dx += Math.sin(anim.phase * TAU) * (head * 1.3 + chest * 1.7)
+        dy -= Math.sin(anim.phase * Math.PI) * chest * 3.6
       }
-      ctx.drawImage(
-        img,
-        srcW * col / columns, srcH * row / bands, srcW / columns, srcH / bands,
-        left + sx * col / columns + dx, top + sy * row / bands + dy,
-        sx / columns + 0.8, sy / bands + 0.7,
-      )
+      // Rotate each skinned cell around its own center; the overlapping tiles
+      // smoothly connect the bend while keeping source texels and transparency.
+      ctx.save()
+      ctx.translate(left + (col + 0.5) * cw + dx, top + (row + 0.5) * ch + dy)
+      ctx.rotate(rotation)
+      ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
+        -cw / 2 - 0.45, -ch / 2 - 0.45, cw + 0.9, ch + 0.9)
+      ctx.restore()
     }
   }
 }
 
-/** Tiny in-hand effects follow the action; there are no extra ghost limbs. */
-function drawPoseAccents(ctx: Ctx2D, kind: string, sx: number, sy: number, anim: HeroAnimation): void {
+/** Tiny aim-aligned accents trace the actual hand release, not a fixed screen spot. */
+function drawPoseAccents(
+  ctx: Ctx2D, kind: string, hero: Hero, anim: HeroAnimation,
+): void {
   if (anim.reducedMotion || (anim.pose !== 'attack' && anim.pose !== 'cast' && anim.pose !== 'victory')) return
-  const phase = anim.phase
-  const power = Math.max(0, Math.sin(Math.PI * phase))
+  const power = Math.max(0, Math.sin(Math.PI * anim.phase))
+  const rig = sampleWeaponRig(kind as 'knight' | 'ranger' | 'wizard', hero, anim)
   if (anim.pose === 'cast') {
-    ctx.save()
-    ctx.strokeStyle = '#b6aaffb8'
-    ctx.lineWidth = 1.6
-    ctx.globalAlpha = power * 0.85
-    const cy = -sy * 0.54
-    ctx.beginPath(); ctx.ellipse(sx * 0.31, cy, 14 + power * 6, 6 + power * 2, phase * TAU, 0, TAU); ctx.stroke()
+    const grip = getFiringOrigin('wizard', 1)
+    ctx.save(); ctx.translate(grip.x, grip.y); ctx.rotate(rig.aim)
+    ctx.strokeStyle = '#b6aaffb8'; ctx.lineWidth = 1.6; ctx.globalAlpha = power * 0.85
+    ctx.beginPath(); ctx.ellipse(13 + power * 6, 0, 14 + power * 6, 6 + power * 2, anim.phase * TAU, 0, TAU); ctx.stroke()
     for (let i = 0; i < 4; i++) {
-      const a = phase * TAU + i * TAU / 4
+      const a = anim.phase * TAU + i * TAU / 4
       ctx.fillStyle = i % 2 ? '#c5ecff' : '#e7ceff'
-      ctx.fillRect(sx * 0.31 + Math.cos(a) * 20, cy + Math.sin(a) * 10, 2.5, 2.5)
+      ctx.fillRect(18 + Math.cos(a) * 20, Math.sin(a) * 10, 2.5, 2.5)
     }
     ctx.restore()
-  } else if (anim.pose === 'attack') {
+  } else if (anim.pose === 'attack' && kind === 'ranger') {
+    const grip = getFiringOrigin('ranger', 1)
+    // Bow-string recoil stays anchored to the bow hand and points downrange.
+    ctx.save(); ctx.translate(grip.x, grip.y); ctx.rotate(rig.aim)
+    ctx.strokeStyle = '#ffdf9b'; ctx.lineWidth = 1.2; ctx.globalAlpha = power * 0.55
+    ctx.beginPath(); ctx.moveTo(-8 - power * 5, -18); ctx.lineTo(0, 0); ctx.lineTo(-8 - power * 5, 18); ctx.stroke()
+    ctx.restore()
+  } else if (anim.pose === 'attack' && kind === 'knight') {
     ctx.save()
-    ctx.globalAlpha = power * (kind === 'knight' ? 0.68 : 0.32)
-    ctx.strokeStyle = kind === 'knight' ? '#ffdb9c' : '#d3f6d6'
-    ctx.lineWidth = 2.2
-    ctx.beginPath()
-    ctx.arc(sx * 0.26, -sy * 0.49, 17, -1.9 + phase, 0.75 + phase)
-    ctx.stroke()
+    ctx.globalAlpha = power * 0.7; ctx.strokeStyle = '#ffdb9c'; ctx.lineWidth = 2.6
+    ctx.beginPath(); ctx.arc(rig.hand.x, rig.hand.y, 26, rig.bladeAngle - 0.85, rig.bladeAngle + 0.7); ctx.stroke()
     ctx.restore()
   } else if (anim.pose === 'victory') {
-    ctx.save()
-    ctx.globalAlpha = 0.20 + power * 0.24
-    ctx.strokeStyle = '#f5dfa8'
-    ctx.lineWidth = 1.2
-    ctx.beginPath()
-    ctx.ellipse(0, -sy * 0.45, sx * 0.39, sy * 0.53, 0, 0, TAU)
-    ctx.stroke()
+    ctx.save(); ctx.globalAlpha = 0.20 + power * 0.24
+    ctx.strokeStyle = '#f5dfa8'; ctx.lineWidth = 1.2
+    ctx.beginPath(); ctx.ellipse(0, -65, 40, 72, 0, 0, TAU); ctx.stroke()
     ctx.restore()
   }
 }
@@ -209,8 +225,8 @@ export function drawCharacter(
   const drawable = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   if (drawable) {
     if (hero && anim) {
-      drawRigSprite(ctx, drawable, sx, sy, hero, anim)
-      drawPoseAccents(ctx, kind, sx, sy, anim)
+      drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice)
+      drawPoseAccents(ctx, kind, hero, anim)
     } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
   }
   ctx.restore()
