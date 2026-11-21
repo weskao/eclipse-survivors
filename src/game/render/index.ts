@@ -61,7 +61,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (!cached || cached.ctx !== ctx || cached.width !== W || cached.height !== H || cached.weather !== scene.weather) {
     assets.weatherCache = { ctx, width: W, height: H, weather: scene.weather, gradient: weatherGrade(ctx, W, H, scene.weather) }
   }
-  ctx.fillStyle = assets.weatherCache.gradient
+  ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
   drawAmbient(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
