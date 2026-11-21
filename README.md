@@ -14,7 +14,7 @@
   &nbsp;•&nbsp; <a href="docs/release-process.md">Releases</a>
 </p>
 
-> **Real gameplay images:** All screenshots in this README are captured from the actual `index.html` using a headless browser. The app icon and social preview are composed exclusively from art assets already embedded in the game, rather than unrelated concept images.
+> **Real gameplay images:** All screenshots in this README are captured from the built game (`pnpm build`, output in `dist/`) using a headless browser. The app icon and social preview are composed exclusively from art assets already embedded in the game, rather than unrelated concept images.
 
 ## Actual Gameplay Screenshots
 
@@ -57,7 +57,7 @@ The character selection screen shows the **current published version** in its bo
 
 **Play online:** [weskao.github.io/eclipse-survivors](https://weskao.github.io/eclipse-survivors/)
 
-**Play offline:** Download `index.html` and open it in a modern browser. No build tools, extra packages, or server are needed.
+**Run locally:** Requires Node.js 24 and pnpm. See [Development](#development) below.
 
 > Browsers require a user gesture before audio playback. Tap or click the selection screen to unlock its cinematic music; gameplay music begins when you press **Start Adventure**. Music and SFX have independent, remembered toggles.
 
@@ -81,28 +81,53 @@ The home-screen icon uses the knight sprite from the game. The social preview co
 
 ## Technology
 
-- HTML5 Canvas, JavaScript, and CSS
-- Self-contained game with no required runtime CDN or game server
-- Embedded original sound and visual assets
+- Vue 3, TypeScript, and Vite, built with pnpm
+- HTML5 Canvas for the game world; Vue components for menus and HUD
+- Static multi-file build with no required runtime CDN or game server
+- Embedded original sound and visual assets, bundled locally by Vite
 - GitHub Pages distribution
 - Mobile app icons and social previews generated from actual in-game character art and gameplay
 - Automated real-game browser screenshot capture for the README
 
+## Development
+
+Requirements: **Node.js 24** and **pnpm**. The pnpm version is pinned by the `packageManager` field in `package.json`; `corepack enable` provides it.
+
+```bash
+pnpm install       # install dependencies (pnpm-lock.yaml is authoritative)
+pnpm dev           # local dev server
+pnpm test          # Vitest unit tests
+pnpm typecheck     # strict TypeScript check (vue-tsc)
+pnpm build         # static site in dist/
+pnpm preview       # serve dist/ locally to check the production build
+```
+
+The build is a static multi-file site. Scripts, styles, art, and music are all bundled locally, with no CDN or third-party runtime dependency. Asset URLs are relative (`base: './'`), so `dist/` can be deployed under any sub-path, such as `https://<user>.github.io/eclipse-survivors/`.
+
+The brand-asset export (`scripts/export-brand-assets.py`) serves `dist/`, so run `pnpm build` before it.
+
 ## Project Layout
 
 ```text
-index.html                       Standalone playable game
-manifest.webmanifest             Home-screen web app metadata
-assets/icon-192.png              App icon based on in-game knight sprite (generated)
-assets/apple-touch-icon.png      iOS home-screen icon (generated)
-assets/icon-512.png              High-resolution home-screen icon (generated)
-assets/og-cover.png              Social preview: real gameplay and in-game sprites
-assets/screenshots/              Screenshots captured from actual gameplay
-scripts/export-brand-assets.py   Generate raster assets and capture screenshots
+index.html                         Vite entry page
+manifest.webmanifest               Home-screen web app metadata
+package.json, pnpm-lock.yaml       Dependencies, scripts and pinned pnpm version
+vite.config.ts                     Build config (relative base) and Vitest settings
+src/main.ts                        Vue app entry
+src/game/                          Game engine modules: state, input, math, audio, render (TypeScript)
+src/components/                    Vue 3 UI: menus, HUD and level-up screens
+src/assets/                        Art and music bundled by Vite (for example bgm.mp3)
+assets/icon-192.png                App icon based on in-game knight sprite (generated)
+assets/apple-touch-icon.png        iOS home-screen icon (generated)
+assets/icon-512.png                High-resolution home-screen icon (generated)
+assets/og-cover.png                Social preview: real gameplay and in-game sprites
+assets/screenshots/                Screenshots captured from actual gameplay
+tests/                             Python brand-asset tests; Vitest suites live beside their source
+scripts/export-brand-assets.py     Generate raster assets and capture screenshots (needs dist/)
 .github/workflows/brand-assets.yml Artwork generation workflow
-.github/workflows/release.yml    GitHub Pages publishing
-CHANGELOG.md                     Player-facing changes
-docs/release-process.md          Publishing and version guidelines
+.github/workflows/release.yml      Verification and GitHub Pages publishing
+CHANGELOG.md                       Player-facing changes
+docs/release-process.md            Publishing and version guidelines
 ```
 
 ## Status and Artwork
