@@ -256,13 +256,14 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     resetBattleClock(delay) {
       battle.setClock(ac ? ac.currentTime + delay : 0)
     },
-    toggleMusic(mode) {
+    toggleMusic(screen) {
+      mode = screen
       musicOn = !musicOn
       save('starMusic', musicOn)
       if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN : 0, ac.currentTime, 0.06)
       if (musicOn) {
         wake()
-        if (mode === 'play') playScore()
+        if (screen === 'play') playScore()
         const t = ac ? ac.currentTime + 0.04 : 0
         menu.setClock(t)
         battle.setClock(t)

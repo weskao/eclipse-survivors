@@ -54,7 +54,7 @@ jobs:
             echo "::group::Merge diagnostics for $branch"
             if git -c user.email=ci@users.noreply.github.com -c user.name=CI merge --no-commit --no-ff FETCH_HEAD >/tmp/merge-output 2>&1; then
               echo "NO TEXTUAL CONFLICTS: $branch"
-              git merge --abort
+              git merge --abort 2>/dev/null || true
             else
               echo "CONFLICTS: $branch"
               cat /tmp/merge-output
