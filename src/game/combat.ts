@@ -6,7 +6,8 @@ import type { GameHooks, GameState, Hero, Mob } from './types'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
 export const nearestAlive = (mobs: Mob[], hero: Hero): Mob[] =>
-  mobs.filter((e) => e.hp > 0).sort((a, b) => dist(a.x - hero.x, a.y - hero.y) - dist(b.x - hero.x, b.y - hero.y))
+  mobs.filter((e) => e.hp > 0).sort((a, b) =>
+    dist(a.x - hero.x, a.y - hero.y) - a.r - (dist(b.x - hero.x, b.y - hero.y) - b.r))
 
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
@@ -54,7 +55,7 @@ export function attack(s: GameState, hooks: GameHooks): void {
   const choice = s.choice
   const close = nearestAlive(s.mobs, hero)
   const target = close[0]
-  if (!target || dist(target.x - hero.x, target.y - hero.y) > hero.range) return
+  if (!target || dist(target.x - hero.x, target.y - hero.y) > hero.range + target.r) return
   const multi = Math.min(1 + (hero.skills.multi ?? 0), 4)
   const angle = Math.atan2(target.y - hero.y, target.x - hero.x)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
@@ -67,7 +68,7 @@ export function attack(s: GameState, hooks: GameHooks): void {
       for (const e of close) {
         const r = dist(e.x - hero.x, e.y - hero.y)
         const d = Math.atan2(e.y - hero.y, e.x - hero.x)
-        if (r < hero.range && Math.cos(d - a) > 0.71) hit(s, e, hero.damage, hooks)
+        if (r < hero.range + e.r && Math.cos(d - a) > 0.71) hit(s, e, hero.damage, hooks)
       }
     }
     hooks.sfx('knight')

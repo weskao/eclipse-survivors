@@ -205,7 +205,7 @@ describe('projectile collision precision', () => {
   })
   it('can hit during the final fraction of a projectile lifetime', () => {
     const { s } = setup()
-    const target = mob(20, 0)
+    const target = mob(40, 0)
     s.mobs.push(target)
     s.shots.push({ x: 0, y: 0, vx: 540, vy: 0, life: 0.05, d: 22, kind: 'arrow', r: 5 })
     step(s, 0.2, still, spyHooks())

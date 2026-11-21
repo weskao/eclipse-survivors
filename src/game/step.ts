@@ -61,9 +61,20 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void
     let firstContact = Infinity
     for (const e of s.mobs) {
       if (e.hp <= 0) continue
-      const t = minmax(((e.x - b.prevX) * dx + (e.y - b.prevY) * dy) / lengthSquared, 0, 1)
-      if (t >= firstContact) continue
-      if (dist(b.prevX + dx * t - e.x, b.prevY + dy * t - e.y) <= e.r + b.r) {
+      const ox = b.prevX - e.x
+      const oy = b.prevY - e.y
+      const reach = e.r + b.r
+      const c = ox * ox + oy * oy - reach * reach
+      let t = 0
+      if (c > 0) {
+        if (lengthSquared === 0) continue
+        const projection = ox * dx + oy * dy
+        const discriminant = projection * projection - lengthSquared * c
+        if (discriminant < 0) continue
+        t = (-projection - Math.sqrt(discriminant)) / lengthSquared
+        if (t < 0 || t > 1) continue
+      }
+      if (t < firstContact) {
         closest = e
         firstContact = t
       }
