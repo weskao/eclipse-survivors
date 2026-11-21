@@ -7,6 +7,7 @@ import LevelUpOverlay from './components/LevelUpOverlay.vue'
 import PauseOverlay from './components/PauseOverlay.vue'
 import ResultOverlay from './components/ResultOverlay.vue'
 import TouchControls from './components/TouchControls.vue'
+import './meta/ui.css'
 
 const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
@@ -46,6 +47,12 @@ onBeforeUnmount(() => unmount?.())
     :music-on="ui.musicOn"
     :sfx-on="ui.sfxOn"
     :version="version"
+    :run-mode="ui.runMode"
+    :profile="ui.profile"
+    @mode="engine.selectRunMode"
+    @purchase="engine.buyPermanentUpgrade"
+    @cosmetic="engine.selectCosmetic"
+    @reset="engine.resetProgress"
     @select="engine.selectJob"
     @start="engine.start"
     @toggle-music="engine.toggleMusic"
@@ -57,6 +64,8 @@ onBeforeUnmount(() => unmount?.())
     :active="ui.mode === 'result'"
     :ending="ui.ending"
     :summary="ui.summary"
+    :run-result="ui.runResult"
+    :rewards="ui.rewards"
     @again="engine.start"
     @home="engine.goMenu"
   />

@@ -187,8 +187,12 @@ export function drawCharacter(
   ctx.restore()
   const anim = hero ? sampleHeroAnimation(s, hero, reducedMotion) : null
   if (hero) {
-    softGlow(ctx, x, y, 72, '#efd69d30', reducedMotion ? 0.4 : 0.8)
-    ctx.strokeStyle = '#f4de9d9f'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(x, y + 2, 35, 11, 0, 0, TAU); ctx.stroke()
+    const aura = s.cosmetic === 'knight-gilded' ? ['#edc66b55', '#ffe2a7c8']
+      : s.cosmetic === 'ranger-moonlit' ? ['#86abf555', '#c7ddffca']
+      : s.cosmetic === 'wizard-astral' ? ['#bc92fc66', '#e2c5ffca']
+      : ['#efd69d30', '#f4de9d9f']
+    softGlow(ctx, x, y, 72, aura[0]!, reducedMotion ? 0.4 : 0.8)
+    ctx.strokeStyle = aura[1]!; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(x, y + 2, 35, 11, 0, 0, TAU); ctx.stroke()
     if (hero.dash > 0 && !reducedMotion) {
       ctx.save(); ctx.strokeStyle = '#c9effa99'; ctx.lineWidth = 2; ctx.beginPath()
       ctx.ellipse(x, y + 2, 50 + Math.sin(s.worldClock * 28) * 4, 13, 0, 0, TAU); ctx.stroke(); ctx.restore()

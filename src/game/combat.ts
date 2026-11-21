@@ -13,6 +13,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
   const boss = e.type === 'boss'
+  s.damageDealt += Math.min(e.hp, d)
   e.hp = Math.max(0, e.hp - d)
   e.hit = 0.16
   e.stagger = Math.min(0.22, e.stagger + (boss ? 0.04 : 0.12))
@@ -25,6 +26,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   burst(s, e.x, e.y, '#fff3c4', 2)
   if (e.hp === 0) {
     s.kill++
+    s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
     const value = boss ? 45 : e.type === 'golem' ? 9 : e.type === 'goblin' ? 5 : 3
     s.stars.push({ x: e.x, y: e.y, value, t: rand(0, 6) })
     burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
@@ -120,7 +122,9 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   if (!hero || s.mode !== 'play' || hero.hp <= 0 || hero.inv > 0 || hero.dash > 0 || !Number.isFinite(n) || n <= 0) return
   const shield = hero.skills.shield ?? 0
   const reduce = 1 - Math.min(0.52, shield * 0.12)
-  hero.hp = Math.max(0, hero.hp - n * reduce)
+  const taken = n * reduce
+  s.damageTaken += Math.min(Math.max(0, hero.hp), taken)
+  hero.hp = Math.max(0, hero.hp - taken)
   hero.inv = 1
   s.cameraKick = Math.min(12, s.cameraKick + 4)
   impact(s, hero.x, hero.y, 48, '#ff5b69', 1)

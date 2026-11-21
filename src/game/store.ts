@@ -1,4 +1,5 @@
 import { MAX_LEVEL, UP } from './constants'
+import type { Profile, RunModeId, RunRewards, RunStats, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { EVOLUTIONS, EVOLUTION_COOLDOWN } from './evolutions'
 import type { AbilityId, GameMode, Hero, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
 
@@ -72,6 +73,10 @@ export interface UiState {
   /** `#ending` / `#summary` text. */
   ending: string
   summary: string
+  runMode: RunModeId
+  profile: Profile
+  runResult: RunStats | null
+  rewards: RunRewards | null
   /** `(pointer:coarse)` matched: show touch controls while playing. */
   coarsePointer: boolean
 }
@@ -79,6 +84,10 @@ export interface UiState {
 export interface GameCommands {
   selectJob(job: JobId): void
   start(): void
+  selectRunMode(mode: RunModeId): void
+  buyPermanentUpgrade(upgrade: PermanentUpgrade): void
+  selectCosmetic(hero: JobId, skin: CosmeticId): void
+  resetProgress(): void
   chooseUpgrade(id: AbilityId): void
   /** Original `pause()`: play → paused, paused → play. */
   togglePause(): void

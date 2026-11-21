@@ -1,5 +1,6 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { attack, hit, victoryConditionMet } from './combat'
+import { hasWonRun } from '../meta/modes'
 import { tickWorld } from './events'
 import { resolveObstacleCollision } from './world'
 import { tickEnemies, tickEnemyProjectiles } from './enemies/ai'
@@ -164,5 +165,6 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)
   s.cam.y += (hero.y - s.cam.y) * minmax(dt * 9, 0, 1)
   s.sceneFxClock += dt
-  if (s.mode === 'play' && victoryConditionMet(s)) hooks.end(true)
+  if (s.mode === 'play' && hasWonRun(s.runMode, { seconds: s.time, bossSpawned: s.bossSpawned, bossDefeated: s.bossDefeated })
+    && victoryConditionMet(s, 'boss')) hooks.end(true)
 }
