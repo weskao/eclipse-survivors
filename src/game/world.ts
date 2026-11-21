@@ -17,18 +17,44 @@ const GRID = 290
 const HAZARD_GRID = 430
 const distance = (a: Point, b: Point): number => Math.hypot(a.x - b.x, a.y - b.y)
 
+// Nearby actors share deterministic terrain. Bound the cache so endless runs do
+// not retain every cell ever visited; evicting only costs regeneration.
+const obstacleCells = new Map<string, WorldObstacle | null>()
+const MAX_OBSTACLE_CELLS = 1024
+
+function obstacleInCell(scene: number, i: number, j: number): WorldObstacle | null {
+  const key = `${scene}:${i}:${j}`
+  const cached = obstacleCells.get(key)
+  if (cached !== undefined) return cached
+
+  let obstacle: WorldObstacle | null = null
+  if (hash(i + 17 * scene, j + 41) >= 0.43) {
+    const x = (i + 0.5) * GRID + (hash(i + scene * 31, j + 7) - 0.5) * 105
+    const y = (j + 0.5) * GRID + (hash(i + 13, j + scene * 43) - 0.5) * 105
+    if (x * x + y * y >= 205 * 205) {
+      obstacle = { x, y, r: 29 + Math.floor(hash(i + 9, j + scene * 11) * 14),
+        variant: Math.floor(hash(i + 3, j + scene) * 3) }
+    }
+  }
+  if (obstacleCells.size >= MAX_OBSTACLE_CELLS) {
+    const oldest = obstacleCells.keys().next()
+    if (!oldest.done) obstacleCells.delete(oldest.value)
+  }
+  obstacleCells.set(key, obstacle)
+  return obstacle
+}
+
 /** A stable sparse grid; no generated obstacle ever occupies the starting clearing. */
 export function nearbyObstacles(scene: number, x: number, y: number, radius: number): WorldObstacle[] {
   const result: WorldObstacle[] = []
   const pad = 100
   for (let i = Math.floor((x - radius - pad) / GRID); i <= Math.ceil((x + radius + pad) / GRID); i++) {
     for (let j = Math.floor((y - radius - pad) / GRID); j <= Math.ceil((y + radius + pad) / GRID); j++) {
-      if (hash(i + 17 * scene, j + 41) < 0.43) continue
-      const px = (i + 0.5) * GRID + (hash(i + scene * 31, j + 7) - 0.5) * 105
-      const py = (j + 0.5) * GRID + (hash(i + 13, j + scene * 43) - 0.5) * 105
-      const r = 29 + Math.floor(hash(i + 9, j + scene * 11) * 14)
-      if (Math.hypot(px, py) < 205 || Math.hypot(px - x, py - y) > radius + r) continue
-      result.push({ x: px, y: py, r, variant: Math.floor(hash(i + 3, j + scene) * 3) })
+      const o = obstacleInCell(scene, i, j)
+      if (!o) continue
+      const dx = o.x - x, dy = o.y - y, reach = radius + o.r
+      if (dx * dx + dy * dy > reach * reach) continue
+      result.push(o)
     }
   }
   return result
