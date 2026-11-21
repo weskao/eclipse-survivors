@@ -93,3 +93,17 @@ describe('tickSpawning', () => {
     expect(hooks.message).toHaveBeenCalledWith('⚠ 魔王降臨！')
   })
 })
+
+describe('boss-cap regression', () => {
+  it('still spawns the required boss when the ordinary mob cap is full', () => {
+    const s = setup()
+    s.spawnT = 999
+    s.time = 93
+    for (let i = 0; i < MAX_MOBS; i++) spawnMob(s)
+    const hooks = spyHooks()
+    tickSpawning(s, 0.016, hooks)
+    expect(s.bossSpawned).toBe(true)
+    expect(s.mobs.filter(m => m.type === 'boss')).toHaveLength(1)
+    expect(hooks.message).toHaveBeenCalledWith('⚠ 魔王降臨！')
+  })
+})

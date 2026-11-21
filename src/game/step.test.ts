@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { step } from './step'
+import { hit } from './combat'
 import { DURATION } from './constants'
 import { seeded, setRandom } from './math'
 import { createHero, createState } from './state'
@@ -45,9 +46,11 @@ describe('step', () => {
     expect(s.currentScene).toBe(1)
     expect(hooks.sfx).toHaveBeenCalledWith('scene')
   })
-  it('ends the run as a victory at DURATION', () => {
+  it('ends the run at DURATION after the boss was defeated', () => {
     const { s } = setup()
     s.time = DURATION - 0.01
+    s.bossDefeated = true
+    s.bossSpawned = true
     const hooks = spyHooks()
     step(s, 0.005, still, hooks)
     expect(hooks.end).not.toHaveBeenCalled()
@@ -113,5 +116,70 @@ describe('step', () => {
     expect(s.numberFx).toHaveLength(0)
     expect(s.swipes).toHaveLength(1)
     expect(s.cam.x).toBeCloseTo(90)
+  })
+})
+
+describe('simulation correctness regressions', () => {
+  it('does not award victory at the deadline with the required boss alive', () => {
+    const { s } = setup()
+    s.time = DURATION - 0.02
+    s.bossSpawned = true
+    s.mobs.push(mob(300, 0, { type: 'boss', hp: 1000 }))
+    const hooks = spyHooks()
+    step(s, 0.03, still, hooks)
+    expect(hooks.end).not.toHaveBeenCalled()
+    hit(s, s.mobs[0]!, 1000, hooks)
+    step(s, 0.016, still, hooks)
+    expect(hooks.end).toHaveBeenCalledOnce()
+    expect(hooks.end).toHaveBeenCalledWith(true)
+  })
+  it('ignores corpses for contact damage and never rewards them twice', () => {
+    const { s, hero } = setup()
+    const dead = mob(0, 10, { hp: 5, dmg: 100 })
+    s.mobs.push(dead)
+    const hooks = spyHooks()
+    hit(s, dead, 20, hooks)
+    step(s, 0.016, still, hooks)
+    expect(hero.hp).toBe(hero.max)
+    expect(s.kill).toBe(1)
+    expect(s.mobs).toHaveLength(0)
+  })
+  it('detects projectiles crossing multiple targets and hits the earliest one', () => {
+    const { s } = setup()
+    const near = mob(45, 0)
+    const far = mob(95, 0)
+    s.mobs.push(far, near)
+    s.shots.push({ x: 0, y: 0, vx: 540, vy: 0, life: 1.2, d: 22, kind: 'arrow', r: 5 })
+    step(s, 0.2, still, spyHooks())
+    expect(near.hp).toBe(78)
+    expect(far.hp).toBe(100)
+    expect(s.shots).toHaveLength(0)
+  })
+  it('moves a recently hit mob outward while staggered', () => {
+    const { s } = setup()
+    const enemy = mob(100, 0, { speed: 0 })
+    s.mobs.push(enemy)
+    hit(s, enemy, 10, spyHooks())
+    step(s, 0.05, still, spyHooks())
+    expect(enemy.x).toBeGreaterThan(102)
+  })
+  it('keeps the required boss after the usual far-mob despawn radius', () => {
+    const { s } = setup()
+    s.bossSpawned = true
+    s.mobs.push(mob(2000, 0, { type: 'boss' }), mob(2000, 10))
+    step(s, 0.016, still, spyHooks())
+    expect(s.mobs.map(e => e.type)).toEqual(['boss'])
+  })
+  it('never converts a lethal contact hit into a victory on the same tick', () => {
+    const { s, hero } = setup()
+    hero.hp = 1
+    s.time = DURATION - 0.01
+    s.bossDefeated = true
+    s.bossSpawned = true
+    s.mobs.push(mob(0, 10, { dmg: 100 }))
+    const hooks = spyHooks()
+    step(s, 0.02, still, hooks)
+    expect(hooks.end).toHaveBeenCalledTimes(1)
+    expect(hooks.end).toHaveBeenCalledWith(false)
   })
 })
