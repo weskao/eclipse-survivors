@@ -23,9 +23,9 @@ assert.match(html, /id="music"/, 'music control is required');
 assert.match(html, /id="sfx"/, 'sound effects toggle is required');
 assert.match(html, /id="menuSfx"/, 'menu sound effects toggle is required');
 const changelog = readFileSync(new URL('../CHANGELOG.md', import.meta.url), 'utf8');
-const currentVersion = changelog.match(/^## \\[([0-9]+\\.[0-9]+\\.[0-9]+)\\]/m)?.[1];
+const currentVersion = changelog.match(/^## \[([0-9]+\.[0-9]+\.[0-9]+)\]/m)?.[1];
 assert.ok(currentVersion, 'CHANGELOG must declare a version');
-assert.match(html, new RegExp('id="gameVersion"[^>]*>v' + currentVersion.replace(/\\./g, '\\\\.') + '<'),
+assert.match(html, new RegExp('id="gameVersion"[^>]*>v' + currentVersion.replace(/\./g, '\\.') + '<'),
   'menu version must match the current published changelog version');
 assert.match(html, /audio\/mpeg|audio\/mp3|data:audio/i, 'music must be embedded for offline play');
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)];
