@@ -7,7 +7,7 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildMagicGlow, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
@@ -23,6 +23,7 @@ export interface RenderAssets {
   prefersReducedMotion: () => boolean
   biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
+  magicGlow: HTMLCanvasElement | null
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -36,6 +37,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     prefersReducedMotion: () => query?.matches ?? false,
     depthOrder: [],
     biomes: buildBiomeArt(makeCanvas),
+    magicGlow: buildMagicGlow(makeCanvas),
   }
 }
 
@@ -103,7 +105,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced)
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
-  drawShots(ctx, s, ox, oy)
+  drawShots(ctx, s, ox, oy, assets.magicGlow)
   drawEnemyProjectiles(ctx, s, ox, oy)
   drawOrbs(ctx, s, hero, ox, oy)
   drawImpactWaves(ctx, s, ox, oy)
