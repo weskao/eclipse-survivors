@@ -1,0 +1,74 @@
+name: Eclipse Survivors v1 integration verification
+
+on:
+  push:
+    branches:
+      - feature/eclipse-survivors-v1-integration
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm check-release
+      - name: Verify GitHub Pages distribution
+        run: |
+          test -s dist/index.html
+          test -s dist/manifest.webmanifest
+          test -s dist/assets/og-cover.png
+          test -s dist/assets/screenshots/gameplay.webp
+
+  inspect-merges:
+    if: github.ref == 'refs/heads/feature/eclipse-survivors-v1-integration'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Identify unmerged conflicts without altering the branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/merge-reports
+          for name in advanced-enemies-bosses skill-evolution-system biomes-and-random-events meta-progression-game-modes audio-ux-performance-polish; do
+            branch="feature/$name"
+            git fetch origin "$branch" --quiet
+            echo "::group::Merge diagnostics for $branch"
+            if git -c user.email=ci@users.noreply.github.com -c user.name=CI merge --no-commit --no-ff FETCH_HEAD >/tmp/merge-output 2>&1; then
+              echo "NO TEXTUAL CONFLICTS: $branch"
+              git merge --abort
+            else
+              echo "CONFLICTS: $branch"
+              cat /tmp/merge-output
+              git diff --name-only --diff-filter=U | tee "/tmp/merge-reports/$name.txt"
+              while IFS= read -r path; do
+                echo "CONFLICT FILE: $path"
+                git diff -- "$path" | head -120 || true
+              done < "/tmp/merge-reports/$name.txt"
+              git merge --abort
+            fi
+            echo "::endgroup::"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-conflict-report
+          path: /tmp/merge-reports
