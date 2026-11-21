@@ -1,13 +1,10 @@
 name: Verify and publish Eclipse Survivors
 
-# One path: every push to main is checked and published. Tags/Releases come from scripts/release.sh.
+# Main pushes are verified and deployed; only a successful deployment may publish a versioned Release.
 on:
   push:
     branches: [main]
   workflow_dispatch:
-  workflow_run:
-    workflows: ['Export game artwork and screenshots']
-    types: [completed]
 
 concurrency:
   group: github-pages
@@ -15,11 +12,11 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     name: Verify and deploy game to GitHub Pages
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
       pages: write
       id-token: write
     environment:
@@ -60,6 +57,30 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+      # Artifact indexing can lag behind a successful upload. A clean run must
+      # expose exactly one github-pages artifact before deploy-pages starts.
+      - name: Wait for Pages artifact indexing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 18); do
+            count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" \
+              --jq '[.artifacts[] | select(.name == "github-pages" and .expired == false)] | length' || echo 0)
+            if [ "$count" = "1" ]; then
+              echo "Pages artifact indexed (attempt $attempt)."
+              sleep 5
+              exit 0
+            fi
+            if [ "$count" != "0" ]; then
+              echo "::error::Expected one Pages artifact, found $count. Use a clean run, not a rerun with duplicates."
+              exit 1
+            fi
+            sleep 5
+          done
+          echo '::error::Pages artifact is still not discoverable.'
+          exit 1
       - uses: actions/deploy-pages@v4
         id: deployment
       - name: Verify the public game URL
@@ -78,3 +99,49 @@ jobs:
           done
           echo '::error::The published site did not serve the playable game.'
           exit 1
+
+  release:
+    name: Publish versioned GitHub Release after deployed v1
+    needs: deploy
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Publish tagged release for exactly the verified main commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          current=$(git rev-parse HEAD)
+          remote=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$current" != "$GITHUB_SHA" ] || [ "$remote" != "$GITHUB_SHA" ]; then
+            echo '::error::main moved while deploying; release the newer commit instead.'
+            exit 1
+          fi
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Existing release $tag; no duplicate."
+            exit 0
+          fi
+          if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
+            echo "::error::Tag $tag exists without a release. Inspect manually."
+            exit 1
+          fi
+          awk -v version="$version" '
+            $0 ~ "^## \\[" version "\\]" { found=1; print; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > /tmp/release-notes.md
+          if [ ! -s /tmp/release-notes.md ]; then
+            echo "::error::Missing changelog notes for $tag."
+            exit 1
+          fi
+          gh release create "$tag" --target "$GITHUB_SHA" \
+            --title "Eclipse Survivors $tag" --notes-file /tmp/release-notes.md
