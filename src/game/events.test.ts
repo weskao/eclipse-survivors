@@ -101,3 +101,30 @@ describe('controlled random events', () => {
     expect(s.hero!.hp).toBeLessThan(damaged)
   })
 })
+
+
+describe('visible danger bounds', () => {
+  it('uses the rendered ellipse rather than an invisible circular damage radius', () => {
+    const s = make()
+    s.currentScene = 3
+    const h = nearbyHazards(3, 0, 0, 900)[0]!
+    s.hero!.x = h.x
+    s.hero!.y = h.y + h.r * .94
+    s.sceneEnteredAt = 0
+    s.time = 12
+    tickWorld(s, .016, hooks())
+    expect(s.hero!.hp).toBe(s.hero!.max)
+    s.hero!.y = h.y
+    s.time = 14
+    tickWorld(s, .016, hooks())
+    expect(s.hero!.hp).toBeLessThan(s.hero!.max)
+  })
+  it('does not advance event scheduling while the game is paused', () => {
+    const s = make()
+    s.nextEventAt = 0
+    s.mode = 'paused'
+    tickWorld(s, 1, hooks())
+    expect(s.events).toHaveLength(0)
+    expect(s.nextEventAt).toBe(0)
+  })
+})

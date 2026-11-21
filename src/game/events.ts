@@ -98,7 +98,7 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
   if (s.blessingUntil > s.time) hero.hp = Math.min(hero.max, hero.hp + 2.4 * dt)
 
   if (s.challengePoint && s.challengeUntil > 0) {
-    const d = Math.hypot(hero.x - s.challengePoint.x, hero.y - s.challengePoint.y)
+    const d = Math.hypot(hero.x - s.challengePoint.x, (hero.y - s.challengePoint.y) / 0.58)
     if (d > 250 || hero.hp <= 0) {
       hooks.message('試煉失敗 · 離開法陣')
       s.challengePoint = null
@@ -115,11 +115,11 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
   if (s.time - s.sceneEnteredAt < 1.2 || s.time - s.hazardLastHitAt < 1.4) return
   const hazards = nearbyHazards(s.currentScene, hero.x, hero.y, 100)
   const contact = hazards.some(h =>
-    Math.hypot(hero.x - h.x, hero.y - h.y) < h.r + 10 &&
+    Math.hypot(hero.x - h.x, (hero.y - h.y) / 0.58) < h.r + 4 &&
     hazardPhase(s.currentScene, h, s.worldClock) === 'active'
   )
   const challengeRing = !!s.challengePoint && s.challengeUntil > s.time &&
-    Math.abs(Math.hypot(hero.x - s.challengePoint.x, hero.y - s.challengePoint.y) - 130) < 23 &&
+    Math.abs(Math.hypot(hero.x - s.challengePoint.x, (hero.y - s.challengePoint.y) / 0.58) - 130) < 18 &&
     s.time % 3 > 2.15
   if (!contact && !challengeRing) return
   if (hero.inv > 0 || hero.dash > 0) return
