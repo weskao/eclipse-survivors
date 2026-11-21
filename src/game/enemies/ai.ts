@@ -139,9 +139,9 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
       if (ai.timer <= 0) { ai.hitThisAttack = false; recover(e, 0.7) }
       continue
     }
-    const d = dist(hero.x - e.x, hero.y - e.y)
+    const dx = hero.x - e.x, dy = hero.y - e.y
     const range = NEAR[e.type]
-    if (d <= range) {
+    if (dx * dx + dy * dy <= range * range) {
       const attack = chooseAttack(e)
       ai.cycle++
       warn(e, hero, attack)

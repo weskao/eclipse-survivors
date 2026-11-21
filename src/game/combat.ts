@@ -6,9 +6,16 @@ import { DURATION } from './constants'
 import type { GameHooks, GameState, Hero, Mob } from './types'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
-export const nearestAlive = (mobs: Mob[], hero: Hero): Mob[] =>
-  mobs.filter((e) => e.hp > 0).sort((a, b) =>
-    dist(a.x - hero.x, a.y - hero.y) - a.r - (dist(b.x - hero.x, b.y - hero.y) - b.r))
+export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
+  const alive: Mob[] = []
+  const distances = new Map<Mob, number>()
+  for (const e of mobs) {
+    if (e.hp <= 0) continue
+    alive.push(e)
+    distances.set(e, dist(e.x - hero.x, e.y - hero.y) - e.r)
+  }
+  return alive.sort((a, b) => distances.get(a)! - distances.get(b)!)
+}
 
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero

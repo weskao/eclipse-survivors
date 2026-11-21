@@ -58,7 +58,7 @@ describe('createRenderAssets', () => {
     expect(assets.props.tree.width).toBe(230)
     expect(assets.props.ruin.width).toBe(148)
     expect(assets.props.crystal.width).toBe(120)
-    expect(made).toHaveLength(9 + 3 + 8)
+    expect(made).toHaveLength(9 + 3 + 8 + 1)
     expect(made.every((m) => m.fake.calls.includes('fill') || m.fake.calls.includes('stroke'))).toBe(true)
   })
 })
