@@ -1,0 +1,26 @@
+name: Check cinematic audio and release version
+
+on:
+  push:
+    branches:
+      - feature/cinematic-audio-menu-version
+  pull_request:
+    paths:
+      - index.html
+      - tests/audio-ui.test.mjs
+      - scripts/check-release.mjs
+      - CHANGELOG.md
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/audio-ui.test.mjs
+      - run: node scripts/check-release.mjs

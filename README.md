@@ -48,8 +48,10 @@ The images below show the current game as it runs in Chromium, not promotional m
 - **Evolving atmosphere:** Explore an ancient battlefield through morning light, thunderstorms, snowfall, and drifting embers.
 - **Boss encounters:** Survive long enough to challenge powerful enemies.
 - **Grounded movement:** Smoother acceleration and more stable character proportions replace exaggerated pseudo-skeletal animation.
-- **Original music and sound effects:** All essential game audio and artwork are embedded in the HTML.
+- **Cinematic audio:** A dark-fantasy selection-screen motif, battle soundtrack, and distinctive feedback for heroes, spells, upgrades, pickups, bosses, and UI actions. Music and effects can be muted separately.
 - **Desktop and mobile:** Play with a keyboard or touch controls.
+
+The character selection screen shows the **current published version** in its bottom bar. The release check verifies that this label matches the newest `CHANGELOG.md` version.
 
 ## Quick Start
 
@@ -57,7 +59,7 @@ The images below show the current game as it runs in Chromium, not promotional m
 
 **Play offline:** Download `index.html` and open it in a modern browser. No build tools, extra packages, or server are needed.
 
-> Browsers normally require a user interaction before playing audio. Background music starts after you select a class and press **Start Adventure**.
+> Browsers require a user gesture before audio playback. Tap or click the selection screen to unlock its cinematic music; gameplay music begins when you press **Start Adventure**. Music and SFX have independent, remembered toggles.
 
 ### Controls
 

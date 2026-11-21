@@ -31,7 +31,9 @@ jobs:
           ref: main
       # ubuntu-latest ships Node, so no setup-node step is needed.
       - name: Validate entry point, game logic and offline audio
-        run: node scripts/check-release.mjs
+        run: |
+          node scripts/check-release.mjs
+          node --test tests/audio-ui.test.mjs
       - name: Check branded assets and actual gameplay screenshots
         run: |
           test -s assets/icon-192.png
