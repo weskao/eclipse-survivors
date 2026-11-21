@@ -65,13 +65,14 @@ describe('realtime computation budgets', () => {
     const hero = createHero('knight')
     const mobs = Array.from({ length: 130 }, (_, i) => mob(150 + ((i * 53) % 130) * 6, i % 3))
     mobs[0]!.hp = 0
+    const expected = mobs.slice(1).sort((a, b) =>
+      Math.hypot(a.x - hero.x, a.y - hero.y) - a.r -
+      (Math.hypot(b.x - hero.x, b.y - hero.y) - b.r))[0]
     const hypot = vi.spyOn(Math, 'hypot')
     try {
       const sorted = nearestAlive(mobs, hero)
       expect(sorted).toHaveLength(129)
-      expect(sorted[0]).toBe(mobs.slice(1).reduce((a, b) =>
-        Math.hypot(a.x - hero.x, a.y - hero.y) - a.r <
-        Math.hypot(b.x - hero.x, b.y - hero.y) - b.r ? a : b))
+      expect(sorted[0]).toBe(expected)
       expect(hypot.mock.calls.length).toBeLessThan(150)
     } finally {
       hypot.mockRestore()
@@ -86,7 +87,7 @@ describe('realtime computation budgets', () => {
     const hypot = vi.spyOn(Math, 'hypot')
     try {
       tickEnemies(s, 1 / 60, hooks)
-      expect(s.mobs.every(e => e.x < 600 + s.mobs.indexOf(e) * 2)).toBe(true)
+      expect(s.mobs.every((e, i) => e.x < 600 + i * 2)).toBe(true)
       expect(hypot.mock.calls.length).toBeLessThan(150)
     } finally {
       hypot.mockRestore()
