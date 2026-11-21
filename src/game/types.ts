@@ -34,7 +34,7 @@ export type Skills = Partial<Record<UpgradeId, number>>
 export interface Hero {
   x: number; y: number; hp: number; max: number; level: number; xp: number; need: number
   damage: number; delay: number; speed: number; range: number
-  attack: number; inv: number; dash: number; dashCd: number; face: 1 | -1
+  attack: number; inv: number; dash: number; dashCd: number; face: 1 | -1; aimAngle: number
   skills: Skills
   evolutions: Partial<Record<EvolutionId, boolean>>
   evolutionCd: Partial<Record<EvolutionId, number>>

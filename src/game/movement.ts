@@ -42,7 +42,7 @@ export function moveHero(s: GameState, input: MoveInput, dt: number): void {
         }
       }
     }
-    if (moving && Math.abs(hero.vx) > 10) hero.face = hero.vx > 0 ? 1 : -1
+    if (hero.strike <= 0 && moving && Math.abs(hero.vx) > 10) hero.face = hero.vx > 0 ? 1 : -1
     if (hero.dash > 0 && random() < dt * 18) pushEcho(s, hero.x, hero.y, s.choice, s.worldClock)
   }
 }

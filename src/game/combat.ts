@@ -1,5 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { burst, impact, pushEcho, zigzag } from './fx'
+import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DURATION } from './constants'
 import type { GameHooks, GameState, Hero, Mob } from './types'
@@ -61,6 +62,7 @@ export function attack(s: GameState, hooks: GameHooks): void {
   const multi = Math.min(1 + (hero.skills.multi ?? 0), 4)
   const angle = Math.atan2(target.y - hero.y, target.x - hero.x)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
+  hero.aimAngle = angle
   hero.strike = 0.29
   impact(s, hero.x, hero.y, choice === 'knight' ? 56 : 21, choice === 'wizard' ? '#b49cff' : '#f8dba8', 0.35)
   if (choice === 'knight') {
@@ -76,13 +78,17 @@ export function attack(s: GameState, hooks: GameHooks): void {
     hooks.sfx('knight')
   } else {
     const ranger = choice === 'ranger'
-    // Aim from the projectile origin, not the hero's feet.
-    const shotAngle = Math.atan2(target.y - (hero.y - 13), target.x - hero.x)
+    // The projectile and the rigged hand share a single world-space origin.
+    const grip = getFiringOrigin(choice, hero.face)
+    const originX = hero.x + grip.x
+    const originY = hero.y + grip.y
+    const shotAngle = Math.atan2(target.y - originY, target.x - originX)
+    hero.aimAngle = shotAngle
     for (let j = 0; j < multi; j++) {
       const a = shotAngle + (j - (multi - 1) / 2) * 0.18
       const speed = ranger ? 540 : 340
       s.shots.push({
-        x: hero.x, y: hero.y - 13, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
+        x: originX, y: originY, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
         life: ranger ? 1.2 : 1.7, d: hero.damage, kind: ranger ? 'arrow' : 'magic', r: ranger ? 5 : 9,
       })
     }

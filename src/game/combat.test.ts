@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { attack, damageHero, dash, hit, nearestAlive, victoryConditionMet } from './combat'
 import { DURATION, JOB } from './constants'
+import { getFiringOrigin } from './weapon-geometry'
 import { seeded, setRandom } from './math'
 import { createHero, createState, resetRun } from './state'
 import type { GameHooks, GameState, Hero, JobId, Mob } from './types'
@@ -58,7 +59,7 @@ describe('attack', () => {
     attack(s, hooks)
     expect(s.shots).toHaveLength(1)
     const shot = s.shots[0]!
-    expect(shot).toMatchObject({ x: 0, y: -13, kind, r, life, d })
+    expect(shot).toMatchObject({ ...getFiringOrigin(job, 1), kind, r, life, d })
     expect(Math.hypot(shot.vx, shot.vy)).toBeCloseTo(speed)
     expect(shot.vy).toBeGreaterThan(0)
     expect(hooks.sfx).toHaveBeenCalledWith(job)
@@ -226,7 +227,9 @@ describe('combat fairness regressions', () => {
     s.mobs.push(mob(100, 60))
     attack(s, spyHooks())
     const shot = s.shots[0]!
-    const travel = 100 / shot.vx
+    // Time to cross the enemy's x-coordinate is measured from the hand,
+    // not from the hero's ground-contact x-coordinate.
+    const travel = (100 - shot.x) / shot.vx
     expect(shot.y + shot.vy * travel).toBeCloseTo(60)
   })
   it('keeps all three roles distinct and wizard burst competitive with ranger', () => {
