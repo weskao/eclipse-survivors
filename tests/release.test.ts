@@ -18,4 +18,13 @@ describe('release metadata', () => {
     expect(html).toMatch(/rel="manifest" href="manifest\.webmanifest"/)
     expect(html).toMatch(/<div id="app"><\/div>/)
   })
+  it('waits for indexed Pages artifacts and tags only after successful deployment', () => {
+    const workflow = read('.github/workflows/release.yml')
+    expect(workflow).not.toMatch(/^\s+workflow_run:\s*$/m)
+    expect(workflow).toContain('Wait for Pages artifact indexing')
+    expect(workflow).toContain('actions: read')
+    expect(workflow).toMatch(/needs:\s*deploy/)
+    expect(workflow).toContain('gh release create')
+  })
+
 })
