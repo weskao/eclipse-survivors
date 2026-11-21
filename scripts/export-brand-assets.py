@@ -1,26 +1,44 @@
 #!/usr/bin/env python3
 """Export real Eclipse Survivors artwork and gameplay captures, never concept/mockup art."""
-import base64
-from io import BytesIO
+from contextlib import contextmanager
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import os
-import re
+import threading
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 ROOT=Path(__file__).resolve().parent.parent
 ASSETS=ROOT/'assets'
+SRC_ASSETS=ROOT/'src'/'assets'
+DIST=ROOT/'dist'
+ART_NAMES=('knight','ranger','wizard','slime','bat','goblin','golem','boss','ground','courtyard')
 SHOTS=ASSETS/'screenshots'
 RESAMPLE=Image.Resampling.LANCZOS
 SERIF='/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf'
 SANS='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 
-def get_game_images(html):
+def get_game_images(art_dir=SRC_ASSETS):
     images={}
-    for key,encoded in re.findall(r'artSources\.([\w-]+)="data:image/(?:webp|png);base64,([A-Za-z0-9+/=]+)";',html):
-        images[key]=Image.open(BytesIO(base64.b64decode(encoded))).convert('RGBA')
+    for key in ART_NAMES:
+        path=Path(art_dir)/f'{key}.webp'
+        if path.is_file():
+            with Image.open(path) as art:images[key]=art.convert('RGBA')
     if not {'knight','ranger','wizard','golem','ground'} <= images.keys():
-        raise ValueError('Missing real in-game sprites in index.html')
+        raise ValueError(f'Missing real in-game sprites in {art_dir}')
     return images
+
+class _QuietHandler(SimpleHTTPRequestHandler):
+    def log_message(self,*args):pass
+
+@contextmanager
+def serve_dir(directory):
+    # Built ES modules do not load from file:// or set_content, so serve over HTTP on a free port.
+    server=ThreadingHTTPServer(('127.0.0.1',0),partial(_QuietHandler,directory=str(directory)))
+    thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+    try:yield f'http://127.0.0.1:{server.server_address[1]}'
+    finally:
+        server.shutdown();server.server_close();thread.join()
 
 def background(size,ground):
     canvas=Image.new('RGBA',size,(10,21,25,255))
@@ -107,18 +125,23 @@ def social_cover(images,screenshot):
     d.rectangle((12,12,1188,618),outline=(190,155,103,150),width=2)
     return bg.convert('RGB')
 
-def render_brand_images(html,screenshot,outdir):
+def render_brand_images(screenshot,outdir):
     outdir=Path(outdir);outdir.mkdir(parents=True,exist_ok=True)
-    images=get_game_images(html);icon=icon512(images)
+    images=get_game_images();icon=icon512(images)
     for size,name in [(180,'apple-touch-icon.png'),(192,'icon-192.png'),(512,'icon-512.png')]:
         icon.resize((size,size),RESAMPLE).save(outdir/name,optimize=True)
     social_cover(images,screenshot).save(outdir/'og-cover.png',optimize=True)
 
 def capture_game(page,filename,upgrade=False):
+    if not (DIST/'index.html').is_file():
+        raise FileNotFoundError(f'{DIST/"index.html"} not found: run `pnpm build` first')
+    with serve_dir(DIST) as base:
+        _capture(page,filename,upgrade,f'{base}/index.html')
+
+def _capture(page,filename,upgrade,url):
     errors=[]
     page.on('pageerror',lambda error:errors.append(str(error)))
-    page.goto('about:blank')
-    page.set_content((ROOT/'index.html').read_text(encoding='utf-8'),wait_until='domcontentloaded',timeout=60000)
+    page.goto(url,wait_until='domcontentloaded',timeout=60000)
     page.wait_for_function('window.__test && window.__test.sceneArtLoaded',timeout=40000)
     page.locator('#start').click(timeout=18000)
     page.wait_for_function('window.__test && window.__test.mode === "play"',timeout=15000)
@@ -141,7 +164,6 @@ def capture_game(page,filename,upgrade=False):
 def main():
     from playwright.sync_api import sync_playwright
     SHOTS.mkdir(parents=True,exist_ok=True)
-    html=(ROOT/'index.html').read_text('utf-8')
     with sync_playwright() as p:
         kwargs={'headless':True,'args':['--disable-dev-shm-usage','--no-sandbox']}
         if os.environ.get('CHROMIUM_BIN'):kwargs['executable_path']=os.environ['CHROMIUM_BIN']
@@ -154,7 +176,7 @@ def main():
             upgrade=browser.new_page(viewport={'width':1280,'height':800},device_scale_factor=1)
             capture_game(upgrade,SHOTS/'upgrade.png',upgrade=True);upgrade.close()
         finally:browser.close()
-    render_brand_images(html,SHOTS/'gameplay.webp',ASSETS)
+    render_brand_images(SHOTS/'gameplay.webp',ASSETS)
     for name in ['icon-192.png','icon-512.png','apple-touch-icon.png','og-cover.png','screenshots/gameplay.webp','screenshots/mobile.webp','screenshots/upgrade.webp']:
         f=ASSETS/name
         assert f.is_file() and f.stat().st_size>5000,f'Missing or empty asset: {name}'

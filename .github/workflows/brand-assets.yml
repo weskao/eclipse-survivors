@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - index.html
+      - src/**
+      - package.json
+      - pnpm-lock.yaml
+      - vite.config.ts
       - tests/test_brand_assets.py
       - manifest.webmanifest
       - scripts/export-brand-assets.py
@@ -30,6 +34,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Build the game (the export script serves dist/)
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
       - name: Install image tooling (build only; not used by the game)
         run: |
           python -m pip install --disable-pip-version-check "Pillow==11.1.0" "playwright==1.58.0"

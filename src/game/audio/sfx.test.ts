@@ -1,0 +1,35 @@
+import { describe, expect, it } from 'vitest'
+import type { SfxCue } from '../types'
+import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
+
+// Copied from the original game.js `sfxCooldown` table.
+const ORIGINAL_COOLDOWN: Record<SfxCue, number> = {
+  ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
+  dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, boss: 0.8, bossDefeat: 0.8,
+  hurt: 0.28, pickup: 0.16, scene: 0.45, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
+}
+
+describe('sfx tables', () => {
+  it('cooldowns match game.js', () => {
+    expect(SFX_COOLDOWN).toEqual(ORIGINAL_COOLDOWN)
+  })
+
+  it('every cue has at least one tone and the original cue count', () => {
+    const cues = Object.keys(ORIGINAL_COOLDOWN) as SfxCue[]
+    expect(Object.keys(SFX_CUES).sort()).toEqual([...cues].sort())
+    for (const cue of cues) expect(SFX_CUES[cue].length).toBeGreaterThan(0)
+  })
+
+  it('spot-checks tone tuples [pitch, delay, duration, gain, wave]', () => {
+    expect(SFX_CUES.ui).toEqual([[72, 0, 0.07, 0.02, 'sine']])
+    expect(SFX_CUES.start).toEqual([[48, 0, 0.47, 0.085, 'sawtooth'], [55, 0.11, 0.65, 0.05, 'triangle'], [72, 0.18, 0.77, 0.055, 'sine']])
+    expect(SFX_CUES.victory).toEqual([[60, 0, 0.4, 0.08, 'triangle'], [64, 0.15, 0.52, 0.057, 'sine'], [67, 0.28, 0.68, 0.05, 'triangle'], [72, 0.5, 0.92, 0.05, 'sine']])
+    expect(SFX_CUES.vortex).toEqual([[52, 0, 0.5, 0.06, 'triangle'], [59, 0.16, 0.5, 0.033, 'sine']])
+    expect(SFX_CUES.hurt).toEqual([[42, 0, 0.2, 0.07, 'sawtooth'], [35, 0.06, 0.19, 0.05, 'triangle']])
+    expect(SFX_CUES.defeat).toEqual([[52, 0, 0.44, 0.06, 'triangle'], [47, 0.2, 0.52, 0.05, 'sawtooth'], [40, 0.44, 0.74, 0.05, 'sine']])
+  })
+
+  it('noise burst cues are knight, dash, hurt, boss', () => {
+    expect([...NOISE_CUES].sort()).toEqual(['boss', 'dash', 'hurt', 'knight'])
+  })
+})

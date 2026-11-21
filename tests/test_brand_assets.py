@@ -3,6 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.request import urlopen
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,10 +12,34 @@ brand = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(brand)
 
 class BrandAssetTests(unittest.TestCase):
-    def test_uses_actual_embedded_game_sprites(self):
-        images = brand.get_game_images((ROOT / "index.html").read_text())
-        self.assertTrue({"knight", "ranger", "wizard", "ground", "golem"} <= set(images))
+    def test_loads_actual_game_art_from_src_assets(self):
+        images = brand.get_game_images()
+        expected = {"knight", "ranger", "wizard", "slime", "bat", "goblin",
+                    "golem", "boss", "ground", "courtyard"}
+        self.assertTrue(expected <= set(images))
+        self.assertEqual(images["knight"].mode, "RGBA")
         self.assertGreater(images["knight"].size[0], 300)
+
+    def test_missing_art_raises_clear_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "Missing real in-game sprites"):
+                brand.get_game_images(Path(tmp))
+
+    def test_serve_dir_serves_files_over_http_then_shuts_down(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "index.html").write_text("<p>hi</p>")
+            with brand.serve_dir(Path(tmp)) as base:
+                self.assertTrue(base.startswith("http://127.0.0.1:"))
+                with urlopen(base + "/index.html", timeout=5) as response:
+                    self.assertEqual(response.read(), b"<p>hi</p>")
+            with self.assertRaises(OSError):
+                urlopen(base + "/index.html", timeout=2)
+
+    def test_capture_requires_built_dist(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(brand, "DIST", Path(tmp) / "dist"):
+                with self.assertRaisesRegex(FileNotFoundError, "pnpm build"):
+                    brand.capture_game(None, Path(tmp) / "shot.png")
 
     def test_social_cover_displays_all_three_playable_classes(self):
         """The OG cover must show every starting hero, not only the knight and mage."""
@@ -48,7 +73,7 @@ class BrandAssetTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             Image.new("RGB", (1280, 800), "#64763e").save(root / "live.png")
-            brand.render_brand_images((ROOT / "index.html").read_text(), root / "live.png", root)
+            brand.render_brand_images(root / "live.png", root)
             sizes = {"icon-192.png": (192, 192), "icon-512.png": (512, 512),
                      "apple-touch-icon.png": (180, 180), "og-cover.png": (1200, 630)}
             for name, size in sizes.items():
