@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Export game artwork and screenshots']
+    types: [completed]
 
 concurrency:
   group: github-pages
@@ -12,6 +15,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     name: Verify and deploy game to GitHub Pages
     runs-on: ubuntu-latest
     permissions:
@@ -23,9 +27,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       # ubuntu-latest ships Node, so no setup-node step is needed.
       - name: Validate entry point, game logic and offline audio
         run: node scripts/check-release.mjs
+      - name: Check branded assets and actual gameplay screenshots
+        run: |
+          test -s assets/icon-192.png
+          test -s assets/apple-touch-icon.png
+          test -s assets/og-cover.png
+          test -s assets/screenshots/gameplay.webp
+          test -s assets/screenshots/mobile.webp
+          test -s assets/screenshots/upgrade.webp
       - name: Assemble site
         run: mkdir site && cp -r index.html manifest.webmanifest assets site/ && touch site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
