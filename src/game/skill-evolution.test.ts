@@ -41,6 +41,7 @@ describe('weighted skill progression', () => {
   it('excludes capped skills and returns no duplicates or invalid options', () => {
     const hero = createHero('knight')
     for (const up of UP) hero.skills[up.id] = MAX_LEVEL[up.id]
+    for (const evolution of EVOLUTIONS) hero.evolutions[evolution.id] = true
     expect(pickUpgrades(hero, seeded(1))).toEqual([])
     hero.skills.frost = 1
     const choices = pickUpgrades(hero, seeded(3))
