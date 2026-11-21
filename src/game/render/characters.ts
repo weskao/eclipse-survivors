@@ -34,6 +34,8 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
   } else if (e.type === 'goblin') {
     ctx.rotate(Math.sin(a * 1.3) * 0.065)
     ctx.translate(Math.sin(a * 1.8) * 2, -Math.abs(Math.sin(a * 1.8)) * 2)
+  } else if (e.type === 'warlock') {
+    ctx.translate(0, Math.sin(a * 1.4) * 5 - 5)
   } else if (e.type === 'golem') {
     ctx.rotate(Math.sin(a * 0.6) * 0.02)
     ctx.scale(1 + Math.sin(a * 0.72) * 0.012, 1 - Math.sin(a * 0.72) * 0.015)
@@ -47,7 +49,7 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
 
 const DIMS: Record<string, [number, number]> = {
   knight: [108, 134], ranger: [111, 144], wizard: [117, 147], slime: [87, 75],
-  bat: [114, 92], goblin: [92, 108], golem: [139, 134], boss: [236, 246],
+  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [236, 246],
 }
 
 export function drawCharacter(
@@ -77,13 +79,15 @@ export function drawCharacter(
   ctx.save(); ctx.translate(x, y)
   if (hero && hero.face < 0) ctx.scale(-1, 1)
   if (hero && hero.inv > 0 && Math.floor(s.worldClock * 17) % 2 === 0) ctx.globalAlpha = 0.55
+  if (mob && mob.elite) ctx.filter = 'hue-rotate(75deg) saturate(1.5) brightness(1.1)'
+  if (mob && mob.type === 'warlock') ctx.filter = 'hue-rotate(15deg) saturate(1.2)'
   if (mob && mob.hit > 0) ctx.filter = 'brightness(1.45) sepia(.35)'
-  const im = art[kind]
+  const im = art[kind === 'warlock' ? 'wizard' : kind]
   if (im && im.complete && im.naturalWidth) {
     if (hero) drawRigSprite(ctx, im, sx, sy, hero)
     else if (mob) drawMobBody(ctx, s, mob, im, sx, sy)
   } else {
-    const fall = sprites[kind === 'golem' ? 'goblin' : kind]
+    const fall = sprites[kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind]
     if (fall) ctx.drawImage(fall, -sx / 2, -sy + 4, sx, sy)
   }
   ctx.restore()
