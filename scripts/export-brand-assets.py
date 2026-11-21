@@ -15,8 +15,13 @@ DIST=ROOT/'dist'
 ART_NAMES=('knight','ranger','wizard','slime','bat','goblin','golem','boss','ground','courtyard')
 SHOTS=ASSETS/'screenshots'
 RESAMPLE=Image.Resampling.LANCZOS
-SERIF='/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf'
-SANS='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+# DejaVu (CI/Ubuntu) first so committed art stays identical; macOS fonts only for local runs.
+SERIF=next((p for p in ('/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf','/System/Library/Fonts/Supplemental/Georgia Bold.ttf') if os.path.exists(p)),None)
+SANS=next((p for p in ('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf','/System/Library/Fonts/Supplemental/Arial.ttf') if os.path.exists(p)),None)
+
+def require_fonts():
+    if not (SERIF and SANS):
+        raise FileNotFoundError('Brand fonts missing: install fonts-dejavu (Linux) or run on macOS (Georgia/Arial)')
 
 def get_game_images(art_dir=SRC_ASSETS):
     images={}
@@ -126,6 +131,7 @@ def social_cover(images,screenshot):
     return bg.convert('RGB')
 
 def render_brand_images(screenshot,outdir):
+    require_fonts()
     outdir=Path(outdir);outdir.mkdir(parents=True,exist_ok=True)
     images=get_game_images();icon=icon512(images)
     for size,name in [(180,'apple-touch-icon.png'),(192,'icon-192.png'),(512,'icon-512.png')]:
@@ -162,6 +168,7 @@ def _capture(page,filename,upgrade,url):
     filename.unlink()
 
 def main():
+    require_fonts()  # before the Playwright captures, not after
     from playwright.sync_api import sync_playwright
     SHOTS.mkdir(parents=True,exist_ok=True)
     with sync_playwright() as p:

@@ -61,6 +61,10 @@ export class FakeAudioContext implements AudioContextLike {
     this.state = 'running'
     return Promise.resolve()
   }
+  close(): Promise<void> {
+    this.state = 'closed'
+    return Promise.resolve()
+  }
   createOscillator(): FakeOscillator { const n = new FakeOscillator(); this.oscillators.push(n); return n }
   createGain(): FakeGain { const n = new FakeGain(); this.gains.push(n); return n }
   createBuffer(_channels: number, length: number, sampleRate: number): FakeBuffer { return new FakeBuffer(length, sampleRate) }

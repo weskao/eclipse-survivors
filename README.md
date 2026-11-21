@@ -57,7 +57,7 @@ The character selection screen shows the **current published version** in its bo
 
 **Play online:** [weskao.github.io/eclipse-survivors](https://weskao.github.io/eclipse-survivors/)
 
-**Run locally:** Requires Node.js 24 and pnpm. See [Development](#development) below.
+**Run locally:** Requires Node.js 24 and pnpm. See [Development](#development) below. Opening `dist/index.html` straight from disk (`file://`) does not work, because browsers block module scripts there. Serve it with `pnpm preview` instead.
 
 > Browsers require a user gesture before audio playback. Tap or click the selection screen to unlock its cinematic music; gameplay music begins when you press **Start Adventure**. Music and SFX have independent, remembered toggles.
 
@@ -122,7 +122,7 @@ assets/apple-touch-icon.png        iOS home-screen icon (generated)
 assets/icon-512.png                High-resolution home-screen icon (generated)
 assets/og-cover.png                Social preview: real gameplay and in-game sprites
 assets/screenshots/                Screenshots captured from actual gameplay
-tests/                             Python brand-asset tests; Vitest suites live beside their source
+tests/                             Python brand-asset tests + Vitest release checks; other suites beside their source
 scripts/export-brand-assets.py     Generate raster assets and capture screenshots (needs dist/)
 .github/workflows/brand-assets.yml Artwork generation workflow
 .github/workflows/release.yml      Verification and GitHub Pages publishing

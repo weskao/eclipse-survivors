@@ -309,3 +309,17 @@ describe('onScreen', () => {
     expect(ctx.oscillators.length - first).toBe(3)
   })
 })
+
+describe('dispose', () => {
+  it('pauses bgm, closes the context, and lets a later wake() start fresh', () => {
+    const audio = make()
+    audio.wake()
+    bgm.paused = false
+    audio.dispose()
+    expect(bgm.paused).toBe(true)
+    expect(ctx.state).toBe('closed')
+    expect(audio.unlocked).toBe(false)
+    audio.wake()
+    expect(created).toBe(2)
+  })
+})

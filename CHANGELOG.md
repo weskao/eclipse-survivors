@@ -1,3 +1,10 @@
+## [Unreleased]
+
+### ⚠️ Breaking / 破壞性變更
+
+- 遊戲改以 Vue 3、TypeScript 與 Vite 建置，發布內容由單一離線 `index.html` 改為 `dist/` 資料夾。直接從檔案（`file://`）開啟已無法遊玩，請使用 GitHub Pages 線上版或 `pnpm preview`。
+- The game is now built with Vue 3, TypeScript and Vite, and ships as a `dist/` folder instead of a single offline `index.html`. Opening it straight from disk (`file://`) no longer works; play it on GitHub Pages or serve it with `pnpm preview`.
+
 ## [0.1.0] - 2026-11-21
 
 ### 🚀 Features

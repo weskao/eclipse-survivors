@@ -28,12 +28,18 @@ class BrandAssetTests(unittest.TestCase):
     def test_serve_dir_serves_files_over_http_then_shuts_down(self):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "index.html").write_text("<p>hi</p>")
-            with brand.serve_dir(Path(tmp)) as base:
-                self.assertTrue(base.startswith("http://127.0.0.1:"))
-                with urlopen(base + "/index.html", timeout=5) as response:
-                    self.assertEqual(response.read(), b"<p>hi</p>")
-            with self.assertRaises(OSError):
-                urlopen(base + "/index.html", timeout=2)
+            servers = []
+            real = brand.ThreadingHTTPServer
+            def capture(*args, **kwargs):
+                servers.append(real(*args, **kwargs))
+                return servers[-1]
+            with patch.object(brand, "ThreadingHTTPServer", capture):
+                with brand.serve_dir(Path(tmp)) as base:
+                    self.assertTrue(base.startswith("http://127.0.0.1:"))
+                    with urlopen(base + "/index.html", timeout=5) as response:
+                        self.assertEqual(response.read(), b"<p>hi</p>")
+            # Check the socket itself, not the port: the OS may hand the freed port to someone else.
+            self.assertEqual(servers[0].socket.fileno(), -1)
 
     def test_capture_requires_built_dist(self):
         with tempfile.TemporaryDirectory() as tmp:
