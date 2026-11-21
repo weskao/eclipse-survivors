@@ -54,7 +54,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
-  paintEnvironment(ctx, s, assets.art, assets.biomes, ox, oy)
+  paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy)
   const scene = currentSceneInfo(s)
   ctx.fillStyle = weatherGrade(ctx, W, H, scene.weather)
   ctx.fillRect(0, 0, W, H)

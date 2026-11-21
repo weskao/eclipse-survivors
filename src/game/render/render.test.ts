@@ -74,7 +74,8 @@ describe('drawFrame', () => {
     expect(calls).not.toContain('strokeText')
     const biomeTiles = assets.biomes.map(b => b.tile)
     const landmarks = assets.biomes.map(b => b.landmark)
-    expect(drawn.every(d => d === assets.art.courtyard || biomeTiles.includes(d as HTMLCanvasElement) || landmarks.includes(d as HTMLCanvasElement))).toBe(true)
+    const props = Object.values(assets.props)
+    expect(drawn.every(d => d === assets.art.courtyard || biomeTiles.includes(d as HTMLCanvasElement) || landmarks.includes(d as HTMLCanvasElement) || props.includes(d as HTMLCanvasElement))).toBe(true)
     expect(calls.at(-1)).toBe('fillRect')
   })
 

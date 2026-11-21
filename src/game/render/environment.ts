@@ -5,11 +5,12 @@ import { currentSceneInfo } from '../state'
 import type { GameState } from '../types'
 import type { Ctx2D } from './ctx'
 import type { BiomeArt } from './biome-art'
+import type { Props } from './sprites'
 import { biomePalette, hazardPhase, nearbyHazards, nearbyObstacles } from '../world'
 
 const ready = (img: HTMLImageElement): boolean => img.complete && img.naturalWidth > 0
 
-export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, biomes: BiomeArt[], ox: number, oy: number): void {
+export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number): void {
   const { W, H } = s
   const biome = biomes[s.currentScene] ?? biomes[0]!
   const tile = biome.tile
@@ -49,7 +50,11 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, biomes:
     const x = o.x + ox
     const y = o.y + oy
     if (x < -110 || x > W + 110 || y < -180 || y > H + 80) continue
-    ctx.drawImage(biome.landmark, x - 72, y - 156, 144, 176)
+    if (s.currentScene === 0 && o.variant === 0) ctx.drawImage(props.tree, x - 90, y - 207, 181, 216)
+    else if (s.currentScene === 0 && o.variant === 1) ctx.drawImage(props.ruin, x - 46, y - 114, 92, 121)
+    else if (s.currentScene === 1 && o.variant === 1) ctx.drawImage(props.crystal, x - 34, y - 90, 68, 95)
+    else if (s.currentScene === 2 && o.variant === 2) ctx.drawImage(props.crystal, x - 38, y - 105, 76, 110)
+    else ctx.drawImage(biome.landmark, x - 72, y - 156, 144, 176)
   }
 }
 
