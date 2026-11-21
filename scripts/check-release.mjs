@@ -22,6 +22,9 @@ assert.ok(js.includes(mp3), 'the game bundle must reference the bundled mp3')
 for (const art of ['knight', 'ranger', 'wizard', 'slime', 'bat', 'goblin', 'golem', 'boss', 'ground', 'courtyard']) {
   assert.ok(files.some(f => f.startsWith(`${art}-`) && f.endsWith('.webp')), `${art} art must be bundled locally`)
 }
+const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+// esbuild may emit the define as "x", 'x' or `x`.
+assert.ok(['"', "'", '`'].some(q => js.includes(q + version + q)), `game bundle must carry version ${version} (stale dist/ or broken define)`)
 assert.doesNotMatch(js, /\bimport\s*\(\s*["']https?:|from\s*["']https?:/, 'no remote module imports')
 assert.doesNotMatch(css, /url\(\s*["']?(?:https?:)?\/\//, 'no remote CSS assets (fonts/images)')
 assert.ok(existsSync(new URL('manifest.webmanifest', dist)), 'manifest must ship with the site')
@@ -36,4 +39,4 @@ const manifestUrl = new URL(manifestHref, dist)
 for (const { src } of JSON.parse(readFileSync(manifestUrl, 'utf8')).icons) {
   assert.ok(existsSync(new URL(src, manifestUrl)), `manifest icon ${src} does not resolve next to ${manifestHref}`)
 }
-console.log('Release checks passed: relative module entry, local art + mp3, no remote URLs, manifest + icons.')
+console.log('Release checks passed: relative module entry, version label, local art + mp3, no remote URLs, manifest + icons.')
