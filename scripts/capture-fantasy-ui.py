@@ -47,7 +47,16 @@ def capture(browser, url, name, width, height, mobile):
     try:
         page.goto(url, wait_until="domcontentloaded")
         page.wait_for_function("window.__test?.sceneArtLoaded", timeout=45000)
+        webp = page.request.get(url.split("/index.html")[0] + "/assets/skill-icons/frost@3x.webp")
+        assert webp.ok and webp.body()[:4] == b"RIFF", f"{name}: generated WebP not served"
         page.screenshot(path=str(OUTPUT / f"{name}-hero-knight.png"), animations="disabled")
+        drawer = page.locator(".progression-drawer")
+        if drawer.count():
+            drawer.locator("summary").click()
+            drawer.scroll_into_view_if_needed()
+            page.wait_for_timeout(380)
+            page.screenshot(path=str(OUTPUT / f"{name}-progression.png"), animations="disabled")
+            drawer.locator("summary").click()
 
         ranger = page.locator('[data-job="ranger"]')
         ranger.click()
@@ -66,6 +75,7 @@ def capture(browser, url, name, width, height, mobile):
         page.evaluate("window.__test.level()")
         page.wait_for_function("window.__test?.mode === 'level'")
         page.wait_for_function("document.querySelectorAll('#level.active .upgrade').length === 3")
+        page.wait_for_function("Array.from(document.querySelectorAll('#level.active img.skill-art')).every(img => img.complete && img.naturalWidth > 0)")
         page.wait_for_timeout(550)  # Ensure entrance animations and loaded artwork have settled.
         if height <= 500:
             cards = page.locator("#level.active .upgrade").evaluate_all(
@@ -91,7 +101,7 @@ def main():
         finally:
             browser.close()
     images = list(OUTPUT.glob("*.png"))
-    assert len(images) == 12 and all(image.stat().st_size > 3000 for image in images)
+    assert len(images) == 15 and all(image.stat().st_size > 3000 for image in images)
     print(f"Captured {len(images)} real-game UI screenshots.")
 
 
