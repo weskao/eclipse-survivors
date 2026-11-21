@@ -1,5 +1,6 @@
 import { chromium } from 'playwright'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, copyFile } from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
 
 const url = process.env.PREVIEW_URL || 'http://127.0.0.1:4173/'
 await mkdir('artifacts/meta-progression', { recursive: true })
@@ -48,6 +49,29 @@ try {
   await mobile.screenshot({ path: 'artifacts/meta-progression/defeat-result-mobile.png' })
 } catch {
   console.log('Defeat screen was not reached in 65 seconds; menu/gameplay captures remain valid.')
+}
+const demoContext = await browser.newContext({
+  viewport: { width: 1280, height: 800 }, recordVideo: { dir: 'artifacts/meta-progression/videos', size: { width: 1280, height: 800 } },
+})
+const demo = await demoContext.newPage()
+await demo.goto(url, { waitUntil: 'networkidle' })
+await demo.waitForTimeout(550)
+await demo.getByRole('radio').nth(3).click()
+await demo.waitForTimeout(900)
+await demo.locator('.progression-drawer summary').click()
+await demo.waitForTimeout(1300)
+await demo.locator('.progression-drawer summary').click()
+await demo.waitForTimeout(400)
+await demo.locator('#start').click()
+await demo.waitForTimeout(4500)
+const recorded = demo.video()
+await demoContext.close()
+if (recorded) {
+  const file = await recorded.path()
+  await copyFile(file, 'artifacts/meta-progression/feature-demo.webm')
+  try {
+    execFileSync('ffmpeg', ['-y', '-i', file, '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', 'artifacts/meta-progression/feature-demo.mp4'], { stdio: 'pipe' })
+  } catch { console.log('WebM demo recorded; MP4 conversion unavailable on this runner.') }
 }
 await browser.close()
 console.log('Captured real Vue app screenshots in artifacts/meta-progression/')
