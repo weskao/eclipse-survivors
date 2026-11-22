@@ -28,6 +28,35 @@ try {
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
       assert.match(await page.locator('#gameVersion').innerText(), /^v[0-9]/)
       await page.screenshot({ path: `${directory}/${viewport.name}-menu.png`, animations: 'disabled' })
+
+      // Exercise the actual in-game Settings listbox across both phone orientations.
+      await page.locator('.es2-top-actions button').last().click()
+      const selectors = page.locator('.es2-dialog button[role="combobox"]')
+      assert.equal(await selectors.count(), 4, `${viewport.name}: all settings must use game dropdowns`)
+      assert.equal(await page.locator('.es2-dialog select').count(), 0,
+        `${viewport.name}: native dropdown found`)
+      const quality = page.locator('#es2-quality')
+      await quality.click()
+      const listbox = page.locator('#es2-quality-listbox')
+      await listbox.waitFor({ state: 'visible' })
+      const listLayout = await listbox.evaluate(element => {
+        const box = element.getBoundingClientRect()
+        const viewport = window.visualViewport
+        return { left: box.left, top: box.top, right: box.right, bottom: box.bottom,
+          width: viewport?.width ?? innerWidth, height: viewport?.height ?? innerHeight,
+          offsetLeft: viewport?.offsetLeft ?? 0, offsetTop: viewport?.offsetTop ?? 0 }
+      })
+      assert.ok(listLayout.left >= listLayout.offsetLeft - 2
+        && listLayout.top >= listLayout.offsetTop - 2
+        && listLayout.right <= listLayout.offsetLeft + listLayout.width + 2
+        && listLayout.bottom <= listLayout.offsetTop + listLayout.height + 2,
+      `${viewport.name}: dropdown clips outside viewport: ${JSON.stringify(listLayout)}`)
+      await page.screenshot({ path: `${directory}/${viewport.name}-dropdown.png`, animations: 'disabled' })
+      await page.keyboard.press('Escape')
+      assert.equal(await quality.getAttribute('aria-expanded'), 'false',
+        `${viewport.name}: Escape must close dropdown, not settings`)
+      assert.ok(await page.locator('.es2-dialog').isVisible())
+      await page.locator('.es2-close').click()
       await page.locator('.es2-start').click()
       await page.locator('.es2-mobile-controls[data-active="true"]').waitFor({ state: 'visible', timeout: 30000 })
       const layout = await page.evaluate(() => {
