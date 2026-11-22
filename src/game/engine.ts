@@ -6,7 +6,7 @@ import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
-import { dash as heroDash } from './combat'
+import { dash as heroDash, hit } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
 import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
@@ -20,7 +20,7 @@ import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-eve
 import { createMetaProgressionStore } from './content/meta/store'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
-import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
+import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
 import { impact } from './fx'
 import { EVOLUTIONS } from './evolutions'
@@ -223,9 +223,33 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message,
     offerUpgrades,
     end,
-    modifyOutgoingDamage: amount => heroSpecialization?.modifyOutgoingDamage(amount) ?? amount,
-    mitigateIncomingDamage: amount => heroSpecialization?.mitigateIncomingDamage(amount) ?? amount,
-    afterDamage: amount => heroSpecialization?.afterDamage(amount),
+    modifyOutgoingDamage: (amount, target) => {
+      const modified = heroSpecialization?.modifyOutgoingDamage(amount) ?? amount
+      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
+      const result = calculateRelicAttack(s, modified, {
+        moving: s.hero.moveAmount > 0,
+        boss: target?.type === 'boss',
+        targetHp: target?.hp,
+        targetHpFraction: target && target.max > 0 ? target.hp / target.max : undefined,
+      }, random)
+      return result.execute && target ? Math.max(result.damage, target.hp) : result.damage
+    },
+    mitigateIncomingDamage: amount => {
+      const modified = heroSpecialization?.mitigateIncomingDamage(amount) ?? amount
+      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
+      return calculateRelicIncoming(s, modified, random).damage
+    },
+    afterDamage: (amount, source) => {
+      heroSpecialization?.afterDamage(amount)
+      if (!relicsEnabled || !source || source.hp <= 0 || !s.hero || s.hero.hp <= 0 ||
+        s.mode !== 'play' || amount <= 0) return
+      const reflect = relicBonuses(s).reflect ?? 0
+      if (reflect > 0) {
+        // Only the original colliding Mob receives reflected damage.
+        // Do not roll relic critical hits a second time for the reflected strike.
+        hit(s, source, amount * reflect, { ...hooks, modifyOutgoingDamage: undefined })
+      }
+    },
     canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
     // Skip all event-object allocation in the default empty-pack game.
     content: contentRegistry.packs.some(pack => pack.onEvent)

@@ -1,0 +1,29 @@
+name: ES2 final relic combat host TDD
+on:
+  push:
+    branches: [feature/es2-final-relic-combat-host]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-relic-host-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm typecheck
+        if: success() || failure()
+      - run: pnpm build
+        if: success() || failure()
+      - run: pnpm check-release
+        if: success() || failure()
