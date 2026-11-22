@@ -1,18 +1,16 @@
 import type { SpecializationId } from '../../content/heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
-import shadowblade from '../../../assets/es2/production/heroes/shadowblade-8dir@3x.webp'
-import summoner from '../../../assets/es2/production/heroes/spirit-summoner-8dir@3x.webp'
-import paladin from '../../../assets/es2/production/heroes/crimson-paladin-8dir@3x.webp'
+import type { HeroSheets } from '../hero-sheets'
+import { drawPortraitMotion } from './portrait-motion'
+import shadowblade from '../../../assets/es2/production/heroes/shadowblade-portrait@3x.webp'
+import summoner from '../../../assets/es2/production/heroes/spirit-summoner-portrait@3x.webp'
+import paladin from '../../../assets/es2/production/heroes/crimson-paladin-portrait@3x.webp'
 import shadowAction from '../../../assets/es2/production/heroes/shadowblade-run-attack@3x.webp'
 import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-run-attack@3x.webp'
 import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-run-attack@3x.webp'
 
-/**
- * Original authoring grid cut into 32 isolated 128px cells per hero.
- * Columns follow the runtime's direction octants E, SE, S, SW, W, NW, N, NE;
- * rows are idle, run, attack and cast. HeroAnimation already owns direction.
- */
+/** Full 900×900 3x character illustrations, matching the homepage and HUD. */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
   shadowblade,
   'spirit-summoner': summoner,
@@ -32,11 +30,8 @@ export type ProductionHeroArtwork = Record<SpecializationId, HTMLImageElement>
 export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => new Image()): ProductionHeroArtwork {
   const result = {} as ProductionHeroArtwork
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {
-    const image = makeImage() as AtlasWithAction
+    const image = makeImage()
     image.src = PRODUCTION_HERO_SOURCES[id]
-    const action = makeImage()
-    action.src = PRODUCTION_HERO_ACTION_SOURCES[id]
-    image.actionStrip = action
     result[id] = image
   }
   return result
@@ -96,8 +91,17 @@ export function productionHeroDirectionRect(anim: HeroAnimation): ProductionHero
 
 export function drawProductionHeroFrame(
   ctx: Ctx2D, image: HTMLImageElement, anim: HeroAnimation, width: number, height: number,
+  heroSheets?: HeroSheets,
 ): boolean {
   if (!image.complete) return false
+  // Like the original three heroes, compose animation from a single sharp
+  // illustration instead of enlarging a tiny 128px figure. The generated
+  // 3x Canvas cache is bounded and reused across frames.
+  if (image.naturalWidth === 900 && image.naturalHeight === 900) {
+    if (heroSheets?.drawSpecialization(ctx, image, anim, width, height)) return true
+    drawPortraitMotion(ctx, image, anim, width, height)
+    return true
+  }
   if (image.naturalWidth === 1024 && image.naturalHeight === 512) {
     // Keep the legacy authored eight directions for every view except E, where
     // an independently illustrated, high-detail 8-frame run/attack sequence
