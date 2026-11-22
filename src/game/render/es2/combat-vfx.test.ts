@@ -28,7 +28,7 @@ function fakeCanvas() {
       if (key === 'globalAlpha') calls.push('alpha:' + value)
       return true
     },
-  }) as Ctx2D
+  }) as unknown as Ctx2D
   return { ctx, calls }
 }
 const queue = (kind: Parameters<typeof emitCombatVfx>[1], angle = 0) => {
