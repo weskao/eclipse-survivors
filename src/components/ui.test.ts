@@ -11,6 +11,7 @@ import LevelUpOverlay from './LevelUpOverlay.vue'
 import PauseOverlay from './PauseOverlay.vue'
 import ResultOverlay from './ResultOverlay.vue'
 import TouchControls from './TouchControls.vue'
+import SettingsOverlay from './SettingsOverlay.vue'
 
 const menuProps = { active: true, choice: 'knight' as const, musicOn: true, sfxOn: true, version: '1.2.3' }
 
@@ -123,6 +124,34 @@ describe('GameHud', () => {
   it('hides toast when not visible', () => {
     const w = mount(GameHud, { props: { ...props, toastVisible: false } })
     expect((w.find('#toast').element as HTMLElement).style.opacity).toBe('0')
+  })
+})
+
+describe('SettingsOverlay', () => {
+  const props = { active: true, musicOn: true, sfxOn: true, musicVolume: 100, sfxVolume: 100, upgradeEffect: 'soft' as const, cameraShake: true }
+
+  it('shows accessible volume sliders, mute actions and motion choices', async () => {
+    const w = mount(SettingsOverlay, { props })
+    expect(w.find('[role="dialog"]').attributes('aria-label')).toBe('遊戲設定')
+    expect(w.find('#settingsMusicVolume').attributes('type')).toBe('range')
+    expect(w.find('#settingsSfxVolume').attributes('type')).toBe('range')
+    expect(w.find('#settingsSoft').attributes('aria-pressed')).toBe('true')
+    expect(w.find('#settingsStill').attributes('aria-pressed')).toBe('false')
+    expect(w.find('#settingsCameraShake').attributes('aria-pressed')).toBe('true')
+    await w.find('#settingsMusicVolume').setValue('35')
+    await w.find('#settingsSfxVolume').setValue('70')
+    expect(w.emitted('musicVolume')?.at(-1)).toEqual([35])
+    expect(w.emitted('sfxVolume')?.at(-1)).toEqual([70])
+    await w.find('#settingsMusicMute').trigger('click')
+    await w.find('#settingsSfxMute').trigger('click')
+    expect(w.emitted('toggleMusic')).toHaveLength(1)
+    expect(w.emitted('toggleSfx')).toHaveLength(1)
+    await w.find('#settingsStill').trigger('click')
+    await w.find('#settingsCameraShake').trigger('click')
+    expect(w.emitted('upgradeEffect')?.at(-1)).toEqual(['still'])
+    expect(w.emitted('cameraShake')?.at(-1)).toEqual([false])
+    await w.find('#settingsClose').trigger('click')
+    expect(w.emitted('close')).toHaveLength(1)
   })
 })
 
