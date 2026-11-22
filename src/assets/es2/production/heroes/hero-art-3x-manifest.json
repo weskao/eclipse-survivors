@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "visualStatus": "QA_PENDING: 900px portraits and right-facing 8-cell motion strips are committed and wired; seven directions still use the existing atlas",
+  "visualStatus": "QA_PENDING: live actor uses each 900px portrait with bounded 3x procedural animation cache in all poses; old eight-direction sheets and action strips retained only for legacy/archival compatibility",
   "heroes": [
     {
       "id": "shadowblade",
@@ -119,5 +119,29 @@
     "source": "original realistic portrait; gold hair recolored to copper-red to match existing red-haired motion strip",
     "sha256": "0659af3278ad58edeb3a03cc61c05b9a72374361fed6a54f24280120f5be2135",
     "status": "manual-review-required"
+  },
+  "runtime": {
+    "source": "portrait@3x.webp",
+    "sourcePixels": [
+      900,
+      900
+    ],
+    "method": "Procedural pose/limb-strip deformation sampled from the same original 900px illustration as selection and HUD",
+    "cache": "3x rendered Canvas frames, 4 bounded pose sequences, shared across directional octants",
+    "states": [
+      "idle",
+      "run",
+      "dash",
+      "attack",
+      "cast",
+      "hurt",
+      "death",
+      "victory",
+      "reduced-motion"
+    ],
+    "facing": "Original-hero-style horizontal mirroring; true 8-view perspective is not claimed",
+    "legacy": "Existing 128px per-cell 8dir atlases and 448px right-facing strips stay in repository but are not active actor render sources",
+    "constraints": "Visual only; collision, combat, hitboxes, firing origins, and original three heroes unchanged",
+    "qa": "Pending actual-browser visual screenshots, motion continuity and mobile performance review"
   }
 }
