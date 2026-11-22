@@ -6,7 +6,7 @@ import { acquireRelic, inventorySnapshot } from '../relics/runtime'
 import { createLegacyEventWorld } from './adapters'
 import { WORLD_EVENT_DEFINITIONS } from './definitions'
 import { createLiveWorldEvents } from './runtime'
-import type { GameHooks, GameState } from '../../types'
+import type { GameHooks } from '../../types'
 
 const hooks = (): GameHooks => ({
   sfx: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), end: vi.fn(), content: vi.fn(),
@@ -118,10 +118,12 @@ describe('world-event live integration', () => {
       live.onContentEvent({ type: 'kill', mob, damage: 10 })
     }
     expect(live.director.objectives[0]?.count).toBe(3)
-    const xp = state.hero!.xp
+    const level = state.hero!.level
     live.tick()
-    expect(state.hero!.xp).toBeGreaterThan(xp)
+    expect(state.hero!.level).toBeGreaterThan(level)
+    const after = { level: state.hero!.level, xp: state.hero!.xp }
     live.tick()
+    expect({ level: state.hero!.level, xp: state.hero!.xp }).toEqual(after)
     expect(live.director.objectives).toHaveLength(0)
   })
 
