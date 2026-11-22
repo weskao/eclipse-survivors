@@ -228,7 +228,7 @@ describe('keyboard and focus', () => {
     expect(engine.ui.musicOn).toBe(true)
   })
 
-  it('explicit menu music activation never toggles the user's music preference', () => {
+  it("explicit menu music activation never toggles the user\'s music preference", () => {
     expect(engine.ui.audioUnlocked).toBe(false)
     engine.enableMenuAudio()
     expect(engine.ui.audioUnlocked).toBe(true)
