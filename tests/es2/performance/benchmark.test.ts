@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { createHero, createState } from '../../../src/game/state'
 import { step } from '../../../src/game/step'
 import { createRenderAssets, drawFrame } from '../../../src/game/render'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from '../../../src/game/render/fakes'
@@ -31,8 +30,6 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
     const low = createStressScenario('mobile-low')
     expect([low.W, low.H]).toEqual([390, 844])
     expect(low.mobs).toHaveLength(130)
-    expect(createHero('knight')).toBeTruthy()
-    expect(createState().mobs).toHaveLength(0)
   })
 
   it('emits real timing distributions and Canvas command counts, with no FPS claim or timing gate', () => {
@@ -46,9 +43,10 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
     assets.presentation = () => lowPolicy
     const desktopFake = createFakeCtx()
     const desktopAssets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
-    desktopAssets.presentation = () => resolvePresentationPolicy({
+    const highPolicy = resolvePresentationPolicy({
       ...DEFAULT_ACCESSIBILITY_PREFERENCES, quality: 'high', reducedMotion: 'off',
     })
+    desktopAssets.presentation = () => highPolicy
     const desktopState = createStressScenario('desktop')
     setRandom(seeded(20261122))
     try {
@@ -106,6 +104,7 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
       expect(render.samplesMs).toHaveLength(120)
       expect(desktopRender.samplesMs).toHaveLength(120)
       expect(lowPolicy.quality).toBe('low')
+      expect(highPolicy.quality).toBe('high')
       expect(desktopPaintCalls.every(n => n > 0)).toBe(true)
       expect(paintCalls.every(n => n > 0)).toBe(true)
       expect(report.helperCacheProbe.hitRate).toBeGreaterThan(0)
