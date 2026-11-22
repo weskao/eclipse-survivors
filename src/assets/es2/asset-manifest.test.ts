@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto'
 import { readFileSync, statSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-const base = new URL('.', import.meta.url)
-const manifest = JSON.parse(readFileSync(new URL('concept-manifest.json', base), 'utf8')) as {
+const base = resolve(process.cwd(), 'src/assets/es2')
+const manifest = JSON.parse(readFileSync(join(base, 'concept-manifest.json'), 'utf8')) as {
   status: string
   scale: number
   designUnit: number
@@ -13,9 +14,9 @@ const manifest = JSON.parse(readFileSync(new URL('concept-manifest.json', base),
 }
 
 function inspectWebp(path: string, maxBytes: number) {
-  const url = new URL(path, base)
-  const bytes = readFileSync(url)
-  expect(statSync(url).size).toBeLessThanOrEqual(maxBytes)
+  const file = join(base, path)
+  const bytes = readFileSync(file)
+  expect(statSync(file).size).toBeLessThanOrEqual(maxBytes)
   expect(bytes.toString('ascii', 0, 4)).toBe('RIFF')
   expect(bytes.toString('ascii', 8, 12)).toBe('WEBP')
   expect(bytes.readUInt32LE(4) + 8).toBe(bytes.length)
