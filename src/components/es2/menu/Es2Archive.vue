@@ -87,7 +87,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
       <div class="es2-archive-grid"><article v-for="entry in upgrades" :key="entry.id" class="es2-archive-card">
         <div class="es2-archive-glyph" aria-hidden="true">{{ entry.icon }}</div><strong>{{ t(entry.title) }}</strong><p>{{ t(entry.bonus) }}</p><small>{{ t("第") }} {{ profile.upgrades[entry.id] }} {{ t("/ 3 階") }}</small>
         <button class="es2-secondary" type="button" :disabled="profile.upgrades[entry.id] >= 3 || profile.embers < upgradeCost(profile.upgrades[entry.id])"
-          @click="emit('purchase', entry.id)">{{ profile.upgrades[entry.id] >{{ t("= 3 ? '已滿階' : `升級 · ${upgradeCost(profile.upgrades[entry.id])} ✧` }}") }}</button>
+          @click="emit('purchase', entry.id)">{{ t(profile.upgrades[entry.id] >= 3 ? '已滿階' : `升級 · ${upgradeCost(profile.upgrades[entry.id])} ✧`) }}</button>
       </article></div>
       </div>
       <h3>{{ t("英雄造型") }} <small>{{ t("只影響外觀 · 不影響戰鬥數值") }}</small></h3>
