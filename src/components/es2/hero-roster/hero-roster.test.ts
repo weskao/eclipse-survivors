@@ -30,12 +30,12 @@ describe('ES2 three-hero selection UI', () => {
   })
 
 
-  it('shows the selected hero\'s real 8-direction game illustration instead of the legacy SVG portraits', () => {
+  it('uses each selected hero\'s full-resolution 3x portrait, not a cropped 128px gameplay cell', () => {
     const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
-      const portrait = wrapper.get(`[data-hero-id="${id}"] svg.es2-roster__portrait`)
-      expect(portrait.attributes('viewBox')).toBeTruthy()
-      expect(portrait.get('image').attributes('href')).toContain(id + '-8dir@3x.webp')
+      const portrait = wrapper.get(`[data-hero-id="${id}"] img.es2-roster__portrait`)
+      expect(portrait.attributes('src')).toContain(id + '-portrait@3x.webp')
+      expect(wrapper.find(`[data-hero-id="${id}"] svg.es2-roster__portrait`).exists()).toBe(false)
     }
   })
 
