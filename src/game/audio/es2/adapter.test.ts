@@ -27,7 +27,7 @@ const make = (storage: StorageFake = new StorageFake()) => {
   const bgm = new Media()
   const audio = createAudioSystem({ bgm, storage, createContext: () => { created++; return context } })
   const tone = vi.fn<ToneFn>()
-  const director = createEs2AudioAdapter({ audio, now: () => clock, tone })
+  const director = createEs2AudioAdapter({ audio, now: () => clock, tone, isRunning: () => context.state === 'running' })
   return { director, audio, context, bgm, storage, tone, setClock: (t: number) => { clock = t; context.currentTime = t }, created: () => created }
 }
 
@@ -98,6 +98,25 @@ describe('audio integration adapter', () => {
     const count = a.tone.mock.calls.length
     a.director.play('boss-intro')
     expect(a.tone.mock.calls).toHaveLength(count)
+  })
+
+  it('does not schedule into an OS-suspended context or apply the gain twice', () => {
+    const a = make()
+    a.director.wakeFromGesture()
+    a.director.setMusicVolume(50)
+    a.director.tick('menu')
+    // The existing music bus already applies the 50% user setting.
+    expect(a.tone.mock.calls[0]?.[3]).toBeCloseTo(0.044)
+    const count = a.tone.mock.calls.length
+    a.context.state = 'suspended'
+    a.setClock(1)
+    a.director.tick('menu')
+    a.director.play('critical-hit')
+    expect(a.tone.mock.calls).toHaveLength(count)
+    a.context.state = 'running'
+    a.director.setSfxVolume(50)
+    a.director.play('sword-attack')
+    expect(a.tone.mock.lastCall?.[3]).toBeCloseTo(0.019)
   })
 
   it('covers every requested semantic cue with an existing sound fallback', () => {

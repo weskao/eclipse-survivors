@@ -37,6 +37,8 @@ describe('original adaptive score', () => {
     expect(during.length).toBeGreaterThan(0)
     expect(during.every(n => n.gain > 0 && n.gain <= 0.14)).toBe(true)
     expect(during.some(n => n.gain < 0.04)).toBe(true)
+    // The first boss downbeat must be scheduled during the fade, not silently skipped.
+    expect(during.some(n => n.midi === 60)).toBe(true)
     score.schedule(2.5, tone, 1)
     expect(score.currentScene).toBe('boss')
     expect(score.fadingFrom).toBe(null)
