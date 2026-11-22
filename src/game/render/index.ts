@@ -1,5 +1,7 @@
 import type { Artwork } from '../art'
 import type { ContentRegistry } from '../content/registry'
+import type { BossEncounterController } from '../content/bosses/controller'
+import { drawBossTelegraphs } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
@@ -19,6 +21,7 @@ export type { Ctx2D } from './ctx'
 
 export interface RenderAssets {
   content?: ContentRegistry
+  bosses?: BossEncounterController
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
@@ -95,6 +98,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   drawStars(ctx, s, ox, oy, reduced)
   drawEnemyTelegraphs(ctx, s, ox, oy)
+  if (assets.bosses) drawBossTelegraphs(ctx, assets.bosses.snapshot(s), ox, oy)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   const objects = assets.depthOrder
   objects.length = 0

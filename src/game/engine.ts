@@ -9,6 +9,9 @@ import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
 import { CONTENT_PACKS } from './content/packs'
+import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
+import { createBossEncounterController } from './content/bosses/controller'
+import { createBossEncounterPack } from './content/packs/bosses'
 import type { ContentPack } from './content/contracts'
 import { trySpawnEvent } from './events'
 import { impact } from './fx'
@@ -84,7 +87,27 @@ const pad2 = (n: number): string => String(n).padStart(2, '0')
 
 export function createEngine(opts: { audio?: AudioSystem; profileStore?: ProfileStore; contentPacks?: readonly ContentPack[] } = {}): Engine {
   const s = createState()
-  const contentRegistry = createContentRegistry(opts.contentPacks ?? CONTENT_PACKS, random)
+  const requestedPacks = opts.contentPacks ?? CONTENT_PACKS
+  const bosses = requestedPacks.some(pack => pack.id === 'bosses') ? createBossEncounterController() : null
+  const contentRegistry = createContentRegistry(
+    bosses ? requestedPacks.map(pack => pack.id === 'bosses' ? createBossEncounterPack(bosses) : pack) : requestedPacks,
+    random,
+  )
+  const bossIds = Object.keys(BOSS_DEFINITIONS) as BossId[]
+  let bossSequence = 0
+  const bossAdapter = bosses ? {
+    spawn(state: GameState, hooks: GameHooks): void {
+      const id = bossIds[bossSequence % bossIds.length]!
+      const hero = state.hero
+      if (!hero) return
+      const spawned = bosses.spawn(state, id, { x: hero.x + 245, y: hero.y }, hooks)
+      if (spawned) {
+        bossSequence++
+        hooks.message(`⚠ ${BOSS_DEFINITIONS[id].title} 降臨！`)
+      }
+    },
+    tick(state: GameState, dt: number, hooks: GameHooks): void { bosses.tick(state, dt, hooks) },
+  } : undefined
   const profileStore = opts.profileStore ?? createProfileStore()
   const audio = opts.audio ?? createAudioSystem({ bgm: createBgm() })
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
@@ -272,7 +295,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
-    step(s, dt, moveVector(keys, stick), hooks, contentRegistry)
+    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
       audio.setCombatIntensity(bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
@@ -430,6 +453,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
     if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
+    if (bosses) assets.bosses = bosses
     assets.cameraShakeEnabled = () => ui.cameraShake
     let dpr = 1
     let last = 0

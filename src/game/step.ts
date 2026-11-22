@@ -143,14 +143,19 @@ function ageEffects(s: GameState, hero: Hero, dt: number): void {
   s.swipes = s.swipes.filter((w) => w.life > 0)
 }
 
-export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry): void {
+export interface BossStepAdapter {
+  spawn(state: GameState, hooks: GameHooks): void
+  tick(state: GameState, dt: number, hooks: GameHooks): void
+}
+
+export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
   tickTimers(s, hero, dt)
   registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
-  tickSpawning(s, dt, hooks)
+  tickSpawning(s, dt, hooks, bosses?.spawn)
   moveHero(s, input, dt)
   const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
   hero.x = free.x; hero.y = free.y
@@ -159,6 +164,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
     hero.attack = hero.delay
   }
   tickEnemies(s, dt, hooks)
+  bosses?.tick(s, dt, hooks)
   for (const e of s.mobs) {
     if (e.hp <= 0) continue
     const safe = resolveObstacleCollision(s.currentScene, e.x, e.y, e.r * 0.65)
