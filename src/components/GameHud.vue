@@ -38,7 +38,7 @@ defineExpose({ minimap })
       <div class="stats">
         <div class="chip" id="timer">{{ hud.timer }}</div>
         <div class="chip">☠ <span id="score">{{ hud.kill }}</span></div>
-        <div class="chip">
+        <div class="chip hud-actions" role="group" aria-label="遊戲快速操作">
           <AudioControl context="hud" compact :active="active && (audioActive ?? true)" :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')" @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)" />
           <SettingsButton compact @open="emit('settings')" />
           <button id="pauser" aria-label="暫停" aria-keyshortcuts="P" @click="emit('pause')">Ⅱ<kbd class="pause-shortcut" aria-hidden="true">P</kbd></button>
