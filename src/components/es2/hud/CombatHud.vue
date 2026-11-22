@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch, withDefaults } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
 import AudioControl from '../../AudioControl.vue'
