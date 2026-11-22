@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import Es2Dialog from '../menu/Es2Dialog.vue'
 import { WORLD_EVENT_DEFINITIONS } from '../../../game/content/world-events/definitions'
 import type { WorldEventOption } from '../../../game/content/world-events/runtime'
@@ -22,6 +22,8 @@ function choose(option: WorldEventOption): void {
   if (!props.event || !option.available || submitting.value) return
   submitting.value = true
   emit('choose', props.event.id, option.id)
+  // Commits are synchronous; a failed transaction may be retried on the next UI turn.
+  void nextTick(() => { submitting.value = false })
 }
 
 function shortcut(event: KeyboardEvent): void {
