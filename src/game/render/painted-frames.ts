@@ -1,7 +1,7 @@
 import type { Hero, JobId } from '../types'
 import type { HeroAnimation } from './animation'
 import type { Ctx2D } from './ctx'
-import { heroCombatAtlasUrl } from './hero-combat-atlas-data'
+import heroCombatAtlasUrl from '../../assets/hero-combat-atlas.webp'
 
 /**
  * Real, manually composited RGBA art, not skinned pixels from a static portrait.
