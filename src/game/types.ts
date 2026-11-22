@@ -171,4 +171,6 @@ export interface GameHooks {
   end(win: boolean): void
   /** Optional for standalone combat/unit tests and legacy call sites. */
   content?(state: GameState, event: ContentEvent): void
+  /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
+  openTreasure?(state: GameState, chestId: number): boolean
 }
