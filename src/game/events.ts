@@ -35,13 +35,17 @@ export function trySpawnEvent(s: GameState, kind: WorldEventKind, rng: () => num
   return false
 }
 
-function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks): boolean {
+function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eventId?: number): boolean {
   const hero = s.hero
   if (!hero) return false
   switch (kind) {
     case 'chest':
-      addXp(s, 12, hooks)
-      hooks.message('✦ 開啟古代寶箱 · 獲得經驗')
+      if (eventId !== undefined && hooks.openTreasure?.(s, eventId)) {
+        hooks.message('✦ 古代寶箱 · 選擇一件聖物')
+      } else {
+        addXp(s, 12, hooks)
+        hooks.message('✦ 開啟古代寶箱 · 獲得經驗')
+      }
       break
     case 'shrine':
       hero.hp = Math.min(hero.max, hero.hp + 36)
@@ -93,7 +97,8 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
   }
   for (const event of s.events) {
     if (Math.hypot(event.x - hero.x, event.y - hero.y) > 39) continue
-    if (activateEvent(s, event.kind, hooks)) event.expiresAt = -1
+    if (activateEvent(s, event.kind, hooks, event.id)) event.expiresAt = -1
+    if (s.mode !== 'play') break
   }
   s.events = s.events.filter(e => e.expiresAt > s.time)
   if (s.blessingUntil > s.time) hero.hp = Math.min(hero.max, hero.hp + 2.4 * dt)
