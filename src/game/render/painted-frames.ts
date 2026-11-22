@@ -1,15 +1,15 @@
 import type { Hero, JobId } from '../types'
 import type { HeroAnimation } from './animation'
 import type { Ctx2D } from './ctx'
-import atlasUrl from '../../assets/hero-combat-atlas.webp'
+import { heroCombatAtlasUrl } from './hero-combat-atlas-data'
 
 /**
  * Real, manually composited RGBA art, not skinned pixels from a static portrait.
  * Atlas layout: 4 columns x (3 rows per hero), 48x60 source pixels per cell.
  * The art contains twelve full-body action poses for each playable character.
  */
-const WIDTH = 48
-const HEIGHT = 60
+const WIDTH = 32
+const HEIGHT = 40
 const COLUMNS = 4
 const FRAMES = 12
 const ROWS_PER_HERO = 3
@@ -17,7 +17,7 @@ const ROW: Record<JobId, number> = { knight: 0, ranger: 3, wizard: 6 }
 
 export function loadPaintedHeroAtlas(): HTMLImageElement {
   const image = new Image()
-  image.src = atlasUrl
+  image.src = heroCombatAtlasUrl
   return image
 }
 
