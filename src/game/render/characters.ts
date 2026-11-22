@@ -276,7 +276,11 @@ export function drawCharacter(
     if (hero && anim) {
       // Original three heroes keep their existing rig and equipment animation.
       ctx.save()
-      if (hero.face < 0) ctx.scale(-1, 1)
+      // Eight authored directions already include the left-facing artwork.
+      // Mirror only legacy art; otherwise westward movement would face east.
+      const isDirectional = productionImage?.complete && productionImage.naturalWidth === 1024
+        && productionImage.naturalHeight === 512
+      if (hero.face < 0 && !isDirectional) ctx.scale(-1, 1)
       const productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
       if (!productionDrawn) {
