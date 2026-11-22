@@ -12,6 +12,7 @@ import ContentShowcase from './components/ContentShowcase.vue'
 import './meta/ui.css'
 import './visual-polish.css'
 import './settings.css'
+import './ui-fidelity.css'
 
 const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
