@@ -66,8 +66,8 @@ describe('cached directional sprite sheets', () => {
     const anim = sampleHeroAnimation(state, hero)
     expect(sheets.draw(draw.ctx, image, job, hero, anim, 108, 144)).toBe(true)
     expect(factory.made).toHaveLength(1)
-    expect(factory.made[0]!.canvas.width).toBe(108 * anim.count)
-    expect(factory.made[0]!.canvas.height).toBe(144)
+    expect(factory.made[0]!.canvas.width).toBe((108 + 64) * anim.count)
+    expect(factory.made[0]!.canvas.height).toBe(144 + 64)
     const bakedDraws = factory.made[0]!.fake.calls.length
     hero.strike = 0.08
     sheets.draw(draw.ctx, image, job, hero, sampleHeroAnimation(state, hero), 108, 144)
