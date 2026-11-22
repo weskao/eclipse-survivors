@@ -1,5 +1,6 @@
 import type { AbilityId, JobId, MobType } from '../game/types'
 import { EVOLUTIONS } from '../game/evolutions'
+import { isContentId } from '../game/content/registry'
 import { ACHIEVEMENTS, newlyEarned } from './achievements'
 import { modeIds } from './modes'
 import type { CosmeticId, PermanentUpgrade, Profile, RunBest, RunRewards, RunStats } from './types'
@@ -8,6 +9,7 @@ export const SAVE_KEY = 'eclipse-survivors.profile.v2'
 const jobs: JobId[] = ['knight', 'ranger', 'wizard']
 const monsters: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'warlock', 'boss']
 const abilities: AbilityId[] = ['damage', 'speed', 'haste', 'maxhp', 'multi', 'orb', 'magnet', 'heal', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain', ...EVOLUTIONS.map(e => e.id)]
+const validAbility = (id: unknown): id is AbilityId => typeof id === 'string' && (abilities.includes(id as AbilityId) || isContentId(id))
 const cosmetics: CosmeticId[] = ['knight-default', 'ranger-default', 'wizard-default', 'knight-gilded', 'ranger-moonlit', 'wizard-astral']
 const defaults: Record<JobId, CosmeticId> = { knight: 'knight-default', ranger: 'ranger-default', wizard: 'wizard-default' }
 const isObj = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v)
@@ -46,7 +48,8 @@ export function migrateProfile(raw: unknown): Profile | null {
     || !Number.isInteger(raw.upgrades.power) || !Number.isInteger(raw.upgrades.vitality)
     || raw.upgrades.power > 3 || raw.upgrades.vitality > 3) return null
   const names = ACHIEVEMENTS.map(a => a.id)
-  if (!listOf(raw.achievements, names) || !listOf(raw.discoveredAbilities, abilities)
+  if (!listOf(raw.achievements, names) || !Array.isArray(raw.discoveredAbilities) || raw.discoveredAbilities.length > 1024
+    || !raw.discoveredAbilities.every(validAbility)
     || !listOf(raw.heroesPlayed, jobs) || !listOf(raw.unlockedCosmetics, cosmetics)
     || !Array.isArray(raw.recentRunIds) || raw.recentRunIds.length > 128
     || !raw.recentRunIds.every((id: unknown) => typeof id === 'string' && id.length > 0 && id.length < 128)) return null
@@ -115,7 +118,7 @@ export function createProfileStore(storage: Store | null = defaultStorage()): Pr
         const count = stats.enemies[type] ?? 0
         if (nonNegative(count) && count) profile.discoveredMonsters[type] = (profile.discoveredMonsters[type] ?? 0) + Math.floor(count)
       }
-      for (const skill of stats.abilities) if (abilities.includes(skill) && !profile.discoveredAbilities.includes(skill)) profile.discoveredAbilities.push(skill)
+      for (const skill of stats.abilities) if (validAbility(skill) && !profile.discoveredAbilities.includes(skill)) profile.discoveredAbilities.push(skill)
       const best = profile.best[stats.mode]
       if (!best || stats.kills > best.kills || (stats.kills === best.kills && stats.seconds > best.seconds))
         profile.best[stats.mode] = { seconds: stats.seconds, kills: stats.kills, level: stats.level, victory: stats.victory }

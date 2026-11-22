@@ -1,28 +1,37 @@
 import type { Artwork } from '../art'
+import type { ContentRegistry } from '../content/registry'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
 import { buildProps } from './props'
 import { buildSprites, domCanvas, type MakeCanvas } from './sprites'
+import type { MobTintCache } from './tint-cache'
 
 export type { Ctx2D } from './ctx'
 
 export interface RenderAssets {
+  content?: ContentRegistry
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
+  heroSheets: HeroSheets
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
+  cameraShakeEnabled: () => boolean
   biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
+  magicGlow: HTMLCanvasElement | null
+  gems: GemSprites
+  mobTint: MobTintCache
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -33,9 +42,14 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     : null
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
+    heroSheets: createHeroSheets(makeCanvas),
     prefersReducedMotion: () => query?.matches ?? false,
+    cameraShakeEnabled: () => true,
     depthOrder: [],
     biomes: buildBiomeArt(makeCanvas),
+    magicGlow: buildMagicGlow(makeCanvas),
+    gems: buildGemSprites(makeCanvas),
+    mobTint: { makeCanvas, variants: new WeakMap() },
   }
 }
 
@@ -63,7 +77,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillRect(0, 0, W, H)
   let ox = W * 0.5 - (hero ? s.cam.x : 0)
   let oy = H * 0.53 - (hero ? s.cam.y : 0)
-  if (hero && s.cameraKick > 0 && !reduced) {
+  if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced && assets.cameraShakeEnabled()) {
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
@@ -87,23 +101,31 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ctx.fillRect(0, 0, W, H)
     return
   }
-  drawStars(ctx, s, ox, oy, reduced)
+  drawStars(ctx, s, ox, oy, reduced, assets.gems)
   drawEnemyTelegraphs(ctx, s, ox, oy)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   const objects = assets.depthOrder
   objects.length = 0
-  for (const mob of s.mobs) objects.push(mob)
+  // Reject offscreen and dead mobs before sorting, not after the sort in drawCharacter.
+  // Keep the same conservative bounds as the individual sprite renderer.
+  for (const mob of s.mobs) {
+    const x = mob.x + ox, y = mob.y + oy
+    if (mob.hp > 0 && x >= -180 && x <= W + 180 && y >= -240 && y <= H + 220) objects.push(mob)
+  }
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
-  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced)
+  for (const obj of objects) {
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint)
+  }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
-  drawShots(ctx, s, ox, oy)
+  drawShots(ctx, s, ox, oy, assets.magicGlow)
   drawEnemyProjectiles(ctx, s, ox, oy)
   drawOrbs(ctx, s, hero, ox, oy)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
+  assets.content?.render(ctx, s, ox, oy)
   drawNumbers(ctx, s, ox, oy)
   drawVignette(ctx, s)
   drawBossPhaseIndicator(ctx, s)

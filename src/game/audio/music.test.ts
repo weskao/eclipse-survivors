@@ -8,44 +8,44 @@ const recorder = () => {
   return { notes, tone: (midi: number, at: number, dur: number, vol: number, wave: string, bus: string) => { notes.push({ midi, at, dur, vol, wave, bus }) } }
 }
 
-describe('menu motif', () => {
-  it('first beat plays the drone chord on the music bus then steps by .45s', () => {
+describe('menu title theme', () => {
+  it('opens with an audible melodic lead, rhythmic pulse, and harmony on the music bus', () => {
     const { notes, tone } = recorder()
     const menu = createMenuScore()
     menu.setClock(0)
     menu.schedule(0, tone)
-    expect(notes.map(n => [n.midi, n.dur, n.vol, n.wave, n.bus])).toEqual([
-      [33, 2.55, 0.033, 'sine', 'music'],
-      [52, 2.15, 0.024, 'triangle', 'music'],
-      [60, 1.7, 0.015, 'sine', 'music'],
-    ])
-    expect(notes.map(n => n.at)).toEqual([0, 0.12, 0.27])
+    expect(notes.length).toBeGreaterThanOrEqual(5)
+    expect(notes.some(n => n.midi >= 69 && n.vol >= 0.075 && n.wave === 'triangle')).toBe(true)
+    expect(notes.some(n => n.wave === 'sawtooth' && n.dur <= 0.2)).toBe(true)
+    expect(notes.every(n => n.bus === 'music' && n.vol > 0 && n.vol < 0.25)).toBe(true)
   })
 
-  it('snaps a stale clock to now + .04, then steps every .45s (accent on beat 2)', () => {
-    const { notes, tone } = recorder()
-    const menu = createMenuScore()
-    menu.setClock(0)
-    menu.schedule(10, tone)
-    expect(notes).toHaveLength(3)
-    expect(notes[0].at).toBeCloseTo(10.04)
-    menu.schedule(10, tone) // next step at 10.49, outside the .20s lookahead
-    expect(notes).toHaveLength(3)
-    menu.schedule(10.4, tone) // step 1 (no notes)
-    menu.schedule(10.9, tone) // step 2: root 45 + [12,15,19,22][1]
-    expect(notes).toHaveLength(4)
-    expect(notes[3]).toMatchObject({ midi: 60, dur: 0.65, vol: 0.019, wave: 'sine', bus: 'music' })
-  })
-
-  it('resetStep restarts the chord progression', () => {
+  it('plays an eighth-note theme at a steady .3s pulse without queueing duplicates', () => {
     const { notes, tone } = recorder()
     const menu = createMenuScore()
     menu.setClock(0)
     menu.schedule(0, tone)
+    const first = notes.length
+    menu.schedule(0.05, tone)
+    expect(notes).toHaveLength(first)
+    menu.schedule(0.3, tone)
+    expect(notes.length).toBeGreaterThan(first)
+    expect(notes.slice(first).some(n => n.at === 0.3 && n.midi >= 69)).toBe(true)
+  })
+
+  it('changes harmonic foundation between phrases and can restart from the opening', () => {
+    const { notes, tone } = recorder()
+    const menu = createMenuScore()
+    menu.setClock(0)
+    menu.schedule(0, tone)
+    const opening = notes.map(n => [n.midi, n.dur, n.vol, n.wave])
+    for (let beat = 1; beat <= 8; beat++) menu.schedule(beat * 0.3, tone)
+    expect(notes.some(n => Math.abs(n.at - 2.4) < 0.001 && n.midi === 53)).toBe(true)
+    const before = notes.length
     menu.resetStep()
-    menu.setClock(1)
-    menu.schedule(1, tone)
-    expect(notes.slice(3).map(n => n.midi)).toEqual([33, 52, 60])
+    menu.setClock(5)
+    menu.schedule(5, tone)
+    expect(notes.slice(before).map(n => [n.midi, n.dur, n.vol, n.wave])).toEqual(opening)
   })
 })
 

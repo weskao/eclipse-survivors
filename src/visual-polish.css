@@ -1,0 +1,314 @@
+/* Eclipse Survivors: original dark-fantasy UI art direction.
+   The generated transparent WebP art carries only artwork; text and interactive states stay live HTML/CSS.
+   Inspired by the readable card hierarchies of action RPGs, not their copyrighted assets. */
+
+#menu .menu-panel{--ui-gold:#e9c888;--ui-pale:#f9e9c5}
+#menu .job{isolation:isolate;overflow:hidden;border-color:#8e806d;background:linear-gradient(150deg,#253342ed,#0d1523f5 73%);transition:transform .2s ease,border-color .2s ease,filter .2s ease,box-shadow .2s ease}
+#menu .job:not(.selected){filter:saturate(.77) brightness(.88)}
+#menu .job:not(.selected) .portrait img{opacity:.86}
+#menu .job:not(.selected):hover{filter:saturate(1) brightness(1.06);border-color:#ebcb8a}
+#menu .job.selected{filter:none;border-color:#ffdf9b;background:radial-gradient(ellipse at 50% 18%,#bf94504b,transparent 60%),linear-gradient(150deg,#333748ed,#111d2d);box-shadow:0 0 0 1px #ffe5a25a,0 0 25px #d9a95c59,inset 0 1px 0 #fff7cc45}
+#menu .job:focus-visible{outline:3px solid #fff0ba;outline-offset:3px;filter:none}
+#menu .job:active{transform:translateY(-1px) scale(.99)}
+#menu .job .job-choose{opacity:1;color:#bfc9c9;letter-spacing:.7px}
+#menu .job.selected .job-choose{color:#ffe5a6;font-weight:900;text-shadow:0 0 9px #dda358}
+#menu .job.selected .portrait:after{content:"";position:absolute;left:15%;right:15%;bottom:-3px;height:2px;background:linear-gradient(90deg,transparent,#ffe0a1,transparent);box-shadow:0 0 11px #dba550;pointer-events:none}
+#menu .start-adventure{background:linear-gradient(180deg,#fff4ca,#f2c97d 46%,#b67830);border-color:#ffe9b6;box-shadow:0 4px 0 #63421f,0 12px 31px #000a,inset 0 2px 1px #fff9e3}
+#menu .start-adventure:focus-visible{outline:3px solid #fff4cb;outline-offset:4px}
+#menu .start-adventure:active{transform:translateY(2px);box-shadow:0 1px 0 #63421f,0 5px 15px #000b}
+
+.mode-choice{isolation:isolate;overflow:hidden;min-height:75px;padding-right:26px;border-radius:7px;border-color:#8b8490;background:linear-gradient(125deg,#293446,#141b29 80%);transition:transform .18s,border-color .18s,box-shadow .18s,filter .18s}
+.mode-choice[aria-checked="false"]{filter:saturate(.82);color:#d8d7d2}
+.mode-choice[aria-checked="false"]:hover{filter:none;border-color:#e3c488}
+.mode-choice[aria-checked="true"]{filter:none;border-color:#ffde9b;background:radial-gradient(ellipse at 0 0,#896d3c66,transparent 80%),linear-gradient(120deg,#354252,#1a2232);box-shadow:0 0 0 1px #ffe1a466,inset 0 0 17px #e7bd6436,0 0 17px #d8ae4b33}
+.mode-choice[aria-checked="true"] .mode-icon{color:#fff0be;text-shadow:0 0 12px #eac478}
+.mode-choice[aria-checked="true"]::after{content:"✓";position:absolute;right:7px;bottom:8px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;color:#181c23;background:#f9d88e;font-size:11px;font-weight:900}
+.mode-choice:focus-visible{outline:3px solid #ffe5ad;outline-offset:3px}
+.mode-choice:active{transform:scale(.99)}
+
+#level .upgrade{isolation:isolate;overflow:hidden;border-radius:10px;border-color:#aaafb9;background:radial-gradient(circle at 50% 18%,#4c5a7663,transparent 68%),linear-gradient(160deg,#282c39,#111722);box-shadow:inset 0 1px 0 #d5dbeb38,0 9px 22px #0009}
+#level .upgrade.rare{border-color:#87c9e9;background:radial-gradient(circle at 50% 16%,#406f9f74,transparent 66%),linear-gradient(#1b3046,#111621)}
+#level .upgrade.legendary{border-color:#ffd185;background:radial-gradient(circle at 50% 16%,#b984456b,transparent 66%),linear-gradient(#45342e,#1d1824);box-shadow:inset 0 1px 0 #ffe4a65c,0 0 22px #dda45d63}
+#level .upgrade:focus-visible{outline:3px solid #fff0c1;outline-offset:3px}
+#level .upgrade:hover{filter:brightness(1.08)}
+#level .upgrade .portrait.skill-sigil{border-radius:15px;background:linear-gradient(#1b2431,#10141d);border-color:#bba57b}
+#level .upgrade.rare .portrait.skill-sigil{border-color:#a8e6f7}
+#level .upgrade.legendary .portrait.skill-sigil{border-color:#ffda98}
+
+
+/* Real GPT-generated 3x transparent WebP assets:
+   a single 720x288 atlas for the compact combat HUD; 288px standalone art for upgrade cards.
+   Other ability IDs keep their original vector icon. */
+.skill-slots .skill[data-skill="damage"] .skill-sigil{--arcana-x:0%;--arcana-y:0%}
+.skill-slots .skill[data-skill="multi"] .skill-sigil{--arcana-x:25%;--arcana-y:0%}
+.skill-slots .skill[data-skill="blaze"] .skill-sigil{--arcana-x:50%;--arcana-y:0%}
+.skill-slots .skill[data-skill="frost"] .skill-sigil{--arcana-x:75%;--arcana-y:0%}
+.skill-slots .skill[data-skill="chain"] .skill-sigil{--arcana-x:100%;--arcana-y:0%}
+.skill-slots .skill[data-skill="vortex"] .skill-sigil{--arcana-x:0%;--arcana-y:100%}
+.skill-slots .skill[data-skill="meteor"] .skill-sigil{--arcana-x:25%;--arcana-y:100%}
+.skill-slots .skill[data-skill="orb"] .skill-sigil{--arcana-x:50%;--arcana-y:100%}
+.skill-slots .skill[data-skill="shield"] .skill-sigil{--arcana-x:75%;--arcana-y:100%}
+.skill-slots .skill[data-skill="heal"] .skill-sigil{--arcana-x:100%;--arcana-y:100%}
+.skill-slots .skill[data-skill="damage"] .skill-sigil,
+.skill-slots .skill[data-skill="multi"] .skill-sigil,
+.skill-slots .skill[data-skill="blaze"] .skill-sigil,
+.skill-slots .skill[data-skill="frost"] .skill-sigil,
+.skill-slots .skill[data-skill="chain"] .skill-sigil,
+.skill-slots .skill[data-skill="vortex"] .skill-sigil,
+.skill-slots .skill[data-skill="meteor"] .skill-sigil,
+.skill-slots .skill[data-skill="orb"] .skill-sigil,
+.skill-slots .skill[data-skill="shield"] .skill-sigil,
+.skill-slots .skill[data-skill="heal"] .skill-sigil{position:relative;isolation:isolate;overflow:hidden}
+.skill-slots .skill[data-skill="damage"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="multi"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="blaze"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="frost"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="chain"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="vortex"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="meteor"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="orb"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="shield"] .skill-sigil img.skill-art,
+.skill-slots .skill[data-skill="heal"] .skill-sigil img.skill-art{visibility:hidden}
+.skill-slots .skill[data-skill="damage"] .skill-sigil::after,
+.skill-slots .skill[data-skill="multi"] .skill-sigil::after,
+.skill-slots .skill[data-skill="blaze"] .skill-sigil::after,
+.skill-slots .skill[data-skill="frost"] .skill-sigil::after,
+.skill-slots .skill[data-skill="chain"] .skill-sigil::after,
+.skill-slots .skill[data-skill="vortex"] .skill-sigil::after,
+.skill-slots .skill[data-skill="meteor"] .skill-sigil::after,
+.skill-slots .skill[data-skill="orb"] .skill-sigil::after,
+.skill-slots .skill[data-skill="shield"] .skill-sigil::after,
+.skill-slots .skill[data-skill="heal"] .skill-sigil::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:6px;background-image:url('./assets/ui/skill-art-atlas@3x.webp');background-size:500% 200%;background-position:var(--arcana-x) var(--arcana-y);background-repeat:no-repeat}
+#level .upgrade .portrait.skill-sigil img.skill-art{visibility:visible;object-fit:contain;object-position:center}
+.skill-slots .skill{border-radius:7px;box-shadow:inset 0 1px 0 #fff4,0 5px 11px #000a}
+.skill-slots .skill.legendary{box-shadow:0 0 11px #e6a85299,inset 0 1px 0 #ffe2a0}
+.skill-slots .skill.evolved{border-color:#fbe4a4}
+.skill-slots .skill .skill-cooldown{background:#08121ec4}
+
+.progression-upgrade button,.cosmetic-list button{min-height:42px;border-radius:6px;transition:border-color .18s,background .18s,box-shadow .18s,transform .18s}
+.progression-upgrade button:not(:disabled):hover,.cosmetic-list button:not(:disabled):hover{transform:translateY(-1px);border-color:#ffe0a0;background:#444038}
+.progression-upgrade button:focus-visible,.cosmetic-list button:focus-visible,.progression-drawer>summary:focus-visible{outline:3px solid #f9d78d;outline-offset:3px}
+.progression-upgrade button:disabled,.cosmetic-list button:disabled{opacity:.73;filter:saturate(.35);background:#222832;color:#b5b8ba;cursor:not-allowed;border-color:#717783}
+.cosmetic-list button{position:relative;padding-right:30px}
+.cosmetic-list button[aria-pressed="true"]{border-color:#ffdc8a;background:linear-gradient(#443b31,#1c2933);box-shadow:0 0 0 1px #eacc7a66,inset 0 0 18px #e7be6333}
+.cosmetic-list button[aria-pressed="true"]::after{content:"✓";position:absolute;top:9px;right:8px;color:#f7d587;font-weight:900}
+.achievement.locked,.codex-entry.locked{opacity:.72;filter:saturate(.4)}
+.achievement:not(.locked){border-color:#dabb81;box-shadow:inset 0 0 12px #cf9f5340}
+.result-victory .result-emblem{filter:drop-shadow(0 0 16px #f1d08055)}
+.result-defeat .result-emblem{filter:drop-shadow(0 0 13px #bd5e7860)}
+.result-actions :is(button,.cta,.ghost):focus-visible{outline:3px solid #fff0bd;outline-offset:3px}
+
+@media(max-width:700px){
+  .mode-choice{min-height:76px;padding-right:23px}
+  .mode-choice[aria-checked="true"]::after{right:5px;bottom:6px}
+  
+  #menu .job.selected{transform:translateY(-2px)}
+}
+/* Short-landscape upgrade selection: keep all three choices visible, not half offscreen. */
+@media(max-height:500px) and (min-width:701px){
+  #level.overlay{padding:6px}
+  #level .panel{max-height:calc(100dvh - 12px);padding:10px 14px 9px;overflow-y:auto}
+  #level .kicker{font-size:9px;letter-spacing:1.5px}
+  #level h2{font-size:22px;margin:5px 0 7px}
+  #level .cards{margin:8px 0;gap:9px}
+  #level .upgrade{min-height:0;height:200px;padding:9px 8px 7px}
+  #level .upgrade .portrait.skill-sigil{width:52px;height:52px;margin:5px auto 7px}
+  #level .upgrade strong{font-size:12px;line-height:1.2}
+  #level .upgrade .upgrade-rarity{font-size:9px}
+  #level .upgrade .upgrade-level{font-size:10px;margin:4px 0 3px}
+  #level .upgrade small.upgrade-desc{font-size:10px;line-height:1.3}
+  #level .upgrade small.upgrade-key{font-size:9px;margin-top:5px}
+  #level .panel>p{font-size:10px;margin:6px 0 0}
+}
+@media(prefers-reduced-motion:reduce){
+  #menu .job,.mode-choice,#level .upgrade,.progression-upgrade button,.cosmetic-list button{transition:none!important;animation:none!important;transform:none!important}
+  #menu .job.selected{transform:none}
+}
+
+
+/* Dark fantasy UI depth — layered static textures, compositor-only micro-motion.
+   Keep content selectable and all copy in HTML, never bake UI labels into artwork. */
+:root{--eclipse-gold:#eec788;--eclipse-gold-bright:#fff2cb;--eclipse-silver:#aabcca;--eclipse-night:#0c1320}
+#menu.overlay.active .menu-panel,
+#level.overlay.active .panel,
+#result.overlay.active .panel,
+#paused.overlay.active .panel{animation:eclipse-appear .42s cubic-bezier(.19,1,.22,1) both}
+@keyframes eclipse-appear{from{opacity:.45;transform:translateY(12px) scale(.992)}to{opacity:1;transform:translateY(0) scale(1)}}
+#menu .menu-selection{isolation:isolate;box-shadow:-20px 0 42px #05080cbc,inset 1px 0 0 #fce2ab24}
+#menu .menu-selection::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 42% 38% at 96% 10%,#d8a95d12,transparent 84%);z-index:-1}
+#menu .menu-brand .game-title{text-shadow:0 3px 9px #050810,0 0 25px #d6b77523;filter:drop-shadow(0 2px 1px #0b0c16)}
+#menu .menu-showcase .showcase-halo{opacity:.85;filter:drop-shadow(0 0 21px #d8b46d7b)}
+#menu .job.selected .portrait img{filter:drop-shadow(0 0 13px #e8cc9159)}
+#menu .job.selected .job-mark{color:#fff0c4}
+#menu .job.selected::after{height:2px;background:linear-gradient(90deg,transparent,#fff3ca,#f2bc67,transparent);box-shadow:0 0 12px #e1b878}
+#menu .job:hover:not(.selected) .portrait img{filter:brightness(1.10)}
+#menu .job:focus-visible .job-choose{color:#fff2c8}
+#menu .start-adventure{position:relative;overflow:hidden;isolation:isolate}
+#menu .start-adventure::after{content:"";position:absolute;top:-30%;bottom:-30%;width:24%;left:-40%;pointer-events:none;transform:skewX(-19deg);background:linear-gradient(90deg,transparent,#fff8d37a,transparent);opacity:0;transition:left .55s ease,opacity .25s ease}
+#menu .start-adventure:is(:hover,:focus-visible)::after{left:130%;opacity:1}
+#menu .start-adventure:disabled{filter:grayscale(1);opacity:.48;cursor:not-allowed}
+#menu .mode-choice[data-mode]{overflow:hidden}
+.mode-choice[data-mode]::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background:radial-gradient(ellipse at 90% 15%,#cfb8853b,transparent 66%)}
+.mode-choice[data-mode="endless"]::before{background:radial-gradient(ellipse at 90% 15%,#b869b859,transparent 70%)}
+.mode-choice[data-mode="challenge"]::before{background:radial-gradient(ellipse at 90% 15%,#d96f5857,transparent 70%)}
+.mode-choice[data-mode="standard"]::before{background:radial-gradient(ellipse at 90% 15%,#7391be59,transparent 70%)}
+.mode-choice[aria-checked="true"]::before{opacity:.85}
+.mode-choice[aria-checked="false"] .mode-icon{opacity:.76;filter:grayscale(.2)}
+.mode-choice:focus-visible .mode-copy strong{color:#fff4d6}
+
+/* Upgrade window: controlled light on cards, distinctive metal trim and card hierarchy. */
+#level.overlay{background:radial-gradient(ellipse at 50% 30%,#29233abf,#050810e8 77%);backdrop-filter:blur(11px)}
+#level .panel{border-radius:15px;border-color:#d0a96dbb;background:radial-gradient(ellipse at 50% 5%,#57466a42,transparent 50%),linear-gradient(158deg,#1b2330,#0b111b 65%,#161e2a);box-shadow:0 24px 85px #000e,inset 0 0 70px #0006,0 0 30px #c39a4f21}
+#level .panel::before{inset:7px;border-color:#f7dba126;border-radius:9px}
+#level .panel .kicker{color:#d5b581}
+#level .upgrade{border-width:1px;transform-origin:center 80%;transition:transform .2s ease,filter .2s ease,border-color .2s ease,box-shadow .2s ease}
+#level .upgrade::before{content:"";pointer-events:none;position:absolute;inset:2px;border:1px solid #ffffff1a;border-radius:8px;background:linear-gradient(135deg,#ffffff0e,transparent 30%);z-index:0}
+#level .upgrade::after{content:"";pointer-events:none;position:absolute;top:0;left:15%;right:15%;height:3px;background:linear-gradient(90deg,transparent,#d4cfcb99,transparent);z-index:0}
+#level .upgrade.rare::after{background:linear-gradient(90deg,transparent,#a9e4ff,transparent)}
+#level .upgrade.legendary::after{background:linear-gradient(90deg,transparent,#ffe6a8,#e2a74d,transparent);box-shadow:0 0 16px #f6bc705c}
+#level .upgrade.legendary{animation:blessing-arrive .42s both ease-out,eclipse-legendary-breathe 3.8s ease-in-out infinite 1s}
+@keyframes eclipse-legendary-breathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)}}
+#level .upgrade:active{transform:translateY(-2px) scale(.99)}
+#level .upgrade .portrait.skill-sigil{border-radius:16px;overflow:hidden;isolation:isolate;box-shadow:inset 0 0 23px #0008,0 0 16px #b6a07845}
+#level .upgrade .portrait.skill-sigil:before{content:"";position:absolute;inset:0;border:1px solid #fff4e42d;border-radius:15px;pointer-events:none;z-index:3}
+#level .upgrade .portrait.skill-sigil img.skill-art{width:100%;height:100%;padding:2px;filter:drop-shadow(0 2px 5px #0009)}
+#level .upgrade.legendary .portrait.skill-sigil{background:radial-gradient(circle,#60462f,#171720 80%);box-shadow:0 0 22px #e9af62a1,inset 0 0 20px #000a}
+#level .upgrade .upgrade-desc{max-width:24ch;margin-inline:auto}
+#level .upgrade .upgrade-key{opacity:.8!important;color:#eacb9c!important}
+#level .upgrade:focus-visible .upgrade-key{color:#fff7d9!important;opacity:1!important}
+
+/* Compact HUD: stronger depth and legible cooldown overlays without extra frame work. */
+#hud .status{border-radius:9px;border-color:#d4b97f9c;background:linear-gradient(135deg,#142233f4,#0b131eec);box-shadow:0 7px 24px #000b,inset 0 1px 0 #f5dc8a26}
+#hud .hud-face{border-radius:6px;border-color:#d8bb81;box-shadow:inset 0 0 18px #1111,0 0 12px #c5a27435}
+#hud .chip{border-color:#bcab87a6;border-radius:7px}
+#hud .chip button[aria-pressed="false"]{color:#919baa}
+#hud .chip button:focus-visible{outline:3px solid #fff0bb;outline-offset:3px}
+#hud .skill-slots{padding:4px 7px;border:1px solid #b99f7555;border-radius:10px;background:#101826b0;box-shadow:0 3px 15px #0008}
+#hud .skill-slots .skill{isolation:isolate;overflow:hidden;border-color:#d5bd8ac7;box-shadow:inset 0 1px 0 #fff4,0 3px 10px #000c}
+#hud .skill-slots .skill.evolved{border-color:#ffd18d;box-shadow:0 0 14px #f7ba568c,inset 0 1px 0 #fff9}
+#hud .skill-slots .skill::before{content:"";position:absolute;inset:2px;border:1px solid #e8f6ff12;border-radius:4px;pointer-events:none;z-index:1}
+#hud .skill-slots .skill .skill-cooldown{z-index:5;background:linear-gradient(0deg,#090f20ef,#121725db);border-color:#f3f3f338}
+#hud .skill-slots .skill .skill-evolved,#hud .skill-slots .skill small.skill-level{z-index:6}
+#hud .boss-wrap .boss-track{border-radius:5px;height:13px;box-shadow:0 0 16px #df514853,inset 0 0 7px #000}
+#hud .toast{transition:opacity .18s ease,filter .18s ease;filter:drop-shadow(0 3px 15px #d7a459aa)}
+
+/* Progression windows: reward states, locked states and rich but restrained depth. */
+.progression-drawer{border-radius:8px;box-shadow:0 8px 29px #0007,inset 0 0 20px #e3bf6b0c}
+.progression-drawer[open]{border-color:#e8c68a}
+.progression-drawer[open] .progression-content{animation:eclipse-reveal .36s ease both}
+@keyframes eclipse-reveal{from{opacity:.4;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.progression-totals>div{border-color:#baa16e85;background:radial-gradient(ellipse at 50% 0,#d4aa5122,transparent 72%),#1b2837}
+.progression-upgrade,.achievement,.codex-entry{border-radius:7px;background:linear-gradient(130deg,#253347aa,#121c2cec);box-shadow:inset 0 1px 0 #ffffff0b}
+.progression-upgrade:has(button:not(:disabled)){border-color:#d7b97d78}
+.progression-upgrade button:not(:disabled){box-shadow:inset 0 1px 0 #fff3,0 3px 8px #0005}
+.cosmetic-list button[aria-pressed="true"]{box-shadow:0 0 0 1px #e7bc6c66,0 0 17px #a9833d3a,inset 0 0 18px #e7be6333}
+/* Locked cosmetics already show a text lock; do not draw a duplicate badge. */
+.achievement:not(.locked){box-shadow:inset 0 0 12px #eac96b20,0 0 9px #dca94b1f}
+.achievement.locked,.codex-entry.locked{filter:saturate(.35);opacity:.62}
+.reset-confirm{box-shadow:0 8px 26px #0008,inset 0 1px 0 #e8a1a125}
+.reset-confirm button:focus-visible{outline:3px solid #ffe1c9;outline-offset:3px}
+
+/* Result windows: celebratory tiering, victory gold vs defeat crimson. */
+#result .result-panel{overflow-x:hidden;isolation:isolate;border-radius:15px}
+#result .result-panel::before{border-radius:9px}
+#result .result-panel.result-victory{background:radial-gradient(ellipse 90% 40% at 50% 0,#8d683537,transparent 85%),linear-gradient(155deg,#27313b,#0e1522 70%)}
+#result .result-panel.result-defeat{background:radial-gradient(ellipse 90% 40% at 50% 0,#7c33453d,transparent 85%),linear-gradient(155deg,#262833,#0e1420 70%)}
+#result .result-emblem{animation:eclipse-emblem-enter .64s cubic-bezier(.16,1,.3,1) both}
+@keyframes eclipse-emblem-enter{from{opacity:.3;transform:translateY(16px) scale(.86)}to{opacity:1;transform:none}}
+.result-stats>div{border-color:#c6ae8266;background:radial-gradient(circle at 50% 0,#e0b65f18,transparent 70%),#172435e8}
+.result-stats strong{font-variant-numeric:tabular-nums}
+.result-rewards{border-color:#dfbe7b7f;background:linear-gradient(130deg,#4d3a2345,#192535ad);box-shadow:inset 0 1px 0 #eac78e33,0 7px 18px #0007}
+.result-actions :is(.cta,.ghost){transition:filter .15s,transform .15s,box-shadow .15s}
+.result-actions :is(.cta,.ghost):hover{filter:brightness(1.11)}
+.result-actions :is(.cta,.ghost):active{transform:translateY(2px)}
+
+@media(max-width:760px){
+  #hud .skill-slots{padding:3px 5px}
+  #level .upgrade .portrait.skill-sigil img.skill-art{padding:1px}
+  #level .upgrade .upgrade-desc{max-width:none}
+  #menu .menu-panel{animation-duration:.3s}
+}
+@media(max-height:500px) and (min-width:701px){
+  #level .upgrade .portrait.skill-sigil{margin-top:4px;margin-bottom:6px}
+  #level .upgrade .portrait.skill-sigil img.skill-art{padding:0}
+  #level .upgrade.legendary{animation:blessing-arrive .3s both ease-out}
+}
+@media(prefers-reduced-motion:reduce){
+  #menu.overlay.active .menu-panel,#level.overlay.active .panel,#result.overlay.active .panel,
+  #paused.overlay.active .panel,#level .upgrade.legendary,.result-emblem,
+  .progression-drawer[open] .progression-content{animation:none!important}
+  #menu .start-adventure::after{display:none}
+  #level .upgrade,.result-actions :is(.cta,.ghost){transition:none!important;transform:none!important}
+}
+
+/* Touch controls: tactile fantasy metal but no additional gameplay interaction. */
+#stick{border-color:#f2d7a29c;background:radial-gradient(circle at 45% 36%,#3e4c5e7d,#101923b8 73%);box-shadow:0 0 0 8px #ddbd6920,0 6px 17px #0007,inset 0 0 18px #000b}
+#knob{border-color:#f4dbab;background:radial-gradient(circle at 30% 24%,#73808c,#222b3a 70%);box-shadow:0 3px 12px #000b,inset 0 1px 0 #fff7}
+#dash{border-color:#f4dba7;background:radial-gradient(circle at 40% 24%,#5f6880,#252b38 72%);box-shadow:0 0 0 7px #f3cc811a,0 6px 18px #000a,inset 0 1px 0 #ffe8b25a;transition:transform .13s,filter .13s}
+#dash:active{transform:scale(.94);filter:brightness(1.21)}
+#dash:focus-visible{outline:3px solid #ffe6a4;outline-offset:5px}
+@media(max-width:700px){
+  .mode-copy strong{font-size:12px}
+  .mode-copy small{font-size:10px;line-height:1.35}
+  #level.overlay{backdrop-filter:blur(5px)}
+  .progression-upgrade button,.cosmetic-list button{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){
+  #dash{transition:none}
+}
+
+/* True frame-by-frame native WebP animation (no SVG drawing, no per-frame JS).
+   One decoded atlas is shared by all equipped HUD skills; motion preferences and
+   non-active HUD stay on the still WebP. */
+#level .upgrade .portrait.skill-sigil picture{display:block;position:relative;width:100%;height:100%}
+#level .upgrade .portrait.skill-sigil picture img.skill-art{display:block;max-width:100%;max-height:100%;width:100%;height:100%}
+@media(prefers-reduced-motion:no-preference){
+  #hud.active .skill-slots .skill[data-skill="damage"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="multi"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="blaze"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="frost"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="chain"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="vortex"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="meteor"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="orb"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="shield"] .skill-sigil::after,
+  #hud.active .skill-slots .skill[data-skill="heal"] .skill-sigil::after{
+    background-image:url('./assets/ui/skill-art-atlas@3x-animated.webp');
+  }
+}
+
+/* Desktop-only keyboard affordance: sits at the pause control's lower-right edge. */
+#hud #pauser{position:relative;isolation:isolate}
+#hud #pauser .pause-shortcut{
+  display:none;
+  position:absolute;
+  right:-9px;
+  bottom:-10px;
+  box-sizing:border-box;
+  min-width:17px;
+  height:17px;
+  padding:0 3px;
+  align-items:center;
+  justify-content:center;
+  color:#fff1c9;
+  background:linear-gradient(145deg,#384453,#161d29);
+  border:1px solid #dec18b;
+  border-radius:4px;
+  box-shadow:0 2px 6px #000a,inset 0 1px 0 #ffffff30;
+  font:700 10px/1 system-ui,sans-serif;
+  letter-spacing:0;
+  pointer-events:none;
+}
+@media (hover: hover) and (pointer: fine){
+  #hud #pauser .pause-shortcut{display:flex}
+}
+
+/* The upgrade picker is a calm decision moment: no camera-like UI motion. */
+@keyframes level-soft-reveal{from{opacity:0}to{opacity:1}}
+#level.overlay.active .panel{animation:level-soft-reveal .32s ease-out both}
+#level .upgrade{animation:level-soft-reveal .38s ease-out both;transition:border-color .2s ease,box-shadow .2s ease,filter .2s ease}
+#level .upgrade.legendary{animation:level-soft-reveal .38s ease-out both,eclipse-legendary-breathe 3.8s ease-in-out infinite 1s}
+#level .upgrade:hover,#level .upgrade:focus-visible,#level .upgrade:active{transform:none}
+@media(prefers-reduced-motion:reduce){
+  #level.overlay.active .panel,#level .upgrade,#level .upgrade.legendary{animation:none!important;transition:none!important}
+}

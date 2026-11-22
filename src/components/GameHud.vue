@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
+import SettingsButton from './SettingsButton.vue'
+import AudioControl from './AudioControl.vue'
 import type { HudView } from '../game/store'
 import type { JobId } from '../game/types'
 
@@ -10,10 +13,13 @@ defineProps<{
   choice: JobId
   musicOn: boolean
   sfxOn: boolean
+  musicVolume?: number
+  sfxVolume?: number
+  audioActive?: boolean
   toastText: string
   toastVisible: boolean
 }>()
-const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; pause: [] }>()
+const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; musicVolume: [value: number]; sfxVolume: [value: number]; pause: []; settings: [] }>()
 
 const minimap = shallowRef<HTMLCanvasElement | null>(null)
 defineExpose({ minimap })
@@ -22,20 +28,20 @@ defineExpose({ minimap })
 <template>
   <div id="hud" :class="{ active }">
     <div class="top">
-      <div class="status">
+      <div class="status" :class="{ 'status-critical': hud.hpPct <= 25 }">
         <div class="hud-face" id="hudFace"><img :src="ART_URLS[choice]" :alt="choice" /></div>
         <b id="who">{{ hud.who }}</b>
-        <div class="bar"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>
+        <div id="hudHealthMeter" class="bar" role="progressbar" aria-label="生命值" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>
         <div class="sub" id="hpLabel">{{ hud.hpLabel }}</div>
-        <div class="bar exp"><i id="xpBar" :style="{ width: hud.xpPct + '%' }"></i></div>
+        <div id="hudExperienceMeter" class="bar exp" role="progressbar" aria-label="經驗值" :aria-valuenow="Math.max(0, Math.min(100, hud.xpPct))" aria-valuemin="0" aria-valuemax="100"><i id="xpBar" :style="{ width: hud.xpPct + '%' }"></i></div>
       </div>
       <div class="stats">
         <div class="chip" id="timer">{{ hud.timer }}</div>
         <div class="chip">☠ <span id="score">{{ hud.kill }}</span></div>
-        <div class="chip">
-          <button id="music" aria-label="音樂切換" :aria-pressed="musicOn" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
-          <button id="sfx" aria-label="音效切換" :aria-pressed="sfxOn" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
-          <button id="pauser" aria-label="暫停" @click="emit('pause')">Ⅱ</button>
+        <div class="chip hud-actions" role="group" aria-label="遊戲快速操作">
+          <AudioControl context="hud" compact :active="active && (audioActive ?? true)" :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')" @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)" />
+          <SettingsButton compact @open="emit('settings')" />
+          <button id="pauser" aria-label="暫停" aria-keyshortcuts="P" @click="emit('pause')">Ⅱ<kbd class="pause-shortcut" aria-hidden="true">P</kbd></button>
         </div>
       </div>
     </div>
@@ -54,7 +60,7 @@ defineExpose({ minimap })
         <div v-for="skill in hud.skills" :key="skill.id" class="skill" :class="[skill.rarity, { evolved: skill.evolved }]"
           :data-skill="skill.id" :title="`${skill.title} · Lv.${skill.level}/${skill.maxLevel}${skill.cooldown > 0 ? ' · 冷卻 ' + skill.cooldown.toFixed(1) + ' 秒' : ''}`"
           :aria-label="`${skill.title} 等級 ${skill.level}，${skill.cooldown > 0 ? '冷卻 ' + skill.cooldown.toFixed(1) + ' 秒' : '可用'}`">
-          <span class="skill-sigil" aria-hidden="true"><img class="skill-art" :src="`./assets/skill-icons/${skill.id}.svg`" alt="" />{{ skill.icon }}</span>
+          <span class="skill-sigil" aria-hidden="true"><img v-if="skill.iconSrc || (!skill.id.includes(':') && !hasGeneratedSkillArt(skill.id))" class="skill-art" draggable="false" decoding="async" :src="skill.iconSrc ?? skillImageSrc(skill.id)" alt="" />{{ skill.icon }}</span>
           <span class="skill-cooldown" :style="{ height: skill.cooldownPct + '%' }"></span>
           <small class="skill-level">{{ skill.level }}</small>
           <span v-if="skill.evolved" class="skill-evolved" aria-hidden="true">✦</span>

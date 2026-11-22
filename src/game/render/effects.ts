@@ -2,13 +2,60 @@ import { TAU } from '../constants'
 import { easing } from '../math'
 import type { GameState, Hero } from '../types'
 import type { Ctx2D } from './ctx'
+import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
 
+// Reuse the full-screen grade between frames, but rebuild it on resize.
+const vignetteGradients = new WeakMap<Ctx2D, { W: number; H: number; gradient: CanvasGradient }>()
+
+export interface GemSprites { common: HTMLCanvasElement; rare: HTMLCanvasElement }
+
+/** Two static crystal shapes, cached at 3x. Position and rotation remain dynamic. */
+export function buildGemSprites(makeCanvas: MakeCanvas): GemSprites {
+  const gem = (rare: boolean): HTMLCanvasElement => {
+    const canvas = makeCanvas(96, 96)
+    const paint = canvas.getContext('2d')
+    if (!paint) return canvas
+    paint.scale(3, 3)
+    paint.translate(16, 16)
+    paint.shadowBlur = 12
+    paint.shadowColor = rare ? '#f8bd67' : '#75cfff'
+    paint.fillStyle = rare ? '#ffc77c' : '#8ddffe'
+    paint.beginPath()
+    paint.moveTo(0, -11); paint.lineTo(7, -1); paint.lineTo(0, 10); paint.lineTo(-7, -1); paint.closePath(); paint.fill()
+    paint.shadowBlur = 0
+    paint.fillStyle = '#ffffffb8'
+    paint.beginPath()
+    paint.moveTo(0, -9); paint.lineTo(0, 6); paint.lineTo(-3, -1); paint.closePath(); paint.fill()
+    return canvas
+  }
+  return { common: gem(false), rare: gem(true) }
+}
+
+/** Rasterize the local-space bolt glow once; drawing the image preserves its position after translate(). */
+export function buildMagicGlow(makeCanvas: MakeCanvas): HTMLCanvasElement | null {
+  // Paint at 3x resolution; the 56 CSS-pixel bolt stays crisp on high-DPI displays.
+  const canvas = makeCanvas(168, 168)
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+  ctx.scale(3, 3)
+  const glow = ctx.createRadialGradient(28, 28, 0, 28, 28, 28)
+  glow.addColorStop(0, '#f2eaff')
+  glow.addColorStop(0.2, '#a6d8ff')
+  glow.addColorStop(0.44, '#937af7b9')
+  glow.addColorStop(1, '#9170ec00')
+  ctx.fillStyle = glow
+  ctx.beginPath()
+  ctx.arc(28, 28, 28, 0, TAU)
+  ctx.fill()
+  return canvas
+}
+
 // Magical gems have faceted highlights and small animated coronae.
-export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
+export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, gems?: GemSprites): void {
   const { W, H } = s
   for (const star of s.stars) {
     const x = star.x + ox
@@ -16,10 +63,15 @@ export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, redu
     if (x < -25 || x > W + 25 || y < -25 || y > H + 25) continue
     const bob = reducedMotion ? 0 : Math.sin(star.t * 4) * 3
     ctx.save(); ctx.translate(x, y + bob - 7); if (!reducedMotion) ctx.rotate(Math.sin(star.t * 2) * 0.11)
-    ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
-    ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(7, -1); ctx.lineTo(0, 10); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill()
-    ctx.shadowBlur = 0; ctx.fillStyle = '#ffffffb8'
-    ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(0, 6); ctx.lineTo(-3, -1); ctx.closePath(); ctx.fill()
+    if (gems) {
+      ctx.drawImage(star.value > 10 ? gems.rare : gems.common, -16, -16, 32, 32)
+    } else {
+      // Standalone callers retain the procedural renderer without asset setup.
+      ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
+      ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(7, -1); ctx.lineTo(0, 10); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill()
+      ctx.shadowBlur = 0; ctx.fillStyle = '#ffffffb8'
+      ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(0, 6); ctx.lineTo(-3, -1); ctx.closePath(); ctx.fill()
+    }
     ctx.restore()
   }
 }
@@ -104,17 +156,22 @@ export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 // Fast arrows leave stretched trails. Arcane bolts cast a soft violet halo.
-export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null): void {
   const { W, H } = s
   for (const b of s.shots) {
     const x = b.x + ox
     const y = b.y + oy
-    const a = Math.atan2(b.vy, b.vx)
     if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue
+    const a = Math.atan2(b.vy, b.vx)
     // Motion history is drawn in world space to avoid faking a longer shaft.
-    const tx = (b.prevX ?? b.x) + ox
-    const ty = (b.prevY ?? b.y) + oy
-    const history = Math.hypot(x - tx, y - ty)
+    const prevX = (b.prevX ?? b.x) + ox
+    const prevY = (b.prevY ?? b.y) + oy
+    const history = Math.hypot(x - prevX, y - prevY)
+    // Never stretch a trail all the way back to the firing hand on a laggy tick.
+    // This is a short moving tracer, not a second bow/arrow or magical residue.
+    const extent = Math.min(1, 14 / Math.max(1, history))
+    const tx = x - (x - prevX) * extent
+    const ty = y - (y - prevY) * extent
     if (history > 2) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
@@ -136,10 +193,15 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number): voi
       ctx.strokeStyle = '#ddac77'; ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(-15, -4); ctx.lineTo(-11, 0); ctx.lineTo(-15, 4); ctx.stroke()
     } else {
-      const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 28)
-      gl.addColorStop(0, '#f2eaff'); gl.addColorStop(0.2, '#a6d8ff'); gl.addColorStop(0.44, '#937af7b9'); gl.addColorStop(1, '#9170ec00')
-      ctx.fillStyle = gl
-      ctx.beginPath(); ctx.arc(0, 0, 28, 0, TAU); ctx.fill()
+      if (magicGlow) {
+        ctx.drawImage(magicGlow, -28, -28, 56, 56)
+      } else {
+        // Preserve standalone renderer behavior when no prepainted asset is supplied.
+        const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 28)
+        gl.addColorStop(0, '#f2eaff'); gl.addColorStop(0.2, '#a6d8ff'); gl.addColorStop(0.44, '#937af7b9'); gl.addColorStop(1, '#9170ec00')
+        ctx.fillStyle = gl
+        ctx.beginPath(); ctx.arc(0, 0, 28, 0, TAU); ctx.fill()
+      }
       ctx.strokeStyle = '#d6baff80'; ctx.lineWidth = 2
       ctx.beginPath(); ctx.moveTo(-30, 0); ctx.lineTo(0, 0); ctx.stroke()
     }
@@ -170,6 +232,8 @@ export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number
     const t = 1 - z.life / z.max
     const x = z.x + ox
     const y = z.y + oy
+    const reach = z.size + 15
+    if (x < -reach || x > s.W + reach || y < -reach || y > s.H + reach) continue
     ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 1.7) * 0.85; ctx.strokeStyle = z.color; ctx.lineWidth = (1 - t) * 4.6
     ctx.shadowColor = z.color; ctx.shadowBlur = 9
     ctx.beginPath(); ctx.ellipse(x, y, 9 + z.size * easing(t), 4 + z.size * 0.36 * easing(t), 0, 0, TAU); ctx.stroke()
@@ -224,13 +288,15 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
 
 export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
   for (const z of s.numberFx) {
+    const x = z.x + ox, y = z.y + oy
+    if (x < -60 || x > s.W + 60 || y < -60 || y > s.H + 60) continue
     const a = Math.max(0, Math.min(1, z.life / 0.4))
     ctx.save(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.lineJoin = 'round'
     ctx.font = `900 ${z.boss ? '21' : '16'}px system-ui`
     ctx.lineWidth = 4; ctx.strokeStyle = '#151019e8'
-    ctx.strokeText(String(z.value), z.x + ox, z.y + oy)
+    ctx.strokeText(String(z.value), x, y)
     ctx.fillStyle = z.boss ? '#ffca7c' : '#fff1d0'
-    ctx.fillText(String(z.value), z.x + ox, z.y + oy)
+    ctx.fillText(String(z.value), x, y)
     ctx.restore()
   }
 }
@@ -238,8 +304,13 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number): v
 // Screen-space finishing: one-pass warm tint, vignette and high-contrast center.
 export function drawVignette(ctx: Ctx2D, s: GameState): void {
   const { W, H } = s
-  const vg = ctx.createRadialGradient(W * 0.52, H * 0.49, Math.min(W, H) * 0.19, W * 0.52, H * 0.49, Math.max(W, H) * 0.86)
-  vg.addColorStop(0, '#04070900'); vg.addColorStop(0.7, '#0e112010'); vg.addColorStop(1, '#06071596')
-  ctx.fillStyle = vg
+  let cached = vignetteGradients.get(ctx)
+  if (!cached || cached.W !== W || cached.H !== H) {
+    const gradient = ctx.createRadialGradient(W * 0.52, H * 0.49, Math.min(W, H) * 0.19, W * 0.52, H * 0.49, Math.max(W, H) * 0.86)
+    gradient.addColorStop(0, '#04070900'); gradient.addColorStop(0.7, '#0e112010'); gradient.addColorStop(1, '#06071596')
+    cached = { W, H, gradient }
+    vignetteGradients.set(ctx, cached)
+  }
+  ctx.fillStyle = cached.gradient
   ctx.fillRect(0, 0, W, H)
 }

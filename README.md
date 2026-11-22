@@ -106,6 +106,17 @@ For the latest evidence, see [integration checks](https://github.com/weskao/ecli
 
 Requirements: **Node.js 24** and **pnpm**. The pnpm version is pinned by the `packageManager` field in `package.json`; `corepack enable` provides it.
 
+To start playing locally with one command from the repository root:
+
+```sh
+make dev             # installs dependencies when needed and opens the game in your browser
+make dev PORT=5174   # use a different preferred local port
+make help            # see all available shortcuts
+```
+
+Vite prints the actual local URL (normally `http://localhost:5173/`) and keeps running until you press **Ctrl+C**. If the preferred port is occupied, Vite chooses another free port. Other shortcuts include `make test`, `make typecheck`, `make build`, `make preview` and `make verify`.
+
+
 ```bash
 pnpm install       # install dependencies (pnpm-lock.yaml is authoritative)
 pnpm dev           # local dev server

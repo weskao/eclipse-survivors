@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import SettingsButton from './SettingsButton.vue'
 defineProps<{ active: boolean }>()
-const emit = defineEmits<{ resume: []; leave: [] }>()
+const emit = defineEmits<{ resume: []; leave: []; settings: [] }>()
 </script>
 
 <template>
-  <div id="paused" class="overlay" :class="{ active }" role="dialog" aria-modal="true" aria-label="遊戲暫停"><div class="panel"><h2>⏸ 冒險暫停</h2><button class="cta" id="resume" @click="emit('resume')">繼續遊戲</button><div><button class="ghost" id="leave" @click="emit('leave')">返回選角</button></div></div></div>
+  <div id="paused" class="overlay" :class="{ active }" role="dialog" aria-modal="true" aria-label="遊戲暫停"><div class="panel"><h2>⏸ 冒險暫停</h2><button class="cta" id="resume" @click="emit('resume')">繼續遊戲</button><div class="pause-settings-actions"><SettingsButton @open="emit('settings')" /><button class="ghost" id="leave" @click="emit('leave')">返回選角</button></div></div></div>
 </template>

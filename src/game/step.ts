@@ -1,10 +1,11 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { attack, hit, victoryConditionMet } from './combat'
+import type { ContentRegistry } from './content/registry'
 import { hasWonRun } from '../meta/modes'
 import { tickWorld } from './events'
 import { resolveObstacleCollision } from './world'
 import { tickEnemies, tickEnemyProjectiles } from './enemies/ai'
-import { dist, minmax } from './math'
+import { minmax } from './math'
 import { moveHero } from './movement'
 import { addXp } from './progression'
 import { sceneIndexAt, setScene } from './scene'
@@ -75,7 +76,12 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void
   }
   s.shots = s.shots.filter((b) => b.life > 0)
   // The required boss must never disappear just because the player moved far away.
-  s.mobs = s.mobs.filter((e) => e.hp > 0 && (e.type === 'boss' || dist(e.x - hero.x, e.y - hero.y) < 1700))
+  s.mobs = s.mobs.filter((e) => {
+    if (e.hp <= 0) return false
+    if (e.type === 'boss') return true
+    const dx = e.x - hero.x, dy = e.y - hero.y
+    return dx * dx + dy * dy < 1700 * 1700
+  })
 }
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
@@ -83,15 +89,19 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
     star.t += dt
     const dx = hero.x - star.x
     const dy = hero.y - star.y
-    const d = Math.max(1, dist(dx, dy))
-    if (d < 115 + (hero.skills.magnet ?? 0) * 55) {
+    const squared = dx * dx + dy * dy
+    const reach = 115 + (hero.skills.magnet ?? 0) * 55
+    if (squared < reach * reach) {
+      // Only crystal attraction needs a true distance for normalization.
+      const d = Math.max(1, Math.sqrt(squared))
       star.x += (dx / d) * Math.min(d, 450 * dt)
       star.y += (dy / d) * Math.min(d, 450 * dt)
     }
-    if (d < 23) {
+    if (squared < 23 * 23) {
       star.dead = true
       addXp(s, star.value, hooks)
       hooks.sfx('pickup')
+      hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
     }
   }
   s.stars = s.stars.filter((star) => !star.dead).slice(-220)
@@ -133,10 +143,11 @@ function ageEffects(s: GameState, hero: Hero, dt: number): void {
   s.swipes = s.swipes.filter((w) => w.life > 0)
 }
 
-export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks): void {
+export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
   tickTimers(s, hero, dt)
+  registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
   tickSpawning(s, dt, hooks)

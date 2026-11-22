@@ -7,12 +7,19 @@ import LevelUpOverlay from './components/LevelUpOverlay.vue'
 import PauseOverlay from './components/PauseOverlay.vue'
 import ResultOverlay from './components/ResultOverlay.vue'
 import TouchControls from './components/TouchControls.vue'
+import SettingsOverlay from './components/SettingsOverlay.vue'
+import ContentShowcase from './components/ContentShowcase.vue'
 import './meta/ui.css'
+import './visual-polish.css'
+import './settings.css'
+import './ui-fidelity.css'
 
 const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
 const ui = engine.ui
 const version = __APP_VERSION__
+const devShowcase = import.meta.env.DEV && typeof location !== 'undefined' &&
+  new URLSearchParams(location.search).get('content-showcase') === '1'
 
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
 const hudRef = useTemplateRef<InstanceType<typeof GameHud>>('hud')
@@ -32,20 +39,30 @@ onBeforeUnmount(() => unmount?.())
     :active="ui.mode !== 'menu'"
     :hud="ui.hud"
     :choice="ui.choice"
-    :music-on="ui.musicOn"
-    :sfx-on="ui.sfxOn"
+    :music-on="ui.musicOn && ui.musicVolume > 0"
+    :music-volume="ui.musicVolume"
+    :sfx-volume="ui.sfxVolume"
+    :audio-active="ui.mode === 'play' && !ui.settingsOpen"
+    :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :toast-text="ui.toastText"
     :toast-visible="ui.toastVisible"
     @toggle-music="engine.toggleMusic"
     @toggle-sfx="engine.toggleSfx"
     @pause="engine.togglePause"
+    @music-volume="engine.setMusicVolume"
+    @sfx-volume="engine.setSfxVolume"
+    @settings="engine.openSettings"
   />
   <TouchControls :active="touchActive" @stick="engine.setStick" @dash="engine.dash" />
   <MenuScreen
     :active="ui.mode === 'menu'"
     :choice="ui.choice"
-    :music-on="ui.musicOn"
-    :sfx-on="ui.sfxOn"
+    :music-on="ui.musicOn && ui.musicVolume > 0"
+    :music-volume="ui.musicVolume"
+    :sfx-volume="ui.sfxVolume"
+    :audio-active="ui.mode === 'menu' && !ui.settingsOpen"
+    :audio-unlocked="ui.audioUnlocked"
+    :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :version="version"
     :run-mode="ui.runMode"
     :profile="ui.profile"
@@ -55,11 +72,15 @@ onBeforeUnmount(() => unmount?.())
     @reset="engine.resetProgress"
     @select="engine.selectJob"
     @start="engine.start"
+    @music-volume="engine.setMusicVolume"
+    @sfx-volume="engine.setSfxVolume"
+    @settings="engine.openSettings"
     @toggle-music="engine.toggleMusic"
     @toggle-sfx="engine.toggleSfx"
+    @enable-audio="engine.enableMenuAudio"
   />
-  <LevelUpOverlay :active="ui.mode === 'level'" :upgrades="ui.upgrades" @choose="engine.chooseUpgrade" />
-  <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" />
+  <LevelUpOverlay :active="ui.mode === 'level'" :upgrades="ui.upgrades" :effect="ui.upgradeEffect" @choose="engine.chooseUpgrade" @settings="engine.openSettings" />
+  <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
   <ResultOverlay
     :active="ui.mode === 'result'"
     :ending="ui.ending"
@@ -68,5 +89,14 @@ onBeforeUnmount(() => unmount?.())
     :rewards="ui.rewards"
     @again="engine.start"
     @home="engine.goMenu"
+  />
+  <ContentShowcase v-if="devShowcase" :engine="engine" />
+  <SettingsOverlay
+    :active="ui.settingsOpen"
+    :upgrade-effect="ui.upgradeEffect"
+    :camera-shake="ui.cameraShake"
+    @close="engine.closeSettings"
+    @upgrade-effect="engine.setUpgradeEffect"
+    @camera-shake="engine.setCameraShake"
   />
 </template>

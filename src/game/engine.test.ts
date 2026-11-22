@@ -13,6 +13,10 @@ class SpyAudio implements AudioSystem {
   interruptions = 0
   musicOn = true
   sfxOn = true
+  musicVolume = 100
+  sfxVolume = 100
+  setMusicVolume(value: number): void { this.musicVolume = value }
+  setSfxVolume(value: number): void { this.sfxVolume = value }
   wake(): void { this.unlocked = true; this.wakeCalls++ }
   interrupt(): void { this.interruptions++ }
   setCombatIntensity(): void {}
@@ -35,7 +39,11 @@ beforeEach(() => {
   engine.state.W = 1280
   engine.state.H = 720
 })
-afterEach(() => setRandom())
+afterEach(() => {
+  setRandom()
+  localStorage.removeItem('eclipseUpgradeEffect')
+  localStorage.removeItem('eclipseCameraShake')
+})
 
 const key = (code: string): void => { window.dispatchEvent(new KeyboardEvent('keydown', { code })) }
 
@@ -53,6 +61,66 @@ describe('engine commands fire the original cues', () => {
     expect(audio.cues).toContain('start')
     expect(engine.ui.hud.who).toBe('曙鋼騎士 · LV.1')
     expect(engine.ui.toastText).toBe('幽暮之門已開啟')
+  })
+
+  it('opens settings from gameplay safely and restores play after closing', () => {
+    engine.start()
+    engine.openSettings()
+    expect(engine.ui.settingsOpen).toBe(true)
+    expect(engine.ui.mode).toBe('paused')
+    const stop = engine.listen(window)
+    key('KeyP')
+    expect(engine.ui.mode).toBe('paused')
+    key('Escape')
+    expect(engine.ui.settingsOpen).toBe(false)
+    expect(engine.ui.mode).toBe('play')
+    stop()
+  })
+
+  it('keeps the skill selection state intact when settings are opened during an upgrade', () => {
+    engine.start()
+    engine.testApi.level()
+    const stop = engine.listen(window)
+    engine.openSettings()
+    key('Digit1')
+    expect(engine.ui.mode).toBe('level')
+    engine.closeSettings()
+    expect(engine.ui.mode).toBe('level')
+    stop()
+  })
+
+  it('persists still/soft upgrade effects and combat camera motion preferences', () => {
+    expect(engine.ui.upgradeEffect).toBe('soft')
+    expect(engine.ui.cameraShake).toBe(true)
+    engine.setUpgradeEffect('still')
+    engine.setCameraShake(false)
+    expect(engine.ui.upgradeEffect).toBe('still')
+    expect(engine.ui.cameraShake).toBe(false)
+    expect(localStorage.getItem('eclipseUpgradeEffect')).toBe('still')
+    expect(localStorage.getItem('eclipseCameraShake')).toBe('off')
+    const reloaded = createEngine({ audio })
+    expect(reloaded.ui.upgradeEffect).toBe('still')
+    expect(reloaded.ui.cameraShake).toBe(false)
+  })
+
+  it('freezes upgrade-scene ambient motion only in still mode', () => {
+    engine.start()
+    engine.testApi.level()
+    const before = engine.state.worldClock
+    engine.advance(0.2)
+    expect(engine.state.worldClock).toBeGreaterThan(before)
+    engine.setUpgradeEffect('still')
+    const frozen = engine.state.worldClock
+    engine.advance(0.2)
+    expect(engine.state.worldClock).toBe(frozen)
+    expect(engine.ui.mode).toBe('level')
+  })
+
+  it('sends slider changes to the audio system and updates the UI', () => {
+    engine.setMusicVolume(43)
+    engine.setSfxVolume(17)
+    expect(engine.ui.musicVolume).toBe(43)
+    expect(engine.ui.sfxVolume).toBe(17)
   })
 
   it('pause/resume cues and mode round-trip', () => {
@@ -73,6 +141,17 @@ describe('engine commands fire the original cues', () => {
     engine.chooseUpgrade(engine.ui.upgrades[0]!.id)
     expect(engine.ui.mode).toBe('play')
     expect(audio.cues.at(-1)).toBe('upgrade')
+  })
+
+  it('discards camera impact when the level-up picker opens and after choosing a skill', () => {
+    engine.start()
+    engine.state.cameraKick = 8
+    engine.testApi.level()
+    expect(engine.ui.mode).toBe('level')
+    expect(engine.state.cameraKick).toBe(0)
+    engine.chooseUpgrade(engine.ui.upgrades[0]!.id)
+    expect(engine.ui.mode).toBe('play')
+    expect(engine.state.cameraKick).toBe(0)
   })
 
   it('handles three queued level-ups, rejects a hidden choice and updates equipped HUD skills', () => {
@@ -141,6 +220,21 @@ describe('keyboard and focus', () => {
   beforeEach(() => { stop = engine.listen(window) })
   afterEach(() => stop())
 
+  it('shows the menu music activation as pending until a user gesture unlocks audio', () => {
+    expect(engine.ui.audioUnlocked).toBe(false)
+    expect(engine.ui.musicOn).toBe(true)
+    key('KeyA')
+    expect(engine.ui.audioUnlocked).toBe(true)
+    expect(engine.ui.musicOn).toBe(true)
+  })
+
+  it("explicit menu music activation never toggles the user\'s music preference", () => {
+    expect(engine.ui.audioUnlocked).toBe(false)
+    engine.enableMenuAudio()
+    expect(engine.ui.audioUnlocked).toBe(true)
+    expect(engine.ui.musicOn).toBe(true)
+  })
+
   it('menu keydown unlocks audio only when music is on', () => {
     engine.toggleMusic()
     key('KeyA')
@@ -163,10 +257,17 @@ describe('keyboard and focus', () => {
     expect(engine.state.hero!.skills[first as UpgradeId]).toBe(1)
   })
 
-  it('window blur pauses a running game', () => {
+  it('window blur does not pause a run or leave movement stuck', () => {
     engine.start()
+    key('KeyD')
+    engine.advance(0.05)
+    const movingSpeed = engine.state.hero!.vx
+    expect(movingSpeed).toBeGreaterThan(0)
     window.dispatchEvent(new Event('blur'))
-    expect(engine.ui.mode).toBe('paused')
+    expect(engine.ui.mode).toBe('play')
+    expect(audio.interruptions).toBe(0)
+    engine.advance(0.05)
+    expect(engine.state.hero!.vx).toBeLessThan(movingSpeed)
   })
 
   it('pointerdown on a button wakes audio and plays the ui cue', () => {
@@ -208,20 +309,22 @@ describe('interruption and input lifecycle', () => {
     stop()
   })
 
-  it('pauses on hidden or pagehide, never silently resumes on visibility return', () => {
+  it('keeps gameplay running when hidden or pagehide, while interrupting background audio', () => {
     const stop = engine.listen(window)
     const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
     engine.start()
     document.dispatchEvent(new Event('visibilitychange'))
-    expect(engine.ui.mode).toBe('paused')
+    expect(engine.ui.mode).toBe('play')
     expect(audio.interruptions).toBe(1)
+    const elapsed = engine.state.time
+    engine.advance(0.016)
+    expect(engine.state.time).toBeGreaterThan(elapsed)
     hidden.mockReturnValue(false)
     document.dispatchEvent(new Event('visibilitychange'))
-    expect(engine.ui.mode).toBe('paused')
-    engine.togglePause()
     expect(engine.ui.mode).toBe('play')
+    key('KeyA')
     window.dispatchEvent(new Event('pagehide'))
-    expect(engine.ui.mode).toBe('paused')
+    expect(engine.ui.mode).toBe('play')
     expect(audio.interruptions).toBe(2)
     hidden.mockRestore()
     stop()

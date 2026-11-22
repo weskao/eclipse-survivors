@@ -58,7 +58,7 @@ describe('createRenderAssets', () => {
     expect(assets.props.tree.width).toBe(230)
     expect(assets.props.ruin.width).toBe(148)
     expect(assets.props.crystal.width).toBe(120)
-    expect(made).toHaveLength(9 + 3 + 8)
+    expect(made).toHaveLength(9 + 3 + 8 + 1 + 2)
     expect(made.every((m) => m.fake.calls.includes('fill') || m.fake.calls.includes('stroke'))).toBe(true)
   })
 })
@@ -79,12 +79,39 @@ describe('drawFrame', () => {
     expect(calls.at(-1)).toBe('fillRect')
   })
 
+  it('keeps the battlefield fixed while choosing a skill despite a pending camera impact', () => {
+    const s = busyState()
+    s.mode = 'level'
+    s.cameraKick = 9
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const firstTile = (): [number, number] => {
+      const { ctx } = createFakeCtx()
+      let position: [number, number] | null = null
+      const original = ctx.drawImage
+      ctx.drawImage = ((...args: unknown[]) => {
+        if (!position && args[0] === assets.biomes[0]!.tile) {
+          position = [args[1] as number, args[2] as number]
+        }
+        return (original as (...args: unknown[]) => void)(...args)
+      }) as typeof ctx.drawImage
+      drawFrame(ctx, s, 1, assets)
+      if (!position) throw new Error('Expected background tile to render')
+      return position
+    }
+    const before = firstTile()
+    s.worldClock += 0.25
+    expect(firstTile()).toEqual(before)
+    // Actual combat must keep its hit feedback; only the selection overlay is still.
+    s.mode = 'play'
+    expect(firstTile()).not.toEqual(before)
+  })
+
   it('with art ready, characters use the artwork', () => {
     const { ctx, drawn } = createFakeCtx()
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(true), make)
     drawFrame(ctx, busyState(), 2, assets)
-    for (const k of ['knight', 'slime', 'bat', 'goblin', 'golem', 'boss'] as const) expect(drawn, k).toContain(assets.art[k])
+    for (const k of ['knight', 'slime', 'goblin', 'golem', 'boss'] as const) expect(drawn, k).toContain(assets.art[k])
     expect(drawn).not.toContain(assets.sprites.knight)
   })
 
@@ -93,7 +120,8 @@ describe('drawFrame', () => {
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(false), make)
     drawFrame(ctx, busyState(), 1, assets)
-    for (const k of ['knight', 'slime', 'bat', 'goblin', 'boss']) expect(drawn, k).toContain(assets.sprites[k])
+    // The hit-tinted bat now draws from its cached filtered bitmap, not the raw sprite.
+    for (const k of ['knight', 'slime', 'goblin', 'boss']) expect(drawn, k).toContain(assets.sprites[k])
     expect(drawn).not.toContain(assets.art.knight)
   })
 
@@ -103,6 +131,33 @@ describe('drawFrame', () => {
     drawFrame(f.ctx, busyState(), 1, createRenderAssets(fakeArtwork(true), make))
     expect(f.calls).toContain('strokeText')
     expect(f.calls.filter((c) => c === 'lineTo').length).toBeGreaterThan(0)
+  })
+
+  it('disables combat recoil when the camera-shake preference is off', () => {
+    const state = busyState()
+    state.cameraKick = 9
+    state.mode = 'play'
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const firstTile = (): [number, number] => {
+      const { ctx } = createFakeCtx()
+      let position: [number, number] | null = null
+      const original = ctx.drawImage
+      ctx.drawImage = ((...args: unknown[]) => {
+        if (!position && args[0] === assets.biomes[0]!.tile) {
+          position = [args[1] as number, args[2] as number]
+        }
+        return (original as (...args: unknown[]) => void)(...args)
+      }) as typeof ctx.drawImage
+      drawFrame(ctx, state, 1, assets)
+      if (!position) throw new Error('Missing background tile')
+      return position
+    }
+    assets.cameraShakeEnabled = () => false
+    const still = firstTile()
+    state.worldClock += 0.3
+    expect(firstTile()).toEqual(still)
+    assets.cameraShakeEnabled = () => true
+    expect(firstTile()).not.toEqual(still)
   })
 
   it('applies a live reduced-motion preference change on the next frame', () => {
@@ -116,8 +171,8 @@ describe('drawFrame', () => {
     reducedMotion = true
     const reduced = createFakeCtx()
     drawFrame(reduced.ctx, s, 1, assets)
-    expect(normal.calls.filter((name) => name === 'drawImage').length)
-      .toBeGreaterThan(reduced.calls.filter((name) => name === 'drawImage').length)
+    // Reduced motion skips ambient, echoes and swipes, which are path draws (not drawImage).
+    expect(normal.calls.length).toBeGreaterThan(reduced.calls.length)
   })
 
   it.each([0, 1, 2, 3])('scene %i draws', (scene) => {
