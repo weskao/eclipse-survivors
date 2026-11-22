@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
 import Es2Dialog from './Es2Dialog.vue'
 import Es2ChoiceCards from './Es2ChoiceCards.vue'
@@ -27,12 +28,12 @@ function shortcut(event: KeyboardEvent): void {
 watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), props.kind], () => { selecting.value = false })
 </script>
 <template>
-  <Es2Dialog :active="active" :title="titles[kind]" :subtitle="captions[kind]" :dismissible="kind !== 'level'"
+  <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(captions[kind])" :dismissible="kind !== 'level'"
     wide :tone="kind === 'evolution' ? 'legendary' : 'neutral'" @cancel="emit('cancel')" @shortcut="shortcut">
     <div class="es2-selection-scene" :class="{ 'es2-still': still }">
-      <div v-if="kind === 'level'" class="es2-choice-toolbar"><button type="button" class="es2-secondary" @click="emit('settings')">⚙ 遊戲設定</button></div>
-      <Es2ChoiceCards :items="uniqueItems" :disabled="selecting" :label="captions[kind]" @choose="choose" />
-      <p class="es2-hint">{{ uniqueItems.length ? '點選卡牌或按 1–9 選擇 · 方向鍵切換焦點 · Enter 確認' : '目前沒有可用的選項' }}</p>
+      <div v-if="kind === 'level'" class="es2-choice-toolbar"><button type="button" class="es2-secondary" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></div>
+      <Es2ChoiceCards :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="choose" />
+      <p class="es2-hint">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇 · 方向鍵切換焦點 · Enter 確認' : '目前沒有可用的選項') }}</p>
     </div>
   </Es2Dialog>
 </template>
