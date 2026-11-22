@@ -58,8 +58,9 @@ const worldBiomes = BIOMES.map(biome => ({
   id: biome.id, title: biome.title, ...WORLD_ART.biomes[biome.id],
 }))
 const worldIcons = WORLD_UI_IDS.map(id => ({ id, src: WORLD_ART.ui[id] }))
-const c104Gallery = Object.entries(C104_SURFACES).flatMap(([category, spec]) =>
-  spec.sources.map(id => ({ id, category, src: C104_SOURCES[id] })))
+type C104Category = keyof typeof C104_SURFACES
+const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(category =>
+  C104_SURFACES[category].sources.map(id => ({ id, category, src: C104_SOURCES[id] })))
 </script>
 <template>
   <Es2Dialog :active="active" :title="title[view]" subtitle="冒險者殿堂 · 記錄每一場遠征留下的印記" wide @cancel="emit('close')">
