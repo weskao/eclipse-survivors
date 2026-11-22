@@ -46,15 +46,23 @@ export function frameForPose(
  */
 export function drawPaintedHero(
   ctx: Ctx2D, atlas: HTMLImageElement, job: JobId, hero: Hero,
-  anim: HeroAnimation, _width: number, height: number,
+  anim: HeroAnimation, _width: number, height: number, runSheet?: HTMLImageElement,
 ): boolean {
-  if (!atlas.complete || atlas.naturalWidth !== WIDTH * COLUMNS ||
-    atlas.naturalHeight !== HEIGHT * ROWS_PER_HERO * 3) return false
-  const frame = frameForPose(job, anim)
+  const runReady = anim.pose === 'run' && runSheet?.complete &&
+    runSheet.naturalWidth === 8 * WIDTH && runSheet.naturalHeight === 3 * HEIGHT
+  const combatReady = atlas.complete && atlas.naturalWidth === WIDTH * COLUMNS &&
+    atlas.naturalHeight === HEIGHT * ROWS_PER_HERO * 3
+  if (!runReady && !combatReady) return false
+  const source = runReady ? runSheet! : atlas
+  const frame = runReady
+    ? { x: Math.floor(anim.phase * 8) % 8 * WIDTH, y: ({ knight: 0, ranger: 1, wizard: 2 })[job] * HEIGHT }
+    : frameForPose(job, anim)
   const renderedWidth = height * WIDTH / HEIGHT // uniform x/y scale
   ctx.save()
-  if (hero.face < 0) ctx.scale(-1, 1)
-  ctx.drawImage(atlas, frame.x, frame.y, WIDTH, HEIGHT,
+  // Attack direction is authoritative even before the hero.face field catches up.
+  const attacking = anim.pose === 'attack' || anim.pose === 'cast'
+  if (hero.face < 0 || (attacking && Math.cos(hero.aimAngle) < 0)) ctx.scale(-1, 1)
+  ctx.drawImage(source, frame.x, frame.y, WIDTH, HEIGHT,
     -renderedWidth / 2, -height + 4, renderedWidth, height)
   ctx.restore()
   return true
