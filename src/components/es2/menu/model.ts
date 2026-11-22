@@ -10,7 +10,7 @@ export interface MenuChoice {
   icon?: string
   imageSrc?: string
   reducedMotionSrc?: string
-  rarity?: SkillRarity
+  rarity?: SkillRarity | 'epic'
   level?: number
   maxLevel?: number
   requirements?: string
