@@ -84,7 +84,7 @@ describe('physical two-bone animation', () => {
 })
 
 describe('articulated texture rendering', () => {
-  it('rotates the weapon-bearing source cells during a swing but not a static idle', () => {
+  it('rotates only the intact equipment layer during a swing while idle keeps it aligned', () => {
     const s = setup('knight')
     const { ctx } = createFakeCtx()
     const turn = vi.spyOn(ctx, 'rotate')
@@ -106,7 +106,7 @@ describe('aim-dependent weapon mesh', () => {
   it.each(['ranger', 'wizard'] as const)('%s visibly angles the weapon toward enemies above and below', (job) => {
     const s = setup(job)
     s.hero!.strike = 0.14
-    const rotations = (angle: number): number[] => {
+    const rotations = (angle: number): number => {
       s.hero!.aimAngle = angle
       const { ctx } = createFakeCtx()
       const spy = vi.spyOn(ctx, 'rotate')
@@ -115,11 +115,11 @@ describe('aim-dependent weapon mesh', () => {
       source.height = 390
       const layers = createRigidWeaponLayers(source, job, fakeCanvasFactory().make)!
       drawRigSprite(ctx, source, 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), job, layers)
-      return spy.mock.calls.map(([theta]) => theta)
+      // Equipment is rendered last, and has exactly one rigid rotation.
+      return spy.mock.calls.at(-1)![0]!
     }
     const up = rotations(-0.8)
     const down = rotations(0.8)
-    expect(up).toHaveLength(down.length)
-    expect(up.some((n, i) => Math.abs(n - down[i]!) > 0.02)).toBe(true)
+    expect(Math.abs(up - down)).toBeGreaterThan(0.02)
   })
 })
