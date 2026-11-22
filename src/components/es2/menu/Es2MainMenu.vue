@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { nextTick } from 'vue'
 import { ART_URLS } from '../../../game/art'
-import type { JobId } from '../../../game/types'
+import type { HeroId, JobId } from '../../../game/types'
+import HeroRoster from '../hero-roster/HeroRoster.vue'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
 import type { MenuView } from './model'
-defineProps<{ choice: JobId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
 const emit = defineEmits<{
-  select: [hero: JobId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
+  select: [hero: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
 }>()
 const heroes: readonly { id: JobId; name: string; role: string; number: string }[] = [
   { id: 'knight', name: '曙鋼騎士', role: '重甲反擊 · 近戰爆發', number: '01' },
@@ -48,13 +49,15 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <div class="es2-section-heading"><span>01 / THE CHOSEN</span><h2 id="es2HeroTitle">選擇命運的繼承者</h2><p>每位英雄都擁有專屬的戰鬥風格。</p></div>
           <div class="es2-hero-grid" role="group" aria-label="選擇英雄">
             <button v-for="hero in heroes" :key="hero.id" type="button" :data-hero="hero.id" class="es2-hero-card"
-              :class="{ 'es2-hero-active': choice === hero.id }" :aria-pressed="choice === hero.id"
+              :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
               <span class="es2-hero-number">{{ hero.number }} / HERO</span>
               <img :src="ART_URLS[hero.id]" :alt="hero.name + ' 原始角色插畫'" decoding="async" draggable="false" />
-              <span class="es2-hero-copy"><strong>{{ hero.name }}</strong><small>{{ hero.role }}</small><span class="es2-hero-selection">{{ choice === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span></span>
+              <span class="es2-hero-copy"><strong>{{ hero.name }}</strong><small>{{ hero.role }}</small><span class="es2-hero-selection">{{ (heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span></span>
             </button>
           </div>
+          <h3 class="es2-section-heading">NEW HEROES · 新增英雄</h3>
+          <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" />
         </section>
         <section class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>02 / THE EXPEDITION</span><h2 id="es2ModeTitle">選擇遠征命運</h2><p>每一條道路都通往不同的試煉。</p></div>

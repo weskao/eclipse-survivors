@@ -4,13 +4,15 @@ import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
 import AudioControl from '../../AudioControl.vue'
 import type { HudView } from '../../../game/store'
-import type { JobId } from '../../../game/types'
+import type { HeroId, JobId } from '../../../game/types'
+import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
 import { projectCombatHud, type CombatHudActions, type CombatHudFeed } from './model'
 import '../../../styles/es2/hud.css'
 
 const props = withDefaults(defineProps<{
   active: boolean
   choice: JobId
+  heroId?: HeroId
   hud: HudView
   actions: CombatHudActions
   feed?: CombatHudFeed
@@ -22,6 +24,8 @@ const props = withDefaults(defineProps<{
 }>(), { audioActive: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed))
+const portrait = computed(() => props.heroId && isSpecializationId(props.heroId)
+  ? HERO_DEFINITIONS[props.heroId].portraitSrc : ART_URLS[props.choice])
 const selectedId = ref<string | null>(null)
 const selectedSkill = computed(() => view.value.skills.find(skill => skill.id === selectedId.value) ?? null)
 watch(() => view.value.skills, skills => {
@@ -43,7 +47,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <header class="es2-hud__top">
       <div class="es2-hud__hero es2-hud__plate">
         <div class="es2-hud__portrait">
-          <img :src="ART_URLS[view.choice]" alt="" decoding="async" draggable="false" />
+          <img :src="portrait" alt="" decoding="async" draggable="false" />
           <span aria-hidden="true" class="es2-hud__portrait-corner">✧</span>
         </div>
         <div class="es2-hud__vitals">

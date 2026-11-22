@@ -8,6 +8,7 @@ import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
+import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
@@ -28,7 +29,7 @@ import { spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
-import type { AbilityId, ContentEvent, ContentId, EvolutionId, GameHooks, GameMode, GameState, JobId, MoveInput, Point, UpgradeId } from './types'
+import type { AbilityId, ContentEvent, ContentId, EvolutionId, GameHooks, GameMode, GameState, HeroId, JobId, MoveInput, Point, UpgradeId } from './types'
 
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
@@ -126,7 +127,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
+    mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
@@ -141,6 +142,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let presentationPolicy: VisualPresentationPolicy | null = null
   let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
+  let heroSpecialization: HeroSpecializationAdapter | null = null
 
   function wakeAudio(): void {
     audio.wake()
@@ -152,6 +154,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message,
     offerUpgrades,
     end,
+    modifyOutgoingDamage: amount => heroSpecialization?.modifyOutgoingDamage(amount) ?? amount,
+    mitigateIncomingDamage: amount => heroSpecialization?.mitigateIncomingDamage(amount) ?? amount,
+    afterDamage: amount => heroSpecialization?.afterDamage(amount),
+    canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
     // Skip all event-object allocation in the default empty-pack game.
     content: contentRegistry.packs.some(pack => pack.onEvent)
       ? (state, event) => contentRegistry.emit(state, event, hooks)
@@ -167,6 +173,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       screen('level')
       return true
     } : undefined,
+  }
+
+  // Special attacks and companion hits already own their damage; do not apply the normal
+  // attack critical/modifier hook a second time when they call legacy hit().
+  const heroHooks: GameHooks = {
+    ...hooks, modifyOutgoingDamage: undefined, mitigateIncomingDamage: undefined, afterDamage: undefined,
   }
 
   function screen(name: GameMode): void {
@@ -195,7 +207,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const boss = s.mobs.find(e => e.type === 'boss' && e.hp > 0)
     const xpPct = minmax(hero.xp / hero.need * 100, 0, 100)
     ui.hud = {
-      who: `${JOB[s.choice].label} · LV.${hero.level}`,
+      who: `${isSpecializationId(s.heroId) ? HERO_DEFINITIONS[s.heroId].label : JOB[s.choice].label} · LV.${hero.level}`,
       hpPct: minmax(hero.hp / hero.max * 100, 0, 100),
       hpLabel: `生命 ${Math.ceil(hero.hp)} / ${hero.max}`,
       xpPct,
@@ -205,6 +217,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
       skills: equippedSkillHud(hero, contentRegistry, s),
     }
+    ui.heroSpecial = heroSpecialization?.snapshot() ?? null
   }
 
   function offerUpgrades(): void {
@@ -226,7 +239,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const h = s.hero
     const stats: RunStats = {
       id: `${Date.now()}-${++runSequence}-${Math.random().toString(36).slice(2)}`,
-      mode: s.runMode, hero: s.choice, victory: win, seconds: Math.floor(s.time),
+      mode: s.runMode, hero: s.choice,
+      specializationId: isSpecializationId(s.heroId) ? s.heroId : undefined,
+      victory: win, seconds: Math.floor(s.time),
       kills: s.kill, level: h?.level ?? 1, remainingHp: Math.max(0, Math.ceil(h?.hp ?? 0)),
       damageDealt: Math.round(s.damageDealt), damageTaken: Math.round(s.damageTaken),
       bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
@@ -246,8 +261,23 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     hud()
   }
 
+  function selectHero(id: HeroId): void {
+    if (s.mode !== 'menu' || ( !isSpecializationId(id) && !Object.prototype.hasOwnProperty.call(JOB, id))) return
+    const fallback = isSpecializationId(id) ? HERO_DEFINITIONS[id].legacyArtJob : id as JobId
+    s.heroId = id
+    ui.heroId = id
+    s.choice = fallback
+    ui.choice = fallback
+    s.cosmetic = profileStore.get().equippedCosmetics[fallback]
+    ui.heroSpecial = null
+    wakeAudio()
+    audio.playSfx('select')
+  }
+
   function start(): void {
     resetRun(s)
+    heroSpecialization = createHeroRosterAdapter(s, s.heroId, heroHooks, random)
+    heroSpecialization?.reset()
     hooks.content?.(s, { type: 'reset' })
     s.runMode = ui.runMode
     s.cosmetic = profileStore.get().equippedCosmetics[s.choice]
@@ -340,6 +370,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter)
+    heroSpecialization?.tick(dt)
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
@@ -577,12 +608,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       profileStore.reset()
       ui.profile = profileStore.get()
     },
-    selectJob(job: JobId) {
-      s.choice = job
-      ui.choice = job
-      s.cosmetic = profileStore.get().equippedCosmetics[job]
-      wakeAudio()
-      audio.playSfx('select')
+    selectJob(job: JobId) { selectHero(job) },
+    selectHero,
+    activateHeroSpecial() {
+      if (s.mode !== 'play' || ui.settingsOpen || !heroSpecialization) return false
+      const activated = heroSpecialization.activate()
+      if (activated) hud()
+      return activated
     },
     start,
     chooseUpgrade,
@@ -614,7 +646,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     openSettings,
     closeSettings,
-    goMenu: () => screen('menu'),
+    goMenu: () => {
+      heroSpecialization = null
+      ui.heroSpecial = null
+      screen('menu')
+    },
     setStick(v) { stick = v ?? { x: 0, y: 0 } },
   }
 }

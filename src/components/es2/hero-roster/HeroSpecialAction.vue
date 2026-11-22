@@ -44,7 +44,9 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 </template>
 
 <style scoped>
-.es2-hero-special { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; color: #f7dfb9; }
+.es2-hero-special { position: fixed; right: max(112px, calc(18px + env(safe-area-inset-right))); bottom: calc(26px + env(safe-area-inset-bottom)); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; color: #f7dfb9; }
+@media (max-width: 760px) { .es2-hero-special { right: max(104px, calc(12px + env(safe-area-inset-right))); bottom: calc(24px + env(safe-area-inset-bottom)); } }
+@media (max-height: 440px) { .es2-hero-special { bottom: max(5px, env(safe-area-inset-bottom)); } }
 .es2-hero-special__button { position: relative; overflow: hidden; min-width: 112px; min-height: 58px; border: 2px solid #daa676; border-radius: 12px; background: #2c1831; color: #fff2d8; font: inherit; font-weight: 700; cursor: pointer; touch-action: manipulation; padding: .55rem .9rem; display: grid; gap: .15rem; }
 .es2-hero-special__button:focus-visible { outline: 3px solid #ffe4a9; outline-offset: 3px; }
 .es2-hero-special__button:disabled { opacity: .7; cursor: not-allowed; }

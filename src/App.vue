@@ -6,6 +6,8 @@ import './game/content/accessibility/presentation.css'
 import { inventorySnapshot } from './game/content/relics/runtime'
 import { RELIC_BY_ID } from './game/content/relics/catalog'
 import CombatHud from './components/es2/hud/CombatHud.vue'
+import HeroSpecialAction from './components/es2/hero-roster/HeroSpecialAction.vue'
+import { isSpecializationId } from './game/content/heroes'
 import type { CombatHudActions, CombatHudFeed } from './components/es2/hud/model'
 import Es2MenuSystem from './components/es2/menu/Es2MenuSystem.vue'
 import MobileControls from './components/es2/accessibility/MobileControls.vue'
@@ -97,6 +99,7 @@ onBeforeUnmount(() => {
     :active="ui.mode !== 'menu'"
     :hud="ui.hud"
     :choice="ui.choice"
+    :hero-id="ui.heroId"
     :music-on="ui.musicOn && ui.musicVolume > 0"
     :music-volume="ui.musicVolume"
     :sfx-volume="ui.sfxVolume"
@@ -104,6 +107,13 @@ onBeforeUnmount(() => {
     :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :actions="combatActions"
     :feed="combatFeed"
+  />
+  <HeroSpecialAction
+    v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
+    :hero-id="ui.heroId"
+    :snapshot="ui.heroSpecial"
+    :active="ui.mode === 'play' && !ui.settingsOpen"
+    @activate="engine.activateHeroSpecial"
   />
   <MobileControls
     :active="touchActive"
@@ -115,6 +125,7 @@ onBeforeUnmount(() => {
   <Es2MenuSystem
     :screen="menuScreen"
     :choice="ui.choice"
+    :hero-id="ui.heroId"
     :run-mode="ui.runMode"
     :version="version"
     :profile="ui.profile"
@@ -135,6 +146,7 @@ onBeforeUnmount(() => {
     :special-choice="ui.specialChoice"
     :accessibility-preferences="accessibilityPreferences"
     @select="engine.selectJob"
+    @select-hero="engine.selectHero"
     @mode="engine.selectRunMode"
     @start="engine.start"
     @choose="engine.chooseUpgrade"
