@@ -109,6 +109,13 @@ export function claimTreasure(state: GameState, chestId: number, id: RelicId, fe
   feedback?.(relic.cursed ? RELIC_CUES.curseTaken : RELIC_CUES.rewardTaken, relic)
   return true
 }
+/** Safely decline a choice without granting a reward or retaining a blocking pending offer. */
+export function declineTreasure(state: GameState, chestId: number): boolean {
+  const run = getRun(state)
+  if (!run.pending || run.pending.chestId !== chestId) return false
+  run.pending = null
+  return true
+}
 export function rerollTreasure(state: GameState, chestId: number, rng: () => number): TreasureOffer | null {
   const run = getRun(state)
   if (!run.pending || run.pending.chestId !== chestId || run.rerolls <= 0) return null
