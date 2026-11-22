@@ -55,17 +55,21 @@ const changeAccessibility = (next: AccessibilityPreferences): void => {
   accessibilityPreferences.value = accessibility.update(next)
 }
 const homeConfirmOpen = ref(false)
+let resumeAfterHomeCancel = false
 function requestHome(): void {
-  if (homeConfirmOpen.value || ui.mode !== 'play' || ui.settingsOpen || !!ui.worldEventChoice) return
-  engine.togglePause()
+  if (homeConfirmOpen.value || (ui.mode !== 'play' && ui.mode !== 'paused') || ui.settingsOpen || !!ui.worldEventChoice) return
+  resumeAfterHomeCancel = ui.mode === 'play'
+  if (resumeAfterHomeCancel) engine.togglePause()
   homeConfirmOpen.value = ui.mode === 'paused'
 }
 function cancelHome(): void {
   homeConfirmOpen.value = false
-  if (ui.mode === 'paused') engine.togglePause()
+  if (resumeAfterHomeCancel && ui.mode === 'paused') engine.togglePause()
+  resumeAfterHomeCancel = false
 }
 function confirmHome(): void {
   homeConfirmOpen.value = false
+  resumeAfterHomeCancel = false
   engine.goMenu()
 }
 watch(() => ui.mode, mode => { if (mode !== 'paused') homeConfirmOpen.value = false })
@@ -218,7 +222,7 @@ onBeforeUnmount(() => {
     @sfx-volume="engine.setSfxVolume"
     @accessibility="changeAccessibility"
   />
-  <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
+  <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen" @resume="engine.togglePause" @leave="requestHome" @settings="engine.openSettings" />
   <Es2Dialog :active="homeConfirmOpen" :title="t('返回主選單？')"
     :subtitle="t('戰鬥已暫停。返回主選單將結束本次遠征，未結算的戰鬥進度不會保留。確定要離開嗎？')"
     @cancel="cancelHome">
