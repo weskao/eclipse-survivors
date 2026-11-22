@@ -173,3 +173,50 @@ describe('ES2 deterministic director remediation', () => {
     expect(adapter.advance(s)?.spawns.some(m => m.role === 'boss')).toBe(true)
   })
 })
+
+
+it('gates Relic Hunt guardian until all four real relics are collected', () => {
+  const director = createWaveDirector({ mode: 'relic-hunt', seed: 19 })
+  const base = {
+    timeSeconds: 220, activeMobs: 0, hero: { x: 0, y: 0 },
+    viewport: { width: 960, height: 540 },
+  }
+  expect(director.advance({ ...base, completedRelics: 3 }).spawns.some(m => m.role === 'boss')).toBe(false)
+  expect(director.advance({ ...base, timeSeconds: 221, completedRelics: 4 })
+    .spawns.filter(m => m.role === 'boss')).toHaveLength(1)
+})
+
+it('can retry a legitimately rejected boss without announcing a ghost encounter', () => {
+  let allowed = false
+  const events: string[] = []
+  const adapter = createWaveEngineAdapter({
+    mode: 'quick', seed: 77,
+    spawn(s, req) {
+      if (!allowed) return null
+      const mob = mobOf(req)
+      s.mobs.push(mob)
+      return mob
+    },
+    onEvent: event => events.push(event.kind),
+  })
+  const s = state(92)
+  expect(adapter.advance(s)?.spawns).toEqual([])
+  expect(events).not.toContain('boss')
+  allowed = true
+  s.time = 93
+  expect(adapter.advance(s)?.spawns.filter(m => m.role === 'boss')).toHaveLength(1)
+  expect(events.filter(e => e === 'boss')).toHaveLength(1)
+})
+
+it('rejects invalid progress, non-actor callbacks and malformed kill evidence', () => {
+  const d = createWaveDirector({ mode: 'chaos-arena', seed: 1 })
+  expect(() => d.advance({
+    timeSeconds: 15, activeMobs: 0, completedWaves: 9, hero: { x: 0, y: 0 },
+    viewport: { width: 960, height: 540 },
+  })).toThrow(RangeError)
+  const adapter = createWaveEngineAdapter({
+    mode: 'chaos-arena', seed: 1,
+    spawn(_state, req) { return mobOf(req) }, // actor was never actually inserted
+  })
+  expect(() => adapter.advance(state(15))).toThrow()
+})
