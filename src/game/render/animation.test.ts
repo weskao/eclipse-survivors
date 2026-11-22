@@ -4,6 +4,8 @@ import type { GameState, JobId } from '../types'
 import { createFakeCtx, fakeImage } from './fakes'
 import { sampleHeroAnimation } from './animation'
 import { drawRigSprite } from './characters'
+import { createRigidWeaponLayers } from './rigid-weapons'
+import { fakeCanvasFactory } from './fakes'
 
 function setup(job: JobId = 'knight'): GameState {
   const s = createState()
@@ -88,9 +90,13 @@ describe('render contract', () => {
     s.hero!.step = 2
     const { ctx } = createFakeCtx()
     const spy = vi.spyOn(ctx, 'drawImage')
-    drawRigSprite(ctx, fakeImage(true), 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!))
-    expect(spy.mock.calls.length).toBeGreaterThan(8)
-    expect(spy.mock.calls.every((args) => args.length === 9)).toBe(true)
+    const source = document.createElement('canvas')
+    source.width = 340
+    source.height = 390
+    const layers = createRigidWeaponLayers(source, 'ranger', fakeCanvasFactory().make)!
+    drawRigSprite(ctx, source, 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), 'ranger', layers)
+    expect(spy.mock.calls.filter(args => args[0] === layers.body && (args as unknown[]).length === 9).length).toBeGreaterThan(8)
+    expect(spy.mock.calls.filter(args => args[0] === layers.weapon && (args as unknown[]).length === 5)).toHaveLength(1)
   })
 
   it('draws one intact original sprite when reduced motion is enabled', () => {
