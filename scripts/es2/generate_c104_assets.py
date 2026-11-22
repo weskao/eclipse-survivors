@@ -30,9 +30,26 @@ SMALL_POSES={
   5:[(0,238),(251,373),(381,504),(974,1107)]
 }
 TELEGRAPHS={6:(1156,1440),5:(1125,1441)}
+# Manually reviewed per-enemy 3rd/4th source poses; source sheet columns are
+# irregular. Reusing generic 381-504 / 974-1107 rectangles imported neighboring
+# spell fragments and sometimes clipped the actor. Four distinct authored poses
+# must fit entirely within their exclusive source boxes.
+REVIEWED_POSE_BOXES = {
+  'shadow-assassin': {2:(447,589),3:(593,778)},
+  'necromancer': {2:(448,588),3:(594,788)},
+  'dark-archer': {2:(439,589),3:(594,790)},
+  'plague-carrier': {2:(440,586),3:(596,795)},
+  'shield-guardian': {2:(437,592),3:(594,788)},
+  'phantom': {2:(394,522),3:(684,832)},
+  'fire-imp': {2:(381,491),3:(505,615)},
+  'frost-wraith': {2:(384,503),3:(510,627)},
+  'berserker': {2:(379,490),3:(637,726)},
+  'crystal-sentinel': {2:(375,491),3:(502,626)},
+}
 for source, rows in ROWS.items():
   for name,(y0,y1) in rows:
-    for k,(x0,x1) in enumerate(SMALL_POSES[source]):
+    for k,(default_x0,default_x1) in enumerate(SMALL_POSES[source]):
+      x0,x1=REVIEWED_POSE_BOXES.get(name,{}).get(k,(default_x0,default_x1))
       ASSET_BOXES[source][f'frame:{name}:{k}']=(x0,y0,x1,y1)
     tx0,tx1=TELEGRAPHS[source]
     ASSET_BOXES[source][f'telegraph:{name}']=(tx0,y0+1,tx1,y1-1)
@@ -216,7 +233,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
 
     for src_id, rows in ROWS.items():
         for id, interval in rows:
-            poses=(0,1,3,1) if id in ('phantom','berserker','shadow-assassin','shield-guardian') else (0,1,2,3)
+            poses=(0,1,2,3)
             frames=[fit(sources[src_id], ASSET_BOXES[src_id][f'frame:{id}:{i}'], (96,96),src_id) for i in poses]
             # Four REAL source poses, natural ping-pong (not generated extras).
             sequence=[frames[i] for i in (0,1,2,3,2,1)]
