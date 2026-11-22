@@ -41,7 +41,10 @@ describe('App', () => {
     expect(root.getAttribute('data-es2-quality')).not.toBeNull()
     engine.openSettings()
     await nextTick()
-    await wrapper.get('#es2-quality').setValue('low')
+    const quality = document.querySelector<HTMLSelectElement>('#es2-quality')
+    expect(quality).not.toBeNull()
+    quality!.value = 'low'
+    quality!.dispatchEvent(new Event('change', { bubbles: true }))
     await nextTick()
     expect(root.getAttribute('data-es2-quality')).toBe('low')
     wrapper.unmount()
