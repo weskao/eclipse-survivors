@@ -174,6 +174,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             <img v-if="skill.iconSrc || !skill.id.includes(':')" :src="skill.iconSrc ?? skillImageSrc(skill.id)" alt="" decoding="async" />
             <span v-else aria-hidden="true" class="es2-hud__skill-glyph">{{ skill.icon }}</span>
             <span class="es2-hud__cooldown" aria-hidden="true" :style="{ '--es2-cooldown': skill.cooldownPct + '%' }"></span>
+            <img v-if="skill.cooldown > 0" class="es2-hud__cooldown-icon" :src="WORLD_ART.ui['hud-cooldown']" data-es2-cooldown-art alt="" loading="lazy" decoding="async" />
             <span class="es2-hud__skill-level">Lv.{{ skill.level }}</span>
             <span v-if="skill.evolved" class="es2-hud__evolved" aria-hidden="true">✦</span>
           </button>
@@ -229,4 +230,5 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
   }
 }
 .es2-world-hud-icon{width:15px;height:15px;object-fit:contain;vertical-align:middle;margin-right:4px}
+.es2-hud__cooldown-icon{position:absolute;right:2px;top:2px;width:15px;height:15px;object-fit:contain;pointer-events:none;z-index:2}
 </style>
