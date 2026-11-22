@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed } from 'vue'
 import type { MetaState } from '../../../game/content/meta/state'
 import {
@@ -30,72 +31,72 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 </script>
 
 <template>
-  <article class="es2-progression-panel" aria-label="永久成長 v3">
+  <article class="es2-progression-panel" :aria-label="t('永久成長 v3')">
     <header class="es2-progression-header">
       <div><p class="es2-progression-overline">✦ CELESTIAL LEGACY ✦</p>
-        <h2>永久成長 · 英雄傳承</h2>
-        <p>研究、裝備與祝福只在下一場遠征開始時生效。</p>
+        <h2>{{ t("永久成長 · 英雄傳承") }}</h2>
+        <p>{{ t("研究、裝備與祝福只在下一場遠征開始時生效。") }}</p>
       </div>
-      <div class="es2-progression-wallet"><strong>{{ state.embers.toLocaleString() }}</strong><span>✧ 暮光餘燼</span></div>
+      <div class="es2-progression-wallet"><strong>{{ state.embers.toLocaleString() }}</strong><span>{{ t("✧ 暮光餘燼") }}</span></div>
     </header>
     <p v-if="status !== 'ready' || error" role="alert" class="es2-progression-error">
-      {{ error || '儲存狀態無法驗證，目前已停用永久獎勵與消費，避免遺失進度。' }}
+      {{ t(error || '儲存狀態無法驗證，目前已停用永久獎勵與消費，避免遺失進度。') }}
     </p>
 
-    <section aria-label="永久研究" class="es2-progression-section">
-      <h3>研究之樹</h3>
+    <section :aria-label="t('永久研究')" class="es2-progression-section">
+      <h3>{{ t("研究之樹") }}</h3>
       <div class="es2-progression-grid">
         <article v-for="node in research" :key="node.id" class="es2-progression-item" :class="{ locked: node.locked }">
           <span class="es2-progression-icon" aria-hidden="true">{{ node.icon }}</span>
-          <strong>{{ node.title }}</strong><p>{{ node.description }}</p>
-          <small>等級 {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> · 前置研究未解鎖</span></small>
+          <strong>{{ t(node.title) }}</strong><p>{{ t(node.description) }}</p>
+          <small>{{ t("等級") }} {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> {{ t("· 前置研究未解鎖") }}</span></small>
           <button type="button" :data-research="node.id" :disabled="!writable || !node.canBuy"
             @click="emit('research', node.id)">
-            {{ node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · ' + node.nextCost + ' ✧' }}
+            {{ t(node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · ' + node.nextCost + ' ✧') }}
           </button>
         </article>
       </div>
     </section>
 
-    <section aria-label="英雄專精" class="es2-progression-section">
-      <h3>英雄專精</h3>
+    <section :aria-label="t('英雄專精')" class="es2-progression-section">
+      <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
-        <span>{{ heroName }}</span><strong>Lv. {{ mastery.level }}</strong><small>累積熟練度 {{ mastery.xp.toLocaleString() }} XP</small>
+        <span>{{ heroName }}</span><strong>Lv. {{ mastery.level }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
       </div>
     </section>
 
-    <section aria-label="起始裝備與祝福" class="es2-progression-section">
-      <h3>起始裝備與祝福</h3>
-      <p class="es2-progression-caption">已解鎖的效果由遊戲整合層在開局時套用，不會改變進行中的戰鬥。</p>
+    <section :aria-label="t('起始裝備與祝福')" class="es2-progression-section">
+      <h3>{{ t("起始裝備與祝福") }}</h3>
+      <p class="es2-progression-caption">{{ t("已解鎖的效果由遊戲整合層在開局時套用，不會改變進行中的戰鬥。") }}</p>
       <div class="es2-progression-grid">
         <article v-for="item in equipment" :key="item.id" class="es2-progression-item">
           <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
-          <strong>{{ item.title }}</strong><p>{{ item.description }}</p>
+          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description) }}</p>
           <button type="button" :data-equipment="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('equipment', item.id)">
-            {{ item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · ' + item.cost + ' ✧' }}
+            {{ t(item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · ' + item.cost + ' ✧') }}
           </button>
         </article>
         <article v-for="item in bonuses" :key="item.id" class="es2-progression-item">
           <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
-          <strong>{{ item.title }}</strong><p>{{ item.description }}</p>
+          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description) }}</p>
           <button type="button" :data-bonus="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('bonus', item.id)">
-            {{ item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · ' + item.cost + ' ✧' }}
+            {{ t(item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · ' + item.cost + ' ✧') }}
           </button>
         </article>
       </div>
     </section>
 
-    <section aria-label="永久成就" class="es2-progression-section">
-      <h3>永久成就 · {{ state.achievements.length }} / {{ achievements.length }}</h3>
+    <section :aria-label="t('永久成就')" class="es2-progression-section">
+      <h3>{{ t("永久成就 ·") }} {{ state.achievements.length }} / {{ achievements.length }}</h3>
       <div class="es2-progression-achievements">
         <article v-for="entry in achievements" :key="entry.id" :data-achievement="entry.id"
           :class="{ locked: !entry.unlocked }">
-          <span aria-hidden="true">{{ entry.icon }}</span><strong>{{ entry.title }}</strong>
-          <small>{{ entry.unlocked ? '✓ 已達成' : '未達成' }}</small>
+          <span aria-hidden="true">{{ entry.icon }}</span><strong>{{ t(entry.title) }}</strong>
+          <small>{{ t(entry.unlocked ? '✓ 已達成' : '未達成') }}</small>
         </article>
       </div>
     </section>

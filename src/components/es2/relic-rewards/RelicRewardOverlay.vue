@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, nextTick, ref, watch } from 'vue'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import Es2Dialog from '../menu/Es2Dialog.vue'
@@ -70,38 +71,38 @@ function shortcut(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <Es2Dialog :active="active && !!offer" title="遠古遺物寶箱" subtitle="選擇一項遺物，詛咒也會伴隨戰利品"
+  <Es2Dialog :active="active && !!offer" :title="t('遠古遺物寶箱')" :subtitle="t('選擇一項遺物，詛咒也會伴隨戰利品')"
     wide dismissible @cancel="decline" @shortcut="shortcut">
     <section class="relic-rewards" :style="{ '--relic-touch-size': TREASURE_UI.touchMinSizePx + 'px' }">
       <header class="relic-rewards__status" aria-live="polite">
-        <span data-relic-inventory>遺物 {{ inventory.items.length }}/{{ inventory.capacity }}</span>
-        <span data-relic-rerolls>重抽 {{ inventory.rerolls }}</span>
-        <span data-relic-banishes>放逐 {{ inventory.banishes }}</span>
+        <span data-relic-inventory>{{ t("遺物") }} {{ inventory.items.length }}/{{ inventory.capacity }}</span>
+        <span data-relic-rerolls>{{ t("重抽") }} {{ inventory.rerolls }}</span>
+        <span data-relic-banishes>{{ t("放逐") }} {{ inventory.banishes }}</span>
       </header>
-      <div v-if="choices.length" class="relic-rewards__grid" role="group" aria-label="遺物選項">
+      <div v-if="choices.length" class="relic-rewards__grid" role="group" :aria-label="t('遺物選項')">
         <article v-for="(relic, index) in choices" :key="relic.id" class="relic-rewards__card"
           :class="['relic-rewards__card--' + relic.rarity, { 'relic-rewards__card--cursed': relic.cursed }]">
           <button type="button" class="relic-rewards__claim" :data-relic-claim="relic.id" :disabled="busy"
-            :aria-label="'領取 ' + relic.title + '，' + relic.description" @click="claim(relic.id)">
+            :aria-label="t('領取 ' + relic.title + '，' + relic.description)" @click="claim(relic.id)">
             <span class="relic-rewards__icon" aria-hidden="true"><img :src="relic.cursed ? WORLD_ART.ui['treasure-cursed'] : relic.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary'] : relic.rarity === 'rare' || relic.rarity === 'epic' ? WORLD_ART.ui['treasure-rare'] : WORLD_ART.ui['treasure-common']" alt="" decoding="async" /></span>
             <span class="relic-rewards__rarity">{{ { common: '普通', rare: '稀有', epic: '史詩', legendary: '傳說' }[relic.rarity] }} · {{ index + 1 }}</span>
-            <strong>{{ relic.title }}</strong>
-            <span class="relic-rewards__description">{{ relic.description }}</span>
-            <span v-if="relic.cursed" class="relic-rewards__curse">⚠ 詛咒遺物：包含負面代價</span>
-            <span class="relic-rewards__obtain">領取遺物</span>
+            <strong>{{ t(relic.title) }}</strong>
+            <span class="relic-rewards__description">{{ t(relic.description) }}</span>
+            <span v-if="relic.cursed" class="relic-rewards__curse">{{ t("⚠ 詛咒遺物：包含負面代價") }}</span>
+            <span class="relic-rewards__obtain">{{ t("領取遺物") }}</span>
           </button>
           <button type="button" class="relic-rewards__banish" :data-relic-banish="relic.id"
-            :disabled="busy || !canBanish(relic.id)" :aria-label="'放逐 ' + relic.title" @click="banish(relic.id)">
-            放逐此遺物
+            :disabled="busy || !canBanish(relic.id)" :aria-label="t('放逐 ' + relic.title)" @click="banish(relic.id)">
+            {{ t("放逐此遺物") }}
           </button>
         </article>
       </div>
-      <p v-else data-relic-empty role="status">目前沒有可領取的遺物，可關閉寶箱繼續遊戲。</p>
+      <p v-else data-relic-empty role="status">{{ t("目前沒有可領取的遺物，可關閉寶箱繼續遊戲。") }}</p>
       <footer class="relic-rewards__actions">
-        <button type="button" data-relic-reroll :disabled="busy || !canReroll" @click="reroll">重抽選項（{{ inventory.rerolls }}）</button>
-        <button type="button" :disabled="busy" @click="decline">放棄寶箱</button>
+        <button type="button" data-relic-reroll :disabled="busy || !canReroll" @click="reroll">{{ t("重抽選項（") }}{{ inventory.rerolls }}）</button>
+        <button type="button" :disabled="busy" @click="decline">{{ t("放棄寶箱") }}</button>
       </footer>
-      <p class="relic-rewards__hint">按 1–3 選取 · Tab 移動焦點 · Esc 關閉</p>
+      <p class="relic-rewards__hint">{{ t("按 1–3 選取 · Tab 移動焦點 · Esc 關閉") }}</p>
     </section>
   </Es2Dialog>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed } from 'vue'
 import type { ContentId, GameState } from '../../../game/types'
 import { evolutionChoices, type EvolutionChoice } from './model'
@@ -14,17 +15,17 @@ function choose(choice: EvolutionChoice): void {
 </script>
 
 <template>
-  <section v-if="active" class="es2-evolution-choices" aria-label="神兵進化配方">
+  <section v-if="active" class="es2-evolution-choices" :aria-label="t('神兵進化配方')">
     <header class="es2-evolution-head">
-      <h2>✦ 命運進化</h2>
-      <p>將武器與被動技能提升至指定等級，即可解鎖傳說之力。</p>
+      <h2>{{ t("✦ 命運進化") }}</h2>
+      <p>{{ t("將武器與被動技能提升至指定等級，即可解鎖傳說之力。") }}</p>
     </header>
     <ul class="es2-evolution-grid">
       <li v-for="choice in choices" :key="choice.id">
         <button type="button" class="es2-evolution-card"
           :class="{ 'is-ready': choice.eligible, 'is-unlocked': choice.unlocked }"
           :disabled="!choice.eligible"
-          :aria-label="`${choice.title}：${choice.weaponTitle} ${choice.weaponLevel} / ${choice.requiredWeaponLevel}，${choice.passiveTitle} ${choice.passiveLevel} / ${choice.requiredPassiveLevel}`"
+          :aria-label="t(`${choice.title}：${choice.weaponTitle} ${choice.weaponLevel} / ${choice.requiredWeaponLevel}，${choice.passiveTitle} ${choice.passiveLevel} / ${choice.requiredPassiveLevel}`)"
           @click="choose(choice)">
           <span class="es2-evolution-icon" aria-hidden="true">
             <picture v-if="animatedEs2ImageSrc(choice.id)">
@@ -34,13 +35,13 @@ function choose(choice: EvolutionChoice): void {
             </picture>
             <template v-else>{{ choice.icon }}</template>
           </span>
-          <span class="es2-evolution-title">{{ choice.title }}</span>
-          <span class="es2-evolution-desc">{{ choice.description }}</span>
+          <span class="es2-evolution-title">{{ t(choice.title) }}</span>
+          <span class="es2-evolution-desc">{{ t(choice.description) }}</span>
           <span class="es2-evolution-gates">
             <span>{{ choice.weaponTitle }} <strong>{{ choice.weaponLevel }} / {{ choice.requiredWeaponLevel }}</strong></span>
             <span>{{ choice.passiveTitle }} <strong>{{ choice.passiveLevel }} / {{ choice.requiredPassiveLevel }}</strong></span>
           </span>
-          <span class="es2-evolution-status">{{ choice.unlocked ? '✓ 已解鎖' : choice.eligible ? '✦ 可進化' : '尚未達成條件' }}</span>
+          <span class="es2-evolution-status">{{ t(choice.unlocked ? '✓ 已解鎖' : choice.eligible ? '✦ 可進化' : '尚未達成條件') }}</span>
         </button>
       </li>
     </ul>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, nextTick, ref, watch } from 'vue'
 import Es2Dialog from '../menu/Es2Dialog.vue'
 import { WORLD_EVENT_DEFINITIONS } from '../../../game/content/world-events/definitions'
@@ -40,7 +41,7 @@ function shortcut(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <Es2Dialog :active="event !== null" :title="title"
+  <Es2Dialog :active="event !== null" :title="t(title)"
     subtitle="Inspect the cost and danger before making your choice"
     wide :dismissible="true" @cancel="emit('close')" @shortcut="shortcut">
     <div class="world-event-panel" :class="{ 'world-event-still': still }">
@@ -49,12 +50,12 @@ function shortcut(event: KeyboardEvent): void {
         <button v-for="(option, index) in options" :key="option.id" type="button"
           class="world-event-choice" :class="{ 'world-event-choice-disabled': !option.available }"
           :data-world-choice="option.id" :disabled="!option.available || submitting"
-          :aria-label="option.title + '. Risk: ' + option.risk + '. Reward: ' + option.reward +
-            (option.reason ? '. Unavailable: ' + option.reason : '')"
+          :aria-label="t(option.title + '. Risk: ' + option.risk + '. Reward: ' + option.reward +
+            (option.reason ? '. Unavailable: ' + option.reason : ''))"
           @click="choose(option)">
           <span class="world-event-number" aria-hidden="true">{{ index + 1 }}</span>
           <span class="world-event-choice-body">
-            <strong>{{ option.title }}</strong>
+            <strong>{{ t(option.title) }}</strong>
             <span v-if="option.costs.length" class="world-event-cost">
               Cost: {{ option.costs.join(' · ') }}
             </span>
@@ -64,7 +65,7 @@ function shortcut(event: KeyboardEvent): void {
           </span>
         </button>
       </div>
-      <p v-if="feedback" role="alert" class="world-event-feedback">{{ feedback }}</p>
+      <p v-if="feedback" role="alert" class="world-event-feedback">{{ t(feedback) }}</p>
       <p class="world-event-hint">Choose by touch, click or number keys 1–9 · Tab to navigate · Esc to close</p>
     </div>
   </Es2Dialog>

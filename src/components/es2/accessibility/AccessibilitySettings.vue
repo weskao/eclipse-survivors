@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed } from 'vue'
 import {
   DEFAULT_ACCESSIBILITY_PREFERENCES,
@@ -35,87 +36,87 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 </script>
 
 <template>
-  <section class="es2-settings" aria-label="手機操控與無障礙設定" :aria-disabled="disabled">
+  <section class="es2-settings" :aria-label="t('手機操控與無障礙設定')" :aria-disabled="disabled">
     <header class="es2-settings-head">
       <div>
         <p class="es2-eyebrow">MOBILE · ACCESSIBILITY</p>
-        <h3>操控與畫面輔助</h3>
-        <p>立即預覽變更；儲存由遊戲設定整合層處理。</p>
+        <h3>{{ t("操控與畫面輔助") }}</h3>
+        <p>{{ t("立即預覽變更；儲存由遊戲設定整合層處理。") }}</p>
       </div>
-      <button type="button" class="es2-reset" :disabled="disabled" @click="reset">回復預設</button>
+      <button type="button" class="es2-reset" :disabled="disabled" @click="reset">{{ t("回復預設") }}</button>
     </header>
 
     <div class="es2-options">
       <div class="es2-field">
-        <label for="es2-side">搖桿位置</label>
+        <label for="es2-side">{{ t("搖桿位置") }}</label>
         <select id="es2-side" :value="modelValue.joystickSide" :disabled="disabled" @change="selectSide">
-          <option value="left">左側</option><option value="right">右側</option>
+          <option value="left">{{ t("左側") }}</option><option value="right">{{ t("右側") }}</option>
         </select>
       </div>
       <div class="es2-field">
-        <label for="es2-bottom">離底部距離 <output>{{ modelValue.joystickBottom }}px</output></label>
+        <label for="es2-bottom">{{ t("離底部距離") }} <output>{{ modelValue.joystickBottom }}px</output></label>
         <input id="es2-bottom" type="range" min="0" max="120" step="2" :value="modelValue.joystickBottom" :disabled="disabled" @input="updateNumber('joystickBottom', $event)" />
       </div>
       <div class="es2-field">
-        <label for="es2-touch-size">觸控尺寸 <output>{{ Math.round(modelValue.touchScale * 100) }}%</output></label>
+        <label for="es2-touch-size">{{ t("觸控尺寸") }} <output>{{ Math.round(modelValue.touchScale * 100) }}%</output></label>
         <input id="es2-touch-size" type="range" min="0.85" max="1.35" step="0.05" :value="modelValue.touchScale" :disabled="disabled" @input="updateNumber('touchScale', $event)" />
       </div>
       <div class="es2-field">
-        <label for="es2-interface-scale">介面縮放 <output>{{ Math.round(modelValue.interfaceScale * 100) }}%</output></label>
+        <label for="es2-interface-scale">{{ t("介面縮放") }} <output>{{ Math.round(modelValue.interfaceScale * 100) }}%</output></label>
         <input id="es2-interface-scale" data-testid="es2-ui-scale" type="range" min="0.85" max="1.25" step="0.05" :value="modelValue.interfaceScale" :disabled="disabled" @input="updateNumber('interfaceScale', $event)" />
       </div>
       <div class="es2-field">
-        <label for="es2-quality">畫質</label>
+        <label for="es2-quality">{{ t("畫質") }}</label>
         <select id="es2-quality" data-testid="es2-quality" :value="modelValue.quality" :disabled="disabled" @change="selectQuality">
-          <option value="auto">自動</option>
-          <option value="low">低</option>
-          <option value="medium">中</option>
-          <option value="high">高</option>
+          <option value="auto">{{ t("自動") }}</option>
+          <option value="low">{{ t("低") }}</option>
+          <option value="medium">{{ t("中") }}</option>
+          <option value="high">{{ t("高") }}</option>
         </select>
       </div>
       <div class="es2-field">
-        <label for="es2-vfx">戰鬥特效強度</label>
+        <label for="es2-vfx">{{ t("戰鬥特效強度") }}</label>
         <select id="es2-vfx" :value="modelValue.vfxIntensity" :disabled="disabled" @change="selectVfx">
-          <option value="full">完整</option><option value="medium">中等</option>
-          <option value="low">低</option><option value="off">關閉非必要特效</option>
+          <option value="full">{{ t("完整") }}</option><option value="medium">{{ t("中等") }}</option>
+          <option value="low">{{ t("低") }}</option><option value="off">{{ t("關閉非必要特效") }}</option>
         </select>
       </div>
     </div>
 
     <div class="es2-switches">
       <div class="es2-switch-row">
-        <div><strong>減少動態</strong><small>減少 UI 移動與過渡動畫</small></div>
-        <div class="es2-switch-group" role="group" aria-label="減少動態">
-          <button data-testid="es2-motion" type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'on'" @click="update({ reducedMotion: modelValue.reducedMotion === 'on' ? 'off' : 'on' })">{{ modelValue.reducedMotion === 'on' ? '開啟' : '關閉' }}</button>
-          <button type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'system'" @click="update({ reducedMotion: 'system' })">依系統</button>
+        <div><strong>{{ t("減少動態") }}</strong><small>{{ t("減少 UI 移動與過渡動畫") }}</small></div>
+        <div class="es2-switch-group" role="group" :aria-label="t('減少動態')">
+          <button data-testid="es2-motion" type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'on'" @click="update({ reducedMotion: modelValue.reducedMotion === 'on' ? 'off' : 'on' })">{{ t(modelValue.reducedMotion === 'on' ? '開啟' : '關閉') }}</button>
+          <button type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'system'" @click="update({ reducedMotion: 'system' })">{{ t("依系統") }}</button>
         </div>
       </div>
       <div class="es2-switch-row">
-        <div><strong>降低閃光</strong><small>避免頻繁閃爍；保留必要攻擊警示</small></div>
-        <button type="button" aria-label="降低閃光" :disabled="disabled" :aria-pressed="modelValue.reducedFlashing" @click="update({ reducedFlashing: !modelValue.reducedFlashing })">{{ modelValue.reducedFlashing ? '開啟' : '關閉' }}</button>
+        <div><strong>{{ t("降低閃光") }}</strong><small>{{ t("避免頻繁閃爍；保留必要攻擊警示") }}</small></div>
+        <button type="button" :aria-label="t('降低閃光')" :disabled="disabled" :aria-pressed="modelValue.reducedFlashing" @click="update({ reducedFlashing: !modelValue.reducedFlashing })">{{ t(modelValue.reducedFlashing ? '開啟' : '關閉') }}</button>
       </div>
       <div class="es2-switch-row">
-        <div><strong>色覺輔助</strong><small>以符號及文字區分狀態，不只靠顏色</small></div>
-        <button type="button" aria-label="色覺輔助" :disabled="disabled" :aria-pressed="modelValue.colorblindIndicators" @click="update({ colorblindIndicators: !modelValue.colorblindIndicators })">{{ modelValue.colorblindIndicators ? '開啟' : '關閉' }}</button>
+        <div><strong>{{ t("色覺輔助") }}</strong><small>{{ t("以符號及文字區分狀態，不只靠顏色") }}</small></div>
+        <button type="button" :aria-label="t('色覺輔助')" :disabled="disabled" :aria-pressed="modelValue.colorblindIndicators" @click="update({ colorblindIndicators: !modelValue.colorblindIndicators })">{{ t(modelValue.colorblindIndicators ? '開啟' : '關閉') }}</button>
       </div>
       <div class="es2-switch-row">
-        <div><strong>傷害數字</strong><small>顯示或隱藏戰鬥傷害浮字</small></div>
-        <button type="button" aria-label="傷害數字" :disabled="disabled" :aria-pressed="modelValue.showDamageNumbers" @click="update({ showDamageNumbers: !modelValue.showDamageNumbers })">{{ modelValue.showDamageNumbers ? '顯示' : '隱藏' }}</button>
+        <div><strong>{{ t("傷害數字") }}</strong><small>{{ t("顯示或隱藏戰鬥傷害浮字") }}</small></div>
+        <button type="button" :aria-label="t('傷害數字')" :disabled="disabled" :aria-pressed="modelValue.showDamageNumbers" @click="update({ showDamageNumbers: !modelValue.showDamageNumbers })">{{ t(modelValue.showDamageNumbers ? '顯示' : '隱藏') }}</button>
       </div>
     </div>
 
     <div data-testid="es2-preview" class="es2-preview" aria-live="polite" aria-atomic="true">
-      <strong>即時預覽 · {{ policy.quality.toUpperCase() }}</strong>
-      <div class="es2-mobile-preview" :data-side="modelValue.joystickSide" :style="{ '--es2-mini-scale': modelValue.touchScale }" aria-label="預覽左右控制鈕位置">
+      <strong>{{ t("即時預覽 ·") }} {{ policy.quality.toUpperCase() }}</strong>
+      <div class="es2-mobile-preview" :data-side="modelValue.joystickSide" :style="{ '--es2-mini-scale': modelValue.touchScale }" :aria-label="t('預覽左右控制鈕位置')">
         <span class="es2-mini-stick" aria-hidden="true">◎</span>
         <span class="es2-mini-dash" aria-hidden="true">✧</span>
       </div>
       <div class="es2-preview-demo" :style="{ fontSize: 'calc(14px * ' + modelValue.interfaceScale + ')' }">
         <span>♥ HP</span><span>✦ XP</span>
         <span v-if="modelValue.showDamageNumbers" class="es2-preview-damage">−24</span>
-        <span v-if="modelValue.colorblindIndicators">● 狀態正常</span>
+        <span v-if="modelValue.colorblindIndicators">{{ t("● 狀態正常") }}</span>
       </div>
-      <small>搖桿：{{ modelValue.joystickSide === 'left' ? '左' : '右' }}側 · {{ Math.round(modelValue.touchScale * 100) }}%｜畫面動態：{{ policy.reduceMotion ? '已減少' : '一般' }}</small>
+      <small>{{ t("搖桿：") }}{{ t(modelValue.joystickSide === 'left' ? '左' : '右') }}{{ t("側 ·") }} {{ Math.round(modelValue.touchScale * 100) }}{{ t("%｜畫面動態：") }}{{ t(policy.reduceMotion ? '已減少' : '一般') }}</small>
     </div>
   </section>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { joystickVector } from '../../../game/content/accessibility/joystick'
@@ -109,7 +110,7 @@ onBeforeUnmount(() => {
       class="es2-stick"
       :class="{ pressed }"
       role="group"
-      aria-label="虛擬方向搖桿，鍵盤仍可使用方向鍵或 WASD"
+      :aria-label="t('虛擬方向搖桿，鍵盤仍可使用方向鍵或 WASD')"
       @pointerdown="downStick"
       @pointermove="moveStick"
       @pointerup="endStick"
@@ -124,12 +125,12 @@ onBeforeUnmount(() => {
       data-testid="es2-dash"
       class="es2-dash"
       type="button"
-      aria-label="衝刺，鍵盤可用空白鍵"
+      :aria-label="t('衝刺，鍵盤可用空白鍵')"
       :disabled="!usable"
       @keydown.space.stop
       @keyup.space.stop
       @click.stop="triggerDash"
-    ><span aria-hidden="true">✧</span> 衝刺</button>
+    ><span aria-hidden="true">✧</span> {{ t("衝刺") }}</button>
   </div>
 </template>
 
