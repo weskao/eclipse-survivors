@@ -2,7 +2,7 @@ import type { ContentAbility, ContentContext } from '../contracts'
 import type { Mob, SfxCue, SkillRarity } from '../../types'
 import { hit } from '../../combat'
 import {
-  addMissile, addZone, keepVisual, moveMissiles, nearest, runtimeOf, tickZones,
+  addMissile, addZone, keepVisual, moveMissiles, nearest, nearestOne, runtimeOf, tickZones,
   type ArsenalRuntime, type MissileKind, type WeaponKey,
 } from './runtime'
 
@@ -39,7 +39,7 @@ function ready(r: ArsenalRuntime, key: WeaponKey, dt: number, interval: number, 
 
 function target(context: ContentContext, range: number): Mob | undefined {
   const h = context.state.hero!
-  return nearest(context.state, h.x, h.y, range)[0]
+  return nearestOne(context.state, h.x, h.y, range)
 }
 
 function fireMissile(
@@ -101,7 +101,7 @@ function tickWolves(context: ContentContext, dt: number, level: number): void {
     r.wolves.push({ x: h.x - 22 - r.wolves.length * 14, y: h.y + 22, attackIn: 0 })
   for (const wolf of r.wolves) {
     wolf.attackIn = Math.max(0, wolf.attackIn - dt)
-    const enemy = nearest(context.state, wolf.x, wolf.y, 490)[0]
+    const enemy = nearestOne(context.state, wolf.x, wolf.y, 490)
     const tx = enemy?.x ?? h.x - 24, ty = enemy?.y ?? h.y + 24
     const dx = tx - wolf.x, dy = ty - wolf.y, d2 = dx * dx + dy * dy
     const attackRange = (enemy?.r ?? 0) + 23
@@ -340,7 +340,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
 }
 
 export const WEAPON_ABILITIES: readonly ContentAbility[] = WEAPON_SPECS.map(spec => ({
-  id: `weapons:${spec.key}`,
+  id: `weapons:${spec.key}` as const,
   kind: 'weapon', icon: spec.icon, title: spec.title, desc: spec.desc,
   rarity: spec.rarity, maxLevel: 5,
   // These are continuous-tick weapons: attack cadence lives in the per-run timer.
