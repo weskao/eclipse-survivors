@@ -66,7 +66,7 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
             :data-job="card.id"
             :aria-pressed="card.id === choice"
             @click="emit('select', card.id)"
-          ><span class="job-mark">{{ card.mark }}</span><span class="portrait" :data-portrait="card.id"><img :src="ART_URLS[card.id]" :alt="card.id" /></span><strong>{{ card.name }}</strong><small>{{ card.role }}</small><span class="job-choose" aria-hidden="true">{{ card.id === choice ? "✓ 已選擇" : "點擊選擇" }}</span></button>
+          ><span class="job-crest" aria-hidden="true">{{ card.id === 'knight' ? '♜' : card.id === 'ranger' ? '✧' : '✦' }}</span><span class="job-mark">{{ card.mark }}</span><span class="portrait" :data-portrait="card.id"><img :src="ART_URLS[card.id]" :alt="card.id" /></span><strong>{{ card.name }}</strong><small>{{ card.role }}</small><span class="job-choose" aria-hidden="true">{{ card.id === choice ? "✓ 已選擇" : "點擊選擇" }}</span></button>
         </div>
         <ModeSelector :value="runMode ?? 'quick'" @select="emit('mode', $event)" />
         <div class="menu-cta-wrap"><button id="start" class="cta start-adventure" @click="emit('start')"><span>踏入幽暮之門</span><span class="start-spark" aria-hidden="true">✦</span></button><p>自動攻擊 · 收集精華 · 覺醒全新能力</p></div>

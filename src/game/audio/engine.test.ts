@@ -73,6 +73,56 @@ describe('wake', () => {
   })
 })
 
+describe('gothic menu soundtrack', () => {
+  it('plays the dedicated orchestral track on a gesture, not the old synthesizer', () => {
+    const menuBgm = new FakeBgm()
+    const audio = createAudioSystem({ bgm, menuBgm, storage: null, createContext: () => ctx })
+    expect(menuBgm.playCalls).toBe(0)
+    audio.wake()
+    expect(menuBgm.playCalls).toBe(1)
+    audio.tick('menu')
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.onScreen('play')
+    expect(menuBgm.paused).toBe(true)
+    expect(bgm.playCalls).toBe(1)
+    audio.onScreen('menu')
+    expect(bgm.paused).toBe(true)
+    expect(menuBgm.currentTime).toBe(0)
+    expect(menuBgm.playCalls).toBe(2)
+  })
+
+  it('applies user volume and mute to both menu and battle tracks', () => {
+    const menuBgm = new FakeBgm()
+    const audio = createAudioSystem({ bgm, menuBgm, storage: null, createContext: () => ctx })
+    audio.wake()
+    audio.setMusicVolume(40)
+    expect(menuBgm.volume).toBeCloseTo(0.78 * 0.4)
+    audio.toggleMusic('menu')
+    expect(menuBgm.paused).toBe(true)
+    expect(bgm.paused).toBe(true)
+    audio.toggleMusic('menu')
+    expect(menuBgm.playCalls).toBe(2)
+    audio.interrupt()
+    expect(menuBgm.paused).toBe(true)
+    audio.wake()
+    expect(menuBgm.playCalls).toBe(3)
+    audio.dispose()
+    expect(menuBgm.paused).toBe(true)
+  })
+
+  it('does not resume menu music when the preference is disabled', () => {
+    const menuBgm = new FakeBgm()
+    const storage = new MemStorage()
+    storage.setItem('starMusic', 'off')
+    const audio = createAudioSystem({ bgm, menuBgm, storage, createContext: () => ctx })
+    audio.wake()
+    audio.onScreen('menu')
+    expect(menuBgm.playCalls).toBe(0)
+    audio.toggleMusic('menu')
+    expect(menuBgm.playCalls).toBe(1)
+  })
+})
+
 describe('independent, persisted audio volumes', () => {
   it('defaults to the existing loudness and persists independent levels', () => {
     const storage = new MemStorage()
