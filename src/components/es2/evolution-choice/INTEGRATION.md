@@ -8,6 +8,7 @@ This is a standalone recipe overview and choice adapter; it does not replace the
 <script setup lang="ts">
 import EvolutionChoicePanel from '@/components/es2/evolution-choice/EvolutionChoicePanel.vue'
 import { applyUpgrade } from '@/game/progression'
+import type { ContentId } from '@/game/types'
 // 'state', 'hooks' and 'registry' are provided by the existing game host.
 function chooseEvolution(id: ContentId) {
   // The registry makes the final prerequisite and duplicate claim decision.
