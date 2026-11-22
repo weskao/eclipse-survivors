@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "status": "production",
+  "designUnit": 128,
+  "scale": 3,
+  "assets": [
+    {
+      "id": "evolution2:nightfall-torrent",
+      "path": "nightfall-torrent@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-2 cell-20",
+      "sha256": "47917d6d92ab472e2d5a1e2b1ee77318bd401982a2148a34b08901a6edec89db",
+      "bytes": 29872,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "evolution2:dawn-judgment",
+      "path": "dawn-judgment@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-21",
+      "sha256": "4e71d2791c139b82bd1dec39aefe94001e28c0ea4043126f367853e91eba3f44",
+      "bytes": 38838,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "evolution2:crimson-reaper",
+      "path": "crimson-reaper@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-19",
+      "sha256": "3a50cbc8120b505ca5f4d178cf50b21e87b95a67b196b24b52628a22add49d8d",
+      "bytes": 39744,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "evolution2:singularity-minefield",
+      "path": "singularity-minefield@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-2 cell-18",
+      "sha256": "e60b3c7640d3bb75f3f83d60c1314d1469ade8e7bf6ec514e2fa1e01aa2702e8",
+      "bytes": 27024,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "evolution2:toxic-permafrost",
+      "path": "toxic-permafrost@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration a_high_detail_fantasy_game_asset_illustration_on_a.png",
+      "sha256": "9429e778963cd42464312a3eded0d17d11c5c7f1b8d226bcfb758a34d1e9d4c7",
+      "bytes": 68610,
+      "reviewNote": "Venom-frost crystal and toxic mist"
+    },
+    {
+      "id": "evolution2:infinite-rebound",
+      "path": "infinite-rebound@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration, isolated sprite and generated effect composition",
+      "sha256": "52fdc0401c74bd808be7732716eba84fd403118040aa0fd7761cd682338b3876",
+      "bytes": 50876,
+      "reviewNote": "Three original metallic spinning blades and distinct purple rebound trajectory"
+    },
+    {
+      "id": "evolution2:wild-hunt",
+      "path": "wild-hunt@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration a_high_detail_fantasy_digital_illustration_on_a_tr.png",
+      "sha256": "1eea51c65bf7e1c6a7b4a20d24634f55c14e2132730a0744dc71cbd0f5805535",
+      "bytes": 62164,
+      "reviewNote": "Three spectral wolves attack as a pack"
+    },
+    {
+      "id": "evolution2:solar-tempest",
+      "path": "solar-tempest@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-14",
+      "sha256": "a58a83ede07e3b9ac7934db829279fb8236a82a7fd8f3d8459d8e5d3aee347f6",
+      "bytes": 37608,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "evolution2:celestial-collapse",
+      "path": "celestial-collapse@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-20",
+      "sha256": "87eb3b237b590220f3c1fe4c7ad1a0bfadc7c41b1e34a2d57622fea9cdd7976f",
+      "bytes": 40954,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "evolution2:spectral-volley",
+      "path": "spectral-volley@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-15",
+      "sha256": "0782a42857bd89d11cdbad1cd1d3fd21b7079168e35fb06833a5258fb6716d26",
+      "bytes": 38658,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "evolution2:bonefire-barrage",
+      "path": "bonefire-barrage@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration, isolated sprite and generated effect composition",
+      "sha256": "3bf7f1dbb164c39b4dded093a5a657de0cf6b8c72e0c21999ba089875db4e614",
+      "bytes": 81578,
+      "reviewNote": "Three original illustrated bone spears and warm fiery magic trails, no opaque rectangular matte"
+    },
+    {
+      "id": "evolution2:verdant-snare",
+      "path": "verdant-snare@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration composition of separately generated illustrations",
+      "sha256": "5c797a7403c65df5558dbffc2427a87d78737056be7acd78daa3b96682bbb28a",
+      "bytes": 63452,
+      "reviewNote": "Fully evolved thorn-chain circular snare with green magic"
+    }
+  ],
+  "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
+  "reviewType": "Visual asset subject and style assessment; manual game viewport approval not yet available"
+}
