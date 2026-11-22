@@ -42,31 +42,31 @@ function shortcut(event: KeyboardEvent): void {
 
 <template>
   <Es2Dialog :active="event !== null" :title="t(title)"
-    subtitle="Inspect the cost and danger before making your choice"
+    :subtitle="t('進行選擇前請先查看代價與風險。')"
     wide :dismissible="true" @cancel="emit('close')" @shortcut="shortcut">
     <div class="world-event-panel" :class="{ 'world-event-still': still }">
-      <p class="world-event-eyebrow">✧ CELESTIAL ENCOUNTER ✧</p>
-      <div class="world-event-options" role="group" aria-label="World event choices">
+      <p class="world-event-eyebrow">{{ t('✧ 天穹奇遇 ✧') }}</p>
+      <div class="world-event-options" role="group" :aria-label="t('世界事件選項')">
         <button v-for="(option, index) in options" :key="option.id" type="button"
           class="world-event-choice" :class="{ 'world-event-choice-disabled': !option.available }"
           :data-world-choice="option.id" :disabled="!option.available || submitting"
-          :aria-label="t(option.title + '. Risk: ' + option.risk + '. Reward: ' + option.reward +
-            (option.reason ? '. Unavailable: ' + option.reason : ''))"
+           :aria-label="[t(option.title), t('風險') + ': ' + t(option.risk), t('獎勵') + ': ' + t(option.reward),
+            option.reason ? t('不可選擇') + ': ' + t(option.reason) : ''].filter(Boolean).join(' · ')"
           @click="choose(option)">
           <span class="world-event-number" aria-hidden="true">{{ index + 1 }}</span>
           <span class="world-event-choice-body">
             <strong>{{ t(option.title) }}</strong>
             <span v-if="option.costs.length" class="world-event-cost">
-              Cost: {{ option.costs.join(' · ') }}
+              {{ t('花費') }}: {{ option.costs.map(cost => t(cost)).join(' · ') }}
             </span>
-            <span class="world-event-risk"><b>Risk</b> {{ option.risk }}</span>
-            <span class="world-event-reward"><b>Reward</b> {{ option.reward }}</span>
-            <span v-if="option.reason" class="world-event-reason">{{ option.reason }}</span>
+            <span class="world-event-risk"><b>{{ t('風險') }}</b> {{ t(option.risk) }}</span>
+            <span class="world-event-reward"><b>{{ t('獎勵') }}</b> {{ t(option.reward) }}</span>
+            <span v-if="option.reason" class="world-event-reason">{{ t(option.reason) }}</span>
           </span>
         </button>
       </div>
       <p v-if="feedback" role="alert" class="world-event-feedback">{{ t(feedback) }}</p>
-      <p class="world-event-hint">Choose by touch, click or number keys 1–9 · Tab to navigate · Esc to close</p>
+      <p class="world-event-hint">{{ t('透過觸控、滑鼠或數字鍵 1–9 選擇 · Tab 切換焦點 · Esc 關閉') }}</p>
     </div>
   </Es2Dialog>
 </template>
