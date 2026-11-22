@@ -39,7 +39,7 @@ describe('responsive ES2 encounter and information rail', () => {
   it('keeps one polite announcement and real wave progress accessible', () => {
     expect(component.match(/aria-live="polite"/g)).toHaveLength(1)
     expect(component).toContain('data-es2-announcement')
-    expect(component).toContain('aria-label="波次進度"')
+    expect(component).toContain(':aria-label="t(\'波次進度\')"')
   })
   it('keeps ES2 styles scoped and avoids changing the legacy game', () => {
     expect(css).toContain('.es2-hud')
