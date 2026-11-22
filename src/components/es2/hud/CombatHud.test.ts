@@ -124,6 +124,7 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.get('.es2-hud').classes()).toContain('es2-hud--active')
     expect(wrapper.get('.es2-hud').attributes('aria-hidden')).toBe('false')
     wrapper.unmount()
+    instances.splice(instances.indexOf(wrapper), 1)
     expect(document.querySelector('.es2-hud')).toBeNull()
   })
 })
