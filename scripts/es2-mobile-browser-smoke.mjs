@@ -71,6 +71,62 @@ try {
       await context.close()
     }
   }
+
+  // Assert the three newly authored heroes actually render the *same* 900px
+  // portrait in both selection and live HUD. Baseline controls above only
+  // exercise the original knight and cannot catch a wrong new-hero sprite.
+  for (const heroId of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+    const context = await browser.newContext({
+      viewport: { width: 375, height: 812 },
+      deviceScaleFactor: 2, isMobile: true, hasTouch: true,
+    })
+    const page = await context.newPage()
+    const errors = []
+    page.on('pageerror', error => errors.push(error.message))
+    try {
+      await page.goto(target, { waitUntil: 'domcontentloaded' })
+      const card = page.locator(`button[data-hero-id="${heroId}"]`)
+      await card.waitFor({ state: 'visible', timeout: 30000 })
+      await card.click()
+      assert.equal(await card.getAttribute('aria-pressed'), 'true')
+      const cardPortrait = card.locator('img.es2-roster__portrait')
+      await cardPortrait.evaluate(image => image.decode())
+      const photo = await cardPortrait.evaluate(image => ({
+        source: image.getAttribute('src'),
+        width: image.naturalWidth, height: image.naturalHeight,
+      }))
+      assert.ok(photo.source.includes(heroId + '-portrait@3x'), `${heroId}: wrong menu portrait`)
+      assert.deepEqual([photo.width, photo.height], [900, 900], `${heroId}: menu portrait is not true 3x`)
+      const preview = await card.locator('.es2-hero-action-preview').evaluate(element => {
+        const style = getComputedStyle(element)
+        return { source: style.backgroundImage, size: style.backgroundSize }
+      })
+      assert.ok(preview.source.includes(heroId + '-run-attack@3x'),
+        `${heroId}: no real 8-frame action preview`)
+      assert.equal(preview.size, '800% 100%', `${heroId}: preview is not divided into 8 cells`)
+      await page.screenshot({ path: `${directory}/portrait-375-${heroId}-selection.png`, animations: 'disabled' })
+      await page.locator('.es2-start').click()
+      const hudPortrait = page.locator('.es2-hud__portrait img')
+      await hudPortrait.waitFor({ state: 'visible', timeout: 30000 })
+      await hudPortrait.evaluate(image => image.decode())
+      const hud = await hudPortrait.evaluate(image => ({
+        source: image.getAttribute('src'),
+        width: image.naturalWidth, height: image.naturalHeight,
+      }))
+      assert.ok(hud.source.includes(heroId + '-portrait@3x'), `${heroId}: HUD renders wrong hero`)
+      assert.deepEqual([hud.width, hud.height], [900, 900], `${heroId}: HUD loads low-resolution art`)
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2),
+        `${heroId}: portrait game viewport horizontally overflows`)
+      await page.screenshot({ path: `${directory}/portrait-375-${heroId}-game.png`, animations: 'disabled' })
+      assert.deepEqual(errors, [], `${heroId}: uncaught browser errors`)
+      console.log(`PASS ${heroId}: committed portrait and action preview, same hero on in-game HUD`)
+    } catch (error) {
+      await page.screenshot({ path: `${directory}/portrait-375-${heroId}-failed.png` }).catch(() => {})
+      throw error
+    } finally {
+      await context.close()
+    }
+  }
 } finally {
   await browser.close()
 }
