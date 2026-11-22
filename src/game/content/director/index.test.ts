@@ -159,3 +159,23 @@ describe('director scheduling and budgets', () => {
     }
   })
 })
+
+it('does not announce or consume a blocked boss; retries when safe and never exceeds its reserved slot', () => {
+  const director = createWaveDirector({ mode: 'quick', seed: 9 })
+  director.advance(frame(79))
+  const blocked = director.advance({ ...frame(92, MAX_MOBS), canSpawnAt: () => false })
+  expect(blocked.events.some(e => e.kind === 'boss')).toBe(false)
+  expect(blocked.spawns).toEqual([])
+  const accepted = director.advance(frame(92.5, MAX_MOBS))
+  expect(accepted.spawns.filter(s => s.role === 'boss')).toHaveLength(1)
+  expect(accepted.events.filter(e => e.kind === 'boss')).toHaveLength(1)
+  expect(director.advance(frame(93, MAX_MOBS)).events.filter(e => e.kind === 'boss')).toEqual([])
+  const overfull = createWaveDirector({ mode: 'quick', seed: 9 })
+  expect(overfull.advance(frame(92, MAX_MOBS + 1)).spawns).toEqual([])
+})
+
+it('does not schedule a second boss when the legacy state says one already spawned', () => {
+  const director = createWaveDirector({ mode: 'standard', seed: 14 })
+  expect(director.advance({ ...frame(300), bossSpawned: true }).spawns).toEqual([])
+  expect(director.advance(frame(301)).spawns.filter(s => s.role === 'boss')).toEqual([])
+})
