@@ -19,6 +19,7 @@ export function setScene(s: GameState, index: number, announce: boolean, hooks: 
   s.challengeUntil = 0
   s.challengePoint = null
   s.hazardLastHitAt = -Infinity
+  hooks.content?.(s, { type: 'scene-change', index })
   const hero = s.hero
   if (!announce || !hero) return
   const scene = SCENES[index]!

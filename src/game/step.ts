@@ -1,5 +1,6 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { attack, hit, victoryConditionMet } from './combat'
+import type { ContentRegistry } from './content/registry'
 import { hasWonRun } from '../meta/modes'
 import { tickWorld } from './events'
 import { resolveObstacleCollision } from './world'
@@ -100,6 +101,7 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
       star.dead = true
       addXp(s, star.value, hooks)
       hooks.sfx('pickup')
+      hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
     }
   }
   s.stars = s.stars.filter((star) => !star.dead).slice(-220)
@@ -141,10 +143,11 @@ function ageEffects(s: GameState, hero: Hero, dt: number): void {
   s.swipes = s.swipes.filter((w) => w.life > 0)
 }
 
-export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks): void {
+export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
   tickTimers(s, hero, dt)
+  registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
   tickSpawning(s, dt, hooks)
