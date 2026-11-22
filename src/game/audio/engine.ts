@@ -90,6 +90,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let musicVolume = 100
   let sfxVolume = 100
   let interrupted = false
+  let externalScoreActive = false
   let mode: GameMode = 'menu'
   let intensity: CombatIntensity = 'calm'
   let noiseBuffer: BufferLike | null = null
@@ -131,7 +132,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   if (menuBgm) menuBgm.volume = menuLevel()
 
   const activeTrack = (): BgmElement | undefined =>
-    mode === 'menu' ? menuBgm : mode === 'play' ? bgm : undefined
+    externalScoreActive ? undefined : mode === 'menu' ? menuBgm : mode === 'play' ? bgm : undefined
 
   const playScore = (): void => {
     const track = activeTrack()
@@ -234,6 +235,20 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
 
   return {
     get unlocked() { return ac !== null },
+    createEs2Port() {
+      return {
+        now: () => ac?.currentTime ?? 0,
+        isRunning: () => running() !== null,
+        tone: (midi: number, at: number, dur: number, vol: number, wave: OscillatorType, bus: 'sfx' | 'music') => {
+          if (running()) tone(midi, at, dur, vol, wave, bus)
+        },
+      }
+    },
+    setExternalScoreActive(active: boolean) {
+      externalScoreActive = active
+      if (active) { bgm.pause(); menuBgm?.pause() }
+      else playScore()
+    },
     get musicOn() { return musicOn },
     get sfxOn() { return sfxOn },
     get musicVolume() { return musicVolume },
@@ -275,6 +290,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (NOISE_CUES.has(cue)) noiseBurst(now)
     },
     tick(mode) {
+      if (externalScoreActive) return
       const ctx = running()
       if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }

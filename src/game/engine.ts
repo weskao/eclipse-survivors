@@ -4,6 +4,7 @@ import { getMode, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
+import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
@@ -158,6 +159,22 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     bgm: createBgm(BGM_URL),
     menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
   })
+  // The original audio owner provides the context and buses. Never start a second BGM.
+  // Older injected AudioSystem fakes retain their original behaviour unchanged.
+  const es2Port = audio.createEs2Port?.()
+  const es2Audio = es2Port && audio.setExternalScoreActive
+    ? createEs2AudioAdapter({
+      audio, ...es2Port,
+      tone: (...args) => {
+        try { es2Port.tone(...args) }
+        catch (error) {
+          // The adapter falls back to legacy scheduling after any synthesis failure.
+          audio.setExternalScoreActive?.(false)
+          throw error
+        }
+      },
+    }) : null
+  if (es2Audio) audio.setExternalScoreActive?.(true)
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = true
@@ -196,7 +213,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let ending = false
 
   function wakeAudio(): void {
-    audio.wake()
+    if (es2Audio) es2Audio.wakeFromGesture()
+    else audio.wake()
     ui.audioUnlocked = audio.unlocked
   }
 
@@ -252,6 +270,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
     audio.onScreen(name)
+    if (name === 'menu') es2Audio?.setScene('menu')
+    else if (name === 'play') es2Audio?.setScene('exploration')
     if (name !== 'play') {
       keys = {}
       stick = { x: 0, y: 0 }
@@ -350,6 +370,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     refreshMeta()
     screen('result')
+    es2Audio?.setScene(win ? 'victory' : 'defeat')
     audio.playSfx(win ? 'victory' : 'defeat')
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
     ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}` + saveWarning
@@ -538,7 +559,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
-      audio.setCombatIntensity(bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
+      const phase = bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
+      audio.setCombatIntensity(phase)
+      es2Audio?.setScene(phase === 'boss' ? 'boss' : phase === 'combat' ? 'combat' : 'exploration')
     }
     if (toastTimer > 0) {
       toastTimer -= dt
@@ -690,12 +713,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const onVisibility = (): void => {
       if (doc.hidden) {
         onBlur()
-        audio.interrupt()
+        if (es2Audio) es2Audio.interrupt()
+        else audio.interrupt()
       }
     }
     const onPageHide = (): void => {
       onBlur()
-      audio.interrupt()
+      if (es2Audio) es2Audio.interrupt()
+      else audio.interrupt()
     }
     const onPointerDown = (e: PointerEvent): void => {
       wakeAudio()
@@ -758,7 +783,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       frameDrawn++
       drawFrame(ctx, s, dpr, assets)
       if (s.hero && mini && frameDrawn % 7 === 0) drawMiniMap(mini, s, assets)
-      audio.tick(s.mode)
+      if (es2Audio) es2Audio.tick(s.mode)
+      else audio.tick(s.mode)
       raf = requestAnimationFrame(frame)
     }
     resizeRenderer = resize
@@ -773,6 +799,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       removeEventListener('resize', resize)
       unlisten()
       delete window.__test
+      es2Audio?.dispose()
       audio.dispose()
     }
   }
