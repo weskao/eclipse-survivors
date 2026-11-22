@@ -57,8 +57,8 @@ watch(() => props.active, async (active) => {
           <p class="settings-hint">升級時不會晃動背景；可選擇保留柔和淡入或完全靜止。</p>
           <div class="settings-option-label">技能升級畫面</div>
           <div class="settings-segments" role="group" aria-label="技能升級畫面效果">
-            <button id="settingsSoft" type="button" :aria-pressed="upgradeEffect === 'soft'" @click="emit('upgradeEffect', 'soft')">✧ 柔和淡入</button>
-            <button id="settingsStill" type="button" :aria-pressed="upgradeEffect === 'still'" @click="emit('upgradeEffect', 'still')">▣ 無動畫</button>
+            <button id="settingsSoft" type="button" :aria-pressed="upgradeEffect === 'soft'" @click="emit('upgradeEffect', 'soft')"><span class="settings-choice-icon" aria-hidden="true">✧</span><span class="settings-choice-copy"><strong>柔和淡入</strong><small>只顯示輕柔過場效果</small></span></button>
+            <button id="settingsStill" type="button" :aria-pressed="upgradeEffect === 'still'" @click="emit('upgradeEffect', 'still')"><span class="settings-choice-icon" aria-hidden="true">▣</span><span class="settings-choice-copy"><strong>無動畫</strong><small>靜止畫面，專注選擇</small></span></button>
           </div>
           <div class="settings-switch-row">
             <div><strong>戰鬥鏡頭震動</strong><small>戰鬥受到衝擊時的短暫回饋，不影響升級畫面</small></div>
