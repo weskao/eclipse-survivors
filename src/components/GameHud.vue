@@ -28,17 +28,17 @@ defineExpose({ minimap })
 <template>
   <div id="hud" :class="{ active }">
     <div class="top">
-      <div class="status">
+      <div class="status" :class="{ 'status-critical': hud.hpPct <= 25 }">
         <div class="hud-face" id="hudFace"><img :src="ART_URLS[choice]" :alt="choice" /></div>
         <b id="who">{{ hud.who }}</b>
-        <div class="bar"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>
+        <div id="hudHealthMeter" class="bar" role="progressbar" aria-label="生命值" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>
         <div class="sub" id="hpLabel">{{ hud.hpLabel }}</div>
-        <div class="bar exp"><i id="xpBar" :style="{ width: hud.xpPct + '%' }"></i></div>
+        <div id="hudExperienceMeter" class="bar exp" role="progressbar" aria-label="經驗值" :aria-valuenow="Math.max(0, Math.min(100, hud.xpPct))" aria-valuemin="0" aria-valuemax="100"><i id="xpBar" :style="{ width: hud.xpPct + '%' }"></i></div>
       </div>
       <div class="stats">
         <div class="chip" id="timer">{{ hud.timer }}</div>
         <div class="chip">☠ <span id="score">{{ hud.kill }}</span></div>
-        <div class="chip">
+        <div class="chip hud-actions" role="group" aria-label="遊戲快速操作">
           <AudioControl context="hud" compact :active="active && (audioActive ?? true)" :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')" @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)" />
           <SettingsButton compact @open="emit('settings')" />
           <button id="pauser" aria-label="暫停" aria-keyshortcuts="P" @click="emit('pause')">Ⅱ<kbd class="pause-shortcut" aria-hidden="true">P</kbd></button>
