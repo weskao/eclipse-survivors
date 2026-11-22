@@ -2,7 +2,7 @@ import type { RunStats } from '../../../meta/types'
 import {
   ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT,
   LEGACY_EVOLUTIONS, LEGACY_WEAPONS, isCosmeticId, isDiscoverableId,
-  type AchievementDef, type MilestoneDef, type Presentation, type UnlockDef,
+  type AchievementDef, type MilestoneDef, type Presentation, type ResearchDef, type UnlockDef,
 } from './catalog'
 import {
   cloneMetaState, MAX_DISCOVERIES, MAX_RUN_IDS, validateMetaState,
@@ -158,22 +158,49 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   return { accepted: true, state: next, rewards }
 }
 
+const researchReady = (state: MetaState, def: ResearchDef): boolean =>
+  (def.requires ?? []).every(req => (state.research[req.id] ?? 0) >= req.rank)
+
+/** UI can distinguish prerequisites, owned ranks, affordability and capped nodes. */
+export function getResearchStates(state: MetaState) {
+  return RESEARCH.map(def => {
+    const rank = state.research[def.id] ?? 0
+    const nextCost = rank >= def.maxRank ? null : def.firstCost + rank * def.costStep
+    const locked = !researchReady(state, def)
+    return { ...def, rank, nextCost, locked, unlocked: rank > 0, canBuy: !locked && nextCost !== null && state.embers >= nextCost }
+  })
+}
+
 export function buyResearch(state: MetaState, id: string): PurchaseResult {
   const def = RESEARCH.find(x => x.id === id)
   if (!def || !validateMetaState(state)) return { ok: false, state }
   const rank = state.research[id]
   const cost = def.firstCost + rank * def.costStep
-  if (rank >= def.maxRank || state.embers < cost) return { ok: false, state }
+  if (!researchReady(state, def) || rank >= def.maxRank || state.embers < cost) return { ok: false, state }
   const next = cloneMetaState(state)
   next.embers -= cost
   next.research[id]++
   return { ok: true, state: next }
 }
+const unlockReady = (state: MetaState, def: UnlockDef): boolean =>
+  (!def.masteryLevel || (state.mastery[def.hero ?? '']?.level ?? 0) >= def.masteryLevel)
+    && (!def.research || (state.research[def.research] ?? 0) >= 1)
+
+export const getEquipmentStates = (state: MetaState, hero: string) =>
+  STARTING_EQUIPMENT.filter(def => def.hero === hero).map(def => ({
+    ...def, unlocked: state.equipment.includes(def.id), locked: !unlockReady(state, def),
+    canBuy: unlockReady(state, def) && !state.equipment.includes(def.id) && state.embers >= def.cost,
+  }))
+export const getBonusStates = (state: MetaState) =>
+  STARTING_BONUSES.map(def => ({
+    ...def, unlocked: state.bonuses.includes(def.id), locked: !unlockReady(state, def),
+    canBuy: unlockReady(state, def) && !state.bonuses.includes(def.id) && state.embers >= def.cost,
+  }))
+
 function unlock(state: MetaState, id: string, defs: readonly UnlockDef[], field: 'equipment' | 'bonuses'): PurchaseResult {
   const def = defs.find(x => x.id === id)
   if (!def || !validateMetaState(state) || state[field].includes(id) || state.embers < def.cost
-    || (def.masteryLevel && (state.mastery[def.hero ?? '']?.level ?? 0) < def.masteryLevel)
-    || (def.research && (state.research[def.research] ?? 0) < 1)) return { ok: false, state }
+    || !unlockReady(state, def)) return { ok: false, state }
   const next = cloneMetaState(state)
   next.embers -= def.cost
   next[field].push(id)

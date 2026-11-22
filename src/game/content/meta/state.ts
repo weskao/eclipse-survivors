@@ -79,7 +79,9 @@ export function validateMetaState(raw: unknown): raw is MetaState {
     || !uniqueStrings(raw.bonuses, bonuses.length, fromIds(bonuses))
     || !uniqueStrings(raw.cosmetics, 1024, isCosmeticId)
     || !validKeys(research, RESEARCH.map(x => x.id))
-    || RESEARCH.some(def => !validTier(research[def.id], def.maxRank))) return false
+    || RESEARCH.some(def => !validTier(research[def.id], def.maxRank)
+      || ((research[def.id] as number) > 0
+        && (def.requires ?? []).some(req => (research[req.id] as number) < req.rank)))) return false
   for (const [id, value] of Object.entries(mastery)) {
     if (!(heroes.includes(id as JobId) || isDiscoverableId(id)) || !isObj(value)
       || !whole(value.xp, 10_000_000) || !whole(value.level, 1000) || value.level < 1) return false

@@ -94,7 +94,7 @@ describe('isolated permanent meta progression', () => {
     const initial = createMetaState()
     expect(getEquipmentStates(initial, 'knight').find(x => x.id === 'knight-aegis')?.locked).toBe(true)
     expect(getBonusStates(initial).find(x => x.id === 'ember-spark')?.locked).toBe(true)
-    const rich = { ...initial, embers: 2000, mastery: { ...initial.mastery, knight: { xp: 1000, level: 4 } }, research: { ...initial.research, insight: 1 } }
+    const rich = { ...initial, embers: 2000, mastery: { ...initial.mastery, knight: { xp: 1000, level: 4 } }, research: { ...initial.research, power: 1, insight: 1 } }
     const equip = unlockStartingEquipment(rich, 'knight-aegis').state
     const bonus = unlockStartingBonus(equip, 'ember-spark').state
     expect(getEquipmentStates(bonus, 'knight').find(x => x.id === 'knight-aegis')?.unlocked).toBe(true)
@@ -105,7 +105,7 @@ describe('isolated permanent meta progression', () => {
     const s = createMetaState()
     expect(unlockStartingEquipment(s, 'knight-aegis').ok).toBe(false)
     expect(unlockStartingBonus(s, 'ember-spark').ok).toBe(false)
-    const unlocked = { ...s, embers: 2000, mastery: { ...s.mastery, knight: { xp: 1000, level: 4 } }, research: { ...s.research, insight: 1 } }
+    const unlocked = { ...s, embers: 2000, mastery: { ...s.mastery, knight: { xp: 1000, level: 4 } }, research: { ...s.research, power: 1, insight: 1 } }
     const gear = unlockStartingEquipment(unlocked, 'knight-aegis')
     const bonus = unlockStartingBonus(gear.state, 'ember-spark')
     expect(gear.ok).toBe(true)
