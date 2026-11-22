@@ -99,7 +99,10 @@ describe('ES2 combat HUD', () => {
       },
       hud: { ...equipped, bossPct: 44 },
     })
-    expect(wrapper.get('[data-es2-boss]').text()).toContain('霜之王')
+    expect(wrapper.get('[data-es2-encounter] [data-es2-boss]').text()).toContain('霜之王')
+    expect(wrapper.get('[data-es2-encounter] [data-es2-wave]').text()).toContain('霜潮來襲')
+    expect(wrapper.get('[data-es2-information-rail] .es2-hud__objectives').exists()).toBe(true)
+    expect(wrapper.get('[data-es2-information-rail] .es2-hud__notices').exists()).toBe(true)
     expect(wrapper.get('[data-es2-boss]').text()).toContain('2 / 3')
     expect(wrapper.get('[data-es2-wave]').text()).toContain('霜潮來襲')
     expect(wrapper.get('[data-es2-combo]').text()).toContain('19')

@@ -106,36 +106,28 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
     </header>
-    <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss aria-label="首領生命">
-      <div class="es2-hud__boss-heading">
-        <span>☠ {{ view.boss.name }}</span>
-        <span v-if="view.boss.phase !== undefined" class="es2-hud__boss-phase">
-          PHASE {{ view.boss.phase }}<template v-if="view.boss.totalPhases !== undefined"> / {{ view.boss.totalPhases }}</template>
-        </span>
-      </div>
-      <div class="es2-hud__track es2-hud__track--boss" role="progressbar" aria-label="首領生命值"
-        :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100">
-        <span :style="{ width: view.boss.percent + '%' }"></span>
-      </div>
-    </section>
-    <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave aria-label="波次">
-      <span class="es2-hud__eyebrow">WAVE {{ view.wave.number }}</span>
-      <strong v-if="view.wave.announcement">{{ view.wave.announcement }}</strong>
-      <div v-if="view.wave.progressPct !== undefined" class="es2-hud__wave-track" role="progressbar" aria-label="波次進度"
-        :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100">
-        <span :style="{ width: view.wave.progressPct + '%' }"></span>
+    <div v-if="view.boss || view.wave" class="es2-hud__encounter" data-es2-encounter>
+      <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss aria-label="首領生命">
+        <div class="es2-hud__boss-heading">
+          <span>☠ {{ view.boss.name }}</span>
+          <span v-if="view.boss.phase !== undefined" class="es2-hud__boss-phase">
+            PHASE {{ view.boss.phase }}<template v-if="view.boss.totalPhases !== undefined"> / {{ view.boss.totalPhases }}</template>
+          </span>
+        </div>
+        <div class="es2-hud__track es2-hud__track--boss" role="progressbar" aria-label="首領生命值"
+          :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100">
+          <span :style="{ width: view.boss.percent + '%' }"></span>
+        </div>
+      </section>
+      <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave aria-label="波次">
+        <span class="es2-hud__eyebrow">WAVE {{ view.wave.number }}</span>
+        <strong v-if="view.wave.announcement">{{ view.wave.announcement }}</strong>
+        <div v-if="view.wave.progressPct !== undefined" class="es2-hud__wave-track" role="progressbar" aria-label="波次進度"
+          :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100">
+          <span :style="{ width: view.wave.progressPct + '%' }"></span>
+        </div>
       </div>
     </div>
-    <section v-if="view.objective || view.objectives.length" class="es2-hud__objectives es2-hud__plate" aria-label="任務目標">
-      <div class="es2-hud__section-label"><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-quest']" alt="" />目前目標</div>
-      <p v-if="view.objective">{{ view.objective }}</p>
-      <ul v-if="view.objectives.length">
-        <li v-for="item in view.objectives" :key="item.id" :class="{ 'es2-hud__complete': item.complete }">
-          <span>{{ item.complete ? '✓' : '◇' }} {{ item.title }}</span>
-          <span v-if="item.progress !== undefined && item.target !== undefined">{{ item.progress }}/{{ item.target }}</span>
-        </li>
-      </ul>
-    </section>
     <section v-if="view.statuses.length" class="es2-hud__statuses es2-hud__plate" aria-label="暫時效果">
       <span v-for="status in view.statuses" :key="status.id" :data-es2-status="status.id"
         class="es2-hud__status" :class="'es2-hud__status--' + status.kind"
@@ -145,10 +137,24 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         <small v-if="status.remainingSeconds !== undefined">{{ status.remainingSeconds.toFixed(1) }}s</small>
       </span>
     </section>
-    <section v-if="view.notices.length" class="es2-hud__notices" aria-label="戰鬥通知">
-      <div v-for="notice in view.notices" :key="notice.id" class="es2-hud__notice"
-        :class="'es2-hud__notice--' + notice.kind">{{ notice.text }}</div>
-    </section>
+    <div v-if="$slots['mode-progress'] || view.objective || view.objectives.length || view.notices.length"
+      class="es2-hud__side" data-es2-information-rail>
+      <div v-if="$slots['mode-progress']" class="es2-hud__mode-progress"><slot name="mode-progress" /></div>
+      <section v-if="view.objective || view.objectives.length" class="es2-hud__objectives es2-hud__plate" aria-label="任務目標">
+        <div class="es2-hud__section-label"><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-quest']" alt="" />目前目標</div>
+        <p v-if="view.objective">{{ view.objective }}</p>
+        <ul v-if="view.objectives.length">
+          <li v-for="item in view.objectives" :key="item.id" :class="{ 'es2-hud__complete': item.complete }">
+            <span>{{ item.complete ? '✓' : '◇' }} {{ item.title }}</span>
+            <span v-if="item.progress !== undefined && item.target !== undefined">{{ item.progress }}/{{ item.target }}</span>
+          </li>
+        </ul>
+      </section>
+      <section v-if="view.notices.length" class="es2-hud__notices" aria-label="戰鬥通知">
+        <div v-for="notice in view.notices" :key="notice.id" class="es2-hud__notice"
+          :class="'es2-hud__notice--' + notice.kind">{{ notice.text }}</div>
+      </section>
+    </div>
     <footer class="es2-hud__bottom">
       <div v-if="view.relics.length" class="es2-hud__relics es2-hud__plate" aria-label="已裝備遺物">
         <span class="es2-hud__eyebrow">RELICS</span>
@@ -212,23 +218,6 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
 .es2-hud__relic-stack {
   position: absolute; right: 0; bottom: 0; padding: 0 2px;
   border-radius: 3px; background: #070b13e8; color: #fff4d1; font: 700 10px/1.25 system-ui;
-}
-@media (max-width: 700px) {
-  .es2-hud__objectives {
-    top: max(250px, calc(env(safe-area-inset-top) + 245px));
-    left: max(8px, env(safe-area-inset-left)); right: auto;
-    width: min(45vw, 205px); max-height: 21vh;
-  }
-  .es2-hud__statuses {
-    top: max(250px, calc(env(safe-area-inset-top) + 245px));
-    right: max(8px, env(safe-area-inset-right)); left: auto;
-    max-width: 45vw; max-height: 21vh; overflow-y: auto;
-  }
-  .es2-hud__notices {
-    right: max(8px, env(safe-area-inset-right));
-    bottom: max(155px, calc(env(safe-area-inset-bottom) + 145px));
-    max-width: 50vw;
-  }
 }
 .es2-world-hud-icon{width:15px;height:15px;object-fit:contain;vertical-align:middle;margin-right:4px}
 .es2-hud__cooldown-icon{position:absolute;right:2px;top:2px;width:15px;height:15px;object-fit:contain;pointer-events:none;z-index:2}
