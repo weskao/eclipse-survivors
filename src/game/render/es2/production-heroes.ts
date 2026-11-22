@@ -4,6 +4,9 @@ import type { Ctx2D } from '../ctx'
 import shadowblade from '../../../assets/es2/production/heroes/shadowblade-8dir@3x.webp'
 import summoner from '../../../assets/es2/production/heroes/spirit-summoner-8dir@3x.webp'
 import paladin from '../../../assets/es2/production/heroes/crimson-paladin-8dir@3x.webp'
+import shadowAction from '../../../assets/es2/production/heroes/shadowblade-run-attack@3x.webp'
+import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-run-attack@3x.webp'
+import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-run-attack@3x.webp'
 
 /**
  * Original authoring grid cut into 32 isolated 128px cells per hero.
@@ -16,16 +19,37 @@ export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>>
   'crimson-paladin': paladin,
 })
 
+/** Separate authored 8-frame right-facing motion strip for each existing 8-direction hero. */
+export const PRODUCTION_HERO_ACTION_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
+  shadowblade: shadowAction,
+  'spirit-summoner': summonerAction,
+  'crimson-paladin': paladinAction,
+})
+
+type AtlasWithAction = HTMLImageElement & { actionStrip?: HTMLImageElement }
 export type ProductionHeroArtwork = Record<SpecializationId, HTMLImageElement>
 
 export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => new Image()): ProductionHeroArtwork {
   const result = {} as ProductionHeroArtwork
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {
-    const image = makeImage()
+    const image = makeImage() as AtlasWithAction
     image.src = PRODUCTION_HERO_SOURCES[id]
+    const action = makeImage()
+    action.src = PRODUCTION_HERO_ACTION_SOURCES[id]
+    image.actionStrip = action
     result[id] = image
   }
   return result
+}
+
+/** Exact 448px action-strip indexing, never read from a neighbor cell. */
+export function productionHeroActionFrame(anim: HeroAnimation): number {
+  if (anim.reducedMotion) return 0
+  if (anim.pose === 'run' || anim.pose === 'dash')
+    return Math.abs(Math.floor(anim.frame)) % 3
+  if (anim.pose === 'attack' || anim.pose === 'cast')
+    return 3 + Math.min(4, Math.floor(Math.max(0, Math.min(0.9999, anim.phase)) * 5))
+  return 0
 }
 
 /** Legacy 4×96-pixel strips remain supported for existing fallback tests and consumers. */
@@ -75,6 +99,21 @@ export function drawProductionHeroFrame(
 ): boolean {
   if (!image.complete) return false
   if (image.naturalWidth === 1024 && image.naturalHeight === 512) {
+    // Keep the legacy authored eight directions for every view except E, where
+    // an independently illustrated, high-detail 8-frame run/attack sequence
+    // can be shown. The new strip is single-direction: never pretend it is 8-way.
+    const action = (image as AtlasWithAction).actionStrip
+    const octant = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+    const acting = anim.pose === 'run' || anim.pose === 'dash' || anim.pose === 'attack' || anim.pose === 'cast'
+    if (!anim.reducedMotion && octant === 0 && acting
+      && action?.complete && action.naturalWidth === 3584 && action.naturalHeight === 448) {
+      const frame = productionHeroActionFrame(anim)
+      const paintedWidth = width * 1.3
+      const paintedHeight = height * 1.25
+      ctx.drawImage(action, frame * 448, 0, 448, 448,
+        -paintedWidth / 2, 4 - paintedHeight, paintedWidth, paintedHeight)
+      return true
+    }
     const r = productionHeroDirectionRect(anim)
     if (!r) return false
     // The authored body occupies only the middle ~50px of each 128px cell.

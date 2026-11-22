@@ -3,9 +3,9 @@ import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
 import HeroPortrait from './HeroPortrait.vue'
 import type { JobId } from '../../../game/types'
-import shadowAction from '../../../assets/es2/production/heroes/shadowblade-action@3x.webp'
-import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-action@3x.webp'
-import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-action@3x.webp'
+import shadowAction from '../../../assets/es2/production/heroes/shadowblade-run-attack@3x.webp'
+import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-run-attack@3x.webp'
+import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-run-attack@3x.webp'
 
 const props = withDefaults(defineProps<{
   selectedId?: SpecializationId | JobId | null
