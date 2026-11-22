@@ -23,12 +23,19 @@ export interface WaveEngineOptions {
   readonly onWaveCleared?: (index: number) => void
 }
 
+export interface WaveEngineAdvanceOptions {
+  readonly canSpawnAt?: WaveFrame['canSpawnAt']
+  readonly pendingActors?: number
+  /** Actual pickup counter from the Relic Hunt objective reducer. */
+  readonly completedRelics?: number
+}
+
 export interface WaveEngineAdapter {
   readonly clearedWaves: number
   readonly defeatedBosses: number
   advance(
     state: GameState,
-    options?: { readonly canSpawnAt?: WaveFrame['canSpawnAt']; readonly pendingActors?: number },
+    options?: WaveEngineAdvanceOptions,
   ): WaveDecision | null
   /** Call after a finalized kill; unrelated, duplicate or living actors are ignored. */
   killed(mob: Mob): boolean
@@ -37,7 +44,7 @@ export interface WaveEngineAdapter {
 
 export function createWaveEngineAdapter(options: WaveEngineOptions): WaveEngineAdapter {
   const director = createWaveDirector(options)
-  let waveActors = new Set<Mob>()
+  const waveActors = new Set<Mob>()
   let bossActor: Mob | null = null
   let clearedWaves = 0
   let defeatedBosses = 0
@@ -45,14 +52,13 @@ export function createWaveEngineAdapter(options: WaveEngineOptions): WaveEngineA
   function reset(): void {
     director.reset()
     waveActors.clear()
-    waveActors = new Set<Mob>()
     bossActor = null
     clearedWaves = 0
     defeatedBosses = 0
   }
 
   function killed(mob: Mob): boolean {
-    if (mob.hp > 0) return false
+    if (!Number.isFinite(mob.hp) || mob.hp > 0) return false
     if (mob === bossActor) {
       bossActor = null
       defeatedBosses++
@@ -68,7 +74,7 @@ export function createWaveEngineAdapter(options: WaveEngineOptions): WaveEngineA
 
   function advance(
     state: GameState,
-    input: { readonly canSpawnAt?: WaveFrame['canSpawnAt']; readonly pendingActors?: number } = {},
+    input: WaveEngineAdvanceOptions = {},
   ): WaveDecision | null {
     const hero = state.hero
     if (!hero || state.mode !== 'play' || hero.hp <= 0) return null
@@ -86,6 +92,7 @@ export function createWaveEngineAdapter(options: WaveEngineOptions): WaveEngineA
       bossActive: state.mobs.some(m => m.type === 'boss' && m.hp > 0),
       completedBosses: defeatedBosses,
       completedWaves: clearedWaves,
+      completedRelics: input.completedRelics,
       activeWave: waveActors.size > 0,
       pendingActors: input.pendingActors,
       canSpawnAt: input.canSpawnAt,
@@ -94,28 +101,37 @@ export function createWaveEngineAdapter(options: WaveEngineOptions): WaveEngineA
     const spawns: SpawnRequest[] = []
     let acceptedBoss = false
     let acceptedWave = false
-    for (const request of plan.spawns) {
-      // Check live array before each callback; other systems share the same cap.
-      if (state.mobs.length + (input.pendingActors ?? 0) >= MAX_MOBS) break
-      const before = state.mobs.length
-      const mob = options.spawn(state, request)
-      if (mob && (state.mobs.length !== before + 1 || !state.mobs.includes(mob))) {
-        throw new Error('Wave spawn callback must insert exactly one returned actor')
+    try {
+      for (const request of plan.spawns) {
+        // Check live array before each callback; other systems share the same cap.
+        if (state.mobs.length + (input.pendingActors ?? 0) >= MAX_MOBS) break
+        const before = state.mobs.length
+        const mob = options.spawn(state, request)
+        if (mob && (state.mobs.length !== before + 1 || !state.mobs.includes(mob) ||
+            !Number.isFinite(mob.hp) || mob.hp <= 0)) {
+          throw new Error('Wave spawn callback must insert exactly one living returned actor')
+        }
+        if (state.mobs.length > MAX_MOBS) throw new Error('Shared actor cap exceeded')
+        if (!mob) {
+          if (state.mobs.length !== before) throw new Error('Rejected wave spawn changed actor count')
+          continue
+        }
+        spawns.push(request)
+        if (request.role === 'boss') {
+          acceptedBoss = true
+          bossActor = mob
+        }
+        if (request.waveIndex !== undefined) {
+          acceptedWave = true
+          waveActors.add(mob)
+        }
       }
-      if (state.mobs.length > MAX_MOBS) throw new Error('Shared actor cap exceeded')
-      if (!mob) {
-        if (state.mobs.length !== before) throw new Error('Rejected wave spawn changed actor count')
-        continue
-      }
-      spawns.push(request)
-      if (request.role === 'boss') {
-        acceptedBoss = true
-        bossActor = mob
-      }
-      if (request.waveIndex !== undefined) {
-        acceptedWave = true
-        waveActors.add(mob)
-      }
+    } catch (error) {
+      // A failing callback must not permanently consume an unaccepted encounter.
+      const boss = plan.spawns.find(req => req.role === 'boss')
+      if (boss && !acceptedBoss) director.retryBoss(boss.encounterIndex ?? 1)
+      if (plan.waveIndex !== undefined && !acceptedWave) director.retryWave(plan.waveIndex)
+      throw error
     }
     const boss = plan.spawns.find(s => s.role === 'boss')
     if (boss && !acceptedBoss) director.retryBoss(boss.encounterIndex ?? 1)
