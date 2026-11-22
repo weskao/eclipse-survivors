@@ -4,6 +4,7 @@ import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DURATION } from './constants'
 import type { GameHooks, GameState, Hero, Mob } from './types'
+import type { FactionBridge } from './content/enemies/integration'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
 export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
@@ -65,13 +66,20 @@ export function dash(s: GameState, hooks: GameHooks): void {
   hooks.sfx('dash')
 }
 
-export function attack(s: GameState, hooks: GameHooks): void {
+export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge): void {
   const hero = s.hero
-  if (!hero || !s.mobs.length) return
+  if (!hero || (!s.mobs.length && !factions?.runtime.enemies.length)) return
   const choice = s.choice
   const close = nearestAlive(s.mobs, hero)
-  const target = close[0]
-  if (!target || dist(target.x - hero.x, target.y - hero.y) > hero.range + target.r) return
+  const legacy = close[0]
+  const faction = factions?.nearestFaction(hero.x, hero.y, hero.range + 64)
+  const useFaction = !!faction && (!legacy ||
+    dist(faction.x - hero.x, faction.y - hero.y) - faction.radius <
+    dist(legacy.x - hero.x, legacy.y - hero.y) - legacy.r)
+  const target = useFaction ? faction : legacy
+  if (!target) return
+  const targetRadius = 'radius' in target ? target.radius : target.r
+  if (dist(target.x - hero.x, target.y - hero.y) > hero.range + targetRadius) return
   const multi = Math.min(1 + (hero.skills.multi ?? 0), 4)
   const angle = Math.atan2(target.y - hero.y, target.x - hero.x)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
@@ -86,6 +94,16 @@ export function attack(s: GameState, hooks: GameHooks): void {
         const r = dist(e.x - hero.x, e.y - hero.y)
         const d = Math.atan2(e.y - hero.y, e.x - hero.x)
         if (r < hero.range + e.r && Math.cos(d - a) > 0.71) hit(s, e, hero.damage, hooks)
+      }
+      // The authored faction pool is separate from the legacy Mob array.
+      // Reuse its authoritative damage/reward bridge, never a fake Mob copy.
+      for (const e of factions?.factionsInRadius(hero.x, hero.y, hero.range + 35) ?? []) {
+        const r = dist(e.x - hero.x, e.y - hero.y)
+        const d = Math.atan2(e.y - hero.y, e.x - hero.x)
+        if (r < hero.range + e.radius && Math.cos(d - a) > 0.71) {
+          const damage = hooks.modifyOutgoingDamage?.(hero.damage) ?? hero.damage
+          factions!.hitFaction(s, e, damage, hero.x, hero.y, hooks)
+        }
       }
     }
     hooks.sfx('knight')
