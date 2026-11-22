@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createHero, createState } from '../state'
-import type { JobId } from '../types'
 import { sampleHeroAnimation } from './animation'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
 import { createRigidWeaponLayers, drawRigidWeapon } from './rigid-weapons'
@@ -78,7 +77,7 @@ describe('articulated-body and equipment integration', () => {
     // The deformable grid receives ONLY weapon-erased body art.
     expect(draw.mock.calls.filter(args => args[0] === layers.body && args.length === 9)).toHaveLength(96)
     // Every original weapon pixel moves as one rigid image; the uniform scale preserves the source ratio.
-    expect(draw.mock.calls.filter(args => args[0] === layers.weapon && args.length === 5)).toHaveLength(1)
+    expect(draw.mock.calls.filter(args => args[0] === layers.weapon && Array.from(args).length === 5)).toHaveLength(1)
     expect(draw.mock.calls.some(args => args[0] === source)).toBe(false)
   })
 })
