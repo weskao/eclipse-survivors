@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "status": "concept-only",
+  "scaleTarget": 3,
+  "assets": [
+    {
+      "id": "es2-art:concept-01",
+      "path": "concept-icons/concept-01@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "00b5908339ba906e1cc57c4fdeb7b9b3f0735bffaf689eb5af1c135f4d6ef565",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-02",
+      "path": "concept-icons/concept-02@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "bc32f9fce9e31d4d2d0699782d265fadc0e6613f462663fa363e4f303f41c04e",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-03",
+      "path": "concept-icons/concept-03@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "1d6b26f8972ba5782ac3f24b808bf7c6ee4eb299b5e21920850c2954ee89bfe1",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-04",
+      "path": "concept-icons/concept-04@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "58be4603e00866a2bd7b9336af15eb475041483c256f4bc9dcdb1c939894586c",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-05",
+      "path": "concept-icons/concept-05@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "b4be6f4d974392f75d1bf534c9b657dba1833e21945dbb619ec57afb1f11e0b6",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-06",
+      "path": "concept-icons/concept-06@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "491c7aecfcd409e2a64250314c39577e58156d0af004f86ca173f173ad6802a2",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-07",
+      "path": "concept-icons/concept-07@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "22f19d5d5417236cc4a355ddb13779c5da005723f25352f9eb2678d17d81b316",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-08",
+      "path": "concept-icons/concept-08@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "ce955529aa982cffbb46bf91c29ee08b792d3e21bef4047dc0413d0266b2577e",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-09",
+      "path": "concept-icons/concept-09@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "54d7cdf9209cd7b7390ef48375da781f85b231033477ec70aab0d8a7aff11e41",
+      "review": "pending"
+    },
+    {
+      "id": "es2-art:concept-10",
+      "path": "concept-icons/concept-10@3x.webp",
+      "format": "webp",
+      "width": 256,
+      "height": 256,
+      "transparent": true,
+      "sha256": "cf37fc3a97d1f882caf6d1f6d4fafd4da3440e44653aab3fc83758811e1d5126",
+      "review": "pending"
+    }
+  ],
+  "canonicalContentIds": {
+    "weapons": [
+      "weapons:shadow-daggers",
+      "weapons:holy-lance",
+      "weapons:blood-scythe",
+      "weapons:arcane-mines",
+      "weapons:bone-spears",
+      "weapons:poison-cloud",
+      "weapons:ricochet-blades",
+      "weapons:spirit-wolves",
+      "weapons:solar-beam",
+      "weapons:gravity-orbs",
+      "weapons:spectral-bow",
+      "weapons:thorn-chain"
+    ],
+    "evolutions": [
+      "evolution2:nightfall-torrent",
+      "evolution2:dawn-judgment",
+      "evolution2:crimson-reaper",
+      "evolution2:singularity-minefield",
+      "evolution2:toxic-permafrost",
+      "evolution2:infinite-rebound",
+      "evolution2:wild-hunt",
+      "evolution2:solar-tempest",
+      "evolution2:celestial-collapse",
+      "evolution2:spectral-volley",
+      "evolution2:bonefire-barrage",
+      "evolution2:verdant-snare"
+    ]
+  }
+}
