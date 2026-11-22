@@ -51,7 +51,7 @@ describe('weapon arsenal pack registration and compatibility', () => {
       expect(ability.icon).toBeTruthy()
     }
     expect(registry.packs[0]?.effects?.length).toBeGreaterThan(0)
-    expect(CONTENT_PACKS).toHaveLength(0)
+    expect(CONTENT_PACKS.map(pack => pack.id)).toContain('weapons')
     expect(UP).toHaveLength(15)
   })
 
