@@ -5,11 +5,11 @@ import heroCombatAtlasUrl from '../../assets/hero-combat-atlas.webp'
 
 /**
  * Real, manually composited RGBA art, not skinned pixels from a static portrait.
- * Atlas layout: 4 columns x (3 rows per hero), 48x60 source pixels per cell.
+ * Atlas layout: 4 columns x (3 rows per hero), 64x80 source pixels per cell.
  * The art contains twelve full-body action poses for each playable character.
  */
-const WIDTH = 32
-const HEIGHT = 40
+const WIDTH = 64
+const HEIGHT = 80
 const COLUMNS = 4
 const FRAMES = 12
 const ROWS_PER_HERO = 3
