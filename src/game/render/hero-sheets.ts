@@ -74,3 +74,5 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
     },
   }
 }
+
+export type HeroSheets = ReturnType<typeof createHeroSheets>
