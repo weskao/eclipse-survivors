@@ -475,8 +475,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     chooseUpgrade,
     togglePause,
     dash: () => heroDash(s, hooks),
-    toggleMusic() { ui.musicOn = audio.toggleMusic(s.mode) },
-    toggleSfx() { ui.sfxOn = audio.toggleSfx() },
+    toggleMusic() {
+      ui.musicOn = audio.toggleMusic(s.mode)
+      ui.musicVolume = audio.musicVolume
+    },
+    toggleSfx() {
+      ui.sfxOn = audio.toggleSfx()
+      ui.sfxVolume = audio.sfxVolume
+    },
     setMusicVolume(value) { audio.setMusicVolume(value); ui.musicVolume = audio.musicVolume },
     setSfxVolume(value) { audio.setSfxVolume(value); ui.sfxVolume = audio.sfxVolume },
     setUpgradeEffect(effect) {
