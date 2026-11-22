@@ -72,10 +72,10 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
           </div>
         </div>
         <nav class="es2-hud__controls es2-hud__plate" aria-label="戰鬥操作">
-          <AudioControl v-if="actions.toggleMusic && actions.toggleSfx && actions.setMusicVolume && actions.setSfxVolume && musicOn !== undefined && sfxOn !== undefined"
+          <AudioControl v-if="actions.toggleMusic && actions.toggleSfx && actions.setMusicVolume && actions.setSfxVolume && musicOn !== undefined && sfxOn !== undefined && musicVolume !== undefined && sfxVolume !== undefined"
             context="hud" compact :active="active && (audioActive ?? true)"
             :music-on="musicOn ?? false" :sfx-on="sfxOn ?? false"
-            :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100"
+            :music-volume="musicVolume!" :sfx-volume="sfxVolume!"
             @toggle-music="actions.toggleMusic?.()" @toggle-sfx="actions.toggleSfx?.()"
             @music-volume="actions.setMusicVolume?.($event)" @sfx-volume="actions.setSfxVolume?.($event)" />
           <button type="button" data-es2-settings aria-label="開啟設定" title="設定" @click="actions.settings()">⚙</button>
