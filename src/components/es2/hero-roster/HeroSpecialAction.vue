@@ -33,6 +33,8 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
     <button type="button" class="es2-hero-special__button" data-hero-special
       aria-keyshortcuts="Q" :aria-label="hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒')"
       :disabled="!ready" @click="trigger">
+      <img data-hero-special-icon class="es2-hero-special__icon" :src="hero.specialIconSrc" alt=""
+        width="44" height="44" decoding="async" draggable="false" />
       <span class="es2-hero-special__name">{{ hero.special.split('：')[0] }}</span>
       <span class="es2-hero-special__hint">{{ ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放' }}</span>
       <span class="es2-hero-special__fill" aria-hidden="true" :style="{ width: progress + '%' }"></span>
@@ -47,10 +49,19 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special { position: fixed; right: max(112px, calc(18px + env(safe-area-inset-right))); bottom: calc(26px + env(safe-area-inset-bottom)); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; color: #f7dfb9; }
 @media (max-width: 760px) { .es2-hero-special { right: max(104px, calc(12px + env(safe-area-inset-right))); bottom: calc(24px + env(safe-area-inset-bottom)); } }
 @media (max-height: 440px) { .es2-hero-special { bottom: max(5px, env(safe-area-inset-bottom)); } }
-.es2-hero-special__button { position: relative; overflow: hidden; min-width: 112px; min-height: 58px; border: 2px solid #daa676; border-radius: 12px; background: #2c1831; color: #fff2d8; font: inherit; font-weight: 700; cursor: pointer; touch-action: manipulation; padding: .55rem .9rem; display: grid; gap: .15rem; }
+.es2-hero-special__button { position: relative; overflow: hidden; min-width: 160px; min-height: 62px; border: 2px solid #daa676; border-radius: 12px; background: #2c1831; color: #fff2d8; font: inherit; font-weight: 700; cursor: pointer; touch-action: manipulation; padding: .4rem .65rem; display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: .5rem; align-items: center; }
 .es2-hero-special__button:focus-visible { outline: 3px solid #ffe4a9; outline-offset: 3px; }
 .es2-hero-special__button:disabled { opacity: .7; cursor: not-allowed; }
-.es2-hero-special__name, .es2-hero-special__hint { position: relative; z-index: 1; }
+.es2-hero-special__icon { grid-column: 1; grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 8px; object-fit: contain; position: relative; z-index: 1; }
+.es2-hero-special__name, .es2-hero-special__hint { position: relative; z-index: 1; grid-column: 2; }
+.es2-hero-special__name { grid-row: 1; }
+.es2-hero-special__hint { grid-row: 2; }
+@media (max-width: 760px) {
+  .es2-hero-special__button { min-width: 66px; width: 66px; min-height: 66px; grid-template-columns: 1fr; grid-template-rows: 44px auto; justify-items: center; padding: .25rem; }
+  .es2-hero-special__icon { grid-column: 1; grid-row: 1; }
+  .es2-hero-special__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .es2-hero-special__hint { grid-column: 1; grid-row: 2; font-size: .64rem; line-height: 1; }
+}
 .es2-hero-special__hint { font-size: .77rem; font-weight: 500; }
 .es2-hero-special__fill { position: absolute; inset: auto auto 0 0; height: 5px; background: #df5979; transition: width .1s linear; }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }

@@ -49,7 +49,12 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
         <span class="es2-roster__description">{{ hero.description }}</span>
         <span class="es2-roster__stats">生命 {{ hero.stats.hp }} · 攻擊 {{ hero.stats.damage }} · 速度 {{ hero.stats.speed }}</span>
         <span class="es2-roster__gear">起始武器 · {{ hero.startingEquipment }}</span>
-        <span class="es2-roster__skill">主動技能 · {{ hero.special }}（冷卻 {{ hero.specialCooldown }} 秒）</span>
+        <span class="es2-roster__skill">
+          <img data-hero-skill-icon class="es2-roster__skill-icon" :src="hero.specialIconSrc"
+            :alt="hero.label + ' 主動技能圖示'" width="44" height="44"
+            loading="lazy" decoding="async" draggable="false" />
+          <span>主動技能 · {{ hero.special }}（冷卻 {{ hero.specialCooldown }} 秒）</span>
+        </span>
         <span class="es2-roster__traits">優勢 · {{ hero.strengths.join(' / ') }}</span>
         <span class="es2-roster__traits">弱點 · {{ hero.weaknesses.join(' / ') }}</span>
         <span class="es2-roster__selection">{{ selectedId === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span>
@@ -68,6 +73,8 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 .es2-roster__copy strong { font-size: 1.1rem; }
 .es2-roster__subtitle, .es2-roster__traits { color: #cebeb6; font-size: .8rem; }
 .es2-roster__description, .es2-roster__skill { font-size: .86rem; line-height: 1.45; }
+.es2-roster__skill { display: flex; align-items: center; gap: .65rem; }
+.es2-roster__skill-icon { width: 44px; height: 44px; flex: 0 0 44px; object-fit: contain; border-radius: 8px; background: #100f20; }
 .es2-roster__stats, .es2-roster__gear { color: #edc58e; font-size: .83rem; }
 .es2-roster__selection { padding-top: .55rem; font-weight: 700; }
 @media (max-width: 760px) { .es2-roster { grid-template-columns: 1fr; } .es2-roster__portrait { height: 180px; } }
