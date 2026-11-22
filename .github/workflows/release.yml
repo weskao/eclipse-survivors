@@ -118,17 +118,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          current=$(git rev-parse HEAD)
-          remote=$(git ls-remote origin refs/heads/main | cut -f1)
-          if [ "$current" != "$GITHUB_SHA" ] || [ "$remote" != "$GITHUB_SHA" ]; then
-            echo '::error::main moved while deploying; release the newer commit instead.'
-            exit 1
-          fi
           version=$(node -p "require('./package.json').version")
           tag="v$version"
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Existing release $tag; no duplicate."
             exit 0
+          fi
+          current=$(git rev-parse HEAD)
+          remote=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$current" != "$GITHUB_SHA" ] || [ "$remote" != "$GITHUB_SHA" ]; then
+            echo '::error::main moved while deploying; release the newer commit instead.'
+            exit 1
           fi
           if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
             echo "::error::Tag $tag exists without a release. Inspect manually."

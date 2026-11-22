@@ -66,6 +66,11 @@ export interface UiState {
   choice: JobId
   musicOn: boolean
   sfxOn: boolean
+  musicVolume: number
+  sfxVolume: number
+  settingsOpen: boolean
+  upgradeEffect: 'soft' | 'still'
+  cameraShake: boolean
   hud: HudView
   upgrades: readonly UpgradeDef[]
   toastText: string
@@ -94,6 +99,12 @@ export interface GameCommands {
   dash(): void
   toggleMusic(): void
   toggleSfx(): void
+  setMusicVolume(value: number): void
+  setSfxVolume(value: number): void
+  setUpgradeEffect(effect: 'soft' | 'still'): void
+  setCameraShake(enabled: boolean): void
+  openSettings(): void
+  closeSettings(): void
   /** `#home` / `#leave`: back to the menu. */
   goMenu(): void
   /** Joystick input in normalised units (see `stickVector`); `null` releases the stick. */

@@ -279,3 +279,39 @@
     background-image:url('./assets/ui/skill-art-atlas@3x-animated.webp');
   }
 }
+
+/* Desktop-only keyboard affordance: sits at the pause control's lower-right edge. */
+#hud #pauser{position:relative;isolation:isolate}
+#hud #pauser .pause-shortcut{
+  display:none;
+  position:absolute;
+  right:-9px;
+  bottom:-10px;
+  box-sizing:border-box;
+  min-width:17px;
+  height:17px;
+  padding:0 3px;
+  align-items:center;
+  justify-content:center;
+  color:#fff1c9;
+  background:linear-gradient(145deg,#384453,#161d29);
+  border:1px solid #dec18b;
+  border-radius:4px;
+  box-shadow:0 2px 6px #000a,inset 0 1px 0 #ffffff30;
+  font:700 10px/1 system-ui,sans-serif;
+  letter-spacing:0;
+  pointer-events:none;
+}
+@media (hover: hover) and (pointer: fine){
+  #hud #pauser .pause-shortcut{display:flex}
+}
+
+/* The upgrade picker is a calm decision moment: no camera-like UI motion. */
+@keyframes level-soft-reveal{from{opacity:0}to{opacity:1}}
+#level.overlay.active .panel{animation:level-soft-reveal .32s ease-out both}
+#level .upgrade{animation:level-soft-reveal .38s ease-out both;transition:border-color .2s ease,box-shadow .2s ease,filter .2s ease}
+#level .upgrade.legendary{animation:level-soft-reveal .38s ease-out both,eclipse-legendary-breathe 3.8s ease-in-out infinite 1s}
+#level .upgrade:hover,#level .upgrade:focus-visible,#level .upgrade:active{transform:none}
+@media(prefers-reduced-motion:reduce){
+  #level.overlay.active .panel,#level .upgrade,#level .upgrade.legendary{animation:none!important;transition:none!important}
+}

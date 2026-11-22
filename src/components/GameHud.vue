@@ -2,6 +2,7 @@
 import { hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
+import SettingsButton from './SettingsButton.vue'
 import type { HudView } from '../game/store'
 import type { JobId } from '../game/types'
 
@@ -14,7 +15,7 @@ defineProps<{
   toastText: string
   toastVisible: boolean
 }>()
-const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; pause: [] }>()
+const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; pause: []; settings: [] }>()
 
 const minimap = shallowRef<HTMLCanvasElement | null>(null)
 defineExpose({ minimap })
@@ -36,7 +37,8 @@ defineExpose({ minimap })
         <div class="chip">
           <button id="music" aria-label="音樂切換" :aria-pressed="musicOn" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
           <button id="sfx" aria-label="音效切換" :aria-pressed="sfxOn" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
-          <button id="pauser" aria-label="暫停" @click="emit('pause')">Ⅱ</button>
+          <SettingsButton compact @open="emit('settings')" />
+          <button id="pauser" aria-label="暫停" aria-keyshortcuts="P" @click="emit('pause')">Ⅱ<kbd class="pause-shortcut" aria-hidden="true">P</kbd></button>
         </div>
       </div>
     </div>

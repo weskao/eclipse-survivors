@@ -22,6 +22,11 @@ export interface AudioSystem {
   readonly unlocked: boolean
   readonly musicOn: boolean
   readonly sfxOn: boolean
+  /** User volume preferences from 0 to 100; mute switches remain independent. */
+  readonly musicVolume: number
+  readonly sfxVolume: number
+  setMusicVolume(volume: number): void
+  setSfxVolume(volume: number): void
   /** Original `wakeAudio()`: lazily create + resume the AudioContext. */
   wake(): void
   /** Suspend playback on focus, visibility and operating-system interruptions. */
