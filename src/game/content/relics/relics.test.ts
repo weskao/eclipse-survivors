@@ -188,3 +188,17 @@ it('registers ContentPack without unsupported fields, cleans per-run inventory o
   expect(inventorySnapshot(s).pending).toBeNull()
   expect(hasRelic(s,'relics:vampire-fang')).toBe(false)
 })
+
+
+it('emits chest/reward feedback once and never for replayed treasure', () => {
+  const state = setup()
+  const cues: string[] = []
+  const emit = (cue: string) => { cues.push(cue) }
+  const offer = openTreasure(state, 1, seeded(9), emit)!
+  expect(cues).toEqual([RELIC_CUES.chestOpen])
+  expect(claimTreasure(state, 1, offer.options[0]!, emit)).toBe(true)
+  expect(cues).toHaveLength(2)
+  expect(claimTreasure(state, 1, offer.options[0]!, emit)).toBe(false)
+  expect(openTreasure(state, 1, seeded(9), emit)).toBeNull()
+  expect(cues).toHaveLength(2)
+})
