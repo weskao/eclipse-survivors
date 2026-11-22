@@ -2,7 +2,6 @@
 import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
 import HeroPortrait from './HeroPortrait.vue'
-import { PRODUCTION_HERO_ACTION_SOURCES } from '../../../game/render/es2/production-heroes'
 import type { JobId } from '../../../game/types'
 
 const props = withDefaults(defineProps<{
@@ -34,7 +33,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       @click="select(hero.id)" @keydown="move($event, hero.id)">
-      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${PRODUCTION_HERO_ACTION_SOURCES[hero.id]})` }" aria-hidden="true"></span>
+      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${hero.portraitSrc})` }" aria-hidden="true"></span>
       <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="hero.label + ' 角色插畫'" />
       <span class="es2-roster__copy">
         <strong>{{ hero.label }}</strong>
