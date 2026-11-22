@@ -65,7 +65,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillRect(0, 0, W, H)
   let ox = W * 0.5 - (hero ? s.cam.x : 0)
   let oy = H * 0.53 - (hero ? s.cam.y : 0)
-  if (hero && s.cameraKick > 0 && !reduced) {
+  if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced) {
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
