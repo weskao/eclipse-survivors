@@ -213,5 +213,30 @@
     "Bright strike effects touch or cross individual frame bounds and need per-frame retouch.",
     "Pixel alpha and identity are checked; there is no in-game 1x/on-device readability signoff.",
     "Unrelated enemy, boss, biome, and UI categories have not been delivered."
-  ]
+  ],
+  "perceptualReview": {
+    "algorithm": "64-bit dHash of first pose over dark background",
+    "threshold": 8,
+    "pairs": [
+      {
+        "first": "shadowblade",
+        "second": "spirit-summoner",
+        "distance": 24,
+        "suspectedDuplicate": false
+      },
+      {
+        "first": "shadowblade",
+        "second": "crimson-paladin",
+        "distance": 20,
+        "suspectedDuplicate": false
+      },
+      {
+        "first": "spirit-summoner",
+        "second": "crimson-paladin",
+        "distance": 30,
+        "suspectedDuplicate": false
+      }
+    ],
+    "note": "Heuristic screening, not a substitute for visual identity review"
+  }
 }
