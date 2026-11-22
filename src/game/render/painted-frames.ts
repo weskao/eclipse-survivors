@@ -2,6 +2,7 @@ import type { Hero, JobId } from '../types'
 import type { HeroAnimation } from './animation'
 import type { Ctx2D } from './ctx'
 import heroCombatAtlasUrl from '../../assets/hero-combat-atlas.webp'
+import heroRunAtlasUrl from '../../assets/hero-run-atlas.webp'
 
 /**
  * Real, manually composited RGBA art, not skinned pixels from a static portrait.
@@ -18,6 +19,12 @@ const ROW: Record<JobId, number> = { knight: 0, ranger: 3, wizard: 6 }
 export function loadPaintedHeroAtlas(): HTMLImageElement {
   const image = new Image()
   image.src = heroCombatAtlasUrl
+  return image
+}
+
+export function loadPaintedRunAtlas(): HTMLImageElement {
+  const image = new Image()
+  image.src = heroRunAtlasUrl
   return image
 }
 
@@ -47,14 +54,21 @@ export function frameForPose(
 export function drawPaintedHero(
   ctx: Ctx2D, atlas: HTMLImageElement, job: JobId, hero: Hero,
   anim: HeroAnimation, _width: number, height: number,
+  runAtlas?: HTMLImageElement,
 ): boolean {
   if (!atlas.complete || atlas.naturalWidth !== WIDTH * COLUMNS ||
     atlas.naturalHeight !== HEIGHT * ROWS_PER_HERO * 3) return false
-  const frame = frameForPose(job, anim)
+  const useRun = anim.pose === 'run' && !!runAtlas?.complete &&
+    runAtlas.naturalWidth === WIDTH * 8 && runAtlas.naturalHeight === HEIGHT * 3
+  const image = useRun ? runAtlas! : atlas
+  const frame = useRun
+    ? { x: (Math.floor(anim.phase * 8) % 8) * WIDTH,
+        y: (ROW[job] / ROWS_PER_HERO) * HEIGHT }
+    : frameForPose(job, anim)
   const renderedWidth = height * WIDTH / HEIGHT // uniform x/y scale
   ctx.save()
   if (hero.face < 0) ctx.scale(-1, 1)
-  ctx.drawImage(atlas, frame.x, frame.y, WIDTH, HEIGHT,
+  ctx.drawImage(image, frame.x, frame.y, WIDTH, HEIGHT,
     -renderedWidth / 2, -height + 4, renderedWidth, height)
   ctx.restore()
   return true
