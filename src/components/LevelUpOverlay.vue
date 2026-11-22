@@ -29,7 +29,7 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
               <source media="(prefers-reduced-motion: reduce)" :srcset="skillImageSrc(u.id)" />
               <img class="skill-art" draggable="false" decoding="async" :src="effect === 'still' ? skillImageSrc(u.id) : animatedSkillImageSrc(u.id)" alt="" />
             </picture>
-            <img v-else class="skill-art" draggable="false" decoding="async" :src="skillImageSrc(u.id)" alt="" />
+            <img v-else-if="u.iconSrc || !u.id.includes(':')" class="skill-art" draggable="false" decoding="async" :src="u.iconSrc ?? skillImageSrc(u.id)" alt="" />
             {{ u.icon }}
           </span>
           <strong>{{ u.title }}</strong>
