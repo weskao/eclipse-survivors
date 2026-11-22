@@ -5,7 +5,7 @@ import { skillImageSrc } from '../../../game/ui-art'
 import AudioControl from '../../AudioControl.vue'
 import type { HudView } from '../../../game/store'
 import type { JobId } from '../../../game/types'
-import { projectCombatHud, type CombatHudActions, type CombatHudFeed } from './model'
+import { projectCombatHud, type CombatHudActions, type CombatHudFeed, type CombatHudSnapshot } from './model'
 import '../../../styles/es2/hud.css'
 
 const props = withDefaults(defineProps<{
@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<{
   hud: HudView
   actions: CombatHudActions
   feed?: CombatHudFeed
+  expectedFeed?: CombatHudSnapshot
   musicOn?: boolean
   sfxOn?: boolean
   musicVolume?: number
@@ -21,8 +22,23 @@ const props = withDefaults(defineProps<{
   audioActive?: boolean
 }>(), { audioActive: true })
 
-const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed))
+const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
 const selectedId = ref<string | null>(null)
+const hudRoot = shallowRef<HTMLElement | null>(null)
+watch(() => props.active, active => {
+  if (active) return
+  selectedId.value = null
+  if (typeof document !== 'undefined' && hudRoot.value?.contains(document.activeElement)) {
+    (document.activeElement as HTMLElement).blur()
+  }
+}, { flush: 'sync' })
+const liveAnnouncement = computed(() => {
+  if (!props.active) return ''
+  return view.value.notices.at(-1)?.text
+    ?? (view.value.wave?.announcement
+      ? '第 ' + view.value.wave.number + ' 波：' + view.value.wave.announcement
+      : view.value.boss?.phase ? '首領進入第 ' + view.value.boss.phase + ' 階段' : '')
+})
 const selectedSkill = computed(() => view.value.skills.find(skill => skill.id === selectedId.value) ?? null)
 watch(() => view.value.skills, skills => {
   if (selectedId.value && !skills.some(skill => skill.id === selectedId.value)) selectedId.value = null
@@ -39,7 +55,8 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
 
 <template>
   <!-- Always mount minimap: engine.mount captures its ref before the first run. -->
-  <aside class="es2-hud" :class="{ 'es2-hud--active': active }" :aria-hidden="!active" :inert="!active" aria-label="戰鬥資訊">
+  <aside ref="hudRoot" class="es2-hud" :class="{ 'es2-hud--active': active }" :aria-hidden="!active" :inert="!active" aria-label="戰鬥資訊">
+    <span data-es2-announcement class="es2-hud__sr-only" role="status" aria-live="polite" aria-atomic="true">{{ liveAnnouncement }}</span>
     <header class="es2-hud__top">
       <div class="es2-hud__hero es2-hud__plate">
         <div class="es2-hud__portrait">
@@ -99,7 +116,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         <span :style="{ width: view.boss.percent + '%' }"></span>
       </div>
     </section>
-    <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave role="status">
+    <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave aria-label="波次">
       <span class="es2-hud__eyebrow">WAVE {{ view.wave.number }}</span>
       <strong v-if="view.wave.announcement">{{ view.wave.announcement }}</strong>
     </div>
@@ -122,7 +139,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         <small v-if="status.remainingSeconds !== undefined">{{ status.remainingSeconds.toFixed(1) }}s</small>
       </span>
     </section>
-    <section v-if="view.notices.length" class="es2-hud__notices" aria-label="戰鬥通知" aria-live="polite">
+    <section v-if="view.notices.length" class="es2-hud__notices" aria-label="戰鬥通知">
       <div v-for="notice in view.notices" :key="notice.id" class="es2-hud__notice"
         :class="'es2-hud__notice--' + notice.kind">{{ notice.text }}</div>
     </section>
@@ -134,6 +151,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             class="es2-hud__relic" :class="'es2-hud__rarity--' + relic.rarity" :title="relic.title" :aria-label="relic.title">
             <img v-if="relic.iconSrc" :src="relic.iconSrc" alt="" decoding="async" />
             <span v-else aria-hidden="true">{{ relic.icon }}</span>
+            <small v-if="relic.stacks && relic.stacks > 1" class="es2-hud__relic-stack" aria-label="疊加數量">×{{ relic.stacks }}</small>
           </span>
         </div>
       </div>
@@ -160,3 +178,33 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     </footer>
   </aside>
 </template>
+
+<style scoped>
+/* Only HUD-owned overrides: leave the legacy stylesheet, engine canvas and controls untouched. */
+.es2-hud__sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.es2-hud__relic { position: relative; }
+.es2-hud__relic-stack {
+  position: absolute; right: 0; bottom: 0; padding: 0 2px;
+  border-radius: 3px; background: #070b13e8; color: #fff4d1; font: 700 10px/1.25 system-ui;
+}
+@media (max-width: 700px) {
+  .es2-hud__objectives {
+    top: max(250px, calc(env(safe-area-inset-top) + 245px));
+    left: max(8px, env(safe-area-inset-left)); right: auto;
+    width: min(45vw, 205px); max-height: 21vh;
+  }
+  .es2-hud__statuses {
+    top: max(250px, calc(env(safe-area-inset-top) + 245px));
+    right: max(8px, env(safe-area-inset-right)); left: auto;
+    max-width: 45vw; max-height: 21vh; overflow-y: auto;
+  }
+  .es2-hud__notices {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(155px, calc(env(safe-area-inset-bottom) + 145px));
+    max-width: 50vw;
+  }
+}
+</style>
