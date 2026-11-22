@@ -43,6 +43,7 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
         <div class="menu-title-rule"><span>✧</span></div>
         <p class="menu-lede">黑夜吞沒失落王國，只有最後的冒險者能迎接黎明。<br>踏入幽暮遺跡，與無盡魔物決一死戰。</p>
         <div class="menu-chapter"><span class="chapter-icon">◈</span><span>CHAPTER I <b>·</b> THE FALLEN KINGDOM</span></div>
+        <button v-if="musicOn && !audioUnlocked" id="enableMenuMusic" class="menu-music-unlock" @click="emit('enableAudio')">♫ 點擊啟用主題音樂</button>
       </header>
       <div class="menu-showcase" aria-live="polite" :data-cosmetic="profile?.equippedCosmetics[choice]">
         <div class="showcase-halo" aria-hidden="true"></div>
@@ -68,7 +69,7 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
         <div class="menu-cta-wrap"><button id="start" class="cta start-adventure" @click="emit('start')"><span>踏入幽暮之門</span><span class="start-spark" aria-hidden="true">✦</span></button><p>自動攻擊 · 收集精華 · 覺醒全新能力</p></div>
         <ProgressionPanel v-if="profile" :profile="profile" :hero="choice" @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)" @reset="emit('reset')" />
       </section>
-      <footer class="menu-bottom"><span class="menu-controls">⌨ WASD / 方向鍵移動 <b>·</b> SPACE 衝刺 <b>·</b> P 暫停 <b>·</b> 手機支援觸控操作 <span class="menu-version" id="gameVersion">v{{ version }}</span></span><div class="menu-audio-controls"><button v-if="musicOn && !audioUnlocked" id="enableMenuMusic" class="ghost" aria-label="啟用主題音樂" @click="emit('enableAudio')">▶ 啟用主題音樂</button><button id="menuMusic" class="ghost" :aria-pressed="musicOn" @click="emit('toggleMusic')">♫ 背景音樂：{{ musicOn ? (audioUnlocked ? '開' : '待啟用') : '關' }}</button><button id="menuSfx" class="ghost" :aria-pressed="sfxOn" @click="emit('toggleSfx')">♬ 音效：{{ sfxOn ? '開' : '關' }}</button><SettingsButton @open="emit('settings')" /></div></footer>
+      <footer class="menu-bottom"><span class="menu-controls">⌨ WASD / 方向鍵移動 <b>·</b> SPACE 衝刺 <b>·</b> P 暫停 <b>·</b> 手機支援觸控操作 <span class="menu-version" id="gameVersion">v{{ version }}</span></span><div class="menu-audio-controls"><button id="menuMusic" class="ghost" :aria-pressed="musicOn" @click="emit('toggleMusic')">♫ 背景音樂：{{ musicOn ? '開' : '關' }}</button><button id="menuSfx" class="ghost" :aria-pressed="sfxOn" @click="emit('toggleSfx')">♬ 音效：{{ sfxOn ? '開' : '關' }}</button><SettingsButton @open="emit('settings')" /></div></footer>
     </main>
   </div>
 </template>
