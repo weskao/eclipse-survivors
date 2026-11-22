@@ -231,3 +231,14 @@ it('prioritizes a due boss even after a huge timestamp skip without conflicting 
   expect(result.spawns.map(s => s.role)).toEqual(['boss'])
   expect(result.events.map(e => e.kind)).toEqual(['boss'])
 })
+
+
+it('lets a delayed Chaos cohort spawn during final-boss clock windows until eight waves are evidenced', () => {
+  const director = createWaveDirector({ mode: 'chaos-arena', seed: 5 })
+  const deferred = director.advance({
+    timeSeconds: 175, activeMobs: 0, completedWaves: 0,
+    hero: { x: 0, y: 0 }, viewport: { width: 960, height: 540 },
+  })
+  expect(deferred.spawns.some(x => x.waveIndex === 1)).toBe(true)
+  expect(deferred.spawns.some(x => x.role === 'boss')).toBe(false)
+})
