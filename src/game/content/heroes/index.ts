@@ -1,5 +1,6 @@
 import { hit } from '../../combat'
 import { impact, burst } from '../../fx'
+import { random as simulationRandom } from '../../math'
 import { createHero } from '../../state'
 import type { ContentId, GameHooks, GameState, JobId, Mob, SfxCue } from '../../types'
 import type { ContentAbility, ContentPack } from '../contracts'
@@ -159,7 +160,7 @@ export function createHeroSpecializationAdapter(
   state: GameState,
   id: SpecializationId,
   hooks: GameHooks,
-  random: () => number = () => 0.5,
+  random: () => number = simulationRandom,
 ): HeroSpecializationAdapter {
   const def = HERO_DEFINITIONS[id]
   let cooldown = 0
