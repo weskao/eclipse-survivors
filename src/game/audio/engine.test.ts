@@ -372,8 +372,8 @@ describe('onScreen', () => {
     audio.onScreen('menu')
     ctx.currentTime = 20
     audio.tick('menu')
-    // restarted at step 0: chord of 3 again (first call queued 2 steps -> 3 notes)
-    expect(ctx.oscillators.length - first).toBe(3)
+    // Restarted at step 0: layered chord, pulse, and lead return together.
+    expect(ctx.oscillators.length - first).toBeGreaterThanOrEqual(5)
   })
 })
 

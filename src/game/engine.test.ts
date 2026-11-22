@@ -220,6 +220,21 @@ describe('keyboard and focus', () => {
   beforeEach(() => { stop = engine.listen(window) })
   afterEach(() => stop())
 
+  it('shows the menu music activation as pending until a user gesture unlocks audio', () => {
+    expect(engine.ui.audioUnlocked).toBe(false)
+    expect(engine.ui.musicOn).toBe(true)
+    key('KeyA')
+    expect(engine.ui.audioUnlocked).toBe(true)
+    expect(engine.ui.musicOn).toBe(true)
+  })
+
+  it('explicit menu music activation never toggles the user's music preference', () => {
+    expect(engine.ui.audioUnlocked).toBe(false)
+    engine.enableMenuAudio()
+    expect(engine.ui.audioUnlocked).toBe(true)
+    expect(engine.ui.musicOn).toBe(true)
+  })
+
   it('menu keydown unlocks audio only when music is on', () => {
     engine.toggleMusic()
     key('KeyA')

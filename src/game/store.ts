@@ -65,6 +65,8 @@ export interface UiState {
   mode: GameMode
   choice: JobId
   musicOn: boolean
+  /** Has a user gesture unlocked browser audio playback? */
+  audioUnlocked: boolean
   sfxOn: boolean
   musicVolume: number
   sfxVolume: number
@@ -97,6 +99,7 @@ export interface GameCommands {
   /** Original `pause()`: play → paused, paused → play. */
   togglePause(): void
   dash(): void
+  enableMenuAudio(): void
   toggleMusic(): void
   toggleSfx(): void
   setMusicVolume(value: number): void

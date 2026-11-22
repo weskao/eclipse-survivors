@@ -8,7 +8,7 @@ import ProgressionPanel from './progression/ProgressionPanel.vue'
 import SettingsButton from './SettingsButton.vue'
 import type { Profile, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 
-const props = defineProps<{ active: boolean; choice: JobId; musicOn: boolean; sfxOn: boolean; version: string; runMode?: RunModeId; profile?: Profile }>()
+const props = defineProps<{ active: boolean; choice: JobId; musicOn: boolean; audioUnlocked: boolean; sfxOn: boolean; version: string; runMode?: RunModeId; profile?: Profile }>()
 const emit = defineEmits<{
   select: [job: JobId]
   start: []
@@ -17,6 +17,7 @@ const emit = defineEmits<{
   cosmetic: [hero: JobId, skin: CosmeticId]
   reset: []
   toggleMusic: []
+  enableAudio: []
   toggleSfx: []
   settings: []
 }>()
@@ -42,6 +43,7 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
         <div class="menu-title-rule"><span>✧</span></div>
         <p class="menu-lede">黑夜吞沒失落王國，只有最後的冒險者能迎接黎明。<br>踏入幽暮遺跡，與無盡魔物決一死戰。</p>
         <div class="menu-chapter"><span class="chapter-icon">◈</span><span>CHAPTER I <b>·</b> THE FALLEN KINGDOM</span></div>
+        <button v-if="musicOn && !audioUnlocked" id="enableMenuMusic" class="menu-music-unlock" @click="emit('enableAudio')">♫ 點擊啟用主題音樂</button>
       </header>
       <div class="menu-showcase" aria-live="polite" :data-cosmetic="profile?.equippedCosmetics[choice]">
         <div class="showcase-halo" aria-hidden="true"></div>
