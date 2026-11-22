@@ -33,7 +33,7 @@ export const WORLD_ART = Object.freeze({
     id, src('bosses', id + '-phases'),
   ])) as Record<BossId, string>,
   biomes: Object.fromEntries(BIOME_IDS.map(id => [
-    id, { ground: src('biomes', id + '-ground'), decor: src('biomes', id + '-decor') },
+    id, { ground: src('biomes', id + '-ground'), decor: src('biomes', id + '-decor'), scene: src('biomes', id + '-scene') },
   ])) as Record<BiomeId, { ground: string; decor: string }>,
   ui: Object.fromEntries(WORLD_UI_IDS.map(id => [id, src('ui', id)])) as Record<WorldUiId, string>,
 })
