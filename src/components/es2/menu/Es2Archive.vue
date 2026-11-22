@@ -187,17 +187,17 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
 .es2-world-art-card{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:8px;border:1px solid #8a67855e;background:#1b1726;border-radius:12px;padding:10px;text-align:center;color:#f2e3d1}
 .es2-world-art-card strong{font-size:.78rem;overflow-wrap:anywhere}
 .es2-world-art-enemy,.es2-world-art-boss,.es2-world-art-decor{display:block;background-repeat:no-repeat;background-position:0 0;background-color:#252239;border-radius:9px;max-width:100%}
-.es2-world-art-enemy{width:96px;height:96px;background-size:600% 100%;animation:es2-world-enemy-preview 1.25s steps(5,end) infinite}
-.es2-world-art-boss{width:120px;height:120px;background-size:300% 100%;animation:es2-world-boss-preview 1.8s steps(2,end) infinite}
+.es2-world-art-enemy{width:96px;height:96px;background-size:600% 100%;animation:es2-world-enemy-preview 1.25s steps(6,end) infinite}
+.es2-world-art-boss{width:120px;height:120px;background-size:300% 100%;animation:es2-world-boss-preview 1.8s steps(3,end) infinite}
 .es2-world-art-telegraph{width:70px;height:70px;object-fit:contain}
 .es2-world-art-ground{width:100%;max-width:140px;aspect-ratio:1;object-fit:cover;border-radius:8px}
-.es2-world-art-scene{width:100%;max-width:180px;aspect-ratio:16/9;object-fit:cover;border-radius:8px}
+.es2-world-art-scene{width:100%;max-width:180px;aspect-ratio:16/9;object-fit:contain;border-radius:8px}
 .es2-achievement-icon{display:block;width:72px!important;height:72px;object-fit:contain}
 
-.es2-world-art-decor{width:96px;height:96px;background-size:400% 100%;animation:es2-world-decor-preview 2s steps(3,end) infinite}
+.es2-world-art-decor{width:96px;height:96px;background-size:400% 100%;animation:es2-world-decor-preview 2s steps(4,end) infinite}
 .es2-world-art-icon{width:72px;height:72px;object-fit:contain}
-@keyframes es2-world-enemy-preview{to{background-position:100% 0}}
-@keyframes es2-world-boss-preview{to{background-position:100% 0}}
-@keyframes es2-world-decor-preview{to{background-position:100% 0}}
+@keyframes es2-world-enemy-preview{to{background-position:-576px 0}}
+@keyframes es2-world-boss-preview{to{background-position:-360px 0}}
+@keyframes es2-world-decor-preview{to{background-position:-384px 0}}
 @media(prefers-reduced-motion:reduce){.es2-world-art-enemy,.es2-world-art-boss,.es2-world-art-decor{animation:none}}
 </style>

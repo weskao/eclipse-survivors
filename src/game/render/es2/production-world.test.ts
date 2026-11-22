@@ -43,7 +43,25 @@ describe('ES2 world art live asset mapping', () => {
     expect(calls[0]?.slice(1, 5)).toEqual([192, 0, 192, 192])
     expect(drawProductionEnemyFrame(ctx, loaded(576, 96), 5, 100, 105)).toBe(true)
     expect(calls[1]?.slice(1, 5)).toEqual([480, 0, 96, 96])
+    // Each atlas source frame is square: preserve silhouette proportions and bottom anchor.
+    for (const call of calls) {
+      const [, , , , , dx, dy, dw, dh] = call as [unknown, number, number, number, number, number, number, number, number]
+      expect(dw).toBe(dh)
+      expect(dx).toBe(-dw / 2)
+      expect(dy + dh).toBe(4)
+    }
     expect(drawProductionBossFrame(ctx, { ...loaded(576, 192), complete: false } as HTMLImageElement, 1, 236, 246)).toBe(false)
     expect(calls).toHaveLength(2)
+  })
+
+  it('reads 3x boss and enemy atlas cells without drawing neighboring frames', () => {
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawProductionBossFrame(ctx, loaded(2124, 708), 3, 236, 246)).toBe(true)
+    expect(calls[0]?.slice(1, 5)).toEqual([1416, 0, 708, 708])
+    expect(drawProductionEnemyFrame(ctx, loaded(1728, 288), 4, 96, 110)).toBe(true)
+    expect(calls[1]?.slice(1, 5)).toEqual([1152, 0, 288, 288])
+    expect(drawProductionBossFrame(ctx, loaded(2123, 708), 1, 236, 246)).toBe(false)
+    expect(drawProductionEnemyFrame(ctx, loaded(1727, 288), 1, 96, 110)).toBe(false)
   })
 })

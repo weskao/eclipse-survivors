@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { ART_URLS } from '../../../game/art'
-import { PRODUCTION_HERO_SOURCES } from '../../../game/render/es2/production-heroes'
+import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { RunStats } from '../../../meta/types'
 import Es2Result from './Es2Result.vue'
 
@@ -10,15 +10,17 @@ const base = {
   remainingHp: 10, damageDealt: 100, damageTaken: 20,
 } as unknown as RunStats
 
+afterEach(() => { document.body.innerHTML = '' })
+
 describe('result screen hero portrait', () => {
   it('shows the specialization hero, not its legacy base class art', () => {
     const wrapper = mount(Es2Result, {
       props: { active: true, ending: '勝利', summary: '', result: { ...base, specializationId: 'crimson-paladin' } },
       attachTo: document.body,
     })
-    const html = document.body.querySelector('.es2-result-hero')!.innerHTML
-    expect(html).toContain(PRODUCTION_HERO_SOURCES['crimson-paladin'])
-    expect(html).not.toContain(ART_URLS.knight)
+    const portrait = document.body.querySelector('.es2-result-hero img')
+    expect(portrait?.getAttribute('src')).toBe(HERO_DEFINITIONS['crimson-paladin'].portraitSrc)
+    expect(portrait?.getAttribute('src')).not.toBe(ART_URLS.knight)
     wrapper.unmount()
   })
 
@@ -26,7 +28,7 @@ describe('result screen hero portrait', () => {
     const wrapper = mount(Es2Result, {
       props: { active: true, ending: '勝利', summary: '', result: base }, attachTo: document.body,
     })
-    expect(document.body.querySelector('.es2-result-hero')!.innerHTML).toContain(ART_URLS.knight)
+    expect(document.body.querySelector('.es2-result-hero img')?.getAttribute('src')).toBe(ART_URLS.knight)
     wrapper.unmount()
   })
 })

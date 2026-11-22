@@ -64,16 +64,22 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
 export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
 ): boolean {
-  if (!image.complete || image.naturalWidth !== 576 || image.naturalHeight !== 192 || phase < 1 || phase > 3) return false
-  ctx.drawImage(image, (phase - 1) * 192, 0, 192, 192, -width / 2, -height + 4, width, height)
+  if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || phase < 1 || phase > 3) return false
+  const side = Math.min(width, height)
+  if (!Number.isFinite(side) || side <= 0) return false
+  const sourceSide = image.naturalHeight
+  ctx.drawImage(image, (phase - 1) * sourceSide, 0, sourceSide, sourceSide, -side / 2, -side + 4, side, side)
   return true
 }
 
 export function drawProductionEnemyFrame(
   ctx: Ctx2D, image: HTMLImageElement, frame: number, width: number, height: number,
 ): boolean {
-  if (!image.complete || image.naturalWidth !== 576 || image.naturalHeight !== 96 || !Number.isFinite(frame)) return false
+  if (!image.complete || image.naturalHeight < 96 || image.naturalWidth !== image.naturalHeight * 6 || !Number.isFinite(frame)) return false
   const slot = Math.max(0, Math.min(5, Math.floor(frame)))
-  ctx.drawImage(image, slot * 96, 0, 96, 96, -width / 2, -height + 4, width, height)
+  const side = Math.min(width, height)
+  if (!Number.isFinite(side) || side <= 0) return false
+  const sourceSide = image.naturalHeight
+  ctx.drawImage(image, slot * sourceSide, 0, sourceSide, sourceSide, -side / 2, -side + 4, side, side)
   return true
 }

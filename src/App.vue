@@ -119,10 +119,11 @@ onBeforeUnmount(() => {
     :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :actions="combatActions"
     :feed="combatFeed"
-  />
-  <div v-if="ui.mode === 'play' && ui.objectiveProgress" class="es2-objective-hud">
-    <ModeProgress :state="ui.objectiveProgress" />
-  </div>
+  >
+    <template v-if="ui.mode === 'play' && ui.objectiveProgress" #mode-progress>
+      <ModeProgress :state="ui.objectiveProgress" />
+    </template>
+  </CombatHud>
   <HeroSpecialAction
     v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
     :hero-id="ui.heroId"
@@ -202,14 +203,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.es2-objective-hud {
-  position: fixed; top: max(116px, calc(env(safe-area-inset-top) + 84px));
-  right: max(12px, env(safe-area-inset-right)); z-index: 8;
-  width: min(320px, calc(100vw - 24px)); pointer-events: none;
-}
-@media (max-width: 640px) {
-  .es2-objective-hud { top: max(88px, calc(env(safe-area-inset-top) + 72px)); width: min(270px, 55vw); }
-}
  .es2-world-markers { position: fixed; inset: 0; z-index: 9; pointer-events: none; }
 .es2-world-marker { position: absolute; transform: translate(-50%, -50%); pointer-events: auto;
   min-height: 44px; min-width: 44px; border-radius: 50%; border: 2px solid #efd49f;

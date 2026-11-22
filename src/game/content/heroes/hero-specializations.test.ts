@@ -32,7 +32,7 @@ describe('isolated hero specializations', () => {
     expect(new Set(records.map(hero => hero.startingAbility))).toHaveProperty('size', 3)
     expect(new Set(records.map(hero => hero.portraitSrc))).toHaveProperty('size', 3)
     for (const def of records) {
-      expect(def.portraitSrc).toMatch(/\.svg/)
+      expect(def.portraitSrc).toContain(def.id + '-portrait@3x.webp')
       expect(def.specialCooldown).toBeGreaterThan(1)
       expect(def.strengths.length).toBeGreaterThan(0)
       expect(def.weaknesses.length).toBeGreaterThan(0)
