@@ -79,14 +79,14 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     special: '血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；生命低時反擊更強。',
     specialCooldown: 14,
     animation: { idle: 'shield-vigil', attack: 'shield-counter', special: 'crimson-aegis' },
-    audio: { attack: 'knight', special: 'shield' as SfxCue },
+    audio: { attack: 'knight', special: 'knight' },
   },
 })
 
 const HERO_LIST = Object.values(HERO_DEFINITIONS)
 
 /** The existing registry stores these starting abilities and upgrade levels per run. */
-const abilities: ContentAbility[] = HERO_LIST.flatMap(def => [
+const abilities: ContentAbility[] = HERO_LIST.flatMap((def): ContentAbility[] => [
   {
     id: def.startingAbility, kind: 'weapon', icon: '✦', title: def.label + ' · ' + def.special,
     desc: def.passive, rarity: 'rare', maxLevel: 1,
@@ -233,7 +233,7 @@ export function createHeroSpecializationAdapter(
         barrierLife = 3.5
         impact(state, hero.x, hero.y, 105, '#ed6178', 1)
       }
-      hooks.sfx(def.audio.special === ('shield' as SfxCue) ? 'knight' : def.audio.special)
+      hooks.sfx(def.audio.special)
       return true
     },
     modifyOutgoingDamage(amount: number): number {
@@ -248,7 +248,7 @@ export function createHeroSpecializationAdapter(
     },
     mitigateIncomingDamage(amount: number): number {
       if (!Number.isFinite(amount) || amount <= 0) return 0
-      if (!alive() || id !== 'crimson-paladin') return amount
+      if (!alive() || id !== 'crimson-paladin' || state.hero!.inv > 0 || state.hero!.dash > 0) return amount
       const reduced = amount * (0.86 - Math.min(0.06, upgrades() * 0.02))
       const absorb = barrierLife > 0 ? Math.min(barrier, reduced) : 0
       barrier -= absorb
