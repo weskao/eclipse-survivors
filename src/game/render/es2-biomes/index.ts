@@ -80,6 +80,21 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
     })
   }
 
+  function decoration(env: BiomeEnvironment): HTMLCanvasElement {
+    const b = env.definition
+    return prepaint(b.id + ':detail', 96, p => {
+      p.strokeStyle = b.atmosphere.accent
+      p.fillStyle = b.atmosphere.glow
+      p.globalAlpha = .38
+      p.lineWidth = 2
+      p.beginPath(); p.arc(48, 48, 39, 0, TAU); p.stroke()
+      p.font = 'bold 38px Georgia'
+      p.textAlign = 'center'
+      p.fillText(b.id === 'cursed-forest' ? '❦' : b.id === 'celestial-rift' ? '✧' :
+        b.id === 'abyssal-necropolis' ? '◇' : '✛', 48, 61)
+    })
+  }
+
   function prop(env: BiomeEnvironment, kind: TerrainKind): HTMLCanvasElement {
     const b = env.definition
     return prepaint(b.id + ':' + kind, 96, p => {
@@ -104,6 +119,11 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
       for (let j = Math.floor(view.top / TILE); j < Math.ceil(view.bottom / TILE); j++) {
         ctx.drawImage(ground, i * TILE, j * TILE, TILE, TILE)
       }
+    }
+    const visible = env.visibleDecorations(view)
+    if (visible.length) {
+      const decal = decoration(env)
+      for (const d of visible) ctx.drawImage(decal, d.x - d.r, d.y - d.r, d.r * 2, d.r * 2)
     }
     for (const h of env.hazards(query.x, query.y, query.radius)) {
       if (!intersects(h, view)) continue
