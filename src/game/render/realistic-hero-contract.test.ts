@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { ART_URLS } from '../art'
 import { createHero, createState } from '../state'
 import type { JobId } from '../types'
