@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick } from 'vue'
 import { ART_URLS } from '../../../game/art'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
 import type { HeroId, JobId } from '../../../game/types'
 import HeroRoster from '../hero-roster/HeroRoster.vue'
 import ModeChooser from '../modes/ModeChooser.vue'
@@ -9,6 +10,13 @@ import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
 import type { MenuView } from './model'
 const props = defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+const biomeScenes = [
+  'blood-moon-cathedral', 'cursed-forest', 'abyssal-necropolis', 'celestial-rift',
+] as const
+const sceneIllustration = computed(() => {
+  const index = Math.max(0, modeIds.indexOf(props.runMode))
+  return WORLD_ART.biomes[biomeScenes[index % biomeScenes.length]!].scene
+})
 const objectiveSelection = computed<ObjectiveModeId | null>(() => objectiveModeIds.includes(props.runMode as ObjectiveModeId)
   ? props.runMode as ObjectiveModeId : null)
 const emit = defineEmits<{
@@ -39,7 +47,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
 </script>
 <template>
   <main class="es2-menu" aria-label="Eclipse Survivors 主選單">
-    <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /></div>
+    <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div class="es2-menu-shell">
       <header class="es2-menu-header">
         <div class="es2-menu-brand"><span class="es2-eyebrow">✦ THE CELESTIAL ECLIPSE ✦</span><h1>ECLIPSE <em>SURVIVORS</em></h1><p>穿越失落的國度，成為黑夜之後的第一道曙光。</p></div>

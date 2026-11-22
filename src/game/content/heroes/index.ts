@@ -95,7 +95,7 @@ const HERO_LIST = Object.values(HERO_DEFINITIONS)
 /** The existing registry stores these starting abilities and upgrade levels per run. */
 const abilities: ContentAbility[] = HERO_LIST.flatMap((def): ContentAbility[] => [
   {
-    id: def.startingAbility, kind: 'weapon', icon: '✦', title: def.label + ' · ' + def.special,
+    id: def.startingAbility, kind: 'weapon', icon: '✦', iconSrc: def.specialIconSrc, title: def.label + ' · ' + def.special,
     desc: def.passive, rarity: 'rare', maxLevel: 1,
     eligible: () => false, // The adapter grants this at run initialization, never in random rolls.
   },

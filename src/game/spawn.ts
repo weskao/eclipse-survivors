@@ -6,10 +6,10 @@ import type { GameHooks, GameState, MobType } from './types'
 
 const BASE_HP: Record<MobType, number> = { slime: 32, bat: 27, goblin: 55, golem: 155, warlock: 72, boss: 2000 }
 
-export function spawnMob(s: GameState, type?: 'boss'): void {
+export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0): void {
   const hero = s.hero
   // Boss spawns even when the normal crowd budget is exhausted.
-  if (!hero || s.mobs.length >= MAX_MOBS + (type === 'boss' ? 1 : 0)) return
+  if (!hero || s.mobs.length + otherLiving >= MAX_MOBS + (type === 'boss' ? 1 : 0)) return
   const boss = type === 'boss'
   const r = Math.max(200, Math.min(s.W, s.H) * 0.38) + rand(15, 65)
   const a = rand(0, TAU)
@@ -43,12 +43,12 @@ export const spawnInterval = (time: number, currentScene: number, frequency = 1)
   Math.max(0.18, 0.75 - time * 0.003 - sceneBonus(currentScene)) / frequency
 
 /** Counts down `spawnT`, spawns the wave (plus a 32%+ extra after 38s) and the boss after 92s. */
-export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void): void {
+export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void, otherLiving = 0): void {
   s.spawnT -= dt
   if (s.spawnT <= 0) {
     s.spawnT = spawnInterval(s.time, s.currentScene, getMode(s.runMode).modifiers.spawnFrequency)
-    spawnMob(s)
-    if (s.time > 38 && random() < 0.32 + sceneBonus(s.currentScene)) spawnMob(s)
+    spawnMob(s, undefined, otherLiving)
+    if (s.time > 38 && random() < 0.32 + sceneBonus(s.currentScene)) spawnMob(s, undefined, otherLiving)
   }
   if (!s.bossSpawned && s.time > getMode(s.runMode).bossAt) {
     if (spawnBoss) spawnBoss(s, hooks)

@@ -2,6 +2,7 @@ import type { Artwork } from '../art'
 import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
+import type { FactionBridge } from '../content/enemies/integration'
 import { drawBossTelegraphs } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
@@ -10,6 +11,7 @@ import { drawCharacter } from './characters'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
 import type { WorldRuntimeImages } from './es2/production-world'
+import { drawLiveFactionArt, drawLiveFactionProjectiles, type FactionArtwork } from './es2/production-factions'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
@@ -33,6 +35,8 @@ export interface RenderAssets {
   heroSheets: HeroSheets
   productionHeroes?: ProductionHeroArtwork
   productionWorld?: WorldRuntimeImages
+  factions?: FactionBridge
+  factionArtwork?: FactionArtwork
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
   cameraShakeEnabled: () => boolean
@@ -116,6 +120,8 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const bossSnapshot = assets.bosses?.snapshot(s)
   if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
+  if (assets.factions && assets.factionArtwork)
+    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy)
   const objects = assets.depthOrder
   objects.length = 0
   // Reject offscreen and dead mobs before sorting, not after the sort in drawCharacter.
@@ -137,6 +143,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)
   drawEnemyProjectiles(ctx, s, ox, oy)
+  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy)
   drawOrbs(ctx, s, hero, ox, oy)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
