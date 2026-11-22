@@ -6,7 +6,6 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
-import { isSpecializationId } from '../content/heroes'
 import { drawProductionHeroFrame, type ProductionHeroArtwork } from './es2/production-heroes'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
@@ -268,7 +267,8 @@ export function drawCharacter(
   const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
   const source = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   const drawable = source && tint ? cachedMobTint(source, tint, sx, sy, tintCache) : source
-  const productionImage = hero && isSpecializationId(s.heroId) ? productionHeroes?.[s.heroId] : undefined
+  const productionImage = hero && productionHeroes && Object.prototype.hasOwnProperty.call(productionHeroes, s.heroId)
+    ? productionHeroes[s.heroId as keyof ProductionHeroArtwork] : undefined
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
     if (hero && anim) {
