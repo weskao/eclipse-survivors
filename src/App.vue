@@ -115,6 +115,7 @@ onBeforeUnmount(() => {
   <Es2MenuSystem
     :screen="menuScreen"
     :choice="ui.choice"
+    :hero-id="ui.heroId"
     :run-mode="ui.runMode"
     :version="version"
     :profile="ui.profile"
@@ -135,6 +136,7 @@ onBeforeUnmount(() => {
     :special-choice="ui.specialChoice"
     :accessibility-preferences="accessibilityPreferences"
     @select="engine.selectJob"
+    @select-hero="engine.selectHero"
     @mode="engine.selectRunMode"
     @start="engine.start"
     @choose="engine.chooseUpgrade"
