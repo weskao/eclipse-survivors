@@ -6,7 +6,7 @@ import type { GameHooks } from './types'
 
 const hooks: GameHooks={sfx(){},message(){},offerUpgrades(){},end(){}}
 function state(job: 'knight'|'ranger'|'wizard') {
-  const s=createState();resetRun(s);s.mode='play';s.choice=job;s.hero!.x=0;s.hero!.y=0
+  const s=createState();s.choice=job;resetRun(s);s.mode='play';s.hero!.x=0;s.hero!.y=0
   s.mobs=[]
   return s
 }
