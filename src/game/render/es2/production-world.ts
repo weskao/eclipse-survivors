@@ -65,7 +65,9 @@ export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
 ): boolean {
   if (!image.complete || image.naturalWidth !== 576 || image.naturalHeight !== 192 || phase < 1 || phase > 3) return false
-  ctx.drawImage(image, (phase - 1) * 192, 0, 192, 192, -width / 2, -height + 4, width, height)
+  const side = Math.min(width, height)
+  if (!Number.isFinite(side) || side <= 0) return false
+  ctx.drawImage(image, (phase - 1) * 192, 0, 192, 192, -side / 2, -side + 4, side, side)
   return true
 }
 
@@ -74,6 +76,8 @@ export function drawProductionEnemyFrame(
 ): boolean {
   if (!image.complete || image.naturalWidth !== 576 || image.naturalHeight !== 96 || !Number.isFinite(frame)) return false
   const slot = Math.max(0, Math.min(5, Math.floor(frame)))
-  ctx.drawImage(image, slot * 96, 0, 96, 96, -width / 2, -height + 4, width, height)
+  const side = Math.min(width, height)
+  if (!Number.isFinite(side) || side <= 0) return false
+  ctx.drawImage(image, slot * 96, 0, 96, 96, -side / 2, -side + 4, side, side)
   return true
 }
