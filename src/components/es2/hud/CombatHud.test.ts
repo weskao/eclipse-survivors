@@ -63,9 +63,15 @@ describe('ES2 combat HUD', () => {
 
   it('only displays optional real source data, honors interactive callbacks and audio state', async () => {
     const toggleMusic = vi.fn()
-    const { wrapper, pause, settings } = render({
+    const setMusicVolume = vi.fn()
+    const pause = vi.fn()
+    const settings = vi.fn()
+    const { wrapper } = render({
       musicOn: true,
-      actions: { pause: vi.fn(), settings: vi.fn(), toggleMusic },
+      sfxOn: true,
+      musicVolume: 66,
+      sfxVolume: 80,
+      actions: { pause, settings, toggleMusic, toggleSfx: vi.fn(), setMusicVolume, setSfxVolume: vi.fn() },
       feed: {
         boss: { name: '霜之王', phase: 2, totalPhases: 3 },
         wave: { number: 9, announcement: '霜潮來襲' },
@@ -88,13 +94,17 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.text()).toContain('開啟祭壇')
     await wrapper.get('[data-es2-pause]').trigger('click')
     await wrapper.get('[data-es2-settings]').trigger('click')
-    await wrapper.get('[data-es2-music]').trigger('click')
+    await wrapper.get('#hudAudioTrigger').trigger('click')
+    await nextTick()
+    const range = document.querySelector<HTMLInputElement>('#hudMusicVolume')
+    expect(range).not.toBeNull()
+    range!.value = '37'
+    range!.dispatchEvent(new Event('input', { bubbles: true }))
+    document.querySelector<HTMLButtonElement>('#hudMusicMute')!.click()
     expect(toggleMusic).toHaveBeenCalledTimes(1)
-    expect(wrapper.get('[data-es2-music]').attributes('aria-pressed')).toBe('true')
-    expect(pause).not.toHaveBeenCalled()
-    expect(settings).not.toHaveBeenCalled()
-    expect((wrapper.props('actions') as { pause: ReturnType<typeof vi.fn> }).pause).toHaveBeenCalledTimes(1)
-    expect((wrapper.props('actions') as { settings: ReturnType<typeof vi.fn> }).settings).toHaveBeenCalledTimes(1)
+    expect(setMusicVolume).toHaveBeenCalledWith(37)
+    expect(pause).toHaveBeenCalledTimes(1)
+    expect(settings).toHaveBeenCalledTimes(1)
   })
 
   it('does not mount visual overlay while inactive and removes UI cleanly on unmount', async () => {
