@@ -5,7 +5,9 @@ import type { AudioSystem } from '../game/audio/types'
 import type { GameMode, SfxCue } from '../game/types'
 
 const audio: AudioSystem = {
-  unlocked: true, musicOn: false, sfxOn: false, wake() {}, playSfx(_cue: SfxCue) {}, tick() {},
+  unlocked: true, musicOn: false, sfxOn: false, musicVolume: 100, sfxVolume: 100,
+  setMusicVolume() {}, setSfxVolume() {},
+  wake() {}, playSfx(_cue: SfxCue) {}, tick() {},
   onScreen(_mode: GameMode) {}, resetBattleClock() {}, toggleMusic: () => false,
   toggleSfx: () => false, interrupt() {}, setCombatIntensity() {}, dispose() {},
 }
