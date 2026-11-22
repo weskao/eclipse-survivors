@@ -24,7 +24,7 @@ try {
       await page.goto(new URL('tests/es2/performance/browser-harness.html?preset=' + preset, root).href, {
         waitUntil: 'domcontentloaded',
       })
-      await page.waitForFunction(() => window.__es2BenchmarkResult || window.__es2BenchmarkError, {
+      await page.waitForFunction(() => window.__es2BenchmarkResult || window.__es2BenchmarkError, null, {
         timeout: 90000,
       })
       const answer = await page.evaluate(() => ({

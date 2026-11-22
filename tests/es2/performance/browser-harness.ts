@@ -3,6 +3,8 @@ import { loadArtwork } from '../../../src/game/art'
 import { createRenderAssets, drawFrame } from '../../../src/game/render'
 import { createStressScenario, type StressPreset } from '../../../src/game/performance/es2/scenarios'
 import { distribution } from '../../../src/game/performance/es2/metrics'
+import { resolvePresentationPolicy } from '../../../src/game/content/accessibility/presentation'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../../../src/game/content/accessibility/preferences'
 import type { AudioSystem } from '../../../src/game/audio/types'
 
 declare global {
@@ -54,9 +56,11 @@ async function run() {
   }))
   const assets = createRenderAssets(art)
   assets.content = engine.contentRegistry
-  assets.presentation = () => preset === 'mobile-low'
-    ? { quality: 'low', reduceMotion: true, reduceFlashing: true, pixelRatioCap: 1,
-      ambientDensity: 0, showDamageNumbers: false } as never : null
+  const low = resolvePresentationPolicy({
+    ...DEFAULT_ACCESSIBILITY_PREFERENCES,
+    quality: 'low', reducedMotion: 'on',
+  })
+  assets.presentation = () => preset === 'mobile-low' ? low : null
   const heap = (): number | null => {
     const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory
     return memory?.usedJSHeapSize ?? null
