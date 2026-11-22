@@ -3,7 +3,7 @@ import type { GameState, Hero, JobId, SceneDef } from './types'
 
 export function createState(): GameState {
   return {
-    mode: 'menu', choice: 'knight', hero: null, content: { levels: {}, cooldowns: {}, effects: [] },
+    mode: 'menu', choice: 'knight', heroId: 'knight', hero: null, content: { levels: {}, cooldowns: {}, effects: [] },
     mobs: [], shots: [], enemyShots: [], stars: [], fx: [], swipes: [],
     numberFx: [], impactWaves: [], lightningFx: [], motionEchoes: [],
     cameraKick: 0, time: 0, kill: 0, spawnT: 0, bossSpawned: false, bossDefeated: false,

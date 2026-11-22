@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createEngine } from '../../../src/game/engine'
 import type { AudioSystem } from '../../../src/game/audio/types'
-import type { JobId } from '../../../src/game/types'
+import type { HeroId } from '../../../src/game/types'
+import { HERO_DEFINITIONS, isSpecializationId } from '../../../src/game/content/heroes'
 import type { RunModeId } from '../../../src/meta/types'
 
 function silentAudio(): AudioSystem {
@@ -19,10 +20,15 @@ describe('ES2 release gate: real game-session selection (RED until host wiring)'
     'starts a playable session with the real %s hero identity',
     id => {
       const engine = createEngine({ audio: silentAudio() })
-      engine.selectJob(id as unknown as JobId)
-      expect(engine.ui.choice).toBe(id)
+      engine.selectHero(id as HeroId)
+      expect(engine.ui.heroId).toBe(id)
       expect(() => engine.start()).not.toThrow()
-      expect(engine.state.choice).toBe(id)
+      // heroId is authoritative; choice is the unchanged legacy sprite fallback.
+      expect(engine.state.heroId).toBe(id)
+      expect(isSpecializationId(id)).toBe(true)
+      if (!isSpecializationId(id)) throw new Error('Expected a new hero')
+      expect(engine.state.choice).toBe(HERO_DEFINITIONS[id].legacyArtJob)
+      expect(engine.state.hero?.max).toBe(HERO_DEFINITIONS[id].stats.hp)
       expect(engine.state.hero).not.toBeNull()
       expect(engine.state.mode).toBe('play')
     },

@@ -2,7 +2,8 @@ import { MAX_LEVEL, UP } from './constants'
 import type { ContentRegistry } from './content/registry'
 import type { Profile, RunModeId, RunRewards, RunStats, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { EVOLUTIONS, EVOLUTION_COOLDOWN } from './evolutions'
-import type { AbilityId, GameMode, GameState, Hero, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
+import type { AbilityId, GameMode, GameState, Hero, HeroId, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
+import type { SpecializationSnapshot } from './content/heroes'
 
 export interface HudSkill {
   id: AbilityId; icon: string; title: string; rarity: SkillRarity
@@ -80,6 +81,8 @@ export interface UiTreasureChoice {
 export interface UiState {
   mode: GameMode
   choice: JobId
+  heroId: HeroId
+  heroSpecial: SpecializationSnapshot | null
   musicOn: boolean
   /** Has a user gesture unlocked browser audio playback? */
   audioUnlocked: boolean
@@ -107,6 +110,8 @@ export interface UiState {
 
 export interface GameCommands {
   selectJob(job: JobId): void
+  selectHero(hero: HeroId): void
+  activateHeroSpecial(): boolean
   start(): void
   selectRunMode(mode: RunModeId): void
   buyPermanentUpgrade(upgrade: PermanentUpgrade): void

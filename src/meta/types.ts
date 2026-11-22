@@ -1,4 +1,5 @@
 import type { AbilityId, JobId, MobType } from '../game/types'
+import type { SpecializationId } from '../game/content/heroes'
 
 export type RunModeId = 'quick' | 'standard' | 'endless' | 'challenge'
 export type PermanentUpgrade = 'power' | 'vitality'
@@ -10,6 +11,8 @@ export interface RunStats {
   id: string
   mode: RunModeId
   hero: JobId
+  /** True hero identity for ES2 runs; legacy hero remains for v2 profile compatibility. */
+  specializationId?: SpecializationId
   victory: boolean
   seconds: number
   kills: number

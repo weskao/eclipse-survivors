@@ -1,50 +1,44 @@
-# ES2 hero specializations — integration proposal
+# ES2 live hero integration — handoff and verification
 
-**Foundation:** `9fd59c85e355909a6973cf93c116b8de5f9ca0df`  
-**Feature branch:** `feature/es2-hero-specializations`  
-**Owner:** `src/game/content/heroes/` only
+**Integration branch:** `feature/es2-release-readiness-integration`  
+**Source feature:** `feature/es2-remediate-hero-roster`  
+**Feature-owned files imported:** `src/game/content/heroes/**` and `src/components/es2/hero-roster/**`  
+**Integrated on:** 2026-11-22
 
-## Delivered in this isolated feature branch
+## Runtime identity and compatibility
 
-- `HERO_DEFINITIONS`: three selectable records (localized label, strengths, weaknesses, balanced starting stats, unique static illustrated portrait, existing-audio fallback cues and animation cue identifiers).
-- `HERO_SPECIALIZATIONS_PACK`: six namespaced ContentAbility definitions with three hero-locked upgrade tracks. The three starting abilities are granted at initialization and do not pollute random level-up rolls.
-- `createHeroSpecializationAdapter(state, id, hooks, rng?)`: **per-run** combat mechanics for Shadowblade, Spirit Summoner and Crimson Paladin, with deterministic RNG injection and bounded companion/target work.
-- `hero-specializations.test.ts`: initialization, progression isolation, damage, defense, cooldown, reset and lifecycle regression cases.
-- Three distinct static selection portraits. The existing knight/ranger/wizard imagery and animation code are **not replaced**.
+- The authoritative selected identity is `GameState.heroId` / `UiState.heroId`, typed `HeroId = JobId | SpecializationId`. New IDs are **shadowblade**, **spirit-summoner**, **crimson-paladin**; original IDs remain **knight**, **ranger**, **wizard**.
+- `GameState.choice` and `UiState.choice` deliberately remain **legacy JobId-only** as an interim Canvas/attack/skin fallback (`knight` for Shadowblade and Paladin; `wizard` for Summoner). They must **not** be used to determine the real new-hero selection. `selectHero(id)` changes both identity and art fallback; `selectJob(id)` preserves the original API for the original three.
+- The run result carries `specializationId` when relevant; `RunStats.hero` stays legacy-compatible for the persisted version 2 profile. `Profile.heroesPlayed` and available cosmetics still reflect the legacy fallback. Full persistent specialization statistics belong to the meta-progression cutover, **not** this hero integration.
+- The three new starting weapons are registered in `HERO_SPECIALIZATIONS_PACK` in the central content manifest; `adapter.reset()` sets the relevant starting weapon level to 1. Only the selected hero's progression path is eligible.
 
-## What is deliberately not connected yet
+## Gameplay wiring
 
-The foundation's `JobId` union permits only `knight | ranger | wizard`; it is integration-owned. The existing `createHero` and `resetRun` paths, hero-selection menu, legacy attack, `damageHero`, AI threat targeting and sprite renderer cannot be extended safely in this parallel branch without modifying shared files.
+1. `Es2MainMenu.vue` shows the existing 3 cards plus `HeroRoster.vue`; `Es2MenuSystem.vue` forwards new hero selection through `selectHero`, while original cards use `selectJob`. `App.vue` forwards both to the engine. Original selection stays visually unselected when a new hero is active.
+2. On `start()`, the engine calls `resetRun`, creates one per-run `createHeroRosterAdapter(state, heroId, heroHooks, random)`, resets it, then applies permanent upgrades and enters live gameplay. No duplicate simulation loop or global mutable hero adapter.
+3. All standard direct hits and projectile/skill hits pass through **one** legacy `combat.hit` and its optional `GameHooks.modifyOutgoingDamage` intercept. This owns damage dealt, kill credit, XP and content hooks exactly once. The hero adapter uses `heroHooks` without the modifier for its own companion, shadow-strike and counter hit calls: no double critical roll.
+4. All ordinary incoming-damage sources still use the existing `damageHero` path, with `mitigateIncomingDamage` after legacy invulnerability/dash guards. Fully absorbed hits do not add phantom HP damage or invulnerability. `afterDamage` applies counterattack based on actual HP lost.
+5. `tickEnemies` consults `canTargetHero` once per live tick: stealth suppresses new target acquisition and cancels existing windups, while enemy status and recovery timers still advance. Already-fired projectiles are not retroactively erased.
+6. `engine.advance(dt)` ticks the specialization once per live simulation step. The 8 Hz existing `hud()` refresh provides cooldown, barrier and companion counts to the UI; no Vue-side timers. `HeroSpecialAction.vue` supports keyboard Q and pointer/touch. Avoid additionally binding KeyQ in the engine; the component owns its keyboard event listener and removes it on unmount.
+7. Returning to menu discards the adapter and UI snapshot; restarting calls `resetRun` and `adapter.reset()`, clearing cooldowns, barrier, companion levels and hero-specific upgrade levels. Paused/level/result screens never tick abilities.
 
-Consequently **new heroes are not yet selectable from the live game's normal menu**. These adapters are independently callable and tested, but actual playable integration requires these integration-owned changes. For now, `reset()` sets `state.choice` to a legacy art job so the original illustrated sprites remain usable. New portraits are selection illustrations, **not** complete new 8-direction gameplay sprite sheets or finished motion animations. New audio metadata refers to currently supported SFX; new unique sound recordings and playback entries would require audio integration.
+## Remaining art/product work
 
-## Integration order (integration branch only)
+**Playability:** New hero stats, companion pulses, real damage/defense, skills and selection are routed through the actual engine. New selection portraits are SVG and HUD artwork uses the selected hero's unique portrait.
 
-1. Extend shared hero ID, save/result typing, UI choice/HUD metadata and art lookup for the three new IDs, retaining old `JobId` values and old save compatibility. Preserve knight/ranger/wizard untouched.
-2. Register `HERO_SPECIALIZATIONS_PACK` with all other approved packs in the integration-owned `src/game/content/packs/index.ts`. Instantiate `createHeroSpecializationAdapter` **once per run**, with the engine's simulation RNG and `GameHooks`.
-3. After `resetRun(state)` (and before permanent upgrade modifiers), call `adapter.reset()`. The adapter **does not** replace `resetRun`: the latter clears `state.content` and every legacy run-owned array. Only create an adapter for the three new IDs; keep existing jobs' start path unchanged.
-4. Wire `adapter.tick(dt)` exactly once per live simulation tick. It already rejects paused, result, invalid and nonpositive dt. Wire `adapter.activate()` to a dedicated skill key/button with a visible cooldown display based on `snapshot().cooldown`.
-5. Route **outgoing hit amounts** through `adapter.modifyOutgoingDamage(rawDamage)` before the actual legacy `hit` (including projectile hits and skill-specific damage paths). Apply once per damage occurrence; do not repeatedly reroll a single projectile's crit. The result is a damage value, not a replacement for `hit` or its kill/XP/content hooks.
-6. Route incoming damage through a **pre-damage intercept** **after checking the same `mode`, invulnerability and dash guards** as `damageHero`. Pass `adapter.mitigateIncomingDamage(incoming)` to `damageHero` **only when the returned value is positive**, then call `adapter.afterDamage(actualHpLost)` where `actualHpLost = Math.max(0, beforeHp - afterHp)`. The adapter defensively avoids consuming barriers during invulnerability. Damage reduction from legacy shield upgrades remains additive in the normal damage path.
-7. For true Shadowblade stealth, teach shared enemy acquisition/targeting logic to honor `adapter.snapshot().stealth > 0` while still updating enemy simulation and hazards. The adapter's temporary invulnerability already protects part of the window; **aggro suppression is not hooked up in this isolated branch**.
-8. Implement proper realistic dark-fantasy character sprite sheets and run/cast/swing effects for all three *new* heroes, driven by their `animation` metadata. Keep existing three originals. The provided new portraits are SVG illustrations (not pixel art); replace or augment only new-hero assets if a stricter photorealistic look is desired.
-9. Add / bind distinct audio samples for new-hero SFX if required; the present metadata intentionally uses `GameHooks.sfx` cues already allowed by `SfxCue`.
+**Visual limitation:** The active 2D Canvas body/action sprite system still uses the original knight/wizard illustration and animation fallback for new IDs. This branch does **not** deliver finished, unique 8-direction animated sprites or fully visible individual summoned characters. Those assets need final production art and renderer mapping in the dedicated integration/art branch. Existing three heroes' animation atlases remain unchanged.
 
-## Balance and runtime bounds
+**Persistence limitation:** Profile v2 still records legacy fallback in `heroesPlayed`, while live `heroId` and `RunStats.specializationId` are correct. Do not claim v3 save migration or specialized permanent mastery from this branch.
 
-| Hero | HP | Speed | Damage | Delay | Range | Active CD |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Shadowblade | 105 | 248 | 28 | 0.43 | 132 | 9.5s |
-| Spirit Summoner | 118 | 194 | 24 | 0.66 | 355 | 12s |
-| Crimson Paladin | 190 | 172 | 30 | 0.65 | 116 | 14s |
+## Evidence and release gate
 
-- **Shadowblade:** 24% critical hit chance, 1.70× critical damage plus 0.15× per specialized upgrade; 0.95s stealth, 0.70s invulnerability, up to three nearby shadow-strike targets.
-- **Spirit Summoner:** 1/2/3 simultaneous virtual companions at level 1/3/5 (never more than three). One attack/support pulse at most every 1.8s; wisp attacks, guardian heals, reaver attacks and leeches. Special strikes up to three targets and heals 12 HP.
-- **Crimson Paladin:** 14% baseline damage reduction, up to 6% additional reduction from specialization; 1.8s counterattack throttle; 3.5s temporary barrier with 14s special cooldown and an 8%-of-max-HP activation cost. Sub-40%-HP damage bonus is the risk/reward passive.
-- **Performance:** no `Math.random` in this module; uses injected or existing seedable simulation RNG. No global mutable gameplay state, additional spawn entities, per-frame array sorting, unbounded timers or companion allocations. Nearby enemy scans happen only on special use (and one bounded summoner selection each 1.8s); virtual companions are metadata/state, not extra `Mob` objects. FX use the existing bounded emitters.
+GitHub Actions run [45009387473](https://github.com/weskao/eclipse-survivors/actions/runs/45009387473) on commit `9793b533cd542be45e15a96f687a3a38686bdc63`:
+- `pnpm install --frozen-lockfile`: **PASS**
+- `pnpm typecheck`: **PASS**
+- `pnpm build`: **PASS**
+- `pnpm check-release`: **PASS**
+- `pnpm test`: **696 PASS / 5 FAIL** (701 total)
 
-## Required integration verification
+All hero-specific runtime and UI tests passed. The five remaining failures are the independent, still-unintegrated run modes in `tests/es2/integration/release-readiness.test.ts`: Boss Rush, Endless Eclipse, Relic Hunt, Cursed Expedition, Chaos Arena. Their implementations belong to run-mode integration, not this hero branch. No PR, deployment, or merge to `main`/`develop` performed. Full project release readiness is **blocked** until those independent gates (and outstanding art) are resolved.
 
-Run `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release` on the integration branch after wiring. Include selection menu/E2E coverage for each new hero, full-hit and projectile crit paths, incoming barrier/interruption timing, pause/resume, death, restart, long Endless runs, save migration, old-hero visual regressions, and realistic frame/audio reviews.
-
-**No shared engine/core type/manifest changes are made in this feature branch.**
+After any later shared-engine merge, rerun the full suite and browser/mobile visual checks. Never describe the source hero roster alone as end-to-end production-ready without the host integration and visual evidence.

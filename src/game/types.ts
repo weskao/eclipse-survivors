@@ -4,6 +4,8 @@ import type { RunModeId, CosmeticId } from '../meta/types'
 
 export type GameMode = 'menu' | 'play' | 'level' | 'paused' | 'result'
 export type JobId = 'knight' | 'ranger' | 'wizard'
+/** Selected identity stays distinct from its legacy sprite/attack fallback. */
+export type HeroId = JobId | import('./content/heroes').SpecializationId
 export type MobType = 'slime' | 'bat' | 'goblin' | 'golem' | 'warlock' | 'boss'
 export type UpgradeId =
   | 'damage' | 'speed' | 'haste' | 'maxhp' | 'multi' | 'orb' | 'magnet' | 'heal'
@@ -113,6 +115,8 @@ export interface WorldEvent extends Point { id: number; kind: WorldEventKind; ex
 export interface GameState {
   mode: GameMode
   choice: JobId
+  /** Real selected hero identity; choice remains the current legacy renderer fallback. */
+  heroId: HeroId
   hero: Hero | null
   /** Owned by this run; never stored in a module singleton or rebuilt per frame. */
   content: ContentRuntime
@@ -173,4 +177,9 @@ export interface GameHooks {
   content?(state: GameState, event: ContentEvent): void
   /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
   openTreasure?(state: GameState, chestId: number): boolean
+  /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
+  modifyOutgoingDamage?(amount: number): number
+  mitigateIncomingDamage?(amount: number): number
+  afterDamage?(amount: number): void
+  canTargetHero?(): boolean
 }

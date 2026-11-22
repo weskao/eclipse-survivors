@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../../../game/ui-art'
-import type { AbilityId, JobId, UpgradeDef } from '../../../game/types'
+import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
 import type { Profile, PermanentUpgrade, CosmeticId, RunModeId, RunRewards, RunStats } from '../../../meta/types'
@@ -18,7 +18,7 @@ import type { MenuChoice, MenuView, RelicEntry } from './model'
 
 const props = withDefaults(defineProps<{
   screen: 'menu' | 'level' | 'result' | 'hidden'
-  choice: JobId; runMode: RunModeId; version: string
+  choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string
   profile?: Profile; upgrades?: readonly UpgradeDef[]
   ending?: string; summary?: string; runResult?: RunStats | null; rewards?: RunRewards | null
   settingsOpen?: boolean; upgradeEffect?: 'soft' | 'still'; cameraShake?: boolean
@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<{
   musicOn: true, sfxOn: true, musicVolume: 100, sfxVolume: 100,
 })
 const emit = defineEmits<{
-  select: [job: JobId]; mode: [mode: RunModeId]; start: []; choose: [id: AbilityId]
+  select: [job: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; choose: [id: AbilityId]
   specialChoose: [id: string]; specialCancel: []
   purchase: [upgrade: PermanentUpgrade]; cosmetic: [hero: JobId, skin: CosmeticId]
   enableAudio: []; reset: []; again: []; home: []; settings: []; closeSettings: []
@@ -72,9 +72,9 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
 </script>
 <template>
   <div class="es2-system" :class="{ 'es2-system-still': upgradeEffect === 'still' }">
-    <Es2MainMenu v-if="screen === 'menu' && !loading" :choice="choice" :run-mode="runMode" :version="version"
+    <Es2MainMenu v-if="screen === 'menu' && !loading" :choice="choice" :hero-id="heroId" :run-mode="runMode" :version="version"
       :profile="currentProfile" :needs-audio-unlock="musicOn && !audioUnlocked"
-      @select="emit('select', $event)" @mode="emit('mode', $event)" @start="emit('start')"
+      @select="emit('select', $event)" @select-hero="emit('selectHero', $event)" @mode="emit('mode', $event)" @start="emit('start')"
       @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')" />
     <Es2Archive :active="archiveActive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
       :hero="choice" :relics="relics" @close="archive = 'main'" @navigate="navigate"
