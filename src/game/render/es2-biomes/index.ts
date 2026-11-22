@@ -86,7 +86,7 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
       p.fillStyle = b.atmosphere.fog
       p.strokeStyle = b.atmosphere.accent
       p.lineWidth = 3
-      p.beginPath(); p.arc(48, 48, 46, 0, TAU); p.fill(); p.stroke()
+      p.beginPath(); p.arc(48, 48, 48, 0, TAU); p.fill(); p.stroke()
       p.fillStyle = b.atmosphere.glow
       p.font = 'bold 39px Georgia'
       p.textAlign = 'center'
@@ -161,7 +161,8 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
     for (const h of data.hazards) {
       const x = 76 + (h.x - origin.x) * scale, y = 55 + (h.y - origin.y) * scale
       if (x < -5 || x > 157 || y < -5 || y > 115) continue
-      ctx.strokeStyle = env.phase(h, time) === 'warning' ? env.definition.atmosphere.telegraph : HAZARD_COLORS[h.kind]
+      ctx.strokeStyle = env.isSuppressed(h, time) ? '#aeb5b880' :
+        env.phase(h, time) === 'warning' ? env.definition.atmosphere.telegraph : HAZARD_COLORS[h.kind]
       ctx.beginPath(); ctx.arc(x, y, Math.max(1.5, h.r * scale), 0, TAU); ctx.stroke()
     }
     ctx.fillStyle = '#fff3be'
