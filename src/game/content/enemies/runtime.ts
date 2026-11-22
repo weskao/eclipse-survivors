@@ -338,7 +338,7 @@ function tickZones(a: FactionArena, dt: number): void {
 export function tickFactionEnemies(a: FactionArena, dt: number): void {
   if (!Number.isFinite(dt) || dt <= 0) return
   const { runtime: r, hero } = a
-  if (a.legacyMobCount !== undefined)
+  if (a.legacyMobCount !== undefined && Number.isFinite(a.legacyMobCount))
     r.legacyMobCount = Math.max(0, Math.floor(a.legacyMobCount))
   // Snapshot length: necromancer summons start acting on the following tick.
   const count = r.enemies.length
@@ -406,6 +406,8 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
 
 /** Integrator invokes after resolving damage and on run reset to release per-run memory. */
 export function cleanupFactionEnemies(runtime: FactionRuntime): void {
-  runtime.enemies = runtime.enemies.filter(e => e.hp > 0)
+  let write = 0
+  for (const enemy of runtime.enemies) if (enemy.hp > 0) runtime.enemies[write++] = enemy
+  runtime.enemies.length = write
   // Live projectiles/zones intentionally finish their brief, bounded lifetimes.
 }
