@@ -158,7 +158,9 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     }
     case 'evolution2:spectral-volley': {
       const count = Math.min(5, Math.max(0, MAX_VOLLEY_PROJECTILES - state.shots.length))
-      if (count > 0) {
+      // No phantom cast: an exhausted shared projectile budget cannot spawn arrows.
+      if (count === 0) return
+      {
         const first = nearby[0]!
         const base = Math.atan2(first.y - hero.y, first.x - hero.x)
         for (let i = 0; i < count; i++) {
