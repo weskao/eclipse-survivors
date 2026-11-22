@@ -152,7 +152,10 @@ export function describeWave(mode: WaveModeId, seed: number, timeSeconds: number
   let endsAt = cycle * WAVE_CYCLE_SECONDS + phase.to
   if (mode === 'chaos-arena') {
     // Eight explicit readiness gates, with recovery between encounters.
-    const waveIndex = config.waveTimes.findLastIndex(at => timeSeconds >= at)
+    let waveIndex = -1
+    for (let i = 0; i < config.waveTimes.length; i++) {
+      if (timeSeconds >= config.waveTimes[i]!) waveIndex = i
+    }
     if (waveIndex >= 0) {
       const ready = config.waveTimes[waveIndex]!
       const next = config.waveTimes[waveIndex + 1] ?? Infinity
@@ -348,7 +351,7 @@ export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): Wa
         events.push({ id: 'waves:boss:' + bossIndex, kind: 'boss', title: LABELS.boss,
           atSeconds: bossAt, durationSeconds: BOSS_ENCOUNTER_SECONDS, danger: wave.danger })
       }
-    } else if (!frame.bossActive && !frame.bossSpawned && wave.stage !== 'boss' && wave.stage !== 'boss-prep') {
+    } else if (!frame.bossActive && wave.stage !== 'boss' && wave.stage !== 'boss-prep') {
       if (mode === 'chaos-arena') {
         const nextWave = (frame.completedWaves ?? 0) + 1
         if (nextWave <= waveTimes.length && t >= waveTimes[nextWave - 1]! &&
