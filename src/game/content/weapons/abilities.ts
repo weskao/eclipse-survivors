@@ -159,10 +159,8 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
   if (r.charge > 0) {
     r.charge -= dt
     if (r.charge > 0) return
-    const enemy = target(context, 730)
-    if (!enemy) return
-    const a = Math.atan2(enemy.y - h.y, enemy.x - h.x)
-    const ux = Math.cos(a), uy = Math.sin(a)
+    // Freeze direction at windup: a moving target cannot silently redirect a telegraphed attack.
+    const ux = Math.cos(r.beamAngle), uy = Math.sin(r.beamAngle)
     const range = 690 + 20 * level
     const width = 16 + level * 2.5
     r.beam = { x: h.x, y: h.y, ux, uy, range, width, life: 0.4 }
