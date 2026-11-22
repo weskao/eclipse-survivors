@@ -31,6 +31,7 @@ try {
 
       // Exercise the actual in-game Settings listbox across both phone orientations.
       await page.locator('.es2-top-actions button').last().click()
+      await page.locator('#es2-quality').waitFor({ state: 'visible', timeout: 10000 })
       const selectors = page.locator('.es2-dialog button[role="combobox"]')
       assert.equal(await selectors.count(), 4, `${viewport.name}: all settings must use game dropdowns`)
       assert.equal(await page.locator('.es2-dialog select').count(), 0,
