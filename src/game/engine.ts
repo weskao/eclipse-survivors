@@ -27,6 +27,7 @@ import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from
 import { minmax, random } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
+import { loadProductionHeroes } from './render/es2/production-heroes'
 import { setScene } from './scene'
 import { spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
@@ -694,6 +695,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    assets.productionHeroes = loadProductionHeroes()
     if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
     if (bosses) assets.bosses = bosses
     assets.cameraShakeEnabled = () => ui.cameraShake
