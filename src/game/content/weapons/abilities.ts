@@ -2,7 +2,7 @@ import type { ContentAbility, ContentContext } from '../contracts'
 import type { Mob, SfxCue, SkillRarity } from '../../types'
 import { hit } from '../../combat'
 import {
-  addMissile, addZone, area, keepVisual, moveMissiles, nearest, runtimeOf, tickZones,
+  addMissile, addZone, keepVisual, moveMissiles, nearest, runtimeOf, tickZones,
   type ArsenalRuntime, type MissileKind, type WeaponKey,
 } from './runtime'
 
@@ -43,7 +43,7 @@ function target(context: ContentContext, range: number): Mob | undefined {
 }
 
 function fireMissile(
-  context: ContentContext, r: ArsenalRuntime, kind: MissileKind,
+  r: ArsenalRuntime, kind: MissileKind,
   x: number, y: number, targetMob: Mob, speed: number, damage: number,
   pierce: number, jumps: number, radius: number,
 ): void {
@@ -63,7 +63,7 @@ function fireStraight(
   const h = context.state.hero!
   const e = target(context, range)
   if (!e) return false
-  fireMissile(context, r, kind, h.x, h.y, e, speed,
+  fireMissile(r, kind, h.x, h.y, e, speed,
     h.damage * (multiplier + 0.23 * (level - 1)), pierce, 0,
     kind === 'lance' ? 14 : kind === 'bone' ? 7 : 9)
   return true
@@ -87,6 +87,9 @@ function slash(context: ContentContext, level: number): boolean {
     stolen += Math.min(mob.hp, damage) * 0.09
     hit(context.state, mob, damage, context.hooks)
   }
+  const r = runtimeOf(context.state)
+  r.slashLife = 0.3
+  r.slashAngle = a
   h.hp = Math.min(h.max, h.hp + Math.min(5 + 0.8 * level, stolen))
   return true
 }
@@ -176,7 +179,11 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
     context.hooks.sfx('bolt')
     return
   }
-  if (ready(r, 'solar-beam', dt, 3.6, level) && target(context, 730)) r.charge = Math.max(0.42, 0.75 - level * 0.04)
+  const next = target(context, 730)
+  if (next && ready(r, 'solar-beam', dt, 3.6, level)) {
+    r.beamAngle = Math.atan2(next.y - h.y, next.x - h.x)
+    r.charge = Math.max(0.42, 0.75 - level * 0.04)
+  }
 }
 
 function tickChain(context: ContentContext, dt: number, level: number): void {
@@ -257,7 +264,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
         const enemy = target(context, 510)
         if (enemy) {
           for (let i = 0; i < Math.min(6, 1 + level); i++)
-            fireMissile(context, r, 'dagger', h.x + (i - level / 2) * 12, h.y,
+            fireMissile(r, 'dagger', h.x + (i - level / 2) * 12, h.y,
               enemy, 470, h.damage * (0.4 + level * 0.1), 1, 2 + Math.floor(level / 2), 7)
           context.hooks.sfx('ranger')
         }
@@ -269,6 +276,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
         context.hooks.sfx('bolt')
       break
     case 'blood-scythe':
+      r.slashLife = Math.max(0, r.slashLife - dt)
       if (ready(r, key, dt, 1.6, level) && slash(context, level)) context.hooks.sfx('knight')
       break
     case 'arcane-mines':
@@ -305,7 +313,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       if (ready(r, key, dt, 1.9, level)) {
         const enemy = target(context, 520)
         if (enemy) {
-          fireMissile(context, r, 'blade', h.x, h.y, enemy, 560,
+          fireMissile(r, 'blade', h.x, h.y, enemy, 560,
             h.damage * (0.57 + 0.12 * level), 1, 2 + level, 10)
           context.hooks.sfx('chain')
         }
