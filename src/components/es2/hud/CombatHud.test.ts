@@ -51,6 +51,16 @@ describe('ES2 combat HUD', () => {
     })
   })
 
+
+  it('updates the top-left portrait to each live specialization\'s true Canvas artwork', () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const { wrapper } = render({ heroId: id, choice: id === 'spirit-summoner' ? 'wizard' : 'knight' })
+      const portrait = wrapper.get('.es2-hud__portrait svg')
+      expect(portrait.get('image').attributes('href')).toContain(id + '-8dir@3x.webp')
+      expect(portrait.attributes('viewBox')).toBeTruthy()
+    }
+  })
+
   it('selects an actual equipped skill by pointer or keyboard-focusable button and shows live cooldowns', async () => {
     const { wrapper } = render()
     const first = wrapper.get('[data-es2-skill="bolt"]')

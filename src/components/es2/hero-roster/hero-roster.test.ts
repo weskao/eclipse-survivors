@@ -22,11 +22,21 @@ describe('ES2 three-hero selection UI', () => {
     expect(wrapper.findAll('[data-hero-id]')).toHaveLength(3)
     expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('false')
-    expect(wrapper.findAll('img')).toHaveLength(6)
+    expect(wrapper.findAll('img[data-hero-skill-icon]')).toHaveLength(3)
     expect(wrapper.text()).toContain('影刃')
     expect(wrapper.text()).toContain('生命')
     expect(wrapper.text()).toContain('起始武器')
     expect(wrapper.text()).toContain('冷卻')
+  })
+
+
+  it('shows the selected hero\'s real 8-direction game illustration instead of the legacy SVG portraits', () => {
+    const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const portrait = wrapper.get(`[data-hero-id="${id}"] svg.es2-roster__portrait`)
+      expect(portrait.attributes('viewBox')).toBeTruthy()
+      expect(portrait.get('image').attributes('href')).toContain(id + '-8dir@3x.webp')
+    }
   })
 
   it('uses distinct generated art for each hero active skill in character cards', () => {

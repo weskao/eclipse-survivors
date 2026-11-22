@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
+import HeroPortrait from './HeroPortrait.vue'
 import type { JobId } from '../../../game/types'
 import shadowAction from '../../../assets/es2/production/heroes/shadowblade-action@3x.webp'
 import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-action@3x.webp'
@@ -41,8 +42,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       @click="select(hero.id)" @keydown="move($event, hero.id)">
       <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${actionSprites[hero.id]})` }" aria-hidden="true"></span>
-      <img class="es2-roster__portrait" :src="hero.portraitSrc" :alt="hero.label + ' 角色插畫'"
-        width="280" height="320" decoding="async" loading="lazy" draggable="false" />
+      <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="hero.label + ' 角色插畫'" />
       <span class="es2-roster__copy">
         <strong>{{ hero.label }}</strong>
         <span class="es2-roster__subtitle">{{ hero.subtitle }}</span>

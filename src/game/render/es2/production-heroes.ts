@@ -77,8 +77,15 @@ export function drawProductionHeroFrame(
   if (image.naturalWidth === 1024 && image.naturalHeight === 512) {
     const r = productionHeroDirectionRect(anim)
     if (!r) return false
+    // The authored body occupies only the middle ~50px of each 128px cell.
+    // Normalize that visible silhouette to the original three heroes' scale,
+    // with the authored feet (~70% down the cell) on the unchanged ground point.
+    // This changes artwork only, never collision, hitboxes or actor geometry.
+    const scale = 2.5
+    const paintedWidth = width * scale
+    const paintedHeight = height * scale
     ctx.drawImage(image, r.x, r.y, r.width, r.height,
-      -width / 2, -height + 4, width, height)
+      -paintedWidth / 2, 4 - paintedHeight * 0.7, paintedWidth, paintedHeight)
     return true
   }
   if (image.naturalWidth !== 384 || image.naturalHeight !== 96) return false
