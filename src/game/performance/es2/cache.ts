@@ -4,7 +4,7 @@ export interface RenderCacheScope {
   width: number
   height: number
   dpr: number
-  quality: 'low' | 'high'
+  quality: 'low' | 'medium' | 'high'
   assetVersion: string
   contextId: string
 }
