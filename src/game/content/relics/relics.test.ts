@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { expect, it } from 'vitest'
 import { createContentRegistry } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
 import { seeded } from '../../math'
