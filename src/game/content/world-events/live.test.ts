@@ -44,6 +44,24 @@ describe('world-event live integration', () => {
     expect(state.hero).not.toBeNull()
   })
 
+
+  it('replays a deterministic relic grant and transaction outcome from identical run state', () => {
+    const replay = () => {
+      const { state, live, spawn } = setup()
+      const marker = spawn('events:treasure-vault')
+      const selected = live.choose(marker.id, 'unlock')
+      return {
+        marker: { id: marker.id, kind: marker.kind, expiresAt: marker.expiresAt },
+        selected,
+        level: state.hero!.level,
+        experience: state.hero!.xp,
+        hp: state.hero!.hp,
+        relics: inventorySnapshot(state).items,
+      }
+    }
+    expect(replay()).toEqual(replay())
+  })
+
   it('previews reach, pause and HP/XP costs; exactly 64 units is in range', () => {
     const { state, live, spawn } = setup()
     const marker = spawn('events:cursed-altar')
