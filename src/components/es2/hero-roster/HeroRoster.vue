@@ -3,9 +3,7 @@ import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
 import HeroPortrait from './HeroPortrait.vue'
 import type { JobId } from '../../../game/types'
-import shadowAction from '../../../assets/es2/production/heroes/shadowblade-action@3x.webp'
-import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-action@3x.webp'
-import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-action@3x.webp'
+import { C104_HERO_ATLASES, PRODUCTION_HERO_SOURCES, heroBodyBox } from '../../../game/render/es2/production-heroes'
 
 const props = withDefaults(defineProps<{
   selectedId?: SpecializationId | JobId | null
@@ -13,11 +11,21 @@ const props = withDefaults(defineProps<{
 }>(), { selectedId: null, disabled: false })
 const emit = defineEmits<{ select: [id: SpecializationId] }>()
 const heroes = Object.values(HERO_DEFINITIONS)
-const actionSprites: Record<SpecializationId, string> = {
-  shadowblade: shadowAction,
-  'spirit-summoner': summonerAction,
-  'crimson-paladin': paladinAction,
+// South-facing attack/cast row of the live game atlas, expressed in units of the
+// preview box (--box in menu.css) so the same crop works at every breakpoint.
+function previewStyle(id: SpecializationId): Record<string, string | number> {
+  const atlas = C104_HERO_ATLASES[id]
+  const action = atlas.sections[1]!
+  const box = heroBodyBox(atlas, action.rowOffset + 2)
+  return {
+    backgroundImage: `url(${PRODUCTION_HERO_SOURCES[id]})`,
+    '--bw': atlas.width / box.side, '--bh': atlas.height / box.side,
+    '--bx': box.x / box.side, '--by': box.y / box.side,
+    '--bx-end': (box.x + (action.frames - 1) * atlas.cell.width) / box.side,
+    '--frames': action.frames,
+  }
 }
+const previews = Object.fromEntries(heroes.map(hero => [hero.id, previewStyle(hero.id)])) as Record<SpecializationId, Record<string, string | number>>
 const root = ref<HTMLElement | null>(null)
 function select(id: SpecializationId): void { if (!props.disabled) emit('select', id) }
 
@@ -41,7 +49,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       @click="select(hero.id)" @keydown="move($event, hero.id)">
-      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${actionSprites[hero.id]})` }" aria-hidden="true"></span>
+      <span class="es2-hero-action-preview" :style="previews[hero.id]" aria-hidden="true"></span>
       <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="hero.label + ' 角色插畫'" />
       <span class="es2-roster__copy">
         <strong>{{ hero.label }}</strong>

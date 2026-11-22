@@ -1,32 +1,41 @@
 import type { Ctx2D } from '../ctx'
 
 // Source art was committed to the repository BEFORE its UI/Canvas consumer.
-// These large originals are reference atlases, not certified runtime animation cells.
-// Render only as complete, opt-in art sheets until individual cells pass alpha QA.
-import imgs1 from '../../../../assets/images/imgs1.png?url'
-import imgs2 from '../../../../assets/images/imgs2.png?url'
-import imgs3 from '../../../../assets/images/imgs3.png?url'
-import imgs4 from '../../../../assets/images/imgs4.png?url'
-import imgs5 from '../../../../assets/images/imgs5.png?url'
-import imgs6 from '../../../../assets/images/imgs6.png?url'
-import imgs7 from '../../../../assets/images/imgs7.png?url'
-import imgs8 from '../../../../assets/images/imgs8.png?url'
-import imgs9 from '../../../../assets/images/imgs9.png?url'
-import imgs10 from '../../../../assets/images/imgs10.png?url'
+// These large originals are reference atlases; runtime heroes use the verified
+// per-cell atlases built by scripts/es2/build_c104_hero_atlases.py.
+import abyssalRift from '../../../assets/es2/source/c104/biomes-abyssal-necropolis-celestial-rift-sheet.png?url'
+import shadowblade from '../../../assets/es2/source/c104/hero-shadowblade-run-attack-sheet.png?url'
+import spiritSummoner from '../../../assets/es2/source/c104/hero-spirit-summoner-run-cast-sheet.png?url'
+import crimsonPaladin from '../../../assets/es2/source/c104/hero-crimson-paladin-run-attack-sheet.png?url'
+import enemiesA from '../../../assets/es2/source/c104/enemies-phantom-imp-wraith-berserker-sentinel-sheet.png?url'
+import enemiesB from '../../../assets/es2/source/c104/enemies-assassin-necromancer-archer-plague-guardian-sheet.png?url'
+import bossesA from '../../../assets/es2/source/c104/bosses-abyss-monarch-frost-sovereign-sheet.png?url'
+import bossesB from '../../../assets/es2/source/c104/bosses-infernal-titan-eclipse-seraph-sheet.png?url'
+import bloodMoonForest from '../../../assets/es2/source/c104/biomes-blood-moon-cathedral-cursed-forest-sheet.png?url'
+import uiOrnaments from '../../../assets/es2/source/c104/ui-treasure-rarity-hud-ornaments-sheet.png?url'
 
 export const C104_SOURCES = Object.freeze({
-  imgs1, imgs2, imgs3, imgs4, imgs5, imgs6, imgs7, imgs8, imgs9, imgs10,
+  'biomes-abyssal-necropolis-celestial-rift': abyssalRift,
+  'hero-shadowblade-run-attack': shadowblade,
+  'hero-spirit-summoner-run-cast': spiritSummoner,
+  'hero-crimson-paladin-run-attack': crimsonPaladin,
+  'enemies-phantom-imp-wraith-berserker-sentinel': enemiesA,
+  'enemies-assassin-necromancer-archer-plague-guardian': enemiesB,
+  'bosses-abyss-monarch-frost-sovereign': bossesA,
+  'bosses-infernal-titan-eclipse-seraph': bossesB,
+  'biomes-blood-moon-cathedral-cursed-forest': bloodMoonForest,
+  'ui-treasure-rarity-hud-ornaments': uiOrnaments,
 })
 
 export type C104SourceId = keyof typeof C104_SOURCES
 
 /** Every source file is referenced by a real UI surface; no orphaned art. */
 export const C104_SURFACES = {
-  heroes: { sources: ['imgs2', 'imgs3', 'imgs4'] },
-  enemies: { sources: ['imgs5', 'imgs6'] },
-  bosses: { sources: ['imgs7', 'imgs8'] },
-  biomes: { sources: ['imgs1', 'imgs9'] },
-  ui: { sources: ['imgs10'] },
+  heroes: { sources: ['hero-shadowblade-run-attack', 'hero-spirit-summoner-run-cast', 'hero-crimson-paladin-run-attack'] },
+  enemies: { sources: ['enemies-phantom-imp-wraith-berserker-sentinel', 'enemies-assassin-necromancer-archer-plague-guardian'] },
+  bosses: { sources: ['bosses-abyss-monarch-frost-sovereign', 'bosses-infernal-titan-eclipse-seraph'] },
+  biomes: { sources: ['biomes-abyssal-necropolis-celestial-rift', 'biomes-blood-moon-cathedral-cursed-forest'] },
+  ui: { sources: ['ui-treasure-rarity-hud-ornaments'] },
 } as const satisfies Record<string, { sources: readonly C104SourceId[] }>
 
 export interface C104Rect {

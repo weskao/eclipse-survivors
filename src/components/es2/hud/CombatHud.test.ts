@@ -56,7 +56,7 @@ describe('ES2 combat HUD', () => {
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
       const { wrapper } = render({ heroId: id, choice: id === 'spirit-summoner' ? 'wizard' : 'knight' })
       const portrait = wrapper.get('.es2-hud__portrait svg')
-      expect(portrait.get('image').attributes('href')).toContain(id + '-8dir@3x.webp')
+      expect(portrait.get('image').attributes('href')).toContain(id + '-c104-atlas@3x.webp')
       expect(portrait.attributes('viewBox')).toBeTruthy()
     }
   })

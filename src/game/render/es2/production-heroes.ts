@@ -1,20 +1,25 @@
 import type { SpecializationId } from '../../content/heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
-import shadowblade from '../../../assets/es2/production/heroes/shadowblade-8dir@3x.webp'
-import summoner from '../../../assets/es2/production/heroes/spirit-summoner-8dir@3x.webp'
-import paladin from '../../../assets/es2/production/heroes/crimson-paladin-8dir@3x.webp'
+import { heroes as atlasManifest } from '../../../assets/es2/production/heroes/c104-atlas-manifest.json'
+import shadowblade from '../../../assets/es2/production/heroes/shadowblade-c104-atlas@3x.webp'
+import summoner from '../../../assets/es2/production/heroes/spirit-summoner-c104-atlas@3x.webp'
+import paladin from '../../../assets/es2/production/heroes/crimson-paladin-c104-atlas@3x.webp'
 
 /**
- * Original authoring grid cut into 32 isolated 128px cells per hero.
- * Columns follow the runtime's direction octants E, SE, S, SW, W, NW, N, NE;
- * rows are idle, run, attack and cast. HeroAnimation already owns direction.
+ * Runtime atlases cut from the c104 hero sheets by scripts/es2/build_c104_hero_atlases.py.
+ * Row = section * 8 + direction octant (E, SE, S, SW, W, NW, N, NE); column = frame.
+ * Section 0 is the run cycle, section 1 the authored attack/cast cycle.
  */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
   shadowblade,
   'spirit-summoner': summoner,
   'crimson-paladin': paladin,
 })
+
+export type C104HeroAtlas = (typeof atlasManifest)[SpecializationId]
+export const C104_HERO_ATLASES: Readonly<Record<SpecializationId, C104HeroAtlas>> = atlasManifest
+const ATLAS_LIST: readonly C104HeroAtlas[] = Object.values(atlasManifest)
 
 export type ProductionHeroArtwork = Record<SpecializationId, HTMLImageElement>
 
@@ -47,45 +52,62 @@ export function productionHeroFrame(anim: HeroAnimation): number {
   }
 }
 
+/** Decoded image dimensions identify which hero atlas it is (unique per hero, asserted in tests). */
+function atlasFor(image: HTMLImageElement): C104HeroAtlas | undefined {
+  if (!image.complete) return undefined
+  for (const atlas of ATLAS_LIST) {
+    if (image.naturalWidth === atlas.width && image.naturalHeight === atlas.height) return atlas
+  }
+  return undefined
+}
+
+export const isDirectionalHeroAtlas = (image: HTMLImageElement): boolean => atlasFor(image) !== undefined
+
 export interface ProductionHeroSourceRect {
   readonly x: number
   readonly y: number
-  readonly width: 128
-  readonly height: 128
+  readonly width: number
+  readonly height: number
 }
 
 /**
- * Exact per-cell crop, no adjacent frame interpolation or fake left/right flip.
- * Hurt/death/victory intentionally use the already-authored legacy fallback,
- * since their eight-direction artwork is not supplied by this source atlas.
+ * Exact per-cell crop, no adjacent-frame interpolation or fake left/right flip.
+ * Hurt/death/victory have no c104 artwork and return null so the legacy fallback draws.
  */
-export function productionHeroDirectionRect(anim: HeroAnimation): ProductionHeroSourceRect | null {
-  const row = anim.reducedMotion ? 0 :
-    anim.pose === 'idle' ? 0 :
-      anim.pose === 'run' || anim.pose === 'dash' ? 1 :
-        anim.pose === 'attack' ? 2 :
-          anim.pose === 'cast' ? 3 : -1
-  if (row < 0) return null
+export function productionHeroCellRect(atlas: C104HeroAtlas, anim: HeroAnimation): ProductionHeroSourceRect | null {
+  const action = anim.pose === 'attack' || anim.pose === 'cast'
+  if (!action && anim.pose !== 'idle' && anim.pose !== 'run' && anim.pose !== 'dash') return null
+  const section = atlas.sections[action && !anim.reducedMotion ? 1 : 0]!
+  const still = anim.reducedMotion || anim.pose === 'idle' || !(anim.count > 0)
+  const frame = still ? 0 : Math.min(section.frames - 1, Math.max(0, Math.floor(anim.frame * section.frames / anim.count)))
   const dir = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
-  return { x: dir * 128, y: row * 128, width: 128, height: 128 }
+  const { width, height } = atlas.cell
+  return { x: frame * width, y: (section.rowOffset + dir) * height, width, height }
+}
+
+/** Square source box framing the authored body in one atlas row (for DOM portraits/previews). */
+export function heroBodyBox(atlas: C104HeroAtlas, row: number): { x: number; y: number; side: number } {
+  const side = Math.round(atlas.bodyHeight * 1.25)
+  return {
+    x: atlas.cell.anchorX - side / 2,
+    y: row * atlas.cell.height + Math.max(0, atlas.cell.baseline + 4 - side),
+    side,
+  }
 }
 
 export function drawProductionHeroFrame(
   ctx: Ctx2D, image: HTMLImageElement, anim: HeroAnimation, width: number, height: number,
 ): boolean {
   if (!image.complete) return false
-  if (image.naturalWidth === 1024 && image.naturalHeight === 512) {
-    const r = productionHeroDirectionRect(anim)
+  const atlas = atlasFor(image)
+  if (atlas) {
+    const r = productionHeroCellRect(atlas, anim)
     if (!r) return false
-    // The authored body occupies only the middle ~50px of each 128px cell.
-    // Normalize that visible silhouette to the original three heroes' scale,
-    // with the authored feet (~70% down the cell) on the unchanged ground point.
-    // This changes artwork only, never collision, hitboxes or actor geometry.
-    const scale = 2.5
-    const paintedWidth = width * scale
-    const paintedHeight = height * scale
+    // Normalize the authored body to the original heroes' on-screen height with the
+    // feet on the unchanged ground point. Artwork only: collision and hitboxes are untouched.
+    const k = (height * 0.977) / atlas.bodyHeight
     ctx.drawImage(image, r.x, r.y, r.width, r.height,
-      -paintedWidth / 2, 4 - paintedHeight * 0.7, paintedWidth, paintedHeight)
+      -atlas.cell.anchorX * k, 4 - atlas.cell.baseline * k, r.width * k, r.height * k)
     return true
   }
   if (image.naturalWidth !== 384 || image.naturalHeight !== 96) return false

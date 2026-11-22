@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
 import { drawCharacter } from '../characters'
 import { createFakeCtx, fakeArtwork } from '../fakes'
-import type { ProductionHeroArtwork } from './production-heroes'
+import { C104_HERO_ATLASES, type ProductionHeroArtwork } from './production-heroes'
 
 describe('authoritative eight-direction atlas, no accidental face mirroring', () => {
   it('draws a decoded left-facing atlas directly without Canvas scale(-1, 1)', () => {
@@ -12,7 +12,7 @@ describe('authoritative eight-direction atlas, no accidental face mirroring', ()
     s.heroId = 'shadowblade'
     s.hero!.face = -1
     s.W = 800; s.H = 600
-    const atlas = { complete: true, naturalWidth: 1024, naturalHeight: 512 } as HTMLImageElement
+    const atlas = { complete: true, naturalWidth: C104_HERO_ATLASES.shadowblade.width, naturalHeight: C104_HERO_ATLASES.shadowblade.height } as HTMLImageElement
     const { ctx, calls, drawn } = createFakeCtx()
     drawCharacter(ctx, s, fakeArtwork(true), {}, s.hero!, 100, 100, false, undefined, undefined,
       { shadowblade: atlas } as unknown as ProductionHeroArtwork)
@@ -28,7 +28,7 @@ describe('authoritative eight-direction atlas, no accidental face mirroring', ()
     s.hero!.face = -1
     s.hero!.hp = 0
     s.W = 800; s.H = 600
-    const atlas = { complete: true, naturalWidth: 1024, naturalHeight: 512 } as HTMLImageElement
+    const atlas = { complete: true, naturalWidth: C104_HERO_ATLASES.shadowblade.width, naturalHeight: C104_HERO_ATLASES.shadowblade.height } as HTMLImageElement
     const { ctx, calls, drawn } = createFakeCtx()
     drawCharacter(ctx, s, fakeArtwork(true), {}, s.hero!, 100, 100, false, undefined, undefined,
       { shadowblade: atlas } as unknown as ProductionHeroArtwork)

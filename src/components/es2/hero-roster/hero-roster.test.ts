@@ -35,7 +35,7 @@ describe('ES2 three-hero selection UI', () => {
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
       const portrait = wrapper.get(`[data-hero-id="${id}"] svg.es2-roster__portrait`)
       expect(portrait.attributes('viewBox')).toBeTruthy()
-      expect(portrait.get('image').attributes('href')).toContain(id + '-8dir@3x.webp')
+      expect(portrait.get('image').attributes('href')).toContain(id + '-c104-atlas@3x.webp')
     }
   })
 

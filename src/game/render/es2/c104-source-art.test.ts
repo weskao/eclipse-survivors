@@ -4,17 +4,17 @@ import type { Ctx2D } from '../ctx'
 
 describe('c104 original ten-sheet production runtime coverage', () => {
   it('references all ten immutable authored PNGs without leaving any as orphan files', () => {
-    expect(Object.keys(C104_SOURCES)).toEqual(['imgs1','imgs2','imgs3','imgs4','imgs5','imgs6','imgs7','imgs8','imgs9','imgs10'])
+    expect(Object.keys(C104_SOURCES)).toHaveLength(10)
     const used = new Set(Object.values(C104_SURFACES).flatMap(x => x.sources))
     expect(used).toEqual(new Set(Object.keys(C104_SOURCES)))
-    for (const source of Object.values(C104_SOURCES)) expect(source).toMatch(/\.png(?:\?|$)/)
+    for (const [id, source] of Object.entries(C104_SOURCES)) expect(source).toMatch(new RegExp(`${id}-sheet.*\\.png(?:\\?|$)`))
   })
   it('has semantic mappings for heroes, enemies, bosses, environments and UI', () => {
-    expect(C104_SURFACES.heroes.sources).toEqual(['imgs2','imgs3','imgs4'])
-    expect(C104_SURFACES.enemies.sources).toEqual(['imgs5','imgs6'])
-    expect(C104_SURFACES.bosses.sources).toEqual(['imgs7','imgs8'])
-    expect(C104_SURFACES.biomes.sources).toEqual(['imgs1','imgs9'])
-    expect(C104_SURFACES.ui.sources).toEqual(['imgs10'])
+    for (const [category, { sources }] of Object.entries(C104_SURFACES)) {
+      const prefix = category === 'heroes' ? 'hero-' : `${category}-`
+      for (const id of sources) expect(id.startsWith(prefix)).toBe(true)
+    }
+    expect(C104_SURFACES.heroes.sources).toHaveLength(3)
   })
   it('strictly rejects a crop overlapping another frame or outside its source dimensions', () => {
     const draw: unknown[][] = []

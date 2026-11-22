@@ -6,7 +6,7 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
-import { drawProductionHeroFrame, type ProductionHeroArtwork } from './es2/production-heroes'
+import { drawProductionHeroFrame, isDirectionalHeroAtlas, type ProductionHeroArtwork } from './es2/production-heroes'
 import { drawProductionBossFrame } from './es2/production-world'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
@@ -279,8 +279,7 @@ export function drawCharacter(
       // Eight-direction atlases already contain an authored left-facing frame.
       // Mirroring them produces the wrong direction and artwork. Keep the
       // original fallback mirror for unloaded art and unsupported poses.
-      const directionalReady = productionImage?.complete
-        && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512
+      const directionalReady = !!productionImage && isDirectionalHeroAtlas(productionImage)
       if (hero.face < 0 && !directionalReady) ctx.scale(-1, 1)
       const productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
