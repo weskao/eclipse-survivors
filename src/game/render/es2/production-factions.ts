@@ -33,7 +33,7 @@ export function drawLiveFactionArt(
   ox: number, oy: number,
 ): number {
   // Original warning geometries, tied to true aim/radius, are painted first.
-  drawFactionTelegraphs(ctx, runtime, ox, oy)
+  drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy)
   let drawn = 0
   const width = state.W, height = state.H
   for (const enemy of runtime.enemies) {
