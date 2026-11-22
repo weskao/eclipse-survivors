@@ -29,6 +29,14 @@ describe('raster spell artwork animation', () => {
     expect(screen.find('picture img.skill-art').attributes('src')).toContain('blaze@3x-animated.webp')
   })
 
+  it('uses still spell artwork in the no-animation upgrade setting', () => {
+    const u: UpgradeDef = { id: 'blaze', title: 'Flame', desc: 'Fire', icon: '🔥', rarity: 'rare', maxLevel: 5 }
+    const screen = mount(LevelUpOverlay, { props: { active: true, upgrades: [u], effect: 'still' } })
+    expect(screen.find('#level').classes()).toContain('still-upgrades')
+    expect(screen.find('picture img.skill-art').attributes('src')).toContain('blaze@3x.webp')
+    expect(screen.find('picture img.skill-art').attributes('src')).not.toContain('-animated.webp')
+  })
+
   it('uses a single animated atlas for the HUD and a static atlas in reduced motion', () => {
     const animation = readFileSync(resolve(process.cwd(), 'src/assets/ui/skill-art-atlas@3x-animated.webp'))
     expect(animation.toString('ascii', 8, 12)).toBe('WEBP')

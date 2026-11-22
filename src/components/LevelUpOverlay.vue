@@ -21,7 +21,7 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
           <span class="portrait skill-sigil" aria-hidden="true">
             <picture v-if="hasGeneratedSkillArt(u.id)">
               <source media="(prefers-reduced-motion: reduce)" :srcset="skillImageSrc(u.id)" />
-              <img class="skill-art" draggable="false" decoding="async" :src="animatedSkillImageSrc(u.id)" alt="" />
+              <img class="skill-art" draggable="false" decoding="async" :src="effect === 'still' ? skillImageSrc(u.id) : animatedSkillImageSrc(u.id)" alt="" />
             </picture>
             <img v-else class="skill-art" draggable="false" decoding="async" :src="skillImageSrc(u.id)" alt="" />
             {{ u.icon }}

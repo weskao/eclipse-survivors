@@ -248,7 +248,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function advance(dt: number): void {
-    s.worldClock += s.mode === 'play' ? 0 : dt * 0.3
+    // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
+    s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {

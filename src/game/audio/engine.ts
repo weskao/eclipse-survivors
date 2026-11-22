@@ -264,7 +264,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     tick(mode) {
       const ctx = running()
-      if (!musicOn || !ctx) return
+      if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { menu.schedule(ctx.currentTime, tone); return }
       if (mode !== 'play') return
       if (bgm.paused || intensity === 'boss') battle.schedule(ctx.currentTime, tone)
@@ -299,7 +299,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         bgm.volume = mp3Level()
         if (musicOn) {
           if (ac && musicBus) musicBus.gain.setTargetAtTime(MUSIC_GAIN * musicVolume / 100, ac.currentTime, 0.06)
-          playScore()
+          wake()
           return true
         }
       }
@@ -323,6 +323,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
         if (sfxOn) {
           if (ac && master) master.gain.setTargetAtTime(SFX_GAIN * sfxVolume / 100, ac.currentTime, 0.06)
+          wake()
           return true
         }
       }
