@@ -3,6 +3,7 @@ import { hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
 import SettingsButton from './SettingsButton.vue'
+import AudioControl from './AudioControl.vue'
 import type { HudView } from '../game/store'
 import type { JobId } from '../game/types'
 
@@ -12,10 +13,13 @@ defineProps<{
   choice: JobId
   musicOn: boolean
   sfxOn: boolean
+  musicVolume?: number
+  sfxVolume?: number
+  audioActive?: boolean
   toastText: string
   toastVisible: boolean
 }>()
-const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; pause: []; settings: [] }>()
+const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; musicVolume: [value: number]; sfxVolume: [value: number]; pause: []; settings: [] }>()
 
 const minimap = shallowRef<HTMLCanvasElement | null>(null)
 defineExpose({ minimap })
@@ -35,8 +39,7 @@ defineExpose({ minimap })
         <div class="chip" id="timer">{{ hud.timer }}</div>
         <div class="chip">☠ <span id="score">{{ hud.kill }}</span></div>
         <div class="chip">
-          <button id="music" aria-label="音樂切換" :aria-pressed="musicOn" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
-          <button id="sfx" aria-label="音效切換" :aria-pressed="sfxOn" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
+          <AudioControl context="hud" compact :active="active && (audioActive ?? true)" :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')" @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)" />
           <SettingsButton compact @open="emit('settings')" />
           <button id="pauser" aria-label="暫停" aria-keyshortcuts="P" @click="emit('pause')">Ⅱ<kbd class="pause-shortcut" aria-hidden="true">P</kbd></button>
         </div>

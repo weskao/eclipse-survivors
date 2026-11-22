@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { UP } from '../game/constants'
@@ -12,8 +13,55 @@ import PauseOverlay from './PauseOverlay.vue'
 import ResultOverlay from './ResultOverlay.vue'
 import TouchControls from './TouchControls.vue'
 import SettingsOverlay from './SettingsOverlay.vue'
+import AudioControl from './AudioControl.vue'
 
-const menuProps = { active: true, choice: 'knight' as const, musicOn: true, sfxOn: true, version: '1.2.3' }
+const menuProps = { active: true, choice: 'knight' as const, musicOn: true, audioUnlocked: true, sfxOn: true, musicVolume: 100, sfxVolume: 100, version: '1.2.3' }
+
+describe('AudioControl', () => {
+  const props = { context: 'menu' as const, active: true, musicOn: true, sfxOn: true, musicVolume: 64, sfxVolume: 22 }
+
+  it('merges both external buttons into one and adjusts each channel immediately', async () => {
+    const w = mount(AudioControl, { props, attachTo: document.body })
+    const trigger = w.get('#menuAudioTrigger')
+    expect(trigger.attributes('aria-expanded')).toBe('false')
+    await trigger.trigger('click')
+    await nextTick()
+    expect(trigger.attributes('aria-expanded')).toBe('true')
+    const panel = document.querySelector('#menuAudioPopover')!
+    expect(panel).not.toBeNull()
+    const music = panel.querySelector<HTMLInputElement>('#menuMusicVolume')!
+    music.value = '33'
+    music.dispatchEvent(new Event('input', { bubbles: true }))
+    const sfx = panel.querySelector<HTMLInputElement>('#menuSfxVolume')!
+    sfx.value = '81'
+    sfx.dispatchEvent(new Event('input', { bubbles: true }))
+    expect(w.emitted('musicVolume')?.at(-1)).toEqual([33])
+    expect(w.emitted('sfxVolume')?.at(-1)).toEqual([81])
+    panel.querySelector<HTMLButtonElement>('#menuMusicMute')!.click()
+    panel.querySelector<HTMLButtonElement>('#menuSfxMute')!.click()
+    expect(w.emitted('toggleMusic')).toHaveLength(1)
+    expect(w.emitted('toggleSfx')).toHaveLength(1)
+    await w.setProps({ active: false })
+    await nextTick()
+    expect(document.querySelector('#menuAudioPopover')).toBeNull()
+    w.unmount()
+  })
+
+  it('closes on Escape and outside pointer while keeping the trigger accessible', async () => {
+    const w = mount(AudioControl, { props, attachTo: document.body })
+    await w.get('#menuAudioTrigger').trigger('click')
+    await nextTick()
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await nextTick()
+    expect(document.querySelector('#menuAudioPopover')).toBeNull()
+    await w.get('#menuAudioTrigger').trigger('click')
+    await nextTick()
+    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    await nextTick()
+    expect(w.get('#menuAudioTrigger').attributes('aria-expanded')).toBe('false')
+    w.unmount()
+  })
+})
 
 describe('MenuScreen', () => {
   it('renders the static menu structure', () => {
@@ -64,19 +112,13 @@ describe('MenuScreen', () => {
     expect(w.findAll('button.job.selected')).toHaveLength(1)
   })
 
-  it('audio toggles follow props and emit', async () => {
+  it('replaces the two footer audio buttons with one compact control', async () => {
     const w = mount(MenuScreen, { props: menuProps })
-    expect(w.find('#menuMusic').text()).toBe('♫ 背景音樂：開')
-    expect(w.find('#menuSfx').text()).toBe('♬ 音效：開')
-    await w.setProps({ musicOn: false, sfxOn: false })
-    expect(w.find('#menuMusic').text()).toBe('♫ 背景音樂：關')
-    expect(w.find('#menuMusic').attributes('aria-pressed')).toBe('false')
-    expect(w.find('#menuSfx').text()).toBe('♬ 音效：關')
-    expect(w.find('#menuSfx').attributes('aria-pressed')).toBe('false')
-    await w.find('#menuMusic').trigger('click')
-    await w.find('#menuSfx').trigger('click')
-    expect(w.emitted('toggleMusic')).toHaveLength(1)
-    expect(w.emitted('toggleSfx')).toHaveLength(1)
+    expect(w.find('#menuAudioTrigger').exists()).toBe(true)
+    expect(w.find('#menuMusic').exists()).toBe(false)
+    expect(w.find('#menuSfx').exists()).toBe(false)
+    expect(w.findAll('#menuAudioTrigger')).toHaveLength(1)
+    w.unmount()
   })
 })
 
@@ -98,10 +140,9 @@ describe('GameHud', () => {
     expect(w.find('#hudFace img').exists()).toBe(true)
     expect(w.find('#toast').text()).toBe('hi')
     expect((w.find('#toast').element as HTMLElement).style.opacity).toBe('1')
-    expect(w.find('#music').text()).toBe('♫')
-    expect(w.find('#music').attributes('aria-pressed')).toBe('true')
-    expect(w.find('#sfx').text()).toBe('♩')
-    expect(w.find('#sfx').attributes('aria-pressed')).toBe('false')
+    expect(w.find('#hudAudioTrigger').exists()).toBe(true)
+    expect(w.find('#music').exists()).toBe(false)
+    expect(w.find('#sfx').exists()).toBe(false)
     expect(w.find('#pauser').attributes('aria-keyshortcuts')).toBe('P')
     expect(w.find('#pauser .pause-shortcut').text()).toBe('P')
     expect(w.find('#pauser .pause-shortcut').attributes('aria-hidden')).toBe('true')
@@ -118,11 +159,7 @@ describe('GameHud', () => {
 
   it('emits toggles and pause; exposes minimap canvas', async () => {
     const w = mount(GameHud, { props })
-    await w.find('#music').trigger('click')
-    await w.find('#sfx').trigger('click')
     await w.find('#pauser').trigger('click')
-    expect(w.emitted('toggleMusic')).toHaveLength(1)
-    expect(w.emitted('toggleSfx')).toHaveLength(1)
     expect(w.emitted('pause')).toHaveLength(1)
     expect(w.vm.minimap).toBe(w.find('#minimap').element)
     await w.find('.settings-trigger').trigger('click')
@@ -136,24 +173,16 @@ describe('GameHud', () => {
 })
 
 describe('SettingsOverlay', () => {
-  const props = { active: true, musicOn: true, sfxOn: true, musicVolume: 100, sfxVolume: 100, upgradeEffect: 'soft' as const, cameraShake: true }
+  const props = { active: true, upgradeEffect: 'soft' as const, cameraShake: true }
 
-  it('shows accessible volume sliders, mute actions and motion choices', async () => {
+  it('focuses on visual preferences without duplicating external audio controls', async () => {
     const w = mount(SettingsOverlay, { props })
     expect(w.find('[role="dialog"]').attributes('aria-label')).toBe('遊戲設定')
-    expect(w.find('#settingsMusicVolume').attributes('type')).toBe('range')
-    expect(w.find('#settingsSfxVolume').attributes('type')).toBe('range')
+    expect(w.find('#settingsMusicVolume').exists()).toBe(false)
+    expect(w.find('#settingsSfxVolume').exists()).toBe(false)
     expect(w.find('#settingsSoft').attributes('aria-pressed')).toBe('true')
     expect(w.find('#settingsStill').attributes('aria-pressed')).toBe('false')
     expect(w.find('#settingsCameraShake').attributes('aria-pressed')).toBe('true')
-    await w.find('#settingsMusicVolume').setValue('35')
-    await w.find('#settingsSfxVolume').setValue('70')
-    expect(w.emitted('musicVolume')?.at(-1)).toEqual([35])
-    expect(w.emitted('sfxVolume')?.at(-1)).toEqual([70])
-    await w.find('#settingsMusicMute').trigger('click')
-    await w.find('#settingsSfxMute').trigger('click')
-    expect(w.emitted('toggleMusic')).toHaveLength(1)
-    expect(w.emitted('toggleSfx')).toHaveLength(1)
     await w.find('#settingsStill').trigger('click')
     await w.find('#settingsCameraShake').trigger('click')
     expect(w.emitted('upgradeEffect')?.at(-1)).toEqual(['still'])

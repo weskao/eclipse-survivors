@@ -4,19 +4,11 @@ import { nextTick, ref, watch } from 'vue'
 type UpgradeEffect = 'soft' | 'still'
 const props = defineProps<{
   active: boolean
-  musicOn: boolean
-  sfxOn: boolean
-  musicVolume: number
-  sfxVolume: number
   upgradeEffect: UpgradeEffect
   cameraShake: boolean
 }>()
 const emit = defineEmits<{
   close: []
-  toggleMusic: []
-  toggleSfx: []
-  musicVolume: [value: number]
-  sfxVolume: [value: number]
   upgradeEffect: [value: UpgradeEffect]
   cameraShake: [value: boolean]
 }>()
@@ -47,7 +39,6 @@ watch(() => props.active, async (active) => {
     previousFocus = null
   }
 })
-const amount = (event: Event): number => Number((event.target as HTMLInputElement).value)
 </script>
 
 <template>
@@ -61,28 +52,6 @@ const amount = (event: Event): number => Number((event.target as HTMLInputElemen
         <button id="settingsClose" ref="closeButton" class="settings-close" type="button" aria-label="關閉設定" @click="emit('close')">×</button>
       </header>
       <div class="settings-content">
-        <section class="settings-section" aria-labelledby="settingsAudioTitle">
-          <h3 id="settingsAudioTitle"><span aria-hidden="true">♫</span> 音訊設定</h3>
-          <p class="settings-hint">分別調整音樂與音效，也可隨時一鍵靜音。</p>
-          <div class="settings-audio-row">
-            <button id="settingsMusicMute" class="settings-mute" type="button" :aria-pressed="!musicOn" :aria-label="musicOn ? '靜音背景音樂' : '恢復背景音樂'" @click="emit('toggleMusic')">
-              <span aria-hidden="true">{{ musicOn ? '♫' : '♪' }}</span><small>{{ musicOn ? '靜音' : '恢復' }}</small>
-            </button>
-            <div class="settings-volume">
-              <label for="settingsMusicVolume">背景音樂 <output for="settingsMusicVolume">{{ musicVolume }}%</output></label>
-              <input id="settingsMusicVolume" type="range" min="0" max="100" step="1" :value="musicVolume" :style="{ '--volume-fill': musicVolume + '%' }" @input="emit('musicVolume', amount($event))" />
-            </div>
-          </div>
-          <div class="settings-audio-row">
-            <button id="settingsSfxMute" class="settings-mute" type="button" :aria-pressed="!sfxOn" :aria-label="sfxOn ? '靜音遊戲音效' : '恢復遊戲音效'" @click="emit('toggleSfx')">
-              <span aria-hidden="true">{{ sfxOn ? '♬' : '♩' }}</span><small>{{ sfxOn ? '靜音' : '恢復' }}</small>
-            </button>
-            <div class="settings-volume">
-              <label for="settingsSfxVolume">遊戲音效 <output for="settingsSfxVolume">{{ sfxVolume }}%</output></label>
-              <input id="settingsSfxVolume" type="range" min="0" max="100" step="1" :value="sfxVolume" :style="{ '--volume-fill': sfxVolume + '%' }" @input="emit('sfxVolume', amount($event))" />
-            </div>
-          </div>
-        </section>
         <section class="settings-section" aria-labelledby="settingsMotionTitle">
           <h3 id="settingsMotionTitle"><span aria-hidden="true">✧</span> 畫面效果</h3>
           <p class="settings-hint">升級時不會晃動背景；可選擇保留柔和淡入或完全靜止。</p>

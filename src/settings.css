@@ -26,19 +26,6 @@
 #settings h3{margin:0 0 7px;color:#fce4b8;font:750 16px/1.4 system-ui,sans-serif;letter-spacing:.8px}
 #settings h3 span{margin-right:6px;color:#e4bd78}
 #settings .settings-hint{margin:0 0 17px;color:#b6c1cb;font-size:12px;line-height:1.6}
-#settings .settings-audio-row{display:flex;align-items:center;gap:16px;margin:14px 0 17px}
-#settings .settings-mute{display:flex;flex:none;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:64px;min-height:59px;padding:7px;border:1px solid #bb9c69;border-radius:10px;background:linear-gradient(135deg,#374557,#1a2432);color:#fff0cb;cursor:pointer}
-#settings .settings-mute>span{font-size:23px;line-height:1}
-#settings .settings-mute small{font-size:10px}
-#settings .settings-mute[aria-pressed="true"]{color:#aab4bf;border-color:#646d75;background:#1a222d}
-#settings .settings-volume{flex:1;min-width:0}
-#settings .settings-volume label{display:flex;justify-content:space-between;gap:12px;color:#f2e5cb;font:700 13px/1.4 system-ui,sans-serif}
-#settings .settings-volume output{color:#ffd78c;font-variant-numeric:tabular-nums}
-#settings input[type="range"]{--volume-fill:100%;display:block;width:100%;height:30px;margin:7px 0 0;padding:0;cursor:pointer;appearance:none;-webkit-appearance:none;background:transparent;touch-action:pan-x}
-#settings input[type="range"]::-webkit-slider-runnable-track{height:7px;border-radius:99px;border:1px solid #baa37558;background:linear-gradient(90deg,#e4b86d var(--volume-fill),#384555 var(--volume-fill));box-shadow:inset 0 1px 3px #0007}
-#settings input[type="range"]::-moz-range-track{height:7px;border-radius:99px;border:1px solid #baa37558;background:linear-gradient(90deg,#e4b86d var(--volume-fill),#384555 var(--volume-fill))}
-#settings input[type="range"]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin-top:-7px;border:2px solid #fff3d1;border-radius:50%;background:#d19d57;box-shadow:0 2px 7px #000b}
-#settings input[type="range"]::-moz-range-thumb{width:18px;height:18px;border:2px solid #fff3d1;border-radius:50%;background:#d19d57;box-shadow:0 2px 7px #000b}
 #settings .settings-option-label{margin:8px 0;color:#f2e5cc;font:700 13px/1.5 system-ui,sans-serif}
 #settings .settings-segments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 #settings .settings-segments button{min-height:44px;padding:9px;border:1px solid #718296;border-radius:9px;background:#202b39;color:#d9e2e9;font:700 12px/1.4 system-ui,sans-serif;cursor:pointer}
@@ -73,3 +60,29 @@
   #settings .settings-panel{animation:none}
   .settings-trigger{transition:none}
 }
+
+/* Shared contextual volume control, kept in the viewport layer to avoid clipping. */
+.audio-control{display:inline-flex;align-items:center;pointer-events:auto}
+.audio-trigger{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:40px;min-height:36px;padding:7px 12px;color:#f5e2bb;border:1px solid #bda16f9c;border-radius:8px;background:linear-gradient(160deg,#344454,#192334);box-shadow:inset 0 1px 0 #ffffff25,0 3px 10px #0008;cursor:pointer;font:750 12px/1 system-ui,sans-serif;letter-spacing:.6px}
+.audio-trigger.compact{width:32px;min-width:32px;min-height:32px;padding:5px;border-radius:7px}
+.audio-trigger:hover,.audio-trigger[aria-expanded="true"]{color:#fff4d6;border-color:#f1d291;box-shadow:inset 0 0 12px #f5bd6542,0 0 13px #c4984d5c}
+.audio-trigger:focus-visible,.audio-popover :is(button,input):focus-visible{outline:3px solid #ffe0a0;outline-offset:2px}
+#hud .chip .audio-trigger{border:1px solid #bda16f85;background:#222c39;min-height:30px;min-width:30px;padding:4px}
+#menu .menu-audio-controls .audio-trigger{min-height:35px}
+.audio-popover{position:fixed;z-index:50;box-sizing:border-box;max-height:calc(100dvh - 16px);overflow-y:auto;padding:12px 15px 9px;border:1px solid #d6b77f;border-radius:12px;background:radial-gradient(ellipse at 40% 0,#45526580,transparent 67%),linear-gradient(155deg,#242f40,#101821 85%);box-shadow:0 15px 45px #000e,0 0 0 1px #ffe0a01b;color:#f7e6cb;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#ab936e transparent}
+.audio-popover-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 0 7px;border-bottom:1px solid #c6ad773e}
+.audio-popover-heading strong{font:800 13px/1.3 system-ui,sans-serif;letter-spacing:1px}
+.audio-popover-close{min-width:27px;min-height:27px;border:1px solid #a99a82a1;border-radius:6px;background:#293747;color:#e8d6b9;font-size:20px;line-height:1;cursor:pointer}
+.audio-popover-row{display:flex;align-items:center;gap:12px;margin-top:11px}
+.audio-mute{flex:none;min-width:37px;min-height:40px;border:1px solid #bda479;border-radius:8px;background:linear-gradient(#3d4b5b,#25303e);color:#ffe3a7;font-size:23px;line-height:1;cursor:pointer}
+.audio-mute[aria-pressed="true"]{border-color:#607282;background:#18222d;color:#93a1ad}
+.audio-volume{flex:1;min-width:0}
+.audio-volume label{display:flex;align-items:center;justify-content:space-between;gap:8px;font:650 12px/1.4 system-ui,sans-serif}
+.audio-volume output{color:#ffda94;font-variant-numeric:tabular-nums}
+.audio-volume input[type="range"]{display:block;width:100%;height:25px;margin:4px 0 0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;touch-action:pan-x}
+.audio-volume input[type="range"]::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(90deg,#eac07b var(--audio-fill),#465361 var(--audio-fill));box-shadow:inset 0 1px 3px #0009}
+.audio-volume input[type="range"]::-moz-range-track{height:6px;border-radius:99px;background:linear-gradient(90deg,#eac07b var(--audio-fill),#465361 var(--audio-fill))}
+.audio-volume input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-6px;border-radius:50%;border:2px solid #fff0c5;background:#cda15a;box-shadow:0 2px 7px #000c}
+.audio-volume input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:2px solid #fff0c5;background:#cda15a}
+.audio-popover-hint{margin:10px 0 0;color:#b7c4cc;font:10px/1.4 system-ui,sans-serif;text-align:center}
+@media (prefers-reduced-motion: reduce){.audio-trigger{transition:none}}

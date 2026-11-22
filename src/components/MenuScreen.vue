@@ -6,9 +6,10 @@ import MenuSceneArt from './MenuSceneArt.vue'
 import ModeSelector from './modes/ModeSelector.vue'
 import ProgressionPanel from './progression/ProgressionPanel.vue'
 import SettingsButton from './SettingsButton.vue'
+import AudioControl from './AudioControl.vue'
 import type { Profile, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 
-const props = defineProps<{ active: boolean; choice: JobId; musicOn: boolean; audioUnlocked: boolean; sfxOn: boolean; version: string; runMode?: RunModeId; profile?: Profile }>()
+const props = defineProps<{ active: boolean; choice: JobId; musicOn: boolean; audioUnlocked: boolean; sfxOn: boolean; musicVolume?: number; sfxVolume?: number; audioActive?: boolean; version: string; runMode?: RunModeId; profile?: Profile }>()
 const emit = defineEmits<{
   select: [job: JobId]
   start: []
@@ -19,6 +20,8 @@ const emit = defineEmits<{
   toggleMusic: []
   enableAudio: []
   toggleSfx: []
+  musicVolume: [value: number]
+  sfxVolume: [value: number]
   settings: []
 }>()
 
@@ -69,7 +72,7 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
         <div class="menu-cta-wrap"><button id="start" class="cta start-adventure" @click="emit('start')"><span>踏入幽暮之門</span><span class="start-spark" aria-hidden="true">✦</span></button><p>自動攻擊 · 收集精華 · 覺醒全新能力</p></div>
         <ProgressionPanel v-if="profile" :profile="profile" :hero="choice" @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)" @reset="emit('reset')" />
       </section>
-      <footer class="menu-bottom"><span class="menu-controls">⌨ WASD / 方向鍵移動 <b>·</b> SPACE 衝刺 <b>·</b> P 暫停 <b>·</b> 手機支援觸控操作 <span class="menu-version" id="gameVersion">v{{ version }}</span></span><div class="menu-audio-controls"><button id="menuMusic" class="ghost" :aria-pressed="musicOn" @click="emit('toggleMusic')">♫ 背景音樂：{{ musicOn ? '開' : '關' }}</button><button id="menuSfx" class="ghost" :aria-pressed="sfxOn" @click="emit('toggleSfx')">♬ 音效：{{ sfxOn ? '開' : '關' }}</button><SettingsButton @open="emit('settings')" /></div></footer>
+      <footer class="menu-bottom"><span class="menu-controls">⌨ WASD / 方向鍵移動 <b>·</b> SPACE 衝刺 <b>·</b> P 暫停 <b>·</b> 手機支援觸控操作 <span class="menu-version" id="gameVersion">v{{ version }}</span></span><div class="menu-audio-controls"><AudioControl context="menu" :active="active && (audioActive ?? true)" :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')" @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)" /><SettingsButton @open="emit('settings')" /></div></footer>
     </main>
   </div>
 </template>
