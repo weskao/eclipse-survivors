@@ -5,6 +5,7 @@ import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
+import { runtimeOf } from './content/weapons/runtime'
 import { createLiveCombatVfxAdapter } from './render/es2/live-events'
 import type { CombatFxKind } from './render/es2/combat-vfx'
 import type { ConfirmedCombatVfxEvent } from './render/es2/live-events'
@@ -238,6 +239,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ? createLiveCombatVfxAdapter(effect => contentRegistry.addEffect(s, effect)) : null
   let vfxSequence = 0
   let observedBossPhase: number | null = null
+  let seenPoisonZones = new WeakSet<object>()
+  const weaponsEnabled = requestedPacks.some(pack => pack.id === 'weapons')
   function confirmedVfx(kind: CombatFxKind, x: number, y: number, angle?: number): void {
     if (!liveVfx) return
     liveVfx.emit({ sequence: ++vfxSequence, kind, x, y, angle } as ConfirmedCombatVfxEvent)
@@ -269,7 +272,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const last = s.fx.at(-1)
       if (last?.type === 'meteor') confirmedVfx('fire-eruption', last.x, last.y)
     } else if (cue === 'vortex') {
-      confirmedVfx('gravity-vortex', hero.x, hero.y)
+      // One cue serves both the legacy vortex and the authored poison cloud.
+      // Emit miasma only for a newly created real poison zone, never at a guessed position.
+      let poisonEmitted = false
+      if (weaponsEnabled) for (const zone of runtimeOf(s).zones) {
+        if (zone.kind !== 'poison' || zone.life <= 0 || seenPoisonZones.has(zone)) continue
+        seenPoisonZones.add(zone)
+        confirmedVfx('poison-cloud', zone.x, zone.y)
+        poisonEmitted = true
+      }
+      if (!poisonEmitted && hero.skills.vortex) confirmedVfx('gravity-vortex', hero.x, hero.y)
     }
   }
 
@@ -293,12 +305,23 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         targetHp: target?.hp,
         targetHpFraction: target && target.max > 0 ? target.hp / target.max : undefined,
       }, random)
+      if (result.critical && target?.hp && target.hp > 0) {
+        confirmedVfx('critical-hit', target.x, target.y)
+      }
       return result.execute && target ? Math.max(result.damage, target.hp) : result.damage
     },
     mitigateIncomingDamage: amount => {
       const modified = heroSpecialization?.mitigateIncomingDamage(amount) ?? amount
-      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
-      return calculateRelicIncoming(s, modified, random).damage
+      const validMitigation = Number.isFinite(modified) && modified >= 0 && modified < amount
+      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) {
+        if (validMitigation && s.hero && s.mode === 'play')
+          confirmedVfx('shield-impact', s.hero.x, s.hero.y)
+        return modified
+      }
+      const result = calculateRelicIncoming(s, modified, random)
+      if (validMitigation || (result.damage > 0 && result.damage < modified))
+        confirmedVfx('shield-impact', s.hero.x, s.hero.y)
+      return result.damage
     },
     afterDamage: (amount, source) => {
       heroSpecialization?.afterDamage(amount)
@@ -496,6 +519,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     liveVfx?.reset()
     vfxSequence = 0
     observedBossPhase = null
+    seenPoisonZones = new WeakSet<object>()
     const requestedBiome = requestedPacks.some(pack => pack.id === 'biomes')
       ? BIOME_FOR_MODE[ui.runMode] : undefined
     biomeRuntime = requestedBiome ? createBiomeRuntime(requestedBiome, { seed: 0 }) : null
