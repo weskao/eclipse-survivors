@@ -11,10 +11,12 @@ export interface HeroAnimation {
   /** Screen-space octant: E, SE, S, SW, W, NW, N, NE. */
   direction: number
   reducedMotion: boolean
+  /** Projectile is created at attack start; subsequent strike frames are release/recovery. */
+  actionStage?: 'windup' | 'hold' | 'release' | 'recover' | 'none'
 }
 
 const FRAMES: Record<HeroPose, number> = {
-  idle: 6, run: 8, attack: 6, cast: 6, dash: 5, hurt: 3, death: 6, victory: 8,
+  idle: 8, run: 10, attack: 12, cast: 12, dash: 6, hurt: 4, death: 8, victory: 8,
 }
 
 // Rendering-only history. Weak keys let old runs/characters be collected without
@@ -52,7 +54,8 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
   } else old.direction = direction
   const start = entered.get(hero)!
   if (reducedMotion || s.mode === 'paused' || s.mode === 'level') {
-    return { pose, frame: 0, count, phase: 0, direction, reducedMotion }
+    const actionStage = attacking ? 'release' : 'none'
+    return { pose, frame: 0, count, phase: 0, direction, reducedMotion, actionStage }
   }
   const elapsed = Math.max(0, s.worldClock - start.clock)
   let progress = 0
@@ -82,5 +85,12 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
       break
   }
   const frame = Math.min(count - 1, Math.floor(progress * count))
-  return { pose, frame, count, phase: progress, direction, reducedMotion }
+  // attack() spawns the real projectile on the same tick it starts strike.
+  // Never imply a loaded arrow or held spell during release/recover frames.
+  const actionStage = attacking
+    ? progress < 0.22 ? 'release' : 'recover'
+    : hero.attack <= Math.max(0.08, hero.delay * 0.24)
+      ? hero.attack > Math.max(0.03, hero.delay * 0.08) ? 'windup' : 'hold'
+      : 'none'
+  return { pose, frame, count, phase: progress, direction, reducedMotion, actionStage }
 }
