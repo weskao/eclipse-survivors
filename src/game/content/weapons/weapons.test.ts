@@ -157,6 +157,23 @@ describe('real attack mechanics', () => {
     expect(gravity.s.mobs[0]!.x).toBeLessThan(160)
   })
 
+  it('solar beam strike matches its announced telegraph even if the target moves during charge', () => {
+    const { s, registry } = fixture('solar-beam')
+    advance(s, registry, 0.15)
+    const angle = runtimeOf(s).beamAngle
+    expect(Math.abs(angle)).toBeLessThan(0.001)
+    // The original target dodges. A different enemy stays in the announced direction.
+    s.mobs[0]!.y = 250
+    const linedUp = mob(400, 0)
+    s.mobs.push(linedUp)
+    advance(s, registry, 1.0)
+    const beam = runtimeOf(s).beam
+    expect(beam).not.toBeNull()
+    expect(beam!.ux).toBeGreaterThan(0.99)
+    expect(Math.abs(beam!.uy)).toBeLessThan(0.01)
+    expect(linedUp.hp).toBeLessThan(linedUp.max)
+  })
+
   it('thorn chain links enemies and periodically spreads damage', () => {
     const { s, registry } = fixture('thorn-chain')
     s.mobs.push(mob(115, 25), mob(150, 5))
