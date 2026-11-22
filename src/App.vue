@@ -8,6 +8,7 @@ import PauseOverlay from './components/PauseOverlay.vue'
 import ResultOverlay from './components/ResultOverlay.vue'
 import TouchControls from './components/TouchControls.vue'
 import SettingsOverlay from './components/SettingsOverlay.vue'
+import ContentShowcase from './components/ContentShowcase.vue'
 import './meta/ui.css'
 import './visual-polish.css'
 import './settings.css'
@@ -16,6 +17,8 @@ const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
 const ui = engine.ui
 const version = __APP_VERSION__
+const devShowcase = import.meta.env.DEV && typeof location !== 'undefined' &&
+  new URLSearchParams(location.search).get('content-showcase') === '1'
 
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
 const hudRef = useTemplateRef<InstanceType<typeof GameHud>>('hud')
@@ -86,6 +89,7 @@ onBeforeUnmount(() => unmount?.())
     @again="engine.start"
     @home="engine.goMenu"
   />
+  <ContentShowcase v-if="devShowcase" :engine="engine" />
   <SettingsOverlay
     :active="ui.settingsOpen"
     :upgrade-effect="ui.upgradeEffect"
