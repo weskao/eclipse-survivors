@@ -3,7 +3,7 @@ from PIL import Image, ImageOps, ImageDraw, ImageFont
 from pathlib import Path
 import hashlib, json, math
 
-source = Path("reference/assets/images")
+source = Path("assets/images")
 out = Path("art-inspection")
 out.mkdir(exist_ok=True)
 meta=[]

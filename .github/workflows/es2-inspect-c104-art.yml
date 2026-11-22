@@ -1,26 +1,27 @@
-name: Inspect c104 original sprite sheets
+name: Inspect and test c104 sprite art
 on:
   push:
     branches: [feature/es2-c104-art-runtime-integration]
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: c104-sprite-inspection
+  cancel-in-progress: true
 jobs:
-  inspect:
+  inspect-and-test:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          ref: c104b4be43fbfe9dad2dd8a1b270b9e47d63e1c0
-          path: reference
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install pillow==11.3.0
+      - run: python -m unittest discover -s tests/es2/art -p 'test_*.py' -v
       - run: python scripts/es2/inspect_c104.py
       - uses: actions/upload-artifact@v4
         with:
-          name: c104-original-image-inspection
+          name: c104-source-contact-and-metadata
           path: art-inspection/
           if-no-files-found: error
