@@ -27,7 +27,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - if: matrix.check == 'runtime'
-        run: pnpm exec vitest run src/game/render/es2/production-heroes.test.ts src/components/es2/menu/Es2ProductionHeroes.test.ts src/components/es2/menu/Es2MenuSystem.test.ts src/game/render/render.test.ts
+        run: pnpm exec vitest run src/game/render/es2/production-heroes.test.ts src/game/render/es2/production-paint.test.ts src/components/es2/menu/Es2ProductionHeroes.test.ts src/components/es2/menu/Es2MenuSystem.test.ts src/game/render/render.test.ts
       - if: matrix.check == 'all-tests'
         run: pnpm test
       - if: matrix.check == 'typecheck'
