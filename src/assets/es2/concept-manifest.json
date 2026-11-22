@@ -1,107 +1,233 @@
 {
   "schemaVersion": 1,
   "status": "concept-only",
-  "scaleTarget": 3,
+  "designUnit": 32,
+  "scale": 3,
+  "atlas": {
+    "path": "concept-atlas@3x.webp",
+    "width": 576,
+    "height": 384,
+    "cellWidth": 96,
+    "cellHeight": 96,
+    "columns": 6,
+    "rows": 4
+  },
   "assets": [
     {
       "id": "es2-art:concept-01",
       "path": "concept-icons/concept-01@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "00b5908339ba906e1cc57c4fdeb7b9b3f0735bffaf689eb5af1c135f4d6ef565",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "00b5908339ba906e1cc57c4fdeb7b9b3f0735bffaf689eb5af1c135f4d6ef565"
     },
     {
       "id": "es2-art:concept-02",
       "path": "concept-icons/concept-02@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "bc32f9fce9e31d4d2d0699782d265fadc0e6613f462663fa363e4f303f41c04e",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "bc32f9fce9e31d4d2d0699782d265fadc0e6613f462663fa363e4f303f41c04e"
     },
     {
       "id": "es2-art:concept-03",
       "path": "concept-icons/concept-03@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "1d6b26f8972ba5782ac3f24b808bf7c6ee4eb299b5e21920850c2954ee89bfe1",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "1d6b26f8972ba5782ac3f24b808bf7c6ee4eb299b5e21920850c2954ee89bfe1"
     },
     {
       "id": "es2-art:concept-04",
       "path": "concept-icons/concept-04@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "58be4603e00866a2bd7b9336af15eb475041483c256f4bc9dcdb1c939894586c",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "58be4603e00866a2bd7b9336af15eb475041483c256f4bc9dcdb1c939894586c"
     },
     {
       "id": "es2-art:concept-05",
       "path": "concept-icons/concept-05@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "b4be6f4d974392f75d1bf534c9b657dba1833e21945dbb619ec57afb1f11e0b6",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "b4be6f4d974392f75d1bf534c9b657dba1833e21945dbb619ec57afb1f11e0b6"
     },
     {
       "id": "es2-art:concept-06",
       "path": "concept-icons/concept-06@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "491c7aecfcd409e2a64250314c39577e58156d0af004f86ca173f173ad6802a2",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "491c7aecfcd409e2a64250314c39577e58156d0af004f86ca173f173ad6802a2"
     },
     {
       "id": "es2-art:concept-07",
       "path": "concept-icons/concept-07@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "22f19d5d5417236cc4a355ddb13779c5da005723f25352f9eb2678d17d81b316",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "22f19d5d5417236cc4a355ddb13779c5da005723f25352f9eb2678d17d81b316"
     },
     {
       "id": "es2-art:concept-08",
       "path": "concept-icons/concept-08@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "ce955529aa982cffbb46bf91c29ee08b792d3e21bef4047dc0413d0266b2577e",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "ce955529aa982cffbb46bf91c29ee08b792d3e21bef4047dc0413d0266b2577e"
     },
     {
       "id": "es2-art:concept-09",
       "path": "concept-icons/concept-09@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "54d7cdf9209cd7b7390ef48375da781f85b231033477ec70aab0d8a7aff11e41",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "54d7cdf9209cd7b7390ef48375da781f85b231033477ec70aab0d8a7aff11e41"
     },
     {
       "id": "es2-art:concept-10",
       "path": "concept-icons/concept-10@3x.webp",
-      "format": "webp",
       "width": 256,
       "height": 256,
-      "transparent": true,
-      "sha256": "cf37fc3a97d1f882caf6d1f6d4fafd4da3440e44653aab3fc83758811e1d5126",
-      "review": "pending"
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "cf37fc3a97d1f882caf6d1f6d4fafd4da3440e44653aab3fc83758811e1d5126"
+    },
+    {
+      "id": "es2-art:concept-11",
+      "path": "concept-icons/concept-11@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "5b81d4664a2c1a8454a504590e3f850b79f8b6bf22fc4da350672db8ff5ec183"
+    },
+    {
+      "id": "es2-art:concept-12",
+      "path": "concept-icons/concept-12@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "cb0760f06407e25d26349069e3b68467a44aad4966ea250cbb1ecba4af80f544"
+    },
+    {
+      "id": "es2-art:concept-13",
+      "path": "concept-icons/concept-13@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "bdf146df13e41e32328f4641750357772e26c409c6c054c811b4cc638e8d453d"
+    },
+    {
+      "id": "es2-art:concept-14",
+      "path": "concept-icons/concept-14@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "05ab8825c6435ebe342054d5982f0aad8f16cc196054ff646094c192b4ecacad"
+    },
+    {
+      "id": "es2-art:concept-15",
+      "path": "concept-icons/concept-15@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "1a0546c532407dc1fb8f747ebdb1bb6ace5bbab1765111db30934c9ca2ce8146"
+    },
+    {
+      "id": "es2-art:concept-16",
+      "path": "concept-icons/concept-16@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "edb99213aa0aa17f820f68f9a750f342cf17ce4a4dfeb18b622aad8c32a53df0"
+    },
+    {
+      "id": "es2-art:concept-17",
+      "path": "concept-icons/concept-17@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "99afd8e218a6147af5a79d5024ce5d7ef38bf224ec3e374c797c6468e06dbcb4"
+    },
+    {
+      "id": "es2-art:concept-18",
+      "path": "concept-icons/concept-18@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "eb08c32929bb50a5941382e4411d6eca3f05a7c97705c4229563d0759a9d895d"
+    },
+    {
+      "id": "es2-art:concept-19",
+      "path": "concept-icons/concept-19@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "01b18d112466720db6c2adf656992578d343e742496f8c29cbd7f4f21364ea11"
+    },
+    {
+      "id": "es2-art:concept-20",
+      "path": "concept-icons/concept-20@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "36ff22f46367849023eff3d272b7431334d52929d74535ddfdf21b0fdae4fc1f"
+    },
+    {
+      "id": "es2-art:concept-21",
+      "path": "concept-icons/concept-21@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "1a7f056f43ebd4ed5937ac01a88332735af05d924e0e7485c8a9a87f7fd6eecc"
+    },
+    {
+      "id": "es2-art:concept-22",
+      "path": "concept-icons/concept-22@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "1474f8e560b203a36bab4fd2c2649741d1809a3c935477a226775941bca708d4"
+    },
+    {
+      "id": "es2-art:concept-23",
+      "path": "concept-icons/concept-23@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "47cf6e63c68badd315fd71b6e067ca5d7a50f07958df670a579977c428cd60f9"
+    },
+    {
+      "id": "es2-art:concept-24",
+      "path": "concept-icons/concept-24@3x.webp",
+      "width": 256,
+      "height": 256,
+      "role": "concept-only",
+      "source": "original AI generated 6x4 atlas, background matte extracted",
+      "sha256": "4c0369a94b5e4f9e4b38d9ee4451693a904040b7b381262d5380741525f9f96d"
     }
   ],
   "canonicalContentIds": {

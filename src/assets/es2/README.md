@@ -1,12 +1,12 @@
-# ES2 Art Pack — partial concept inventory
+# ES2 original art — integration status
 
-**Not production-ready.** These are original, AI-generated dark-fantasy item illustration concepts, not the completed 16-category game art pack. All included files contain genuine WebP image bytes. Their matte/alpha and subject-to-content-ID correspondence still need human art review. The file names use concept IDs rather than falsely assigning them to unrelated weapon/evolution IDs.
+**Status: concept-only, not a completed production art pack.** The 24 original concept illustrations were generated in a 6×4 dark-fantasy illustration sheet and exported as transparent 256×256 WebPs. An additional 576×384 atlas contains 24 frames of 96×96 pixels (3× for 32-pixel inventory slots). The locally extracted matte is a technical approximation, not a human-approved retouch.
 
-- `concept-manifest.json` lists only image paths committed to this branch.
-- `missing-assets.json` records the 24 canonical weapon and evolution IDs plus the other missing art categories.
-- `asset-manifest.test.ts` verifies file existence, WebP encoding, alpha feature, image sizes, per-file bounds and SHA-256.
-- No changes to shared renderer, UI, main, or integration-owned ContentPack index.
+- `concept-manifest.json`: all *actual existing* concept WebP paths, exact geometry, SHA-256 and the 24 canonical weapon/evolution IDs from the parallel feature specifications. **Concept images are not assigned to incompatible canonical content IDs.**
+- `missing-assets.json`: precise missing canonical assets and remaining category blockers. A manifest entry without a real asset is not counted as delivered.
+- `asset-manifest.test.ts`: Vitest regression checks for manifest IDs, exact WebP header/alpha feature, existing files, bounded sizes, dimensions and hashes.
+- `validate-assets.mjs`: dependency-free Node verifier; run `node --test src/assets/es2/validate-assets.node-test.mjs`. The optional local `validate_concepts.py` performs pixel-alpha checks via Pillow, not installed by this repo.
 
-Design theme: Dark Fantasy + Gothic Magic + Celestial Eclipse, original realistic illustrated art; transparent WebPs intended for future approval.
+**Provenance:** Original generated artwork created in this session for Eclipse Survivors. No external copyrighted game art was copied. Current visuals remain concept-only until animation continuity, subject-to-canonical-ID fidelity, alpha edges, original hero visual identity and mobile presentation are reviewed.
 
-A separate downloadable 25-WebP local concepts pack exists but is **not** equivalent to the GitHub branch's verified inventory. Do not integrate until its canonical appearance and animation constraints are satisfied.
+**Usage:** Do not wire concept art into the shared render engine, UI or `src/game/content/packs/index.ts` from this branch. Integration should replace or approve each canonical item, then use local Vite imports or `new URL('./file.webp', import.meta.url)` where appropriate.

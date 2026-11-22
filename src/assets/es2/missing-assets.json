@@ -1,46 +1,118 @@
 {
-  "status": "incomplete",
-  "canonicalAssetsMissing": [
-    "weapons:shadow-daggers",
-    "weapons:holy-lance",
-    "weapons:blood-scythe",
-    "weapons:arcane-mines",
-    "weapons:bone-spears",
-    "weapons:poison-cloud",
-    "weapons:ricochet-blades",
-    "weapons:spirit-wolves",
-    "weapons:solar-beam",
-    "weapons:gravity-orbs",
-    "weapons:spectral-bow",
-    "weapons:thorn-chain",
-    "evolution2:nightfall-torrent",
-    "evolution2:dawn-judgment",
-    "evolution2:crimson-reaper",
-    "evolution2:singularity-minefield",
-    "evolution2:toxic-permafrost",
-    "evolution2:infinite-rebound",
-    "evolution2:wild-hunt",
-    "evolution2:solar-tempest",
-    "evolution2:celestial-collapse",
-    "evolution2:spectral-volley",
-    "evolution2:bonefire-barrage",
-    "evolution2:verdant-snare"
+  "status": "not-delivered",
+  "note": "Concept artwork is not final production artwork and is not mapped to canonical IDs; final assets not generated or reviewed.",
+  "missingAssets": [
+    {
+      "id": "weapons:shadow-daggers",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:holy-lance",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:blood-scythe",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:arcane-mines",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:bone-spears",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:poison-cloud",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:ricochet-blades",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:spirit-wolves",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:solar-beam",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:gravity-orbs",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:spectral-bow",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:thorn-chain",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:nightfall-torrent",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:dawn-judgment",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:crimson-reaper",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:singularity-minefield",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:toxic-permafrost",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:infinite-rebound",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:wild-hunt",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:solar-tempest",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:celestial-collapse",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:spectral-volley",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:bonefire-barrage",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:verdant-snare",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    }
   ],
-  "categoriesMissing": [
-    "relic-icons-and-rarity",
-    "treasure-chests-and-reward-effects",
-    "enemies",
-    "bosses-and-phases",
-    "hero-portraits",
-    "hero-action-frame-sequences",
-    "biome-decorations",
-    "ui-ornaments",
-    "level-up-rarity-frames",
-    "equipment-inventory-slots",
-    "achievements",
-    "loading-art",
-    "victory-defeat-decoration",
-    "sequential-vfx-sprite-sheets"
-  ],
-  "reason": "Only concept art has been committed; concept images have not been reviewed for accuracy against their canonical content IDs. No placeholders are presented as finished art."
+  "additionalMissingCategories": [
+    "relic icons and rarity artwork",
+    "treasure chests and reward effects",
+    "new enemy artwork",
+    "boss illustrations and phase artwork",
+    "three new hero portraits",
+    "true hero action frames",
+    "biome decorations",
+    "UI ornaments",
+    "level-up rarity frames",
+    "inventory slots",
+    "achievement icons",
+    "loading screen artwork",
+    "victory and defeat decorations",
+    "validated sequential VFX spritesheets"
+  ]
 }
