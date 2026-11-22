@@ -20,13 +20,13 @@ export function loadProductionFactionArt(makeImage: () => HTMLImageElement = () 
   return out
 }
 
-const ready = (image: HTMLImageElement | undefined, width: number, height: number): image is HTMLImageElement =>
-  !!image?.complete && image.naturalWidth === width && image.naturalHeight === height
+const ready = (image: HTMLImageElement | undefined, columns = 1): image is HTMLImageElement =>
+  !!image?.complete && image.naturalHeight >= 96 && image.naturalWidth === image.naturalHeight * columns
 
 /**
  * Visible-only rendering of authoritative faction runtime actors. All gameplay
  * physics/collisions/HP/telegraphs stay in the existing faction simulation.
- * six 96px source slots are independently padded and validated by asset TDD.
+ * six square source slots (legacy 96px or authored 3x) are validated before drawing.
  */
 export function drawLiveFactionArt(
   ctx: Ctx2D, state: GameState, runtime: FactionRuntime, images: Partial<FactionArtwork>,
@@ -42,7 +42,7 @@ export function drawLiveFactionArt(
     if (x < -110 || y < -170 || x > width + 110 || y > height + 90) continue
     const pair = images[enemy.kind]
     const body = pair?.body
-    if (!ready(body, 576, 96)) continue
+    if (!ready(body, 6)) continue
     const frame = enemy.state === 'phase' ? 5
       : enemy.state === 'windup' ? 2
         : enemy.state === 'attack' ? 3
@@ -55,10 +55,11 @@ export function drawLiveFactionArt(
     // These 6-frame strips share one artist-authored facing. This mirroring is
     // separate from the 8-direction hero atlas, which must NEVER be mirrored.
     if (enemy.facingX < 0) ctx.scale(-1, 1)
-    ctx.drawImage(body, frame * 96, 0, 96, 96, -size / 2, -h + 5, size, h)
-    if (enemy.state === 'windup' && pair && ready(pair.telegraph, 96, 96)) {
+    const sourceSide = body.naturalHeight
+    ctx.drawImage(body, frame * sourceSide, 0, sourceSide, sourceSide, -size / 2, -h + 5, size, h)
+    if (enemy.state === 'windup' && pair && ready(pair.telegraph)) {
       // Decorative cue only; the true world-sized hitbox is drawn above.
-      ctx.drawImage(pair.telegraph, 0, 0, 96, 96, -20, -h - 18, 40, 40)
+      ctx.drawImage(pair.telegraph, 0, 0, pair.telegraph.naturalWidth, pair.telegraph.naturalHeight, -20, -h - 18, 40, 40)
     }
     ctx.restore()
     drawn++
