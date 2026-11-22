@@ -101,7 +101,7 @@ describe('ES2 combat VFX contract', () => {
     const high = fakeCanvas(); registry.render(high.ctx, s, 0, 0)
     quality = 'low'; reducedMotion = true; reducedFlashing = true
     const low = fakeCanvas(); registry.render(low.ctx, s, 0, 0)
-    expect(low.calls.filter(c => c.startsWith('fill:')).length).toBeLessThan(high.calls.filter(c => c.startsWith('fill:')).length)
+    expect(low.calls.filter(c => c.startsWith('lineTo:')).length).toBeLessThan(high.calls.filter(c => c.startsWith('lineTo:')).length)
     expect(low.calls.filter(c => c.startsWith('alpha:')).every(c => Number(c.slice(6)) <= 0.55)).toBe(true)
   })
 
