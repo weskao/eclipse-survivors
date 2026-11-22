@@ -1,19 +1,30 @@
 <script setup lang="ts">
 import { nextTick } from 'vue'
 import { ART_URLS } from '../../../game/art'
-import type { JobId } from '../../../game/types'
+import type { HeroId, JobId } from '../../../game/types'
+import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
+import shadowAction from '../../../assets/es2/production/heroes/shadowblade-action@3x.webp'
+import spiritAction from '../../../assets/es2/production/heroes/spirit-summoner-action@3x.webp'
+import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-action@3x.webp'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
 import type { MenuView } from './model'
-defineProps<{ choice: JobId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
 const emit = defineEmits<{
-  select: [hero: JobId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
+  select: [hero: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
 }>()
-const heroes: readonly { id: JobId; name: string; role: string; number: string }[] = [
-  { id: 'knight', name: '曙鋼騎士', role: '重甲反擊 · 近戰爆發', number: '01' },
-  { id: 'ranger', name: '夜痕遊俠', role: '精準射擊 · 高機動', number: '02' },
-  { id: 'wizard', name: '虛空術士', role: '奧術魔彈 · 元素毀傷', number: '03' },
+const heroes: readonly { id: HeroId; name: string; role: string; number: string; image: string; actionSrc?: string }[] = [
+  { id: 'knight', name: '曙鋼騎士', role: '重甲反擊 · 近戰爆發', number: '01', image: ART_URLS.knight },
+  { id: 'ranger', name: '夜痕遊俠', role: '精準射擊 · 高機動', number: '02', image: ART_URLS.ranger },
+  { id: 'wizard', name: '虛空術士', role: '奧術魔彈 · 元素毀傷', number: '03', image: ART_URLS.wizard },
+  { id: 'shadowblade', name: HERO_DEFINITIONS.shadowblade.label, role: '雙刃潛襲 · 暗影暴擊', number: '04', image: HERO_DEFINITIONS.shadowblade.portraitSrc, actionSrc: shadowAction },
+  { id: 'spirit-summoner', name: HERO_DEFINITIONS['spirit-summoner'].label, role: '靈體召喚 · 奧術支援', number: '05', image: HERO_DEFINITIONS['spirit-summoner'].portraitSrc, actionSrc: spiritAction },
+  { id: 'crimson-paladin', name: HERO_DEFINITIONS['crimson-paladin'].label, role: '血誓屏障 · 聖盾反擊', number: '06', image: HERO_DEFINITIONS['crimson-paladin'].portraitSrc, actionSrc: paladinAction },
 ]
+function chooseHero(id: HeroId): void {
+  if (isSpecializationId(id)) emit('selectHero', id)
+  else emit('select', id)
+}
 const links: readonly { id: MenuView; name: string; icon: string }[] = [
   { id: 'progression', name: '永久強化', icon: '◇' }, { id: 'relics', name: '聖物庫', icon: '✧' },
   { id: 'monsters', name: '魔物圖鑑', icon: '♜' }, { id: 'skills', name: '技能圖鑑', icon: '✦' },
@@ -29,7 +40,7 @@ async function moveChoice(event: KeyboardEvent, value: string, items: readonly s
   await nextTick()
   document.querySelector<HTMLButtonElement>(`${selector}[data-${selector === '.es2-hero-card' ? 'hero' : 'mode'}="${next}"]`)?.focus()
 }
-const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveChoice(event, id, heroes.map(hero => hero.id), '.es2-hero-card', next => emit('select', next as JobId)) }
+const moveHero = (event: KeyboardEvent, id: HeroId): void => { void moveChoice(event, id, heroes.map(hero => hero.id), '.es2-hero-card', next => chooseHero(next as HeroId)) }
 const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoice(event, id, modeIds, '.es2-mode-card', next => emit('mode', next as RunModeId)) }
 </script>
 <template>
@@ -48,11 +59,12 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <div class="es2-section-heading"><span>01 / THE CHOSEN</span><h2 id="es2HeroTitle">選擇命運的繼承者</h2><p>每位英雄都擁有專屬的戰鬥風格。</p></div>
           <div class="es2-hero-grid" role="group" aria-label="選擇英雄">
             <button v-for="hero in heroes" :key="hero.id" type="button" :data-hero="hero.id" class="es2-hero-card"
-              :class="{ 'es2-hero-active': choice === hero.id }" :aria-pressed="choice === hero.id"
-              @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
+              :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
+              @click="chooseHero(hero.id)" @keydown="moveHero($event, hero.id)">
               <span class="es2-hero-number">{{ hero.number }} / HERO</span>
-              <img :src="ART_URLS[hero.id]" :alt="hero.name + ' 原始角色插畫'" decoding="async" draggable="false" />
-              <span class="es2-hero-copy"><strong>{{ hero.name }}</strong><small>{{ hero.role }}</small><span class="es2-hero-selection">{{ choice === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span></span>
+              <img :src="hero.image" :alt="hero.name + ' 角色肖像'" decoding="async" draggable="false" />
+              <span v-if="hero.actionSrc" class="es2-hero-action-preview" :style="{ backgroundImage: `url(${hero.actionSrc})` }" aria-hidden="true"></span>
+              <span class="es2-hero-copy"><strong>{{ hero.name }}</strong><small>{{ hero.role }}</small><span class="es2-hero-selection">{{ (heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span></span>
             </button>
           </div>
         </section>
