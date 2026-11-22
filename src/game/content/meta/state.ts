@@ -65,6 +65,9 @@ export function validateMetaState(raw: unknown): raw is MetaState {
     || raw.wins > raw.runs || !isObj(raw.research) || !isObj(raw.mastery)
     || !isObj(raw.discoveries) || !isObj(raw.modeRecords)
     || !uniqueStrings(raw.runIds, MAX_RUN_IDS, isRunId)) return false
+  // Narrow once outside closures: TypeScript does not retain indexed property guards in callbacks.
+  const research = raw.research as Record<string, unknown>
+  const mastery = raw.mastery as Record<string, unknown>
   const achievements = ACHIEVEMENTS.map(a => a.id)
   const milestones = MILESTONES.map(m => m.id)
   const gear = STARTING_EQUIPMENT.map(e => e.id)
@@ -75,13 +78,13 @@ export function validateMetaState(raw: unknown): raw is MetaState {
     || !uniqueStrings(raw.equipment, gear.length, fromIds(gear))
     || !uniqueStrings(raw.bonuses, bonuses.length, fromIds(bonuses))
     || !uniqueStrings(raw.cosmetics, 1024, isCosmeticId)
-    || !validKeys(raw.research, RESEARCH.map(x => x.id))
-    || RESEARCH.some(def => !validTier(raw.research[def.id], def.maxRank))) return false
-  for (const [id, value] of Object.entries(raw.mastery)) {
+    || !validKeys(research, RESEARCH.map(x => x.id))
+    || RESEARCH.some(def => !validTier(research[def.id], def.maxRank))) return false
+  for (const [id, value] of Object.entries(mastery)) {
     if (!(heroes.includes(id as JobId) || isDiscoverableId(id)) || !isObj(value)
       || !whole(value.xp, 10_000_000) || !whole(value.level, 1000) || value.level < 1) return false
   }
-  if (heroes.some(id => !raw.mastery[id])) return false
+  if (heroes.some(id => !mastery[id])) return false
   const categories: readonly DiscoveryKind[] = ['relics', 'weapons', 'evolutions', 'bosses']
   if (!validKeys(raw.discoveries, categories)) return false
   for (const category of categories) if (!uniqueStrings(raw.discoveries[category], MAX_DISCOVERIES, isDiscoverableId)) return false
