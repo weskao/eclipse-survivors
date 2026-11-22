@@ -72,9 +72,10 @@ const specialCards = computed(() => {
   if (!offer || offer.kind !== 'treasure') return offer
   return { ...offer, items: offer.items.map(item => ({
     ...item,
-    imageSrc: item.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary']
-      : item.rarity === 'rare' || item.rarity === 'epic' ? WORLD_ART.ui['treasure-rare']
-        : WORLD_ART.ui['treasure-common'],
+    imageSrc: /cursed|curse/i.test(item.id) ? WORLD_ART.ui['treasure-cursed']
+      : item.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary']
+        : item.rarity === 'rare' || item.rarity === 'epic' ? WORLD_ART.ui['treasure-rare']
+          : WORLD_ART.ui['treasure-common'],
   })) }
 })
 function chooseUpgrade(id: string): void {
