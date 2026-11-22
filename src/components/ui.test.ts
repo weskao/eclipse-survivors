@@ -46,6 +46,12 @@ describe('MenuScreen', () => {
     expect(w.emitted('start')).toHaveLength(1)
   })
 
+  it('opens the shared settings dialog from the main menu', async () => {
+    const w = mount(MenuScreen, { props: menuProps })
+    await w.find('.settings-trigger').trigger('click')
+    expect(w.emitted('settings')).toHaveLength(1)
+  })
+
   it('follows choice prop', async () => {
     const w = mount(MenuScreen, { props: menuProps })
     const knightSrc = w.find('#heroSpotlight').attributes('src')
@@ -119,6 +125,8 @@ describe('GameHud', () => {
     expect(w.emitted('toggleSfx')).toHaveLength(1)
     expect(w.emitted('pause')).toHaveLength(1)
     expect(w.vm.minimap).toBe(w.find('#minimap').element)
+    await w.find('.settings-trigger').trigger('click')
+    expect(w.emitted('settings')).toHaveLength(1)
   })
 
   it('hides toast when not visible', () => {
@@ -181,6 +189,10 @@ describe('LevelUpOverlay', () => {
     expect(items[1]!.text()).toContain('按 2 選擇')
     await items[1]!.trigger('click')
     expect(w.emitted('choose')).toEqual([[upgrades[1]!.id]])
+    await w.find('.settings-trigger').trigger('click')
+    expect(w.emitted('settings')).toHaveLength(1)
+    await w.setProps({ effect: 'still' })
+    expect(w.find('#level').classes()).toContain('still-upgrades')
   })
 })
 
@@ -192,6 +204,8 @@ describe('PauseOverlay / ResultOverlay', () => {
     await w.find('#leave').trigger('click')
     expect(w.emitted('resume')).toHaveLength(1)
     expect(w.emitted('leave')).toHaveLength(1)
+    await w.find('.settings-trigger').trigger('click')
+    expect(w.emitted('settings')).toHaveLength(1)
   })
   it('result shows text and emits again/home', async () => {
     const w = mount(ResultOverlay, { props: { active: false, ending: 'E', summary: 'S' } })
