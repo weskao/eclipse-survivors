@@ -36,7 +36,6 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     s.kill++
-    hooks.content?.(s, { type: 'kill', mob: e, damage: dealt })
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
     const value = boss ? 45 : e.type === 'golem' ? 9 : e.type === 'goblin' ? 5 : 3
     s.stars.push({ x: e.x, y: e.y, value, t: rand(0, 6) })
@@ -47,6 +46,8 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
       hooks.message('🏆 擊敗森林魔王！')
       impact(s, e.x, e.y, 210, '#ffdca4', 3)
     }
+    // Observers see a fully finalized kill, including the boss flag and spawned XP.
+    hooks.content?.(s, { type: 'kill', mob: e, damage: dealt })
   }
 }
 

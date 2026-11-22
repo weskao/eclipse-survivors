@@ -89,7 +89,7 @@ interface ContentRuntime {
 interface ContentVisualFx { id: ContentId; x: number; y: number; life: number; max: number }
 ~~~ 
 
-All handlers are synchronous. The engine invokes pack callbacks in alphabetical pack-id order, independent of registration input order. Within a pack, ability and effect order follows the submitted array. Effects draw in emission order. Never use Math.random inside a pack; use context.random, or inject seeded(seed) into the registry for tests.
+All handlers are synchronous. A hit event reports applied damage after HP decreases; a kill event fires only once after the kill count, XP drop, and boss defeat flag are finalized. The engine invokes pack callbacks in alphabetical pack-id order, independent of registration input order. Within a pack, ability and effect order follows the submitted array. Effects draw in emission order. Never use Math.random inside a pack; use context.random, or inject seeded(seed) into the registry for tests.
 
 Each ability owns its own cooldown under GameState.content.cooldowns[ability.id]. A positive cooldownSeconds invokes onTick when ready and sets that timer after firing. Zero or omitted cooldownSeconds invokes onTick each simulation tick. On acquisition, the ability's level advances and cooldown starts at zero. New runs discard all content levels, cooldowns and effects. Old built-in skills continue to use their original Hero fields.
 
