@@ -31,6 +31,29 @@ describe('authoritative combat HUD feed', () => {
     expect(feed.notices?.[0]?.id).toBe('hit:3')
   })
 
+  it('freezes wave progress on the authoritative simulation clock while paused', () => {
+    const state = createState()
+    state.mode = 'play'
+    state.time = 7.5
+    const snapshot = { runId: 'paused-run', sequence: 1 }
+    const wave = { cycle: 0, startsAt: 0, endsAt: 30, events: [] }
+    expect(buildLiveCombatHudFeed({ state, snapshot, wave }).wave?.progressPct).toBe(25)
+    state.mode = 'paused'
+    expect(buildLiveCombatHudFeed({ state, snapshot, wave }).wave?.progressPct).toBe(25)
+    state.mode = 'play'
+    state.time = 15
+    expect(buildLiveCombatHudFeed({ state, snapshot, wave }).wave?.progressPct).toBe(50)
+  })
+
+  it('rejects invalid stage intervals rather than fabricate completion', () => {
+    const state = createState()
+    state.mode = 'play'
+    state.time = 12
+    const snapshot = { runId: 'bad-interval', sequence: 1 }
+    const wave = { cycle: 0, startsAt: 30, endsAt: 10, events: [] }
+    expect(buildLiveCombatHudFeed({ state, snapshot, wave }).wave).toEqual({ number: 1 })
+  })
+
   it('omits unsupported optional data and removes a defeated boss', () => {
     const state = createState()
     expect(buildLiveCombatHudFeed({ state, snapshot: { runId: 'run-2', sequence: 1 } })).toEqual({
