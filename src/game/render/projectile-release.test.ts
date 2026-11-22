@@ -131,3 +131,17 @@ describe('cached frame isolation', () => {
     expect(baked.drawn).not.toContain(held)
   })
 })
+
+describe('fallback artwork safety', () => {
+  it('never applies WebP-specific weapon cutouts to a temporary Canvas placeholder', () => {
+    const s = fixture('ranger')
+    const fallback = document.createElement('canvas')
+    fallback.width = 120
+    fallback.height = 144
+    const { ctx } = createFakeCtx()
+    const draws = vi.spyOn(ctx, 'drawImage')
+    drawRigSprite(ctx, fallback, 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), 'ranger')
+    expect(draws).toHaveBeenCalledTimes(1)
+    expect(draws.mock.calls[0]![0]).toBe(fallback)
+  })
+})
