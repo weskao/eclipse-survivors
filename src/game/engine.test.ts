@@ -75,6 +75,17 @@ describe('engine commands fire the original cues', () => {
     expect(audio.cues.at(-1)).toBe('upgrade')
   })
 
+  it('discards camera impact when the level-up picker opens and after choosing a skill', () => {
+    engine.start()
+    engine.state.cameraKick = 8
+    engine.testApi.level()
+    expect(engine.ui.mode).toBe('level')
+    expect(engine.state.cameraKick).toBe(0)
+    engine.chooseUpgrade(engine.ui.upgrades[0]!.id)
+    expect(engine.ui.mode).toBe('play')
+    expect(engine.state.cameraKick).toBe(0)
+  })
+
   it('handles three queued level-ups, rejects a hidden choice and updates equipped HUD skills', () => {
     engine.start()
     engine.testApi.level()
