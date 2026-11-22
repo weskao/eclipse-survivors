@@ -18,7 +18,7 @@ function render() {
       expectedFeed: { runId: 'run-1', sequence: 1 },
       feed: {
         snapshot: { runId: 'run-1', sequence: 1 },
-        wave: { number: 2, announcement: '魔物進攻' },
+        wave: { number: 2, announcement: '魔物進攻', progressPct: 35 },
         notices: [{ id: 'n1', kind: 'treasure' as const, text: '獲得聖物' }],
       },
       actions: { pause: vi.fn(), settings: vi.fn() },
@@ -34,6 +34,7 @@ describe('HUD live update, focus and announcements', () => {
     expect(wrapper.findAll('[aria-live="polite"]')).toHaveLength(1)
     expect(wrapper.get('[data-es2-announcement]').text()).toBe('獲得聖物')
     expect(wrapper.get('[data-es2-wave]').text()).toContain('2')
+    expect(wrapper.get('[role="progressbar"][aria-label="波次進度"]').attributes('aria-valuenow')).toBe('35')
     await wrapper.setProps({ feed: {
       snapshot: { runId: 'run-1', sequence: 2 }, wave: { number: 3, announcement: '新的波次' },
       notices: [{ id: 'n2', kind: 'message', text: '下一波來臨' }],
