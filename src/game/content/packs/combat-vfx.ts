@@ -63,7 +63,7 @@ export function createCombatVfxPack(settings: CombatVfxPreferences = {}): Conten
         if (run.killed.has(event.mob)) return
         run.killed.add(event.mob)
         emitCombatVfx(addEffect, 'enemy-death', event.mob.x, event.mob.y)
-      } else if (event.win && !run.won && state.hero) {
+      } else if (event.type === 'run-complete' && event.win && !run.won && state.hero) {
         run.won = true
         emitCombatVfx(addEffect, 'victory-finish', state.hero.x, state.hero.y - 25)
       }
