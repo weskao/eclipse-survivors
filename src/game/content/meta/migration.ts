@@ -1,6 +1,6 @@
 import { migrateProfile } from '../../../meta/profile'
 import type { Profile } from '../../../meta/types'
-import { ACHIEVEMENTS, LEGACY_EVOLUTIONS, MILESTONES } from './catalog'
+import { ACHIEVEMENTS, LEGACY_EVOLUTIONS, MILESTONES, isDiscoverableId } from './catalog'
 import { achievementEligible, milestoneEligible } from './progression'
 import { createMetaState, validateMetaState, type MetaState } from './state'
 
@@ -10,6 +10,8 @@ export interface MetaMigrationProposal {
   /** No writes. Integration must make an atomic transition and retire the old reward writer. */
   readonly requiresIntegration: true
   readonly next: MetaState
+  /** Normalized, complete legacy v2 profile; keep in the integration-owned persistence envelope. */
+  readonly legacyProfile: Profile
 }
 const safeObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
 
@@ -24,14 +26,16 @@ export function proposeV2Migration(raw: unknown): MetaMigrationProposal | null {
   if (!legacy) return null
   const next = createMetaState()
   next.embers = legacy.embers
-  next.runs = legacy.runs
+  // Some valid v2 files were migrated from v1 with wins > runs. Keep both raw values in legacyProfile.
+  next.runs = Math.max(legacy.runs, legacy.wins)
   next.wins = legacy.wins
   next.bossWins = Math.floor(legacy.discoveredMonsters.boss ?? 0)
   next.runIds = [...legacy.recentRunIds]
   next.research.power = legacy.upgrades.power
   next.research.vitality = legacy.upgrades.vitality
   next.cosmetics = [...legacy.unlockedCosmetics]
-  const weapons = legacy.discoveredAbilities.filter(id => !LEGACY_EVOLUTIONS.includes(id))
+  // Passive v2 upgrades (e.g. damage/haste) remain in legacyProfile, not weapon discoveries.
+  const weapons = legacy.discoveredAbilities.filter(id => isDiscoverableId(id) && !LEGACY_EVOLUTIONS.includes(id))
   const evolutions = legacy.discoveredAbilities.filter(id => LEGACY_EVOLUTIONS.includes(id))
   next.discoveries.weapons = [...weapons]
   next.discoveries.evolutions = [...evolutions]
@@ -49,6 +53,8 @@ export function proposeV2Migration(raw: unknown): MetaMigrationProposal | null {
   for (const entry of MILESTONES) {
     if (milestoneEligible(entry.id, next)) next.claimedMilestones.push(entry.id)
   }
-  return validateMetaState(next) ? { fromVersion: 2, toVersion: 3, requiresIntegration: true, next } : null
+  return validateMetaState(next)
+    ? { fromVersion: 2, toVersion: 3, requiresIntegration: true, next, legacyProfile: legacy }
+    : null
 }
 
