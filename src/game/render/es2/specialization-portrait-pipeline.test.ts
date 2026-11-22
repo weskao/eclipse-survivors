@@ -4,81 +4,94 @@ import { HERO_DEFINITIONS, type SpecializationId } from '../../content/heroes'
 import { createHeroSheets } from '../hero-sheets'
 import { drawCharacter } from '../characters'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from '../fakes'
-import { loadProductionHeroes, type ProductionHeroArtwork } from './production-heroes'
+import { loadProductionHeroes, PRODUCTION_HERO_SOURCES, type ProductionHeroArtwork } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 
 const ids = ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const
-type PortraitAtlas = HTMLImageElement & { portrait?: HTMLImageElement }
-
-const portrait = () => ({ complete:true, naturalWidth:900, naturalHeight:900, width:900, height:900 }) as HTMLImageElement
-const atlas = (body: HTMLImageElement) => ({
-  complete:true, naturalWidth:1024, naturalHeight:512, portrait:body,
-}) as PortraitAtlas
+const source = () => ({ complete: true, naturalWidth: 900, naturalHeight: 900 }) as HTMLImageElement
 const animation = (pose: HeroAnimation['pose'], direction = 0): HeroAnimation => ({
-  pose, direction, frame:0, phase:0.3, count:pose === 'run' ? 10 : 12, reducedMotion:false,
+  pose, direction, frame: 2, phase: 0.3, count: pose === 'run' ? 10 : 12, reducedMotion: false,
 })
 
-describe('ES2 new heroes use original-three-style high-resolution body rigs', () => {
-  it('loads exactly one real 900px portrait body per specialization, matching selection and HUD', () => {
-    const loaded: HTMLImageElement[] = []
-    const artwork = loadProductionHeroes(() => {
-      const image = { src:'' } as HTMLImageElement
-      loaded.push(image)
+function drawHero(id: SpecializationId, portrait: HTMLImageElement, reduced = false): ReturnType<typeof createFakeCtx> {
+  const s = createState()
+  resetRun(s)
+  s.mode = 'play'
+  s.heroId = id
+  s.choice = HERO_DEFINITIONS[id].legacyArtJob
+  s.W = 800; s.H = 600
+  const result = createFakeCtx()
+  const originalArt = fakeArtwork(true)
+  drawCharacter(result.ctx, s, originalArt, {}, s.hero!, 100, 100,
+    reduced, undefined, undefined, { [id]: portrait } as unknown as ProductionHeroArtwork)
+  expect(result.drawn).toContain(portrait)
+  expect(result.drawn).not.toContain(originalArt.knight)
+  expect(result.drawn).not.toContain(originalArt.ranger)
+  expect(result.drawn).not.toContain(originalArt.wizard)
+  return result
+}
+
+describe('ES2 new heroes share the original three heroes\' source-illustration + generated-motion architecture', () => {
+  it('loads one distinct real 900px portrait per specialization, shared with selection and HUD', () => {
+    const created: HTMLImageElement[] = []
+    const art = loadProductionHeroes(() => {
+      const image = { src: '' } as HTMLImageElement
+      created.push(image)
       return image
     })
     for (const id of ids) {
-      const source = (artwork[id] as PortraitAtlas).portrait
-      expect(source?.src).toBe(HERO_DEFINITIONS[id].portraitSrc)
-      expect(source?.src).toContain(id + '-portrait@3x.webp')
+      expect(art[id].src).toBe(HERO_DEFINITIONS[id].portraitSrc)
+      expect(art[id].src).toBe(PRODUCTION_HERO_SOURCES[id])
+      expect(art[id].src).toContain(id + '-portrait@3x.webp')
     }
-    expect(loaded).toHaveLength(9) // atlas + authored strip + same portrait as menu
+    expect(created).toHaveLength(3)
   })
 
-  it.each(ids)('%s renders one full 900px body at idle and in reduced-motion instead of enlarged 128px cells', id => {
-    for (const reduced of [false, true]) {
-      const s = createState(); resetRun(s)
-      s.mode = 'play'; s.heroId = id; s.choice = HERO_DEFINITIONS[id].legacyArtJob
-      s.W = 800; s.H = 600
-      const body = portrait()
-      const { ctx, drawn } = createFakeCtx()
-      const image = atlas(body)
-      drawCharacter(ctx,s,fakeArtwork(true),{},s.hero!,100,100,reduced,undefined,undefined,
-        { [id]:image } as unknown as ProductionHeroArtwork)
-      expect(drawn).toContain(body)
-      expect(drawn).not.toContain(image)
-    }
+  it.each(ids)('%s draws the same full-resolution character in regular and reduced motion', id => {
+    const portrait = source()
+    drawHero(id, portrait)
+    drawHero(id, portrait, true)
   })
 
-  it.each(ids)('%s bakes all eight aim directions from its own high-resolution body, no class-art substitution', id => {
-    const body = portrait()
-    const hero = createState().hero!
+  it.each(ids)('%s generates a 3x cached run/attack/cast sequence from the same source', id => {
     const factory = fakeCanvasFactory()
-    const cache = createHeroSheets(factory.make)
+    const sheets = createHeroSheets(factory.make)
+    const image = source()
     const ctx = createFakeCtx()
-    for (let d=0; d<8; d++) {
-      const a = animation('attack',d)
-      expect(cache.draw(ctx.ctx,body,id,hero,a,108,134)).toBe(true)
+    for (const pose of ['run', 'attack', 'cast'] as const) {
+      expect(sheets.drawSpecialization(ctx.ctx, image, animation(pose), 108, 134)).toBe(true)
     }
-    expect(cache.size).toBe(8)
-    expect(factory.made).toHaveLength(8)
-    for (const item of factory.made) {
-      expect(item.fake.drawn).toContain(body)
-      expect(item.fake.drawn.length).toBeGreaterThan(0)
-    }
-    const n=factory.made.length
-    expect(cache.draw(ctx.ctx,body,id,hero,animation('attack',7),108,134)).toBe(true)
-    expect(factory.made).toHaveLength(n)
+    expect(sheets.size).toBe(3)
+    expect(factory.made.every(x => x.canvas.width >= 324 && x.canvas.height >= 402)).toBe(true)
+    expect(factory.made.some(x => x.fake.drawn.includes(image))).toBe(true)
   })
 
-  it('keeps run, cast, hurt and victory readable with bounded caches and no low-res fallback', () => {
-    const factory=fakeCanvasFactory(), sheets=createHeroSheets(factory.make)
-    const body=portrait(), hero=createState().hero!, ctx=createFakeCtx().ctx
-    for (const id of ids) {
-      for (const pose of ['run','attack','cast'] as const) {
-        expect(sheets.draw(ctx,body,id,hero,animation(pose,0),108,134)).toBe(true)
-      }
-      expect(sheets.draw(ctx,body,id, { ...animation('run'),reducedMotion:true },108,134)).toBe(false)
+  it('supports all eight aim octants without 128px upscaling or eight duplicate frame buffers', () => {
+    const factory = fakeCanvasFactory()
+    const sheets = createHeroSheets(factory.make)
+    const portrait = source()
+    const draw = createFakeCtx()
+    for (let direction = 0; direction < 8; direction++) {
+      expect(sheets.drawSpecialization(draw.ctx, portrait, animation('attack', direction), 108, 134)).toBe(true)
     }
-    expect(sheets.size).toBeLessThanOrEqual(16)
+    expect(sheets.size).toBe(1)
+    expect(factory.made).toHaveLength(12)
+    expect(factory.made.every(x => x.fake.drawn.includes(portrait))).toBe(true)
+  })
+
+  it('keeps the portrait cache bounded and never allocates extra frames in reduced motion', () => {
+    const factory = fakeCanvasFactory()
+    const sheets = createHeroSheets(factory.make)
+    const portrait = source()
+    const draw = createFakeCtx()
+    for (const pose of ['run', 'attack', 'cast', 'dash'] as const) {
+      expect(sheets.drawSpecialization(draw.ctx, portrait, animation(pose), 108, 134)).toBe(true)
+    }
+    const count = factory.made.length
+    expect(sheets.drawSpecialization(draw.ctx, portrait,
+      { ...animation('run', 7), reducedMotion: true }, 108, 134)).toBe(true)
+    expect(factory.made).toHaveLength(count)
+    expect(sheets.size).toBeLessThanOrEqual(4)
+    expect(draw.drawn).toContain(portrait)
   })
 })
