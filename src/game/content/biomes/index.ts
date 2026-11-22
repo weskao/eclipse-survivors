@@ -85,6 +85,7 @@ export interface BiomeEnvironment {
   cell(i: number, j: number): BiomeCell
   obstacles(x: number, y: number, radius: number): Terrain[]
   hazards(x: number, y: number, radius: number): Hazard[]
+  interactions(x: number, y: number, radius: number): Interaction[]
   visibleDecorations(view: Bounds): Decoration[]
   minimap(x: number, y: number, radius: number): { obstacles: readonly Terrain[]; hazards: readonly Hazard[] }
   collide(position: Point, radius: number): Point
@@ -187,6 +188,7 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
   }
   const obstacles = (x: number, y: number, radius: number): Terrain[] => nearby(x, y, radius, 'terrain')
   const hazards = (x: number, y: number, radius: number): Hazard[] => nearby(x, y, radius, 'hazards')
+  const interactions = (x: number, y: number, radius: number): Interaction[] => nearby(x, y, radius, 'interactions')
 
   function visibleDecorations(view: Bounds): Decoration[] {
     for (const n of [view.left, view.top, view.right, view.bottom]) validCoord(n)
@@ -268,7 +270,7 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
     return null
   }
   function reset(): void { cells.clear(); suppression.clear() }
-  return { definition, cell, obstacles, hazards, visibleDecorations,
+  return { definition, cell, obstacles, hazards, interactions, visibleDecorations,
     minimap: (x, y, radius) => ({ obstacles: obstacles(x, y, radius), hazards: hazards(x, y, radius) }),
     collide, phase, contact, interact, reset, cacheSize: () => cells.size, activeInteractions: () => suppression.size }
 }
