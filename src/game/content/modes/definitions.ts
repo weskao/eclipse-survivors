@@ -100,6 +100,15 @@ export const OBJECTIVE_MODES: Readonly<Record<ObjectiveModeId, ObjectiveModeDefi
   },
 })
 
+// Freeze nested metadata once: callers and parallel packs cannot rewrite stage gates.
+for (const mode of Object.values(OBJECTIVE_MODES)) {
+  Object.freeze(mode.preRunModifiers)
+  Object.freeze(mode.bossReadySeconds)
+  Object.freeze(mode.relicReadySeconds)
+  Object.freeze(mode.waveReadySeconds)
+  Object.freeze(mode)
+}
+
 export function getObjectiveMode(id: ObjectiveModeId): ObjectiveModeDefinition {
   return OBJECTIVE_MODES[id]
 }
