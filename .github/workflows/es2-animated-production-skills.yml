@@ -7,7 +7,7 @@ permissions:
   contents: write
 concurrency:
   group: es2-animated-production-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   verify:
     name: Bake 3 batches, verify, then publish generated WebP
