@@ -13,6 +13,11 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [runtime, all-tests, typecheck, build, check-release]
+    name: ${{ matrix.check }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
@@ -21,7 +26,13 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
-      - run: pnpm typecheck
-      - run: pnpm build
-      - run: pnpm check-release
+      - if: matrix.check == 'runtime'
+        run: pnpm exec vitest run src/game/render/es2/production-heroes.test.ts src/components/es2/menu/Es2ProductionHeroes.test.ts src/components/es2/menu/Es2MenuSystem.test.ts src/game/render/render.test.ts
+      - if: matrix.check == 'all-tests'
+        run: pnpm test
+      - if: matrix.check == 'typecheck'
+        run: pnpm typecheck
+      - if: matrix.check == 'build'
+        run: pnpm build
+      - if: matrix.check == 'check-release'
+        run: pnpm check-release
