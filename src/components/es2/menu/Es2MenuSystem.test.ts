@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { emptyProfile } from '../../../meta/profile'
+import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
 import Es2MenuSystem from './Es2MenuSystem.vue'
 
@@ -55,19 +56,19 @@ describe('ES2 main menu integration adapter', () => {
   })
 
   it('shows both victory and defeat results with correct actions', async () => {
-    const wrapper = mounted({ screen: 'result', ending: '勝利', summary: '黎明再臨', runResult: {
+    const completed: RunStats = {
       id: 'r1', mode: 'quick', hero: 'knight', victory: true,
       seconds: 154, kills: 92, level: 14, damageDealt: 1200, damageTaken: 90,
       remainingHp: 20, bossDefeated: true, enemies: {}, abilities: [],
-    } })
+    }
+    const wrapper = mounted({ screen: 'result', ending: '勝利', summary: '黎明再臨', runResult: completed })
     await nextTick()
     expect(find('.es2-dialog').classList.contains('es2-tone-victory')).toBe(true)
     expect(find('.es2-result')?.textContent).toContain('02:34')
     click('.es2-dialog-actions .es2-primary')
     expect(wrapper.emitted('again')).toHaveLength(1)
-    const completed = wrapper.props('runResult')
-    expect(completed).toBeDefined()
-    await wrapper.setProps({ runResult: { ...completed!, victory: false }, ending: '落敗' })
+    expect(wrapper.props('runResult')).toBeDefined()
+    await wrapper.setProps({ runResult: { ...completed, victory: false }, ending: '落敗' })
     expect(find('.es2-dialog').classList.contains('es2-tone-defeat')).toBe(true)
     click('.es2-dialog-actions .es2-secondary')
     expect(wrapper.emitted('home')).toHaveLength(1)
