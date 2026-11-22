@@ -105,6 +105,27 @@ describe('ES2 combat VFX contract', () => {
     expect(low.calls.filter(c => c.startsWith('alpha:')).every(c => Number(c.slice(6)) <= 0.55)).toBe(true)
   })
 
+  it('restores Canvas state even when a draw operation fails', () => {
+    const { registry, s } = queue('critical-hit')
+    const { ctx, calls } = fakeCanvas()
+    ctx.stroke = () => { throw new Error('context unavailable') }
+    expect(() => registry.render(ctx, s, 0, 0)).toThrow('context unavailable')
+    expect(calls.filter(c => c.startsWith('save:'))).toHaveLength(2)
+    expect(calls.filter(c => c.startsWith('restore:'))).toHaveLength(2)
+  })
+
+  it('supports a new context and preserves direction after the hero turns', () => {
+    const { registry, s } = queue('projectile-trail', -Math.PI / 4)
+    s.hero!.aimAngle = Math.PI
+    const first = fakeCanvas()
+    const replacement = fakeCanvas()
+    registry.render(first.ctx, s, 0, 0)
+    registry.render(replacement.ctx, s, 0, 0)
+    expect(first.calls).toContain('rotate:' + -Math.PI / 4)
+    expect(replacement.calls).toContain('rotate:' + -Math.PI / 4)
+    expect(replacement.calls.filter(c => c.startsWith('stroke:')).length).toBeGreaterThan(0)
+  })
+
   it('only auto-emits effects grounded in events, not inferred critical hits', () => {
     const registry = createContentRegistry([COMBAT_VFX_PACK])
     const s = state()
