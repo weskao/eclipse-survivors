@@ -62,7 +62,7 @@ export function acquireRelic(state: GameState, id: RelicId): boolean {
   const bonuses = relic.bonuses
   if (bonuses.damage) hero.damage *= 1 + bonuses.damage
   if (bonuses.speed) hero.speed *= 1 + bonuses.speed
-  if (bonuses.haste) hero.delay *= 1 / (1 + bonuses.haste)
+  if (bonuses.haste) hero.delay *= 1 - bonuses.haste
   if (bonuses.maxHp || bonuses.maxHpRate) {
     const oldMax = hero.max
     hero.max = Math.max(1, Math.round((hero.max + (bonuses.maxHp ?? 0)) * (1 + (bonuses.maxHpRate ?? 0))))
