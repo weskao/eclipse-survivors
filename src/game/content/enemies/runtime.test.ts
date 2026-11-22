@@ -142,6 +142,16 @@ describe('deterministic actor state machines', () => {
     expect(r.projectiles).toHaveLength(0)
     expect(e.state).toBe('approach')
   })
+  it('skips costly line-of-sight checks when an enemy is beyond its attack range', () => {
+    const r = createFactionRuntime()
+    const e = spawnFactionEnemy(r, 'dark-archer', 400, 0)!
+    e.speed = 0
+    let raycasts = 0
+    tickFactionEnemies({
+      ...arena(r), lineOfSight: () => { raycasts++; return true },
+    }, 0.05)
+    expect(raycasts).toBe(0)
+  })
   it('projectiles cannot damage the hero through obstacles after leaving the archer', () => {
     const r = createFactionRuntime()
     r.projectiles.push({
