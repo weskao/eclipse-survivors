@@ -33,6 +33,8 @@ export const BOSS_PACK: ContentPack = {
     pulse('bosses:frost-glow', 'Frost warning', '#9bddff', 115),
     pulse('bosses:infernal-glow', 'Infernal warning', '#ff8a4a', 132),
     pulse('bosses:seraph-glow', 'Eclipse warning', '#ffe5a2', 120),
+    pulse('bosses:seraph-light-break', 'Shattered halo', '#fff0bc', 130),
+    pulse('bosses:seraph-dark-collapse', 'Umbra collapse', '#8259bd', 155),
     pulse('bosses:finishing-flare', 'Seraph finishing flare', '#fff2bd', 190),
   ],
 }
