@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mount, type VueWrapper } from '@vue/test-utils'
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import WorldEventPanel from './WorldEventPanel.vue'
 import type { WorldEventOption } from '../../../game/content/world-events/runtime'
@@ -67,7 +67,8 @@ describe('world event dialog', () => {
     card('invoke').click()
     card('invoke').click()
     expect(wrapper.emitted('choose')).toEqual([['0:1', 'invoke']])
-    await nextTick()
+    // Allow both the first render and the retry unlock render to flush.
+    await flushPromises()
     card('invoke').click()
     expect(wrapper.emitted('choose')).toEqual([['0:1', 'invoke'], ['0:1', 'invoke']])
   })

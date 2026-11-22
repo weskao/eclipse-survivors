@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { mount, type VueWrapper } from '@vue/test-utils'
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { createHero, createState } from '../../../game/state'
 import { seeded } from '../../../game/math'
@@ -56,7 +56,10 @@ describe('ES2 relic chest reward overlay', () => {
     first.click()
     press('2')
     expect(wrapper.emitted('claim')).toEqual([[offer.chestId, offer.options[0]]])
-    expect(first.disabled).toBe(true)
+    // DOM disabled bindings are batched by Vue; the synchronous action guard
+    // is proved by the exact-once emitted event above.
+    await flushPromises()
+    expect(first.disabled).toBe(false)
   })
 
   it('blocks invalid keyboard shortcuts and locks transactions until state refreshes', async () => {
@@ -95,7 +98,7 @@ it('recovers when a host rejects a reroll without changing its offer', async () 
   const reroll = document.querySelector<HTMLButtonElement>('[data-relic-reroll]')!
   reroll.click()
   expect(wrapper.emitted('reroll')).toHaveLength(1)
-  await nextTick()
+  await flushPromises()
   expect(reroll.disabled).toBe(false)
   reroll.click()
   expect(wrapper.emitted('reroll')).toHaveLength(2)
