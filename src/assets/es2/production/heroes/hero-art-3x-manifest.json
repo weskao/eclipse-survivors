@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "visualStatus": "QA_PENDING: separate portrait/animation drawings, one-facing action strips only; do not misrepresent as 8-direction",
+  "visualStatus": "QA_PENDING: 900px portraits and right-facing 8-cell motion strips are committed and wired; seven directions still use the existing atlas",
   "heroes": [
     {
       "id": "shadowblade",
@@ -113,5 +113,11 @@
         ]
       }
     }
-  ]
+  ],
+  "hairAlignment": {
+    "hero": "crimson-paladin",
+    "source": "original realistic portrait; gold hair recolored to copper-red to match existing red-haired motion strip",
+    "sha256": "0659af3278ad58edeb3a03cc61c05b9a72374361fed6a54f24280120f5be2135",
+    "status": "manual-review-required"
+  }
 }
