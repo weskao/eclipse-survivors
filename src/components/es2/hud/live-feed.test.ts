@@ -9,11 +9,12 @@ describe('authoritative combat HUD feed', () => {
   it('projects ONLY installed runtime evidence and keeps the origin snapshot', () => {
     const state = createState()
     state.mode = 'play'
+    state.time = 195
     state.mobs.push({ type: 'boss', hp: 40, max: 100, bossPhase: 2 } as GameState['mobs'][number])
     const feed = buildLiveCombatHudFeed({
       state, snapshot: { runId: 'run-1', sequence: 3 },
       bossName: '月蝕之王', totalBossPhases: 3,
-      wave: { cycle: 4, events: [{ id: 'stage-5', title: '第五波來襲' }] },
+      wave: { cycle: 4, startsAt: 180, endsAt: 210, events: [{ id: 'stage-5', title: '第五波來襲' }] },
       objective: { status: 'active', progress: { label: '清除波次', current: 4, required: 8 } },
       comboCount: 12,
       relicInventory: { items: [{ id: 'relics:vampire-fang', stacks: 2 }] },
@@ -22,7 +23,7 @@ describe('authoritative combat HUD feed', () => {
     })
     expect(feed.snapshot).toEqual({ runId: 'run-1', sequence: 3 })
     expect(feed.boss).toEqual({ name: '月蝕之王', phase: 2, totalPhases: 3 })
-    expect(feed.wave).toEqual({ number: 5, announcement: '第五波來襲' })
+    expect(feed.wave).toEqual({ number: 5, announcement: '第五波來襲', progressPct: 50 })
     expect(feed.combo).toEqual({ count: 12 })
     expect(feed.objectives).toEqual([{ id: 'mode-objective', title: '清除波次', progress: 4, target: 8, complete: false }])
     expect(feed.relics?.[0]).toMatchObject({ id: 'relics:vampire-fang', stacks: 2 })
