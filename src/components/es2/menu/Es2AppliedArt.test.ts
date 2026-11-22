@@ -35,7 +35,7 @@ describe('c104 applied assets in real game surfaces', () => {
   })
 
   it('uses authored rarity indicators on real choice cards', () => {
-    const items = ['common','rare','legendary'].map(rarity => ({
+    const items = (['common','rare','legendary'] as const).map(rarity => ({
       id:rarity,title:rarity,rarity,icon:'✦'
     }))
     const wrapper = mount(Es2ChoiceCards, { props:{items} })

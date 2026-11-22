@@ -18,7 +18,7 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     const args:unknown[][]=[]
     const {ctx}=createFakeCtx()
     const draw=ctx.drawImage.bind(ctx)
-    ctx.drawImage=((...items:unknown[])=>{args.push(items);draw(...items)}) as typeof ctx.drawImage
+    ctx.drawImage=((...items:unknown[])=>{args.push(items);Reflect.apply(draw,ctx,items)}) as typeof ctx.drawImage
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
     expect(args.some(a=>a[0]===image && a.slice(1,5).join() === '192,0,96,96')).toBe(true)
     expect(args.some(a=>a[0]===warning && a.slice(1,5).join() === '0,0,96,96')).toBe(true)
