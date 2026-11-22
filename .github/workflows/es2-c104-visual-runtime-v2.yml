@@ -4,7 +4,7 @@ on:
     branches: [feature/es2-c104-visual-runtime-v2]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: es2-c104-runtime-${{ github.ref }}
   cancel-in-progress: true
@@ -31,9 +31,23 @@ jobs:
           name: c104-visual-sources-review
           path: art-inspection/
           if-no-files-found: error
+      - name: Produce 52 exact-source WebP assets in canonical project directories
+        run: python scripts/es2/generate_c104_assets.py --output .
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vitest run src/game/render/es2/c104-source-art.test.ts
       - run: pnpm test
       - run: pnpm typecheck
       - run: pnpm build
       - run: pnpm check-release
+      - name: Commit the tested production image outputs (never on failure)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/assets/es2/production/heroes/*-special@3x.webp
+          git add src/assets/es2/production/enemies/ src/assets/es2/production/bosses/
+          git add src/assets/es2/production/biomes/ src/assets/es2/production/ui/
+          git add src/assets/es2/production/c104-provenance.json
+          if ! git diff --cached --quiet; then
+            git commit -m "art(es2): install 52 c104 source-cropped 3x production candidates"
+            git push origin HEAD:refs/heads/feature/es2-c104-visual-runtime-v2
+          fi
