@@ -85,7 +85,7 @@ onBeforeUnmount(() => {
     class="es2-mobile-controls"
     :data-active="usable"
     :data-side="preferences.joystickSide"
-    :style="{ '--es2-touch-scale': preferences.touchScale, '--es2-bottom-offset': preferences.joystickBottom + 'px' }"
+    :style="{ '--es2-touch-scale': preferences.touchScale, '--es2-stick-offset': preferences.joystickBottom + 'px' }"
     :aria-hidden="!usable"
     @contextmenu.prevent
   >
@@ -120,12 +120,12 @@ onBeforeUnmount(() => {
 <style scoped>
 .es2-mobile-controls {
   --es2-touch-scale: 1;
-  --es2-bottom-offset: 30px;
+  --es2-stick-offset: 30px;
   position: fixed;
   z-index: 3;
   left: max(12px, env(safe-area-inset-left));
   right: max(12px, env(safe-area-inset-right));
-  bottom: calc(env(safe-area-inset-bottom) + var(--es2-bottom-offset));
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: end;
@@ -154,6 +154,7 @@ onBeforeUnmount(() => {
   background: radial-gradient(circle, #34485dc9, #0f192cdd 76%);
   box-shadow: inset 0 0 22px #000a, 0 0 0 6px #d4ba8a24, 0 6px 18px #0009;
   cursor: grab;
+  transform: translateY(calc(24px - var(--es2-stick-offset)));
 }
 .es2-stick.pressed {
   border-color: #fff2cb;

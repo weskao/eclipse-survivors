@@ -106,6 +106,10 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 
     <div data-testid="es2-preview" class="es2-preview" aria-live="polite" aria-atomic="true">
       <strong>即時預覽 · {{ policy.quality.toUpperCase() }}</strong>
+      <div class="es2-mobile-preview" :data-side="modelValue.joystickSide" :style="{ '--es2-mini-scale': modelValue.touchScale }" aria-label="預覽左右控制鈕位置">
+        <span class="es2-mini-stick" aria-hidden="true">◎</span>
+        <span class="es2-mini-dash" aria-hidden="true">✧</span>
+      </div>
       <div class="es2-preview-demo" :style="{ fontSize: 'calc(14px * ' + modelValue.interfaceScale + ')' }">
         <span>♥ HP</span><span>✦ XP</span>
         <span v-if="modelValue.showDamageNumbers" class="es2-preview-damage">−24</span>
@@ -150,6 +154,12 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 .es2-reset { white-space: nowrap; }
 .es2-preview { margin-top: 16px; padding: 12px 14px; border: 1px solid #d4b57a80; border-radius: 10px; background: linear-gradient(150deg, #28384b, #151d29); }
 .es2-preview > strong { font-size: 12px; color: #ffe1ac; letter-spacing: .5px; }
+.es2-mobile-preview { display: grid; grid-template-columns: 1fr 1fr; align-items: end; margin-top: 10px; gap: 20px; }
+.es2-mobile-preview span { display: grid; place-items: center; border: 2px solid #dec28c; border-radius: 50%; background: #30475c; color: #f7e7c3; font-size: 21px; }
+.es2-mini-stick { justify-self: start; grid-column: 1; grid-row: 1; width: calc(54px * var(--es2-mini-scale)); aspect-ratio: 1; }
+.es2-mini-dash { justify-self: end; grid-column: 2; grid-row: 1; width: calc(40px * var(--es2-mini-scale)); aspect-ratio: 1; }
+.es2-mobile-preview[data-side="right"] .es2-mini-stick { grid-column: 2; justify-self: end; }
+.es2-mobile-preview[data-side="right"] .es2-mini-dash { grid-column: 1; justify-self: start; }
 .es2-preview-demo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
 .es2-preview-demo span { padding: 5px 8px; border: 1px solid #c1b18b; background: #172638; border-radius: 5px; }
 .es2-preview-demo .es2-preview-damage { color: #ffb89a; font-weight: 900; }

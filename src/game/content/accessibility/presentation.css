@@ -17,11 +17,11 @@
   content: '♥ ';
   color: #fff2d5;
 }
-[data-es2-status-symbols="true"] .bar.exp::before {
-  content: '✦';
-  position: absolute;
-  transform: translate(-13px, -4px);
-  color: #e7f8ff;
-  font-size: 10px;
+[data-es2-status-symbols="true"] #hpLabel::after {
+  content: ' · ✦ 經驗';
+  color: #dcefff;
 }
-[data-es2-status-symbols="true"] .bar.exp { position: relative; }
+[data-es2-reduce-flashing="true"] .toast {
+  transition: none !important;
+  text-shadow: 0 1px 4px #000;
+}

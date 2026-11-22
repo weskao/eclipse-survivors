@@ -1,4 +1,4 @@
-import { STICK_RADIUS, stickVector } from '../../input'
+import { stickVector } from '../../input'
 import type { MoveInput } from '../../types'
 
 export type JoystickVector = MoveInput & { knobX: number; knobY: number }
@@ -10,7 +10,7 @@ export function joystickVector(dx: number, dy: number, padSize: number): Joystic
   const vector = stickVector(dx * scale, dy * scale)
   return {
     x: vector.x, y: vector.y,
-    knobX: vector.knobX * STICK_RADIUS / STICK_RADIUS / scale,
+    knobX: vector.knobX / scale,
     knobY: vector.knobY / scale,
   }
 }

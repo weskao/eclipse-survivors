@@ -4,6 +4,7 @@ export interface PresentationHints {
   prefersReducedMotion?: boolean
   deviceMemory?: number
   hardwareConcurrency?: number
+  coarsePointer?: boolean
 }
 
 export interface VisualPresentationPolicy {
@@ -21,11 +22,15 @@ export interface VisualPresentationPolicy {
 export function resolvePresentationPolicy(
   p: Readonly<AccessibilityPreferences>, hints: Readonly<PresentationHints> = {},
 ): VisualPresentationPolicy {
-  const quality = p.quality === 'auto'
-    ? (hints.deviceMemory !== undefined && hints.deviceMemory <= 2) || (hints.hardwareConcurrency !== undefined && hints.hardwareConcurrency <= 2)
-      ? 'low' : (hints.deviceMemory !== undefined && hints.deviceMemory <= 4) || (hints.hardwareConcurrency !== undefined && hints.hardwareConcurrency <= 4)
-        ? 'medium' : 'high'
-    : p.quality
+  let quality: Exclude<QualitySetting, 'auto'>
+  if (p.quality !== 'auto') quality = p.quality
+  else if ((hints.deviceMemory !== undefined && hints.deviceMemory <= 2) ||
+    (hints.hardwareConcurrency !== undefined && hints.hardwareConcurrency <= 2)) quality = 'low'
+  else if (hints.coarsePointer ||
+    (hints.deviceMemory !== undefined && hints.deviceMemory <= 4) ||
+    (hints.hardwareConcurrency !== undefined && hints.hardwareConcurrency <= 4) ||
+    (hints.deviceMemory === undefined && hints.hardwareConcurrency === undefined)) quality = 'medium'
+  else quality = 'high'
   const parameters = {
     low: { pixelRatioCap: 1, ambientDensity: 0.35 },
     medium: { pixelRatioCap: 1.5, ambientDensity: 0.65 },
