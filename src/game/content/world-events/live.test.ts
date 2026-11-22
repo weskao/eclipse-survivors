@@ -213,6 +213,23 @@ describe('world-event live integration', () => {
   })
 
 
+
+  it('removes event-spawned actors and pending objectives on reset, leaving unrelated mobs', () => {
+    const { state, live, spawn } = setup()
+    const unrelated = {
+      x: 500, y: 500, type: 'slime' as const, hp: 10, max: 10, r: 10,
+      speed: 0, dmg: 0, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
+    }
+    state.mobs.push(unrelated)
+    const marker = spawn('events:monster-ambush')
+    expect(live.choose(marker.id, 'fight')).toBe('applied')
+    expect(state.mobs).toHaveLength(4)
+    live.reset()
+    expect(state.mobs).toEqual([unrelated])
+    expect(live.director.objectives).toHaveLength(0)
+    expect(live.director.active).toHaveLength(0)
+  })
+
   it('cleans scene-owned markers, buffs and event actors even when scene changes while paused', () => {
     const { state, live, spawn } = setup()
     const unrelated = {
