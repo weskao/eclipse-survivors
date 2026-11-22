@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
 import Es2Dialog from '../menu/Es2Dialog.vue'
 import { RELIC_BY_ID, RELICS, TREASURE_UI, type RelicDefinition, type RelicId } from '../../../game/content/relics/catalog'
 import type { TreasureOffer, inventorySnapshot } from '../../../game/content/relics/runtime'
@@ -82,7 +83,7 @@ function shortcut(event: KeyboardEvent): void {
           :class="['relic-rewards__card--' + relic.rarity, { 'relic-rewards__card--cursed': relic.cursed }]">
           <button type="button" class="relic-rewards__claim" :data-relic-claim="relic.id" :disabled="busy"
             :aria-label="'領取 ' + relic.title + '，' + relic.description" @click="claim(relic.id)">
-            <span class="relic-rewards__icon" aria-hidden="true">{{ relic.icon }}</span>
+            <span class="relic-rewards__icon" aria-hidden="true"><img :src="relic.cursed ? WORLD_ART.ui['treasure-cursed'] : relic.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary'] : relic.rarity === 'rare' || relic.rarity === 'epic' ? WORLD_ART.ui['treasure-rare'] : WORLD_ART.ui['treasure-common']" alt="" decoding="async" /></span>
             <span class="relic-rewards__rarity">{{ { common: '普通', rare: '稀有', epic: '史詩', legendary: '傳說' }[relic.rarity] }} · {{ index + 1 }}</span>
             <strong>{{ relic.title }}</strong>
             <span class="relic-rewards__description">{{ relic.description }}</span>
@@ -119,6 +120,7 @@ function shortcut(event: KeyboardEvent): void {
 .relic-rewards__claim { width: 100%; display: flex; flex: 1; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0.9rem; text-align: center; background: transparent; }
 .relic-rewards__claim:focus-visible, .relic-rewards__banish:focus-visible, .relic-rewards__actions button:focus-visible { outline: 3px solid #fff1a5; outline-offset: 3px; }
 .relic-rewards__icon { font-size: 2.5rem; }
+.relic-rewards__icon img{display:block;width:68px;height:68px;object-fit:contain}
 .relic-rewards__rarity { color: #dbcfaa; font-size: 0.85rem; }
 .relic-rewards__description { font-size: 0.9rem; line-height: 1.45; }
 .relic-rewards__curse { color: #ffb5b5; font-size: 0.8rem; }

@@ -7,6 +7,7 @@ import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, type ProductionHeroArtwork } from './es2/production-heroes'
+import { drawProductionBossFrame } from './es2/production-world'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -219,6 +220,7 @@ export function drawCharacter(
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
+  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3 },
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -289,7 +291,12 @@ export function drawCharacter(
         drawPoseAccents(ctx, kind, hero, anim)
       }
       ctx.restore()
-    } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
+    } else if (mob) {
+      // Use the controller's real phase; the original boss sprite remains the decode fallback.
+      const painted = mob.type === 'boss' && productionBoss
+        ? drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
+      if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy)
+    }
   }
   ctx.restore()
   if (mob && mob.hp < mob.max && mob.type !== 'boss') {

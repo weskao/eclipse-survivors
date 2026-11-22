@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../../../game/ui-art'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
@@ -66,6 +67,16 @@ const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => {
     maxLevel: upgrade.maxLevel, requirements: upgrade.requirements, evolution: upgrade.isEvolution,
   }
 }))
+const specialCards = computed(() => {
+  const offer = props.specialChoice
+  if (!offer || offer.kind !== 'treasure') return offer
+  return { ...offer, items: offer.items.map(item => ({
+    ...item,
+    imageSrc: item.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary']
+      : item.rarity === 'rare' || item.rarity === 'epic' ? WORLD_ART.ui['treasure-rare']
+        : WORLD_ART.ui['treasure-common'],
+  })) }
+})
 function chooseUpgrade(id: string): void {
   const valid = abilityChoiceId(id, props.upgrades)
   if (valid !== null) emit('choose', valid)
@@ -87,7 +98,7 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
     <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still'"
       @choose="chooseUpgrade" @settings="emit('settings')" />
-    <Es2ChoiceDialog v-if="specialChoice" :active="specialActive" :kind="specialChoice.kind" :items="specialChoice.items"
+    <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :items="specialCards.items"
       :still="upgradeEffect === 'still'" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')" />

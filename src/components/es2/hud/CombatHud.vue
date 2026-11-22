@@ -2,6 +2,7 @@
 import { computed, ref, shallowRef, watch } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
 import type { HudView } from '../../../game/store'
 import type { HeroId, JobId } from '../../../game/types'
@@ -72,12 +73,12 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             <span class="es2-hud__eyebrow">ECLIPSE · HERO</span>
             <strong>{{ view.identity }}</strong>
           </div>
-          <div class="es2-hud__health-head"><span>生命值</span><span>{{ view.health.label }}</span></div>
+          <div class="es2-hud__health-head"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-health']" alt="" />生命值</span><span>{{ view.health.label }}</span></div>
           <div class="es2-hud__track es2-hud__track--health" role="progressbar" aria-label="生命值"
             :aria-valuenow="view.health.percent" aria-valuemin="0" aria-valuemax="100">
             <span :style="{ width: view.health.percent + '%' }"></span>
           </div>
-          <div class="es2-hud__health-head es2-hud__health-head--xp"><span>經驗值</span><span>{{ Math.round(view.experience) }}%</span></div>
+          <div class="es2-hud__health-head es2-hud__health-head--xp"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-xp']" alt="" />經驗值</span><span>{{ Math.round(view.experience) }}%</span></div>
           <div class="es2-hud__track es2-hud__track--xp" role="progressbar" aria-label="經驗值"
             :aria-valuenow="view.experience" aria-valuemin="0" aria-valuemax="100">
             <span :style="{ width: view.experience + '%' }"></span>
@@ -129,7 +130,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
       </div>
     </div>
     <section v-if="view.objective || view.objectives.length" class="es2-hud__objectives es2-hud__plate" aria-label="任務目標">
-      <div class="es2-hud__section-label">✥ 目前目標</div>
+      <div class="es2-hud__section-label"><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-quest']" alt="" />目前目標</div>
       <p v-if="view.objective">{{ view.objective }}</p>
       <ul v-if="view.objectives.length">
         <li v-for="item in view.objectives" :key="item.id" :class="{ 'es2-hud__complete': item.complete }">
@@ -227,4 +228,5 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     max-width: 50vw;
   }
 }
+.es2-world-hud-icon{width:15px;height:15px;object-fit:contain;vertical-align:middle;margin-right:4px}
 </style>

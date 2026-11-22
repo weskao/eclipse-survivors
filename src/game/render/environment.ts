@@ -2,6 +2,8 @@ import { SCENE, TAU } from '../constants'
 import type { Artwork } from '../art'
 import { hash } from '../math'
 import { currentSceneInfo } from '../state'
+import { BIOME_IDS } from '../content/biomes'
+import type { WorldRuntimeImages } from './es2/production-world'
 import type { GameState } from '../types'
 import type { Ctx2D } from './ctx'
 import type { BiomeArt } from './biome-art'
@@ -23,10 +25,15 @@ const AMBIENT_SAMPLES = Array.from({ length: 37 }, (_, i) => [hash(i, 7), hash(i
 // retaining canvases or unlimited color/radius variants.
 const glowGradients = new WeakMap<Ctx2D, Map<string, CanvasGradient>>()
 
-export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number): void {
+export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number, world?: WorldRuntimeImages): void {
   const { W, H } = s
   const biome = biomes[s.currentScene] ?? biomes[0]!
-  const tile = biome.tile
+  const biomeId = BIOME_IDS[s.currentScene]
+  const ground = biomeId && world?.ground[biomeId]
+  const authoredGround = !!ground && ground.complete && ground.naturalWidth === 768 && ground.naturalHeight === 768
+  const tile = authoredGround ? ground : biome.tile
+  const decor = biomeId && world?.decor[biomeId]
+  const authoredDecor = !!decor && decor.complete && decor.naturalWidth === 384 && decor.naturalHeight === 96
   const size = 384
   const px = ((ox % size) + size) % size
   const py = ((oy % size) + size) % size
@@ -34,7 +41,7 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
     ctx.drawImage(tile, x, y, size, size)
   }
   // Only the sunlit ruins retain the authored courtyard illustration.
-  if (s.currentScene === 0 && ready(art.courtyard)) {
+  if (s.currentScene === 0 && !authoredGround && ready(art.courtyard)) {
     ctx.drawImage(art.courtyard, ox - SCENE.width / 2, oy - SCENE.height / 2, SCENE.width, SCENE.height)
   }
   const centerX = W / 2 - ox
@@ -63,7 +70,13 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
     const x = o.x + ox
     const y = o.y + oy
     if (x < -110 || x > W + 110 || y < -180 || y > H + 80) continue
-    if (s.currentScene === 0 && o.variant === 0) ctx.drawImage(props.tree, x - 90, y - 207, 181, 216)
+    if (authoredDecor && decor) {
+      // Decoration is visual only: authoritative collision still uses the original obstacle.
+      ctx.save()
+      ctx.globalAlpha = 0.76
+      ctx.drawImage(decor, (o.variant % 4) * 96, 0, 96, 96, x - 55, y - 125, 110, 130)
+      ctx.restore()
+    } else if (s.currentScene === 0 && o.variant === 0) ctx.drawImage(props.tree, x - 90, y - 207, 181, 216)
     else if (s.currentScene === 0 && o.variant === 1) ctx.drawImage(props.ruin, x - 46, y - 114, 92, 121)
     else if (s.currentScene === 1 && o.variant === 1) ctx.drawImage(props.crystal, x - 34, y - 90, 68, 95)
     else if (s.currentScene === 2 && o.variant === 2) ctx.drawImage(props.crystal, x - 38, y - 105, 76, 110)
