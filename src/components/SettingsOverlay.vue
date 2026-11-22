@@ -21,6 +21,21 @@ const emit = defineEmits<{
   cameraShake: [value: boolean]
 }>()
 const closeButton = ref<HTMLButtonElement | null>(null)
+const dialog = ref<HTMLDivElement | null>(null)
+const trapTab = (event: KeyboardEvent): void => {
+  if (event.key !== 'Tab') return
+  const controls = dialog.value?.querySelectorAll<HTMLButtonElement | HTMLInputElement>('button:not(:disabled), input:not(:disabled)')
+  if (!controls?.length) return
+  const first = controls[0]!
+  const last = controls[controls.length - 1]!
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
 let previousFocus: HTMLElement | null = null
 watch(() => props.active, async (active) => {
   if (active) {
@@ -36,7 +51,7 @@ const amount = (event: Event): number => Number((event.target as HTMLInputElemen
 </script>
 
 <template>
-  <div id="settings" class="overlay settings-overlay" :class="{ active }" role="dialog" :aria-modal="active" aria-label="遊戲設定" @click.self="emit('close')">
+  <div id="settings" ref="dialog" class="overlay settings-overlay" :class="{ active }" role="dialog" :aria-modal="active" aria-label="遊戲設定" @click.self="emit('close')" @keydown="trapTab">
     <section class="panel settings-panel" aria-labelledby="settingsTitle">
       <header class="settings-header">
         <div>
