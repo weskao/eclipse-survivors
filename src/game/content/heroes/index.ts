@@ -7,6 +7,9 @@ import type { ContentAbility, ContentPack } from '../contracts'
 import shadowPortrait from './portraits/shadowblade.svg?url'
 import summonerPortrait from './portraits/spirit-summoner.svg?url'
 import paladinPortrait from './portraits/crimson-paladin.svg?url'
+import shadowSpecial from '../../../assets/es2/production/heroes/shadowblade-special@3x.webp'
+import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summoner-special@3x.webp'
+import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
 
 export type SpecializationId = 'shadowblade' | 'spirit-summoner' | 'crimson-paladin'
 export type CompanionKind = 'wisp' | 'guardian' | 'reaver'
@@ -29,6 +32,7 @@ export interface HeroSelectionDefinition {
   readonly legacyArtJob: JobId
   /** A distinct static illustration; the original three hero assets stay untouched. */
   readonly portraitSrc: string
+  readonly specialIconSrc: string
   readonly stats: HeroStats
   readonly startingAbility: ContentId
   /** Hero-specific run equipment; the integration layer retains the original JobId only for fallback art. */
@@ -47,7 +51,7 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     description: '近戰突襲與短暫潛行，高爆發但生存能力較低。',
     strengths: ['高速突進', '暴擊', '短暫潛行'],
     weaknesses: ['低生命', '短射程', '須掌握突襲時機'],
-    legacyArtJob: 'knight', portraitSrc: shadowPortrait,
+    legacyArtJob: 'knight', portraitSrc: shadowPortrait, specialIconSrc: shadowSpecial,
     stats: { hp: 105, speed: 248, damage: 28, delay: 0.43, range: 132 },
     startingAbility: 'heroes:shadow-daggers', startingEquipment: '影鋒雙匕', progressionAbility: 'heroes:shadow-precision',
     passive: '暗影精準：24% 暴擊機率，造成 170% 傷害；升級增強暴擊倍率。',
@@ -61,7 +65,7 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     description: '與靈體協同作戰，逐步提升召喚數量與支援能力。',
     strengths: ['持續召喚傷害', '小額治癒', '穩定遠程作戰'],
     weaknesses: ['脆弱', '前期召喚數量少', '召喚攻擊需要時間'],
-    legacyArtJob: 'wizard', portraitSrc: summonerPortrait,
+    legacyArtJob: 'wizard', portraitSrc: summonerPortrait, specialIconSrc: summonerSpecial,
     stats: { hp: 118, speed: 194, damage: 24, delay: 0.66, range: 355 },
     startingAbility: 'heroes:spirit-orb', startingEquipment: '靈火寶珠', progressionAbility: 'heroes:spirit-bond',
     passive: '靈契：靈火攻擊、守護靈治療、奪魂靈吸血，最多三個常駐夥伴。',
@@ -75,7 +79,7 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     description: '高耐久反擊型近戰，透過生命風險換取屏障與強化傷害。',
     strengths: ['承傷減免', '近身反擊', '臨時屏障'],
     weaknesses: ['移動慢', '射程短', '主動技能消耗生命'],
-    legacyArtJob: 'knight', portraitSrc: paladinPortrait,
+    legacyArtJob: 'knight', portraitSrc: paladinPortrait, specialIconSrc: paladinSpecial,
     stats: { hp: 190, speed: 172, damage: 30, delay: 0.65, range: 116 },
     startingAbility: 'heroes:crimson-guard', startingEquipment: '緋紅聖盾', progressionAbility: 'heroes:crimson-vow',
     passive: '緋紅韌性：受到傷害減少 14%，受傷時有冷卻的近距離反擊。',
@@ -91,7 +95,7 @@ const HERO_LIST = Object.values(HERO_DEFINITIONS)
 /** The existing registry stores these starting abilities and upgrade levels per run. */
 const abilities: ContentAbility[] = HERO_LIST.flatMap((def): ContentAbility[] => [
   {
-    id: def.startingAbility, kind: 'weapon', icon: '✦', title: def.label + ' · ' + def.special,
+    id: def.startingAbility, kind: 'weapon', icon: '✦', iconSrc: def.specialIconSrc, title: def.label + ' · ' + def.special,
     desc: def.passive, rarity: 'rare', maxLevel: 1,
     eligible: () => false, // The adapter grants this at run initialization, never in random rolls.
   },
