@@ -44,10 +44,16 @@ def main():
                     assert page.evaluate('window.__test.mode') == 'play'
                     assert page.evaluate('window.__test.frames') > 10
                     page.screenshot(path=str(OUT / (name + '.png')), animations='disabled')
+                    staged_at = page.evaluate('window.__test.time')
                     for _ in range(28):
                         page.screenshot(path=str(frames / f'frame_{screenshot_count:04d}.png'))
                         screenshot_count += 1
                         page.wait_for_timeout(85)
+                        # Slow runners let the idle hero die or the run timer expire mid-capture.
+                        hp, clock = page.evaluate('[window.__test.hp, window.__test.time]')
+                        if hp < 90 or clock - staged_at > 20:
+                            page.evaluate('(n) => window.__test.previewBiome(n)', index)
+                            staged_at = page.evaluate('window.__test.time')
                 if errors:
                     raise AssertionError('Browser game errors: ' + '; '.join(errors[:3]))
                 # Include one touch-sized screenshot to verify mobile readability.
