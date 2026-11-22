@@ -119,7 +119,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message,
     offerUpgrades,
     end,
-    content: (state, event) => contentRegistry.emit(state, event, hooks),
+    // Skip all event-object allocation in the default empty-pack game.
+    content: contentRegistry.packs.some(pack => pack.onEvent)
+      ? (state, event) => contentRegistry.emit(state, event, hooks)
+      : undefined,
   }
 
   function screen(name: GameMode): void {
@@ -426,7 +429,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
-    assets.content = contentRegistry
+    if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
     assets.cameraShakeEnabled = () => ui.cameraShake
     let dpr = 1
     let last = 0

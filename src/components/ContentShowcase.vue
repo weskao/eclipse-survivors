@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Engine } from '../game/engine'
 import type { ContentEvent, ContentId } from '../game/types'
 
 const { engine } = defineProps<{ engine: Engine }>()
-const abilities = computed(() => engine.contentRegistry.abilities)
-const levels = computed(() => engine.state.content.levels)
-const grant = (id: ContentId): void => { engine.showcaseGrant(id) }
-const simulate = (event: ContentEvent): void => { engine.showcaseEmit(event) }
+const abilities = engine.contentRegistry.abilities
+const revision = ref(0)
+/** GameState is intentionally non-reactive: snapshot only after a grant or screen change. */
+const snapshot = computed(() => {
+  void revision.value
+  void engine.ui.mode
+  return {
+    levels: { ...engine.state.content.levels },
+    eligible: new Set(engine.contentRegistry.eligible(engine.state).map(a => a.id)),
+  }
+})
+const grant = (id: ContentId): void => { if (engine.showcaseGrant(id)) revision.value++ }
+const simulate = (event: ContentEvent): void => { engine.showcaseEmit(event); revision.value++ }
 </script>
 
 <template>
@@ -17,10 +26,10 @@ const simulate = (event: ContentEvent): void => { engine.showcaseEmit(event) }
     <div class="showcase-scroll">
       <button
         v-for="ability in abilities" :key="ability.id" type="button"
-        :disabled="engine.ui.mode !== 'play' || !engine.contentRegistry.eligible(engine.state).some(a => a.id === ability.id)"
+        :disabled="engine.ui.mode !== 'play' || !snapshot.eligible.has(ability.id)"
         :aria-label="'Grant ' + ability.title"
         @click="grant(ability.id)"
-      >{{ ability.icon }} {{ ability.title }} · {{ levels[ability.id] ?? 0 }}/{{ ability.maxLevel }}</button>
+      >{{ ability.icon }} {{ ability.title }} · {{ snapshot.levels[ability.id] ?? 0 }}/{{ ability.maxLevel }}</button>
     </div>
     <div class="showcase-events">
       <button type="button" :disabled="engine.ui.mode !== 'play'" @click="simulate({ type: 'pickup', kind: 'world' })">Pickup event</button>
