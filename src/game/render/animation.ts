@@ -8,16 +8,24 @@ export interface HeroAnimation {
   frame: number
   count: number
   phase: number
+  /** Screen-space octant: E, SE, S, SW, W, NW, N, NE. */
+  direction: number
   reducedMotion: boolean
+  /** Projectile is created at attack start; subsequent strike frames are release/recovery. */
+  actionStage?: 'windup' | 'hold' | 'release' | 'recover' | 'none'
 }
 
 const FRAMES: Record<HeroPose, number> = {
-  idle: 6, run: 8, attack: 6, cast: 6, dash: 5, hurt: 3, death: 6, victory: 8,
+  idle: 8, run: 10, attack: 12, cast: 12, dash: 6, hurt: 4, death: 8, victory: 8,
 }
 
 // Rendering-only history. Weak keys let old runs/characters be collected without
 // touching combat state or requiring a parallel animation update loop.
-const entered = new WeakMap<Hero, { pose: HeroPose; clock: number; reduced: boolean }>()
+const entered = new WeakMap<Hero, { pose: HeroPose; clock: number; reduced: boolean; direction: number }>()
+
+function octant(angle: number): number {
+  return ((Math.round(angle / (TAU / 8)) % 8) + 8) % 8
+}
 
 function poseFor(s: GameState, hero: Hero): HeroPose {
   if (hero.hp <= 0) return 'death'
@@ -36,12 +44,18 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
   const pose = poseFor(s, hero)
   const count = FRAMES[pose]
   const old = entered.get(hero)
+  const attacking = pose === 'attack' || pose === 'cast'
+  const running = pose === 'run' && (hero.vx * hero.vx + hero.vy * hero.vy > 1)
+  const direction = attacking ? octant(hero.aimAngle)
+    : running ? octant(Math.atan2(hero.vy, hero.vx))
+      : old?.direction ?? (hero.face < 0 ? 4 : 0)
   if (!old || old.pose !== pose || old.reduced !== reducedMotion || s.worldClock < old.clock) {
-    entered.set(hero, { pose, clock: s.worldClock, reduced: reducedMotion })
-  }
+    entered.set(hero, { pose, clock: s.worldClock, reduced: reducedMotion, direction })
+  } else old.direction = direction
   const start = entered.get(hero)!
   if (reducedMotion || s.mode === 'paused' || s.mode === 'level') {
-    return { pose, frame: 0, count, phase: 0, reducedMotion }
+    const actionStage = attacking ? 'release' : 'none'
+    return { pose, frame: 0, count, phase: 0, direction, reducedMotion, actionStage }
   }
   const elapsed = Math.max(0, s.worldClock - start.clock)
   let progress = 0
@@ -70,7 +84,13 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
       progress = (elapsed / 1.20) % 1
       break
   }
-  const loop = pose === 'idle' || pose === 'run' || pose === 'victory'
-  const frame = Math.min(count - 1, Math.floor(progress * (loop ? count : count - 1)))
-  return { pose, frame, count, phase: progress, reducedMotion }
+  const frame = Math.min(count - 1, Math.floor(progress * count))
+  // attack() spawns the real projectile on the same tick it starts strike.
+  // Never imply a loaded arrow or held spell during release/recover frames.
+  const actionStage: NonNullable<HeroAnimation['actionStage']> = attacking
+    ? progress < 0.22 ? 'release' : 'recover'
+    : hero.attack <= Math.max(0.08, hero.delay * 0.24)
+      ? hero.attack > Math.max(0.03, hero.delay * 0.08) ? 'windup' : 'hold'
+      : 'none'
+  return { pose, frame, count, phase: progress, direction, reducedMotion, actionStage }
 }
