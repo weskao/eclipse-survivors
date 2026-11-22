@@ -92,6 +92,7 @@ export function createLiveWorldEvents(
   state: GameState, hooks: GameHooks, options: LiveWorldEventsOptions = {},
 ) {
   let tagged = new WeakMap<Mob, string>()
+  const spawned = new Set<Mob>()
   let scene = state.currentScene
   const buffs = new Map<string, TimedBuff>()
   const committed = new Set<string>()
@@ -121,12 +122,20 @@ export function createLiveWorldEvents(
     for (const buff of active) removeBuff(buff)
   }
 
-  function sceneChange(): void {
+  /** Remove only event-created actors; unrelated legacy/faction mobs remain untouched. */
+  function cleanupSpawned(): void {
+    if (spawned.size) {
+      state.mobs = state.mobs.filter(mob => !spawned.has(mob))
+      spawned.clear()
+    }
     tagged = new WeakMap<Mob, string>()
+  }
+
+  function sceneChange(): void {
+    cleanupSpawned()
     clearBuffs()
     scene = state.currentScene
-    // Director owns the pending objective and marker lifecycle on scene changes.
-    if (state.hero) director.tick(createLegacyEventWorld(state))
+    director.sceneChange(scene, state.time)
   }
 
   function prepareEncounter(id: string, count: number): Mob[] | null {
@@ -239,6 +248,7 @@ export function createLiveWorldEvents(
     for (const encounter of encounters) {
       for (const mob of encounter.mobs) {
         state.mobs.push(mob)
+        spawned.add(mob)
         tagged.set(mob, encounter.eventId)
       }
     }
@@ -309,6 +319,7 @@ export function createLiveWorldEvents(
     const eventId = tagged.get(event.mob)
     if (!eventId) return
     tagged.delete(event.mob)
+    spawned.delete(event.mob)
     director.reportKill(!!event.mob.elite, eventId, state.time, event.mob)
   }
 
@@ -325,7 +336,7 @@ export function createLiveWorldEvents(
   }
 
   function reset(): void {
-    tagged = new WeakMap<Mob, string>()
+    cleanupSpawned()
     clearBuffs()
     scene = state.currentScene
     director.reset()
