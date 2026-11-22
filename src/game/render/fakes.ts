@@ -17,7 +17,7 @@ export function createFakeCtx(): FakeCtx {
   }
   const gradient = (): CanvasGradient => ({ addColorStop: () => {} })
   const ctx: Ctx2D = {
-    save: note('save'), restore: note('restore'), translate: note('translate'), rotate: note('rotate'),
+    save: note('save'), restore: note('restore'), translate: note('translate'), rotate: note('rotate'), clip: note('clip'),
     scale: note('scale'), setTransform: note('setTransform'), setLineDash: note('setLineDash'),
     drawImage: (...args: unknown[]): void => {
       calls.push('drawImage')
@@ -30,7 +30,7 @@ export function createFakeCtx(): FakeCtx {
     stroke: note('stroke'),
     createLinearGradient: gradient, createRadialGradient: gradient,
     fillStyle: '', strokeStyle: '', lineWidth: 1, lineCap: 'butt', lineJoin: 'miter', globalAlpha: 1,
-    shadowBlur: 0, shadowColor: '', textAlign: 'start', font: '', filter: 'none',
+    globalCompositeOperation: 'source-over', shadowBlur: 0, shadowColor: '', textAlign: 'start', font: '', filter: 'none',
   }
   return { ctx, calls, drawn }
 }
