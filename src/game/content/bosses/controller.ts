@@ -8,7 +8,6 @@ import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossAttack, type BossAttackId, typ
 export const MAX_BOSS_PROJECTILES = 48
 const MAX_OWNED_MINIONS = 6
 const HERO_HIT_RADIUS = 15
-const TAU = Math.PI * 2
 const SAFE_HALF_ANGLE = Math.PI / 5
 
 /** Snapshot used unchanged by both the renderer and all hit tests. */
@@ -118,11 +117,16 @@ function phaseFor(boss: Mob): 1 | 2 | 3 {
 }
 
 function lockLegacyBrain(boss: Mob): void {
-  // The integration adapter must tick AFTER tickEnemies. Never let two AI owners
-  // fire for one boss; this only locks the passed boss, not shared engine code.
-  boss.ai = {
-    state: 'recover', timer: 1_000_000, attack: 'slam',
-    aimX: boss.x, aimY: boss.y, dirX: 0, dirY: 0, cycle: 0,
+  // Integration ticks AFTER tickEnemies. Reuse the AI record instead of
+  // allocating a new object every simulation frame.
+  if (!boss.ai) {
+    boss.ai = {
+      state: 'recover', timer: 1_000_000, attack: 'slam',
+      aimX: boss.x, aimY: boss.y, dirX: 0, dirY: 0, cycle: 0,
+    }
+  } else {
+    boss.ai.state = 'recover'
+    boss.ai.timer = 1_000_000
   }
 }
 
