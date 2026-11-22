@@ -30,5 +30,5 @@ export default defineConfig({
   plugins: [vue(), copyRootStatics()],
   define: { __APP_VERSION__: JSON.stringify(version) },
   build: { assetsInlineLimit: 0 },
-  test: { environment: 'jsdom', include: ['src/**/*.test.ts', 'tests/**/*.test.ts'] },
+  test: { environment: 'jsdom', setupFiles: ['./src/test-setup.ts'], include: ['src/**/*.test.ts', 'tests/**/*.test.ts'] },
 })
