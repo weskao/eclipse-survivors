@@ -8,6 +8,7 @@ import { projectCombatHud, type CombatHudFeed } from './model'
 describe('authoritative combat HUD feed', () => {
   it('projects ONLY installed runtime evidence and keeps the origin snapshot', () => {
     const state = createState()
+    state.mode = 'play'
     state.mobs.push({ type: 'boss', hp: 40, max: 100, bossPhase: 2 } as GameState['mobs'][number])
     const feed = buildLiveCombatHudFeed({
       state, snapshot: { runId: 'run-1', sequence: 3 },
