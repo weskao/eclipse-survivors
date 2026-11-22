@@ -37,12 +37,15 @@ export interface DirectedCombatFx extends ContentVisualFx {
 }
 
 export const COMBAT_FX_BY_KIND = new Map<CombatFxKind, (typeof COMBAT_FX_SPECS)[number]>(
-  COMBAT_FX_SPECS.map(spec => [spec.kind, spec]),
+  COMBAT_FX_SPECS.map(spec => [spec.kind, spec] as const),
 )
 // The only trigonometric table is immutable. No particles or vectors are allocated per frame.
 const TAU = Math.PI * 2
 const DIRS = Object.freeze(Array.from({ length: 24 }, (_, i) => Object.freeze({
   x: Math.cos(i * TAU / 24), y: Math.sin(i * TAU / 24),
+})))
+const SPIRAL_POINTS = Object.freeze(Array.from({ length: 25 }, (_, i) => Object.freeze({
+  x: Math.cos(i * Math.PI * 1.35 / 24), y: Math.sin(i * Math.PI * 1.35 / 24),
 })))
 const clamp = (n: number) => Math.max(0, Math.min(1, n))
 const ease = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t) }
@@ -57,9 +60,9 @@ function rays(ctx: Ctx2D, count: number, inner: number, outer: number, color: st
   ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineCap = 'round'
   ctx.beginPath()
   const stride = 24 / count
+  const co = Math.cos(offset), si = Math.sin(offset)
   for (let i = 0; i < count; i++) {
     const v = DIRS[Math.floor(i * stride) % 24]!
-    const co = Math.cos(offset), si = Math.sin(offset)
     const x = v.x * co - v.y * si, y = v.y * co + v.x * si
     ctx.moveTo(x * inner, y * inner); ctx.lineTo(x * outer, y * outer)
   }
@@ -85,11 +88,14 @@ function spiral(ctx: Ctx2D, arms: number, radius: number, phase: number, color: 
   ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineCap = 'round'
   ctx.beginPath()
   for (let a = 0; a < arms; a++) {
+    const angle = a * TAU / arms + phase * TAU * 0.25
+    const co = Math.cos(angle), si = Math.sin(angle)
     for (let i = 0; i <= steps; i++) {
       const f = i / steps
-      const angle = a * TAU / arms + f * Math.PI * 1.35 + phase * TAU * 0.25
-      const x = Math.cos(angle) * (7 + radius * f)
-      const y = Math.sin(angle) * (7 + radius * f) * 0.65
+      const v = SPIRAL_POINTS[Math.round(f * 24)]!
+      const r = 7 + radius * f
+      const x = (v.x * co - v.y * si) * r
+      const y = (v.y * co + v.x * si) * r * 0.65
       if (i === 0) ctx.moveTo(x, y)
       else ctx.lineTo(x, y)
     }
