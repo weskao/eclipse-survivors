@@ -4,6 +4,7 @@ import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
 import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
+import { drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
@@ -23,6 +24,7 @@ const ease = (n: number): number => {
  */
 export function drawRigSprite(
   ctx: Ctx2D, img: Drawable, sx: number, sy: number, hero: Hero, anim: HeroAnimation, job: 'knight' | 'ranger' | 'wizard' = 'knight',
+  preparedLayers?: RigidWeaponLayers,
 ): void {
   const left = -sx / 2
   const top = -sy + 4
@@ -30,8 +32,14 @@ export function drawRigSprite(
     ctx.drawImage(img, left, top, sx, sy)
     return
   }
-  const srcW = ('naturalWidth' in img ? img.naturalWidth : img.width) || img.width || sx
-  const srcH = ('naturalHeight' in img ? img.naturalHeight : img.height) || img.height || sy
+  const layers = preparedLayers ?? getRigidWeaponLayers(img, job)
+  if (!layers) {
+    // Never deform equipment when no 2D canvas is available to isolate it.
+    ctx.drawImage(img, left, top, sx, sy)
+    return
+  }
+  const srcW = layers.body.width
+  const srcH = layers.body.height
   const columns = 8
   const rows = 12
   const cw = sx / columns
@@ -110,7 +118,7 @@ export function drawRigSprite(
       // smoothly connect the bend while keeping source texels and transparency.
       if (Math.abs(rotation) < 0.001) {
         // Most cells are stationary: avoid Canvas save/rotate/restore on mobile.
-        ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
+        ctx.drawImage(layers.body, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
           left + col * cw + dx - 0.45, top + row * ch + dy - 0.45, cw + 0.9, ch + 0.9)
       } else {
         ctx.save()
@@ -122,6 +130,7 @@ export function drawRigSprite(
       }
     }
   }
+  drawRigidWeapon(ctx, layers, job, hero, anim, sx, sy)
 }
 
 /** Tiny aim-aligned accents trace the actual hand release, not a fixed screen spot. */
