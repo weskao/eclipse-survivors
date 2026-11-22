@@ -10,6 +10,7 @@ import TouchControls from './components/TouchControls.vue'
 import SettingsOverlay from './components/SettingsOverlay.vue'
 import './meta/ui.css'
 import './visual-polish.css'
+import './settings.css'
 
 const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
