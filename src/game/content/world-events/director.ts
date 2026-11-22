@@ -63,7 +63,8 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
     const hero = world.hero
     if (lastBiome === undefined) lastBiome = world.biome
     if (!world.playing || !hero || hero.hp <= 0 || active.length >= MAX_ACTIVE || !DEFINITIONS.has(kind) ||
-      !Number.isFinite(world.time) || !Number.isFinite(hero.x) || !Number.isFinite(hero.y)) return null
+      !Number.isFinite(world.time) || !Number.isFinite(hero.x) || !Number.isFinite(hero.y) ||
+      !Number.isFinite(hero.hp) || !Number.isFinite(hero.xp)) return null
     let target = position
     if (!target) {
       const angle = roll() * TAU, radius = 210 + roll() * 120
