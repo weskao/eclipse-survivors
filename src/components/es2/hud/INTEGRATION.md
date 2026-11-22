@@ -36,6 +36,8 @@ The component does not simulate statistics, invent phases or run a timer. Skill 
      settings: engine.openSettings,
      toggleMusic: engine.toggleMusic,
      toggleSfx: engine.toggleSfx,
+     setMusicVolume: engine.setMusicVolume,
+     setSfxVolume: engine.setSfxVolume,
    }
 
 4. Replace the old GameHud markup with:
@@ -47,13 +49,17 @@ The component does not simulate statistics, invent phases or run a timer. Skill 
      :hud="ui.hud"
      :music-on="ui.musicOn && ui.musicVolume > 0"
      :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
+     :music-volume="ui.musicVolume"
+     :sfx-volume="ui.sfxVolume"
+     :audio-active="ui.mode === 'play' && !ui.settingsOpen"
      :actions="combatActions"
      :feed="combatFeed"
    />
 
-5. Leave SettingsOverlay and the engine keyboard listener unchanged. Pause shortcut P is implemented by the existing engine; the visible pause button calls engine.togglePause.
-6. If the existing GameHud toast is being retired, project actual engine.ui.toastText / toastVisible to notices in combatFeed, giving stable notice IDs only when the message changes. Do not generate IDs at every render.
-7. Feed is generated at the existing HUD snapshot cadence, not from a per-frame polling timer. GameState is not a deeply reactive Vue object: rely on engine.ui.hud snapshot replacement as the reactive signal when deriving supplementary state. Never expose speculative values.
+5. This component reuses the existing AudioControl popover so real mute toggles, volume sliders and outside-click/Escape cleanup survive the HUD swap. All four audio callbacks are required before that control is displayed.
+6. Leave SettingsOverlay and the engine keyboard listener unchanged. Pause shortcut P is implemented by the existing engine; the visible pause button calls engine.togglePause.
+7. If the existing GameHud toast is being retired, project actual engine.ui.toastText / toastVisible to notices in combatFeed, giving stable notice IDs only when the message changes. Do not generate IDs at every render.
+8. Feed is generated at the existing HUD snapshot cadence, not from a per-frame polling timer. GameState is not a deeply reactive Vue object: rely on engine.ui.hud snapshot replacement as the reactive signal when deriving supplementary state. Never expose speculative values.
 
 Example of an integration-only computed adapter (explicitly *not* included in this branch):
 
