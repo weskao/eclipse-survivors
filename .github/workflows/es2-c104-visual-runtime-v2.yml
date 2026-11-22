@@ -1,0 +1,27 @@
+name: ES2 c104 source art safe integration
+on:
+  push:
+    branches: [feature/es2-c104-visual-runtime-v2]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-c104-runtime-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run src/game/render/es2/c104-source-art.test.ts
+      - run: pnpm test
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm check-release
