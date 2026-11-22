@@ -20,8 +20,8 @@ const emit = defineEmits<{ select: [mode: ObjectiveModeId] }>()
       >
         <strong>{{ t(getObjectiveMode(id).title) }}</strong>
         <span>{{ t(getObjectiveMode(id).description) }}</span>
-        <small>{{ getObjectiveMode(id).victoryDescription }}</small>
-        <small v-for="modifier in getObjectiveMode(id).preRunModifiers" :key="modifier" class="modifier">◈ {{ modifier }}</small>
+        <small>{{ t(getObjectiveMode(id).victoryDescription) }}</small>
+        <small v-for="modifier in getObjectiveMode(id).preRunModifiers" :key="modifier" class="modifier">◈ {{ t(modifier) }}</small>
         <small class="reward">✦ {{ t(id === 'endless-eclipse'
           ? '每 3 分鐘 +' + getObjectiveMode(id).rewardEmbers + ' 餘燼（最高 1500）'
           : '勝利獎勵 ' + getObjectiveMode(id).rewardEmbers + ' 餘燼') }}</small>
