@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "category": "enemies",
+  "status": "incomplete",
+  "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
+  "assets": [
+    {
+      "id": "shadow-assassin",
+      "path": "shadow-assassin-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "shadow-assassin:telegraph",
+      "path": "shadow-assassin-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "necromancer",
+      "path": "necromancer-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "necromancer:telegraph",
+      "path": "necromancer-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "dark-archer",
+      "path": "dark-archer-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "dark-archer:telegraph",
+      "path": "dark-archer-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "plague-carrier",
+      "path": "plague-carrier-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "plague-carrier:telegraph",
+      "path": "plague-carrier-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "shield-guardian",
+      "path": "shield-guardian-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "shield-guardian:telegraph",
+      "path": "shield-guardian-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "phantom",
+      "path": "phantom-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "phantom:telegraph",
+      "path": "phantom-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "fire-imp",
+      "path": "fire-imp-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "fire-imp:telegraph",
+      "path": "fire-imp-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "frost-wraith",
+      "path": "frost-wraith-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "frost-wraith:telegraph",
+      "path": "frost-wraith-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "berserker",
+      "path": "berserker-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "berserker:telegraph",
+      "path": "berserker-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "crystal-sentinel",
+      "path": "crystal-sentinel-body@3x.webp",
+      "width": 576,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 110000,
+      "frames": 6,
+      "status": "not-delivered"
+    },
+    {
+      "id": "crystal-sentinel:telegraph",
+      "path": "crystal-sentinel-telegraph@3x.webp",
+      "width": 96,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 50000,
+      "frames": 1,
+      "status": "not-delivered"
+    }
+  ]
+}

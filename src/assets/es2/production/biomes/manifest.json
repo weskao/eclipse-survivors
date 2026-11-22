@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "category": "biomes",
+  "status": "incomplete",
+  "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
+  "assets": [
+    {
+      "id": "blood-moon-cathedral:ground",
+      "path": "blood-moon-cathedral-ground@3x.webp",
+      "width": 768,
+      "height": 768,
+      "scale": 3,
+      "alpha": false,
+      "maxBytes": 1100000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "blood-moon-cathedral:decor",
+      "path": "blood-moon-cathedral-decor@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 180000,
+      "frames": 4,
+      "status": "not-delivered"
+    },
+    {
+      "id": "cursed-forest:ground",
+      "path": "cursed-forest-ground@3x.webp",
+      "width": 768,
+      "height": 768,
+      "scale": 3,
+      "alpha": false,
+      "maxBytes": 1100000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "cursed-forest:decor",
+      "path": "cursed-forest-decor@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 180000,
+      "frames": 4,
+      "status": "not-delivered"
+    },
+    {
+      "id": "abyssal-necropolis:ground",
+      "path": "abyssal-necropolis-ground@3x.webp",
+      "width": 768,
+      "height": 768,
+      "scale": 3,
+      "alpha": false,
+      "maxBytes": 1100000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "abyssal-necropolis:decor",
+      "path": "abyssal-necropolis-decor@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 180000,
+      "frames": 4,
+      "status": "not-delivered"
+    },
+    {
+      "id": "celestial-rift:ground",
+      "path": "celestial-rift-ground@3x.webp",
+      "width": 768,
+      "height": 768,
+      "scale": 3,
+      "alpha": false,
+      "maxBytes": 1100000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "celestial-rift:decor",
+      "path": "celestial-rift-decor@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 180000,
+      "frames": 4,
+      "status": "not-delivered"
+    }
+  ]
+}

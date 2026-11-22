@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "category": "heroes",
+  "status": "incomplete",
+  "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
+  "assets": [
+    {
+      "id": "shadowblade",
+      "path": "shadowblade-action@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 90000,
+      "frames": 4,
+      "status": "not-delivered"
+    },
+    {
+      "id": "spirit-summoner",
+      "path": "spirit-summoner-action@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 90000,
+      "frames": 4,
+      "status": "not-delivered"
+    },
+    {
+      "id": "crimson-paladin",
+      "path": "crimson-paladin-action@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 90000,
+      "frames": 4,
+      "status": "not-delivered"
+    }
+  ]
+}
