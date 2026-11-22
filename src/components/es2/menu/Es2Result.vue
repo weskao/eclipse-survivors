@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ART_URLS } from '../../../game/art'
+import HeroPortrait from '../hero-roster/HeroPortrait.vue'
 import { MODES } from '../../../meta/modes'
 import type { RunRewards, RunStats } from '../../../meta/types'
 import Es2Dialog from './Es2Dialog.vue'
@@ -20,7 +20,7 @@ const stats = computed(() => props.result ? [
 <template>
   <Es2Dialog :active="active" :title="ending" :subtitle="summary" wide :dismissible="false" :tone="victory ? 'victory' : 'defeat'">
     <div class="es2-result">
-      <div class="es2-result-hero"><img v-if="result" :src="ART_URLS[result.hero]" :alt="'本次遠征英雄：' + result.hero" /><span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span></div>
+      <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="'本次遠征英雄：' + (result.specializationId ?? result.hero)" /><span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span></div>
       <p class="es2-result-status">{{ victory ? '✦ VICTORY · THE DAWN RETURNS ✦' : '✧ DEFEAT · THE NIGHT ENDURES ✧' }}</p>
       <p v-if="result">{{ MODES[result.mode].label }}</p>
       <div class="es2-stat-strip es2-result-stats"><div v-for="stat in stats" :key="stat.title"><b>{{ stat.value }}</b><small>{{ stat.title }}</small></div></div>

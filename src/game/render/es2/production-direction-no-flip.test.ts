@@ -20,7 +20,7 @@ describe('authoritative eight-direction atlas, no accidental face mirroring', ()
     expect(calls).not.toContain('scale')
   })
 
-  it('preserves facing mirroring on the legacy fallback for unillustrated death states', () => {
+  it('holds the authored atlas, unmirrored, for unillustrated death states instead of the legacy rig', () => {
     const s = createState()
     resetRun(s)
     s.mode = 'play'
@@ -32,7 +32,7 @@ describe('authoritative eight-direction atlas, no accidental face mirroring', ()
     const { ctx, calls, drawn } = createFakeCtx()
     drawCharacter(ctx, s, fakeArtwork(true), {}, s.hero!, 100, 100, false, undefined, undefined,
       { shadowblade: atlas } as unknown as ProductionHeroArtwork)
-    expect(drawn).not.toContain(atlas)
-    expect(calls).toContain('scale')
+    expect(drawn).toContain(atlas)
+    expect(calls).not.toContain('scale')
   })
 })
