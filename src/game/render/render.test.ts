@@ -175,6 +175,21 @@ describe('drawFrame', () => {
     expect(normal.calls.length).toBeGreaterThan(reduced.calls.length)
   })
 
+
+  it('hides floating damage numbers under the visual policy without suppressing the battlefield', () => {
+    const s = busyState()
+    s.hero!.levelAnim = 0
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    assets.presentation = () => ({
+      quality: 'low', pixelRatioCap: 1, ambientDensity: 0.35, vfxOpacity: 0.3,
+      reduceMotion: false, reduceFlashing: true, statusSymbols: true, showDamageNumbers: false,
+    })
+    const f = createFakeCtx()
+    drawFrame(f.ctx, s, 1, assets)
+    expect(f.calls).not.toContain('strokeText')
+    expect(f.drawn).toContain(assets.art.knight)
+  })
+
   it.each([0, 1, 2, 3])('scene %i draws', (scene) => {
     const s = busyState()
     s.currentScene = scene

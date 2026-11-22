@@ -32,4 +32,13 @@ describe('App', () => {
     w.unmount()
   })
 
+  it('applies and restores the document accessibility policy without changing the game rules', () => {
+    const before = document.documentElement.getAttribute('data-es2-quality')
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const w = mount(App, { props: { engine }, attachTo: document.body })
+    expect(document.documentElement.getAttribute('data-es2-quality')).toMatch(/^(low|medium|high)$/)
+    w.unmount()
+    expect(document.documentElement.getAttribute('data-es2-quality')).toBe(before)
+  })
+
 })
