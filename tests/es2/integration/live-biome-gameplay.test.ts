@@ -63,4 +63,25 @@ describe('four genuinely playable ES2 biomes use the authoritative runtime', () 
     engine.start()
     expect(engine.activeBiomeId).toBe('abyssal-necropolis')
   })
+
+  it('lets nearby heroes interact with the real biome altar once, then enforces its cooldown and pause rules', () => {
+    const engine = createEngine({ audio: audio() })
+    engine.selectRunMode('boss-rush')
+    engine.start()
+    const node = createBiomeEnvironment('blood-moon-cathedral', { seed: 0 })
+      .interactions(840, 840, 1300)[0]!
+    expect(node).toBeDefined()
+    const hero = engine.state.hero!
+    hero.x = node.x
+    hero.y = node.y
+    expect(engine.biomeInteractionAvailable).toBe(true)
+    expect(engine.interactBiome()).toBe(true)
+    expect(engine.biomeInteractionAvailable).toBe(false)
+    expect(engine.interactBiome()).toBe(false)
+    engine.togglePause()
+    expect(engine.interactBiome()).toBe(false)
+    engine.togglePause()
+    engine.goMenu()
+    expect(engine.biomeInteractionAvailable).toBe(false)
+  })
 })
