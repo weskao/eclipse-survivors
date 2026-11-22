@@ -36,7 +36,7 @@ defineExpose({ minimap })
         <div class="chip">
           <button id="music" aria-label="音樂切換" :aria-pressed="musicOn" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
           <button id="sfx" aria-label="音效切換" :aria-pressed="sfxOn" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
-          <button id="pauser" aria-label="暫停" @click="emit('pause')">Ⅱ</button>
+          <button id="pauser" aria-label="暫停" aria-keyshortcuts="P" @click="emit('pause')">Ⅱ<kbd class="pause-shortcut" aria-hidden="true">P</kbd></button>
         </div>
       </div>
     </div>
