@@ -1,63 +1,114 @@
-# Eclipse Survivors ES2 — audio pack
+# ES2 adaptive audio — typed integration contract
 
-This feature branch intentionally modifies **only** `src/game/audio/es2/` and its tests.
-It does not install another Web Audio engine, rewrite `src/game/audio/engine.ts`, or touch the integration-owned game engine.
+This is an **opt-in adapter**, not a second audio engine. Everything in this
+branch lives under `src/game/audio/es2/`. The shared game engine and
+`src/game/audio/engine.ts` remain unchanged. ES2 themes and SFX are original
+procedural compositions; there are no extra assets, browser timers or packages.
 
-## Original deliverables
+## Delivered surfaces
 
-- Eight original, deterministic synthesized compositions: menu, exploration,
-  combat, high-intensity battle, elite, boss, victory and defeat.
-- A bounded lookahead scheduler with 1.2-second musical crossfades, combat
-  accents and one-shot ending themes. Resets its clock after mobile interruption.
-- 19 distinctive semantic SFX cue recipes (including blade, bow, magic,
-  explosion, critical, hit, defense, rewards, UI and boss calls). Each cue
-  falls back to a real legacy `SfxCue` in the existing audio engine.
-- An opt-in typed adapter delegating mute, separate volume, saved settings,
-  AudioContext wake/suspension and legacy SFX to the existing `AudioSystem`.
-  No new dependencies, external music or unauthorized copyrighted samples.
+- `ES2_SCENES` / `Es2Scene`: `menu`, `exploration`, `combat`, `battle`,
+  `elite`, `boss`, `victory`, `defeat`.
+- `ES2_CUES` / `Es2Cue`: 19 typed semantic gameplay events, all mapped to
+  existing valid `SfxCue` identifiers in `CUE_MAP`.
+- `createEs2Score()`: 1.2-second per-note crossfade, bounded lookahead of
+  120 ms and at most three beats per layer per tick. Result themes play once.
+- `createEs2AudioAdapter(options): Es2AudioAdapter`: passes through existing
+  mute, volume, interruption and wake; never instantiates or disposes
+  `AudioContext`, registers another animation/timer loop or owns media.
+- New SFX use **one** synthesis path. With a valid `tone` callback they
+  play ES2 notes only; without it, or if it throws, they use a legacy cue.
+  A throwing tone port is disabled for the rest of the adapter's lifetime.
+- When the supplied `AudioContext.currentTime` restarts at zero, ES2
+  clears stale SFX cooldowns and re-anchors its score scheduling.
 
-## Required integration by shared-file owner
+## Installable typed host port (integration branch only)
 
-1. Keep exactly one `createAudioSystem(...)` instance in `src/game/engine.ts`.
-2. Export/inject a **ToneFn from that existing audio engine** into
-   `createEs2AudioAdapter({ audio, now: () => audioContext.currentTime, tone, isRunning: () => audioContext.state === 'running' })`.
-   The tone callback must use the existing `musicBus`/`master` Web Audio
-   buses and gain envelopes; ES2 supplies pre-bus linear amplitude so do not\n   multiply user volume again. Do **not** create a second `AudioContext`.
-   If `tone` is omitted, new cues use legacy SFX and `tick` uses legacy music.
-3. Replace *only* the legacy music tick with `adapter.tick(mode)`. Do not
-   call both music tick functions (that doubles scores). Call
-   `adapter.setScene('exploration' | 'combat' | 'battle' | 'elite' | 'boss')`
-   based on gameplay transitions, and `menu`, `victory` or `defeat`
-   when those screens are entered.
-4. Call `adapter.wakeFromGesture()` only in an existing trusted input handler.
-   On visibility loss call `adapter.interrupt()`; on foreground return,
-   wait until the *next user gesture* to call `adapter.resumeFromGesture()`.
-   Do not automatically wake the audio context in a visibility callback.
-5. Replace gameplay SFX callbacks selectively with `adapter.play(cue)`;
-   keep existing SFX for unaffected systems. Do not schedule loops on RAF
-   for each monster, and keep no separate audio event listeners or timers.
-6. Keep current `starMusic`, `starSfx`, `eclipseMusicVolume` and
-   `eclipseSfxVolume` keys. Existing `AudioControl.vue` already has
-   separate music/SFX sliders and mute buttons. Do not duplicate controls.
-7. Retire or silence the legacy `bgm.mp3` playback when using the
-   standalone ES2 procedural score, unless its license is verified and
-   deliberately layered. The extension does not claim the provenance of
-   existing MP3 media. Existing `audio.onScreen` still manages the MP3.
-8. When unmounting, `adapter.dispose()` first and call the original
-   `audio.dispose()` once from its **existing owner**.
+```ts
+import {
+  createEs2AudioAdapter,
+  type Es2AudioAdapter,
+  type Es2AudioOptions,
+} from './audio/es2/adapter'
+import type { Es2Scene } from './audio/es2/score'
+import type { Es2Cue } from './audio/es2/cues'
+import type { ToneFn } from './audio/music'
 
-**Timing:** ES2 receives context time from integration. Its crossfade is
-per-note amplitude interpolation across themes, not a new sound bus; already
-scheduled notes cannot be unscheduled. For sample-level fades, integrate the
-existing music gain bus rather than creating a parallel audio graph.
+// All three callbacks MUST come from the existing AudioSystem's ONE
+// AudioContext and its existing music/SFX gain buses.
+// The shared-file owner must expose them; this branch cannot do so.
+declare const existingAudio: import('./audio/types').AudioSystem
+declare const sharedContext: AudioContext
+declare const hostTone: ToneFn
 
-No generated binary audio is required: the scores and cues are authored
-programmatically in TypeScript and played through the host synthesizer.
+const port: Es2AudioOptions = {
+  audio: existingAudio,
+  now: () => sharedContext.currentTime,
+  isRunning: () => sharedContext.state === 'running',
+  tone: hostTone,
+}
+const es2Audio: Es2AudioAdapter = createEs2AudioAdapter(port)
 
-## Verification
+function onAudioScene(scene: Es2Scene): void { es2Audio.setScene(scene) }
+function onGameplaySfx(cue: Es2Cue): void { es2Audio.play(cue) }
+```
 
-Tests: `score.test.ts`, `adapter.test.ts`.
-Run from the repository root:
+The example is the type-level contract, not a new runtime module. The host
+`ToneFn` has the exact signature
+`(midi, at, duration, volume, wave, bus: 'sfx' | 'music') => void`.
+It must target the **already-existing** Web Audio buses. Music and SFX
+gain buses already enforce the users' 0–100 volume settings; do not apply
+the volume a second time inside the port. When `tone` is provided,
+`isRunning` is required by the TypeScript union to prevent scheduling
+into Safari/iOS suspended contexts.
+
+If a direct host tone port is not yet available, install the **fallback
+variant** `createEs2AudioAdapter({ audio: existingAudio, now: () =>
+sharedContext.currentTime })`. It retains the existing music and legacy
+SFX, but **does not play the ES2 themes**. This is an intentional safety
+fallback, not a replacement audio graph.
+
+## Host integration ownership and lifecycle
+
+1. Maintain exactly one `createAudioSystem(...)` in the existing owner.
+   Create one ES2 adapter per owner lifecycle, not one per run or enemy.
+2. In the **existing** animation loop, replace `audio.tick(mode)` with
+   `es2Audio.tick(mode)` (never call both). The adapter delegates back to
+   legacy music when there is no working direct tone port.
+3. Map title/menu to `menu`, quiet gameplay to `exploration`, ordinary
+   fights to `combat`, intense waves to `battle`, elite encounters to
+   `elite`, bosses to `boss`, win to `victory`, loss to `defeat`.
+   Call `setScene` only when the phase changes. All phase names are typed.
+4. Route the relevant new game events through `play(cue)`; keep unaffected
+   legacy events on `audio.playSfx`. Avoid calling **both** for one event.
+   Existing cooldowns and the eight-per-100-ms limiter remain bounded.
+5. On a **trusted user gesture**, invoke `wakeFromGesture()`. On
+   visibility loss call `interrupt()`; do not resume automatically
+   when the tab returns. On the next user gesture call
+   `resumeFromGesture()`, then wait for `isRunning()` to become true.
+6. Keep the existing `starMusic`, `starSfx`,
+   `eclipseMusicVolume` and `eclipseSfxVolume` storage keys. The
+   shared `AudioControl.vue` already offers separate sliders/toggles:
+   call the adapter's `setMusicVolume`, `setSfxVolume`,
+   `toggleMusic(mode)` and `toggleSfx()` from those controls.
+7. **Do not double-play BGM:** once the direct ES2 synth is activated,
+   stop the legacy media BGM and any simultaneous legacy menu score
+   through the **shared audio owner**. `audio.onScreen` can still
+   play the old MP3, and this isolated branch cannot change it.
+   The integrator must choose precisely one music source per scene.
+8. On unmount, call `es2Audio.dispose()` first; the existing owner
+   alone calls `audio.dispose()`. Disposing the ES2 adapter must never
+   close the shared context.
+
+Crossfades are per-note volume interpolations, not cancelable per-sample
+AudioParam ramps. Already queued notes may continue briefly; this design
+avoids creating competing gain graphs and scheduling loops.
+
+## Verification and current boundaries
+
+Regression tests: `adapter.test.ts`, `score.test.ts`,
+`remediation.test.ts`.
+
 ```sh
 pnpm install --frozen-lockfile
 pnpm test
@@ -66,6 +117,6 @@ pnpm build
 pnpm check-release
 ```
 
-This branch provides **integration-ready audio**. It does not activate ES2 music
-in the live game because that would require modifying shared engine files
-owned by the integration branch.
+No shared engine entry, existing AudioSystem, main branch, or deployment is
+modified here. The integration owner must bind the host port and scene/SFX
+events, and retire duplicate BGM before enabling the ES2 score in gameplay.

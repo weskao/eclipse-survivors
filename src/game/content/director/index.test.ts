@@ -66,13 +66,13 @@ describe('director scheduling and budgets', () => {
     expect(director.advance(frame(40)).spawns).toEqual([])
   })
 
-  it('respects normal slots and reserves the extra boss slot at full crowd', () => {
+  it('respects shared normal and boss slots without exceeding 130 actors', () => {
     const director = createWaveDirector({ mode: 'quick', seed: 13 })
     expect(director.advance(frame(14, MAX_MOBS - 1)).spawns.length).toBeLessThanOrEqual(1)
     expect(director.advance(frame(17, MAX_MOBS)).spawns).toEqual([])
     const boss = director.advance(frame(92, MAX_MOBS))
-    expect(boss.spawns.filter(s => s.role === 'boss')).toHaveLength(1)
-    expect(director.advance(frame(93, MAX_MOBS)).spawns).toEqual([])
+    expect(boss.spawns.filter(s => s.role === 'boss')).toHaveLength(0)
+    expect(director.advance(frame(93, MAX_MOBS - 1)).spawns.filter(s => s.role === 'boss')).toHaveLength(1)
     expect(director.advance(frame(94, MAX_MOBS)).events.filter(e => e.kind === 'boss')).toEqual([])
   })
 
@@ -171,7 +171,7 @@ it('does not announce or consume a blocked boss; retries when safe and never exc
   const blocked = director.advance({ ...frame(92, MAX_MOBS), canSpawnAt: () => false })
   expect(blocked.events.some(e => e.kind === 'boss')).toBe(false)
   expect(blocked.spawns).toEqual([])
-  const accepted = director.advance(frame(92.5, MAX_MOBS))
+  const accepted = director.advance(frame(92.5, MAX_MOBS - 1))
   expect(accepted.spawns.filter(s => s.role === 'boss')).toHaveLength(1)
   expect(accepted.events.filter(e => e.kind === 'boss')).toHaveLength(1)
   expect(director.advance(frame(93, MAX_MOBS)).events.filter(e => e.kind === 'boss')).toEqual([])

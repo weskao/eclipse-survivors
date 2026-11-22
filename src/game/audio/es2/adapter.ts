@@ -4,16 +4,18 @@ import type { AudioSystem } from '../types'
 import { CUE_MAP, type Es2Cue } from './cues'
 import { createEs2Score, type Es2Scene } from './score'
 
-export interface Es2AudioOptions {
-  /** The already-created src/game/audio/engine.ts audio instance; never wrap another context. */
+interface Es2AudioBaseOptions {
+  /** The existing engine's one AudioSystem; the adapter never owns a context. */
   audio: AudioSystem
-  /** Current seconds on that SAME AudioContext, supplied by integration. */
+  /** Seconds on the SAME AudioContext; not Date.now() or performance.now(). */
   now: () => number
-  /** Optional existing engine tone method; omit to use legacy SFX/music fallback. */
-  tone?: ToneFn
-  /** Check the shared context's state; prevents scheduling while Safari/iOS suspends it. */
-  isRunning?: () => boolean
 }
+
+/** Providing direct synthesis requires a live-context guard. No tone means legacy fallback. */
+export type Es2AudioOptions = Es2AudioBaseOptions & (
+  | { tone: ToneFn; isRunning: () => boolean }
+  | { tone?: undefined; isRunning?: () => boolean }
+)
 
 export interface Es2AudioAdapter {
   readonly musicOn: boolean
@@ -53,6 +55,23 @@ export function createEs2AudioAdapter({ audio, now, tone, isRunning }: Es2AudioO
   let interrupted = false
   let disposed = false
   let awake = false
+  let toneFailed = false
+  let lastClock = -Infinity
+
+  // AudioContext.currentTime can restart at zero if its owner recreates the
+  // context. Stale SFX cooldowns and phrase deadlines must not survive it.
+  const clock = (): number | null => {
+    const value = now()
+    if (!Number.isFinite(value) || value < 0) return null
+    if (value < lastClock) {
+      cooldowns.clear()
+      recent.length = 0
+      score.interrupt()
+      score.resume(value)
+    }
+    lastClock = value
+    return value
+  }
 
   const musicalMode = (mode: GameMode): boolean =>
     mode === 'menu' || mode === 'play' ||
@@ -60,10 +79,12 @@ export function createEs2AudioAdapter({ audio, now, tone, isRunning }: Es2AudioO
 
   const wake = (): void => {
     if (disposed) return
+    const restarting = interrupted || !awake
     audio.wake()
     awake = audio.unlocked
     interrupted = false
-    score.resume(now())
+    const at = clock()
+    if (restarting && at !== null) score.resume(at)
   }
 
   return {
@@ -74,8 +95,10 @@ export function createEs2AudioAdapter({ audio, now, tone, isRunning }: Es2AudioO
     get scene() { return scene },
     setScene(next) {
       if (disposed || scene === next) return
+      const at = clock()
+      if (at === null) return
       scene = next
-      score.change(next, now())
+      score.change(next, at)
       audio.setCombatIntensity(next === 'boss' ? 'boss' : next === 'combat' || next === 'battle' || next === 'elite' ? 'combat' : 'calm')
     },
     wakeFromGesture: wake,
@@ -88,19 +111,29 @@ export function createEs2AudioAdapter({ audio, now, tone, isRunning }: Es2AudioO
     resumeFromGesture: wake,
     tick(mode) {
       if (disposed || interrupted || !awake || !audio.musicOn || audio.musicVolume <= 0 || !musicalMode(mode) || isRunning?.() === false) return
-      if (!tone) {
-        // Integration can adopt ES2 cues first and wire music separately.
+      const at = clock()
+      if (at === null) return
+      if (!tone || toneFailed) {
+        // Only one scheduler runs: keep the legacy score if the port is absent.
         audio.tick(mode)
         return
       }
-      // The existing musicBus already applies the user's music volume.
-      score.schedule(now(), tone, 1)
+      try {
+        // The host musicBus already applies user volume; do not multiply twice.
+        score.schedule(at, tone, 1)
+      } catch {
+        // A torn-down or rejected host port must not crash the game loop.
+        toneFailed = true
+        score.interrupt()
+        audio.tick(mode)
+      }
     },
     play(cue) {
       if (disposed || interrupted || !awake || !audio.sfxOn || audio.sfxVolume <= 0 || isRunning?.() === false) return
-      const at = now()
-      if (!Number.isFinite(at)) return
+      const at = clock()
+      if (at === null) return
       const definition = CUE_MAP[cue]
+      if (!definition) return
       if (at - (cooldowns.get(cue) ?? -Infinity) < definition.cooldown) return
       // At most eight timestamps are retained. Critical one-shots can bypass a
       // saturated window, while normal crowd attacks remain bounded.
@@ -108,10 +141,19 @@ export function createEs2AudioAdapter({ audio, now, tone, isRunning }: Es2AudioO
       if (recent.length >= MAX_CUES_PER_100MS && definition.priority !== 'essential') return
       if (recent.length < MAX_CUES_PER_100MS) recent.push(at)
       cooldowns.set(cue, at)
-      audio.playSfx(definition.legacy)
-      if (!tone) return
-      for (const [pitch, delay, duration, volume, wave] of definition.notes) {
-        tone(pitch, at + delay, duration, volume, wave, 'sfx')
+      if (!tone || toneFailed) {
+        audio.playSfx(definition.legacy)
+        return
+      }
+      try {
+        // Never layer the legacy cue onto the same synthesized ES2 cue.
+        for (const [pitch, delay, duration, volume, wave] of definition.notes) {
+          tone(pitch, at + delay, duration, volume, wave, 'sfx')
+        }
+      } catch {
+        toneFailed = true
+        score.interrupt()
+        audio.playSfx(definition.legacy)
       }
     },
     setMusicVolume(value) { if (!disposed) audio.setMusicVolume(value) },

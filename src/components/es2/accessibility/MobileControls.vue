@@ -51,6 +51,12 @@ function endStick(event: PointerEvent): void {
   if (event.pointerId === activePointer) cancelStick()
 }
 
+// Pointer capture can fail in embedded browsers; keep dragging and release outside the pad.
+function moveOutside(event: PointerEvent): void {
+  if (event.target instanceof Node && pad.value?.contains(event.target)) return
+  moveStick(event)
+}
+
 function onVisibilityChange(): void {
   if (document.hidden) cancelStick()
 }
@@ -69,6 +75,10 @@ onMounted(() => {
   window.addEventListener('blur', cancelStick)
   window.addEventListener('resize', cancelStick)
   window.addEventListener('orientationchange', cancelStick)
+  window.addEventListener('pagehide', cancelStick)
+  window.addEventListener('pointermove', moveOutside)
+  window.addEventListener('pointerup', endStick)
+  window.addEventListener('pointercancel', endStick)
   document.addEventListener('visibilitychange', onVisibilityChange)
 })
 onBeforeUnmount(() => {
@@ -76,6 +86,10 @@ onBeforeUnmount(() => {
   window.removeEventListener('blur', cancelStick)
   window.removeEventListener('resize', cancelStick)
   window.removeEventListener('orientationchange', cancelStick)
+  window.removeEventListener('pagehide', cancelStick)
+  window.removeEventListener('pointermove', moveOutside)
+  window.removeEventListener('pointerup', endStick)
+  window.removeEventListener('pointercancel', endStick)
   document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 </script>
@@ -96,11 +110,11 @@ onBeforeUnmount(() => {
       :class="{ pressed }"
       role="group"
       aria-label="虛擬方向搖桿，鍵盤仍可使用方向鍵或 WASD"
-      :tabindex="usable ? 0 : -1"
       @pointerdown="downStick"
       @pointermove="moveStick"
       @pointerup="endStick"
       @pointercancel="endStick"
+      @touchcancel="cancelStick"
       @lostpointercapture="endStick"
     >
       <div class="es2-stick-ring" aria-hidden="true"></div>
@@ -112,6 +126,8 @@ onBeforeUnmount(() => {
       type="button"
       aria-label="衝刺，鍵盤可用空白鍵"
       :disabled="!usable"
+      @keydown.space.stop
+      @keyup.space.stop
       @click.stop="triggerDash"
     ><span aria-hidden="true">✧</span> 衝刺</button>
   </div>
@@ -206,8 +222,8 @@ onBeforeUnmount(() => {
 .es2-mobile-controls[data-side="right"] .es2-dash { grid-column: 1; justify-self: start; }
 @media (max-height: 440px) {
   .es2-mobile-controls { bottom: max(5px, env(safe-area-inset-bottom)); }
-  .es2-stick { width: min(calc(122px * var(--es2-touch-scale)), 23dvh, 100%); }
-  .es2-dash { width: min(calc(82px * var(--es2-touch-scale)), 21dvh, 100%); }
+  .es2-stick { width: min(calc(122px * var(--es2-touch-scale)), max(44px, 23dvh), 100%); }
+  .es2-dash { width: min(calc(82px * var(--es2-touch-scale)), max(44px, 21dvh), 100%); }
 }
 @media (prefers-reduced-motion: reduce) {
   .es2-stick, .es2-dash { animation: none; transition: none; }

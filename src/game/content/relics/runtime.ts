@@ -93,8 +93,9 @@ function weightedOptions(run: RunRelics, rng: () => number, avoid: ReadonlySet<R
 export function openTreasure(state: GameState, chestId: number, rng: () => number, feedback?: RelicFeedback): TreasureOffer | null {
   const run = getRun(state)
   if (!state.hero || run.pending || !Number.isSafeInteger(chestId) || chestId <= run.lastChestId) return null
-  run.lastChestId = chestId
+  // Invalid random samples must not permanently consume the world chest serial.
   const options = weightedOptions(run, rng)
+  run.lastChestId = chestId
   if (!options.length) return null
   run.pending = { chestId, options }
   feedback?.(RELIC_CUES.chestOpen)
@@ -144,6 +145,8 @@ export interface AttackContext {
   boss?: boolean
   /** Remaining enemy HP fraction before this hit. */
   targetHpFraction?: number
+  /** Optional absolute pre-hit HP for a host adapter to apply a real execute floor. */
+  targetHp?: number
 }
 export interface AttackResult { damage: number; critical: boolean; execute: boolean; pierce: number; extraProjectile: boolean }
 /** Pre-hit adapter: caller applies the result to the actual target (never an extra XP event). */
@@ -172,7 +175,8 @@ export interface IncomingResult { damage: number; dodged: boolean; reflected: nu
 export function calculateRelicIncoming(state: GameState, amount: number, rng: () => number): IncomingResult {
   if (!Number.isFinite(amount) || amount <= 0) return { damage: 0, dodged: false, reflected: 0 }
   const b = relicBonuses(state)
-  if (rng() < Math.min(0.6, Math.max(0, b.dodge ?? 0))) return { damage: 0, dodged: true, reflected: 0 }
+  const dodgeChance = Math.min(0.6, Math.max(0, b.dodge ?? 0))
+  if (dodgeChance > 0 && rng() < dodgeChance) return { damage: 0, dodged: true, reflected: 0 }
   let resist = b.resistance ?? 0
   const hero = state.hero
   if (hero && hero.hp / hero.max < 0.35) resist += b.protectLowHp ?? 0
@@ -180,7 +184,8 @@ export function calculateRelicIncoming(state: GameState, amount: number, rng: ()
   return { damage, dodged: false, reflected: damage * Math.max(0, b.reflect ?? 0) }
 }
 export function relicPickupRadius(state: GameState, radius: number): number {
-  return Math.max(0, radius) * (1 + (relicBonuses(state).pickupRange ?? 0))
+  if (!Number.isFinite(radius) || radius <= 0) return 0
+  return radius * (1 + (relicBonuses(state).pickupRange ?? 0))
 }
 /** Bounded periodic recovery; this is an explicit integration hook, not an auto-running ability. */
 export function tickRelicRecovery(state: GameState, dt: number): void {

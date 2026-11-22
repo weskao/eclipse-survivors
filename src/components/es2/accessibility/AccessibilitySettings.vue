@@ -85,22 +85,22 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
     <div class="es2-switches">
       <div class="es2-switch-row">
         <div><strong>減少動態</strong><small>減少 UI 移動與過渡動畫</small></div>
-        <div class="es2-switch-group">
+        <div class="es2-switch-group" role="group" aria-label="減少動態">
           <button data-testid="es2-motion" type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'on'" @click="update({ reducedMotion: modelValue.reducedMotion === 'on' ? 'off' : 'on' })">{{ modelValue.reducedMotion === 'on' ? '開啟' : '關閉' }}</button>
           <button type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'system'" @click="update({ reducedMotion: 'system' })">依系統</button>
         </div>
       </div>
       <div class="es2-switch-row">
         <div><strong>降低閃光</strong><small>避免頻繁閃爍；保留必要攻擊警示</small></div>
-        <button type="button" :disabled="disabled" :aria-pressed="modelValue.reducedFlashing" @click="update({ reducedFlashing: !modelValue.reducedFlashing })">{{ modelValue.reducedFlashing ? '開啟' : '關閉' }}</button>
+        <button type="button" aria-label="降低閃光" :disabled="disabled" :aria-pressed="modelValue.reducedFlashing" @click="update({ reducedFlashing: !modelValue.reducedFlashing })">{{ modelValue.reducedFlashing ? '開啟' : '關閉' }}</button>
       </div>
       <div class="es2-switch-row">
         <div><strong>色覺輔助</strong><small>以符號及文字區分狀態，不只靠顏色</small></div>
-        <button type="button" :disabled="disabled" :aria-pressed="modelValue.colorblindIndicators" @click="update({ colorblindIndicators: !modelValue.colorblindIndicators })">{{ modelValue.colorblindIndicators ? '開啟' : '關閉' }}</button>
+        <button type="button" aria-label="色覺輔助" :disabled="disabled" :aria-pressed="modelValue.colorblindIndicators" @click="update({ colorblindIndicators: !modelValue.colorblindIndicators })">{{ modelValue.colorblindIndicators ? '開啟' : '關閉' }}</button>
       </div>
       <div class="es2-switch-row">
         <div><strong>傷害數字</strong><small>顯示或隱藏戰鬥傷害浮字</small></div>
-        <button type="button" :disabled="disabled" :aria-pressed="modelValue.showDamageNumbers" @click="update({ showDamageNumbers: !modelValue.showDamageNumbers })">{{ modelValue.showDamageNumbers ? '顯示' : '隱藏' }}</button>
+        <button type="button" aria-label="傷害數字" :disabled="disabled" :aria-pressed="modelValue.showDamageNumbers" @click="update({ showDamageNumbers: !modelValue.showDamageNumbers })">{{ modelValue.showDamageNumbers ? '顯示' : '隱藏' }}</button>
       </div>
     </div>
 
@@ -165,6 +165,7 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 .es2-preview-demo .es2-preview-damage { color: #ffb89a; font-weight: 900; }
 .es2-preview small { display: block; }
 @media (max-width: 420px) {
+  .es2-settings-head { flex-wrap: wrap; }
   .es2-options { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .es2-switch-row { align-items: flex-start; flex-direction: column; }
   .es2-switch-group { flex-wrap: wrap; }

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createContentRegistry, MAX_CONTENT_EFFECTS } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
 import { applyUpgrade } from '../../progression'
+import { step } from '../../step'
 import { EVOLUTIONS, eligibleEvolutions } from '../../evolutions'
 import type { ContentId, GameHooks, GameState, Mob, UpgradeId } from '../../types'
 import { EVOLUTION2_PACK } from '../packs/evolution2'
@@ -150,5 +151,135 @@ describe('Evolution2 independent ContentPack', () => {
     expect(state.shots.length).toBeLessThanOrEqual(80)
     expect(state.content.effects.length).toBeLessThanOrEqual(MAX_CONTENT_EFFECTS)
     expect(state.mobs).toHaveLength(130)
+  })
+})
+
+
+describe('Evolution2 combat remediation regressions', () => {
+  it('never attacks or emits effects while paused, and can fire when gameplay resumes', () => {
+    const state = game()
+    const id = unlock(state, 0)
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    const target = enemy(60, 0, 1000)
+    state.mobs = [target]
+    state.mode = 'paused'
+    const before = state.damageDealt
+    registry.tick(state, 0.016, hooks)
+    expect(target.hp).toBe(1000)
+    expect(state.damageDealt).toBe(before)
+    expect(state.content.effects).toHaveLength(0)
+    state.mode = 'play'
+    registry.tick(state, 0.016, hooks)
+    expect(target.hp).toBeLessThan(1000)
+  })
+
+  it('fills only available volley slots and never exceeds eighty shots', () => {
+    const state = game()
+    const id = unlock(state, 9)
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    state.mobs = [enemy(120)]
+    state.shots = Array.from({ length: 79 }, () => ({
+      x: 0, y: 0, vx: 0, vy: 0, life: 1, d: 1, kind: 'arrow' as const, r: 6,
+    }))
+    registry.tick(state, 0.016, hooks)
+    expect(state.shots).toHaveLength(80)
+    expect(state.shots[79]!.vx).toBeGreaterThan(0)
+    registry.tick(state, 10, hooks)
+    expect(state.shots).toHaveLength(80)
+  })
+
+  it('prioritizes nearest AoE targets rather than crowd insertion order', () => {
+    const state = game()
+    const id = unlock(state, 3)
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    const farther = Array.from({ length: 12 }, (_, i) => enemy(143 + i, 0, 1000))
+    const center = enemy(60, 0, 1000)
+    state.mobs = [...farther, center]
+    registry.tick(state, 0.016, hooks)
+    expect(center.hp).toBeLessThan(1000)
+    expect(state.mobs.filter(mob => mob.hp < 1000).length).toBeLessThanOrEqual(12)
+  })
+
+  it('attributes real damage and single kills to the combat hook without replay', () => {
+    const state = game()
+    const id = unlock(state, 0)
+    const observed: string[] = []
+    const observedHooks: GameHooks = {
+      ...hooks,
+      content: (_game, event) => observed.push(event.type),
+    }
+    expect(registry.acquire(state, id, observedHooks)).toBe(true)
+    state.mobs = [enemy(60, 0, 1)]
+    registry.tick(state, 0.016, observedHooks)
+    expect(observed).toEqual(['hit', 'kill'])
+    expect(state.kill).toBe(1)
+    expect(state.damageDealt).toBe(1)
+    registry.tick(state, 0.016, observedHooks)
+    expect(observed).toEqual(['hit', 'kill'])
+    expect(registry.acquire(state, id, observedHooks)).toBe(false)
+  })
+
+  it('provides actual defensive invulnerability for Dawn Judgment while active', () => {
+    const state = game()
+    const id = unlock(state, 1)
+    state.mobs = [enemy(70, 0)]
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    registry.tick(state, 0.016, hooks)
+    expect(state.hero!.inv).toBeGreaterThan(0)
+  })
+})
+
+
+describe('Evolution2 mechanic-specific behavior', () => {
+  it('applies healing, crowd control, and defensive effects to actual game state', () => {
+    for (const [index, assertEffect] of [
+      [1, (state: GameState) => expect(state.hero!.inv).toBeGreaterThan(0)],
+      [2, (state: GameState) => expect(state.hero!.hp).toBeGreaterThan(state.hero!.max - 40)],
+      [4, (state: GameState) => expect(state.mobs[0]!.slow).toBeGreaterThanOrEqual(2.8)],
+      [6, (state: GameState) => expect(state.mobs[0]!.stagger).toBeGreaterThan(0.2)],
+      [7, (state: GameState) => expect(state.mobs[0]!.slow).toBeGreaterThanOrEqual(0.8)],
+      [11, (state: GameState) => expect(state.mobs[0]!.slow).toBeGreaterThanOrEqual(3.5)],
+    ] as const) {
+      const state = game()
+      const id = unlock(state, index)
+      state.mobs = [enemy(80, 0, 1000)]
+      state.hero!.hp = state.hero!.max - 40
+      expect(registry.acquire(state, id, hooks)).toBe(true)
+      registry.tick(state, 0.016, hooks)
+      assertEffect(state)
+    }
+  })
+
+  it('lets native swept collision apply Spectral Volley hits and attribute real damage', () => {
+    const state = game()
+    const id = unlock(state, 9)
+    const target = enemy(110, 0, 1000)
+    state.mobs = [target]
+    state.spawnT = 999
+    state.hero!.attack = 999
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    const events: string[] = []
+    const attributed: GameHooks = { ...hooks, content: (_state, event) => events.push(event.type) }
+    registry.tick(state, 0.016, attributed)
+    expect(state.shots).toHaveLength(5)
+    step(state, 0.25, { x: 0, y: 0 }, attributed, registry)
+    expect(target.hp).toBeLessThan(1000)
+    expect(state.damageDealt).toBeGreaterThan(0)
+    expect(events).toContain('hit')
+  })
+
+  it('does not play a phantom shot or draw a cast when the projectile budget is full', () => {
+    const state = game()
+    const id = unlock(state, 9)
+    state.mobs = [enemy(80)]
+    state.shots = Array.from({ length: 80 }, () => ({
+      x: 0, y: 0, vx: 0, vy: 0, life: 1, d: 1, kind: 'arrow' as const, r: 6,
+    }))
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    vi.mocked(hooks.sfx).mockClear()
+    registry.tick(state, 0.016, hooks)
+    expect(state.shots).toHaveLength(80)
+    expect(state.content.effects).toHaveLength(0)
+    expect(vi.mocked(hooks.sfx)).not.toHaveBeenCalled()
   })
 })
