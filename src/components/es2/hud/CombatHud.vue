@@ -1,0 +1,162 @@
+<script setup lang="ts">
+import { computed, ref, shallowRef, watch } from 'vue'
+import { ART_URLS } from '../../../game/art'
+import { skillImageSrc } from '../../../game/ui-art'
+import AudioControl from '../../AudioControl.vue'
+import type { HudView } from '../../../game/store'
+import type { JobId } from '../../../game/types'
+import { projectCombatHud, type CombatHudActions, type CombatHudFeed } from './model'
+import '../../../styles/es2/hud.css'
+
+const props = defineProps<{
+  active: boolean
+  choice: JobId
+  hud: HudView
+  actions: CombatHudActions
+  feed?: CombatHudFeed
+  musicOn?: boolean
+  sfxOn?: boolean
+  musicVolume?: number
+  sfxVolume?: number
+  audioActive?: boolean
+}>()
+
+const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed))
+const selectedId = ref<string | null>(null)
+const selectedSkill = computed(() => view.value.skills.find(skill => skill.id === selectedId.value) ?? null)
+watch(() => view.value.skills, skills => {
+  if (selectedId.value && !skills.some(skill => skill.id === selectedId.value)) selectedId.value = null
+})
+/** Preserves engine.mount(canvas, minimap) without touching App.vue or shared engine. */
+const minimap = shallowRef<HTMLCanvasElement | null>(null)
+defineExpose({ minimap })
+
+const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
+  [skill.title, '等級 ' + skill.level + '/' + skill.maxLevel,
+    skill.evolved ? '已進化' : '',
+    skill.cooldown > 0 ? '冷卻 ' + skill.cooldown.toFixed(1) + ' 秒' : '可用'].filter(Boolean).join(' · ')
+</script>
+
+<template>
+  <!-- Always mount minimap: engine.mount captures its ref before the first run. -->
+  <aside class="es2-hud" :class="{ 'es2-hud--active': active }" :aria-hidden="!active" :inert="!active" aria-label="戰鬥資訊">
+    <header class="es2-hud__top">
+      <div class="es2-hud__hero es2-hud__plate">
+        <div class="es2-hud__portrait">
+          <img :src="ART_URLS[view.choice]" alt="" decoding="async" draggable="false" />
+          <span aria-hidden="true" class="es2-hud__portrait-corner">✧</span>
+        </div>
+        <div class="es2-hud__vitals">
+          <div class="es2-hud__identity">
+            <span class="es2-hud__eyebrow">ECLIPSE · HERO</span>
+            <strong>{{ view.identity }}</strong>
+          </div>
+          <div class="es2-hud__health-head"><span>生命值</span><span>{{ view.health.label }}</span></div>
+          <div class="es2-hud__track es2-hud__track--health" role="progressbar" aria-label="生命值"
+            :aria-valuenow="view.health.percent" aria-valuemin="0" aria-valuemax="100">
+            <span :style="{ width: view.health.percent + '%' }"></span>
+          </div>
+          <div class="es2-hud__health-head es2-hud__health-head--xp"><span>經驗值</span><span>{{ Math.round(view.experience) }}%</span></div>
+          <div class="es2-hud__track es2-hud__track--xp" role="progressbar" aria-label="經驗值"
+            :aria-valuenow="view.experience" aria-valuemin="0" aria-valuemax="100">
+            <span :style="{ width: view.experience + '%' }"></span>
+          </div>
+        </div>
+      </div>
+      <div class="es2-hud__top-right">
+        <div class="es2-hud__counters es2-hud__plate" aria-label="戰鬥統計">
+          <div class="es2-hud__counter"><span aria-hidden="true">◷</span><span>{{ view.timer }}</span><small>TIME</small></div>
+          <div class="es2-hud__counter"><span aria-hidden="true">☠</span><span>{{ view.kills }}</span><small>KILLS</small></div>
+          <div v-if="view.combo && view.combo.count > 1" class="es2-hud__counter es2-hud__counter--combo" data-es2-combo>
+            <span aria-hidden="true">✦</span><span>{{ view.combo.count }}×</span><small>COMBO</small>
+          </div>
+        </div>
+        <nav class="es2-hud__controls es2-hud__plate" aria-label="戰鬥操作">
+          <AudioControl v-if="actions.toggleMusic && actions.toggleSfx && actions.setMusicVolume && actions.setSfxVolume && musicOn !== undefined && sfxOn !== undefined && musicVolume !== undefined && sfxVolume !== undefined"
+            context="hud" compact :active="active && (audioActive ?? true)"
+            :music-on="musicOn ?? false" :sfx-on="sfxOn ?? false"
+            :music-volume="musicVolume!" :sfx-volume="sfxVolume!"
+            @toggle-music="actions.toggleMusic?.()" @toggle-sfx="actions.toggleSfx?.()"
+            @music-volume="actions.setMusicVolume?.($event)" @sfx-volume="actions.setSfxVolume?.($event)" />
+          <button type="button" data-es2-settings aria-label="開啟設定" title="設定" @click="actions.settings()">⚙</button>
+          <button type="button" data-es2-pause aria-label="暫停遊戲" aria-keyshortcuts="P" title="暫停（P）" @click="actions.pause()">Ⅱ</button>
+        </nav>
+        <div class="es2-hud__map es2-hud__plate">
+          <span class="es2-hud__eyebrow">✦ 戰場地圖</span>
+          <canvas ref="minimap" width="152" height="110" aria-label="戰場小地圖"></canvas>
+        </div>
+      </div>
+    </header>
+    <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss aria-label="首領生命">
+      <div class="es2-hud__boss-heading">
+        <span>☠ {{ view.boss.name }}</span>
+        <span v-if="view.boss.phase !== undefined" class="es2-hud__boss-phase">
+          PHASE {{ view.boss.phase }}<template v-if="view.boss.totalPhases !== undefined"> / {{ view.boss.totalPhases }}</template>
+        </span>
+      </div>
+      <div class="es2-hud__track es2-hud__track--boss" role="progressbar" aria-label="首領生命值"
+        :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100">
+        <span :style="{ width: view.boss.percent + '%' }"></span>
+      </div>
+    </section>
+    <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave role="status">
+      <span class="es2-hud__eyebrow">WAVE {{ view.wave.number }}</span>
+      <strong v-if="view.wave.announcement">{{ view.wave.announcement }}</strong>
+    </div>
+    <section v-if="view.objective || view.objectives.length" class="es2-hud__objectives es2-hud__plate" aria-label="任務目標">
+      <div class="es2-hud__section-label">✥ 目前目標</div>
+      <p v-if="view.objective">{{ view.objective }}</p>
+      <ul v-if="view.objectives.length">
+        <li v-for="item in view.objectives" :key="item.id" :class="{ 'es2-hud__complete': item.complete }">
+          <span>{{ item.complete ? '✓' : '◇' }} {{ item.title }}</span>
+          <span v-if="item.progress !== undefined && item.target !== undefined">{{ item.progress }}/{{ item.target }}</span>
+        </li>
+      </ul>
+    </section>
+    <section v-if="view.statuses.length" class="es2-hud__statuses es2-hud__plate" aria-label="暫時效果">
+      <span v-for="status in view.statuses" :key="status.id" :data-es2-status="status.id"
+        class="es2-hud__status" :class="'es2-hud__status--' + status.kind"
+        :title="status.title + (status.remainingSeconds !== undefined ? ' · ' + status.remainingSeconds.toFixed(1) + ' 秒' : '')">
+        <span aria-hidden="true">{{ status.icon ?? (status.kind === 'buff' ? '✦' : '◆') }}</span>
+        {{ status.title }}
+        <small v-if="status.remainingSeconds !== undefined">{{ status.remainingSeconds.toFixed(1) }}s</small>
+      </span>
+    </section>
+    <section v-if="view.notices.length" class="es2-hud__notices" aria-label="戰鬥通知" aria-live="polite">
+      <div v-for="notice in view.notices" :key="notice.id" class="es2-hud__notice"
+        :class="'es2-hud__notice--' + notice.kind">{{ notice.text }}</div>
+    </section>
+    <footer class="es2-hud__bottom">
+      <div v-if="view.relics.length" class="es2-hud__relics es2-hud__plate" aria-label="已裝備遺物">
+        <span class="es2-hud__eyebrow">RELICS</span>
+        <div class="es2-hud__relic-grid">
+          <span v-for="relic in view.relics" :key="relic.id" :data-es2-relic="relic.id"
+            class="es2-hud__relic" :class="'es2-hud__rarity--' + relic.rarity" :title="relic.title" :aria-label="relic.title">
+            <img v-if="relic.iconSrc" :src="relic.iconSrc" alt="" decoding="async" />
+            <span v-else aria-hidden="true">{{ relic.icon }}</span>
+          </span>
+        </div>
+      </div>
+      <div class="es2-hud__equipment es2-hud__plate">
+        <div class="es2-hud__equipment-head"><span class="es2-hud__section-label">✧ 武器與技能</span><small>{{ view.skills.length }} EQUIPPED</small></div>
+        <div class="es2-hud__skills" role="group" aria-label="已裝備技能">
+          <button v-for="skill in view.skills" :key="skill.id" type="button" :data-es2-skill="skill.id"
+            class="es2-hud__skill" :class="['es2-hud__rarity--' + skill.rarity, { 'es2-hud__skill--evolved': skill.evolved }]"
+            :aria-label="skillDescription(skill)" :title="skillDescription(skill)"
+            :aria-pressed="selectedId === skill.id" @click="selectedId = selectedId === skill.id ? null : skill.id">
+            <img v-if="skill.iconSrc || !skill.id.includes(':')" :src="skill.iconSrc ?? skillImageSrc(skill.id)" alt="" decoding="async" />
+            <span v-else aria-hidden="true" class="es2-hud__skill-glyph">{{ skill.icon }}</span>
+            <span class="es2-hud__cooldown" aria-hidden="true" :style="{ '--es2-cooldown': skill.cooldownPct + '%' }"></span>
+            <span class="es2-hud__skill-level">Lv.{{ skill.level }}</span>
+            <span v-if="skill.evolved" class="es2-hud__evolved" aria-hidden="true">✦</span>
+          </button>
+          <span v-if="view.skills.length === 0" class="es2-hud__no-skills">尚未取得技能</span>
+        </div>
+        <div v-if="selectedSkill" class="es2-hud__selected" data-es2-skill-detail>
+          <strong>{{ selectedSkill.title }} · Lv.{{ selectedSkill.level }}/{{ selectedSkill.maxLevel }}</strong>
+          <span>{{ selectedSkill.cooldown > 0 ? '冷卻 ' + selectedSkill.cooldown.toFixed(1) + ' 秒' : '可用' }}</span>
+        </div>
+      </div>
+    </footer>
+  </aside>
+</template>

@@ -1,0 +1,118 @@
+{
+  "status": "not-delivered",
+  "note": "Concept artwork is not final production artwork and is not mapped to canonical IDs; final assets not generated or reviewed.",
+  "missingAssets": [
+    {
+      "id": "weapons:shadow-daggers",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:holy-lance",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:blood-scythe",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:arcane-mines",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:bone-spears",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:poison-cloud",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:ricochet-blades",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:spirit-wolves",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:solar-beam",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:gravity-orbs",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:spectral-bow",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "weapons:thorn-chain",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:nightfall-torrent",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:dawn-judgment",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:crimson-reaper",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:singularity-minefield",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:toxic-permafrost",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:infinite-rebound",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:wild-hunt",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:solar-tempest",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:celestial-collapse",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:spectral-volley",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:bonefire-barrage",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    },
+    {
+      "id": "evolution2:verdant-snare",
+      "reason": "Needs matching original art, review and 3x optimized transparent WebP"
+    }
+  ],
+  "additionalMissingCategories": [
+    "relic icons and rarity artwork",
+    "treasure chests and reward effects",
+    "new enemy artwork",
+    "boss illustrations and phase artwork",
+    "three new hero portraits",
+    "true hero action frames",
+    "biome decorations",
+    "UI ornaments",
+    "level-up rarity frames",
+    "inventory slots",
+    "achievement icons",
+    "loading screen artwork",
+    "victory and defeat decorations",
+    "validated sequential VFX spritesheets"
+  ]
+}

@@ -1,0 +1,27 @@
+name: ES2 audio verification
+on:
+  push:
+    branches: [feature/es2-audio]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-audio-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Frozen install, tests, typecheck, build and release
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm check-release
