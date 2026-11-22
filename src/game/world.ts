@@ -65,15 +65,24 @@ export function nearbyObstacles(scene: number, x: number, y: number, radius: num
 /** Collision is intentionally only circles, not a second physics system. */
 export function resolveObstacleCollision(scene: number, x: number, y: number, radius: number): Point {
   const point = { x, y }
-  for (const o of nearbyObstacles(scene, x, y, radius + 90)) {
-    const dx = point.x - o.x
-    const dy = point.y - o.y
-    const d = Math.hypot(dx, dy)
-    const min = o.r + radius
-    if (d >= min) continue
-    const scale = min / Math.max(0.0001, d)
-    point.x = o.x + (d ? dx * scale : min)
-    point.y = o.y + (d ? dy * scale : 0)
+  const queryRadius = radius + 90
+  // Iterate the identical cells and candidates as nearbyObstacles, but do not
+  // materialize an array per mob. Only overlapping hitboxes need a sqrt.
+  for (let i = Math.floor((x - queryRadius - 100) / GRID); i <= Math.ceil((x + queryRadius + 100) / GRID); i++) {
+    for (let j = Math.floor((y - queryRadius - 100) / GRID); j <= Math.ceil((y + queryRadius + 100) / GRID); j++) {
+      const o = obstacleInCell(scene, i, j)
+      if (!o) continue
+      const sx = o.x - x, sy = o.y - y, reach = queryRadius + o.r
+      if (sx * sx + sy * sy > reach * reach) continue
+      const dx = point.x - o.x, dy = point.y - o.y
+      const min = o.r + radius
+      const squared = dx * dx + dy * dy
+      if (squared >= min * min) continue
+      const d = Math.sqrt(squared)
+      const scale = min / Math.max(0.0001, d)
+      point.x = o.x + (d ? dx * scale : min)
+      point.y = o.y + (d ? dy * scale : 0)
+    }
   }
   return point
 }

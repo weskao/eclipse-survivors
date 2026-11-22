@@ -6,7 +6,7 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
-import { cachedMobTint, type MobTintCache } from './tint-cache'
+import { cachedMobTint, drawCachedMobShadow, type MobTintCache, type MobShadowCache } from './tint-cache'
 
 type Drawable = HTMLImageElement | HTMLCanvasElement
 const ease = (n: number): number => {
@@ -200,7 +200,7 @@ const DIMS: Record<string, [number, number]> = {
 
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
-  e: Hero | Mob, ox: number, oy: number, reducedMotion = false, tintCache?: MobTintCache,
+  e: Hero | Mob, ox: number, oy: number, reducedMotion = false, tintCache?: MobTintCache, shadowCache?: MobShadowCache,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -214,17 +214,19 @@ export function drawCharacter(
   const sy = dims[1]!
   const move = hero ? hero.moveAmount : 1
   // Ground shadow is painted before the y-sorted body and never jumps with it.
-  ctx.save()
-  ctx.fillStyle = '#02070b70'
-  ctx.beginPath()
-  ctx.ellipse(x + 5, y + 5, sx * 0.32 * (1 + 0.12 * move), sy * 0.095, 0, 0, TAU)
-  ctx.fill()
-  if (mob?.type === 'boss') {
-    // The persistent boss footprint complements the timed, dodgeable AI telegraphs.
-    ctx.strokeStyle = '#ed9e7155'; ctx.lineWidth = 2
-    ctx.beginPath(); ctx.ellipse(x, y + 5, mob.r + 15, (mob.r + 15) * 0.48, 0, 0, TAU); ctx.stroke()
+  if (!mob || mob.type === 'boss' || !drawCachedMobShadow(ctx, x, y, sx, sy, shadowCache)) {
+    ctx.save()
+    ctx.fillStyle = '#02070b70'
+    ctx.beginPath()
+    ctx.ellipse(x + 5, y + 5, sx * 0.32 * (1 + 0.12 * move), sy * 0.095, 0, 0, TAU)
+    ctx.fill()
+    if (mob?.type === 'boss') {
+      // Boss footprint stays dynamic, matching its attack hitbox and telegraphs.
+      ctx.strokeStyle = '#ed9e7155'; ctx.lineWidth = 2
+      ctx.beginPath(); ctx.ellipse(x, y + 5, mob.r + 15, (mob.r + 15) * 0.48, 0, 0, TAU); ctx.stroke()
+    }
+    ctx.restore()
   }
-  ctx.restore()
   const anim = hero ? sampleHeroAnimation(s, hero, reducedMotion) : null
   if (hero) {
     const aura = s.cosmetic === 'knight-gilded' ? ['#edc66b55', '#ffe2a7c8']

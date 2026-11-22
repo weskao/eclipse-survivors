@@ -13,7 +13,7 @@ import {
 import { drawMiniMap as paintMiniMap } from './minimap'
 import { buildProps } from './props'
 import { buildSprites, domCanvas, type MakeCanvas } from './sprites'
-import type { MobTintCache } from './tint-cache'
+import type { MobTintCache, MobShadowCache } from './tint-cache'
 
 export type { Ctx2D } from './ctx'
 
@@ -28,6 +28,7 @@ export interface RenderAssets {
   magicGlow: HTMLCanvasElement | null
   gems: GemSprites
   mobTint: MobTintCache
+  mobShadows: MobShadowCache
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -45,6 +46,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     magicGlow: buildMagicGlow(makeCanvas),
     gems: buildGemSprites(makeCanvas),
     mobTint: { makeCanvas, variants: new WeakMap() },
+    mobShadows: { makeCanvas, shadows: new Map() },
   }
 }
 
@@ -109,7 +111,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
-  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.mobTint)
+  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.mobTint, assets.mobShadows)
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)

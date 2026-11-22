@@ -21,6 +21,33 @@ describe('biome geometry', () => {
     }
   })
 
+  it('preserves collision candidate ordering and exact resolution across scenes and radii', () => {
+    const reference = (scene: number, x: number, y: number, radius: number) => {
+      const point = { x, y }
+      for (const o of nearbyObstacles(scene, x, y, radius + 90)) {
+        const dx = point.x - o.x, dy = point.y - o.y
+        const d = Math.hypot(dx, dy), min = o.r + radius
+        if (d >= min) continue
+        const scale = min / Math.max(0.0001, d)
+        point.x = o.x + (d ? dx * scale : min)
+        point.y = o.y + (d ? dy * scale : 0)
+      }
+      return point
+    }
+    for (let scene = 0; scene < 4; scene++) {
+      for (const radius of [14, 17, 25, 48]) {
+        for (let i = 0; i < 90; i++) {
+          const x = (i * 73 % 1700) - 850
+          const y = (i * 131 % 1500) - 750
+          const expected = reference(scene, x, y, radius)
+          const actual = resolveObstacleCollision(scene, x, y, radius)
+          expect(actual.x).toBeCloseTo(expected.x, 9)
+          expect(actual.y).toBeCloseTo(expected.y, 9)
+        }
+      }
+    }
+  })
+
   it('telegraphs hazards before their active damage phase', () => {
     const storm = nearbyHazards(1, 0, 0, 1000)[0]!
     const states = Array.from({ length: 45 }, (_, i) => hazardPhase(1, storm, i / 10))
