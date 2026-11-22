@@ -110,11 +110,12 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
   }
 
   /** Layer 1: cached floor, then accurately scaled hazard circles. Draw BEFORE actors. */
-  function drawGround(ctx: Ctx2D, env: BiomeEnvironment, view: Bounds, time: number): void {
+  function drawGround(ctx: Ctx2D, env: BiomeEnvironment, view: Bounds, time: number, authored?: HTMLImageElement): void {
     const query = validate(view)
     if (!Number.isFinite(time)) throw new RangeError('Invalid biome simulation time')
     scene(env)
-    const ground = tile(env)
+    const ground = authored?.complete && authored.naturalWidth === 384 && authored.naturalHeight === 384
+      ? authored : tile(env)
     for (let i = Math.floor(view.left / TILE); i < Math.ceil(view.right / TILE); i++) {
       for (let j = Math.floor(view.top / TILE); j < Math.ceil(view.bottom / TILE); j++) {
         ctx.drawImage(ground, i * TILE, j * TILE, TILE, TILE)
@@ -140,14 +141,20 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
   }
 
   /** Layer 2: static props and interaction targets. Call BEFORE actors/projectiles. */
-  function drawProps(ctx: Ctx2D, env: BiomeEnvironment, view: Bounds, time = 0): void {
+  function drawProps(ctx: Ctx2D, env: BiomeEnvironment, view: Bounds, time = 0, authored?: HTMLImageElement): void {
     const query = validate(view)
     if (!Number.isFinite(time)) throw new RangeError('Invalid biome simulation time')
     scene(env)
     for (const obstacle of env.obstacles(query.x, query.y, query.radius)) {
       if (!intersects(obstacle, view)) continue
-      const sprite = prop(env, obstacle.kind)
-      ctx.drawImage(sprite, obstacle.x - obstacle.r, obstacle.y - obstacle.r, obstacle.r * 2, obstacle.r * 2)
+      if (authored?.complete && authored.naturalWidth === 384 && authored.naturalHeight === 96) {
+        ctx.drawImage(authored, obstacle.variant * 96, 0, 96, 96,
+          obstacle.x - obstacle.r, obstacle.y - obstacle.r,
+          obstacle.r * 2, obstacle.r * 2)
+      } else {
+        const sprite = prop(env, obstacle.kind)
+        ctx.drawImage(sprite, obstacle.x - obstacle.r, obstacle.y - obstacle.r, obstacle.r * 2, obstacle.r * 2)
+      }
     }
     // Interaction visibility and activation share the exact generated nodes.
     for (const node of env.interactions(query.x, query.y, query.radius)) {

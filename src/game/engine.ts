@@ -4,6 +4,8 @@ import { getMode, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
+import { BIOME_IDS, type BiomeId } from './content/biomes'
+import { createBiomeRuntime } from './content/biomes/runtime'
 import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
@@ -73,6 +75,7 @@ declare global {
 
 export interface Engine extends GameCommands {
   readonly contentRegistry: ContentRegistry
+  readonly activeBiomeId: BiomeId | null
   setVisualPresentationPolicy(policy: VisualPresentationPolicy): void
   /** Only active in development with ?content-showcase=1. */
   showcaseGrant(id: ContentId): boolean
@@ -97,6 +100,14 @@ function createBgm(source: string): HTMLAudioElement {
 }
 
 const pad2 = (n: number): string => String(n).padStart(2, '0')
+
+const BIOME_FOR_MODE: Partial<Record<RunModeId, BiomeId>> = {
+  'boss-rush': BIOME_IDS[0],
+  'endless-eclipse': BIOME_IDS[1],
+  'relic-hunt': BIOME_IDS[2],
+  'cursed-expedition': BIOME_IDS[3],
+  'chaos-arena': BIOME_IDS[0],
+}
 
 export function createEngine(opts: { audio?: AudioSystem; profileStore?: ProfileStore; contentPacks?: readonly ContentPack[] } = {}): Engine {
   const s = createState()
@@ -192,6 +203,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let art: Artwork | null = null
   let heroSpecialization: HeroSpecializationAdapter | null = null
   let objectiveRuntime: ObjectiveRuntime | null = null
+  let biomeRuntime: ReturnType<typeof createBiomeRuntime> | null = null
   let worldEvents: LiveWorldEvents | null = null
   let ending = false
 
@@ -278,7 +290,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       kill: s.kill,
       timer: `${pad2(Math.floor(s.time / 60))}:${pad2(Math.floor(s.time % 60))}`,
       bossPct: boss ? Math.max(0, boss.hp / boss.max * 100) : null,
-      quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
+      quest: boss ? `最終決戰 · ${biomeRuntime?.environment.definition.title ?? sc.name}`
+        : biomeRuntime?.environment.definition.title ?? `${sc.name} · ${sc.label}`,
       skills: equippedSkillHud(hero, contentRegistry, s),
     }
     ui.heroSpecial = heroSpecialization?.snapshot() ?? null
@@ -381,6 +394,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.worldEventChoice = null
     ui.worldEventMarkers = []
     resetRun(s)
+    const requestedBiome = requestedPacks.some(pack => pack.id === 'biomes')
+      ? BIOME_FOR_MODE[ui.runMode] : undefined
+    biomeRuntime = requestedBiome ? createBiomeRuntime(requestedBiome, { seed: 0 }) : null
     factions?.reset()
     factionSequence = 0
     factionWindow = 0
@@ -498,7 +514,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
-    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
+    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined, biomeRuntime ?? undefined)
     if (factions && s.mode === 'play' && s.hero) {
       const window = Math.floor(s.time / 8)
       if (window > factionWindow) {
@@ -728,6 +744,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    assets.activeBiome = () => biomeRuntime
     assets.productionHeroes = loadProductionHeroes()
     assets.productionWorld = loadWorldRuntimeImages()
     if (factions) {
@@ -750,6 +767,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (canvas.width !== width) canvas.width = width
       if (canvas.height !== height) canvas.height = height
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      assets.biomeRenderer.setPixelRatio(Math.max(1, dpr))
     }
     const frame = (t: number): void => {
       const dt = last ? Math.min((t - last) / 1000, 0.033) : 0
@@ -773,6 +791,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       removeEventListener('resize', resize)
       unlisten()
       delete window.__test
+      assets.biomeRenderer.reset()
       audio.dispose()
     }
   }
@@ -782,6 +801,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   return {
     contentRegistry,
+    get activeBiomeId() { return biomeRuntime?.environment.definition.id ?? null },
     setVisualPresentationPolicy(policy) { presentationPolicy = policy; resizeRenderer() },
     showcaseGrant(id) {
       if (!devShowcase() || s.mode !== 'play' || !s.hero) return false
@@ -882,6 +902,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ui.worldEventChoice = null
       ui.worldEventMarkers = []
       worldEvents?.reset()
+      biomeRuntime = null
       heroSpecialization = null
       ui.heroSpecial = null
       screen('menu')
