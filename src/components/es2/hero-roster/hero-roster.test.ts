@@ -22,7 +22,7 @@ describe('ES2 three-hero selection UI', () => {
     expect(wrapper.findAll('[data-hero-id]')).toHaveLength(3)
     expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('false')
-    expect(wrapper.findAll('img')).toHaveLength(6)
+    expect(wrapper.findAll('img[data-hero-skill-icon]')).toHaveLength(3)
     expect(wrapper.text()).toContain('影刃')
     expect(wrapper.text()).toContain('生命')
     expect(wrapper.text()).toContain('起始武器')
