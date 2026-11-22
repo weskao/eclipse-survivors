@@ -62,9 +62,13 @@ describe('world-event live integration', () => {
     expect(live.choose(marker.id, 'invoke')).toBe('applied')
   })
 
-  it('does not deduct XP when real loot cannot be granted and retries after capacity returns', () => {
+  it('does not deduct XP when loot has no capacity and offers an alternate action', () => {
     const { state, live, spawn } = setup()
-    for (const relic of RELICS.slice(0, 10)) expect(acquireRelic(state, relic.id)).toBe(true)
+    for (const relic of RELICS.slice(0, 10)) {
+      for (let i = 0; i < relic.maxStacks; i++) {
+        expect(acquireRelic(state, relic.id)).toBe(true)
+      }
+    }
     const marker = spawn('events:wandering-merchant')
     const xpBefore = state.hero!.xp
     expect(live.choose(marker.id, 'trade')).toBe('retry')
