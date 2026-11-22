@@ -87,7 +87,7 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
   const frame = Math.min(count - 1, Math.floor(progress * count))
   // attack() spawns the real projectile on the same tick it starts strike.
   // Never imply a loaded arrow or held spell during release/recover frames.
-  const actionStage = attacking
+  const actionStage: NonNullable<HeroAnimation['actionStage']> = attacking
     ? progress < 0.22 ? 'release' : 'recover'
     : hero.attack <= Math.max(0.08, hero.delay * 0.24)
       ? hero.attack > Math.max(0.03, hero.delay * 0.08) ? 'windup' : 'hold'
