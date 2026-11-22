@@ -2,6 +2,9 @@
 import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
 import type { JobId } from '../../../game/types'
+import shadowAction from '../../../assets/es2/production/heroes/shadowblade-action@3x.webp'
+import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-action@3x.webp'
+import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-action@3x.webp'
 
 const props = withDefaults(defineProps<{
   selectedId?: SpecializationId | JobId | null
@@ -9,6 +12,11 @@ const props = withDefaults(defineProps<{
 }>(), { selectedId: null, disabled: false })
 const emit = defineEmits<{ select: [id: SpecializationId] }>()
 const heroes = Object.values(HERO_DEFINITIONS)
+const actionSprites: Record<SpecializationId, string> = {
+  shadowblade: shadowAction,
+  'spirit-summoner': summonerAction,
+  'crimson-paladin': paladinAction,
+}
 const root = ref<HTMLElement | null>(null)
 function select(id: SpecializationId): void { if (!props.disabled) emit('select', id) }
 
@@ -34,6 +42,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       @click="select(hero.id)" @keydown="move($event, hero.id)">
       <img class="es2-roster__portrait" :src="hero.portraitSrc" :alt="hero.label + ' 角色插畫'"
         width="280" height="320" decoding="async" loading="lazy" draggable="false" />
+      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${actionSprites[hero.id]})` }" aria-hidden="true"></span>
       <span class="es2-roster__copy">
         <strong>{{ hero.label }}</strong>
         <span class="es2-roster__subtitle">{{ hero.subtitle }}</span>
@@ -51,7 +60,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 
 <style scoped>
 .es2-roster { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; width: 100%; }
-.es2-roster__card { min-width: 0; border: 1px solid #8e6d54; border-radius: 14px; background: #1d1827; color: #f6e7cf; cursor: pointer; padding: 0; text-align: left; overflow: hidden; touch-action: manipulation; }
+.es2-roster__card { position: relative; min-width: 0; border: 1px solid #8e6d54; border-radius: 14px; background: #1d1827; color: #f6e7cf; cursor: pointer; padding: 0; text-align: left; overflow: hidden; touch-action: manipulation; }
 .es2-roster__card:hover, .es2-roster__card:focus-visible, .es2-roster__card--selected { outline: 2px solid #e6bd7b; outline-offset: 2px; border-color: #e6bd7b; }
 .es2-roster__card:disabled { cursor: not-allowed; opacity: .55; }
 .es2-roster__portrait { display: block; width: 100%; height: 210px; object-fit: contain; background: #241b30; }
