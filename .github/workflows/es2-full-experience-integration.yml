@@ -21,6 +21,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
+      # Collect independent diagnostics even if the test suite fails; the job still fails.
       - run: pnpm typecheck
+        if: success() || failure()
       - run: pnpm build
+        if: success() || failure()
       - run: pnpm check-release
+        if: success() || failure()

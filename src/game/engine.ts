@@ -8,6 +8,7 @@ import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
+import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
 import { createBossEncounterController } from './content/bosses/controller'
@@ -63,6 +64,7 @@ declare global {
 
 export interface Engine extends GameCommands {
   readonly contentRegistry: ContentRegistry
+  setVisualPresentationPolicy(policy: VisualPresentationPolicy): void
   /** Only active in development with ?content-showcase=1. */
   showcaseGrant(id: ContentId): boolean
   showcaseEmit(event: ContentEvent): void
@@ -136,6 +138,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let stick: MoveInput = { x: 0, y: 0 }
   let runSequence = 0
   let frameDrawn = 0
+  let presentationPolicy: VisualPresentationPolicy | null = null
+  let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
 
   function wakeAudio(): void {
@@ -501,13 +505,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
     if (bosses) assets.bosses = bosses
     assets.cameraShakeEnabled = () => ui.cameraShake
+    assets.presentation = () => presentationPolicy
     let dpr = 1
     let last = 0
     let raf = 0
     const resize = (): void => {
       s.W = innerWidth
       s.H = innerHeight
-      dpr = Math.min(devicePixelRatio || 1, 1.5)
+      dpr = Math.min(devicePixelRatio || 1, presentationPolicy?.pixelRatioCap ?? 1.5)
       const width = Math.round(s.W * dpr)
       const height = Math.round(s.H * dpr)
       if (canvas.width !== width) canvas.width = width
@@ -524,6 +529,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       audio.tick(s.mode)
       raf = requestAnimationFrame(frame)
     }
+    resizeRenderer = resize
     addEventListener('resize', resize)
     resize()
     const unlisten = listen()
@@ -531,6 +537,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
+      resizeRenderer = () => {}
       removeEventListener('resize', resize)
       unlisten()
       delete window.__test
@@ -543,6 +550,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   return {
     contentRegistry,
+    setVisualPresentationPolicy(policy) { presentationPolicy = policy; resizeRenderer() },
     showcaseGrant(id) {
       if (!devShowcase() || s.mode !== 'play' || !s.hero) return false
       const ok = contentRegistry.acquire(s, id, hooks)
