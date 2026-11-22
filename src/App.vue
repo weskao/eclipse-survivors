@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import { createEngine, type Engine } from './game/engine'
+import { applyPresentation, resolvePresentationPolicy } from './game/content/accessibility/presentation'
+import './game/content/accessibility/presentation.css'
 import { inventorySnapshot } from './game/content/relics/runtime'
 import { RELIC_BY_ID } from './game/content/relics/catalog'
 import CombatHud from './components/es2/hud/CombatHud.vue'
@@ -65,10 +67,27 @@ const combatFeed = computed<CombatHudFeed>(() => {
 })
 
 let unmount: (() => void) | undefined
+let clearPresentation: () => void = () => {}
+function syncPresentation(): void {
+  clearPresentation()
+  const policy = resolvePresentationPolicy(accessibilityPreferences.value, {
+    prefersReducedMotion: typeof matchMedia === 'function' &&
+      matchMedia('(prefers-reduced-motion: reduce)').matches,
+    hardwareConcurrency: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : undefined,
+    coarsePointer: ui.coarsePointer,
+  })
+  engine.setVisualPresentationPolicy(policy)
+  clearPresentation = applyPresentation(document.documentElement, policy, accessibilityPreferences.value)
+}
+watch(accessibilityPreferences, syncPresentation)
 onMounted(() => {
+  syncPresentation()
   if (canvas.value) unmount = engine.mount(canvas.value, hudRef.value?.minimap ?? null)
 })
-onBeforeUnmount(() => unmount?.())
+onBeforeUnmount(() => {
+  clearPresentation()
+  unmount?.()
+})
 </script>
 
 <template>

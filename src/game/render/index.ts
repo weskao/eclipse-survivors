@@ -1,5 +1,6 @@
 import type { Artwork } from '../art'
 import type { ContentRegistry } from '../content/registry'
+import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
 import { drawBossTelegraphs } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
@@ -23,6 +24,7 @@ export type { Ctx2D } from './ctx'
 
 export interface RenderAssets {
   content?: ContentRegistry
+  presentation?: () => VisualPresentationPolicy | null
   bosses?: BossEncounterController
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
@@ -74,7 +76,8 @@ function weatherGrade(ctx: Ctx2D, W: number, H: number, weather: string): Canvas
 export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderAssets): void {
   const { W, H } = s
   const hero = s.hero
-  const reduced = assets.prefersReducedMotion()
+  const policy = assets.presentation?.()
+  const reduced = policy?.reduceMotion ?? assets.prefersReducedMotion()
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.fillStyle = '#27352d'
   ctx.fillRect(0, 0, W, H)
@@ -92,7 +95,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
-  if (!reduced) drawAmbient(ctx, s, ox, oy)
+  if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
   drawWorldMarkers(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
   ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
@@ -130,7 +133,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
   assets.content?.render(ctx, s, ox, oy)
-  drawNumbers(ctx, s, ox, oy)
+  if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy)
   drawVignette(ctx, s)
   drawBossPhaseIndicator(ctx, s)
 }
