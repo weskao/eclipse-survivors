@@ -178,9 +178,9 @@ describe('world event contract', () => {
     const evt = director.spawn('events:elite-hunt', w, point)!
     near(w)
     expect(director.choose(evt.id, 'hunt', w)).toBe('applied')
-    director.reportKill(false)
+    director.reportKill(false, evt.id)
     expect(applied).toHaveLength(1)
-    director.reportKill(true)
+    director.reportKill(true, evt.id)
     director.tick(w)
     expect(applied).toHaveLength(2)
     director.tick(w)
