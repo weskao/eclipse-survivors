@@ -217,6 +217,7 @@ export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
   paintedFrames?: HTMLImageElement,
+  paintedRunFrames?: HTMLImageElement,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -263,7 +264,7 @@ export function drawCharacter(
   const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
   const drawable = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   if (drawable) {
-    if (hero && anim && paintedFrames && drawPaintedHero(ctx, paintedFrames, s.choice, hero, anim, sx, sy)) {
+    if (hero && anim && paintedFrames && drawPaintedHero(ctx, paintedFrames, s.choice, hero, anim, sx, sy, paintedRunFrames)) {
       // Complete prepainted pose includes its own rigid weapon; only live
       // world projectiles are drawn elsewhere, with no duplicated held arrow.
     } else if (hero && anim) {
