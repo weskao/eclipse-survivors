@@ -26,7 +26,7 @@ describe('bounded, scope-invalidated render cache', () => {
     cache.get('shared', () => 1)
     for (const change of [
       { scene: 3 }, { width: 390, height: 844 }, { dpr: 3 },
-      { quality: 'low' as const }, { assetVersion: 'v2' }, { contextId: 'canvas-2' },
+      { quality: 'low' as const }, { quality: 'medium' as const }, { assetVersion: 'v2' }, { contextId: 'canvas-2' },
     ]) {
       cache.configure({ ...scope, ...change })
       expect(cache.stats().size).toBe(0)
