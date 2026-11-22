@@ -8,6 +8,8 @@ export interface HeroAnimation {
   frame: number
   count: number
   phase: number
+  /** Screen-space octant: E, SE, S, SW, W, NW, N, NE. */
+  direction: number
   reducedMotion: boolean
 }
 
@@ -17,7 +19,11 @@ const FRAMES: Record<HeroPose, number> = {
 
 // Rendering-only history. Weak keys let old runs/characters be collected without
 // touching combat state or requiring a parallel animation update loop.
-const entered = new WeakMap<Hero, { pose: HeroPose; clock: number; reduced: boolean }>()
+const entered = new WeakMap<Hero, { pose: HeroPose; clock: number; reduced: boolean; direction: number }>()
+
+function octant(angle: number): number {
+  return ((Math.round(angle / (TAU / 8)) % 8) + 8) % 8
+}
 
 function poseFor(s: GameState, hero: Hero): HeroPose {
   if (hero.hp <= 0) return 'death'
@@ -36,12 +42,17 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
   const pose = poseFor(s, hero)
   const count = FRAMES[pose]
   const old = entered.get(hero)
+  const attacking = pose === 'attack' || pose === 'cast'
+  const running = pose === 'run' && (hero.vx * hero.vx + hero.vy * hero.vy > 1)
+  const direction = attacking ? octant(hero.aimAngle)
+    : running ? octant(Math.atan2(hero.vy, hero.vx))
+      : old?.direction ?? (hero.face < 0 ? 4 : 0)
   if (!old || old.pose !== pose || old.reduced !== reducedMotion || s.worldClock < old.clock) {
-    entered.set(hero, { pose, clock: s.worldClock, reduced: reducedMotion })
-  }
+    entered.set(hero, { pose, clock: s.worldClock, reduced: reducedMotion, direction })
+  } else old.direction = direction
   const start = entered.get(hero)!
   if (reducedMotion || s.mode === 'paused' || s.mode === 'level') {
-    return { pose, frame: 0, count, phase: 0, reducedMotion }
+    return { pose, frame: 0, count, phase: 0, direction, reducedMotion }
   }
   const elapsed = Math.max(0, s.worldClock - start.clock)
   let progress = 0
@@ -70,7 +81,6 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
       progress = (elapsed / 1.20) % 1
       break
   }
-  const loop = pose === 'idle' || pose === 'run' || pose === 'victory'
-  const frame = Math.min(count - 1, Math.floor(progress * (loop ? count : count - 1)))
-  return { pose, frame, count, phase: progress, reducedMotion }
+  const frame = Math.min(count - 1, Math.floor(progress * count))
+  return { pose, frame, count, phase: progress, direction, reducedMotion }
 }
