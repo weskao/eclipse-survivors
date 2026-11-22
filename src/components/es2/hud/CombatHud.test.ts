@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { emptyHud, type HudView } from '../../../game/store'
 import CombatHud from './CombatHud.vue'
+import AudioControl from '../../AudioControl.vue'
 
 const equipped: HudView = {
   ...emptyHud(), who: '遊俠 · LV.7', hpPct: 75, hpLabel: '生命 90 / 120',
@@ -42,7 +43,7 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.find('[data-es2-boss]').exists()).toBe(false)
     expect(wrapper.find('[data-es2-wave]').exists()).toBe(false)
     expect(wrapper.find('[data-es2-relic]').exists()).toBe(false)
-    expect(wrapper.get('canvas[aria-label="戰場小地圖"]').exists()).toBe(true)
+    expect(wrapper.find('canvas[aria-label="戰場小地圖"]').exists()).toBe(true)
     // A replaced engine snapshot updates bars without a component-local timer.
     return wrapper.setProps({ hud: { ...equipped, hpPct: 28, xpPct: 83, kill: 78 } }).then(() => {
       expect(wrapper.get('[role="progressbar"][aria-label="生命值"]').attributes('aria-valuenow')).toBe('28')
@@ -100,6 +101,7 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.text()).toContain('開啟祭壇')
     await wrapper.get('[data-es2-pause]').trigger('click')
     await wrapper.get('[data-es2-settings]').trigger('click')
+    expect(wrapper.findComponent(AudioControl).props('active')).toBe(true)
     await wrapper.get('#hudAudioTrigger').trigger('click')
     await nextTick()
     const range = document.querySelector<HTMLInputElement>('#hudMusicVolume')
@@ -119,7 +121,7 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.find('.es2-hud').exists()).toBe(true)
     expect(wrapper.get('.es2-hud').classes()).not.toContain('es2-hud--active')
     expect(wrapper.get('.es2-hud').attributes('aria-hidden')).toBe('true')
-    expect(wrapper.get('canvas[aria-label="戰場小地圖"]').exists()).toBe(true)
+    expect(wrapper.find('canvas[aria-label="戰場小地圖"]').exists()).toBe(true)
     await wrapper.setProps({ active: true })
     expect(wrapper.get('.es2-hud').classes()).toContain('es2-hud--active')
     expect(wrapper.get('.es2-hud').attributes('aria-hidden')).toBe('false')
