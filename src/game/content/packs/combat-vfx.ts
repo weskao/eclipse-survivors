@@ -1,5 +1,5 @@
 import type { ContentEffectDefinition, ContentPack } from '../contracts'
-import type { ContentVisualFx } from '../../types'
+import type { ContentVisualFx, GameState, Mob } from '../../types'
 import {
   COMBAT_FX_BY_KIND, COMBAT_FX_SPECS, drawCombatEffect,
   type CombatFxKind, type CombatVfxPreferences, type DirectedCombatFx,
@@ -37,6 +37,9 @@ export function createCombatVfxPack(settings: CombatVfxPreferences = {}): Conten
     ...settings,
     reducedMotion: settings.reducedMotion ?? (() => motionQuery?.matches ?? false),
   }
+  // Weak keys and weak mob identities prevent a long-running game from retaining
+  // old states or dead monsters. New runs must send an authoritative reset/start.
+  const seen = new WeakMap<GameState, { killed: WeakSet<Mob>; won: boolean }>()
   return {
     id: 'combat-vfx',
     effects: COMBAT_FX_SPECS.map((spec): ContentEffectDefinition => ({
@@ -46,16 +49,27 @@ export function createCombatVfxPack(settings: CombatVfxPreferences = {}): Conten
       },
     })),
     onEvent({ state, addEffect }, event) {
-      // These events have authoritative positions and outcomes. All other VFX
-      // require integration-owned gameplay hooks with their actual direction.
+      if (event.type === 'start' || event.type === 'reset') {
+        seen.delete(state)
+        return
+      }
+      if (event.type !== 'kill' && event.type !== 'run-complete') return
+      let run = seen.get(state)
+      if (!run) {
+        run = { killed: new WeakSet<Mob>(), won: false }
+        seen.set(state, run)
+      }
       if (event.type === 'kill') {
+        if (run.killed.has(event.mob)) return
+        run.killed.add(event.mob)
         emitCombatVfx(addEffect, 'enemy-death', event.mob.x, event.mob.y)
-      } else if (event.type === 'run-complete' && event.win && state.hero) {
+      } else if (event.win && !run.won && state.hero) {
+        run.won = true
         emitCombatVfx(addEffect, 'victory-finish', state.hero.x, state.hero.y - 25)
       }
     },
   }
 }
 
-/** This is intentionally NOT installed into packs/index.ts on a parallel branch. */
+/** Not installed into packs/index.ts on a parallel branch. */
 export const COMBAT_VFX_PACK: ContentPack = createCombatVfxPack()
