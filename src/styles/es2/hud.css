@@ -64,6 +64,9 @@
   box-shadow: 0 0 0 3px #151b2b, inset 0 0 16px #0009;
 }
 .es2-hud__portrait > :is(img, svg) { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+/* Preserve full-body art in selection cards; show readable face/torso only in the small HUD. */
+.es2-hud__portrait img[data-es2-specialization] { object-position: 50% 0; transform: scale(2.18); transform-origin: center top; }
+
 .es2-hud__portrait-corner { position: absolute; right: 5px; bottom: 0; color: #ffe4a9; font-size: 18px; }
 .es2-hud__vitals { min-width: 0; flex: 1; }
 .es2-hud__identity { display: flex; flex-direction: column; gap: 1px; margin-bottom: 7px; }

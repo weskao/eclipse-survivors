@@ -22,6 +22,7 @@ const fallback = computed(() => isSpecializationId(props.heroId)
 </script>
 
 <template>
-  <img :src="failed ? fallback : source" :alt="alt" decoding="async" draggable="false"
+  <img :src="failed ? fallback : source" :alt="alt" :data-es2-specialization="isSpecializationId(heroId) ? '' : undefined"
+    decoding="async" draggable="false"
     @error="failed = true" />
 </template>
