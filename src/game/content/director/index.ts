@@ -174,7 +174,12 @@ function place(
 ): { x: number; y: number } | null {
   const halfW = frame.viewport.width / 2
   const halfH = frame.viewport.height / 2
-  const safeDistance = Math.max(270, Math.hypot(halfW + 64, halfH + 64) + 32)
+  // Ordinary mobs are culled at 1700 world units by the existing engine.
+  // On very large CSS viewports, prefer a long-range telegraphed onscreen spawn
+  // over placing enemies where the legacy engine instantly removes them.
+  const offscreenDistance = Math.max(270, Math.hypot(halfW + 64, halfH + 64) + 32)
+  const safeDistance = Math.min(1600, offscreenDistance)
+  const requireOffscreen = offscreenDistance <= 1600
   const angle = (mix(seed, cycle, pulse) / 0x100000000) * Math.PI * 2
     + (index - (total - 1) / 2) * 0.26
   const radius = radiusOf(type)
@@ -184,7 +189,7 @@ function place(
     const y = frame.hero.y + Math.sin(a) * safeDistance
     const dx = x - frame.hero.x
     const dy = y - frame.hero.y
-    if (Math.abs(dx) <= halfW + 32 && Math.abs(dy) <= halfH + 32) continue
+    if (requireOffscreen && Math.abs(dx) <= halfW + 32 && Math.abs(dy) <= halfH + 32) continue
     if (alreadyPlaced.some(p => (p.x - x) ** 2 + (p.y - y) ** 2 < (radius + radiusOf(p.type) + 32) ** 2)) continue
     if (frame.canSpawnAt && !frame.canSpawnAt(x, y, radius)) continue
     return { x, y }
