@@ -64,6 +64,35 @@ describe('ES2 release gate: real game-session selection (RED until host wiring)'
     expect(engine.state.mode).toBe('paused')
   })
 
+  it('spawns interactive ES2 world markers without automatically granting rewards', () => {
+    const engine = createEngine({ audio: silentAudio() })
+    engine.start()
+    if (!engine.state.hero) throw new Error('Missing hero')
+    engine.state.W = 1280
+    engine.state.H = 720
+    engine.state.hero.inv = 200
+    engine.state.hero.attack = Number.POSITIVE_INFINITY
+    engine.state.spawnT = Number.POSITIVE_INFINITY
+    engine.state.mobs = []
+    for (let tick = 0; tick < 9; tick++) engine.advance(1)
+    const marker = engine.ui.worldEventMarkers[0]
+    expect(marker).toBeDefined()
+    if (!marker) throw new Error('Expected a real event marker')
+    expect(engine.state.hero.xp).toBe(0)
+    expect(engine.ui.worldEventChoice).toBeNull()
+    // Deliberate player interaction only. The distant marker cannot be claimed.
+    expect(engine.openWorldEvent(marker.id)).toBe(false)
+    engine.state.hero.x = marker.x
+    engine.state.hero.y = marker.y
+    expect(engine.openWorldEvent(marker.id)).toBe(true)
+    expect(engine.ui.worldEventChoice?.event.id).toBe(marker.id)
+    const before = engine.state.time
+    engine.advance(4)
+    expect(engine.state.time).toBe(before) // modal freezes simulation, but not the action port
+    engine.closeWorldEvent()
+    expect(engine.ui.worldEventChoice).toBeNull()
+  })
+
   it.each(['boss-rush', 'endless-eclipse', 'relic-hunt', 'cursed-expedition', 'chaos-arena'])(
     'starts a session with authoritative %s rules rather than falling back to quick',
     id => {
