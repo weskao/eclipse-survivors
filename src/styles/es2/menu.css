@@ -154,3 +154,9 @@
 @media(max-width:380px){.es2-choice-grid{grid-template-columns:1fr}.es2-choice{min-height:0}.es2-card-art{height:100px}.es2-hero-copy small{display:none}.es2-mode-card{gap:9px}}
 @media(max-height:570px){.es2-dialog{max-height:calc(100dvh - 12px);padding:15px}.es2-dialog-header{margin-bottom:12px}}
 @media(prefers-reduced-motion:reduce){.es2-system *, .es2-backdrop *, .es2-loading *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.es2-choice:hover,.es2-hero-card:hover{transform:none}}
+
+/* New-hero authored 4×96px WebP action strip; purely visual, no simulation timers. */
+.es2-hero-action-preview{position:absolute;right:9px;top:9px;z-index:1;width:64px;height:64px;pointer-events:none;border-radius:10px;background-repeat:no-repeat;background-size:400% 100%;background-position:0 0;background-color:#08101ab8;border:1px solid #dac89c55;box-shadow:0 1px 12px #03050977;animation:es2-hero-action-frames 1.2s steps(3,end) infinite}
+@keyframes es2-hero-action-frames{to{background-position:100% 0}}
+@media(max-width:610px){.es2-hero-action-preview{width:42px;height:42px;right:4px;top:5px;border-radius:6px}}
+@media(prefers-reduced-motion:reduce){.es2-hero-action-preview{animation:none;background-position:0 0}}
