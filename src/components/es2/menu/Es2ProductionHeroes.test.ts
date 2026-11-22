@@ -12,7 +12,11 @@ describe('ES2 production hero artwork integration', () => {
     expect(originals).toEqual(['knight', 'ranger', 'wizard'])
     expect(newHeroes).toEqual(['shadowblade', 'spirit-summoner', 'crimson-paladin'])
     expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
-    expect(wrapper.get('[data-hero-id="shadowblade"] .es2-hero-action-preview').attributes('style')).toContain('shadowblade')
+    expect(wrapper.get('[data-hero-id="shadowblade"] .es2-hero-action-preview').attributes('style')).toContain('shadowblade-portrait@3x.webp')
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const card = wrapper.get(`[data-hero-id="${id}"]`)
+      expect(card.get('.es2-hero-action-preview').attributes('style')).toContain(id + '-portrait@3x.webp')
+    }
     wrapper.unmount()
   })
 
