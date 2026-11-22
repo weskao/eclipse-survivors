@@ -49,6 +49,21 @@ describe('integration cutover: one v3 currency writer and preserved v2 snapshot'
     expect(createMetaProgressionStore(localStorage).get().state?.runs).toBe(2)
   })
 
+  it('offers one v3 research purchase and applies its effect on the next real run', () => {
+    const engine = createEngine({ audio })
+    finish(engine)
+    engine.goMenu()
+    const before = createMetaProgressionStore(localStorage).get().state!.embers
+    engine.purchaseResearch('power')
+    const after = createMetaProgressionStore(localStorage).get().state!
+    expect(after.research.power).toBe(1)
+    expect(after.embers).toBeLessThan(before)
+    expect(engine.ui.profile.embers).toBe(after.embers)
+    expect(engine.ui.metaState?.research.power).toBe(1)
+    engine.start()
+    expect(engine.state.hero?.damage).toBeCloseTo(32 * 1.04)
+  })
+
   it('never pays the original v2 writer from an ordinary new engine session', () => {
     const engine = createEngine({ audio })
     finish(engine)
