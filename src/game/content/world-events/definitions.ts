@@ -136,8 +136,8 @@ export function validEffects(effects: readonly WorldEventEffect[]): boolean {
       if (!effect.id || !Number.isFinite(effect.seconds) || effect.seconds <= 0 || effect.seconds > 60) return false
     } else if (effect.type === 'encounter') {
       if (!effect.id || !Number.isInteger(effect.count) || effect.count < 1 || effect.count > 6) return false
-    } else if (!effect.id || !['common', 'rare', 'epic', 'legendary'].includes(effect.tier)) return false
-    if (effect.type === 'symbolic-loot') {
+    } else if (effect.type === 'symbolic-loot') {
+      if (!effect.id || !['common', 'rare', 'epic', 'legendary'].includes(effect.tier)) return false
       if (seen.has(effect.id)) return false
       seen.add(effect.id)
     }
