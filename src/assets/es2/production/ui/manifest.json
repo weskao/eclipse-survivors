@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "category": "ui",
+  "status": "incomplete",
+  "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
+  "assets": [
+    {
+      "id": "treasure-common",
+      "path": "treasure-common@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "treasure-rare",
+      "path": "treasure-rare@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "treasure-legendary",
+      "path": "treasure-legendary@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "treasure-cursed",
+      "path": "treasure-cursed@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "rarity-common",
+      "path": "rarity-common@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "rarity-rare",
+      "path": "rarity-rare@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "rarity-legendary",
+      "path": "rarity-legendary@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "hud-health",
+      "path": "hud-health@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "hud-xp",
+      "path": "hud-xp@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "hud-cooldown",
+      "path": "hud-cooldown@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "hud-quest",
+      "path": "hud-quest@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "achievement-boss",
+      "path": "achievement-boss@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "achievement-survivor",
+      "path": "achievement-survivor@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "achievement-evolution",
+      "path": "achievement-evolution@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "achievement-explorer",
+      "path": "achievement-explorer@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "achievement-collector",
+      "path": "achievement-collector@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    },
+    {
+      "id": "achievement-flawless",
+      "path": "achievement-flawless@3x.webp",
+      "width": 192,
+      "height": 192,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 75000,
+      "frames": 1,
+      "status": "not-delivered"
+    }
+  ]
+}
