@@ -73,6 +73,56 @@ describe('wake', () => {
   })
 })
 
+describe('independent, persisted audio volumes', () => {
+  it('defaults to the existing loudness and persists independent levels', () => {
+    const storage = new MemStorage()
+    const audio = make(storage)
+    expect(audio.musicVolume).toBe(100)
+    expect(audio.sfxVolume).toBe(100)
+    audio.setMusicVolume(45)
+    audio.setSfxVolume(25)
+    expect(storage.data.get('eclipseMusicVolume')).toBe('45')
+    expect(storage.data.get('eclipseSfxVolume')).toBe('25')
+    expect(audio.musicVolume).toBe(45)
+    expect(audio.sfxVolume).toBe(25)
+    const restored = make(storage)
+    expect(restored.musicVolume).toBe(45)
+    expect(restored.sfxVolume).toBe(25)
+  })
+
+  it('applies volume to both synth buses and the MP3, without changing mute switches', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.setMusicVolume(50)
+    audio.setSfxVolume(40)
+    expect(ctx.gains[0]!.gain.setTargetAtTime).toBeDefined()
+    expect(ctx.gains[0]!.gain.value).toBeCloseTo(0.52)
+    expect(bgm.volume).toBeCloseTo(0.19)
+    expect(audio.musicOn).toBe(true)
+    expect(audio.sfxOn).toBe(true)
+    audio.toggleMusic('play')
+    audio.toggleSfx()
+    audio.setMusicVolume(80)
+    audio.setSfxVolume(70)
+    expect(audio.musicOn).toBe(false)
+    expect(audio.sfxOn).toBe(false)
+  })
+
+  it('sanitizes corrupt stored values and clamps invalid changes', () => {
+    const storage = new MemStorage()
+    storage.setItem('eclipseMusicVolume', 'Infinity')
+    storage.setItem('eclipseSfxVolume', '-50')
+    const audio = make(storage)
+    expect(audio.musicVolume).toBe(100)
+    expect(audio.sfxVolume).toBe(0)
+    audio.setMusicVolume(125)
+    audio.setSfxVolume(Number.NaN)
+    expect(audio.musicVolume).toBe(100)
+    expect(audio.sfxVolume).toBe(0)
+  })
+})
+
 describe('playSfx', () => {
   it('is a no-op before wake', () => {
     const audio = make()
