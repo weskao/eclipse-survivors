@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from './state'
 import { attack } from './combat'
+import { getFiringOrigin } from './weapon-geometry'
 import { createFactionBridge } from './content/enemies/integration'
 import type { GameHooks } from './types'
 
@@ -25,7 +26,9 @@ describe('new faction actors are actual, targetable enemies',()=>{
       bridge.spawn(s,'dark-archer',135,0)
       attack(s,hooks,bridge)
       expect(s.shots.length).toBeGreaterThan(0)
-      expect(s.hero!.aimAngle).toBeCloseTo(0,1)
+      const grip = getFiringOrigin(job, s.hero!.face)
+      const expectedAngle = Math.atan2(-grip.y, 135 - grip.x)
+      expect(s.hero!.aimAngle).toBeCloseTo(expectedAngle, 6)
     })
   }
 })
