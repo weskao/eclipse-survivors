@@ -129,8 +129,7 @@ export const WORLD_EVENT_DEFINITIONS: readonly WorldEventDefinition[] = [
 export function validEffects(effects: readonly WorldEventEffect[]): boolean {
   const seen = new Set<string>()
   for (const effect of effects) {
-    if (effect.type === 'xp' || effect.type === 'xp-cost' ||
-        effect.type === 'heal' || effect.type === 'health-cost') {
+    if ('amount' in effect) {
       if (!Number.isFinite(effect.amount) || effect.amount <= 0) return false
     } else if (effect.type === 'buff') {
       if (!effect.id || !Number.isFinite(effect.seconds) || effect.seconds <= 0 || effect.seconds > 60) return false
