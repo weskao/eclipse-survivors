@@ -34,6 +34,19 @@ describe('real eight-direction production hero atlases', () => {
       .toEqual({ x: 512, y: 0, width: 128, height: 128 })
   })
 
+
+  it('normalizes the authored small character silhouette to the original hero on-screen height and foot anchor', () => {
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    const sheet = { complete: true, naturalWidth: 1024, naturalHeight: 512 } as HTMLImageElement
+    expect(drawProductionHeroFrame(ctx, sheet, animation({ pose: 'idle' }), 108, 134)).toBe(true)
+    const draw = calls[0]!
+    expect(draw.slice(1, 5)).toEqual([0, 0, 128, 128])
+    expect(draw[7]).toBeCloseTo(108 * 2.5)
+    expect(draw[8]).toBeCloseTo(134 * 2.5)
+    expect(Number(draw[6]) + Number(draw[8]) * 0.7).toBeCloseTo(4)
+  })
+
   it('keeps unsupported hurt/death/victory on the previously authored fallback sprite', () => {
     for (const pose of ['hurt','death','victory'] as const) {
       expect(productionHeroDirectionRect(animation({ pose }))).toBeNull()
