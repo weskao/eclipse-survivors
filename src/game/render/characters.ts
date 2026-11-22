@@ -6,7 +6,6 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
-import { drawPaintedHero } from './painted-frames'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -217,7 +216,7 @@ const DIMS: Record<string, [number, number]> = {
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
-  paintedFrames?: HTMLImageElement, tintCache?: MobTintCache,
+  tintCache?: MobTintCache,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -268,13 +267,9 @@ export function drawCharacter(
   const drawable = source && tint ? cachedMobTint(source, tint, sx, sy, tintCache) : source
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
-    if (hero && anim && paintedFrames && drawPaintedHero(ctx, paintedFrames, s.choice, hero, anim, sx, sy)) {
-      // Complete prepainted pose includes its own rigid weapon; only live
-      // world projectiles are drawn elsewhere, with no duplicated held arrow.
-    } else if (hero && anim) {
-      // Fallback: keep existing illustrated rendering until the atlas decodes.
-      // The WebP is the authoritative artwork. Cache its direction/pose frames
-      // once instead of skinning 96 texture cells on every gameplay draw.
+    if (hero && anim) {
+      // Always animate from the project's original realistic WebP artwork.
+      // Cached original-art frames avoid skinning every frame of gameplay.
       const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
       const prebaked = !!(heroSheets && im && drawable === im
         && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
