@@ -38,7 +38,7 @@ describe('world event dialog', () => {
     mounted({})
     await nextTick()
     expect(document.querySelector('[role=dialog]')?.getAttribute('aria-modal')).toBe('true')
-    expect(document.body.textContent).toContain('Cursed Altar')
+    expect(document.body.textContent).toContain('詛咒祭壇')
     expect(card('invoke').textContent).toContain('18 HP')
     expect(card('invoke').textContent).toContain('Sacrifice 18 HP')
     expect(card('invoke').textContent).toContain('Gain cursed might')

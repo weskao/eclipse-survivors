@@ -53,7 +53,7 @@ describe('ES2 new heroes share the original three heroes\' source-illustration +
     drawHero(id, portrait, true)
   })
 
-  it.each(ids)('%s generates a 3x cached run/attack/cast sequence from the same source', id => {
+  it.each(ids)('%s generates a 3x cached run/attack/cast sequence from the same source', () => {
     const factory = fakeCanvasFactory()
     const sheets = createHeroSheets(factory.make)
     const image = source()
