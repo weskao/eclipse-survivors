@@ -276,10 +276,16 @@ export function drawCharacter(
     if (hero && anim) {
       // Original three heroes keep their existing rig and equipment animation.
       ctx.save()
-      if (hero.face < 0) ctx.scale(-1, 1)
+      // Eight-direction atlases already contain an authored left-facing frame.
+      // Mirroring them produces the wrong direction and artwork. Keep the
+      // original fallback mirror for unloaded art and unsupported poses.
+      const directionalReady = productionImage?.complete
+        && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512
+      if (hero.face < 0 && !directionalReady) ctx.scale(-1, 1)
       const productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
       if (!productionDrawn) {
+        if (hero.face < 0 && directionalReady) ctx.scale(-1, 1)
         // Preserve existing animation while the new WebP decodes or if it fails.
         const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
         const prebaked = !!(heroSheets && im && drawable === im

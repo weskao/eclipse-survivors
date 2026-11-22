@@ -1,11 +1,15 @@
 import type { SpecializationId } from '../../content/heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
-import shadowblade from '../../../assets/es2/production/heroes/shadowblade-action@3x.webp'
-import summoner from '../../../assets/es2/production/heroes/spirit-summoner-action@3x.webp'
-import paladin from '../../../assets/es2/production/heroes/crimson-paladin-action@3x.webp'
+import shadowblade from '../../../assets/es2/production/heroes/shadowblade-8dir@3x.webp'
+import summoner from '../../../assets/es2/production/heroes/spirit-summoner-8dir@3x.webp'
+import paladin from '../../../assets/es2/production/heroes/crimson-paladin-8dir@3x.webp'
 
-/** Authored 384×96 action strips: 4 distinct 3× frames, one per 96×96 slot. */
+/**
+ * Original authoring grid cut into 32 isolated 128px cells per hero.
+ * Columns follow the runtime's direction octants E, SE, S, SW, W, NW, N, NE;
+ * rows are idle, run, attack and cast. HeroAnimation already owns direction.
+ */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
   shadowblade,
   'spirit-summoner': summoner,
@@ -14,7 +18,6 @@ export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>>
 
 export type ProductionHeroArtwork = Record<SpecializationId, HTMLImageElement>
 
-/** Load once on renderer mount; never allocate Image inside the hot draw loop. */
 export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => new Image()): ProductionHeroArtwork {
   const result = {} as ProductionHeroArtwork
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {
@@ -25,7 +28,7 @@ export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => n
   return result
 }
 
-/** The gameplay projectile already exists at strike start: never redraw held windup. */
+/** Legacy 4×96-pixel strips remain supported for existing fallback tests and consumers. */
 export function productionHeroFrame(anim: HeroAnimation): number {
   if (anim.reducedMotion) return 0
   switch (anim.pose) {
@@ -44,11 +47,41 @@ export function productionHeroFrame(anim: HeroAnimation): number {
   }
 }
 
-/** Mirrors direction with the enclosing Canvas transform; returns false until decoded. */
+export interface ProductionHeroSourceRect {
+  readonly x: number
+  readonly y: number
+  readonly width: 128
+  readonly height: 128
+}
+
+/**
+ * Exact per-cell crop, no adjacent frame interpolation or fake left/right flip.
+ * Hurt/death/victory intentionally use the already-authored legacy fallback,
+ * since their eight-direction artwork is not supplied by this source atlas.
+ */
+export function productionHeroDirectionRect(anim: HeroAnimation): ProductionHeroSourceRect | null {
+  const row = anim.reducedMotion ? 0 :
+    anim.pose === 'idle' ? 0 :
+      anim.pose === 'run' || anim.pose === 'dash' ? 1 :
+        anim.pose === 'attack' ? 2 :
+          anim.pose === 'cast' ? 3 : -1
+  if (row < 0) return null
+  const dir = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+  return { x: dir * 128, y: row * 128, width: 128, height: 128 }
+}
+
 export function drawProductionHeroFrame(
   ctx: Ctx2D, image: HTMLImageElement, anim: HeroAnimation, width: number, height: number,
 ): boolean {
-  if (!image.complete || image.naturalWidth !== 384 || image.naturalHeight !== 96) return false
+  if (!image.complete) return false
+  if (image.naturalWidth === 1024 && image.naturalHeight === 512) {
+    const r = productionHeroDirectionRect(anim)
+    if (!r) return false
+    ctx.drawImage(image, r.x, r.y, r.width, r.height,
+      -width / 2, -height + 4, width, height)
+    return true
+  }
+  if (image.naturalWidth !== 384 || image.naturalHeight !== 96) return false
   ctx.drawImage(image, productionHeroFrame(anim) * 96, 0, 96, 96,
     -width / 2, -height + 4, width, height)
   return true
