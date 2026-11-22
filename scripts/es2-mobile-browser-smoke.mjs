@@ -30,7 +30,7 @@ try {
       await page.screenshot({ path: `${directory}/${viewport.name}-menu.png`, animations: 'disabled' })
 
       // Exercise the actual in-game Settings listbox across both phone orientations.
-      await page.locator('[data-es2-settings]').click()
+      await page.locator('.es2-top-actions [data-es2-settings]').click()
       await page.locator('#es2-quality').waitFor({ state: 'visible', timeout: 10000 })
       const selectors = page.locator('.es2-dialog button[role="combobox"]')
       assert.equal(await selectors.count(), 4, `${viewport.name}: all settings must use game dropdowns`)
