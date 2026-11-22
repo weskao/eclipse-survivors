@@ -106,7 +106,19 @@ try {
       assert.equal(preview.size, '800% 100%', `${heroId}: preview is not divided into 8 cells`)
       await page.screenshot({ path: `${directory}/portrait-375-${heroId}-selection.png`, animations: 'disabled' })
       await page.locator('.es2-start').click()
-      const hudPortrait = page.locator('.es2-hud__portrait img')
+      // Newly selected specializations can enter a real level-up dialog at
+      // run initialization. Choose an offered ability exactly as a player
+      // would; the combat HUD is intentionally hidden while the modal is open.
+      await page.waitForFunction(() =>
+        !!document.querySelector('.es2-hud--active')
+        || !!document.querySelector('.es2-backdrop button[data-choice]'), null, { timeout: 30000 })
+      for (let pick = 0; pick < 8; pick++) {
+        if (await page.locator('.es2-hud--active').isVisible()) break
+        const offered = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
+        await offered.waitFor({ state: 'visible', timeout: 30000 })
+        await offered.click()
+      }
+      const hudPortrait = page.locator('.es2-hud--active .es2-hud__portrait img')
       await hudPortrait.waitFor({ state: 'visible', timeout: 30000 })
       await hudPortrait.evaluate(image => image.decode())
       const hud = await hudPortrait.evaluate(image => ({
