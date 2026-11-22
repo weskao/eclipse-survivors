@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createContentRegistry } from '../registry'
-import { createState, resetRun } from '../../state'
+import { createHero, createState, resetRun } from '../../state'
 import type { GameHooks, Mob } from '../../types'
 import {
   HERO_DEFINITIONS, HERO_SPECIALIZATIONS_PACK, createHeroSpecializationAdapter,
@@ -125,6 +125,28 @@ describe('isolated hero specializations', () => {
     expect(adapter.snapshot().barrier).toBe(0)
     state.hero!.hp = 20
     expect(adapter.modifyOutgoingDamage(20)).toBeGreaterThan(20)
+  })
+
+  it('does not consume a barrier for damage ignored by legacy invulnerability', () => {
+    const { state, adapter } = setup('crimson-paladin')
+    adapter.activate()
+    const initialBarrier = adapter.snapshot().barrier
+    state.hero!.inv = 0.5
+    expect(adapter.mitigateIncomingDamage(50)).toBe(50)
+    expect(adapter.snapshot().barrier).toBe(initialBarrier)
+    state.hero!.inv = 0
+    expect(adapter.mitigateIncomingDamage(50)).toBeLessThan(50)
+    expect(adapter.snapshot().barrier).toBeLessThan(initialBarrier)
+  })
+
+  it('preserves the original three hero constructors and rejects invalid damage inputs', () => {
+    const original = (['knight', 'ranger', 'wizard'] as const).map(id => createHero(id))
+    setup('shadowblade')
+    expect((['knight', 'ranger', 'wizard'] as const).map(id => createHero(id))).toEqual(original)
+    const { adapter } = setup('crimson-paladin')
+    expect(adapter.mitigateIncomingDamage(NaN)).toBe(0)
+    expect(adapter.modifyOutgoingDamage(Infinity)).toBe(0)
+    expect(adapter.mitigateIncomingDamage(-10)).toBe(0)
   })
 
   it('reset clears per-run timers, companion state, barrier and content upgrades', () => {
