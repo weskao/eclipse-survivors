@@ -124,9 +124,12 @@ describe('director scheduling and budgets', () => {
       // Isolate ordinary wave composition: the required timed boss has its own scheduling tests.
       const wave = director.advance({ ...frame(time), bossSpawned: time >= 180 })
       patterns.add(wave.pattern)
-      if (wave.pattern === 'ranged') expect(wave.spawns.some(s => s.type === 'warlock')).toBe(true)
-      if (wave.pattern === 'elite') expect(wave.spawns.some(s => s.elite)).toBe(true)
-      if (wave.pattern === 'swarm') expect(wave.spawns.every(s => ['slime', 'bat', 'goblin'].includes(s.type))).toBe(true)
+      // Mini-bosses are separate encounters; assess ordinary wave composition independently.
+      const ordinary = wave.spawns.filter(spawn => spawn.role === 'normal')
+      expect(ordinary.length).toBeGreaterThan(0)
+      if (wave.pattern === 'ranged') expect(ordinary.some(s => s.type === 'warlock')).toBe(true)
+      if (wave.pattern === 'elite') expect(ordinary.some(s => s.elite)).toBe(true)
+      if (wave.pattern === 'swarm') expect(ordinary.every(s => ['slime', 'bat', 'goblin'].includes(s.type))).toBe(true)
     }
     expect(patterns).toEqual(new Set(['swarm', 'elite', 'ranged']))
   })
