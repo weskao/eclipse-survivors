@@ -135,9 +135,14 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue
     const a = Math.atan2(b.vy, b.vx)
     // Motion history is drawn in world space to avoid faking a longer shaft.
-    const tx = (b.prevX ?? b.x) + ox
-    const ty = (b.prevY ?? b.y) + oy
-    const history = Math.hypot(x - tx, y - ty)
+    const prevX = (b.prevX ?? b.x) + ox
+    const prevY = (b.prevY ?? b.y) + oy
+    const history = Math.hypot(x - prevX, y - prevY)
+    // Never stretch a trail all the way back to the firing hand on a laggy tick.
+    // This is a short moving tracer, not a second bow/arrow or magical residue.
+    const extent = Math.min(1, 14 / Math.max(1, history))
+    const tx = x - (x - prevX) * extent
+    const ty = y - (y - prevY) * extent
     if (history > 2) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
