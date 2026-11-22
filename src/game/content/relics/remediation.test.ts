@@ -139,3 +139,16 @@ it('rejects impossible hit and reflection receipts without dropping legitimate p
   expect(hooks.confirmIncoming(1, 20)).toBeCloseTo(4)
   expect(events.map(event => event.type)).toEqual(['hit', 'kill', 'damage'])
 })
+
+
+it('does not consume a random draw when there is no dodge probability', () => {
+  const s = setup()
+  let consumed = 0
+  const incoming = calculateRelicIncoming(s, 42, () => { consumed++; return 0 })
+  expect(incoming.damage).toBe(42)
+  expect(incoming.dodged).toBe(false)
+  expect(consumed).toBe(0)
+  acquireRelic(s, 'relics:phantom-boots')
+  expect(calculateRelicIncoming(s, 42, () => { consumed++; return 0 }).dodged).toBe(true)
+  expect(consumed).toBe(1)
+})
