@@ -31,6 +31,18 @@ try {
 
       // Exercise the actual in-game Settings listbox across both phone orientations.
       await page.locator('.es2-top-actions button').last().click()
+      await page.waitForTimeout(150)
+      const settingsDiagnostic = await page.evaluate(() => {
+        const app = document.querySelector('#app')
+        const instance = app?.__vue_app__?._instance
+        return {
+          settingsOpen: instance?.setupState?.ui?.settingsOpen,
+          dialogs: document.querySelectorAll('.es2-dialog').length,
+          dropdowns: document.querySelectorAll('button[role="combobox"]').length,
+          trigger: document.querySelector('.es2-top-actions button:last-child')?.outerHTML,
+        }
+      })
+      console.log('Settings open diagnostic:', JSON.stringify({ ...settingsDiagnostic, errors }))
       await page.locator('#es2-quality').waitFor({ state: 'visible', timeout: 10000 })
       const selectors = page.locator('.es2-dialog button[role="combobox"]')
       assert.equal(await selectors.count(), 4, `${viewport.name}: all settings must use game dropdowns`)
