@@ -40,7 +40,7 @@ export const RELICS: readonly RelicDefinition[] = Object.freeze([
   make('wolf-totem', 'Wolf Totem', 'Summons deal +28% damage per stack.', '🐺', 'rare', 2, { summon: 0.28 }),
   make('frost-rune', 'Frost Rune', 'Frost damage +22% per stack.', '❄', 'common', 3, { frost: 0.22 }),
   make('ember-ring', 'Ember Ring', 'Fire damage +20% per stack.', '🔥', 'common', 3, { fire: 0.2 }),
-  make('thunder-rod', 'Thunder Rod', 'Lightning damage +14% per stack.', '🌩', 'common', 2, { lightning: 0.14 }),
+  make('thunder-rod', 'Thunder Rod', 'Deal +18% damage to bosses per stack.', '🌩', 'common', 2, { bossDamage: 0.18 }),
   make('grave-bell', 'Grave Bell', 'Execute ordinary foes below 6% remaining HP.', '🔔', 'rare', 2, { execute: 0.06 }),
   make('ritual-dagger', 'Ritual Dagger', 'Critical hit chance +7% per stack.', '🗡', 'common', 3, { critChance: 0.07 }),
   make('hunter-lens', 'Hunter Lens', 'Critical damage multiplier +30% per stack.', '🎯', 'rare', 2, { critPower: 0.3 }),
