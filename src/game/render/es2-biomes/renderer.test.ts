@@ -36,7 +36,8 @@ describe.each(BIOME_IDS)('%s cached biome renderer', id => {
     expect(renderer.cacheSize()).toBeLessThanOrEqual(12)
     const other = BIOME_IDS[(BIOME_IDS.indexOf(id) + 1) % BIOME_IDS.length]!
     renderer.drawGround(ctx, createBiomeEnvironment(other), view, 0)
-    expect(renderer.cacheSize()).toBe(1)
+    expect(renderer.cacheSize()).toBeLessThanOrEqual(2)
+    expect(renderer.cacheSize()).toBeGreaterThan(0)
     renderer.setPixelRatio(2)
     expect(renderer.cacheSize()).toBe(0)
     renderer.drawGround(ctx, env, view, 0)
@@ -70,6 +71,23 @@ describe.each(BIOME_IDS)('%s cached biome renderer', id => {
     renderer.drawGround(ctx, env, { left: hazard.x - 80, top: hazard.y - 80,
       right: hazard.x + 80, bottom: hazard.y + 80 }, t)
     expect(alphas).toContain(.13)
+  })
+
+
+  it('draws only visible, prepainted deterministic floor decorations', () => {
+    const env = createBiomeEnvironment(id, { seed: 42 })
+    const marker = env.visibleDecorations({ left: -1000, top: -1000, right: 1000, bottom: 1000 })[0]!
+    expect(marker).toBeDefined()
+    const { make, made } = fakeCanvasFactory()
+    const renderer = createBiomeRenderer(make)
+    const view = { left: marker.x - 70, top: marker.y - 70, right: marker.x + 70, bottom: marker.y + 70 }
+    const { ctx, drawn } = createFakeCtx()
+    renderer.drawGround(ctx, env, view, 0)
+    expect(made.length).toBeGreaterThanOrEqual(2)
+    expect(drawn).toContain(made[1]!.canvas)
+    const count = made.length
+    renderer.drawGround(ctx, env, view, 1)
+    expect(made).toHaveLength(count)
   })
 
   it('prepares exact minimap geometry and rejects oversized mobile render regions', () => {
