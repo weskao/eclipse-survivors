@@ -28,7 +28,7 @@ export function drawRigSprite(
 ): void {
   const left = -sx / 2
   const top = -sy + 4
-  const layers = preparedLayers ?? getRigidWeaponLayers(img, job)
+  const layers = preparedLayers ?? ('naturalWidth' in img ? getRigidWeaponLayers(img, job) : null)
   if (anim.reducedMotion) {
     ctx.drawImage(layers?.body ?? img, left, top, sx, sy)
     if (layers && includeWeapon) drawRigidWeapon(ctx, layers, job, hero, anim, sx, sy)
@@ -264,7 +264,7 @@ export function drawCharacter(
     if (hero && anim) {
       // The WebP is the authoritative artwork. Cache its direction/pose frames
       // once instead of skinning 96 texture cells on every gameplay draw.
-      const layers = getRigidWeaponLayers(drawable, s.choice)
+      const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
       const prebaked = !!(heroSheets && im && drawable === im
         && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
       ctx.save()
