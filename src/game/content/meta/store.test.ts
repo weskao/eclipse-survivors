@@ -179,3 +179,29 @@ describe('uncertain post-write storage acknowledgement', () => {
     expect(recovered.get().state?.runs).toBe(1)
   })
 })
+
+describe('commit slot verification', () => {
+  it('does not acknowledge a revision if the pointed-to slot changes during final verification', () => {
+    const disk = memoryStorage()
+    let headWritten = false
+    let headReads = 0
+    const racing = {
+      getItem(key: string) {
+        if (key === META_V3_HEAD_KEY && headWritten && ++headReads === 2) {
+          const head = JSON.parse(disk.getItem(META_V3_HEAD_KEY)!) as { slot: 'a' | 'b' }
+          const slot = META_V3_SLOT_KEYS[head.slot]
+          const forged = JSON.parse(disk.getItem(slot)!) as { state: ReturnType<typeof createMetaState> }
+          forged.state.embers += 1
+          disk.corrupt(slot, JSON.stringify(forged))
+        }
+        return disk.getItem(key)
+      },
+      setItem(key: string, value: string) {
+        disk.setItem(key, value)
+        if (key === META_V3_HEAD_KEY) headWritten = true
+      },
+    }
+    const result = createMetaProgressionStore(racing).settle({ stats: run('racing') })
+    expect(result).toMatchObject({ ok: false, reason: 'storage-failure', rewards: [] })
+  })
+})
