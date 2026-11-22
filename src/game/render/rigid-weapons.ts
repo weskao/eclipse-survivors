@@ -31,6 +31,22 @@ const MASKS: Record<JobId, readonly Polygon[]> = {
   ],
 }
 
+/**
+ * Separate projectile/charge silhouettes from original art. These pixels must
+ * never be drawn on the body or the persistent rigid weapon after firing.
+ * Normalised points follow the loaded arrow and the caster's right-hand orb.
+ */
+const PROJECTILE_MASKS: Partial<Record<JobId, readonly Polygon[]>> = {
+  ranger: [[
+    [.59, .50], [.63, .43], [.77, .23], [.80, .18],
+    [.83, .19], [.80, .26], [.66, .47], [.62, .52],
+  ]],
+  wizard: [[
+    [.73, .15], [.79, .10], [.89, .09], [.98, .15],
+    [1, .24], [.98, .33], [.90, .38], [.79, .34], [.73, .27],
+  ]],
+}
+
 // Original illustration's weapon-hand attachment, not an independent stretch point.
 const GRIPS: Record<JobId, readonly [number, number]> = {
   knight: [.22, .50], ranger: [.73, .55], wizard: [.26, .50],
@@ -39,12 +55,14 @@ const GRIPS: Record<JobId, readonly [number, number]> = {
 export interface RigidWeaponLayers {
   body: HTMLCanvasElement
   weapon: HTMLCanvasElement
+  /** Arrow on the bowstring or charge in the casting hand; never cached in the body. */
+  projectile?: HTMLCanvasElement
   grip: readonly [number, number]
 }
 
-function outline(ctx: CanvasRenderingContext2D, job: JobId, width: number, height: number): void {
+function outline(ctx: CanvasRenderingContext2D, polygons: readonly Polygon[], width: number, height: number): void {
   ctx.beginPath()
-  for (const path of MASKS[job]) {
+  for (const path of polygons) {
     for (let i = 0; i < path.length; i++) {
       const [u, v] = path[i]!
       if (i === 0) ctx.moveTo(u * width, v * height)
@@ -63,38 +81,57 @@ export function createRigidWeaponLayers(
   if (width <= 1 || height <= 1) return null
   const body = makeCanvas(width, height)
   const weapon = makeCanvas(width, height)
+  const projectile = job === 'knight' ? undefined : makeCanvas(width, height)
   const b = body.getContext('2d')
   const w = weapon.getContext('2d')
-  if (!b || !w) return null
+  const p = projectile?.getContext('2d')
+  if (!b || !w || (projectile && !p)) return null
 
   b.drawImage(image, 0, 0)
   b.save()
   b.globalCompositeOperation = 'destination-out'
   b.fillStyle = '#000'
-  outline(b, job, width, height)
+  outline(b, MASKS[job], width, height)
   b.fill()
+  if (PROJECTILE_MASKS[job]) {
+    outline(b, PROJECTILE_MASKS[job]!, width, height)
+    b.fill()
+  }
   b.restore()
 
   w.save()
-  outline(w, job, width, height)
+  outline(w, MASKS[job], width, height)
   w.clip()
   w.drawImage(image, 0, 0)
   w.restore()
+  if (PROJECTILE_MASKS[job]) {
+    w.save()
+    w.globalCompositeOperation = 'destination-out'
+    w.fillStyle = '#000'
+    outline(w, PROJECTILE_MASKS[job]!, width, height)
+    w.fill()
+    w.restore()
+    p!.save()
+    outline(p!, PROJECTILE_MASKS[job]!, width, height)
+    p!.clip()
+    p!.drawImage(image, 0, 0)
+    p!.restore()
+  }
 
-  return { body, weapon, grip: GRIPS[job] }
+  return { body, weapon, projectile, grip: GRIPS[job] }
 }
 
 const memo = new WeakMap<ImageSource, Partial<Record<JobId, RigidWeaponLayers>>>()
 
 /** Source reference changes automatically invalidate its corresponding cutouts. */
-export function getRigidWeaponLayers(image: ImageSource, job: JobId): RigidWeaponLayers | null {
+export function getRigidWeaponLayers(image: ImageSource, job: JobId, makeCanvas: MakeCanvas = domCanvas): RigidWeaponLayers | null {
   let byJob = memo.get(image)
   if (!byJob) {
     byJob = {}
     memo.set(image, byJob)
   }
   if (!byJob[job]) {
-    const layers = createRigidWeaponLayers(image, job)
+    const layers = createRigidWeaponLayers(image, job, makeCanvas)
     if (!layers) return null
     byJob[job] = layers
   }
@@ -124,5 +161,33 @@ export function drawRigidWeapon(
   ctx.translate(pivotX + posed.hand.x - rest.hand.x, pivotY + posed.hand.y - rest.hand.y)
   ctx.rotate(turn)
   ctx.drawImage(layers.weapon, -layers.grip[0] * rigidWidth, -layers.grip[1] * height, rigidWidth, height)
+  ctx.restore()
+}
+
+/** World projectiles spawn at the START of strike. Reload art is visible only
+ * during the next windup / ready-hold, never release, recovery or damage. */
+export function loadedProjectileVisible(job: JobId, hero: Hero, anim: HeroAnimation): boolean {
+  return job !== 'knight' && hero.strike <= 0
+    && (anim.actionStage === 'windup' || anim.actionStage === 'hold')
+    && anim.pose !== 'death' && anim.pose !== 'hurt' && anim.pose !== 'dash'
+}
+
+/** Pre-rendered source art, only overlaid during ready/windup. Never in an atlas. */
+export function drawLoadedProjectile(
+  ctx: Ctx2D, layers: RigidWeaponLayers, job: JobId, hero: Hero, anim: HeroAnimation,
+  width: number, height: number,
+): void {
+  if (!layers.projectile || !loadedProjectileVisible(job, hero, anim)) return
+  const rigidWidth = height * layers.projectile.width / layers.projectile.height
+  ctx.save()
+  // Arrow follows the bow grip. Caster's held charge follows the spell hand.
+  if (job === 'ranger') {
+    const rest = sampleWeaponRig(job, hero, { ...anim, pose: 'idle', phase: 0 })
+    const posed = sampleWeaponRig(job, hero, anim)
+    ctx.translate(posed.hand.x - rest.hand.x, posed.hand.y - rest.hand.y)
+  } else {
+    ctx.globalAlpha *= anim.actionStage === 'windup' ? 0.74 : 1
+  }
+  ctx.drawImage(layers.projectile, -rigidWidth / 2, -height + 4, rigidWidth, height)
   ctx.restore()
 }
