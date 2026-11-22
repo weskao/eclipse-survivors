@@ -34,9 +34,8 @@ jobs:
       - run: pnpm build
       - name: Install isolated browser for screenshots
         run: |
-          # npm crashes on pnpm's node_modules; the parent dir is still on Node's resolve path.
-          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
-          ../node_modules/.bin/playwright install --with-deps chromium
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
       - name: Launch real game and capture desktop/mobile UI
         run: |
           pnpm preview --host 127.0.0.1 --port 4173 > /tmp/meta-preview.log 2>&1 &
