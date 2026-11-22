@@ -951,6 +951,12 @@ const english = new Map<string, string>([
     "210 秒 · 強敵侵襲與高壓戰鬥",
     "210 seconds · powerful enemies and intense combat"
   ]
+  ,["返回主選單", "Return to Main Menu"]
+  ,["返回主選單？", "Return to the Main Menu?"]
+  ,["戰鬥已暫停。返回主選單將結束本次遠征，未結算的戰鬥進度不會保留。確定要離開嗎？", "The battle is paused. Returning to the main menu ends this expedition. Unsettled combat progress will not be saved. Are you sure you want to leave?"]
+  ,["離開後將無法繼續本次遠征。", "You will not be able to resume this expedition."]
+  ,["繼續戰鬥", "Continue Battle"]
+  ,["結束遠征並返回", "End Expedition & Return"]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],
