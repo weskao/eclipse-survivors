@@ -346,8 +346,9 @@ export const WEAPON_ABILITIES: readonly ContentAbility[] = WEAPON_SPECS.map(spec
   // These are continuous-tick weapons: attack cadence lives in the per-run timer.
   // A positive registry cooldown would freeze their active missiles or companions.
   cooldownSeconds: 0,
-  onAcquire({ state }, level) {
+  onAcquire({ state, hooks }, level) {
     if (level === 1) runtimeOf(state).timers[spec.key] = 0
+    hooks.sfx(spec.sound)
   },
   onTick(context, dt, level) { tickWeapon(context, dt, level, spec.key) },
 }))
