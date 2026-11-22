@@ -80,7 +80,8 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
   }
 
   function canChoose(choice: WorldEventChoice, world: EventWorld): boolean {
-    if ((choice.minHp ?? 0) > world.hero.hp || (choice.minXp ?? 0) > world.hero.xp) return false
+    if (!Number.isFinite(world.hero.hp) || !Number.isFinite(world.hero.xp) ||
+      (choice.minHp ?? 0) > world.hero.hp || (choice.minXp ?? 0) > world.hero.xp) return false
     if (choice.objective && pending.length >= 1) return false
     return true
   }
@@ -108,7 +109,10 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
 
   function choose(eventId: string, choiceId: string, world: EventWorld):
     'applied' | 'unavailable' | 'out-of-range' | 'retry' {
-    if (!world.playing || !world.hero || world.hero.hp <= 0) return 'unavailable'
+    if (!world.playing || !world.hero || world.hero.hp <= 0 ||
+      !Number.isFinite(world.time) || !Number.isFinite(world.hero.x) ||
+      !Number.isFinite(world.hero.y) || !Number.isFinite(world.hero.hp) ||
+      !Number.isFinite(world.hero.xp)) return 'unavailable'
     const event = active.find(e => e.id === eventId && e.expiresAt > world.time)
     const definition = event && DEFINITIONS.get(event.kind)
     const choice = definition?.choices.find(c => c.id === choiceId)
@@ -142,7 +146,10 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
   }
 
   function tick(world: EventWorld): void {
-    if (!world.playing || !world.hero || world.hero.hp <= 0 || !Number.isFinite(world.time)) return
+    if (!world.playing || !world.hero || world.hero.hp <= 0 ||
+      !Number.isFinite(world.time) || !Number.isFinite(world.hero.x) ||
+      !Number.isFinite(world.hero.y) || !Number.isFinite(world.hero.hp) ||
+      !Number.isFinite(world.hero.xp)) return
     if (lastBiome === undefined) lastBiome = world.biome
     else if (lastBiome !== world.biome) {
       lastBiome = world.biome
