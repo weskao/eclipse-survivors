@@ -6,6 +6,7 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
+import { drawPaintedHero } from './painted-frames'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, drawCachedMobShadow, type MobTintCache, type MobShadowCache } from './tint-cache'
@@ -216,7 +217,7 @@ const DIMS: Record<string, [number, number]> = {
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
-  tintCache?: MobTintCache, shadowCache?: MobShadowCache,
+  paintedFrames?: HTMLImageElement, tintCache?: MobTintCache, shadowCache?: MobShadowCache,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -259,7 +260,7 @@ export function drawCharacter(
   ctx.save(); ctx.translate(x, y)
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
   // Hit tint takes priority over warlock tint, which takes priority over elite.
-  // Hero sheets and rigid weapons are never filtered or baked into enemy variants.
+  // Reuse a 2x bitmap instead of a Canvas CSS filter on every visible enemy.
   const tint = mob?.hit && mob.hit > 0 && !reducedMotion ? 'brightness(1.3) sepia(.25)'
     : mob?.type === 'warlock' ? 'hue-rotate(15deg) saturate(1.2)'
       : mob?.elite ? 'hue-rotate(75deg) saturate(1.5) brightness(1.1)' : null
@@ -267,9 +268,13 @@ export function drawCharacter(
   const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
   const source = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   const drawable = source && tint ? cachedMobTint(source, tint, sx, sy, tintCache) : source
-  if (tint && source === drawable) ctx.filter = tint // Fallback when rasterization isn't available.
+  if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
-    if (hero && anim) {
+    if (hero && anim && paintedFrames && drawPaintedHero(ctx, paintedFrames, s.choice, hero, anim, sx, sy)) {
+      // Complete prepainted pose includes its own rigid weapon; only live
+      // world projectiles are drawn elsewhere, with no duplicated held arrow.
+    } else if (hero && anim) {
+      // Fallback: keep existing illustrated rendering until the atlas decodes.
       // The WebP is the authoritative artwork. Cache its direction/pose frames
       // once instead of skinning 96 texture cells on every gameplay draw.
       const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null

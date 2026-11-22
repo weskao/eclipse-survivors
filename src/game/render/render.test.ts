@@ -120,6 +120,7 @@ describe('drawFrame', () => {
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(false), make)
     drawFrame(ctx, busyState(), 1, assets)
+    // The hit-tinted bat now draws from its cached filtered bitmap, not the raw sprite.
     for (const k of ['knight', 'slime', 'goblin', 'boss']) expect(drawn, k).toContain(assets.sprites[k])
     expect(drawn).not.toContain(assets.art.knight)
   })
@@ -170,8 +171,7 @@ describe('drawFrame', () => {
     reducedMotion = true
     const reduced = createFakeCtx()
     drawFrame(reduced.ctx, s, 1, assets)
-    // Shared sprite caches do not change drawImage counts; motion suppression
-    // instead removes animated ribbons, echoes and extra lightning strokes.
+    // Cached sprites are drawn in both modes; animated effect strokes are not.
     expect(normal.calls.filter((name) => name === 'stroke').length)
       .toBeGreaterThan(reduced.calls.filter((name) => name === 'stroke').length)
   })

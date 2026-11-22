@@ -13,7 +13,7 @@ const vignetteGradients = new WeakMap<Ctx2D, { W: number; H: number; gradient: C
 
 export interface GemSprites { common: HTMLCanvasElement; rare: HTMLCanvasElement }
 
-/** Rasterize the same two static crystal paintings once at 3x resolution. */
+/** Two static crystal shapes, cached at 3x. Position and rotation remain dynamic. */
 export function buildGemSprites(makeCanvas: MakeCanvas): GemSprites {
   const gem = (rare: boolean): HTMLCanvasElement => {
     const canvas = makeCanvas(96, 96)
@@ -66,7 +66,7 @@ export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, redu
     if (gems) {
       ctx.drawImage(star.value > 10 ? gems.rare : gems.common, -16, -16, 32, 32)
     } else {
-      // Standalone callers still support the procedural fallback.
+      // Standalone callers retain the procedural renderer without asset setup.
       ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
       ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(7, -1); ctx.lineTo(0, 10); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill()
       ctx.shadowBlur = 0; ctx.fillStyle = '#ffffffb8'
