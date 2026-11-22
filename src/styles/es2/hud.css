@@ -85,6 +85,7 @@
   color: #fff0cc; cursor: pointer; font: 750 20px/1 system-ui, sans-serif;
   transition: transform .15s ease, border-color .15s ease, background .15s ease;
 }
+.es2-hud__controls .audio-trigger { min-width: 44px; min-height: 44px; border-radius: 8px; }
 .es2-hud__controls button:hover { transform: translateY(-1px); border-color: #ffe5aa; background: #44536a; }
 .es2-hud__controls button:active { transform: translateY(1px); }
 .es2-hud__controls button[aria-pressed="false"] { color: #a9b2c1; background: #141a28; }
@@ -172,7 +173,7 @@
   .es2-hud__track { height: 8px; }
   .es2-hud__track--xp { height: 6px; }
   .es2-hud__top-right { display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 5px; }
-  .es2-hud__controls { padding: 2px; gap: 3px; }
+  .es2-hud__controls { padding: 2px; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 104px; }
   .es2-hud__controls button { width: 44px; min-height: 44px; font-size: 17px; }
   .es2-hud__counters { padding: 4px; gap: 3px; }
   .es2-hud__counter { min-width: 38px; grid-template-columns: 12px auto; }
@@ -198,6 +199,7 @@
   .es2-hud__top-right .es2-hud__counters { max-width: 120px; }
   .es2-hud__controls button { width: 44px; }
   .es2-hud__portrait { display: none; }
+  .es2-hud__plate { backdrop-filter: none; }
   .es2-hud__identity strong { font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
