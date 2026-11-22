@@ -5,6 +5,8 @@ export const MAX_MOBS = 130
 export const DURATION = 150
 export const BOSS_TIME = 92
 export const SCENE_SECONDS = 36
+export const DASH_COOLDOWN = 3
+export const LOW_HP_PCT = 25
 /** Illustrated courtyard size in world units. */
 export const SCENE = { width: 2200, height: 1238 } as const
 
