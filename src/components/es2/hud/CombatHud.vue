@@ -194,7 +194,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
         <div v-if="selectedSkill" class="es2-hud__selected" data-es2-skill-detail>
           <strong>{{ t(selectedSkill.title) }} · Lv.{{ selectedSkill.level }}/{{ selectedSkill.maxLevel }}</strong>
-          <span>{{ t(selectedSkill.cooldown > {{ t("0 ? '冷卻 ' + selectedSkill.cooldown.toFixed(1) + ' 秒' : '可用') }}") }}</span>
+          <span>{{ t(selectedSkill.cooldown > 0 ? '冷卻 ' + selectedSkill.cooldown.toFixed(1) + ' 秒' : '可用') }}</span>
         </div>
       </div>
     </footer>
