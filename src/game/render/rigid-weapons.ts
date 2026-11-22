@@ -114,9 +114,9 @@ export function drawRigidWeapon(
   const pivotX = (layers.grip[0] - .5) * width
   const pivotY = (layers.grip[1] - 1) * height + 4
   const action = anim.pose === 'attack' || anim.pose === 'cast'
-  const turn = job === 'ranger' && action
-    ? posed.aim * .45
-    : posed.bladeAngle - rest.bladeAngle
+  const turn = (job === 'ranger' && action ? posed.aim * .45 : 0)
+    + (job === 'wizard' && action ? posed.aim * .35 : 0)
+    + posed.bladeAngle - rest.bladeAngle
   ctx.save()
   ctx.translate(pivotX + posed.hand.x - rest.hand.x, pivotY + posed.hand.y - rest.hand.y)
   ctx.rotate(turn)
