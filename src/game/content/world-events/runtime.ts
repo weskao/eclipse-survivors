@@ -6,7 +6,7 @@ import { acquireRelic, inventorySnapshot } from '../relics/runtime'
 import { createLegacyEventWorld } from './adapters'
 import { WORLD_EVENT_DEFINITIONS, validEffects } from './definitions'
 import { createWorldEventDirector } from './director'
-import type { WorldEventEffect, WorldEventId, WorldEventTransaction } from './types'
+import type { WorldEventEffect, WorldEventTransaction } from './types'
 
 const INTERACTION_RADIUS_SQUARED = 64 * 64
 const HISTORY_LIMIT = 256
@@ -104,12 +104,21 @@ export function createLiveWorldEvents(
     buff.hero.damage /= buff.damage
     buff.hero.speed /= buff.speed
     buff.hero.delay /= buff.delay
-    if (buff.protection) buff.hero.inv = Math.min(buff.hero.inv, 1)
+    if (buff.protection) {
+      let remainingProtection = 0
+      for (const other of buffs.values()) {
+        if (other !== buff && other.hero === buff.hero && other.protection) {
+          remainingProtection = Math.max(remainingProtection, other.until - state.time)
+        }
+      }
+      buff.hero.inv = Math.max(Math.min(buff.hero.inv, 1), remainingProtection)
+    }
   }
 
   function clearBuffs(): void {
-    for (const buff of buffs.values()) removeBuff(buff)
+    const active = [...buffs.values()]
     buffs.clear()
+    for (const buff of active) removeBuff(buff)
   }
 
   function sceneChange(): void {
@@ -162,7 +171,7 @@ export function createLiveWorldEvents(
     buffs.set(buff.id, buff)
   }
 
-  function markCommitted(id: string, serial: number): void {
+  function markCommitted(id: string): void {
     committed.add(id)
     recent.push(id)
     if (recent.length > HISTORY_LIMIT) {
@@ -171,7 +180,6 @@ export function createLiveWorldEvents(
       const oldSerial = Number(forgotten.split(':')[1])
       if (Number.isSafeInteger(oldSerial)) retiredSerial = Math.max(retiredSerial, oldSerial)
     }
-    void serial
   }
 
   function commit(tx: WorldEventTransaction): boolean {
@@ -237,7 +245,7 @@ export function createLiveWorldEvents(
       if (effect.type === 'heal') hero.hp = Math.min(hero.max, hero.hp + effect.amount)
     }
     // Mark before emitting potentially reentrant level-up and pickup callbacks.
-    markCommitted(tx.id, serial)
+    markCommitted(tx.id)
     for (const effect of tx.effects) {
       if (effect.type === 'xp') addXp(state, effect.amount, hooks)
     }
@@ -270,6 +278,11 @@ export function createLiveWorldEvents(
       else if (choice.minHp && world.hero.hp < choice.minHp) reason = 'Insufficient HP'
       else if (choice.minXp && world.hero.xp < choice.minXp) reason = 'Insufficient XP'
       else if (choice.objective && busy) reason = 'Finish the current objective'
+      else if (choice.effects.some(effect => effect.type === 'symbolic-loot' &&
+        !availableRelic(state, effect))) reason = 'Relic inventory full or unavailable'
+      else if (choice.effects.some(effect => effect.type === 'encounter' &&
+        state.mobs.length + (options.otherActors?.() ?? 0) + effect.count > MAX_MOBS))
+        reason = 'Enemy capacity reached'
       else if (!allowed.has(choice.id)) reason = 'Unavailable'
       return { id: choice.id, title: choice.title, risk: choice.risk, reward: choice.reward,
         costs: costLabels(choice.effects), available: reason === null, reason }
@@ -316,4 +329,3 @@ export function createLiveWorldEvents(
 }
 
 export type LiveWorldEvents = ReturnType<typeof createLiveWorldEvents>
-export type LiveWorldEventKind = WorldEventId
