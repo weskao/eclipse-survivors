@@ -79,6 +79,33 @@ describe('drawFrame', () => {
     expect(calls.at(-1)).toBe('fillRect')
   })
 
+  it('keeps the battlefield fixed while choosing a skill despite a pending camera impact', () => {
+    const s = busyState()
+    s.mode = 'level'
+    s.cameraKick = 9
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const firstTile = (): [number, number] => {
+      const { ctx } = createFakeCtx()
+      let position: [number, number] | null = null
+      const original = ctx.drawImage
+      ctx.drawImage = ((...args: unknown[]) => {
+        if (!position && args[0] === assets.biomes[0]!.tile) {
+          position = [args[1] as number, args[2] as number]
+        }
+        return (original as (...args: unknown[]) => void)(...args)
+      }) as typeof ctx.drawImage
+      drawFrame(ctx, s, 1, assets)
+      if (!position) throw new Error('Expected background tile to render')
+      return position
+    }
+    const before = firstTile()
+    s.worldClock += 0.25
+    expect(firstTile()).toEqual(before)
+    // Actual combat must keep its hit feedback; only the selection overlay is still.
+    s.mode = 'play'
+    expect(firstTile()).not.toEqual(before)
+  })
+
   it('with art ready, characters use the artwork', () => {
     const { ctx, drawn } = createFakeCtx()
     const { make } = fakeCanvasFactory()
