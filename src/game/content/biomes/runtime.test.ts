@@ -19,13 +19,19 @@ describe.each(BIOME_IDS)('%s playable runtime', id => {
     const game = createBiomeRuntime(id, { seed: 99 })
     const hazard = game.environment.hazards(900, 900, 1500)[0]!
     expect(hazard).toBeDefined()
-    const active = hazard.period * ((hazard.warn + 1) / 2) - hazard.offset
+    const active = ((hazard.period * ((hazard.warn + 1) / 2) - hazard.offset) % hazard.period + hazard.period) % hazard.period
     game.advance(active)
     expect(game.contact(hazard, 0).phase).toBe('active')
     expect(game.contact(hazard, 0).damagePerSecond).toBeGreaterThan(0)
+    const damage = game.step(hazard, { x: 0, y: 0 }, 0, .02)
+    expect(damage.hazardDamage).toBeGreaterThan(0)
+    expect(damage.hazardDamage).toBeLessThanOrEqual(.02 * damage.contact.damagePerSecond)
+    const paused = game.step(hazard, { x: 100, y: 0 }, 0, 2, true)
+    expect(paused.position).toEqual(hazard)
+    expect(paused.hazardDamage).toBe(0)
     expect(game.minimap(hazard.x, hazard.y, 100)).toEqual(game.environment.minimap(hazard.x, hazard.y, 100))
     game.advance(5, true)
-    expect(game.time).toBe(active)
+    expect(game.time).toBeCloseTo(active + .02)
     expect(game.contact(hazard, 0).phase).toBe('active')
   })
 
