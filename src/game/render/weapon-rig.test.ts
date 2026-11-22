@@ -123,3 +123,14 @@ describe('aim-dependent weapon mesh', () => {
     expect(Math.abs(up - down)).toBeGreaterThan(0.02)
   })
 })
+
+it.each(['knight', 'ranger', 'wizard'] as const)('%s loads back before extending into the stroke', job => {
+  const hero = createHero(job)
+  const handAt = (phase: number) => {
+    const rig = sampleWeaponRig(job, hero, { pose: job === 'wizard' ? 'cast' : 'attack', phase, frame: 0, count: 6, direction: 0, reducedMotion: false })
+    return job === 'ranger' ? rig.supportHand : rig.hand
+  }
+  expect(handAt(0.3).x).toBeLessThan(handAt(0).x)
+  expect(handAt(0.6).x).toBeGreaterThan(handAt(0.3).x)
+  expect(handAt(1)).toEqual(handAt(0))
+})
