@@ -1,0 +1,206 @@
+/* Isolated ES2 HUD skin. No tags, ids or selectors escape .es2-hud. */
+.es2-hud {
+  --es2-ink: #eff0ea;
+  --es2-muted: #c6c7c8;
+  --es2-gold: #e5c98d;
+  --es2-line: #b6a17788;
+  position: fixed;
+  inset: 0;
+  z-index: 31;
+  color: var(--es2-ink);
+  font: 500 13px/1.4 system-ui, -apple-system, sans-serif;
+  text-shadow: 0 1px 2px #000e;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .18s ease, visibility .18s;
+  box-sizing: border-box;
+}
+.es2-hud *, .es2-hud *::before, .es2-hud *::after { box-sizing: border-box; }
+.es2-hud--active { opacity: 1; visibility: visible; }
+.es2-hud__plate {
+  position: relative;
+  border: 1px solid var(--es2-line);
+  border-radius: 12px;
+  background:
+    radial-gradient(ellipse at 20% 0%, #6b5a5040, transparent 60%),
+    linear-gradient(165deg, #263044ed 0%, #101622ed 58%, #090d18f0 100%);
+  box-shadow: inset 0 1px #fff3, inset 0 -2px #0006, 0 9px 22px #000a;
+  backdrop-filter: blur(10px);
+}
+.es2-hud__plate::before {
+  content: '✦';
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  color: var(--es2-gold);
+  font-size: 13px;
+  text-shadow: 0 0 10px #edc378ab;
+  pointer-events: none;
+}
+.es2-hud__top {
+  position: absolute;
+  left: 0; top: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+}
+.es2-hud__hero { display: flex; gap: 11px; width: min(360px, 43vw); padding: 12px; min-width: 0; }
+.es2-hud__portrait {
+  position: relative; width: 82px; height: 90px; flex: 0 0 82px; overflow: hidden;
+  border: 1px solid #d1ab70; border-radius: 10px 10px 18px 10px;
+  background: radial-gradient(circle at 50% 15%, #78664d, #202436 76%);
+  box-shadow: 0 0 0 3px #151b2b, inset 0 0 16px #0009;
+}
+.es2-hud__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+.es2-hud__portrait-corner { position: absolute; right: 5px; bottom: 0; color: #ffe4a9; font-size: 18px; }
+.es2-hud__vitals { min-width: 0; flex: 1; }
+.es2-hud__identity { display: flex; flex-direction: column; gap: 1px; margin-bottom: 7px; }
+.es2-hud__identity strong {
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #fff2d4;
+  font: 750 clamp(14px, 1.3vw, 18px)/1.25 Georgia, 'Noto Serif TC', serif;
+}
+.es2-hud__eyebrow { color: #e0c88e; font: 750 10px/1.25 system-ui, sans-serif; letter-spacing: .13em; }
+.es2-hud__health-head { display: flex; justify-content: space-between; gap: 6px; color: #f8d2ca; font-size: 10px; margin: 2px 0 4px; }
+.es2-hud__health-head--xp { color: #c7d7ec; margin-top: 7px; }
+.es2-hud__track { overflow: hidden; height: 11px; border: 1px solid #b69a7170; border-radius: 99px; background: #040810e8; box-shadow: inset 0 2px 5px #0009; }
+.es2-hud__track > span { display: block; width: 0; height: 100%; border-radius: inherit; transition: width .12s linear; box-shadow: inset 0 1px #fff8, 0 0 9px currentColor; }
+.es2-hud__track--health > span { color: #d45b5b; background: linear-gradient(#f3937a, #b63b42 50%, #812831); }
+.es2-hud__track--xp { height: 8px; }
+.es2-hud__track--xp > span { color: #7ca6e6; background: linear-gradient(#b5daf9, #517ac6 56%, #314991); }
+.es2-hud__top-right { display: flex; align-items: flex-start; gap: 8px; }
+.es2-hud__counters { display: flex; gap: 6px; padding: 6px 9px; min-height: 46px; }
+.es2-hud__counter { display: grid; gap: 0; grid-template-columns: 15px auto; grid-template-rows: 21px 10px; align-items: center; min-width: 57px; }
+.es2-hud__counter > span:nth-child(1) { color: #ddc288; font-size: 16px; }
+.es2-hud__counter > span:nth-child(2) { font-size: 15px; font-variant-numeric: tabular-nums; font-weight: 850; }
+.es2-hud__counter small { grid-column: 2; color: #bdbaad; letter-spacing: .1em; font-size: 8px; }
+.es2-hud__counter--combo > span:nth-child(2) { color: #ffdd9c; }
+.es2-hud__controls { display: flex; padding: 4px; gap: 4px; pointer-events: auto; }
+.es2-hud__controls button {
+  display: grid; place-items: center; padding: 0; width: 44px; min-height: 44px;
+  border: 1px solid #ac9065a9; border-radius: 8px;
+  background: linear-gradient(#384253, #171d2c);
+  color: #fff0cc; cursor: pointer; font: 750 20px/1 system-ui, sans-serif;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.es2-hud__controls button:hover { transform: translateY(-1px); border-color: #ffe5aa; background: #44536a; }
+.es2-hud__controls button:active { transform: translateY(1px); }
+.es2-hud__controls button[aria-pressed="false"] { color: #a9b2c1; background: #141a28; }
+.es2-hud button:focus-visible { outline: 3px solid #fff0bc; outline-offset: 3px; z-index: 2; }
+.es2-hud__map { padding: 10px; }
+.es2-hud__map canvas { display: block; width: 152px; height: 110px; border: 1px solid #93866e; border-radius: 5px; background: #121a27; }
+.es2-hud__map .es2-hud__eyebrow { display: block; margin-bottom: 6px; }
+.es2-hud__boss { position: absolute; top: max(15px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: clamp(240px, 33vw, 500px); padding: 10px 15px 12px; }
+.es2-hud__boss-heading { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; font: 750 14px/1.3 Georgia, serif; color: #ffdbc2; }
+.es2-hud__boss-phase { font: 750 10px system-ui; color: #f2c586; letter-spacing: .08em; white-space: nowrap; }
+.es2-hud__track--boss { height: 12px; border-color: #b16c73; }
+.es2-hud__track--boss > span { color: #bd447d; background: linear-gradient(#e594c3, #a53b72 53%, #67234e); }
+.es2-hud__wave { position: absolute; top: 95px; left: 50%; transform: translateX(-50%); padding: 8px 20px; text-align: center; max-width: 50vw; }
+.es2-hud__wave strong { display: block; color: #f7dbab; font: 750 16px Georgia, serif; }
+.es2-hud__objectives {
+  position: absolute; top: 218px; right: max(16px, env(safe-area-inset-right));
+  width: clamp(190px, 21vw, 270px); padding: 12px; max-height: min(29vh, 240px); overflow: auto;
+}
+.es2-hud__section-label { color: #e5c98d; font: 750 11px system-ui; letter-spacing: .12em; }
+.es2-hud__objectives p { margin: 7px 0 0; }
+.es2-hud__objectives ul { margin: 7px 0 0; padding: 0; list-style: none; }
+.es2-hud__objectives li { display: flex; justify-content: space-between; gap: 6px; padding: 4px 0; color: #d5dadd; }
+.es2-hud__objectives li.es2-hud__complete { color: #b1e9bd; }
+.es2-hud__statuses {
+  position: absolute; left: max(16px, env(safe-area-inset-left)); top: 143px;
+  max-width: min(300px, 40vw); display: flex; flex-wrap: wrap; gap: 5px; padding: 8px;
+}
+.es2-hud__status { display: inline-flex; gap: 5px; align-items: center; padding: 3px 6px; border-radius: 5px; border: 1px solid #8ab7cb; background: #21425bc4; font-size: 11px; }
+.es2-hud__status--debuff { border-color: #d98795; background: #5a293fc4; }
+.es2-hud__status small { color: #f6e5cb; font-variant-numeric: tabular-nums; }
+.es2-hud__notices { position: absolute; bottom: 186px; right: max(16px, env(safe-area-inset-right)); display: grid; justify-items: end; gap: 5px; max-width: min(300px, 36vw); }
+.es2-hud__notice { padding: 7px 11px; border-radius: 8px; border: 1px solid #d1b07b9a; background: #151b28ee; box-shadow: 0 3px 15px #000b; color: #fceac5; font-weight: 700; animation: es2-hud-reveal .24s ease-out both; }
+.es2-hud__notice--critical { color: #ffe49c; font-size: 18px; }
+.es2-hud__notice--damage { color: #f9a8a8; }
+.es2-hud__notice--treasure { border-color: #f2d17d; background: #39301dcf; }
+.es2-hud__bottom { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 9px; max-width: calc(100vw - 24px); }
+.es2-hud__relics { padding: 10px; min-width: 90px; max-width: 190px; }
+.es2-hud__relic-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.es2-hud__relic { display: grid; place-items: center; width: 39px; height: 39px; background: #1b2535; border: 1px solid currentColor; border-radius: 7px; font-size: 22px; }
+.es2-hud__relic img { width: 92%; height: 92%; object-fit: contain; }
+.es2-hud__equipment { padding: 10px; width: min(675px, 62vw); }
+.es2-hud__equipment-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; gap: 10px; }
+.es2-hud__equipment-head small { color: #abb6c2; letter-spacing: .1em; font-size: 10px; }
+.es2-hud__skills { display: flex; align-items: center; justify-content: center; gap: 7px; overflow-x: auto; padding: 4px 3px 7px; scrollbar-width: thin; scrollbar-color: #aa9167 transparent; }
+.es2-hud__skill {
+  position: relative; flex: 0 0 58px; width: 58px; height: 62px; overflow: hidden;
+  color: var(--es2-gold); border: 2px solid currentColor; border-radius: 9px; padding: 0;
+  background: linear-gradient(135deg, #374052, #171922);
+  box-shadow: inset 0 1px #ffffff55, 0 3px 9px #0009;
+  cursor: pointer; pointer-events: auto; transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.es2-hud__skill img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.es2-hud__skill-glyph { font-size: 28px; line-height: 52px; }
+.es2-hud__skill-level { position: absolute; bottom: 0; right: 0; background: #050a11e8; border-radius: 5px 0 0; padding: 2px 5px; font: 750 10px system-ui; color: #fff1c9; z-index: 2; }
+.es2-hud__cooldown { position: absolute; inset: 0; pointer-events: none; z-index: 1; background: conic-gradient(#030913d9 var(--es2-cooldown), transparent 0); transition: background .12s linear; }
+.es2-hud__evolved { position: absolute; left: 2px; top: 0; color: #ffe5a1; font-size: 15px; z-index: 2; }
+.es2-hud__skill:hover { transform: translateY(-2px); }
+.es2-hud__skill[aria-pressed="true"] { border-color: #fff1ae; box-shadow: 0 0 0 2px #efca7c7d, 0 0 22px #edc673b0; transform: translateY(-3px); }
+.es2-hud__rarity--common { color: #cad1d9; }
+.es2-hud__rarity--rare { color: #7fc6fb; }
+.es2-hud__rarity--epic { color: #d2a4ff; }
+.es2-hud__rarity--legendary { color: #ffd17e; }
+.es2-hud__selected { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin: 5px 3px 0; border-top: 1px solid #8e805d66; padding-top: 6px; font-size: 11px; }
+.es2-hud__selected strong { color: #f6e3be; }
+.es2-hud__no-skills { padding: 12px; color: #c9c9cf; }
+@keyframes es2-hud-reveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 1060px) {
+  .es2-hud__map { display: none; }
+  .es2-hud__hero { width: min(335px, 43vw); }
+  .es2-hud__boss { top: 129px; }
+  .es2-hud__wave { top: 208px; }
+  .es2-hud__objectives { top: 205px; }
+}
+@media (max-width: 700px) {
+  .es2-hud { font-size: 12px; }
+  .es2-hud__top { gap: 6px; padding: max(7px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left)); }
+  .es2-hud__hero { width: min(64vw, 280px); gap: 7px; padding: 7px; }
+  .es2-hud__portrait { width: 54px; flex-basis: 54px; height: 68px; }
+  .es2-hud__identity { margin-bottom: 3px; }
+  .es2-hud__identity strong { font-size: 12px; }
+  .es2-hud__eyebrow { font-size: 8px; }
+  .es2-hud__health-head { font-size: 9px; margin: 1px 0 2px; }
+  .es2-hud__health-head--xp { margin-top: 3px; }
+  .es2-hud__track { height: 8px; }
+  .es2-hud__track--xp { height: 6px; }
+  .es2-hud__top-right { display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 5px; }
+  .es2-hud__controls { padding: 2px; gap: 3px; }
+  .es2-hud__controls button { width: 44px; min-height: 44px; font-size: 17px; }
+  .es2-hud__counters { padding: 4px; gap: 3px; }
+  .es2-hud__counter { min-width: 38px; grid-template-columns: 12px auto; }
+  .es2-hud__counter > span:nth-child(2) { font-size: 11px; }
+  .es2-hud__boss { top: 136px; width: min(90vw, 430px); padding: 8px 10px; }
+  .es2-hud__boss-heading { font-size: 12px; }
+  .es2-hud__wave { top: 197px; max-width: 80vw; }
+  .es2-hud__wave strong { font-size: 12px; }
+  .es2-hud__objectives { top: 260px; right: max(8px, env(safe-area-inset-right)); width: min(190px, 45vw); max-height: 19vh; padding: 7px; font-size: 10px; }
+  .es2-hud__statuses { top: 150px; left: max(8px, env(safe-area-inset-left)); max-width: 40vw; }
+  .es2-hud__notices { bottom: 160px; right: 8px; max-width: 55vw; }
+  .es2-hud__bottom { width: calc(100vw - 16px); bottom: max(12px, env(safe-area-inset-bottom)); gap: 4px; }
+  .es2-hud__relics { min-width: 60px; max-width: 80px; padding: 6px; }
+  .es2-hud__relic { width: 31px; height: 31px; font-size: 16px; }
+  .es2-hud__equipment { flex: 1; width: auto; min-width: 0; padding: 7px; }
+  .es2-hud__equipment-head small { font-size: 8px; }
+  .es2-hud__skills { justify-content: flex-start; gap: 5px; }
+  .es2-hud__skill { flex-basis: 48px; width: 48px; height: 52px; }
+  .es2-hud__skill-glyph { line-height: 42px; }
+}
+@media (max-width: 400px) {
+  .es2-hud__hero { width: 62vw; }
+  .es2-hud__top-right .es2-hud__counters { max-width: 120px; }
+  .es2-hud__controls button { width: 44px; }
+  .es2-hud__portrait { display: none; }
+  .es2-hud__identity strong { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es2-hud, .es2-hud__track > span, .es2-hud__skill, .es2-hud__controls button, .es2-hud__cooldown { transition: none; }
+  .es2-hud__notice { animation: none; }
+}
