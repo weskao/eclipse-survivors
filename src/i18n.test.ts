@@ -43,6 +43,7 @@ describe('language preference', () => {
       setItem: () => { throw Error('blocked') },
     })).not.toThrow()
     expect(t('遊戲設定')).toBe('遊戲設定')
+    expect(t('Dawnsteel Knight')).toBe('曙鋼騎士')
   })
 })
 
