@@ -43,7 +43,7 @@ describe('ES2 canonical production art / blocking acceptance gate', () => {
       expect(manifest.assets.map(a => a.id).sort()).toEqual([...expected[category]!].sort())
       expect(new Set(manifest.assets.map(a => a.path)).size).toBe(manifest.assets.length)
       for (const a of manifest.assets) {
-        expect(a.path).toMatch(/^[a-z0-9-]+(?:@3x)?\\.webp$/)
+        expect(a.path).toMatch(/^[a-z0-9-]+@3x[.]webp$/)
         expect(a.path).toContain('@3x.webp')
         expect(a.scale).toBe(3)
         expect(a.width).toBeGreaterThan(0)
