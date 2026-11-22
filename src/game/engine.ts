@@ -328,14 +328,19 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     const onKeyUp = (e: KeyboardEvent): void => { keys[e.code] = false }
     const onBlur = (): void => {
+      // Release held controls without changing the player's pause state.
       keys = {}
       stick = { x: 0, y: 0 }
-      audio.interrupt()
-      if (s.mode === 'play') screen('paused')
     }
     const onVisibility = (): void => {
-      if (doc.hidden) onBlur()
-      // Visibility alone must never restart audio or unpause gameplay.
+      if (doc.hidden) {
+        onBlur()
+        audio.interrupt()
+      }
+    }
+    const onPageHide = (): void => {
+      onBlur()
+      audio.interrupt()
     }
     const onPointerDown = (e: PointerEvent): void => {
       audio.wake()
@@ -347,7 +352,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('keydown', onKeyDown)
     win.addEventListener('keyup', onKeyUp)
     win.addEventListener('blur', onBlur)
-    win.addEventListener('pagehide', onBlur)
+    win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
     doc.addEventListener('pointerdown', onPointerDown)
     doc.addEventListener('pointerover', onPointerOver)
@@ -355,7 +360,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('keydown', onKeyDown)
       win.removeEventListener('keyup', onKeyUp)
       win.removeEventListener('blur', onBlur)
-      win.removeEventListener('pagehide', onBlur)
+      win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
       doc.removeEventListener('pointerdown', onPointerDown)
       doc.removeEventListener('pointerover', onPointerOver)
