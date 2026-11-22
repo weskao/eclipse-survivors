@@ -25,6 +25,7 @@ describe('isolated permanent meta progression', () => {
     expect(initial.embers).toBe(0)
     expect(result.state.runs).toBe(1)
     expect(result.state.wins).toBe(1)
+    expect(result.state.bossWins).toBe(1)
     expect(result.state.discoveries.relics).toContain('relics:moonstone')
     expect(result.state.discoveries.evolutions).toContain('frozen-thunderstorm')
     expect(result.state.discoveries.bosses).toContain('bosses:monarch')
@@ -105,6 +106,27 @@ describe('isolated permanent meta progression', () => {
     expect(getDiscoveryEntries(next, 'relics', ['relics:moonstone', 'relics:unknown']).map(x => x.unlocked)).toEqual([true, false])
     expect(next.discoveries.weapons).toContain('arcane:bolt')
     expect(next.discoveries.evolutions).toContain('arcane:super-bolt')
+  })
+
+  it('accepts real fractional run durations without discarding settlement', () => {
+    const result = applyCompletedRun(createMetaState(), { stats: run('fractional', { seconds: 180.65 }) })
+    expect(result.accepted).toBe(true)
+    expect(result.state.modeRecords.quick?.bestSeconds).toBe(180.65)
+  })
+
+  it('counts confirmed boss kills rather than arbitrary discovered boss species', () => {
+    const first = applyCompletedRun(createMetaState(), { stats: run('boss-1'), bossIds: ['bosses:one', 'bosses:two', 'bosses:three'] })
+    expect(first.state.bossWins).toBe(1)
+    expect(first.state.achievements).not.toContain('abyss-conqueror')
+    const second = applyCompletedRun(first.state, { stats: run('boss-2') })
+    const third = applyCompletedRun(second.state, { stats: run('boss-3') })
+    expect(third.state.bossWins).toBe(3)
+    expect(third.state.achievements).toContain('abyss-conqueror')
+  })
+
+  it('rejects unknown cosmetic unlock claims', () => {
+    expect(applyCompletedRun(createMetaState(), { stats: run(), cosmeticIds: ['not-a-cosmetic'] }).accepted).toBe(false)
+    expect(parseMetaSnapshot(JSON.stringify({ ...createMetaState(), cosmetics: ['not-a-cosmetic'] }))).toBeNull()
   })
 
   it('rejects malformed inputs and duplicate IDs before paying anything', () => {
