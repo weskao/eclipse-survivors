@@ -58,7 +58,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     // exhausting a cast's hit budget before enemies at the blast center.
     for (const mob of targetsNear(state, x, y, radius)) {
       if (hitCount >= MAX_HITS_PER_CAST) break
-      if (hitMobs.has(mob)) continue
+      if (mob.hp <= 0 || hitMobs.has(mob)) continue
       if (pull > 0) {
         const k = mob.type === 'boss' ? pull * 0.25 : pull
         mob.x += (x - mob.x) * k
@@ -160,17 +160,15 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
       const count = Math.min(5, Math.max(0, MAX_VOLLEY_PROJECTILES - state.shots.length))
       // No phantom cast: an exhausted shared projectile budget cannot spawn arrows.
       if (count === 0) return
-      {
-        const first = nearby[0]!
-        const base = Math.atan2(first.y - hero.y, first.x - hero.x)
-        for (let i = 0; i < count; i++) {
-          const angle = base + (i - (count - 1) / 2) * 0.12
-          state.shots.push({
-            x: hero.x, y: hero.y - 8,
-            vx: Math.cos(angle) * 570, vy: Math.sin(angle) * 570,
-            life: 1.25, d: hero.damage * 1.05, kind: 'arrow', r: 6,
-          })
-        }
+      const first = nearby[0]!
+      const base = Math.atan2(first.y - hero.y, first.x - hero.x)
+      for (let i = 0; i < count; i++) {
+        const angle = base + (i - (count - 1) / 2) * 0.12
+        state.shots.push({
+          x: hero.x, y: hero.y - 8,
+          vx: Math.cos(angle) * 570, vy: Math.sin(angle) * 570,
+          life: 1.25, d: hero.damage * 1.05, kind: 'arrow', r: 6,
+        })
       }
       cueAt(hero.x, hero.y)
       break
