@@ -152,14 +152,14 @@ export interface BossStepAdapter {
   tick(state: GameState, dt: number, hooks: GameHooks): void
 }
 
-export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter, factions?: FactionBridge, directorOwnsSpawns = false): void {
+export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter, factions?: FactionBridge): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
   tickTimers(s, hero, dt)
   registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
-  if (!directorOwnsSpawns) tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0)
+  tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0)
   moveHero(s, input, dt, factions?.movementMultiplier ?? 1)
   const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
   hero.x = free.x; hero.y = free.y

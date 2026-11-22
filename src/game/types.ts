@@ -54,10 +54,6 @@ export interface Mob {
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
   ai?: EnemyBrain
   elite?: boolean
-  /** Live wave attribution, never inferred from a killed actor's type. */
-  waveIndex?: number
-  /** No attacks are permitted during the real spawn warning interval. */
-  telegraphUntil?: number
   bossPhase?: 1 | 2 | 3
   summonedByBoss?: boolean
 }

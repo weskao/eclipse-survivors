@@ -48,20 +48,7 @@ function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number): void {
 }
 
 export function drawEnemyTelegraphs(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
-  for (const enemy of s.mobs) {
-    if (enemy.hp <= 0) continue
-    if (enemy.telegraphUntil !== undefined && s.time < enemy.telegraphUntil) {
-      const x = enemy.x + ox, y = enemy.y + oy
-      if (x < -100 || x > s.W + 100 || y < -100 || y > s.H + 100) continue
-      ctx.save()
-      ctx.setLineDash([6, 5])
-      ctx.strokeStyle = enemy.type === 'boss' ? '#ff8877' : '#f9df9e'
-      ctx.globalAlpha = 0.65
-      ctx.lineWidth = 3
-      ctx.beginPath(); ctx.arc(x, y, enemy.r + 14, 0, TAU); ctx.stroke()
-      ctx.restore()
-    } else if (enemy.ai?.state === 'windup') warning(ctx, enemy, ox, oy)
-  }
+  for (const enemy of s.mobs) if (enemy.hp > 0 && enemy.ai?.state === 'windup') warning(ctx, enemy, ox, oy)
 }
 
 export function drawEnemyProjectiles(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
