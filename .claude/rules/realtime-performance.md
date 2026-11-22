@@ -51,6 +51,11 @@
 
 Run `pnpm test`, `pnpm typecheck`, `pnpm build`, and `pnpm check-release` before claiming completion. Keep `src/game/crowd-benchmark.test.ts` **diagnostic**, not a brittle timing gate. Compare same-workload multi-run timings, allocations and memory; verify real desktop and iOS/Android browser performance separately. A mocked Canvas benchmark is **not** real-world FPS.
 
+## Rigid weapons are never deformable body texture
+- Knight swords, ranger bows, and wizard staffs must keep their original silhouette and aspect ratio in movement, attack, cast, and direction changes. The bow's original curvature is intentional and must be retained.
+- Never send weapon pixels through per-cell skinning, mesh bending, scaling/stretching, or differential transforms. Render isolated weapon pixels as one solid image with translation and rotation; left-right mirroring is permitted.
+- Body joints may animate independently, but the weapon must stay attached to the correct hand and preserve the original projectile origin. Cover all three heroes, all eight directions, reduced motion, and atlas caching with regression tests.
+
 ## 7. Review rule for every new hot-path operation
 
 For any new loop inside `src/game/step.ts`, `src/game/enemies/`, `src/game/skills.ts`, `src/game/combat.ts`, `src/game/world.ts`, or `src/game/render/`:
