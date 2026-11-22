@@ -40,6 +40,11 @@ describe('ES2 release gate: real game-session selection (RED until host wiring)'
     engine.start()
     if (!engine.state.hero) throw new Error('No live hero')
     engine.state.hero.inv = 200
+    // Keep this encounter test free from level-up modal interruptions.
+    // Gameplay ticks must still create the real boss at its scheduled time.
+    engine.state.hero.attack = Number.POSITIVE_INFINITY
+    engine.state.spawnT = Number.POSITIVE_INFINITY
+    engine.state.mobs = []
     for (let tick = 0; tick < 27; tick++) engine.advance(1)
     expect(engine.state.mobs.some(mob => mob.type === 'boss' && mob.hp > 0)).toBe(true)
     expect(engine.state.mode).toBe('play')

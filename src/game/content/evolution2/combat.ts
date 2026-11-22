@@ -1,6 +1,6 @@
 import { hit } from '../../combat'
 import type { ContentContext } from '../contracts'
-import type { GameState, Hero, Mob } from '../../types'
+import type { GameState, Mob } from '../../types'
 import { EVOLUTION2_CUES } from './cues'
 import type { Evolution2Recipe } from './recipes'
 

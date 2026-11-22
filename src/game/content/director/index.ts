@@ -184,8 +184,7 @@ export function describeWave(mode: WaveModeId, seed: number, timeSeconds: number
       endsAt = bossAt + BOSS_ENCOUNTER_SECONDS
       break
     }
-    if (stage !== 'boss' && stage !== 'boss-prep' &&
-        startsAt < bossAt && endsAt > bossAt - BOSS_PREP_SECONDS) {
+    if (startsAt < bossAt && endsAt > bossAt - BOSS_PREP_SECONDS) {
       endsAt = bossAt - BOSS_PREP_SECONDS
     }
   }
@@ -319,7 +318,7 @@ export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): Wa
       if (wave.stage !== 'boss') {
         events.push({
           id: 'waves:' + wave.stage, kind: wave.stage === 'reward' ? 'reward'
-            : wave.stage === 'boss-prep' ? 'boss-prep' : wave.stage === 'boss' ? 'boss' : 'stage',
+            : wave.stage === 'boss-prep' ? 'boss-prep' : 'stage',
           title: LABELS[wave.stage], atSeconds: wave.startsAt,
           durationSeconds: Math.max(0, wave.endsAt - wave.startsAt), danger: wave.danger,
         })
