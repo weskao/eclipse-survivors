@@ -327,6 +327,8 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     tick(state, dt, hooks) {
       const e = current(state)
       if (!e || !Number.isFinite(dt) || dt <= 0) return
+      // A director-owned boss may be visible during its announced arrival warning.
+      if (e.boss.telegraphUntil !== undefined && state.time < e.boss.telegraphUntil) return
       if (e.boss.hp <= 0 || e.rewarded) return
       if (state.mode !== 'play' || !state.hero || state.hero.hp <= 0) return
       // The host must call AFTER legacy tickEnemies, which has no extensibility

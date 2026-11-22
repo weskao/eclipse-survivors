@@ -24,11 +24,9 @@
 
 ## Remaining art/product work
 
-**Playability:** New hero stats, companion pulses, real damage/defense, skills and selection are routed through the actual engine. Both NEW HEROES cards and the live upper-left Combat HUD crop the same authored 8-direction WebP atlas that the selected hero uses during gameplay. The former SVG illustrations are retained only as explicit image-load fallbacks. Original knight, ranger and wizard portraits and Canvas rig stay untouched.
+**Playability:** New hero stats, companion pulses, real damage/defense, skills and selection are routed through the actual engine. New selection portraits are SVG and HUD artwork uses the selected hero's unique portrait.
 
-**Visual scale:** The authored sprite occupies only about 50 of each 128-pixel atlas cell's vertical pixels. The 8-direction live Canvas path now enlarges the visible silhouette by 2.5× relative to its previous atlas-cell rendering and anchors the feet consistently to the legacy three heroes' ground point. Crop rectangles remain confined to the authored 128×128 cell, and collision/gameplay geometry does not change.
-
-**Remaining visual limitation:** The atlas supplies eight facings and only four distinct poses (idle, run, attack and cast); hurt, death and victory deliberately retain the original knight/wizard animation fallback. The source atlases still need visual contamination/bleed QA and final animation continuity approval; this change does **not** claim that extra motion frames or finished individual summoned-character animation exist. Existing three heroes' animation atlases remain unchanged.
+**Visual limitation:** The active 2D Canvas body/action sprite system still uses the original knight/wizard illustration and animation fallback for new IDs. This branch does **not** deliver finished, unique 8-direction animated sprites or fully visible individual summoned characters. Those assets need final production art and renderer mapping in the dedicated integration/art branch. Existing three heroes' animation atlases remain unchanged.
 
 **Persistence limitation:** Profile v2 still records legacy fallback in `heroesPlayed`, while live `heroId` and `RunStats.specializationId` are correct. Do not claim v3 save migration or specialized permanent mastery from this branch.
 

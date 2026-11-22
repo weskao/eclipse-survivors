@@ -54,6 +54,10 @@ export interface Mob {
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
   ai?: EnemyBrain
   elite?: boolean
+  /** Live wave attribution, never inferred from a killed actor's type. */
+  waveIndex?: number
+  /** No attacks are permitted during the real spawn warning interval. */
+  telegraphUntil?: number
   bossPhase?: 1 | 2 | 3
   summonedByBoss?: boolean
 }
@@ -178,8 +182,8 @@ export interface GameHooks {
   /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
   openTreasure?(state: GameState, chestId: number): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
-  modifyOutgoingDamage?(amount: number): number
+  modifyOutgoingDamage?(amount: number, target?: Mob): number
   mitigateIncomingDamage?(amount: number): number
-  afterDamage?(amount: number): void
+  afterDamage?(amount: number, source?: Mob): void
   canTargetHero?(): boolean
 }

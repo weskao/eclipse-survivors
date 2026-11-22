@@ -1,4 +1,5 @@
 import type { GameMode, SfxCue } from '../types'
+import type { ToneFn } from './music'
 
 /** Minimal `<audio>` surface the engine uses for the MP3 score (testable with a fake). */
 export interface BgmElement {
@@ -20,6 +21,10 @@ export type CombatIntensity = 'calm' | 'combat' | 'boss'
 export interface AudioSystem {
   /** true once an AudioContext exists (`window.__test.audio`). */
   readonly unlocked: boolean
+  /** One shared context/oscillator port for authored ES2 music; no extra AudioContext. */
+  createEs2Port?(): { now: () => number; isRunning: () => boolean; tone: ToneFn }
+  /** Suppress legacy media and synth only when the ES2 host score is enabled. */
+  setExternalScoreActive?(active: boolean): void
   readonly musicOn: boolean
   readonly sfxOn: boolean
   /** User volume preferences from 0 to 100; mute switches remain independent. */

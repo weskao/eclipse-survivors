@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from PIL import Image, ImageOps
+from PIL import Image
 
 SOURCE_FILES = tuple(f'imgs{i}.png' for i in range(1, 11))
 ROOT = Path(__file__).resolve().parents[2]
@@ -30,26 +30,9 @@ SMALL_POSES={
   5:[(0,238),(251,373),(381,504),(974,1107)]
 }
 TELEGRAPHS={6:(1156,1440),5:(1125,1441)}
-# Manually reviewed per-enemy 3rd/4th source poses; source sheet columns are
-# irregular. Reusing generic 381-504 / 974-1107 rectangles imported neighboring
-# spell fragments and sometimes clipped the actor. Four distinct authored poses
-# must fit entirely within their exclusive source boxes.
-REVIEWED_POSE_BOXES = {
-  'shadow-assassin': {2:(447,589),3:(593,778)},
-  'necromancer': {2:(448,588),3:(594,788)},
-  'dark-archer': {2:(439,589),3:(594,790)},
-  'plague-carrier': {2:(440,586),3:(596,795)},
-  'shield-guardian': {2:(437,592),3:(594,788)},
-  'phantom': {2:(394,522),3:(684,832)},
-  'fire-imp': {2:(381,491),3:(505,615)},
-  'frost-wraith': {2:(384,503),3:(510,627)},
-  'berserker': {2:(379,490),3:(637,726)},
-  'crystal-sentinel': {2:(375,491),3:(502,626)},
-}
 for source, rows in ROWS.items():
   for name,(y0,y1) in rows:
-    for k,(default_x0,default_x1) in enumerate(SMALL_POSES[source]):
-      x0,x1=REVIEWED_POSE_BOXES.get(name,{}).get(k,(default_x0,default_x1))
+    for k,(x0,x1) in enumerate(SMALL_POSES[source]):
       ASSET_BOXES[source][f'frame:{name}:{k}']=(x0,y0,x1,y1)
     tx0,tx1=TELEGRAPHS[source]
     ASSET_BOXES[source][f'telegraph:{name}']=(tx0,y0+1,tx1,y1-1)
@@ -160,18 +143,6 @@ def fit(source:Image.Image, box:tuple[int,int,int,int], size:tuple[int,int], sou
     return canvas
 
 
-def fit_scene(source:Image.Image, box:tuple[int,int,int,int], size:tuple[int,int])->Image.Image:
-    """Preserve the whole cinematic illustration, including genuine dark pixels.
-
-    The RGB scene sheets have near-black painted architecture. Alpha-keying
-    black is valid for isolated props, never for a full backdrop.
-    """
-    return ImageOps.pad(
-        source.crop(box).convert('RGB'), size,
-        method=Image.Resampling.LANCZOS, color=(16,12,26),
-    ).convert('RGBA')
-
-
 def isolate_main_alpha_component(image:Image.Image)->Image.Image:
     """Remove detached neighbouring-sheet fragments without touching the main silhouette."""
     from collections import deque
@@ -233,7 +204,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
 
     for src_id, rows in ROWS.items():
         for id, interval in rows:
-            poses=(0,1,2,3)
+            poses=(0,1,3,1) if id in ('phantom','berserker','shadow-assassin','shield-guardian') else (0,1,2,3)
             frames=[fit(sources[src_id], ASSET_BOXES[src_id][f'frame:{id}:{i}'], (96,96),src_id) for i in poses]
             # Four REAL source poses, natural ping-pong (not generated extras).
             sequence=[frames[i] for i in (0,1,2,3,2,1)]
@@ -242,20 +213,8 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
             tbox=ASSET_BOXES[src_id][f'telegraph:{id}']
             emit(f'src/assets/es2/production/enemies/{id}-telegraph@3x.webp','enemy-telegraph',fit(sources[src_id],tbox,(96,96),src_id),1,(96,96),src_id,[tbox],50000)
 
-    # Exact masks for five already-confirmed neighboring-source fragments.
-    # Each lies outside the corresponding boss silhouette on the 192px frame;
-    # do not discard floating spell effects elsewhere in the illustration.
-    boss_bleed_masks = {
-        'frost-sovereign': {0: [(0,0,192,32)], 1: [(0,0,192,55)]},
-        'eclipse-seraph': {0: [(0,0,33,192)], 1: [(0,0,20,192)],
-                           2: [(0,0,192,14)]},
-    }
     for id,(src_id,boxes) in BOSSES.items():
         images=[fit(sources[src_id],box,(192,192),src_id,10) for box in boxes]
-        for pose,rects in boss_bleed_masks.get(id,{}).items():
-            alpha=images[pose].getchannel('A')
-            for rect in rects: alpha.paste(0,rect)
-            images[pose].putalpha(alpha)
         emit(f'src/assets/es2/production/bosses/{id}-phases@3x.webp','boss-phases',add_atlas(images,(192,192)),3,(192,192),src_id,boxes,300000)
 
     for id,(src_id,boxes) in DECOR.items():
@@ -263,7 +222,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
         emit(f'src/assets/es2/production/biomes/{id}-decor@3x.webp','biome-decor',add_atlas(ims,(96,96)),4,(96,96),src_id,boxes,180000)
     for id,(src_id,box) in SCENES.items():
         # Cinematic biome illustration for real menu/UI use. NOT a repeat tile.
-        im=fit_scene(sources[src_id],box,(768,432))
+        im=fit(sources[src_id],box,(768,432),src_id,6)
         emit(f'src/assets/es2/production/biomes/{id}-scene@3x.webp','biome-scene',im,1,(768,432),src_id,[box],450000)
 
     for id,box in UI_BOXES.items():

@@ -1,5 +1,6 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
-import { attack, hit, victoryConditionMet } from './combat'
+import { attack, damageHero, hit, victoryConditionMet } from './combat'
+import type { createBiomeRuntime } from './content/biomes/runtime'
 import type { ContentRegistry } from './content/registry'
 import type { FactionBridge } from './content/enemies/integration'
 import { hasWonRun } from '../meta/modes'
@@ -152,17 +153,20 @@ export interface BossStepAdapter {
   tick(state: GameState, dt: number, hooks: GameHooks): void
 }
 
-export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter, factions?: FactionBridge): void {
+export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter, factions?: FactionBridge, directorOwnsSpawns = false, biome?: ReturnType<typeof createBiomeRuntime>): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
   tickTimers(s, hero, dt)
   registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
-  if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
-  tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0)
-  moveHero(s, input, dt, factions?.movementMultiplier ?? 1)
-  const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
+  if (!biome && nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
+  if (!directorOwnsSpawns) tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0)
+  const contact = biome?.contact({ x: hero.x, y: hero.y }, 17)
+  moveHero(s, input, dt, (factions?.movementMultiplier ?? 1) * (contact?.speedMultiplier ?? 1))
+  const biomeStep = biome?.step({ x: hero.x, y: hero.y }, { x: 0, y: 0 }, 17, dt)
+  const free = biomeStep?.position ?? resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
   hero.x = free.x; hero.y = free.y
+  if (biomeStep?.hazardDamage && biomeStep.hazardDamage > 0) damageHero(s, biomeStep.hazardDamage, hooks)
   if (hero.attack <= 0) {
     attack(s, hooks, factions)
     hero.attack = hero.delay
@@ -171,7 +175,9 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   bosses?.tick(s, dt, hooks)
   for (const e of s.mobs) {
     if (e.hp <= 0) continue
-    const safe = resolveObstacleCollision(s.currentScene, e.x, e.y, e.r * 0.65)
+    const safe = biome
+      ? biome.environment.collide({ x: e.x, y: e.y }, e.r * 0.65)
+      : resolveObstacleCollision(s.currentScene, e.x, e.y, e.r * 0.65)
     e.x = safe.x; e.y = safe.y
   }
   tickEnemyProjectiles(s, dt, hooks)

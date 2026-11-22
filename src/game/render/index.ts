@@ -1,4 +1,6 @@
 import type { Artwork } from '../art'
+import type { createBiomeRuntime } from '../content/biomes/runtime'
+import { createBiomeRenderer } from './es2-biomes'
 import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
@@ -28,6 +30,9 @@ export type { Ctx2D } from './ctx'
 
 export interface RenderAssets {
   content?: ContentRegistry
+  /** Live optional ES2 environment; old four-stage modes never supply one. */
+  activeBiome?: () => ReturnType<typeof createBiomeRuntime> | null
+  biomeRenderer: ReturnType<typeof createBiomeRenderer>
   presentation?: () => VisualPresentationPolicy | null
   bosses?: BossEncounterController
   art: Artwork
@@ -56,6 +61,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     heroSheets: createHeroSheets(makeCanvas),
+    biomeRenderer: createBiomeRenderer(makeCanvas),
     prefersReducedMotion: () => query?.matches ?? false,
     cameraShakeEnabled: () => true,
     depthOrder: [],
@@ -95,7 +101,17 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
-  paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy, assets.productionWorld)
+  const runtime = assets.activeBiome?.()
+  const env = runtime?.environment
+  if (env && runtime) {
+    const id = env.definition.id
+    ctx.save()
+    ctx.translate(ox, oy)
+    const view = { left: -ox, top: -oy, right: W - ox, bottom: H - oy }
+    assets.biomeRenderer.drawGround(ctx, env, view, runtime.time, assets.productionWorld?.ground[id])
+    assets.biomeRenderer.drawProps(ctx, env, view, runtime.time, assets.productionWorld?.decor[id])
+    ctx.restore()
+  } else paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy, assets.productionWorld)
   const scene = currentSceneInfo(s)
   const cached = assets.weatherCache
   if (!cached || cached.ctx !== ctx || cached.width !== W || cached.height !== H || cached.weather !== scene.weather) {
@@ -103,10 +119,10 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
-  if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
+  if (!env && !reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
   drawWorldMarkers(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
-  ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
+  ctx.fillText(env ? env.definition.title : scene.name + ' · ' + scene.label, W / 2, 34)
   ctx.restore()
   if (!hero) {
     const shadow = ctx.createRadialGradient(W / 2, H * 0.49, 55, W / 2, H * 0.49, Math.max(W, H) * 0.76)
@@ -155,5 +171,8 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
 }
 
 export function drawMiniMap(p: Ctx2D, s: GameState, assets: RenderAssets): void {
-  paintMiniMap(p, s, assets.art)
+  const runtime = assets.activeBiome?.()
+  if (runtime && s.hero) assets.biomeRenderer.drawMinimap(p, runtime.environment,
+    { x: s.hero.x, y: s.hero.y }, runtime.time)
+  else paintMiniMap(p, s, assets.art)
 }
