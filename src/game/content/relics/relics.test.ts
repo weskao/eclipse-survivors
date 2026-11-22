@@ -6,7 +6,7 @@ import { RELICS_PACK } from '../packs/relics'
 import { RELICS, RELIC_BY_ID, RELIC_CUES, TREASURE_UI, type RelicId } from './catalog'
 import {
   acquireRelic, banishTreasure, calculateRelicAttack, calculateRelicIncoming,
-  claimTreasure, hasRelic, inventorySnapshot, onRelicEvent, openTreasure,
+  claimTreasure, declineTreasure, hasRelic, inventorySnapshot, onRelicEvent, openTreasure,
   relicBonuses, relicPickupRadius, rerollTreasure, resetRelics, tickRelicRecovery,
   RELIC_CAPACITY,
 } from './runtime'
@@ -203,6 +203,16 @@ it('emits chest/reward feedback once and never for replayed treasure', () => {
   expect(cues).toHaveLength(2)
 })
 
+
+it('can decline an opened chest without creating an unclaimable pending reward', () => {
+  const s = setup()
+  expect(openTreasure(s, 1, seeded(3))).not.toBeNull()
+  expect(declineTreasure(s, 1)).toBe(true)
+  expect(declineTreasure(s, 1)).toBe(false)
+  expect(inventorySnapshot(s).pending).toBeNull()
+  expect(inventorySnapshot(s).items).toEqual([])
+  expect(openTreasure(s, 2, seeded(3))).not.toBeNull()
+})
 
 it('honors exact 10% and 30% attack interval reductions in relic descriptions', () => {
   const basic = setup()
