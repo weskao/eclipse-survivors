@@ -302,5 +302,5 @@ export function createWaveDirector(opts: { mode: RunModeId; seed: number }): Wav
     return { ...wave, spawns, events }
   }
 
-  return Object.freeze({ mode, inspect: t => describeWave(mode, seed, t), advance, reset })
+  return Object.freeze({ mode, inspect: (t: number) => describeWave(mode, seed, t), advance, reset })
 }
