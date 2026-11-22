@@ -64,6 +64,23 @@ describe('combat and lifecycle event bridge', () => {
     expect(s.kill).toBe(1)
   })
 
+  it('dispatches kill after boss flags and reward state are finalized', () => {
+    const s = createState()
+    s.mode = 'play'
+    s.hero = createHero('knight')
+    const observed: Array<{ bossDefeated: boolean; stars: number; kills: number }> = []
+    const registry = createContentRegistry([{ id: 'observer', onEvent(ctx, event) {
+      if (event.type === 'kill') observed.push({
+        bossDefeated: ctx.state.bossDefeated, stars: ctx.state.stars.length, kills: ctx.state.kill,
+      })
+    } }])
+    const hooksWithEvents: GameHooks = { ...hooks, content: (state, event) => registry.emit(state, event, hooks) }
+    const boss = { ...enemy(), type: 'boss' as const }
+    s.mobs.push(boss)
+    hit(s, boss, 20, hooksWithEvents)
+    expect(observed).toEqual([{ bossDefeated: true, stars: 1, kills: 1 }])
+  })
+
   it('bridges actual damage, xp pickup and scene transition without changing combat rules', () => {
     const events: string[] = []
     const registry = createContentRegistry([{ id: 'observer', onEvent(_ctx, event) { events.push(event.type) } }])
