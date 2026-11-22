@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { nextTick, type Component } from 'vue'
 import Es2ChoiceDialog from './Es2ChoiceDialog.vue'
 import Es2Dialog from './Es2Dialog.vue'
 import type { MenuChoice } from './model'
@@ -14,9 +14,9 @@ const dialog = () => document.querySelector<HTMLElement>('.es2-dialog')!
 const button = (id: string) => document.querySelector<HTMLButtonElement>(`[data-choice="${id}"]`)!
 const press = (key: string, extra: KeyboardEventInit = {}) => document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...extra }))
 const wrappers: VueWrapper[] = []
-function mounted<T extends object>(component: T, props: object) {
-  const wrapper: VueWrapper = mount(component as never, { attachTo: document.body, props: props as never })
-  wrappers.push(wrapper as VueWrapper)
+function mounted(component: Component, props: Record<string, unknown>) {
+  const wrapper = mount(component, { attachTo: document.body, props })
+  wrappers.push(wrapper)
   return wrapper
 }
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount(); document.body.innerHTML = '' })
