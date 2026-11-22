@@ -8,8 +8,8 @@ import { createRenderAssets, drawFrame } from './index'
 function readyAtlas(): HTMLImageElement {
   const image = new Image()
   Object.defineProperty(image, 'complete', { value: true })
-  Object.defineProperty(image, 'naturalWidth', { value: 192 })
-  Object.defineProperty(image, 'naturalHeight', { value: 540 })
+  Object.defineProperty(image, 'naturalWidth', { value: 128 })
+  Object.defineProperty(image, 'naturalHeight', { value: 360 })
   return image
 }
 
@@ -30,9 +30,9 @@ describe('real raster frame art in gameplay', () => {
     expect(drawPaintedHero(ctx, image, job, hero, anim, 110, 145)).toBe(true)
     expect(drawn).toEqual([image])
     expect(draw.mock.calls[0]).toHaveLength(9)
-    expect(draw.mock.calls[0]![3]).toBe(48)
-    expect(draw.mock.calls[0]![4]).toBe(60)
-    expect((draw.mock.calls[0]![7] as number) / (draw.mock.calls[0]![8] as number)).toBeCloseTo(48 / 60)
+    expect(draw.mock.calls[0]![3]).toBe(32)
+    expect(draw.mock.calls[0]![4]).toBe(40)
+    expect((draw.mock.calls[0]![7] as number) / (draw.mock.calls[0]![8] as number)).toBeCloseTo(32 / 40)
     expect(scale.mock.calls).toEqual([[-1, 1]])
   })
 
@@ -40,7 +40,7 @@ describe('real raster frame art in gameplay', () => {
     for (const [job, row] of [['knight', 0], ['ranger', 3], ['wizard', 6]] as const) {
       for (let i = 0; i < 12; i++) {
         const frame = frameForPose(job, { pose: 'attack', frame: i, count: 12, phase: i / 12, direction: 0, reducedMotion: false })
-        expect(frame).toEqual({ x: (i % 4) * 48, y: (row + Math.floor(i / 4)) * 60 })
+        expect(frame).toEqual({ x: (i % 4) * 32, y: (row + Math.floor(i / 4)) * 40 })
       }
     }
   })
