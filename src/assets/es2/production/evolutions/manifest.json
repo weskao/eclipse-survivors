@@ -22,9 +22,9 @@
       "height": 384,
       "status": "approved",
       "source": "original-generated-illustration sheet-3 cell-21",
-      "sha256": "4e71d2791c139b82bd1dec39aefe94001e28c0ea4043126f367853e91eba3f44",
-      "bytes": 38838,
-      "reviewNote": "Subject appears consistent; final human art approval pending"
+      "sha256": "ba8643a624978de3d1e4933ce3fc98a029a7160340b0ca876ea0cbcb508b5ae2",
+      "bytes": 39002,
+      "reviewNote": "Subject appears consistent; final human art approval pending; manually reviewed matte-free transparency on dark UI"
     },
     {
       "id": "evolution2:crimson-reaper",
@@ -88,9 +88,9 @@
       "height": 384,
       "status": "approved",
       "source": "original-generated-illustration sheet-3 cell-14",
-      "sha256": "a58a83ede07e3b9ac7934db829279fb8236a82a7fd8f3d8459d8e5d3aee347f6",
-      "bytes": 37608,
-      "reviewNote": "Subject appears consistent; final human art approval pending"
+      "sha256": "f813cce67ab5befe2ae51d3eb1a493070fac4e7268d99524a53f377b17a2debd",
+      "bytes": 31626,
+      "reviewNote": "Subject appears consistent; final human art approval pending; manually reviewed matte-free transparency on dark UI"
     },
     {
       "id": "evolution2:celestial-collapse",
@@ -99,9 +99,9 @@
       "height": 384,
       "status": "approved",
       "source": "original-generated-illustration sheet-3 cell-20",
-      "sha256": "87eb3b237b590220f3c1fe4c7ad1a0bfadc7c41b1e34a2d57622fea9cdd7976f",
-      "bytes": 40954,
-      "reviewNote": "Subject appears consistent; final human art approval pending"
+      "sha256": "f3559a62a1be1a5eb0c023868051d7a02c23823e101e583765bf0aa5ef3eb2c3",
+      "bytes": 34038,
+      "reviewNote": "Subject appears consistent; final human art approval pending; manually reviewed matte-free transparency on dark UI"
     },
     {
       "id": "evolution2:spectral-volley",
@@ -110,9 +110,9 @@
       "height": 384,
       "status": "approved",
       "source": "original-generated-illustration sheet-3 cell-15",
-      "sha256": "0782a42857bd89d11cdbad1cd1d3fd21b7079168e35fb06833a5258fb6716d26",
-      "bytes": 38658,
-      "reviewNote": "Subject appears consistent; final human art approval pending"
+      "sha256": "25050035316e737c6cf134567326d4fdd4bb2b484ed43defde1d092ba52b7a2b",
+      "bytes": 33598,
+      "reviewNote": "Subject appears consistent; final human art approval pending; manually reviewed matte-free transparency on dark UI"
     },
     {
       "id": "evolution2:bonefire-barrage",
