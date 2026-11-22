@@ -163,6 +163,24 @@ describe('isolated permanent meta progression', () => {
     expect(applyCompletedRun(plan!.next, { stats: run('historical-id') }).accepted).toBe(false)
   })
 
+  it('preserves valid v2 profiles including passive discoveries and v1-derived win counts', () => {
+    const legacy = {
+      ...emptyProfile(), runs: 0, wins: 2, embers: 25,
+      discoveredAbilities: ['damage', 'bolt', 'frozen-thunderstorm'] as ReturnType<typeof emptyProfile>['discoveredAbilities'],
+      discoveredMonsters: { slime: 4 },
+      equippedCosmetics: { knight: 'knight-default', ranger: 'ranger-default', wizard: 'wizard-default' },
+    }
+    const migrated = proposeV2Migration(legacy)
+    expect(migrated).not.toBeNull()
+    expect(migrated!.next.runs).toBeGreaterThanOrEqual(migrated!.next.wins)
+    expect(migrated!.next.discoveries.weapons).toContain('bolt')
+    expect(migrated!.next.discoveries.weapons).not.toContain('damage')
+    expect(migrated!.legacyProfile.discoveredAbilities).toContain('damage')
+    expect(migrated!.legacyProfile.discoveredMonsters.slime).toBe(4)
+    expect(migrated!.legacyProfile.runs).toBe(0)
+    expect(legacy.runs).toBe(0)
+  })
+
   it('never retroactively credits achievements or milestone rewards', () => {
     const legacy = { ...emptyProfile(), runs: 50, wins: 15, embers: 19, achievements: ['first-victory'] }
     const p = proposeV2Migration(legacy)!.next
