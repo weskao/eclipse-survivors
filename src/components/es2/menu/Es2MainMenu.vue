@@ -2,7 +2,7 @@
 import { nextTick } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import type { HeroId, JobId } from '../../../game/types'
-import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
+import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import shadowAction from '../../../assets/es2/production/heroes/shadowblade-action@3x.webp'
 import spiritAction from '../../../assets/es2/production/heroes/spirit-summoner-action@3x.webp'
 import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-action@3x.webp'
@@ -22,7 +22,7 @@ const heroes: readonly { id: HeroId; name: string; role: string; number: string;
   { id: 'crimson-paladin', name: HERO_DEFINITIONS['crimson-paladin'].label, role: '血誓屏障 · 聖盾反擊', number: '06', image: HERO_DEFINITIONS['crimson-paladin'].portraitSrc, actionSrc: paladinAction },
 ]
 function chooseHero(id: HeroId): void {
-  if (isSpecializationId(id)) emit('selectHero', id)
+  if (id === 'shadowblade' || id === 'spirit-summoner' || id === 'crimson-paladin') emit('selectHero', id)
   else emit('select', id)
 }
 const links: readonly { id: MenuView; name: string; icon: string }[] = [
