@@ -22,11 +22,20 @@ describe('ES2 three-hero selection UI', () => {
     expect(wrapper.findAll('[data-hero-id]')).toHaveLength(3)
     expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('false')
-    expect(wrapper.findAll('img')).toHaveLength(3)
+    expect(wrapper.findAll('img')).toHaveLength(6)
     expect(wrapper.text()).toContain('影刃')
     expect(wrapper.text()).toContain('生命')
     expect(wrapper.text()).toContain('起始武器')
     expect(wrapper.text()).toContain('冷卻')
+  })
+
+  it('uses distinct generated art for each hero active skill in character cards', () => {
+    const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const image = wrapper.get(`[data-hero-id="${id}"] [data-hero-skill-icon]`)
+      expect(image.attributes('src')).toContain(id + '-special')
+      expect(image.attributes('alt')).toContain('主動技能')
+    }
   })
 
   it('selects through pointer and arrow-key focus, and respects disabled state', async () => {
@@ -59,6 +68,19 @@ describe('ES2 dedicated hero special action', () => {
     expect(action.attributes('disabled')).toBeDefined()
     await action.trigger('click')
     expect(wrapper.emitted('activate')).toHaveLength(1)
+  })
+
+  it('shows the distinct active-skill artwork on the live ability button', () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const wrapper = render(HeroSpecialAction, {
+        heroId: id, active: true,
+        snapshot: { cooldown: 0, stealth: 0, barrier: 0, companions: [] },
+      })
+      const image = wrapper.get('[data-hero-special-icon]')
+      expect(image.attributes('src')).toContain(id + '-special')
+      expect(image.attributes('alt')).toBe('')
+      expect(wrapper.get('[data-hero-special]').attributes('aria-label')).toContain('可施放')
+    }
   })
 
   it('supports Q, skips typing/repeats and removes the global listener on unmount', async () => {
