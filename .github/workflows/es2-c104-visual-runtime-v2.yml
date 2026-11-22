@@ -19,6 +19,18 @@ jobs:
         with:
           node-version: '24'
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow==11.3.0
+      - run: python -m unittest discover -s tests/es2/art -p 'test_*.py' -v
+      - run: python scripts/es2/inspect_c104.py
+      - run: python scripts/es2/verify_runtime_atlases.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: c104-visual-sources-review
+          path: art-inspection/
+          if-no-files-found: error
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vitest run src/game/render/es2/c104-source-art.test.ts
       - run: pnpm test
