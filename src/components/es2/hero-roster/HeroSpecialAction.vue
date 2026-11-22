@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, onMounted, onUnmounted } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId, type SpecializationSnapshot } from '../../../game/content/heroes'
 
@@ -29,19 +30,19 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 </script>
 
 <template>
-  <div class="es2-hero-special" :aria-label="hero.label + ' 主動技能'">
+  <div class="es2-hero-special" :aria-label="t(hero.label + ' 主動技能')">
     <button type="button" class="es2-hero-special__button" data-hero-special
-      aria-keyshortcuts="Q" :aria-label="hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒')"
+      aria-keyshortcuts="Q" :aria-label="t(hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒'))"
       :disabled="!ready" @click="trigger">
       <img data-hero-special-icon class="es2-hero-special__icon" :src="hero.specialIconSrc" alt=""
         width="44" height="44" decoding="async" draggable="false" />
-      <span class="es2-hero-special__name">{{ hero.special.split('：')[0] }}</span>
-      <span class="es2-hero-special__hint">{{ ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放' }}</span>
+      <span class="es2-hero-special__name">{{ t(hero.special.split('：')[0]) }}</span>
+      <span class="es2-hero-special__hint">{{ t(ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放') }}</span>
       <span class="es2-hero-special__fill" aria-hidden="true" :style="{ width: progress + '%' }"></span>
     </button>
-    <span v-if="snapshot.stealth > 0" class="es2-hero-special__status" role="status">潛行 {{ snapshot.stealth.toFixed(1) }} 秒</span>
-    <span v-if="snapshot.barrier > 0" class="es2-hero-special__status" role="status">屏障 {{ Math.ceil(snapshot.barrier) }}</span>
-    <span v-if="snapshot.companions.length" class="es2-hero-special__status" role="status">靈體 {{ snapshot.companions.length }} / 3</span>
+    <span v-if="snapshot.stealth > 0" class="es2-hero-special__status" role="status">{{ t("潛行") }} {{ snapshot.stealth.toFixed(1) }} {{ t("秒") }}</span>
+    <span v-if="snapshot.barrier > 0" class="es2-hero-special__status" role="status">{{ t("屏障") }} {{ Math.ceil(snapshot.barrier) }}</span>
+    <span v-if="snapshot.companions.length" class="es2-hero-special__status" role="status">{{ t("靈體") }} {{ snapshot.companions.length }} / 3</span>
   </div>
 </template>
 

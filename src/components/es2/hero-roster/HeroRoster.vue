@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
 import HeroPortrait from './HeroPortrait.vue'
@@ -28,28 +29,28 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 </script>
 
 <template>
-  <section ref="root" class="es2-roster" role="group" aria-label="ES2 新英雄選擇">
+  <section ref="root" class="es2-roster" role="group" :aria-label="t('ES2 新英雄選擇')">
     <button v-for="hero in heroes" :key="hero.id" type="button" class="es2-roster__card"
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       @click="select(hero.id)" @keydown="move($event, hero.id)">
       <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${hero.portraitSrc})` }" aria-hidden="true"></span>
-      <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="hero.label + ' 角色插畫'" />
+      <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="t(hero.label + ' 角色插畫')" />
       <span class="es2-roster__copy">
-        <strong>{{ hero.label }}</strong>
-        <span class="es2-roster__subtitle">{{ hero.subtitle }}</span>
-        <span class="es2-roster__description">{{ hero.description }}</span>
-        <span class="es2-roster__stats">生命 {{ hero.stats.hp }} · 攻擊 {{ hero.stats.damage }} · 速度 {{ hero.stats.speed }}</span>
-        <span class="es2-roster__gear">起始武器 · {{ hero.startingEquipment }}</span>
+        <strong>{{ t(hero.label) }}</strong>
+        <span class="es2-roster__subtitle">{{ t(hero.subtitle) }}</span>
+        <span class="es2-roster__description">{{ t(hero.description) }}</span>
+        <span class="es2-roster__stats">{{ t("生命") }} {{ hero.stats.hp }} {{ t("· 攻擊") }} {{ hero.stats.damage }} {{ t("· 速度") }} {{ hero.stats.speed }}</span>
+        <span class="es2-roster__gear">{{ t("起始武器 ·") }} {{ t(hero.startingEquipment) }}</span>
         <span class="es2-roster__skill">
           <img data-hero-skill-icon class="es2-roster__skill-icon" :src="hero.specialIconSrc"
-            :alt="hero.label + ' 主動技能圖示'" width="44" height="44"
+            :alt="t(hero.label + ' 主動技能圖示')" width="44" height="44"
             loading="lazy" decoding="async" draggable="false" />
-          <span>主動技能 · {{ hero.special }}（冷卻 {{ hero.specialCooldown }} 秒）</span>
+          <span>{{ t("主動技能 ·") }} {{ t(hero.special) }}{{ t("（冷卻") }} {{ hero.specialCooldown }} {{ t("秒）") }}</span>
         </span>
-        <span class="es2-roster__traits">優勢 · {{ hero.strengths.join(' / ') }}</span>
-        <span class="es2-roster__traits">弱點 · {{ hero.weaknesses.join(' / ') }}</span>
-        <span class="es2-roster__selection">{{ selectedId === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span>
+        <span class="es2-roster__traits">{{ t("優勢 ·") }} {{ t(hero.strengths.join(' / ')) }}</span>
+        <span class="es2-roster__traits">{{ t("弱點 ·") }} {{ t(hero.weaknesses.join(' / ')) }}</span>
+        <span class="es2-roster__selection">{{ t(selectedId === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span>
       </span>
     </button>
   </section>

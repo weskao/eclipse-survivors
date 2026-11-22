@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
 import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
@@ -103,11 +104,11 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       :still="upgradeEffect === 'still'" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')" />
-    <Es2Message :active="resetOpen && !settingsOpen" kind="confirmation" title="重置所有遠征紀錄？"
-      message="成就、餘燼、戰績、造型及永久升級將全部刪除。" confirm-label="永久刪除" destructive
+    <Es2Message :active="resetOpen && !settingsOpen" kind="confirmation" :title="t('重置所有遠征紀錄？')"
+      :message="t('成就、餘燼、戰績、造型及永久升級將全部刪除。')" :confirm-label="t('永久刪除')" destructive
       @confirm="confirmReset" @cancel="resetOpen = false" />
     <Es2Message :active="!!notification && !settingsOpen" kind="notification"
-      :title="notification?.title ?? ''" :message="notification?.message ?? ''"
+      :title="t(notification?.title ?? '')" :message="t(notification?.message ?? '')"
       @confirm="emit('dismissNotification')" @cancel="emit('dismissNotification')" />
     <Es2Settings :active="settingsOpen && !loading" :upgrade-effect="upgradeEffect" :camera-shake="cameraShake"
       :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume" :sfx-volume="sfxVolume"
@@ -116,6 +117,6 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       @camera-shake="emit('cameraShake', $event)" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')"
       @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)"
       @accessibility="emit('accessibility', $event)" />
-    <Es2Loading :active="!!loading" :message="loading?.message" :hero="loading?.hero" :progress="loading?.progress" />
+    <Es2Loading :active="!!loading" :message="t(loading?.message)" :hero="loading?.hero" :progress="loading?.progress" />
   </div>
 </template>

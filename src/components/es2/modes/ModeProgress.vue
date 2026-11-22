@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed } from 'vue'
 import { getObjectiveMode } from '../../../game/content/modes/definitions'
 import { evaluateObjective, getObjectiveDifficulty, type ObjectiveState } from '../../../game/content/objectives/evaluator'
@@ -17,19 +18,19 @@ const progressLabel = computed(() => result.value.progress.required === null
 </script>
 
 <template>
-  <section class="es2-mode-progress" aria-label="ES2 模式進度" aria-live="polite">
-    <header><span>{{ rule.title }}</span><strong>{{ outcome }}</strong></header>
+  <section class="es2-mode-progress" :aria-label="t('ES2 模式進度')" aria-live="polite">
+    <header><span>{{ t(rule.title) }}</span><strong>{{ t(outcome) }}</strong></header>
     <div class="es2-mode-progress-detail">
-      <span>{{ result.progress.label }}</span>
-      <output>{{ progressLabel }}</output>
+      <span>{{ t(result.progress.label) }}</span>
+      <output>{{ t(progressLabel) }}</output>
     </div>
     <progress v-if="result.progress.required !== null"
       :value="result.progress.current" :max="result.progress.required"
-      :aria-label="result.progress.label" />
+      :aria-label="t(result.progress.label)" />
     <div class="es2-mode-progress-extra">
-      <small v-if="state.mode === 'relic-hunt'">聖物完整度 {{ state.relicIntegrity }}%</small>
-      <small v-if="difficulty.activeModifier">目前異變：{{ difficulty.activeModifier }}</small>
-      <small v-if="state.status !== 'active'">預估餘燼：{{ result.rewards.embers }}</small>
+      <small v-if="state.mode === 'relic-hunt'">{{ t("聖物完整度") }} {{ state.relicIntegrity }}%</small>
+      <small v-if="difficulty.activeModifier">{{ t("目前異變：") }}{{ difficulty.activeModifier }}</small>
+      <small v-if="state.status !== 'active'">{{ t("預估餘燼：") }}{{ result.rewards.embers }}</small>
     </div>
   </section>
 </template>
