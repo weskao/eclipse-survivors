@@ -202,3 +202,14 @@ it('emits chest/reward feedback once and never for replayed treasure', () => {
   expect(openTreasure(state, 1, seeded(9), emit)).toBeNull()
   expect(cues).toHaveLength(2)
 })
+
+
+it('honors exact 10% and 30% attack interval reductions in relic descriptions', () => {
+  const basic = setup()
+  const originalDelay = basic.hero!.delay
+  expect(acquireRelic(basic, 'relics:quicksilver-hourglass')).toBe(true)
+  expect(basic.hero!.delay).toBeCloseTo(originalDelay * 0.9)
+  const cursed = setup()
+  expect(acquireRelic(cursed, 'relics:hollow-idol')).toBe(true)
+  expect(cursed.hero!.delay).toBeCloseTo(originalDelay * 0.7)
+})
