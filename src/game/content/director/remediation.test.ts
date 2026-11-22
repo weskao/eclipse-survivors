@@ -220,3 +220,14 @@ it('rejects invalid progress, non-actor callbacks and malformed kill evidence', 
   })
   expect(() => adapter.advance(state(15))).toThrow()
 })
+
+
+it('prioritizes a due boss even after a huge timestamp skip without conflicting wave announcements', () => {
+  const director = createWaveDirector({ mode: 'quick', seed: 9 })
+  director.advance({ timeSeconds: 0, activeMobs: 0, hero: { x: 0, y: 0 },
+    viewport: { width: 960, height: 540 } })
+  const result = director.advance({ timeSeconds: 300, activeMobs: 0, hero: { x: 0, y: 0 },
+    viewport: { width: 960, height: 540 } })
+  expect(result.spawns.map(s => s.role)).toEqual(['boss'])
+  expect(result.events.map(e => e.kind)).toEqual(['boss'])
+})
