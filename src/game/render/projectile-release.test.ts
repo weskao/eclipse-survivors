@@ -6,6 +6,7 @@ import { sampleHeroAnimation } from './animation'
 import { drawRigSprite } from './characters'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
 import { createHeroSheets } from './hero-sheets'
+import { drawShots } from './effects'
 import { createRigidWeaponLayers, drawLoadedProjectile, loadedProjectileVisible } from './rigid-weapons'
 
 function fixture(job: JobId): GameState {
@@ -143,5 +144,22 @@ describe('fallback artwork safety', () => {
     drawRigSprite(ctx, fallback, 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), 'ranger')
     expect(draws).toHaveBeenCalledTimes(1)
     expect(draws.mock.calls[0]![0]).toBe(fallback)
+  })
+})
+
+describe('moving projectiles never drag their launch-point ghost through the world', () => {
+  it.each(['arrow', 'magic'] as const)('%s caps its historical trail to the immediate flight segment', kind => {
+    const s = fixture(kind === 'arrow' ? 'ranger' : 'wizard')
+    s.W = 1000
+    s.H = 800
+    s.shots.push({
+      x: 310, y: 200, prevX: 0, prevY: 200,
+      vx: 540, vy: 0, life: 1, kind, d: 10, r: 5,
+    })
+    const { ctx } = createFakeCtx()
+    const moves = vi.spyOn(ctx, 'moveTo')
+    drawShots(ctx, s, 0, 0)
+    expect(moves.mock.calls[0]![0]).toBeGreaterThan(280)
+    expect(moves.mock.calls[1]![0]).toBeGreaterThan(275)
   })
 })
