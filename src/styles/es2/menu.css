@@ -86,6 +86,7 @@
 .es2-card-glyph{font-size:3.4rem;color:var(--es2-rarity,#d2bb84);filter:drop-shadow(0 0 14px #c6bf8955)}
 .es2-evolution-sigil{position:absolute;right:10px;bottom:5px;font-size:2rem;color:#ffdc9d;animation:es2-glow 2.4s infinite alternate;pointer-events:none}
 .es2-card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 13px 0}
+.es2-rarity-icon{display:inline-block;width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:5px;pointer-events:none}
 .es2-rarity-label{font:700 .67rem system-ui,sans-serif;color:var(--es2-rarity,#b9c8d7);letter-spacing:.1em}
 .es2-key-hint{display:grid;place-items:center;width:24px;height:24px;border:1px solid #a8acaa;border-radius:5px;background:#0b1420;font:700 .76rem system-ui,sans-serif}
 .es2-card-name{font-size:1.08rem;line-height:1.4;padding:9px 13px 0;overflow-wrap:anywhere}
