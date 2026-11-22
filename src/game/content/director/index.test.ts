@@ -179,3 +179,16 @@ it('does not schedule a second boss when the legacy state says one already spawn
   expect(director.advance({ ...frame(300), bossSpawned: true }).spawns).toEqual([])
   expect(director.advance(frame(301)).spawns.filter(s => s.role === 'boss')).toEqual([])
 })
+
+it('keeps ultra-wide viewport spawns within the legacy 1700-unit mob culling boundary', () => {
+  const director = createWaveDirector({ mode: 'challenge', seed: 21 })
+  const huge = director.advance({
+    timeSeconds: 14, activeMobs: 0, hero: { x: 0, y: 0 },
+    viewport: { width: 4000, height: 2400 },
+  })
+  expect(huge.spawns.length).toBeGreaterThan(0)
+  for (const mob of huge.spawns) {
+    expect(mob.x * mob.x + mob.y * mob.y).toBeLessThan(1700 * 1700)
+    expect(mob.telegraphSeconds).toBeGreaterThan(1)
+  }
+})
