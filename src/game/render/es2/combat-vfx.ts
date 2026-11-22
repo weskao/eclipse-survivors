@@ -198,10 +198,17 @@ export function drawCombatEffect(
         break
       case 'poison-cloud':
         ring(ctx, 30 + strike * 52, '#7cbe80', 4, 0, 0.5)
-        for (let i = 0; i < count; i++) {
-          const v = DIRS[Math.floor(i * 24 / count)]!
-          ring(ctx, 7 + (i % 3) * 4 + strike * 6, i % 2 ? '#80b66b' : '#ad8bc2', 2,
-            v.y * (25 + strike * 46), 0.55, v.x * (25 + strike * 46))
+        // Batch alternating wisps by palette, avoiding 12 state changes/strokes.
+        for (let parity = 0; parity < 2; parity++) {
+          ctx.strokeStyle = parity ? '#80b66b' : '#ad8bc2'; ctx.lineWidth = 2
+          ctx.beginPath()
+          for (let i = parity; i < count; i += 2) {
+            const v = DIRS[Math.floor(i * 24 / count)]!
+            const r = 7 + (i % 3) * 4 + strike * 6
+            ctx.ellipse(v.x * (25 + strike * 46), v.y * (25 + strike * 46),
+              r, r * 0.55, 0, 0, TAU)
+          }
+          ctx.stroke()
         }
         break
       case 'gravity-vortex':
@@ -225,12 +232,14 @@ export function drawCombatEffect(
         shards(ctx, count, 14 + strike * 35, 5, '#77bbff', strike)
         break
       case 'dash-afterimage':
-        for (let i = 0; i < count; i++) {
-          const v = DIRS[Math.floor(i * 24 / count)]!
-          ctx.strokeStyle = i % 2 ? '#94c8e8' : '#d4f6ff'; ctx.lineWidth = 2
+        for (let parity = 0; parity < 2; parity++) {
+          ctx.strokeStyle = parity ? '#94c8e8' : '#d4f6ff'; ctx.lineWidth = 2
           ctx.beginPath()
-          ctx.moveTo(-23 - strike * 51 - i * 3, v.y * 20)
-          ctx.lineTo(17 - strike * 9, v.y * 12 + v.x * 6)
+          for (let i = parity; i < count; i += 2) {
+            const v = DIRS[Math.floor(i * 24 / count)]!
+            ctx.moveTo(-23 - strike * 51 - i * 3, v.y * 20)
+            ctx.lineTo(17 - strike * 9, v.y * 12 + v.x * 6)
+          }
           ctx.stroke()
         }
         break
