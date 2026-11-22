@@ -23,8 +23,8 @@ spawns events or provides UI. This branch exclusively owns `packs/events.ts` and
    New biomes must supply identical semantics for obstacles and hazards; do not
    assume every biome is indexed 0–3.
 6. For combat encounters, only spawn within `MAX_MOBS` and tag those mobs with
-   their origin event ID. Report each confirmed, unique death with
-   `director.reportKill(isElite, sourceEventId)`. Unrelated kills must never
+   their origin event ID. Report each confirmed, unique death (with stable mob identity and the current play clock) with
+   `director.reportKill(isElite, sourceEventId, state.time, mob)`. Unrelated kills must never
    count toward an event objective. Clear tags on reset/scene change.
 7. Implement `WorldEventTransaction` externally **as one atomic operation**,
    idempotent by `transaction.id`. Its `symbolic-loot` IDs are placeholders

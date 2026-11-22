@@ -10,7 +10,7 @@ export type WorldEventEffect =
   | { readonly type: 'encounter'; readonly id: string; readonly count: number }
 
 export interface WorldEventObjectiveDef {
-  readonly kind: 'stay' | 'survive' | 'kill'
+  readonly kind: 'stay' | 'kill'
   readonly seconds: number
   readonly count?: number
   readonly eliteOnly?: boolean
