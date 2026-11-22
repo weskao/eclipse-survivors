@@ -90,6 +90,27 @@ describe.each(BIOME_IDS)('%s cached biome renderer', id => {
     expect(made).toHaveLength(count)
   })
 
+
+  it('visually distinguishes ready and cooling-down interaction nodes', () => {
+    const env = createBiomeEnvironment(id, { seed: 42 })
+    const node = env.interactions(0, 0, 1400)[0]!
+    expect(node).toBeDefined()
+    const { ctx } = createFakeCtx()
+    const alphas: number[] = []
+    ctx.fillText = ((_glyph: string, x: number, y: number) => {
+      if (x === node.x && y === node.y + 6) alphas.push(ctx.globalAlpha)
+    }) as typeof ctx.fillText
+    const renderer = createBiomeRenderer(fakeCanvasFactory().make)
+    const view = { left: node.x - 60, top: node.y - 60, right: node.x + 60, bottom: node.y + 60 }
+    renderer.drawProps(ctx, env, view, 0)
+    expect(alphas).toContain(.68)
+    expect(env.interact(node, 0)).not.toBeNull()
+    renderer.drawProps(ctx, env, view, 1)
+    expect(alphas).toContain(.2)
+    renderer.drawProps(ctx, env, view, 10)
+    expect(alphas.at(-1)).toBe(.68)
+  })
+
   it('prepares exact minimap geometry and rejects oversized mobile render regions', () => {
     const env = createBiomeEnvironment(id, { seed: 17 })
     const renderer = createBiomeRenderer(fakeCanvasFactory().make)
