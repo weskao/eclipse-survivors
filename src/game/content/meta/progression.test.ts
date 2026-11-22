@@ -3,7 +3,7 @@ import { emptyProfile } from '../../../meta/profile'
 import type { RunStats } from '../../../meta/types'
 import {
   ACHIEVEMENTS, RESEARCH, applyCompletedRun, buyResearch, createMetaState,
-  getAchievementStates, getDiscoveryEntries, getRewardMetadata, getStartingLoadout,
+  getAchievementStates, getBonusStates, getDiscoveryEntries, getEquipmentStates, getResearchStates, getRewardMetadata, getStartingLoadout,
   parseMetaSnapshot, proposeV2Migration, readMetaSnapshot, resetMetaState,
   unlockStartingBonus, unlockStartingEquipment, validateMetaState,
 } from './index'
@@ -72,6 +72,33 @@ describe('isolated permanent meta progression', () => {
     expect(buyResearch(full, 'power').ok).toBe(false)
     expect(buyResearch(createMetaState(), 'power').ok).toBe(false)
     expect(buyResearch(initial, 'not-real').ok).toBe(false)
+  })
+
+  it('requires parent research nodes and exposes remaining upgrade costs', () => {
+    const initial = { ...createMetaState(), embers: 2000 }
+    expect(getResearchStates(initial).find(x => x.id === 'insight')?.locked).toBe(true)
+    expect(buyResearch(initial, 'insight').ok).toBe(false)
+    const powered = buyResearch(initial, 'power').state
+    expect(getResearchStates(powered).find(x => x.id === 'insight')?.locked).toBe(false)
+    expect(getResearchStates(powered).find(x => x.id === 'insight')?.nextCost).toBe(80)
+    const insight = buyResearch(powered, 'insight')
+    expect(insight.ok).toBe(true)
+    expect(buyResearch(insight.state, 'ember-study').ok).toBe(false)
+    const vital = buyResearch(insight.state, 'vitality').state
+    const scavenged = buyResearch(vital, 'scavenging')
+    expect(scavenged.ok).toBe(true)
+    expect(buyResearch(scavenged.state, 'ember-study').ok).toBe(true)
+  })
+
+  it('exposes locked and unlocked starter rewards for integration UI', () => {
+    const initial = createMetaState()
+    expect(getEquipmentStates(initial, 'knight').find(x => x.id === 'knight-aegis')?.locked).toBe(true)
+    expect(getBonusStates(initial).find(x => x.id === 'ember-spark')?.locked).toBe(true)
+    const rich = { ...initial, embers: 2000, mastery: { ...initial.mastery, knight: { xp: 1000, level: 4 } }, research: { ...initial.research, insight: 1 } }
+    const equip = unlockStartingEquipment(rich, 'knight-aegis').state
+    const bonus = unlockStartingBonus(equip, 'ember-spark').state
+    expect(getEquipmentStates(bonus, 'knight').find(x => x.id === 'knight-aegis')?.unlocked).toBe(true)
+    expect(getBonusStates(bonus).find(x => x.id === 'ember-spark')?.unlocked).toBe(true)
   })
 
   it('gates equipment and starter bonuses behind mastery and upgrades', () => {
