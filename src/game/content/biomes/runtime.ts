@@ -1,5 +1,5 @@
 import {
-  createBiomeSession,
+  createBiomeSession, CELL_SIZE,
   type BiomeEnvironment, type BiomeId, type HazardContact, type Point,
 } from './index'
 
@@ -75,10 +75,10 @@ export function createBiomeRuntime(initial: BiomeId, options: { seed?: number; m
     if (!Number.isFinite(distance) || distance > 2500) throw new RangeError('Biome navigation exceeds query bounds')
     if (lineOfSight(from, to, radius)) return [to]
     const nearestCorner = (p: Point): Point => {
-      const gx = Math.floor(p.x / 420) * 420, gy = Math.floor(p.y / 420) * 420
+      const gx = Math.floor(p.x / CELL_SIZE) * CELL_SIZE, gy = Math.floor(p.y / CELL_SIZE) * CELL_SIZE
       const candidates = [
-        { x: gx, y: gy }, { x: gx + 420, y: gy },
-        { x: gx, y: gy + 420 }, { x: gx + 420, y: gy + 420 },
+        { x: gx, y: gy }, { x: gx + CELL_SIZE, y: gy },
+        { x: gx, y: gy + CELL_SIZE }, { x: gx + CELL_SIZE, y: gy + CELL_SIZE },
       ]
       candidates.sort((a, b) => {
         const da = (a.x - p.x) ** 2 + (a.y - p.y) ** 2
