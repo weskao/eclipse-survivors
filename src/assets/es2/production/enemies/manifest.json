@@ -17,8 +17,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "ced9bb3df0055244d9d5fdc5b8b4f569aff424b958a427044c16c8ede905d9dd",
-      "qaNote": "Visual review required"
+      "sha256": "9e28e4801e8bc4df9c744a7ce30d6de9f1cd721ce7205f5f8f7bdf542b43af29",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "shadow-assassin:telegraph",
@@ -34,8 +34,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "841e54b9505195378746e9a7fb4832029e929aed8878803f7070bd6260222b03",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "bb1dddb40b86eaf47aa36a24a69389c7c7ff2b01f332c612344ebef5d058509e",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "necromancer",
@@ -51,8 +51,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "138cf8aa5f00e66bf8651fe625b2f3a884f19d3748bc0b62ab5ea75d4f91ddd1",
-      "qaNote": "Visual review required"
+      "sha256": "56fc06dc490b7f51c71f994aa3b72464111bcfe9a9dbb37714aa5bef3682918e",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "necromancer:telegraph",
@@ -68,8 +68,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "56508041b2c7de0ef6e1b7550d41a2eb6d24f0c93032d05f48fd37ea900fad62",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "d0a8c75ec72ef9668f98dae541be58f4bc9db54b312f5d09b8380784d9a4a063",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "dark-archer",
@@ -85,8 +85,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "677f8ccfb486e155a0591c2a0381ec6f8177f72b38d610d518b5b2174dfd761c",
-      "qaNote": "Visual review required"
+      "sha256": "3beb62ea74b6f619f3fa632f454de9fd6969a4ffb8071b6484bd5cb71e703f65",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "dark-archer:telegraph",
@@ -102,8 +102,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "74d2434b3b7caa0d6cd6b4aef9e68f8cffad745c84dcb4c22521a73cdab4ad22",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "d41d7b6ff01ee13e06d54c8098d3939243abe6d92c32ee034e032bc4f17098a5",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "plague-carrier",
@@ -119,8 +119,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "a29f5c7a7624aab92987a774e94f0cdc771a6c55fe24929b3210ab132693254c",
-      "qaNote": "Visual review required"
+      "sha256": "8de0311486c093deef00d22ff3fd8ceca353e548c7c97ac8691272ca45f7692e",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "plague-carrier:telegraph",
@@ -136,8 +136,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "5276459ecd0e6c593cbe691b83ff5c66a1aac4bd11fb46def727adb358d3d755",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "89f1a97d59674ee89b57117c302138d1b0ba377c9bdc7609f0155263159c43c6",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "shield-guardian",
@@ -153,8 +153,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "d6b9a10fc48e2f544b081c0136914cef329fb2ab1c5f8802b6c155fdf3a0eefc",
-      "qaNote": "Visual review required"
+      "sha256": "bc84ebd2a669e315cc36306a32b24c4308a0a3b02c0077944a6e540d65d40f11",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "shield-guardian:telegraph",
@@ -170,8 +170,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "2eeeb5be6a26964ee503ae15d5d52ed34eb1c2126edb85d0c854aac4a4ea98e1",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "28ab6f430aef6ff27a2c7cc6e08d30f77d88a69f204bd1db3816d0242bb48ee6",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "phantom",
@@ -187,8 +187,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "0df8a199b04026104757d73b5a602de5c5bb1dfbd7376d0dd00f4285125a3439",
-      "qaNote": "Visual review required"
+      "sha256": "12b2477da7dc74b33e353c2c6a450c34baf86a210a83867d3c83625a426bd854",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "phantom:telegraph",
@@ -204,8 +204,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "99e2937365913a44ef229d3df3385708b4c4c6834f668b5c8d0e6556951bdf99",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "105e1b8a00f5eeb5db03452204dc94ce1962b87dab12b40f19d78ec2f958544c",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "fire-imp",
@@ -221,8 +221,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "82e2006f2f1f834532502079cf73a68b8a3793ab808d94e8ac25de757362bc2f",
-      "qaNote": "Visual review required"
+      "sha256": "f8199e36e2b3098862b8bdffb3814c024a1a35e292854a20b9dd405ed5edbce2",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "fire-imp:telegraph",
@@ -238,8 +238,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "cee2fcee7747e073cce363bdb761ae9f3a25b5cf64f4d6a3febbbbae75e3c18f",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "7e6b3c36007afe952a5b8f5deffdecf1740d39ee001408b262b789d913c5e64b",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "frost-wraith",
@@ -255,8 +255,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "bfe086c907bee24887024a1ec3eba0bad85f95aca5d5864a8f9cb38e68f8b66c",
-      "qaNote": "Visual review required"
+      "sha256": "ee347e3bd72a2dc86bffe3fb3b7d638465978ff91f53c558151247b52fa0f6d1",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "frost-wraith:telegraph",
@@ -272,8 +272,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "9f79a143b70e57845dc89832875cf91602d7bfe9049bdbf6a701ab5230c6f0d2",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "3b73712ecbb906607b9374e98298734ee95e0d9d5d0afba20831f4010806cc29",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "berserker",
@@ -289,8 +289,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "6f04be9ead6146e4a6a3e02098e4c8fb8d41922f29b2f2cee205ac01525f879f",
-      "qaNote": "Visual review required"
+      "sha256": "5c2f4a803d520f9cb46c82b21552cb99504bba37ce5081abd2de8e68a1365e8c",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "berserker:telegraph",
@@ -306,8 +306,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "72bcf2604ee98ab3d20f71fc746a62338dc85bfe7e4437f31e61ca788dab570a",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "a04468f75374b65971096ba418b3dda3be6d77e1856e2b270670ae2feb85c685",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "crystal-sentinel",
@@ -323,8 +323,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "c6d437442c7cf578a1f4a7bd0ee9299afa0a0b247615d98834a8b8b2c3ebc879",
-      "qaNote": "Visual review required"
+      "sha256": "f0212487c17b3b6a7405878dbd7854497533eea2b2d1fb85472612712e1d8278",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "crystal-sentinel:telegraph",
@@ -340,8 +340,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "b701baa8581fff6b7f689cab8ad022943c4db9265d7768bc396d810e9579a88f",
-      "qaNote": "Verify world collision geometry and alpha matte"
+      "sha256": "a3a1cb35f929c27d24dc840b48b33ed1314b70ceb63dd5ced2860c2d9f70f570",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     }
   ]
 }

@@ -17,8 +17,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "de8f9d5e533f84280bf24bcdd09a2b64baadb51e32aaea60a8c5ea00bd29be9d",
-      "qaNote": "Three phase images, not runtime proof"
+      "sha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+      "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha."
     },
     {
       "id": "frost-sovereign",
@@ -34,8 +34,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "f16eb4c22efd34f88c5bb2ed06206573e80d86be3e634a07ff1f0e90341c68ee",
-      "qaNote": "Three phase images, not runtime proof"
+      "sha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+      "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha."
     },
     {
       "id": "infernal-titan",
@@ -51,8 +51,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "cdca154632b010c0b8be1d5d041dbbc979022b2d67eeb1157d56302ee1fbc0fa",
-      "qaNote": "Three phase images, not runtime proof"
+      "sha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+      "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha."
     },
     {
       "id": "eclipse-seraph",
@@ -68,8 +68,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "6e29de3583808900ec848da242904e1b22ad47f9918560751fdf674d3b19611b",
-      "qaNote": "Three phase images, not runtime proof"
+      "sha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+      "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha."
     }
   ]
 }

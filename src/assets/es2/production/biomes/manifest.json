@@ -34,8 +34,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "9166243f735aa601e84fe156c15d8034640c93b397ffb3c2da76d38c872de2b7",
-      "qaNote": "Illustration panel excerpts: props need alpha isolation/visual review"
+      "sha256": "02dcd88838c02fb7a4d430be4b88820f6d96cc5e1d7967515ef247fe6c865004",
+      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
     },
     {
       "id": "cursed-forest:ground",
@@ -68,8 +68,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "a6fbfbe21b51fda07cab57a59ac04cd76adbb1ba302891d83cf177fb14ddbc93",
-      "qaNote": "Illustration panel excerpts: props need alpha isolation/visual review"
+      "sha256": "b59308fe657ceb5ba7fa6b9ec3b343cbc28528ebfd80f2e3787160c610153df1",
+      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
     },
     {
       "id": "abyssal-necropolis:ground",
@@ -102,8 +102,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "46a0869650ad350f74e4775f33ed69be98c11b9a24ff18f482ce8937cbc141a9",
-      "qaNote": "Illustration panel excerpts: props need alpha isolation/visual review"
+      "sha256": "9de12d25e3cf61b388b33e16126847d850a022a64abc8399141e4ec79c04860b",
+      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
     },
     {
       "id": "celestial-rift:ground",
@@ -136,8 +136,8 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "ccaba555aa86b42babf6be1083ff19bc25dbba81d86275590ccbc1f472de0075",
-      "qaNote": "Illustration panel excerpts: props need alpha isolation/visual review"
+      "sha256": "79bed9709eff585ca4070a46720de67407a1145527f63f9c247cd48cec7967e2",
+      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
     }
   ]
 }

@@ -17,8 +17,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "5d51c13a6c73fe13527771c71899162257fddd2ed0e16d20bc2d06a4e32b6658",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "1616cb472bb36a82e05956de0e637169ea92cfcbbdd0f963c9b4b809c60c9759",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "treasure-rare",
@@ -34,8 +34,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "06e3b4c677ca0f5f5e55afb61df9e27afd240f581e9d6ecd095eba5f15551ca9",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "dec80e8459e594f578e5fc4d25a438b93d9df169eb357ad13d9fb66d91c4d61f",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "treasure-legendary",
@@ -51,8 +51,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "61096fd6a02718234c2068b51b28ff8111b9bdd1de4ac2e550a63eaed4823cda",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "8e03144be06b23aa7e6b46aa333d84b5e8986b4f0e9d633bb09cda85d071a050",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "treasure-cursed",
@@ -68,8 +68,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "fb81b31cefb3123a9ef8806e9d4ee34450f277ce95e3c4630849bca1945d0c1a",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "10d724a7fa6d6ddc33cd58aed84ca77c4a75371befa3ab241ae9e94cd415b0a3",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "rarity-common",
@@ -85,8 +85,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "469835edfaeee3a775026f2500edd2a26a12e840217bf99bb6d961a826dd2eb5",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "8e616f8d705b465324b27da89bfd376ad776954c289d771244f17a1c3b6c62bc",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "rarity-rare",
@@ -102,8 +102,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "900faa1392ef22d78aeb79539bb5bd1f9f0a5f97f6c621b9926a8968f4663b30",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "3c07ca5eeb2025daccf1becf2102b15a1308e3e8fea363ad42837ea289734695",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "rarity-legendary",
@@ -119,8 +119,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "c9a4842d115790b14732e5484cda4b4d301302493f550ea3544d0e94c2c699f1",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "5ef5630631c525c3970f017acc0c421f5cb30bd18400719fc5c70f525973e05c",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-health",
@@ -136,8 +136,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "629798aa405a1dc707780247e983f59cc5afc77b846d80d23da6b35491d7e590",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "59a58f1f4018c6606baf04a4a808c051c792d3ab9990ef9ab3dec16b8cf550be",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-xp",
@@ -153,8 +153,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "f05f22fbc223b1e75d19ceaa32fa7ddda0019c20d02a347f14acf7ec78b81f82",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "b8c396c67d8da45cde11603a771e2c2f49cde578e30faef996221292505a47c6",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-cooldown",
@@ -170,8 +170,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "4bec6bad947b0343737ea9fc764a575637e5e6be78d6fa58fa6ffdb9e5b809db",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "d6278ecd2ffd71a1731ec06e299d987de62b4748ae6f6d20f7422506db5f53f8",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-quest",
@@ -187,8 +187,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "87228e6ae4eaf969af034cdd255ca3ccdcc8af40ac98c25f15f7042422ef2ae1",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "2d5c6374b85dc9a38dcd4780c76533ae2522ab0af1123e20a3e7ecb598edde1b",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-boss",
@@ -204,8 +204,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "de2d3d187799d27d1cb92284b74bb3d8366b5ae8cde7b11966b17cb542281624",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "4ce725a455b99e471447032528abd55b9df308b83ef5c7b9f8c072b39a6a8e99",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-survivor",
@@ -221,8 +221,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "de3a35665946f2ae2d9380891aebeec536b991ce58e57fd6dde9568e2697ef32",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "7ff4cbbd66d4915103c7b66533d2cfe47eb0ce676fd3b3632674cc935ae68e12",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-evolution",
@@ -238,8 +238,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "bdc72fc26fa3c8f6a5aae9e8c6c73111e0531e0af724d990e7a89963daad0b1a",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "fe6c8a323a4dabbafde1bcd1101345eec0bdcd10de19917f05c864b159fb5231",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-explorer",
@@ -255,8 +255,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "0566b851919b57a839bbea7be7eccbfc1afcc1673ed7a7c0fe455321825c95cd",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "bc3da4afb758ba50ea463a70ddba095d20aa8bdd9b626728a30acdac340a2469",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-collector",
@@ -272,8 +272,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "de64baa5946d9f2eb745bb9226c6ed4357aea9ecda68f986b49fc839dae185a8",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "7a56f968ff6ca4299b74808487a41cd473833781772e19a7e456aacb15f3d5e8",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-flawless",
@@ -289,8 +289,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "0ab233805b19ff704cd98a4e7ebac3c2b9e4e0afe95dbed4b52e386d8b405905",
-      "qaNote": "Preview for mobile accessibility/alpha edge review"
+      "sha256": "0046b453fe538510d39db81d7b010b4dd1463fb8066de047db960981919f8e30",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     }
   ]
 }
