@@ -178,13 +178,42 @@ describe('world event contract', () => {
     const evt = director.spawn('events:elite-hunt', w, point)!
     near(w)
     expect(director.choose(evt.id, 'hunt', w)).toBe('applied')
-    director.reportKill(false, evt.id)
+    const grunt = {}
+    director.reportKill(false, evt.id, w.time, grunt)
     expect(applied).toHaveLength(1)
-    director.reportKill(true, evt.id)
+    const elite = {}
+    director.reportKill(true, evt.id, w.time, elite)
+    director.reportKill(true, evt.id, w.time, elite) // duplicate kill callback
     director.tick(w)
     expect(applied).toHaveLength(2)
     director.tick(w)
     expect(applied).toHaveLength(2)
+  })
+
+  it('does not credit late or duplicate kills toward deferred rewards', () => {
+    const { director, applied } = setup()
+    const w = world()
+    const evt = director.spawn('events:monster-ambush', w, point)!
+    near(w)
+    expect(director.choose(evt.id, 'fight', w)).toBe('applied')
+    const mob = {}
+    director.reportKill(false, evt.id, 1, mob)
+    director.reportKill(false, evt.id, 1, mob)
+    w.time = 19
+    director.reportKill(false, evt.id, w.time, {})
+    director.tick(w)
+    expect(applied).toHaveLength(1)
+    expect(director.objectives).toHaveLength(0)
+  })
+
+  it('rejects non-finite clocks and coordinates rather than leaving permanent markers', () => {
+    const { director } = setup()
+    const w = world()
+    w.time = Number.NaN
+    expect(director.spawn('events:divine-shrine', w, point)).toBeNull()
+    w.time = 0
+    w.hero.x = Number.POSITIVE_INFINITY
+    expect(director.spawn('events:divine-shrine', w, point)).toBeNull()
   })
 
   it('adapts terrain/hazards from existing world and uses an idempotent commit bridge', () => {
