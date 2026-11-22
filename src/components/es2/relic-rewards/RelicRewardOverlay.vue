@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import Es2Dialog from '../menu/Es2Dialog.vue'
 import { RELIC_BY_ID, RELICS, TREASURE_UI, type RelicDefinition, type RelicId } from '../../../game/content/relics/catalog'
 import type { TreasureOffer, inventorySnapshot } from '../../../game/content/relics/runtime'
@@ -32,24 +32,29 @@ watch(() => [props.active, props.offer?.chestId, props.offer?.options.join(','),
   busy.value = false
 })
 
+/** Guard against duplicate events in one turn; never soft-lock after a rejected host action. */
+function lockTurn(): void {
+  busy.value = true
+  void nextTick(() => { busy.value = false })
+}
 function claim(id: RelicId): void {
   if (!props.active || busy.value || !props.offer || !choices.value.some(relic => relic.id === id)) return
-  busy.value = true
+  lockTurn()
   emit('claim', props.offer.chestId, id)
 }
 function reroll(): void {
   if (!props.active || busy.value || !canReroll.value || !props.offer) return
-  busy.value = true
+  lockTurn()
   emit('reroll', props.offer.chestId)
 }
 function banish(id: RelicId): void {
   if (!props.active || busy.value || !props.offer || !choices.value.some(relic => relic.id === id) || !canBanish(id)) return
-  busy.value = true
+  lockTurn()
   emit('banish', props.offer.chestId, id)
 }
 function decline(): void {
   if (!props.active || busy.value || !props.offer) return
-  busy.value = true
+  lockTurn()
   emit('decline', props.offer.chestId)
 }
 function shortcut(event: KeyboardEvent): void {
