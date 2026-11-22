@@ -34,6 +34,31 @@ describe('ES2 release gate: real game-session selection (RED until host wiring)'
     },
   )
 
+  it('schedules a real boss encounter instead of just recording Boss Rush metadata', () => {
+    const engine = createEngine({ audio: silentAudio() })
+    engine.selectRunMode('boss-rush' as RunModeId)
+    engine.start()
+    if (!engine.state.hero) throw new Error('No live hero')
+    engine.state.hero.inv = 200
+    for (let tick = 0; tick < 27; tick++) engine.advance(1)
+    expect(engine.state.mobs.some(mob => mob.type === 'boss' && mob.hp > 0)).toBe(true)
+    expect(engine.state.mode).toBe('play')
+    expect(engine.ui.objectiveProgress?.bosses).toBe(0)
+  })
+
+  it('freezes the authoritative Endless Eclipse objective clock during pause', () => {
+    const engine = createEngine({ audio: silentAudio() })
+    engine.selectRunMode('endless-eclipse' as RunModeId)
+    engine.start()
+    engine.advance(1)
+    const before = engine.ui.objectiveProgress?.seconds
+    expect(before).toBeGreaterThan(0)
+    engine.togglePause()
+    engine.advance(10)
+    expect(engine.ui.objectiveProgress?.seconds).toBe(before)
+    expect(engine.state.mode).toBe('paused')
+  })
+
   it.each(['boss-rush', 'endless-eclipse', 'relic-hunt', 'cursed-expedition', 'chaos-arena'])(
     'starts a session with authoritative %s rules rather than falling back to quick',
     id => {
