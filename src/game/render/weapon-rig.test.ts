@@ -5,7 +5,8 @@ import { createHero, createState } from '../state'
 import type { GameState, JobId, Mob } from '../types'
 import { sampleHeroAnimation } from './animation'
 import { drawRigSprite } from './characters'
-import { createFakeCtx, fakeImage } from './fakes'
+import { createFakeCtx, fakeCanvasFactory } from './fakes'
+import { createRigidWeaponLayers } from './rigid-weapons'
 import { sampleWeaponRig } from './weapon-rig'
 import { getFiringOrigin } from '../weapon-geometry'
 
@@ -87,12 +88,16 @@ describe('articulated texture rendering', () => {
     const s = setup('knight')
     const { ctx } = createFakeCtx()
     const turn = vi.spyOn(ctx, 'rotate')
-    drawRigSprite(ctx, fakeImage(true), 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight')
-    expect(turn).not.toHaveBeenCalled()
+    const source = document.createElement('canvas')
+    source.width = 340
+    source.height = 390
+    const layers = createRigidWeaponLayers(source, 'knight', fakeCanvasFactory().make)!
+    drawRigSprite(ctx, source, 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight', layers)
+    expect(turn.mock.calls.every(([angle]) => Math.abs(angle) < 0.001)).toBe(true)
     s.hero!.strike = 0.16
     s.hero!.aimAngle = 0.65
     turn.mockClear()
-    drawRigSprite(ctx, fakeImage(true), 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight')
+    drawRigSprite(ctx, source, 108, 134, s.hero!, sampleHeroAnimation(s, s.hero!), 'knight', layers)
     expect(turn.mock.calls.some(([angle]) => Math.abs(angle) > 0.01)).toBe(true)
   })
 })
@@ -105,7 +110,11 @@ describe('aim-dependent weapon mesh', () => {
       s.hero!.aimAngle = angle
       const { ctx } = createFakeCtx()
       const spy = vi.spyOn(ctx, 'rotate')
-      drawRigSprite(ctx, fakeImage(true), 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), job)
+      const source = document.createElement('canvas')
+      source.width = 340
+      source.height = 390
+      const layers = createRigidWeaponLayers(source, job, fakeCanvasFactory().make)!
+      drawRigSprite(ctx, source, 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), job, layers)
       return spy.mock.calls.map(([theta]) => theta)
     }
     const up = rotations(-0.8)
