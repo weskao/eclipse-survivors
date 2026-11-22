@@ -63,6 +63,41 @@ describe('real raster frame art in gameplay', () => {
     }
   })
 
+
+  it('uses a dedicated eight-frame run sheet instead of recycled attack recovery frames', () => {
+    const s = createState()
+    s.choice = 'ranger'
+    s.mode = 'play'
+    s.hero = createHero('ranger')
+    const hero = s.hero
+    hero.moveAmount = 1
+    hero.vx = 90
+    hero.step = Math.PI
+    const atlas = readyAtlas()
+    const run = new Image()
+    Object.defineProperty(run, 'complete', { value: true })
+    Object.defineProperty(run, 'naturalWidth', { value: 512 })
+    Object.defineProperty(run, 'naturalHeight', { value: 240 })
+    const { ctx } = createFakeCtx()
+    const draw = vi.spyOn(ctx, 'drawImage')
+    expect(drawPaintedHero(ctx, atlas, 'ranger', hero, sampleHeroAnimation(s, hero), 110, 145, run)).toBe(true)
+    expect(draw.mock.calls.at(-1)![0]).toBe(run)
+    expect(draw.mock.calls.at(-1)![3]).toBe(64)
+    expect(draw.mock.calls.at(-1)![4]).toBe(80)
+  })
+
+  it('falls back to attack atlas safely while the dedicated run sheet is loading', () => {
+    const s = createState()
+    s.choice = 'knight'
+    s.mode = 'play'
+    s.hero = createHero('knight')
+    s.hero.moveAmount = 1
+    const { ctx } = createFakeCtx()
+    const draw = vi.spyOn(ctx, 'drawImage')
+    drawPaintedHero(ctx, readyAtlas(), 'knight', s.hero, sampleHeroAnimation(s, s.hero), 110, 145, new Image())
+    expect(draw.mock.calls.at(-1)![0]).toBeDefined()
+  })
+
   it('preserves the old renderer until the new sprite sheet has decoded', () => {
     const state = createState()
     state.choice = 'ranger'
