@@ -61,6 +61,9 @@ class TestC104ProductionArt(unittest.TestCase):
                         for index in range(entry['frames']):
                             cell = image.crop((index*width, 0, (index+1)*width, height))
                             alpha = cell.getchannel('A')
+                            if entry['kind'] == 'biome-scene':
+                                self.assertEqual(alpha.getextrema(), (255, 255),
+                                                 'Full-scene art must preserve dark pixels without transparent holes')
                             self.assertIsNotNone(alpha.getbbox())
                             edges = [alpha.crop((0, 0, width, 2)),
                                      alpha.crop((0, height-2, width, height)),
