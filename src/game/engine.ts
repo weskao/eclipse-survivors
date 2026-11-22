@@ -82,6 +82,8 @@ declare global {
 export interface Engine extends GameCommands {
   readonly contentRegistry: ContentRegistry
   readonly activeBiomeId: BiomeId | null
+  readonly biomeInteractionAvailable: boolean
+  interactBiome(): boolean
   setVisualPresentationPolicy(policy: VisualPresentationPolicy): void
   /** Only active in development with ?content-showcase=1. */
   showcaseGrant(id: ContentId): boolean
@@ -740,6 +742,27 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function closeWorldEvent(): void { ui.worldEventChoice = null }
 
+  function nearbyBiomeNode() {
+    const hero = s.hero
+    const environment = biomeRuntime?.environment
+    if (!hero || !environment || s.mode !== 'play' || ui.settingsOpen || ui.worldEventChoice) return null
+    const time = biomeRuntime!.time
+    return environment.interactions(hero.x, hero.y, 76).find(node =>
+      Math.hypot(node.x - hero.x, node.y - hero.y) <= node.r + 22 &&
+      environment.interactionAvailable(node, time)) ?? null
+  }
+
+  function interactBiome(): boolean {
+    const node = nearbyBiomeNode()
+    if (!node || !biomeRuntime || !s.hero) return false
+    const applied = biomeRuntime.interact({ x: s.hero.x, y: s.hero.y })
+    if (!applied) return false
+    hooks.sfx('scene')
+    hooks.message('✦ 祭壇已淨化，附近環境危險暫時受到壓制')
+    hud()
+    return true
+  }
+
   const testApi: TestApi = {
     get mode() { return s.mode },
     get enemies() { return s.mobs.length },
@@ -833,6 +856,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
       if (e.code === 'Space' && s.mode === 'play') heroDash(s, hooks)
+      if (e.code === 'KeyE' && s.mode === 'play') interactBiome()
       if (e.code === 'KeyP' || e.code === 'Escape') togglePause()
       const n = upgradeKeyIndex(e.code)
       if (s.mode === 'level' && ui.specialChoice) {
@@ -953,6 +977,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   return {
     contentRegistry,
     get activeBiomeId() { return biomeRuntime?.environment.definition.id ?? null },
+    get biomeInteractionAvailable() { return nearbyBiomeNode() !== null },
+    interactBiome,
     setVisualPresentationPolicy(policy) { presentationPolicy = policy; resizeRenderer() },
     showcaseGrant(id) {
       if (!devShowcase() || s.mode !== 'play' || !s.hero) return false

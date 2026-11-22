@@ -34,6 +34,10 @@ const devShowcase = import.meta.env.DEV && typeof location !== 'undefined' &&
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
 const hudRef = useTemplateRef<InstanceType<typeof CombatHud>>('hud')
 const touchActive = computed(() => ui.mode === 'play' && ui.coarsePointer)
+const biomeInteractionAvailable = computed(() => {
+  void ui.hud // Follow the engine's existing 8-Hz authoritative HUD snapshot.
+  return engine.biomeInteractionAvailable
+})
 const worldMarkerButtons = computed(() => {
   void ui.hud
   return ui.worldEventMarkers.flatMap(event => {
@@ -136,6 +140,9 @@ onBeforeUnmount(() => {
       :aria-label="'互動世界事件 ' + marker.event.kind.slice(7)"
       @click="engine.openWorldEvent(marker.event.id)">✧</button>
   </div>
+  <button v-if="ui.mode === 'play' && biomeInteractionAvailable" type="button"
+    data-testid="es2-biome-interact" class="es2-biome-interact"
+    aria-label="淨化附近祭壇，鍵盤 E" @click="engine.interactBiome">✧ 淨化 <kbd>E</kbd></button>
   <WorldEventPanel :event="ui.worldEventChoice?.event ?? null"
     :options="ui.worldEventChoice?.options ?? []" :feedback="ui.worldEventChoice?.feedback"
     @choose="engine.chooseWorldEvent" @close="engine.closeWorldEvent" />
@@ -216,5 +223,19 @@ onBeforeUnmount(() => {
   background: #34213bea; color: #fff0ba; font-size: 1.45rem; cursor: pointer;
   box-shadow: 0 0 14px #b6787a88; }
 .es2-world-marker:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+.es2-biome-interact {
+  position: fixed; z-index: 12; right: max(18px, env(safe-area-inset-right));
+  bottom: calc(env(safe-area-inset-bottom) + 134px);
+  min-height: 44px; min-width: 88px; padding: .45rem .7rem;
+  border: 2px solid #eecb8d; border-radius: 24px;
+  background: #241d36e8; color: #fff2c9; font: 700 13px system-ui;
+  box-shadow: 0 5px 16px #0b0719a8; cursor: pointer;
+}
+.es2-biome-interact kbd { font: 700 10px monospace; opacity: .75; margin-left: .4rem; }
+.es2-biome-interact:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+@media (max-height: 440px) {
+  .es2-biome-interact { right: max(105px, calc(env(safe-area-inset-right) + 94px));
+    bottom: calc(env(safe-area-inset-bottom) + 26px); }
+}
 @media (prefers-reduced-motion: reduce) { .es2-world-marker { transition: none; } }
 </style>
