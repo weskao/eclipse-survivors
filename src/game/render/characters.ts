@@ -282,7 +282,12 @@ export function drawCharacter(
       // original fallback mirror for unloaded art.
       const directionalReady = productionImage?.complete
         && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512
-      if (hero.face < 0 && !directionalReady) ctx.scale(-1, 1)
+      // Follow the same octant/facing contract as the original three heroes.
+      // A 900px portrait has only one authored view, so mirror it for westward
+      // aim without pretending to have eight different camera perspectives.
+      const facing = anim.direction === 2 || anim.direction === 6 ? hero.face
+        : anim.direction > 2 && anim.direction < 6 ? -1 : 1
+      if (facing < 0 && !directionalReady) ctx.scale(-1, 1)
       let productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets) : false
       if (!productionDrawn && isSpecializationId(s.heroId)) {
