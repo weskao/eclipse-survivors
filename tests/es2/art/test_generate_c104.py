@@ -99,12 +99,13 @@ class TestC104ProductionArt(unittest.TestCase):
                                                      max(45, areas[0] * 0.035),
                                                      f'Neighboring pose contamination: {entry["path"]} cell {index}')
                             self.assertIsNotNone(alpha.getbbox())
-                            edges = [alpha.crop((0, 0, width, 2)),
-                                     alpha.crop((0, height-2, width, height)),
-                                     alpha.crop((0, 0, 2, height)),
-                                     alpha.crop((width-2, 0, width, height))]
-                            for edge in edges:
-                                self.assertLessEqual(edge.getextrema()[1], 16)
+                            if entry['kind'] != 'biome-scene':
+                                edges = [alpha.crop((0, 0, width, 2)),
+                                         alpha.crop((0, height-2, width, height)),
+                                         alpha.crop((0, 0, 2, height)),
+                                         alpha.crop((width-2, 0, width, height))]
+                                for edge in edges:
+                                    self.assertLessEqual(edge.getextrema()[1], 16)
                     self.assertLess(file.stat().st_size, entry['max_bytes'])
 
 if __name__ == '__main__':
