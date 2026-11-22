@@ -166,7 +166,7 @@ describe('real attack mechanics', () => {
     s.mobs[0]!.y = 250
     const linedUp = mob(400, 0)
     s.mobs.push(linedUp)
-    advance(s, registry, 1.0)
+    advance(s, registry, 0.7)
     const beam = runtimeOf(s).beam
     expect(beam).not.toBeNull()
     expect(beam!.ux).toBeGreaterThan(0.99)
