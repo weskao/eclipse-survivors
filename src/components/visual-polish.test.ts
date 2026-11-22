@@ -8,6 +8,7 @@ const menuProps = {
   active: true,
   choice: 'knight' as const,
   musicOn: true,
+  audioUnlocked: true,
   sfxOn: true,
   version: '1.0.0',
 }
