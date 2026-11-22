@@ -1,4 +1,4 @@
-import type { ContentPack } from '../contracts'
+import type { ContentEffectDefinition, ContentPack } from '../contracts'
 import type { ContentVisualFx } from '../../types'
 import {
   COMBAT_FX_BY_KIND, COMBAT_FX_SPECS, drawCombatEffect,
@@ -39,7 +39,7 @@ export function createCombatVfxPack(settings: CombatVfxPreferences = {}): Conten
   }
   return {
     id: 'combat-vfx',
-    effects: COMBAT_FX_SPECS.map(spec => ({
+    effects: COMBAT_FX_SPECS.map((spec): ContentEffectDefinition => ({
       id: spec.id, title: spec.title,
       draw(ctx, state, effect, ox, oy) {
         drawCombatEffect(ctx, state, effect, ox, oy, spec.kind, preferences)
