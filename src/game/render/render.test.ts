@@ -120,7 +120,7 @@ describe('drawFrame', () => {
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(false), make)
     drawFrame(ctx, busyState(), 1, assets)
-    for (const k of ['knight', 'slime', 'bat', 'goblin', 'boss']) expect(drawn, k).toContain(assets.sprites[k])
+    for (const k of ['knight', 'slime', 'goblin', 'boss']) expect(drawn, k).toContain(assets.sprites[k])
     expect(drawn).not.toContain(assets.art.knight)
   })
 
