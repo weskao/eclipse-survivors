@@ -36,3 +36,15 @@ describe('independent replayable mode definitions', () => {
     expect(getObjectiveMode('chaos-arena').waveReadySeconds).toHaveLength(8)
   })
 })
+
+
+describe('immutable mode schedules', () => {
+  it.each(objectiveModeIds)('%s protects public rule metadata from mutation', id => {
+    const mode = getObjectiveMode(id)
+    expect(Object.isFrozen(mode)).toBe(true)
+    expect(Object.isFrozen(mode.preRunModifiers)).toBe(true)
+    expect(Object.isFrozen(mode.bossReadySeconds)).toBe(true)
+    expect(Object.isFrozen(mode.relicReadySeconds)).toBe(true)
+    expect(Object.isFrozen(mode.waveReadySeconds)).toBe(true)
+  })
+})
