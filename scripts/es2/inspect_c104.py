@@ -3,13 +3,13 @@ from PIL import Image, ImageOps, ImageDraw, ImageFont
 from pathlib import Path
 import hashlib, json, math
 
-source = Path("assets/images")
+from generate_c104_assets import SOURCE_DIR as source, SOURCE_FILES  # same dir when run as a script
 out = Path("art-inspection")
 out.mkdir(exist_ok=True)
 meta=[]
 tiles=[]
 for n in range(1,11):
-    src=source / f"imgs{n}.png"
+    src=source / SOURCE_FILES[n]
     with Image.open(src) as original:
         img=original.convert("RGBA")
         width,height=img.size
@@ -20,7 +20,7 @@ for n in range(1,11):
         card=Image.new("RGBA",(440,470),(30,29,40,255))
         card.alpha_composite(thumb,((440-thumb.width)//2,20+(420-thumb.height)//2))
         d=ImageDraw.Draw(card)
-        d.text((10,444),f"imgs{n}.png | {width} x {height} | alpha {alpha}",fill=(255,245,225))
+        d.text((10,444),f"{n}:{SOURCE_FILES[n][:28]} | {width} x {height} | alpha {alpha}",fill=(255,245,225))
         tiles.append(card)
         meta.append({"path":str(src),"width":width,"height":height,
             "ratio":ratio,"mode":original.mode,"alpha_extrema":alpha,

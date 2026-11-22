@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: c104-10-original-source-pngs
-          path: assets/images/img*.png
+          path: src/assets/es2/source/c104/*.png
           if-no-files-found: error
       - run: python scripts/es2/verify_runtime_atlases.py
       - uses: actions/upload-artifact@v4

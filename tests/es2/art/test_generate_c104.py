@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from PIL import Image
 
-from scripts.es2.generate_c104_assets import generate_assets, ASSET_BOXES, UI_BOXES
+from scripts.es2.generate_c104_assets import generate_assets, ASSET_BOXES, UI_BOXES, SOURCE_DIR, SOURCE_FILES
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -36,7 +36,7 @@ def alpha_component_sizes(alpha):
 class TestC104ProductionArt(unittest.TestCase):
     def test_explicit_boxes_are_nonoverlapping_and_in_source(self):
         for source, rects in ASSET_BOXES.items():
-            with Image.open(ROOT / 'assets' / 'images' / f'imgs{source}.png') as image:
+            with Image.open(SOURCE_DIR / SOURCE_FILES[source]) as image:
                 frames = [(key, box) for key, box in rects.items() if key.startswith('frame:')]
                 for key, (x0, y0, x1, y1) in rects.items():
                     with self.subTest(source=source, key=key):
@@ -68,7 +68,7 @@ class TestC104ProductionArt(unittest.TestCase):
                 dest = output / 'src/assets/es2/production/heroes' / source.name
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 copy2(source, dest)
-            items = generate_assets(ROOT / 'assets/images', output)
+            items = generate_assets(SOURCE_DIR, output)
             expected = {'enemy-body': 10, 'enemy-telegraph': 10,
                         'boss-phases': 4, 'biome-decor': 4,
                         'biome-scene': 4, 'ui': 17, 'hero-special': 3}

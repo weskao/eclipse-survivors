@@ -2,7 +2,8 @@
 
 Never guess grids. Every cropped pose/prop/UI icon has one explicit, disjoint
 source ownership rectangle. Neighbouring art is never read outside the rectangle.
-Inputs: the ten immutable assets/images/imgs{1..10}.png files from c104b4be.
+Inputs: the ten immutable c104b4be source sheets, renamed by content under
+src/assets/es2/source/c104/ (see SOURCE_FILES; numeric ids keep c104 order).
 """
 from __future__ import annotations
 
@@ -11,8 +12,21 @@ import json
 from pathlib import Path
 from PIL import Image, ImageOps
 
-SOURCE_FILES = tuple(f'imgs{i}.png' for i in range(1, 11))
 ROOT = Path(__file__).resolve().parents[2]
+SOURCE_DIR = ROOT / "src/assets/es2/source/c104"
+# c104 upload order (imgs1..imgs10) -> content-named file.
+SOURCE_FILES: dict[int, str] = {
+    1: "biomes-abyssal-necropolis-celestial-rift-sheet.png",
+    2: "hero-shadowblade-run-attack-sheet.png",
+    3: "hero-spirit-summoner-run-cast-sheet.png",
+    4: "hero-crimson-paladin-run-attack-sheet.png",
+    5: "enemies-phantom-imp-wraith-berserker-sentinel-sheet.png",
+    6: "enemies-assassin-necromancer-archer-plague-guardian-sheet.png",
+    7: "bosses-abyss-monarch-frost-sovereign-sheet.png",
+    8: "bosses-infernal-titan-eclipse-seraph-sheet.png",
+    9: "biomes-blood-moon-cathedral-cursed-forest-sheet.png",
+    10: "ui-treasure-rarity-hud-ornaments-sheet.png",
+}
 ASSET_BOXES: dict[int, dict[str, tuple[int,int,int,int]]] = {i:{} for i in range(1,11)}
 
 # Source 6 = shadow assassin, necromancer, archer, plague carrier, guardian.
@@ -107,7 +121,7 @@ SPECIALS=('shadowblade','spirit-summoner','crimson-paladin')
 
 def validate_geometry(source_dir: Path)->None:
     for source, rects in ASSET_BOXES.items():
-        with Image.open(source_dir/f'imgs{source}.png') as im:
+        with Image.open(source_dir/SOURCE_FILES[source]) as im:
             for label,(x0,y0,x1,y1) in rects.items():
                 if not(0<=x0<x1<=im.width and 0<=y0<y1<=im.height):
                     raise ValueError(f'Out-of-bounds {source}: {label}')
@@ -217,7 +231,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
     source_dir=Path(source_dir)
     output=Path(output)
     validate_geometry(source_dir)
-    sources={i:Image.open(source_dir/f'imgs{i}.png').convert('RGBA') for i in range(1,11)}
+    sources={i:Image.open(source_dir/SOURCE_FILES[i]).convert('RGBA') for i in range(1,11)}
     produced=[]
     def emit(name:str,kind:str,image:Image.Image,frames:int,cell:tuple[int,int],source:int|None,boxes:list[tuple[int,int,int,int]],max_bytes:int)->None:
         path=output/name
@@ -227,7 +241,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
             image.save(path,'WEBP',quality=64,alpha_quality=72,method=5)
         if path.stat().st_size>=max_bytes:raise ValueError(f'Budget exceeded: {name} {path.stat().st_size}')
         produced.append({'path':name,'kind':kind,'size':list(image.size),'frames':frames,
-            'cell':list(cell),'source':f'imgs{source}.png' if source else 'hero-8dir-WebP',
+            'cell':list(cell),'source':SOURCE_FILES[source] if source else 'hero-8dir-WebP',
             'sourceBoxes':boxes,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
             'bytes':path.stat().st_size,'max_bytes':max_bytes})
 
@@ -318,7 +332,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
     prov=output/'src/assets/es2/production/c104-provenance.json'
     prov.parent.mkdir(parents=True,exist_ok=True)
     prov.write_text(json.dumps({'schemaVersion':1,'sourceCommit':'c104b4be43fbfe9dad2dd8a1b270b9e47d63e1c0',
-      'sourceAssets':{f'imgs{i}.png':hashlib.sha256((source_dir/f'imgs{i}.png').read_bytes()).hexdigest() for i in range(1,11)},
+      'sourceAssets':{SOURCE_FILES[i]:hashlib.sha256((source_dir/SOURCE_FILES[i]).read_bytes()).hexdigest() for i in range(1,11)},
       'visualStatus':'review-required', 'derived':produced},ensure_ascii=False,indent=2)+'\n')
     return produced
 
@@ -326,7 +340,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
 if __name__=='__main__':
     import argparse
     parser=argparse.ArgumentParser()
-    parser.add_argument('--source',type=Path,default=ROOT/'assets/images')
+    parser.add_argument('--source',type=Path,default=SOURCE_DIR)
     parser.add_argument('--output',type=Path,default=ROOT)
     args=parser.parse_args()
     items=generate_assets(args.source,args.output)

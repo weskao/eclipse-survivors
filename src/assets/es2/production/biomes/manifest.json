@@ -36,7 +36,7 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "02dcd88838c02fb7a4d430be4b88820f6d96cc5e1d7967515ef247fe6c865004",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): biomes-blood-moon-cathedral-cursed-forest-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "cursed-forest:ground",
@@ -70,7 +70,7 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "b59308fe657ceb5ba7fa6b9ec3b343cbc28528ebfd80f2e3787160c610153df1",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): biomes-blood-moon-cathedral-cursed-forest-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "abyssal-necropolis:ground",
@@ -104,7 +104,7 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "9de12d25e3cf61b388b33e16126847d850a022a64abc8399141e4ec79c04860b",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): biomes-abyssal-necropolis-celestial-rift-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "celestial-rift:ground",
@@ -138,7 +138,7 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "79bed9709eff585ca4070a46720de67407a1145527f63f9c247cd48cec7967e2",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): biomes-abyssal-necropolis-celestial-rift-sheet.png; visually review animation continuity and alpha."
     }
   ]
 }

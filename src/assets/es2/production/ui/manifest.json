@@ -19,7 +19,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "1616cb472bb36a82e05956de0e637169ea92cfcbbdd0f963c9b4b809c60c9759",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "treasure-rare",
@@ -36,7 +36,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "dec80e8459e594f578e5fc4d25a438b93d9df169eb357ad13d9fb66d91c4d61f",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "treasure-legendary",
@@ -53,7 +53,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "8e03144be06b23aa7e6b46aa333d84b5e8986b4f0e9d633bb09cda85d071a050",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "treasure-cursed",
@@ -70,7 +70,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "10d724a7fa6d6ddc33cd58aed84ca77c4a75371befa3ab241ae9e94cd415b0a3",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "rarity-common",
@@ -87,7 +87,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "8e616f8d705b465324b27da89bfd376ad776954c289d771244f17a1c3b6c62bc",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "rarity-rare",
@@ -104,7 +104,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "3c07ca5eeb2025daccf1becf2102b15a1308e3e8fea363ad42837ea289734695",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "rarity-legendary",
@@ -121,7 +121,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "5ef5630631c525c3970f017acc0c421f5cb30bd18400719fc5c70f525973e05c",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-health",
@@ -138,7 +138,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "59a58f1f4018c6606baf04a4a808c051c792d3ab9990ef9ab3dec16b8cf550be",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-xp",
@@ -155,7 +155,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "b8c396c67d8da45cde11603a771e2c2f49cde578e30faef996221292505a47c6",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-cooldown",
@@ -172,7 +172,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "d6278ecd2ffd71a1731ec06e299d987de62b4748ae6f6d20f7422506db5f53f8",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-quest",
@@ -189,7 +189,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "2d5c6374b85dc9a38dcd4780c76533ae2522ab0af1123e20a3e7ecb598edde1b",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-boss",
@@ -206,7 +206,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "4ce725a455b99e471447032528abd55b9df308b83ef5c7b9f8c072b39a6a8e99",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-survivor",
@@ -223,7 +223,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "7ff4cbbd66d4915103c7b66533d2cfe47eb0ce676fd3b3632674cc935ae68e12",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-evolution",
@@ -240,7 +240,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "fe6c8a323a4dabbafde1bcd1101345eec0bdcd10de19917f05c864b159fb5231",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-explorer",
@@ -257,7 +257,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "bc3da4afb758ba50ea463a70ddba095d20aa8bdd9b626728a30acdac340a2469",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-collector",
@@ -274,7 +274,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "7a56f968ff6ca4299b74808487a41cd473833781772e19a7e456aacb15f3d5e8",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     },
     {
       "id": "achievement-flawless",
@@ -291,7 +291,7 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "0046b453fe538510d39db81d7b010b4dd1463fb8066de047db960981919f8e30",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): ui-treasure-rarity-hud-ornaments-sheet.png; visually review animation continuity and alpha."
     }
   ]
 }
