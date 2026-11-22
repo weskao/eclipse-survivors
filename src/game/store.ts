@@ -5,6 +5,8 @@ import { EVOLUTIONS, EVOLUTION_COOLDOWN } from './evolutions'
 import type { AbilityId, GameMode, GameState, Hero, HeroId, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
 import type { SpecializationSnapshot } from './content/heroes'
 import type { ObjectiveState } from './content/objectives/evaluator'
+import type { ActiveWorldEvent } from './content/world-events/types'
+import type { WorldEventOption } from './content/world-events/runtime'
 
 export interface HudSkill {
   id: AbilityId; icon: string; title: string; rarity: SkillRarity
@@ -104,6 +106,8 @@ export interface UiState {
   runMode: RunModeId
   /** Only actual objective-runtime evidence; null for original four modes. */
   objectiveProgress: ObjectiveState | null
+  worldEventMarkers: readonly ActiveWorldEvent[]
+  worldEventChoice: { event: ActiveWorldEvent; options: readonly WorldEventOption[]; feedback: string | null } | null
   profile: Profile
   runResult: RunStats | null
   rewards: RunRewards | null
@@ -116,6 +120,9 @@ export interface GameCommands {
   selectHero(hero: HeroId): void
   activateHeroSpecial(): boolean
   start(): void
+  openWorldEvent(id: string): boolean
+  chooseWorldEvent(eventId: string, choiceId: string): void
+  closeWorldEvent(): void
   selectRunMode(mode: RunModeId): void
   buyPermanentUpgrade(upgrade: PermanentUpgrade): void
   selectCosmetic(hero: JobId, skin: CosmeticId): void

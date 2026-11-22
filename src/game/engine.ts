@@ -15,6 +15,7 @@ import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
+import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
@@ -132,7 +133,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
-    runMode: 'quick', objectiveProgress: null, profile: profileStore.get(), runResult: null, rewards: null,
+    runMode: 'quick', objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
+    profile: profileStore.get(), runResult: null, rewards: null,
   })
   let resumeAfterSettings = false
   let toastTimer = 0
@@ -145,6 +147,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let art: Artwork | null = null
   let heroSpecialization: HeroSpecializationAdapter | null = null
   let objectiveRuntime: ObjectiveRuntime | null = null
+  let worldEvents: LiveWorldEvents | null = null
   let ending = false
 
   function wakeAudio(): void {
@@ -165,6 +168,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     content: contentRegistry.packs.some(pack => pack.onEvent)
       ? (state, event) => {
         contentRegistry.emit(state, event, hooks)
+        if (state === s) worldEvents?.onContentEvent(event)
         // Only an actual finalized kill can advance an objective. The existing
         // boss controller gets first chance to account for its original XP/reward.
         if (state === s && event.type === 'kill' && objectiveRuntime) {
@@ -185,6 +189,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       return true
     } : undefined,
   }
+
+  // All 12 world events use the existing HP/XP, relic and combat writers.
+  // The adapter owns the per-run transaction ledger, never another game loop.
+  worldEvents = createLiveWorldEvents(s, hooks, { random })
 
   // Special attacks and companion hits already own their damage; do not apply the normal
   // attack critical/modifier hook a second time when they call legacy hit().
@@ -230,6 +238,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     ui.heroSpecial = heroSpecialization?.snapshot() ?? null
     ui.objectiveProgress = objectiveRuntime?.snapshot() ?? null
+    ui.worldEventMarkers = worldEvents?.director.active ?? []
   }
 
   function offerUpgrades(): void {
@@ -295,6 +304,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function start(): void {
     ending = false
+    ui.worldEventChoice = null
+    ui.worldEventMarkers = []
     resetRun(s)
     objectiveRuntime = isObjectiveModeId(ui.runMode)
       ? createObjectiveRuntime(ui.runMode, (_state, evaluation) => {
@@ -392,17 +403,27 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function advance(dt: number): void {
+    // Event choices are deliberate atomic transactions; gameplay cannot run
+    // underneath the modal, even when the underlying screen is still 'play'.
+    if (ui.worldEventChoice) return
     // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter)
     if (s.mode !== 'play') return
     heroSpecialization?.tick(dt)
+    worldEvents?.tick()
     if (objectiveRuntime) {
       objectiveRuntime.tick(dt, true)
       if (s.mode !== 'play') return
       // The first scheduled boss is a real controller-owned actor. A registered
       // mob death, never a timer or a metadata-only ID, advances the objective.
+      // Endless events only advance on a real, committed world interaction.
+      const eventIndex = objectiveRuntime.plan().eventIndex
+      if (eventIndex !== null && worldEvents) {
+        const marker = worldEvents.director.active[0]
+        if (marker) objectiveRuntime.registerEvent(eventIndex, marker)
+      }
       const stage = objectiveRuntime.plan().bossStage
       const hero = s.hero
       if (stage !== null && hero && bosses) {
@@ -425,6 +446,37 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     if (Math.floor(s.time * 8) !== Math.floor((s.time - dt) * 8)) hud()
   }
+
+  function openWorldEvent(id: string): boolean {
+    if (s.mode !== 'play' || ui.settingsOpen || ui.worldEventChoice || !s.hero || !worldEvents) return false
+    const marker = worldEvents.director.active.find(event => event.id === id)
+    if (!marker) return false
+    const dx = marker.x - s.hero.x
+    const dy = marker.y - s.hero.y
+    if (dx * dx + dy * dy > 64 * 64) return false
+    ui.worldEventChoice = { event: marker, options: worldEvents.options(id), feedback: null }
+    keys = {}
+    stick = { x: 0, y: 0 }
+    return true
+  }
+
+  function chooseWorldEvent(eventId: string, choiceId: string): void {
+    if (!worldEvents || s.mode !== 'play' || !ui.worldEventChoice ||
+        ui.worldEventChoice.event.id !== eventId) return
+    const selected = ui.worldEventChoice.event
+    const outcome = worldEvents.choose(eventId, choiceId)
+    if (outcome === 'applied') {
+      objectiveRuntime?.resolveEvent(selected, true)
+      ui.worldEventChoice = null
+    } else {
+      const feedback = outcome === 'retry' ? '獎勵無法領取，請重新選擇'
+        : outcome === 'out-of-range' ? '請靠近事件' : '目前無法選擇此項目'
+      ui.worldEventChoice = { event: selected, options: worldEvents.options(eventId), feedback }
+    }
+    hud()
+  }
+
+  function closeWorldEvent(): void { ui.worldEventChoice = null }
 
   const testApi: TestApi = {
     get mode() { return s.mode },
@@ -660,6 +712,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       return activated
     },
     start,
+    openWorldEvent,
+    chooseWorldEvent,
+    closeWorldEvent,
     chooseUpgrade,
     chooseTreasure,
     cancelTreasure,
@@ -690,6 +745,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     openSettings,
     closeSettings,
     goMenu: () => {
+      ui.worldEventChoice = null
+      ui.worldEventMarkers = []
+      worldEvents?.reset()
       heroSpecialization = null
       ui.heroSpecial = null
       screen('menu')
