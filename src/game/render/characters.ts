@@ -4,8 +4,12 @@ import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
 import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
+import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
+import type { HeroSheets } from './hero-sheets'
+import { drawPaintedHero } from './painted-frames'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
+import { cachedMobTint, type MobTintCache } from './tint-cache'
 
 type Drawable = HTMLImageElement | HTMLCanvasElement
 const ease = (n: number): number => {
@@ -16,21 +20,29 @@ const ease = (n: number): number => {
 /**
  * Articulate the original transparent illustration using shoulder/elbow/wrist
  * constraints rather than one rigid full-body translation. Small texture cells
- * preserve the face, costume, and original weapon while the weighted arm and
- * staff regions track the same joint pose used by the projectile origin.
- * The expensive per-frame work is bounded to the single playable hero.
+ * preserve the face and costume while the original sword, bow and staff
+ * are completely excluded from every warped body tile and drawn as rigid art.
  */
 export function drawRigSprite(
   ctx: Ctx2D, img: Drawable, sx: number, sy: number, hero: Hero, anim: HeroAnimation, job: 'knight' | 'ranger' | 'wizard' = 'knight',
+  preparedLayers?: RigidWeaponLayers,
+  includeWeapon = true,
 ): void {
   const left = -sx / 2
   const top = -sy + 4
+  const layers = preparedLayers ?? ('naturalWidth' in img ? getRigidWeaponLayers(img, job) : null)
   if (anim.reducedMotion) {
+    ctx.drawImage(layers?.body ?? img, left, top, sx, sy)
+    if (layers && includeWeapon) drawRigidWeapon(ctx, layers, job, hero, anim, sx, sy)
+    return
+  }
+  if (!layers) {
+    // Never deform equipment when no 2D canvas is available to isolate it.
     ctx.drawImage(img, left, top, sx, sy)
     return
   }
-  const srcW = ('naturalWidth' in img ? img.naturalWidth : img.width) || img.width || sx
-  const srcH = ('naturalHeight' in img ? img.naturalHeight : img.height) || img.height || sy
+  const srcW = layers.body.width
+  const srcH = layers.body.height
   const columns = 8
   const rows = 12
   const cw = sx / columns
@@ -109,18 +121,19 @@ export function drawRigSprite(
       // smoothly connect the bend while keeping source texels and transparency.
       if (Math.abs(rotation) < 0.001) {
         // Most cells are stationary: avoid Canvas save/rotate/restore on mobile.
-        ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
+        ctx.drawImage(layers.body, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
           left + col * cw + dx - 0.45, top + row * ch + dy - 0.45, cw + 0.9, ch + 0.9)
       } else {
         ctx.save()
         ctx.translate(left + (col + 0.5) * cw + dx, top + (row + 0.5) * ch + dy)
         ctx.rotate(rotation)
-        ctx.drawImage(img, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
+        ctx.drawImage(layers.body, srcW * col / columns, srcH * row / rows, srcW / columns, srcH / rows,
           -cw / 2 - 0.45, -ch / 2 - 0.45, cw + 0.9, ch + 0.9)
         ctx.restore()
       }
     }
   }
+  if (includeWeapon) drawRigidWeapon(ctx, layers, job, hero, anim, sx, sy)
 }
 
 /** Tiny aim-aligned accents trace the actual hand release, not a fixed screen spot. */
@@ -128,6 +141,9 @@ function drawPoseAccents(
   ctx: Ctx2D, kind: string, hero: Hero, anim: HeroAnimation,
 ): void {
   if (anim.reducedMotion || (anim.pose !== 'attack' && anim.pose !== 'cast' && anim.pose !== 'victory')) return
+  // The projectile already exists in world space from the beginning of strike.
+  // Do not draw a lingering held energy orb or a faux loaded arrow in recovery.
+  if (anim.pose === 'cast' && anim.actionStage !== 'release') return
   const power = Math.max(0, Math.sin(Math.PI * anim.phase))
   const rig = sampleWeaponRig(kind as 'knight' | 'ranger' | 'wizard', hero, anim)
   if (anim.pose === 'cast') {
@@ -145,12 +161,13 @@ function drawPoseAccents(
     ctx.globalAlpha = power * 0.6; ctx.strokeStyle = '#d5b6ff'; ctx.lineWidth = 2
     ctx.beginPath(); ctx.arc(rig.hand.x, rig.hand.y, 13, rig.bladeAngle - 1, rig.bladeAngle + 0.7); ctx.stroke()
     ctx.restore()
-  } else if (anim.pose === 'attack' && kind === 'ranger') {
+  } else if (anim.pose === 'attack' && kind === 'ranger' && anim.actionStage === 'release') {
+    // Short bowstring rebound only: no shaft, duplicate arrow or lingering bow.
     const grip = getFiringOrigin('ranger', 1)
-    // Bow-string recoil stays anchored to the bow hand and points downrange.
     ctx.save(); ctx.translate(grip.x, grip.y); ctx.rotate(rig.aim)
-    ctx.strokeStyle = '#ffdf9b'; ctx.lineWidth = 1.2; ctx.globalAlpha = power * 0.55
-    ctx.beginPath(); ctx.moveTo(-8 - power * 5, -18); ctx.lineTo(0, 0); ctx.lineTo(-8 - power * 5, 18); ctx.stroke()
+    ctx.strokeStyle = '#ffdf9b'; ctx.lineWidth = 1.1
+    ctx.globalAlpha = Math.max(0, (0.22 - anim.phase) / 0.22) * 0.35
+    ctx.beginPath(); ctx.moveTo(-2, -12); ctx.lineTo(-4, 0); ctx.lineTo(-2, 12); ctx.stroke()
     ctx.restore()
   } else if (anim.pose === 'attack' && kind === 'knight') {
     ctx.save()
@@ -199,7 +216,8 @@ const DIMS: Record<string, [number, number]> = {
 
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
-  e: Hero | Mob, ox: number, oy: number, reducedMotion = false,
+  e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
+  paintedFrames?: HTMLImageElement, tintCache?: MobTintCache,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -238,18 +256,38 @@ export function drawCharacter(
     }
   }
   ctx.save(); ctx.translate(x, y)
-  if (hero && hero.face < 0) ctx.scale(-1, 1)
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
-  if (mob && mob.elite) ctx.filter = 'hue-rotate(75deg) saturate(1.5) brightness(1.1)'
-  if (mob && mob.type === 'warlock') ctx.filter = 'hue-rotate(15deg) saturate(1.2)'
-  if (mob && mob.hit > 0 && !reducedMotion) ctx.filter = 'brightness(1.3) sepia(.25)'
+  // Hit tint takes priority over warlock tint, which takes priority over elite.
+  // Reuse a 2x bitmap instead of a Canvas CSS filter on every visible enemy.
+  const tint = mob?.hit && mob.hit > 0 && !reducedMotion ? 'brightness(1.3) sepia(.25)'
+    : mob?.type === 'warlock' ? 'hue-rotate(15deg) saturate(1.2)'
+      : mob?.elite ? 'hue-rotate(75deg) saturate(1.5) brightness(1.1)' : null
   const im = art[kind === 'warlock' ? 'wizard' : kind]
   const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
-  const drawable = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
+  const source = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
+  const drawable = source && tint ? cachedMobTint(source, tint, sx, sy, tintCache) : source
+  if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
-    if (hero && anim) {
-      drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice)
+    if (hero && anim && paintedFrames && drawPaintedHero(ctx, paintedFrames, s.choice, hero, anim, sx, sy)) {
+      // Complete prepainted pose includes its own rigid weapon; only live
+      // world projectiles are drawn elsewhere, with no duplicated held arrow.
+    } else if (hero && anim) {
+      // Fallback: keep existing illustrated rendering until the atlas decodes.
+      // The WebP is the authoritative artwork. Cache its direction/pose frames
+      // once instead of skinning 96 texture cells on every gameplay draw.
+      const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
+      const prebaked = !!(heroSheets && im && drawable === im
+        && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
+      ctx.save()
+      if (hero.face < 0) ctx.scale(-1, 1)
+      // Prebaked sheets contain the body ONLY. The exact current weapon angle
+      // and pre-release arrow / charge are composited live in their own layers.
+      if (prebaked) {
+        if (layers) drawRigidWeapon(ctx, layers, s.choice, hero, anim, sx, sy)
+      } else drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice, layers ?? undefined)
+      if (layers) drawLoadedProjectile(ctx, layers, s.choice, hero, anim, sx, sy)
       drawPoseAccents(ctx, kind, hero, anim)
+      ctx.restore()
     } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
   }
   ctx.restore()

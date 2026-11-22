@@ -58,7 +58,7 @@ describe('createRenderAssets', () => {
     expect(assets.props.tree.width).toBe(230)
     expect(assets.props.ruin.width).toBe(148)
     expect(assets.props.crystal.width).toBe(120)
-    expect(made).toHaveLength(9 + 3 + 8 + 1)
+    expect(made).toHaveLength(9 + 3 + 8 + 1 + 2)
     expect(made.every((m) => m.fake.calls.includes('fill') || m.fake.calls.includes('stroke'))).toBe(true)
   })
 })
@@ -111,7 +111,7 @@ describe('drawFrame', () => {
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(true), make)
     drawFrame(ctx, busyState(), 2, assets)
-    for (const k of ['knight', 'slime', 'bat', 'goblin', 'golem', 'boss'] as const) expect(drawn, k).toContain(assets.art[k])
+    for (const k of ['knight', 'slime', 'goblin', 'golem', 'boss'] as const) expect(drawn, k).toContain(assets.art[k])
     expect(drawn).not.toContain(assets.sprites.knight)
   })
 
@@ -120,7 +120,8 @@ describe('drawFrame', () => {
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(false), make)
     drawFrame(ctx, busyState(), 1, assets)
-    for (const k of ['knight', 'slime', 'bat', 'goblin', 'boss']) expect(drawn, k).toContain(assets.sprites[k])
+    // The hit-tinted bat now draws from its cached filtered bitmap, not the raw sprite.
+    for (const k of ['knight', 'slime', 'goblin', 'boss']) expect(drawn, k).toContain(assets.sprites[k])
     expect(drawn).not.toContain(assets.art.knight)
   })
 

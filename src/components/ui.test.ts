@@ -100,6 +100,15 @@ describe('MenuScreen', () => {
     expect(w.emitted('settings')).toHaveLength(1)
   })
 
+  it('shows an accessible, distinct chosen-hero emblem without mutating the hero artwork', () => {
+    const w = mount(MenuScreen, { props: menuProps })
+    expect(w.get('[data-job="knight"]').attributes('aria-pressed')).toBe('true')
+    expect(w.get('[data-job="knight"] .job-crest').exists()).toBe(true)
+    expect(w.get('[data-job="ranger"] .job-crest').exists()).toBe(true)
+    expect(w.find('#heroSpotlight img').exists()).toBe(false)
+    w.unmount()
+  })
+
   it('follows choice prop', async () => {
     const w = mount(MenuScreen, { props: menuProps })
     const knightSrc = w.find('#heroSpotlight').attributes('src')
@@ -149,6 +158,31 @@ describe('GameHud', () => {
     expect(w.find('canvas#minimap').exists()).toBe(true)
   })
 
+  it('keeps top-right volume, settings and pause actions in a padded, spaced row', () => {
+    const w = mount(GameHud, { props })
+    const actions = w.get('#hud .hud-actions')
+    expect(Array.from(actions.element.children).map(child =>
+      child.classList.contains('audio-control') ? 'audio' :
+      child.classList.contains('settings-trigger') ? 'settings' : child.id
+    )).toEqual(['audio', 'settings', 'pauser'])
+    const css = readFileSync(resolve(process.cwd(), 'src/settings.css'), 'utf8')
+    expect(css).toMatch(/#hud \.stats \.chip\.hud-actions\s*\{[^}]*display:flex;[^}]*gap:8px;[^}]*padding:6px 13px;/)
+    expect(css).toMatch(/#hud \.stats \.chip\.hud-actions\s*\{[^}]*gap:5px;[^}]*padding:5px 8px;/)
+  })
+
+  it('shows readable resource meters and highlights critical health', async () => {
+    const w = mount(GameHud, { props })
+    expect(w.get('#hudHealthMeter').attributes('role')).toBe('progressbar')
+    expect(w.get('#hudHealthMeter').attributes('aria-valuenow')).toBe('40')
+    expect(w.get('#hudExperienceMeter').attributes('role')).toBe('progressbar')
+    expect(w.get('#hudExperienceMeter').attributes('aria-valuenow')).toBe('25')
+    expect(w.get('#hud .status').classes()).not.toContain('status-critical')
+    await w.setProps({ hud: { ...hud, hpPct: 18 } })
+    expect(w.get('#hud .status').classes()).toContain('status-critical')
+    expect(w.get('#hudHealthMeter').attributes('aria-valuenow')).toBe('18')
+    w.unmount()
+  })
+
   it('shows boss bar only when bossPct is set', async () => {
     const w = mount(GameHud, { props })
     expect(w.find('#bossWrap').classes()).not.toContain('show')
@@ -191,6 +225,15 @@ describe('SettingsOverlay', () => {
     expect(w.emitted('close')).toHaveLength(1)
   })
 
+  it('pairs motion choices with distinct visuals and descriptions', () => {
+    const w = mount(SettingsOverlay, { props })
+    expect(w.findAll('#settings .settings-choice-icon')).toHaveLength(2)
+    expect(w.get('#settingsSoft .settings-choice-copy').text()).toContain('柔和淡入')
+    expect(w.get('#settingsStill .settings-choice-copy').text()).toContain('無動畫')
+    expect(w.get('#settings .settings-panel').exists()).toBe(true)
+    w.unmount()
+  })
+
   it('keeps keyboard tab focus inside the settings dialog', async () => {
     const w = mount(SettingsOverlay, { props, attachTo: document.body })
     const last = w.find('.settings-done').element as HTMLButtonElement
@@ -207,6 +250,15 @@ describe('SettingsOverlay', () => {
 
 describe('LevelUpOverlay', () => {
   const upgrades = UP.slice(0, 3)
+  it('presents clearly separated rarity, ability and selection regions', () => {
+    const w = mount(LevelUpOverlay, { props: { active: true, upgrades } })
+    expect(w.get('#level .level-headline').exists()).toBe(true)
+    expect(w.findAll('#upgrades .upgrade-action')).toHaveLength(3)
+    expect(w.findAll('#upgrades .upgrade-rarity')).toHaveLength(3)
+    expect(w.findAll('#upgrades .upgrade-action').every(a => a.text().includes('選擇'))).toBe(true)
+    w.unmount()
+  })
+
   it('renders 3 upgrades and emits choose', async () => {
     const w = mount(LevelUpOverlay, { props: { active: true, upgrades } })
     expect(w.find('#level.overlay').classes()).toContain('active')
@@ -301,5 +353,18 @@ describe('style.css', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/visual-polish.css'), 'utf8')
     expect(css).toContain('#hud #pauser .pause-shortcut')
     expect(css).toContain('@media (hover: hover) and (pointer: fine)')
+  })
+})
+
+describe('HUD and panel art-direction safeguards', () => {
+  it('keeps visual effects CSS-only and disables panel animation for still/reduced-motion modes', () => {
+    const app = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf8')
+    const css = readFileSync(resolve(process.cwd(), 'src/ui-fidelity.css'), 'utf8')
+    expect(app).toContain("import './ui-fidelity.css'")
+    expect(css).toContain('#level.still-upgrades')
+    expect(css).toContain('prefers-reduced-motion: reduce')
+    expect(css).toContain('#menu .job.selected')
+    expect(css).toContain('#hud .status')
+    expect(css).toContain('#settings .settings-segments')
   })
 })
