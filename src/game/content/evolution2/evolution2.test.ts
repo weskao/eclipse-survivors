@@ -3,7 +3,7 @@ import { createContentRegistry, MAX_CONTENT_EFFECTS } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
 import { applyUpgrade } from '../../progression'
 import { EVOLUTIONS, eligibleEvolutions } from '../../evolutions'
-import type { ContentId, GameHooks, GameState, Mob } from '../../types'
+import type { ContentId, GameHooks, GameState, Mob, UpgradeId } from '../../types'
 import { EVOLUTION2_PACK } from '../packs/evolution2'
 import { EVOLUTION2_RECIPES } from './recipes'
 import { EVOLUTION2_CUES } from './cues'
@@ -24,7 +24,7 @@ function unlock(state: GameState, index: number): ContentId {
   const ability = EVOLUTION2_PACK.abilities![index]!
   for (const requirement of ability.requires!) {
     if (requirement.id.includes(':')) state.content.levels[requirement.id as `${string}:${string}`] = requirement.level
-    else state.hero!.skills[requirement.id as keyof typeof state.hero.skills] = requirement.level
+    else state.hero!.skills[requirement.id as UpgradeId] = requirement.level
   }
   return ability.id
 }
@@ -72,12 +72,12 @@ describe('Evolution2 independent ContentPack', () => {
       state.content.levels[weapon.id as `${string}:${string}`] = weapon.level - 1
       expect(registry.eligible(state).some(a => a.id === id)).toBe(false)
       state.content.levels[weapon.id as `${string}:${string}`] = weapon.level
-      state.hero!.skills[passive.id as keyof typeof state.hero.skills] = passive.level - 1
+      state.hero!.skills[passive.id as UpgradeId] = passive.level - 1
       expect(registry.acquire(state, id, hooks)).toBe(false)
-      state.hero!.skills[passive.id as keyof typeof state.hero.skills] = passive.level
+      state.hero!.skills[passive.id as UpgradeId] = passive.level
       expect(registry.acquire(state, id, hooks)).toBe(true)
       expect(state.content.levels[weapon.id as `${string}:${string}`]).toBe(weapon.level)
-      expect(state.hero!.skills[passive.id as keyof typeof state.hero.skills]).toBe(passive.level)
+      expect(state.hero!.skills[passive.id as UpgradeId]).toBe(passive.level)
       expect(state.content.levels[id as `${string}:${string}`]).toBe(1)
       expect(registry.acquire(state, id, hooks)).toBe(false)
     }
