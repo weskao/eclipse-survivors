@@ -64,6 +64,18 @@ describe('engine commands fire the original cues', () => {
     expect(engine.ui.toastText).toBe('幽暮之門已開啟')
   })
 
+  it('starts every new specialization at level one without a fabricated initial upgrade queue', () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+      engine.selectHero(id)
+      engine.start()
+      expect(engine.ui.mode, id).toBe('play')
+      expect(engine.state.hero?.level, id).toBe(1)
+      expect(engine.state.levelQueue, id).toBe(0)
+      expect(engine.ui.heroId, id).toBe(id)
+      engine.goMenu()
+    }
+  })
+
   it('opens settings from gameplay safely and restores play after closing', () => {
     engine.start()
     engine.openSettings()

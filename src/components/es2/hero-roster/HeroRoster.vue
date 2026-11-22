@@ -2,10 +2,8 @@
 import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
 import HeroPortrait from './HeroPortrait.vue'
+import { PRODUCTION_HERO_ACTION_SOURCES } from '../../../game/render/es2/production-heroes'
 import type { JobId } from '../../../game/types'
-import shadowAction from '../../../assets/es2/production/heroes/shadowblade-run-attack@3x.webp'
-import summonerAction from '../../../assets/es2/production/heroes/spirit-summoner-run-attack@3x.webp'
-import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin-run-attack@3x.webp'
 
 const props = withDefaults(defineProps<{
   selectedId?: SpecializationId | JobId | null
@@ -13,11 +11,6 @@ const props = withDefaults(defineProps<{
 }>(), { selectedId: null, disabled: false })
 const emit = defineEmits<{ select: [id: SpecializationId] }>()
 const heroes = Object.values(HERO_DEFINITIONS)
-const actionSprites: Record<SpecializationId, string> = {
-  shadowblade: shadowAction,
-  'spirit-summoner': summonerAction,
-  'crimson-paladin': paladinAction,
-}
 const root = ref<HTMLElement | null>(null)
 function select(id: SpecializationId): void { if (!props.disabled) emit('select', id) }
 
@@ -41,7 +34,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       @click="select(hero.id)" @keydown="move($event, hero.id)">
-      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${actionSprites[hero.id]})` }" aria-hidden="true"></span>
+      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${PRODUCTION_HERO_ACTION_SOURCES[hero.id]})` }" aria-hidden="true"></span>
       <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="hero.label + ' 角色插畫'" />
       <span class="es2-roster__copy">
         <strong>{{ hero.label }}</strong>

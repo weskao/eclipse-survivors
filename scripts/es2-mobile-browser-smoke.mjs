@@ -112,12 +112,17 @@ try {
       await page.waitForFunction(() =>
         !!document.querySelector('.es2-hud--active')
         || !!document.querySelector('.es2-backdrop button[data-choice]'), null, { timeout: 30000 })
-      for (let pick = 0; pick < 8; pick++) {
+      // Combat can accrue multiple queued upgrades from early waves. Process
+      // each actual offer, but cap iterations to catch a broken infinite queue.
+      let picks = 0
+      for (; picks < 64; picks++) {
         if (await page.locator('.es2-hud--active').isVisible()) break
         const offered = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
         await offered.waitFor({ state: 'visible', timeout: 30000 })
         await offered.click()
       }
+      const mode = await page.evaluate(() => window.__test?.mode)
+      assert.equal(mode, 'play', `${heroId}: still in ${mode} after ${picks} real upgrade picks`)
       const hudPortrait = page.locator('.es2-hud--active .es2-hud__portrait img')
       await hudPortrait.waitFor({ state: 'visible', timeout: 30000 })
       await hudPortrait.evaluate(image => image.decode())
