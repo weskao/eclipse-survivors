@@ -30,10 +30,10 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
   const biome = biomes[s.currentScene] ?? biomes[0]!
   const biomeId = BIOME_IDS[s.currentScene]
   const ground = biomeId && world?.ground[biomeId]
-  const authoredGround = !!ground && ground.complete && ground.naturalWidth === 768 && ground.naturalHeight === 768
+  const authoredGround = !!ground && ground.complete && ground.naturalWidth >= 768 && ground.naturalWidth === ground.naturalHeight
   const tile = authoredGround ? ground : biome.tile
   const decor = biomeId && world?.decor[biomeId]
-  const authoredDecor = !!decor && decor.complete && decor.naturalWidth === 384 && decor.naturalHeight === 96
+  const authoredDecor = !!decor && decor.complete && decor.naturalHeight >= 96 && decor.naturalWidth === decor.naturalHeight * 4
   const size = 384
   const px = ((ox % size) + size) % size
   const py = ((oy % size) + size) % size
@@ -74,7 +74,8 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
       // Decoration is visual only: authoritative collision still uses the original obstacle.
       ctx.save()
       ctx.globalAlpha = 0.76
-      ctx.drawImage(decor, (o.variant % 4) * 96, 0, 96, 96, x - 55, y - 105, 110, 110)
+      const sourceSide = decor.naturalHeight
+      ctx.drawImage(decor, (o.variant % 4) * sourceSide, 0, sourceSide, sourceSide, x - 55, y - 105, 110, 110)
       ctx.restore()
     } else if (s.currentScene === 0 && o.variant === 0) ctx.drawImage(props.tree, x - 90, y - 207, 181, 216)
     else if (s.currentScene === 0 && o.variant === 1) ctx.drawImage(props.ruin, x - 46, y - 114, 92, 121)
