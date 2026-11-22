@@ -191,6 +191,8 @@ export function createLiveWorldEvents(
     if (!Number.isSafeInteger(epoch) || !Number.isSafeInteger(serial) || serial < 1 ||
       epoch < generation || (epoch === generation && serial <= retiredSerial) ||
       state.mode !== 'play' || !state.hero || state.hero.hp <= 0 ||
+      !Number.isFinite(state.time) || !Number.isFinite(state.hero.hp) ||
+      !Number.isFinite(state.hero.max) || !Number.isFinite(state.hero.xp) ||
       !validEffects(tx.effects)) return false
     if (epoch > generation) {
       generation = epoch
@@ -267,12 +269,16 @@ export function createLiveWorldEvents(
     if (!marker || !definition || !state.hero) return []
     const world = createLegacyEventWorld(state)
     const dx = marker.x - world.hero.x, dy = marker.y - world.hero.y
-    const withinRange = dx * dx + dy * dy <= INTERACTION_RADIUS_SQUARED
+    const withinRange = Number.isFinite(world.hero.x) && Number.isFinite(world.hero.y) &&
+      dx * dx + dy * dy <= INTERACTION_RADIUS_SQUARED
     const allowed = new Set(director.choices(eventId, world).map(choice => choice.id))
     const busy = director.objectives.length > 0
     return definition.choices.map(choice => {
       let reason: string | null = null
       if (!world.playing) reason = 'Game is paused'
+      else if (!Number.isFinite(world.hero.hp) || !Number.isFinite(world.hero.xp) ||
+        !Number.isFinite(world.hero.x) || !Number.isFinite(world.hero.y))
+        reason = 'Invalid player state'
       else if (marker.expiresAt <= world.time) reason = 'Event expired'
       else if (!withinRange) reason = 'Move into interaction range'
       else if (choice.minHp && world.hero.hp < choice.minHp) reason = 'Insufficient HP'
