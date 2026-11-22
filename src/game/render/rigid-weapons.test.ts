@@ -55,7 +55,7 @@ describe('rigid non-deforming equipment layers', () => {
     expect(scale).not.toHaveBeenCalled()
     for (const args of draw.mock.calls) {
       expect(args[0]).toBe(layers.weapon)
-      expect(args[3]).toBe(110)
+      expect(args[3] / args[4]).toBeCloseTo(source.width / source.height, 5)
       expect(args[4]).toBe(150)
     }
   })
