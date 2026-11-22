@@ -161,6 +161,35 @@ describe('world-event live integration', () => {
     expect(live.director.objectives).toHaveLength(0)
   })
 
+
+  it('preserves a later protection buff when an overlapping one expires', () => {
+    const { state, live, spawn } = setup()
+    const long = spawn('events:divine-shrine')
+    expect(live.choose(long.id, 'ward')).toBe('applied')
+    state.time = 2
+    const short = spawn('events:cursed-altar')
+    expect(live.choose(short.id, 'purify')).toBe('applied')
+    state.time = 10
+    live.tick()
+    expect(state.hero!.inv).toBeGreaterThanOrEqual(2)
+    state.time = 12
+    live.tick()
+    expect(state.hero!.inv).toBeLessThanOrEqual(1)
+  })
+
+  it('includes actors owned by faction runtimes in the encounter cap', () => {
+    const { state } = setup()
+    const live = createLiveWorldEvents(state, hooks(), {
+      random: () => 0.5, otherActors: () => MAX_MOBS - 2,
+    })
+    const marker = live.director.spawn('events:monster-ambush', createLegacyEventWorld(state),
+      { x: 0, y: 0 })!
+    expect(marker).not.toBeNull()
+    expect(live.choose(marker.id, 'fight')).toBe('retry')
+    expect(state.mobs).toHaveLength(0)
+    expect(live.director.objectives).toHaveLength(0)
+  })
+
   it('holds the world director still while paused and expires markers when play resumes', () => {
     const { state, live, spawn } = setup()
     const marker = spawn('events:divine-shrine')
