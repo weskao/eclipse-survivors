@@ -170,8 +170,10 @@ describe('drawFrame', () => {
     reducedMotion = true
     const reduced = createFakeCtx()
     drawFrame(reduced.ctx, s, 1, assets)
-    expect(normal.calls.filter((name) => name === 'drawImage').length)
-      .toBeGreaterThan(reduced.calls.filter((name) => name === 'drawImage').length)
+    // Shared sprite caches do not change drawImage counts; motion suppression
+    // instead removes animated ribbons, echoes and extra lightning strokes.
+    expect(normal.calls.filter((name) => name === 'stroke').length)
+      .toBeGreaterThan(reduced.calls.filter((name) => name === 'stroke').length)
   })
 
   it.each([0, 1, 2, 3])('scene %i draws', (scene) => {
