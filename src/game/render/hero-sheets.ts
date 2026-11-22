@@ -5,11 +5,13 @@ import type { HeroAnimation } from './animation'
 import { drawRigSprite } from './characters'
 import { getRigidWeaponLayers } from './rigid-weapons'
 import type { Ctx2D } from './ctx'
+import { drawPortraitMotion } from './es2/portrait-motion'
 import type { MakeCanvas } from './sprites'
 
 type Source = HTMLImageElement | HTMLCanvasElement
 type SequencePose = 'run' | 'attack' | 'cast'
 interface Sheet { source: Source; image: HTMLCanvasElement }
+interface PortraitSheet { source: Source; frames: HTMLCanvasElement[] }
 
 /**
  * Bakes only deformable BODY frames. Rigid equipment and its loaded projectile
@@ -21,14 +23,54 @@ interface Sheet { source: Source; image: HTMLCanvasElement }
  */
 export function createHeroSheets(makeCanvas: MakeCanvas): {
   draw(ctx: Ctx2D, source: Source, job: JobId, hero: Hero, anim: HeroAnimation, width: number, height: number): boolean
+  drawSpecialization(ctx: Ctx2D, source: HTMLImageElement, anim: HeroAnimation, width: number, height: number): boolean
   readonly size: number
 } {
   const cache = new Map<string, Sheet>()
+  const portraitCache = new Map<string, PortraitSheet>()
+  const portraitLimit = 4 // 3x cached frames use more mobile memory than the original body sheets.
   const maxSheets = 16
   const margin = 32 // Keep the sword, drawn bow and staff inside their own frame.
 
   return {
-    get size() { return cache.size },
+    get size() { return cache.size + portraitCache.size },
+    drawSpecialization(ctx, source, anim, width, height) {
+      if (!source.complete || source.naturalWidth !== 900 || source.naturalHeight !== 900) return false
+      if (anim.reducedMotion || !['run', 'dash', 'attack', 'cast'].includes(anim.pose)) {
+        drawPortraitMotion(ctx, source, anim, width, height)
+        return true
+      }
+      const key = [anim.pose, anim.direction, width, height, anim.count].join(':')
+      let item = portraitCache.get(key)
+      if (item && item.source !== source) { portraitCache.delete(key); item = undefined }
+      if (!item) {
+        const margin = 12
+        const frameWidth = Math.ceil((width * 1.24 + margin * 2) * 3)
+        const frameHeight = Math.ceil((height * 1.10 + margin * 2) * 3)
+        const frames: HTMLCanvasElement[] = []
+        for (let i = 0; i < anim.count; i++) {
+          const frame = makeCanvas(frameWidth, frameHeight)
+          const context = frame.getContext('2d')
+          if (!context) return false
+          context.save()
+          context.scale(3, 3)
+          context.translate(frameWidth / 6, frameHeight / 3 - margin)
+          drawPortraitMotion(context, source, {
+            ...anim, frame: i, phase: i / Math.max(1, anim.count - 1),
+          }, width, height)
+          context.restore()
+          frames.push(frame)
+        }
+        item = { source, frames }
+      }
+      portraitCache.delete(key)
+      portraitCache.set(key, item)
+      if (portraitCache.size > portraitLimit) portraitCache.delete(portraitCache.keys().next().value!)
+      const frame = item.frames[Math.min(Math.max(0, Math.floor(anim.frame)), item.frames.length - 1)]!
+      const drawWidth = frame.width / 3, drawHeight = frame.height / 3
+      ctx.drawImage(frame, -drawWidth / 2, -drawHeight + 12, drawWidth, drawHeight)
+      return true
+    },
     draw(ctx, source, job, hero, anim, width, height) {
       if (anim.reducedMotion || (anim.pose !== 'run' && anim.pose !== 'attack' && anim.pose !== 'cast')) return false
       const pose: SequencePose = anim.pose
