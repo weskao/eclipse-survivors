@@ -77,4 +77,21 @@ describe('App', () => {
     wrapper.unmount()
   })
 
+  it('keeps the battle paused if the existing pause menu exit is cancelled', async () => {
+    const runtime = createEngine()
+    const engine = { ...runtime, mount: vi.fn(() => vi.fn()) }
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    engine.start()
+    engine.togglePause()
+    await nextTick()
+    expect(engine.ui.mode).toBe('paused')
+    document.querySelector<HTMLButtonElement>('#leave')!.click()
+    await nextTick()
+    expect(document.querySelector('[data-es2-home-confirm]')).not.toBeNull()
+    document.querySelector<HTMLButtonElement>('[data-es2-home-cancel]')!.click()
+    await nextTick()
+    expect(engine.ui.mode).toBe('paused')
+    expect(document.querySelector('#paused.active')).not.toBeNull()
+    wrapper.unmount()
+  })
 })
