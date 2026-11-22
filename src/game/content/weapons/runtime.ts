@@ -79,6 +79,23 @@ export function keepVisual(context: ContentContext, r: ArsenalRuntime): void {
   if (r.visual) r.visual.life = 4
 }
 
+/** Allocation-free closest-enemy query for per-tick summons and homing shots. */
+export function nearestOne(state: GameState, x: number, y: number, range: number, exclude?: Set<Mob>): Mob | undefined {
+  let best: Mob | undefined
+  let score = Infinity
+  for (const e of state.mobs) {
+    if (e.hp <= 0 || exclude?.has(e)) continue
+    const dx = e.x - x, dy = e.y - y
+    const d2 = dx * dx + dy * dy
+    const reach = range + e.r
+    if (d2 <= reach * reach && d2 < score) {
+      score = d2
+      best = e
+    }
+  }
+  return best
+}
+
 /** Small K insertion selection, O(mobs × limit) at fire time; no full enemy sort. */
 export function nearest(state: GameState, x: number, y: number, range: number, limit = 1, exclude?: Set<Mob>): Mob[] {
   const found: Mob[] = []
@@ -129,11 +146,13 @@ function contact(s: GameState, p: Missile, x0: number, y0: number, x1: number, y
   const dx = x1 - x0, dy = y1 - y0, length2 = dx * dx + dy * dy
   let found: Mob | null = null
   let first = Infinity
+  const minX = Math.min(x0, x1), maxX = Math.max(x0, x1)
+  const minY = Math.min(y0, y1), maxY = Math.max(y0, y1)
   for (const e of s.mobs) {
     if (e.hp <= 0 || p.visited.has(e)) continue
     const reach = e.r + p.radius
-    if (e.x < Math.min(x0, x1) - reach || e.x > Math.max(x0, x1) + reach ||
-        e.y < Math.min(y0, y1) - reach || e.y > Math.max(y0, y1) + reach) continue
+    if (e.x < minX - reach || e.x > maxX + reach ||
+        e.y < minY - reach || e.y > maxY + reach) continue
     const ox = x0 - e.x, oy = y0 - e.y
     const c = ox * ox + oy * oy - reach * reach
     let t = 0
@@ -154,7 +173,7 @@ function advanceOne(context: ContentContext, p: Missile, dt: number): void {
   const { state } = context
   if (p.kind === 'dagger' || p.kind === 'blade') {
     if (!p.target || p.target.hp <= 0 || p.visited.has(p.target)) {
-      p.target = nearest(state, p.x, p.y, 520, 1, p.visited)[0]
+      p.target = nearestOne(state, p.x, p.y, 520, p.visited)
     }
     if (!p.target) { p.life = 0; return }
     const dx = p.target.x - p.x, dy = p.target.y - p.y
@@ -180,14 +199,14 @@ function advanceOne(context: ContentContext, p: Missile, dt: number): void {
     if (p.kind === 'blade' && p.jumps > 0) {
       p.jumps--
       p.pierce = 1
-      p.target = nearest(state, p.x, p.y, 390, 1, p.visited)[0]
+      p.target = nearestOne(state, p.x, p.y, 390, p.visited)
       if (!p.target) p.life = 0
       break // Redirect on next tick, never double-travel in one tick.
     }
     if (p.kind === 'dagger' && p.jumps > 0) {
       p.jumps--
       p.pierce = 1
-      p.target = nearest(state, p.x, p.y, 520, 1, p.visited)[0]
+      p.target = nearestOne(state, p.x, p.y, 520, p.visited)
       if (!p.target) p.life = 0
       break
     }
