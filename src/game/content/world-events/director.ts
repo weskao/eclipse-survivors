@@ -50,6 +50,15 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
     resolving.clear()
   }
 
+  /** Invalidate scene-owned markers/objectives even when no play ticks occur. */
+  function sceneChange(biome: EventWorld['biome'], time: number): void {
+    lastBiome = biome
+    active = []
+    pending = []
+    resolving.clear()
+    nextAt = Number.isFinite(time) ? time + 6 : 7
+  }
+
   function spawn(kind: WorldEventId, world: EventWorld, position?: { x: number; y: number }): ActiveWorldEvent | null {
     const hero = world.hero
     if (lastBiome === undefined) lastBiome = world.biome
@@ -152,10 +161,7 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
       !Number.isFinite(world.hero.xp)) return
     if (lastBiome === undefined) lastBiome = world.biome
     else if (lastBiome !== world.biome) {
-      lastBiome = world.biome
-      active = []
-      pending = []
-      nextAt = world.time + 6
+      sceneChange(world.biome, world.time)
       return
     }
     const before = active.length
@@ -209,6 +215,6 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
       return pending.map(({ eventId, choiceId, kind, deadline, x, y, count, target, eliteOnly }) =>
         ({ eventId, choiceId, kind, deadline, x, y, count, target, eliteOnly }))
     },
-    spawn, tick, choices, choose, reportKill, reset,
+    spawn, tick, choices, choose, reportKill, reset, sceneChange,
   }
 }
