@@ -35,4 +35,4 @@ jobs:
       - if: matrix.check == 'build'
         run: pnpm build
       - if: matrix.check == 'check-release'
-        run: pnpm check-release
+        run: pnpm build && pnpm check-release
