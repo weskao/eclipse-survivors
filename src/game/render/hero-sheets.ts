@@ -24,6 +24,7 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
 } {
   const cache = new Map<string, Sheet>()
   const maxSheets = 16
+  const margin = 32 // Keep the sword, drawn bow and staff inside their own frame.
 
   return {
     get size() { return cache.size },
@@ -43,7 +44,9 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
         item = undefined
       }
       if (!item) {
-        const sheet = makeCanvas(width * anim.count, height)
+        const stride = width + margin * 2
+        const frameHeight = height + margin * 2
+        const sheet = makeCanvas(stride * anim.count, frameHeight)
         const context = sheet.getContext('2d')
         if (!context) return false
         const model = createHero(job)
@@ -54,7 +57,7 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
           const phase = frame / Math.max(1, anim.count - 1)
           model.step = pose === 'run' ? frame * TAU / anim.count : 0
           context.save()
-          context.translate(width * (frame + 0.5), height - 4)
+          context.translate(stride * frame + margin + width / 2, margin + height - 4)
           if (facing < 0) context.scale(-1, 1)
           drawRigSprite(context, source, width, height, model, {
             pose, frame, count: anim.count, phase, direction, reducedMotion: false,
@@ -68,8 +71,10 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
       cache.delete(key)
       cache.set(key, item)
       if (cache.size > maxSheets) cache.delete(cache.keys().next().value!)
-      ctx.drawImage(item.image, Math.min(anim.frame, anim.count - 1) * width, 0, width, height,
-        -width / 2, -height + 4, width, height)
+      const stride = width + margin * 2
+      const frameHeight = height + margin * 2
+      ctx.drawImage(item.image, Math.min(anim.frame, anim.count - 1) * stride, 0, stride, frameHeight,
+        -width / 2 - margin, -height + 4 - margin, stride, frameHeight)
       return true
     },
   }
