@@ -114,6 +114,24 @@ describe('ES2 combat VFX contract', () => {
     expect(calls.filter(c => c.startsWith('restore:'))).toHaveLength(2)
   })
 
+  it('renders every effect at multiple animation phases without losing Canvas balance', () => {
+    const registry = createContentRegistry([COMBAT_VFX_PACK])
+    for (const spec of COMBAT_FX_SPECS) {
+      const s = state()
+      expect(emitCombatVfx(fx => registry.addEffect(s, fx), spec.kind, 400, 300, { angle: Math.PI / 3 })).toBe(true)
+      const beginning = fakeCanvas()
+      expect(() => registry.render(beginning.ctx, s, 0, 0)).not.toThrow()
+      registry.tick(s, spec.duration * 0.4, hooks)
+      const impact = fakeCanvas()
+      expect(() => registry.render(impact.ctx, s, 0, 0)).not.toThrow()
+      expect(impact.calls.filter(c => c.startsWith('save:')).length)
+        .toBe(impact.calls.filter(c => c.startsWith('restore:')).length)
+      expect(impact.calls.some(c => c.startsWith('stroke:') || c.startsWith('fill:'))).toBe(true)
+      registry.tick(s, 4, hooks)
+      expect(s.content.effects).toHaveLength(0)
+    }
+  })
+
   it('supports a new context and preserves direction after the hero turns', () => {
     const { registry, s } = queue('projectile-trail', -Math.PI / 4)
     s.hero!.aimAngle = Math.PI
