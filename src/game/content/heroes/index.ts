@@ -137,14 +137,15 @@ function nearby(state: GameState, reach: number, limit: number): Mob[] {
   const hero = state.hero
   if (!hero) return []
   const selected: { mob: Mob; d: number }[] = []
+  const reachSquared = reach * reach
   for (const enemy of state.mobs) {
     if (enemy.hp <= 0) continue
     const dx = enemy.x - hero.x
     const dy = enemy.y - hero.y
     const d = dx * dx + dy * dy
-    if (d > reach * reach) continue
-    let i = selected.findIndex(entry => d < entry.d)
-    if (i < 0) i = selected.length
+    if (d > reachSquared) continue
+    let i = 0
+    while (i < selected.length && d >= selected[i]!.d) i++
     if (i >= limit) continue
     selected.splice(i, 0, { mob: enemy, d })
     if (selected.length > limit) selected.pop()
