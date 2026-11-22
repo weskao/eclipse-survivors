@@ -74,7 +74,7 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
       // Decoration is visual only: authoritative collision still uses the original obstacle.
       ctx.save()
       ctx.globalAlpha = 0.76
-      ctx.drawImage(decor, (o.variant % 4) * 96, 0, 96, 96, x - 55, y - 125, 110, 130)
+      ctx.drawImage(decor, (o.variant % 4) * 96, 0, 96, 96, x - 55, y - 105, 110, 110)
       ctx.restore()
     } else if (s.currentScene === 0 && o.variant === 0) ctx.drawImage(props.tree, x - 90, y - 207, 181, 216)
     else if (s.currentScene === 0 && o.variant === 1) ctx.drawImage(props.ruin, x - 46, y - 114, 92, 121)
