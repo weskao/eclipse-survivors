@@ -280,7 +280,8 @@ export function createWaveDirector(opts: { mode: RunModeId; seed: number }): Wav
       const lastMini = t >= MINI_BOSS_FIRST
         ? MINI_BOSS_FIRST + Math.floor((t - MINI_BOSS_FIRST) / MINI_BOSS_INTERVAL) * MINI_BOSS_INTERVAL
         : -1
-      const miniDue = available > 0 && lastMini > lastTime && lastMini <= t &&
+      // Drop stale optional encounters on resume; never dump a backlog in one tick.
+      const miniDue = available > 0 && lastMini > lastTime && t - lastMini <= 4 && lastMini <= t &&
         Math.abs(lastMini - bossAt) > BOSS_PREP_SECONDS &&
         // Do not surprise the player with elite encounters during recovery or a boss fight.
         wave.stage !== 'boss-prep' && wave.stage !== 'boss' && wave.stage !== 'recovery'
