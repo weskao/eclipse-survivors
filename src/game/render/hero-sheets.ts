@@ -40,7 +40,9 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
         drawPortraitMotion(ctx, source, anim, width, height)
         return true
       }
-      const key = [anim.pose, anim.direction, width, height, anim.count].join(':')
+      // Body art is one view; direction changes only its outer facing transform.
+      // One cached sequence serves all octants without duplicate 3x bitmaps.
+      const key = [anim.pose, width, height, anim.count].join(':')
       let item = portraitCache.get(key)
       if (item && item.source !== source) { portraitCache.delete(key); item = undefined }
       if (!item) {
