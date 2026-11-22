@@ -49,7 +49,7 @@ export function drawLiveFactionArt(
           : enemy.state === 'recover' ? 4
             : (Math.floor(state.worldClock * 6 + enemy.id) & 1)
     const size = Math.max(70, enemy.radius * 4)
-    const h = size * 1.08
+    const h = size // The authored 96×96 source cells must retain their natural aspect ratio.
     ctx.save()
     ctx.translate(x, y)
     // These 6-frame strips share one artist-authored facing. This mirroring is
