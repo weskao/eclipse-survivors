@@ -151,7 +151,12 @@ describe('independent premium boss content', () => {
     const { state, hooks, controller } = setup()
     const boss = controller.spawn(state, 'frost-sovereign', { x: 190, y: 0 }, hooks)!
     controller.tick(state, 1.5, hooks)
+    state.content.effects.push(
+      { id: 'bosses:frost-glow', x: 0, y: 0, life: 1, max: 1 },
+      { id: 'other:preserve', x: 0, y: 0, life: 1, max: 1 },
+    )
     controller.onContentEvent(state, { type: 'scene-change', index: 1 }, hooks)
+    expect(state.content.effects.map(fx => fx.id)).toEqual(['other:preserve'])
     expect(controller.snapshot(state).telegraphs).toEqual([])
     expect(controller.snapshot(state).projectiles).toEqual([])
     expect(state.mobs).toContain(boss)
