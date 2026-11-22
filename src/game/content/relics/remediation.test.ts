@@ -122,3 +122,20 @@ describe('relic combat remediation', () => {
     expect(calculateRelicIncoming(s, Number.POSITIVE_INFINITY, () => 0).damage).toBe(0)
   })
 })
+
+
+it('rejects impossible hit and reflection receipts without dropping legitimate pending contacts', () => {
+  const s = setup()
+  acquireRelic(s, 'relics:mirror-charm')
+  const events: ContentEvent[] = []
+  const hooks = createRelicCombatHooks(s, () => 1, event => events.push(event))
+  expect(hooks.attack(1, 10, {})).not.toBeNull()
+  expect(hooks.confirmHit(1, null as never, 5, true)).toBe(false)
+  expect(hooks.confirmHit(1, mob(), 20, true)).toBe(false)
+  expect(hooks.confirmHit(1, mob(), 0, true)).toBe(false)
+  expect(hooks.confirmHit(1, mob(), 5, true)).toBe(true)
+  expect(hooks.incoming(1, 100)?.damage).toBeGreaterThan(0)
+  expect(hooks.confirmIncoming(1, 500)).toBeNull()
+  expect(hooks.confirmIncoming(1, 20)).toBeCloseTo(4)
+  expect(events.map(event => event.type)).toEqual(['hit', 'kill', 'damage'])
+})
