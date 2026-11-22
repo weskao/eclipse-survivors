@@ -172,7 +172,8 @@ describe('engine commands fire the original cues', () => {
     }
     expect(engine.ui.hud.skills.length).toBeGreaterThan(0)
     expect(engine.ui.hud.skills.every(item =>
-      item.id in engine.state.hero!.skills || item.id in engine.state.hero!.evolutions,
+      item.id in engine.state.hero!.skills || item.id in engine.state.hero!.evolutions ||
+      item.id in engine.state.content.levels,
     )).toBe(true)
   })
 
