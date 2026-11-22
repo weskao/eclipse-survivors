@@ -90,6 +90,19 @@ class TestC104ProductionArt(unittest.TestCase):
                             if entry['kind'] == 'biome-scene':
                                 self.assertEqual(alpha.getextrema(), (255, 255),
                                                  'Full-scene art must preserve dark pixels without transparent holes')
+                            if entry['kind'] == 'boss-phases':
+                                # Manually compared against full-resolution c104 source sheets.
+                                # These strips are adjacent artwork, not part of the boss.
+                                stray_regions = {
+                                    'frost-sovereign-phases@3x.webp': {
+                                        0: [(0, 0, 192, 32)], 1: [(0, 0, 192, 55)]},
+                                    'eclipse-seraph-phases@3x.webp': {
+                                        0: [(0, 0, 33, 192)], 1: [(0, 0, 20, 192)],
+                                        2: [(0, 0, 192, 14)]},
+                                }
+                                for region in stray_regions.get(file.name, {}).get(index, []):
+                                    self.assertIsNone(alpha.crop(region).getbbox(),
+                                                      f'Neighbor boss sheet bleed: {file.name} cell {index}')
                             if entry['kind'] == 'enemy-body':
                                 self.assertEqual(len({tuple(bounds) for bounds in entry['sourceBoxes']}), 4,
                                                  'Six playback slots must reuse four distinct authored poses')
