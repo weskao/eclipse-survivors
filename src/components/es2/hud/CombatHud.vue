@@ -3,6 +3,7 @@ import { computed, ref, shallowRef, watch } from 'vue'
 import { animatedEs2ImageSrc, skillImageSrc } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
+import { t } from '../../../i18n'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
 import type { HudView } from '../../../game/store'
 import type { HeroId, JobId } from '../../../game/types'
@@ -22,6 +23,7 @@ const props = withDefaults(defineProps<{
   musicVolume?: number
   sfxVolume?: number
   audioActive?: boolean
+  canReturnHome?: boolean
 }>(), { audioActive: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
@@ -97,6 +99,9 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             :music-volume="musicVolume!" :sfx-volume="sfxVolume!"
             @toggle-music="actions.toggleMusic?.()" @toggle-sfx="actions.toggleSfx?.()"
             @music-volume="actions.setMusicVolume?.($event)" @sfx-volume="actions.setSfxVolume?.($event)" />
+          <button v-if="canReturnHome && actions.home" type="button" data-es2-home :aria-label="t('返回主選單')" :title="t('返回主選單')" @click="actions.home()">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V21h13V9.5M9.5 21v-7h5v7"/></svg>
+          </button>
           <button type="button" data-es2-settings aria-label="開啟設定" title="設定" @click="actions.settings()">⚙</button>
           <button type="button" data-es2-pause aria-label="暫停遊戲" aria-keyshortcuts="P" title="暫停（P）" @click="actions.pause()">Ⅱ</button>
         </nav>
