@@ -35,7 +35,11 @@ beforeEach(() => {
   engine.state.W = 1280
   engine.state.H = 720
 })
-afterEach(() => setRandom())
+afterEach(() => {
+  setRandom()
+  localStorage.removeItem('eclipseUpgradeEffect')
+  localStorage.removeItem('eclipseCameraShake')
+})
 
 const key = (code: string): void => { window.dispatchEvent(new KeyboardEvent('keydown', { code })) }
 
@@ -53,6 +57,53 @@ describe('engine commands fire the original cues', () => {
     expect(audio.cues).toContain('start')
     expect(engine.ui.hud.who).toBe('曙鋼騎士 · LV.1')
     expect(engine.ui.toastText).toBe('幽暮之門已開啟')
+  })
+
+  it('opens settings from gameplay safely and restores play after closing', () => {
+    engine.start()
+    engine.openSettings()
+    expect(engine.ui.settingsOpen).toBe(true)
+    expect(engine.ui.mode).toBe('paused')
+    const stop = engine.listen(window)
+    key('KeyP')
+    expect(engine.ui.mode).toBe('paused')
+    key('Escape')
+    expect(engine.ui.settingsOpen).toBe(false)
+    expect(engine.ui.mode).toBe('play')
+    stop()
+  })
+
+  it('keeps the skill selection state intact when settings are opened during an upgrade', () => {
+    engine.start()
+    engine.testApi.level()
+    const stop = engine.listen(window)
+    engine.openSettings()
+    key('Digit1')
+    expect(engine.ui.mode).toBe('level')
+    engine.closeSettings()
+    expect(engine.ui.mode).toBe('level')
+    stop()
+  })
+
+  it('persists still/soft upgrade effects and combat camera motion preferences', () => {
+    expect(engine.ui.upgradeEffect).toBe('soft')
+    expect(engine.ui.cameraShake).toBe(true)
+    engine.setUpgradeEffect('still')
+    engine.setCameraShake(false)
+    expect(engine.ui.upgradeEffect).toBe('still')
+    expect(engine.ui.cameraShake).toBe(false)
+    expect(localStorage.getItem('eclipseUpgradeEffect')).toBe('still')
+    expect(localStorage.getItem('eclipseCameraShake')).toBe('off')
+    const reloaded = createEngine({ audio })
+    expect(reloaded.ui.upgradeEffect).toBe('still')
+    expect(reloaded.ui.cameraShake).toBe(false)
+  })
+
+  it('sends slider changes to the audio system and updates the UI', () => {
+    engine.setMusicVolume(43)
+    engine.setSfxVolume(17)
+    expect(engine.ui.musicVolume).toBe(43)
+    expect(engine.ui.sfxVolume).toBe(17)
   })
 
   it('pause/resume cues and mode round-trip', () => {
