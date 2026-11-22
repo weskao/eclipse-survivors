@@ -99,9 +99,14 @@ describe('ES2 combat HUD', () => {
 
   it('does not mount visual overlay while inactive and removes UI cleanly on unmount', async () => {
     const { wrapper } = render({ active: false })
-    expect(wrapper.find('.es2-hud').exists()).toBe(false)
-    await wrapper.setProps({ active: true })
+    // The map element must exist even while hidden: engine.mount captures it on menu mount.
     expect(wrapper.find('.es2-hud').exists()).toBe(true)
+    expect(wrapper.get('.es2-hud').classes()).not.toContain('es2-hud--active')
+    expect(wrapper.get('.es2-hud').attributes('aria-hidden')).toBe('true')
+    expect(wrapper.get('canvas[aria-label="戰場小地圖"]').exists()).toBe(true)
+    await wrapper.setProps({ active: true })
+    expect(wrapper.get('.es2-hud').classes()).toContain('es2-hud--active')
+    expect(wrapper.get('.es2-hud').attributes('aria-hidden')).toBe('false')
     wrapper.unmount()
     expect(document.querySelector('.es2-hud')).toBeNull()
   })
