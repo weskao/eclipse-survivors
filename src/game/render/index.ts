@@ -14,7 +14,7 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroStatus, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
@@ -133,6 +133,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt)
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
+  drawHeroStatus(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)
   drawEnemyProjectiles(ctx, s, ox, oy)
