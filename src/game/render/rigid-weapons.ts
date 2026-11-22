@@ -113,6 +113,9 @@ export function drawRigidWeapon(
   const posed = sampleWeaponRig(job, hero, anim)
   const pivotX = (layers.grip[0] - .5) * width
   const pivotY = (layers.grip[1] - 1) * height + 4
+  // Match the body's displayed height while preserving the original artwork's
+  // width/height ratio. Never stretch a sword, bow, or staff along only one axis.
+  const rigidWidth = height * layers.weapon.width / layers.weapon.height
   const action = anim.pose === 'attack' || anim.pose === 'cast'
   const turn = (job === 'ranger' && action ? posed.aim * .45 : 0)
     + (job === 'wizard' && action ? posed.aim * .35 : 0)
@@ -120,6 +123,6 @@ export function drawRigidWeapon(
   ctx.save()
   ctx.translate(pivotX + posed.hand.x - rest.hand.x, pivotY + posed.hand.y - rest.hand.y)
   ctx.rotate(turn)
-  ctx.drawImage(layers.weapon, -width / 2 - pivotX, -height + 4 - pivotY, width, height)
+  ctx.drawImage(layers.weapon, -layers.grip[0] * rigidWidth, -layers.grip[1] * height, rigidWidth, height)
   ctx.restore()
 }
