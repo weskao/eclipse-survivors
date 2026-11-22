@@ -93,14 +93,18 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = true
+  let initialHpBar = true
+  let initialXpBar = true
   try {
     if (settingsStorage?.getItem('eclipseUpgradeEffect') === 'still') initialEffect = 'still'
     if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
+    if (settingsStorage?.getItem('eclipseHeroHpBar') === 'off') initialHpBar = false
+    if (settingsStorage?.getItem('eclipseHeroXpBar') === 'off') initialXpBar = false
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
     mode: 'menu', choice: s.choice, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
-    settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
+    settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, heroHpBar: initialHpBar, heroXpBar: initialXpBar, hud: emptyHud(),
     upgrades: [], toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
     runMode: 'quick', profile: profileStore.get(), runResult: null, rewards: null,
   })
@@ -434,6 +438,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const assets: RenderAssets = createRenderAssets(art)
     if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
     assets.cameraShakeEnabled = () => ui.cameraShake
+    assets.heroHpBarEnabled = () => ui.heroHpBar
+    assets.heroXpBarEnabled = () => ui.heroXpBar
     let dpr = 1
     let last = 0
     let raf = 0
@@ -534,6 +540,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ui.cameraShake = enabled
       saveSetting('eclipseCameraShake', enabled ? 'on' : 'off')
       if (!enabled) s.cameraKick = 0
+    },
+    setHeroHpBar(enabled) {
+      ui.heroHpBar = enabled
+      saveSetting('eclipseHeroHpBar', enabled ? 'on' : 'off')
+    },
+    setHeroXpBar(enabled) {
+      ui.heroXpBar = enabled
+      saveSetting('eclipseHeroXpBar', enabled ? 'on' : 'off')
     },
     openSettings,
     closeSettings,

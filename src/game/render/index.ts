@@ -9,7 +9,7 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroBars, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
@@ -27,6 +27,8 @@ export interface RenderAssets {
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
   cameraShakeEnabled: () => boolean
+  heroHpBarEnabled: () => boolean
+  heroXpBarEnabled: () => boolean
   biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
   magicGlow: HTMLCanvasElement | null
@@ -45,6 +47,8 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     heroSheets: createHeroSheets(makeCanvas),
     prefersReducedMotion: () => query?.matches ?? false,
     cameraShakeEnabled: () => true,
+    heroHpBarEnabled: () => true,
+    heroXpBarEnabled: () => true,
     depthOrder: [],
     biomes: buildBiomeArt(makeCanvas),
     magicGlow: buildMagicGlow(makeCanvas),
@@ -118,6 +122,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint)
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
+  drawHeroBars(ctx, s, hero, ox, oy, assets.heroHpBarEnabled(), assets.heroXpBarEnabled())
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)
   drawEnemyProjectiles(ctx, s, ox, oy)

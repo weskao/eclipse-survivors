@@ -83,6 +83,8 @@ export interface UiState {
   settingsOpen: boolean
   upgradeEffect: 'soft' | 'still'
   cameraShake: boolean
+  heroHpBar: boolean
+  heroXpBar: boolean
   hud: HudView
   upgrades: readonly UpgradeDef[]
   toastText: string
@@ -116,6 +118,8 @@ export interface GameCommands {
   setSfxVolume(value: number): void
   setUpgradeEffect(effect: 'soft' | 'still'): void
   setCameraShake(enabled: boolean): void
+  setHeroHpBar(enabled: boolean): void
+  setHeroXpBar(enabled: boolean): void
   openSettings(): void
   closeSettings(): void
   /** `#home` / `#leave`: back to the menu. */

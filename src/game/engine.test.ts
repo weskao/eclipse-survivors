@@ -43,6 +43,8 @@ afterEach(() => {
   setRandom()
   localStorage.removeItem('eclipseUpgradeEffect')
   localStorage.removeItem('eclipseCameraShake')
+  localStorage.removeItem('eclipseHeroHpBar')
+  localStorage.removeItem('eclipseHeroXpBar')
 })
 
 const key = (code: string): void => { window.dispatchEvent(new KeyboardEvent('keydown', { code })) }
@@ -101,6 +103,19 @@ describe('engine commands fire the original cues', () => {
     const reloaded = createEngine({ audio })
     expect(reloaded.ui.upgradeEffect).toBe('still')
     expect(reloaded.ui.cameraShake).toBe(false)
+  })
+
+  it('shows hero foot bars by default and persists each toggle', () => {
+    expect(engine.ui.heroHpBar).toBe(true)
+    expect(engine.ui.heroXpBar).toBe(true)
+    engine.setHeroHpBar(false)
+    expect(localStorage.getItem('eclipseHeroHpBar')).toBe('off')
+    const hpOff = createEngine({ audio })
+    expect([hpOff.ui.heroHpBar, hpOff.ui.heroXpBar]).toEqual([false, true])
+    engine.setHeroHpBar(true)
+    engine.setHeroXpBar(false)
+    const xpOff = createEngine({ audio })
+    expect([xpOff.ui.heroHpBar, xpOff.ui.heroXpBar]).toEqual([true, false])
   })
 
   it('freezes upgrade-scene ambient motion only in still mode', () => {

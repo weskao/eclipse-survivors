@@ -95,8 +95,12 @@ onBeforeUnmount(() => unmount?.())
     :active="ui.settingsOpen"
     :upgrade-effect="ui.upgradeEffect"
     :camera-shake="ui.cameraShake"
+    :hero-hp-bar="ui.heroHpBar"
+    :hero-xp-bar="ui.heroXpBar"
     @close="engine.closeSettings"
     @upgrade-effect="engine.setUpgradeEffect"
     @camera-shake="engine.setCameraShake"
+    @hero-hp-bar="engine.setHeroHpBar"
+    @hero-xp-bar="engine.setHeroXpBar"
   />
 </template>

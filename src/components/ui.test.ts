@@ -222,7 +222,7 @@ describe('GameHud', () => {
 })
 
 describe('SettingsOverlay', () => {
-  const props = { active: true, upgradeEffect: 'soft' as const, cameraShake: true }
+  const props = { active: true, upgradeEffect: 'soft' as const, cameraShake: true, heroHpBar: true, heroXpBar: true }
 
   it('focuses on visual preferences without duplicating external audio controls', async () => {
     const w = mount(SettingsOverlay, { props })
@@ -238,6 +238,20 @@ describe('SettingsOverlay', () => {
     expect(w.emitted('cameraShake')?.at(-1)).toEqual([false])
     await w.find('#settingsClose').trigger('click')
     expect(w.emitted('close')).toHaveLength(1)
+  })
+
+  it('toggles the hero health and experience bars independently', async () => {
+    const w = mount(SettingsOverlay, { props: { ...props, heroXpBar: false } })
+    const hp = w.find('#settingsHeroHpBar')
+    const xp = w.find('#settingsHeroXpBar')
+    expect(hp.attributes('aria-pressed')).toBe('true')
+    expect(hp.attributes('aria-label')).toBe('關閉人物生命條')
+    expect(xp.attributes('aria-pressed')).toBe('false')
+    expect(xp.attributes('aria-label')).toBe('開啟人物經驗條')
+    await hp.trigger('click')
+    await xp.trigger('click')
+    expect(w.emitted('heroHpBar')?.at(-1)).toEqual([false])
+    expect(w.emitted('heroXpBar')?.at(-1)).toEqual([true])
   })
 
   it('pairs motion choices with distinct visuals and descriptions', () => {

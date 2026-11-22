@@ -160,6 +160,22 @@ describe('drawFrame', () => {
     expect(firstTile()).not.toEqual(still)
   })
 
+  it('reads the hero foot bar preferences live on every frame', () => {
+    const state = busyState()
+    state.mode = 'play'
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const rects = (): number => {
+      const { ctx, calls } = createFakeCtx()
+      drawFrame(ctx, state, 1, assets)
+      return calls.filter((c) => c === 'fillRect').length
+    }
+    const shown = rects()
+    assets.heroHpBarEnabled = () => false
+    expect(rects()).toBe(shown - 2)
+    assets.heroXpBarEnabled = () => false
+    expect(rects()).toBe(shown - 4)
+  })
+
   it('applies a live reduced-motion preference change on the next frame', () => {
     const s = busyState()
     const { make } = fakeCanvasFactory()
