@@ -164,7 +164,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
   hero.x = free.x; hero.y = free.y
   if (hero.attack <= 0) {
-    attack(s, hooks)
+    attack(s, hooks, factions)
     hero.attack = hero.delay
   }
   tickEnemies(s, dt, hooks)
