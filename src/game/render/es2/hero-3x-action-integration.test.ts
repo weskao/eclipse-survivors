@@ -9,13 +9,13 @@ const animation = (overrides: Partial<HeroAnimation> = {}): HeroAnimation => ({
 
 type AtlasWithAction = HTMLImageElement & { actionStrip?: HTMLImageElement }
 
-describe('ES2 high-resolution action strips without losing true eight-direction movement', () => {
-  it('loads distinct committed 3x eight-cell action sheets for all three specializations', () => {
+describe('ES2 archived motion strips and legacy eight-direction fallback', () => {
+  it('loads the canonical 3x homepage portrait for all three specializations', () => {
     expect(Object.keys(PRODUCTION_HERO_ACTION_SOURCES).sort()).toEqual(['crimson-paladin', 'shadowblade', 'spirit-summoner'])
     const built = loadProductionHeroes(() => ({ src: '' }) as HTMLImageElement)
     for (const id of ['shadowblade','spirit-summoner','crimson-paladin'] as const) {
-      expect((built[id] as AtlasWithAction).src).toContain(id + '-8dir@3x.webp')
-      expect((built[id] as AtlasWithAction).actionStrip?.src).toContain(id + '-run-attack@3x.webp')
+      expect((built[id] as AtlasWithAction).src).toContain(id + '-portrait@3x.webp')
+      expect((built[id] as AtlasWithAction).actionStrip).toBeUndefined()
     }
   })
 
