@@ -159,3 +159,23 @@ describe('v3 progression durable transactions', () => {
     expect(store.get().state?.runIds).toHaveLength(MAX_RUN_IDS)
   })
 })
+
+describe('uncertain post-write storage acknowledgement', () => {
+  it('does not pay the same receipt again when setItem throws after the head was stored', () => {
+    const disk = memoryStorage()
+    const flaky = {
+      getItem: disk.getItem,
+      setItem(key: string, value: string) {
+        disk.setItem(key, value)
+        if (key === META_V3_HEAD_KEY) throw Error('acknowledgement lost')
+      },
+    }
+    const first = createMetaProgressionStore(flaky).settle({ stats: run('uncertain-receipt') })
+    expect(first.ok).toBe(false)
+    expect(first.rewards).toEqual([])
+    const recovered = createMetaProgressionStore(disk)
+    expect(recovered.get().state?.runs).toBe(1)
+    expect(recovered.settle({ stats: run('uncertain-receipt') }).reason).toBe('duplicate')
+    expect(recovered.get().state?.runs).toBe(1)
+  })
+})
