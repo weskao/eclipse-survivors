@@ -25,6 +25,12 @@ jobs:
       - run: python -m pip install pillow==11.3.0
       - run: python -m unittest discover -s tests/es2/art -p 'test_*.py' -v
       - run: python scripts/es2/inspect_c104.py
+      - name: Save immutable c104 source sheets for exact pixel-by-pixel crop review
+        uses: actions/upload-artifact@v4
+        with:
+          name: c104-10-original-source-pngs
+          path: assets/images/img*.png
+          if-no-files-found: error
       - run: python scripts/es2/verify_runtime_atlases.py
       - uses: actions/upload-artifact@v4
         with:
