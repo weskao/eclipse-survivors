@@ -98,6 +98,7 @@ describe('director scheduling and budgets', () => {
     const skipped = director.advance(frame(3600))
     expect(skipped.spawns.length).toBeLessThanOrEqual(10)
     expect(skipped.events.length).toBeLessThanOrEqual(3)
+    expect(skipped.events.some(e => e.kind === 'mini-boss')).toBe(false)
   })
 
   it('keeps all spawn coordinates outside view and respects collision veto without unsafe fallback', () => {
