@@ -46,6 +46,8 @@ export interface MetaProgressionStore {
   purchaseResearch(id: string): MetaTransactionResult
   purchaseEquipment(id: string): MetaTransactionResult
   purchaseBonus(id: string): MetaTransactionResult
+  /** User-initiated reset. Never erase a committed save before the new head verifies. */
+  reset(): MetaTransactionResult
 }
 
 const blocked = (): Loaded => ({
@@ -182,5 +184,11 @@ export function createMetaProgressionStore(
     purchaseResearch: id => purchase(id, buyResearch),
     purchaseEquipment: id => purchase(id, unlockStartingEquipment),
     purchaseBonus: id => purchase(id, unlockStartingBonus),
+    reset() {
+      const current = load(storage)
+      if (current.status !== 'ready' || !current.state) return rejected('blocked', null)
+      // The new envelope intentionally drops the legacy rollback snapshot.
+      return commit({ ...current, legacyProfile: null }, createMetaState(), [])
+    },
   }
 }
