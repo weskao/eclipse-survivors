@@ -1,5 +1,7 @@
 import type { ContentEvent, GameState } from '../../types'
-import { RELIC_BY_ID, RELICS, type RelicBonuses, type RelicDefinition, type RelicId, type RelicStat } from './catalog'
+import { RELIC_BY_ID, RELIC_CUES, RELICS, type RelicBonuses, type RelicDefinition, type RelicId, type RelicStat } from './catalog'
+
+export type RelicFeedback = (cue: (typeof RELIC_CUES)[keyof typeof RELIC_CUES], relic?: RelicDefinition) => void
 
 export const RELIC_CAPACITY = 10
 export const INITIAL_REROLLS = 2
@@ -88,20 +90,23 @@ function weightedOptions(run: RunRelics, rng: () => number, avoid: ReadonlySet<R
   return choices
 }
 /** chestId must be a strictly increasing world-event serial. Same/old chests never pay twice. */
-export function openTreasure(state: GameState, chestId: number, rng: () => number): TreasureOffer | null {
+export function openTreasure(state: GameState, chestId: number, rng: () => number, feedback?: RelicFeedback): TreasureOffer | null {
   const run = getRun(state)
   if (!state.hero || run.pending || !Number.isSafeInteger(chestId) || chestId <= run.lastChestId) return null
   run.lastChestId = chestId
   const options = weightedOptions(run, rng)
   if (!options.length) return null
   run.pending = { chestId, options }
+  feedback?.(RELIC_CUES.chestOpen)
   return { chestId, options: [...options] }
 }
-export function claimTreasure(state: GameState, chestId: number, id: RelicId): boolean {
+export function claimTreasure(state: GameState, chestId: number, id: RelicId, feedback?: RelicFeedback): boolean {
   const run = getRun(state)
   if (!run.pending || run.pending.chestId !== chestId || !run.pending.options.includes(id)) return false
   if (!acquireRelic(state, id)) return false
   run.pending = null
+  const relic = RELIC_BY_ID.get(id)!
+  feedback?.(relic.cursed ? RELIC_CUES.curseTaken : RELIC_CUES.rewardTaken, relic)
   return true
 }
 export function rerollTreasure(state: GameState, chestId: number, rng: () => number): TreasureOffer | null {
