@@ -2,8 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { createHero, createState } from '../state'
 import type { GameState, JobId } from '../types'
 import { sampleHeroAnimation } from './animation'
-import { createFakeCtx, fakeCanvasFactory, fakeImage } from './fakes'
+import { createFakeCtx, fakeArtwork, fakeCanvasFactory, fakeImage } from './fakes'
 import { createHeroSheets } from './hero-sheets'
+import { createRenderAssets, drawFrame } from './index'
 
 function setup(job: JobId): GameState {
   const state = createState()
@@ -118,5 +119,28 @@ describe('cached directional sprite sheets', () => {
       hero.strike = 0.20
     }
     expect(sheets.size).toBeLessThanOrEqual(16)
+  })
+})
+
+describe('live gameplay integration', () => {
+  it('uses the cached image sequence in the main drawFrame path without rebaking every tick', () => {
+    const state = setup('knight')
+    state.W = 900
+    state.H = 600
+    state.hero!.strike = 0.26
+    state.hero!.aimAngle = Math.PI / 2
+    const factory = fakeCanvasFactory()
+    const assets = createRenderAssets(fakeArtwork(true), factory.make)
+    const baseline = factory.made.length
+    const first = createFakeCtx()
+    drawFrame(first.ctx, state, 1, assets)
+    expect(factory.made).toHaveLength(baseline + 1)
+    const sheet = factory.made.at(-1)!.canvas
+    expect(first.drawn).toContain(sheet)
+    const second = createFakeCtx()
+    state.hero!.strike = 0.07
+    drawFrame(second.ctx, state, 1, assets)
+    expect(second.drawn).toContain(sheet)
+    expect(factory.made).toHaveLength(baseline + 1)
   })
 })
