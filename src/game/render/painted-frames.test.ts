@@ -22,6 +22,7 @@ describe('real raster frame art in gameplay', () => {
     const hero = state.hero
     hero.strike = .15
     hero.aimAngle = Math.PI
+    hero.face = -1
     const anim = sampleHeroAnimation(state, hero)
     const image = readyAtlas()
     const { ctx, drawn } = createFakeCtx()
