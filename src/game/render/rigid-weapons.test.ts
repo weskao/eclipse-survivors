@@ -4,6 +4,7 @@ import type { JobId } from '../types'
 import { sampleHeroAnimation } from './animation'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
 import { createRigidWeaponLayers, drawRigidWeapon } from './rigid-weapons'
+import { drawRigSprite } from './characters'
 
 const jobs = ['knight', 'ranger', 'wizard'] as const
 
@@ -57,5 +58,27 @@ describe('rigid non-deforming equipment layers', () => {
       expect(args[3]).toBe(110)
       expect(args[4]).toBe(150)
     }
+  })
+})
+
+describe('articulated-body and equipment integration', () => {
+  it.each(jobs)('%s never submits source weapon pixels to the deformable grid', job => {
+    const source = document.createElement('canvas')
+    source.width = 340
+    source.height = 390
+    const layers = createRigidWeaponLayers(source, job, fakeCanvasFactory().make)!
+    const state = createState()
+    state.choice = job
+    state.mode = 'play'
+    state.hero = createHero(job)
+    state.hero.strike = .14
+    const { ctx } = createFakeCtx()
+    const draw = vi.spyOn(ctx, 'drawImage')
+    drawRigSprite(ctx, source, 108, 144, state.hero, sampleHeroAnimation(state, state.hero), job, layers)
+    // The deformable grid receives ONLY weapon-erased body art.
+    expect(draw.mock.calls.filter(args => args[0] === layers.body && args.length === 9)).toHaveLength(96)
+    // Every original weapon pixel moves as exactly one unscaled image.
+    expect(draw.mock.calls.filter(args => args[0] === layers.weapon && args.length === 5)).toHaveLength(1)
+    expect(draw.mock.calls.some(args => args[0] === source)).toBe(false)
   })
 })
