@@ -22,6 +22,10 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
     expect(args.some(a=>a[0]===image && a.slice(1,5).join() === '192,0,96,96')).toBe(true)
     expect(args.some(a=>a[0]===warning && a.slice(1,5).join() === '0,0,96,96')).toBe(true)
+    const bodyDraw = args.find(a => a[0] === image)!
+    // A square authored atlas cell must not be stretched vertically at game size.
+    expect(bodyDraw[7]).toBe(bodyDraw[8])
+    expect(Number(bodyDraw[6]) + Number(bodyDraw[8])).toBe(5)
   })
 
   it('never paints offscreen, dead or malformed source sheets', () => {
