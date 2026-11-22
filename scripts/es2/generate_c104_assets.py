@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageOps
 
 SOURCE_FILES = tuple(f'imgs{i}.png' for i in range(1, 11))
 ROOT = Path(__file__).resolve().parents[2]
@@ -143,6 +143,18 @@ def fit(source:Image.Image, box:tuple[int,int,int,int], size:tuple[int,int], sou
     return canvas
 
 
+def fit_scene(source:Image.Image, box:tuple[int,int,int,int], size:tuple[int,int])->Image.Image:
+    """Preserve the whole cinematic illustration, including genuine dark pixels.
+
+    The RGB scene sheets have near-black painted architecture. Alpha-keying
+    black is valid for isolated props, never for a full backdrop.
+    """
+    return ImageOps.pad(
+        source.crop(box).convert('RGB'), size,
+        method=Image.Resampling.LANCZOS, color=(16,12,26),
+    ).convert('RGBA')
+
+
 def isolate_main_alpha_component(image:Image.Image)->Image.Image:
     """Remove detached neighbouring-sheet fragments without touching the main silhouette."""
     from collections import deque
@@ -222,7 +234,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
         emit(f'src/assets/es2/production/biomes/{id}-decor@3x.webp','biome-decor',add_atlas(ims,(96,96)),4,(96,96),src_id,boxes,180000)
     for id,(src_id,box) in SCENES.items():
         # Cinematic biome illustration for real menu/UI use. NOT a repeat tile.
-        im=fit(sources[src_id],box,(768,432),src_id,6)
+        im=fit_scene(sources[src_id],box,(768,432))
         emit(f'src/assets/es2/production/biomes/{id}-scene@3x.webp','biome-scene',im,1,(768,432),src_id,[box],450000)
 
     for id,box in UI_BOXES.items():
