@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
 import { ART_URLS } from '../../../game/art'
-import { skillImageSrc } from '../../../game/ui-art'
+import { animatedEs2ImageSrc, skillImageSrc } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
 import type { HudView } from '../../../game/store'
@@ -171,7 +171,11 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             class="es2-hud__skill" :class="['es2-hud__rarity--' + skill.rarity, { 'es2-hud__skill--evolved': skill.evolved }]"
             :aria-label="skillDescription(skill)" :title="skillDescription(skill)"
             :aria-pressed="selectedId === skill.id" @click="selectedId = selectedId === skill.id ? null : skill.id">
-            <img v-if="skill.iconSrc || !skill.id.includes(':')" :src="skill.iconSrc ?? skillImageSrc(skill.id)" alt="" decoding="async" />
+            <picture v-if="animatedEs2ImageSrc(skill.id)">
+              <source media="(prefers-reduced-motion: reduce)" :srcset="skill.iconSrc" />
+              <img :src="animatedEs2ImageSrc(skill.id)" alt="" decoding="async" draggable="false" />
+            </picture>
+            <img v-else-if="skill.iconSrc || !skill.id.includes(':')" :src="skill.iconSrc ?? skillImageSrc(skill.id)" alt="" decoding="async" />
             <span v-else aria-hidden="true" class="es2-hud__skill-glyph">{{ skill.icon }}</span>
             <span class="es2-hud__cooldown" aria-hidden="true" :style="{ '--es2-cooldown': skill.cooldownPct + '%' }"></span>
             <span class="es2-hud__skill-level">Lv.{{ skill.level }}</span>

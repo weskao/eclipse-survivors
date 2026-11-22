@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { ContentId, GameState } from '../../../game/types'
 import { evolutionChoices, type EvolutionChoice } from './model'
+import { animatedEs2ImageSrc, stillEs2ImageSrc } from '../../../game/ui-art'
 
 const props = defineProps<{ state: GameState; active: boolean }>()
 const emit = defineEmits<{ choose: [id: ContentId] }>()
@@ -25,7 +26,14 @@ function choose(choice: EvolutionChoice): void {
           :disabled="!choice.eligible"
           :aria-label="`${choice.title}：${choice.weaponTitle} ${choice.weaponLevel} / ${choice.requiredWeaponLevel}，${choice.passiveTitle} ${choice.passiveLevel} / ${choice.requiredPassiveLevel}`"
           @click="choose(choice)">
-          <span class="es2-evolution-icon" aria-hidden="true">{{ choice.icon }}</span>
+          <span class="es2-evolution-icon" aria-hidden="true">
+            <picture v-if="animatedEs2ImageSrc(choice.id)">
+              <source media="(prefers-reduced-motion: reduce)" :srcset="stillEs2ImageSrc(choice.id)" />
+              <img class="es2-evolution-art" :src="animatedEs2ImageSrc(choice.id)"
+                width="96" height="96" decoding="async" loading="lazy" draggable="false" alt="" />
+            </picture>
+            <template v-else>{{ choice.icon }}</template>
+          </span>
           <span class="es2-evolution-title">{{ choice.title }}</span>
           <span class="es2-evolution-desc">{{ choice.description }}</span>
           <span class="es2-evolution-gates">
@@ -84,6 +92,7 @@ function choose(choice: EvolutionChoice): void {
 .es2-evolution-card:focus-visible { outline: 3px solid #ffe8ab; outline-offset: 3px; }
 .es2-evolution-card.is-unlocked { border-color: #9fbeaa; }
 .es2-evolution-icon { font-size: 2rem; color: #f9dc9e; }
+.es2-evolution-art { display: block; width: 96px; height: 96px; max-width: 100%; object-fit: contain; }
 .es2-evolution-title { font-weight: 700; font-size: 1rem; }
 .es2-evolution-desc { color: #e0d1c9; font-size: .78rem; line-height: 1.4; }
 .es2-evolution-gates { display: grid; gap: 4px; width: 100%; margin-top: auto; font-size: .78rem; }

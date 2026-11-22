@@ -4,27 +4,54 @@ on:
     branches: [feature/es2-animated-production-skills]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: es2-animated-production-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   verify:
-    name: Verify animated assets, types, build and release
+    name: Bake 3 batches, verify, then publish generated WebP
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check Pillow==12.0.0
+      - name: Produce and commit 10 + 10 + 4 canonical artworks
+        shell: bash
+        run: |
+          set -euo pipefail
+          for batch in 1 2 3; do
+            python scripts/generate-es2-animated-art.py --batch "$batch"
+            git add src/assets/es2/production/animated-skill-manifest.json
+            git add src/assets/es2/production/weapons/*@3x-animated.webp
+            git add src/assets/es2/production/evolutions/*@3x-animated.webp
+            if ! git diff --cached --quiet; then
+              git -c user.name='github-actions[bot]' \
+                  -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+                  commit -m "art(es2): generated 3x animated WebP batch $batch"
+            fi
+          done
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm typecheck
-        if: success() || failure()
       - run: pnpm build
-        if: success() || failure()
       - run: pnpm check-release
-        if: success() || failure()
+      - name: Publish only if the branch has not moved and every check passed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin refs/heads/feature/es2-animated-production-skills:refs/remotes/origin/feature/es2-animated-production-skills
+          test "$(git rev-parse refs/remotes/origin/feature/es2-animated-production-skills)" = "$GITHUB_SHA"
+          if [ "$(git rev-parse HEAD)" != "$GITHUB_SHA" ]; then
+            git push origin HEAD:refs/heads/feature/es2-animated-production-skills
+          fi

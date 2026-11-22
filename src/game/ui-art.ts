@@ -18,3 +18,30 @@ export function skillImageSrc(id: AbilityId): string {
 export function animatedSkillImageSrc(id: AbilityId): string {
   return hasGeneratedSkillArt(id) ? `./assets/skill-icons/${id}@3x-animated.webp` : skillImageSrc(id)
 }
+
+/** Canonical ES2 stills remain the source of truth; animated WebP is presentation-only. */
+const es2StaticArt = import.meta.glob('../assets/es2/production/{weapons,evolutions}/*@3x.webp', {
+  eager: true, query: '?url', import: 'default',
+}) as Record<string, string>
+const es2AnimatedArt = import.meta.glob('../assets/es2/production/{weapons,evolutions}/*@3x-animated.webp', {
+  eager: true, query: '?url', import: 'default',
+}) as Record<string, string>
+
+function es2ArtKey(id: AbilityId, animated: boolean): string | undefined {
+  const colon = id.indexOf(':')
+  if (colon < 0) return undefined
+  const namespace = id.slice(0, colon)
+  const slug = id.slice(colon + 1)
+  if ((namespace !== 'weapons' && namespace !== 'evolution2') || !/^[a-z][a-z0-9-]*$/.test(slug)) return undefined
+  return `../assets/es2/production/${namespace === 'weapons' ? 'weapons' : 'evolutions'}/${slug}@3x${animated ? '-animated' : ''}.webp`
+}
+
+export function stillEs2ImageSrc(id: AbilityId): string | undefined {
+  const key = es2ArtKey(id, false)
+  return key ? es2StaticArt[key] : undefined
+}
+
+export function animatedEs2ImageSrc(id: AbilityId): string | undefined {
+  const key = es2ArtKey(id, true)
+  return key ? es2AnimatedArt[key] : undefined
+}
