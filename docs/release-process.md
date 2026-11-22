@@ -40,9 +40,9 @@ The project currently uses **B. GitHub Actions** as its only deployment path. Op
 ### B. GitHub Actions (current, with verification gate)
 
 - **Source**: GitHub Actions
-- Workflow: `.github/workflows/release.yml`; a single job handles verification and deployment.
-- A push to `main` (or manual workflow dispatch) runs `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` in order. It checks the `dist/` entry point, `manifest.webmanifest`, icons, and screenshot assets; uploads `dist/` as a Pages artifact and deploys it; then confirms the public URL returns the game entry point (HTML containing `id="app"`).
-- A `v*` tag does not trigger Pages deployment. After a **successful** `main` push deployment and live-site verification, the same workflow automatically creates the `vX.Y.Z` tag and GitHub Release (only if absent). No `scripts/release.sh` file is required.
+- The [release workflow](../.github/workflows/release.yml) has a deploy job and a dependent Release job. Both jobs check out the event commit.
+- A push to `main` or a manual dispatch runs the deploy job. It runs `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` in order. It checks the built entry point, manifest, icons and screenshots, then uploads and deploys `dist/`. The public URL check requires the game title and a fetchable, non-empty hashed JavaScript bundle referenced by the page.
+- After a successful deployment from a `main` push, the Release job creates the `vX.Y.Z` tag and GitHub Release for the verified commit. It skips an existing Release, stops if `main` has moved before creating a new Release, and stops for manual inspection if the tag exists without a Release. Manual dispatch only redeploys. A `v*` tag does not trigger deployment.
 - The upload-to-deploy handoff waits until the Pages artifact is visible to GitHub Actions. Avoid rerunning an old failed Pages workflow attempt: reruns can create duplicate `github-pages` artifacts. Use a fresh `main` run instead.
 - To redeploy manually: select **Actions → Verify and publish Eclipse Survivors → Run workflow**, and choose the `main` branch.
 
@@ -53,9 +53,9 @@ The project currently uses **B. GitHub Actions** as its only deployment path. Op
    - Set the `version` in `package.json` to the upcoming release version (for example, `0.0.4`). Vite's `define` (`__APP_VERSION__`) displays this value in the version bar on the character selection screen.
    - The `version` in `package.json` must match the latest `## [x.y.z]` entry in `CHANGELOG.md`. A Vitest test enforces this, and `pnpm check-release` checks the built output in `dist/`.
    - Before committing, run `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` locally in that order, and ensure they all pass.
-3. Commit the version/changelog updates to `main`, after the full checks pass, without force-pushing. A push to `main` starts the deployment workflow; no PR is required for this release procedure.
-4. Confirm **Verify and publish Eclipse Survivors** has two successful jobs: **Verify and deploy game to GitHub Pages** and **Publish versioned GitHub Release**. The Release job runs only after the published game URL has been verified and only for a `main` push.
-5. Confirm the versioned GitHub Release and tag point to the deployed commit at <https://github.com/weskao/eclipse-survivors/releases>.
+3. After the full checks pass, commit the version and changelog updates to `main` when authorized. A regular push to `main` starts the deployment workflow.
+4. For a new version, confirm that both jobs in **Verify and publish Eclipse Survivors** succeeded and that the Release job created the expected tag.
+5. Confirm the new GitHub Release and tag point to the deployed commit. A skipped existing Release still belongs to the commit originally tagged for that version. See [GitHub Releases](https://github.com/weskao/eclipse-survivors/releases).
 6. On desktop and mobile, confirm starting an adventure, movement, the upgrade menu, sound effects, and pause work correctly.
 
 ## Troubleshooting
