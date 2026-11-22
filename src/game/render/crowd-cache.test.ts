@@ -3,6 +3,7 @@ import { createState, resetRun } from '../state'
 import type { Mob } from '../types'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from './fakes'
 import { createRenderAssets, drawFrame } from './index'
+import { drawCharacter } from './characters'
 
 const mob = (type: Mob['type'], x: number, y: number, extra: Partial<Mob> = {}): Mob => ({
   x, y, type, hp: 100, max: 100, r: 18, speed: 0, dmg: 0,
@@ -47,6 +48,24 @@ describe('crowd bitmap cache contracts', () => {
     expect(painted.every(entry => entry.calls.filter(name => name === 'drawImage').length === 1)).toBe(true)
     drawFrame(frame.ctx, s, 1, assets)
     expect(made.length - initial).toBe(3)
+  })
+
+  it('reuses a prepainted ground shadow across same-sized mobs', () => {
+    const s = crowd()
+    const { make, made } = fakeCanvasFactory()
+    const assets = createRenderAssets(fakeArtwork(true), make)
+    const first = s.mobs[0]!
+    const second = s.mobs[1]!
+    const originalCount = made.length
+    const frame = createFakeCtx()
+    drawCharacter(frame.ctx, s, assets.art, assets.sprites, first, 480, 286, false, assets.mobTint, assets.mobShadows)
+    expect(frame.calls).not.toContain('ellipse')
+    const shadow = made[originalCount]!.canvas
+    expect(frame.drawn).toContain(shadow)
+    drawCharacter(frame.ctx, s, assets.art, assets.sprites, second, 480, 286, false, assets.mobTint, assets.mobShadows)
+    expect(frame.drawn.filter(img => img === shadow)).toHaveLength(2)
+    // The second mob needs no additional shadow bitmap.
+    expect(made.filter(item => item.canvas === shadow)).toHaveLength(1)
   })
 
   it('uses cached gem bitmaps to render a dense XP field instead of rebuilding glowing paths', () => {
