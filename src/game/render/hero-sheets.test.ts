@@ -78,7 +78,7 @@ describe('cached directional sprite sheets', () => {
     expect(spy.mock.calls.every(args => args.length === 9 && args[0] === factory.made[0]!.canvas)).toBe(true)
   })
 
-  it('provides a different sheet for every direction and uses 8 locomotion frames', () => {
+  it('provides a different sheet for every direction and uses 10 locomotion frames', () => {
     const state = setup('knight')
     const hero = state.hero!
     hero.moveAmount = 1
@@ -91,7 +91,7 @@ describe('cached directional sprite sheets', () => {
       hero.vy = Math.sin(direction * Math.PI / 4) * 100
       const anim = sampleHeroAnimation(state, hero)
       expect(anim.direction).toBe(direction)
-      expect(anim.count).toBe(8)
+      expect(anim.count).toBe(10)
       expect(sheets.draw(ctx, image, 'knight', hero, anim, 108, 134)).toBe(true)
     }
     expect(factory.made).toHaveLength(8)
