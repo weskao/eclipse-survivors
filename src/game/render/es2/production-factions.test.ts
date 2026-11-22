@@ -28,6 +28,23 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(Number(bodyDraw[6]) + Number(bodyDraw[8])).toBe(5)
   })
 
+  it('uses the 288-pixel source cells of a true 3x enemy atlas', () => {
+    const state=createState(); resetRun(state)
+    state.W=900;state.H=600
+    const runtime=createFactionRuntime()
+    const enemy=spawnFactionEnemy(runtime,'shadow-assassin',120,110)!
+    enemy.state='windup'
+    const image=loaded(1728,288), warning=loaded(144,144)
+    const images={ 'shadow-assassin':{body:image,telegraph:warning} } as FactionArtwork
+    const args:unknown[][]=[]
+    const {ctx}=createFakeCtx()
+    const draw=ctx.drawImage.bind(ctx)
+    ctx.drawImage=((...items:unknown[])=>{args.push(items);Reflect.apply(draw,ctx,items)}) as typeof ctx.drawImage
+    expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
+    expect(args.some(a=>a[0]===image && a.slice(1,5).join() === '576,0,288,288')).toBe(true)
+    expect(args.some(a=>a[0]===warning && a.slice(1,5).join() === '0,0,144,144')).toBe(true)
+  })
+
   it('never paints offscreen, dead or malformed source sheets', () => {
     const state=createState(); resetRun(state);state.W=200;state.H=200
     const runtime=createFactionRuntime()
