@@ -126,6 +126,11 @@ describe('independent premium boss content', () => {
     expect(minions.length).toBeGreaterThan(0)
     expect(minions.length).toBeLessThanOrEqual(6)
     expect(state.mobs.length).toBeLessThanOrEqual(MAX_MOBS + 1)
+    // The cap is on LIVING minions: a cleared wave must allow new summons.
+    for (const minion of minions) minion.hp = 0
+    state.mobs = state.mobs.filter(m => m.hp > 0)
+    for (let i = 0; i < 200; i++) controller.tick(state, 0.1, hooks)
+    expect(state.mobs.some(m => m.summonedByBoss && m.hp > 0)).toBe(true)
     controller.onContentEvent(state, { type: 'scene-change', index: 1 }, hooks)
     expect(state.mobs).toContain(boss)
     expect(state.mobs.some(m => m.summonedByBoss)).toBe(false)
