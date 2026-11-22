@@ -33,7 +33,7 @@
 
 - [x] Write test cases for all 12 weapon behaviors, registration, levels, multi-hero, effects, overlaps, 130-mob boss and resets before implementing the pack.
 - [x] Commit test-first source (`5bc2941`) on the feature branch.
-- [ ] Execute targeted Vitest and observe *expected failures*; local environment lacks pnpm and project dependency installation, and Foundation GitHub workflow is restricted to another branch.
+- [ ] Execute targeted Vitest and observe *expected failures*; the new branch-only workflow runs on GitHub Actions. The original test-first commit preceded CI setup; the later solar-beam regression was observed RED in run 44990964570 before its fix.
 
 ### Task 2 — GREEN: Real combat mechanics
 
@@ -68,4 +68,4 @@
 
 ## Execution limitations
 
-The remote GitHub connector can create branch commits but cannot run shell commands. The available container cannot resolve `github.com` or `registry.npmjs.org`, and it has no checkout or pnpm package cache. The Foundation workflow triggers only on `feature/es-content-foundation` and is not valid evidence for this feature branch. The code and tests can be submitted without a PR; their status must remain **not verified** until a compatible runner executes the full commands.
+The GitHub connector creates commits but does not execute shell commands; the available local container cannot install dependencies. Instead, `.github/workflows/es2-weapon-arsenal.yml` runs all five commands on every branch push, using GitHub Actions as authoritative verification. Check the most recent SHA and workflow conclusion. Do not infer a final pass from an earlier run or create a PR.

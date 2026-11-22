@@ -51,4 +51,4 @@ pnpm build
 pnpm check-release
 ```
 
-GitHub Actions workflows at the Foundation SHA do not automatically trigger on `feature/es2-weapon-arsenal`. CI results must be observed on an explicitly validated runner before considering this branch verified. No changes to production/Pages release workflow or deployment are authorized for this feature.
+The feature-owned `.github/workflows/es2-weapon-arsenal.yml` triggers these five checks on pushes to `feature/es2-weapon-arsenal`. Inspect the latest run against the actual HEAD before reporting validation. No production/Pages release workflow or deployment is modified.
