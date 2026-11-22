@@ -60,6 +60,18 @@ describe('world event dialog', () => {
     expect(wrapper.emitted('choose')).toEqual([['0:1', 'invoke'], ['0:2', 'leave']])
   })
 
+
+  it('unlocks selection for an intentional retry after the pending action completes', async () => {
+    const wrapper = mounted({ feedback: 'Reward unavailable; try again' })
+    await nextTick()
+    card('invoke').click()
+    card('invoke').click()
+    expect(wrapper.emitted('choose')).toEqual([['0:1', 'invoke']])
+    await nextTick()
+    card('invoke').click()
+    expect(wrapper.emitted('choose')).toEqual([['0:1', 'invoke'], ['0:1', 'invoke']])
+  })
+
   it('ignores repeat, modified and out-of-range keyboard shortcuts', async () => {
     const wrapper = mounted({})
     await nextTick()
