@@ -1210,6 +1210,8 @@ const chinese = new Map<string, string>([
   ['VICTORY', '勝利'], ['DEFEAT', '失敗'],
 ])
 
+const chineseByEnglish = new Map([...english].map(([zh, en]) => [en, zh]))
+
 export function detectLocale(languages: Iterable<unknown> = []): Locale {
   for (const language of languages) {
     if (/^zh($|[-_])/i.test(String(language))) return 'zh-TW'
@@ -1259,7 +1261,7 @@ export function t(value: unknown, params?: Record<string, unknown>): string {
   let source = value === null || value === undefined ? '' : String(value)
   if (params) source = source.replace(/\{(\w+)\}/g, (whole, key: string) =>
     Object.hasOwn(params, key) ? String(params[key]) : whole)
-  if (currentLocale.value === 'zh-TW') return chinese.get(source) ?? source
+  if (currentLocale.value === 'zh-TW') return chinese.get(source) ?? chineseByEnglish.get(source) ?? source
   return english.get(source) ?? (/[\u3400-\u9fff]/.test(source)
     ? source.replace(expression, match => english.get(match) ?? match) : source)
 }
