@@ -16,6 +16,7 @@ import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
+import { createMetaProgressionStore } from './content/meta/store'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
@@ -117,6 +118,29 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     tick(state: GameState, dt: number, hooks: GameHooks): void { bosses.tick(state, dt, hooks) },
   } : undefined
   const profileStore = opts.profileStore ?? createProfileStore()
+  // Injected legacy stores are retained for existing compatibility tests.
+  // In production the v3 writer owns all currency and run settlements.
+  const metaStore = opts.profileStore ? null : createMetaProgressionStore()
+  function displayProfile() {
+    const legacy = profileStore.get()
+    const persisted = metaStore?.get()
+    if (persisted?.status === 'ready' && persisted.state) {
+      const v3 = persisted.state
+      legacy.runs = v3.runs
+      legacy.wins = v3.wins
+      legacy.embers = v3.embers
+      legacy.upgrades.power = v3.research.power ?? 0
+      legacy.upgrades.vitality = v3.research.vitality ?? 0
+      legacy.achievements = [...new Set([...legacy.achievements, ...v3.achievements])]
+      const compatible = v3.cosmetics.filter(id =>
+        id === 'knight-gilded' || id === 'ranger-moonlit' || id === 'wizard-astral') as CosmeticId[]
+      legacy.unlockedCosmetics = [...new Set([...legacy.unlockedCosmetics, ...compatible])]
+    } else if (metaStore) {
+      // A corrupt committed v3 save cannot expose the old wallet for spending.
+      legacy.embers = 0
+    }
+    return legacy
+  }
   const audio = opts.audio ?? createAudioSystem({
     bgm: createBgm(BGM_URL),
     menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
@@ -134,13 +158,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
     runMode: 'quick', objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
-    profile: profileStore.get(), runResult: null, rewards: null,
+    profile: displayProfile(), runResult: null, rewards: null,
   })
   let resumeAfterSettings = false
   let toastTimer = 0
   let keys: KeyState = {}
   let stick: MoveInput = { x: 0, y: 0 }
   let runSequence = 0
+  let runReceiptId: string | null = null
   let frameDrawn = 0
   let presentationPolicy: VisualPresentationPolicy | null = null
   let resizeRenderer: () => void = () => {}
@@ -266,7 +291,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     hooks.content?.(s, { type: 'run-complete', win })
     const h = s.hero
     const stats: RunStats = {
-      id: `${Date.now()}-${++runSequence}-${Math.random().toString(36).slice(2)}`,
+      id: runReceiptId ?? `unsettled-${++runSequence}`,
       mode: s.runMode, hero: s.choice,
       specializationId: isSpecializationId(s.heroId) ? s.heroId : undefined,
       victory: win, seconds: Math.floor(s.time),
@@ -280,12 +305,34 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ],
     }
     ui.runResult = stats
-    ui.rewards = profileStore.recordRun(stats)
-    ui.profile = profileStore.get()
+    let saveWarning = ''
+    if (metaStore) {
+      const before = metaStore.get()
+      const settled = runReceiptId && before.status === 'ready'
+        ? metaStore.settle({
+          stats,
+          modeId: isObjectiveModeId(stats.mode) ? 'modes:' + stats.mode : stats.mode,
+          heroId: stats.specializationId ? 'heroes:' + stats.specializationId : stats.hero,
+          relicIds: inventorySnapshot(s).items.map(item => item.id),
+        }) : null
+      const previousCosmetics = new Set(before.state?.cosmetics ?? [])
+      ui.rewards = {
+        embers: settled?.ok ? settled.rewards.reduce((sum, reward) => sum + reward.embers, 0) : 0,
+        newAchievements: settled?.ok
+          ? settled.rewards.filter(reward => reward.type === 'achievement').map(reward => reward.id) : [],
+        newCosmetics: settled?.ok && settled.state
+          ? settled.state.cosmetics.filter(id => !previousCosmetics.has(id) &&
+            (id === 'knight-gilded' || id === 'ranger-moonlit' || id === 'wizard-astral')) as CosmeticId[] : [],
+      }
+      if (!settled?.ok) saveWarning = ' · ⚠ 儲存未確認，未發放永久獎勵'
+    } else {
+      ui.rewards = profileStore.recordRun(stats)
+    }
+    ui.profile = displayProfile()
     screen('result')
     audio.playSfx(win ? 'victory' : 'defeat')
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
-    ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}`
+    ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}` + saveWarning
     hud()
   }
 
@@ -304,6 +351,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function start(): void {
     ending = false
+    if (metaStore && typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      const entropy = new Uint8Array(16)
+      crypto.getRandomValues(entropy)
+      runReceiptId = Array.from(entropy, byte => byte.toString(16).padStart(2, '0')).join('')
+    } else {
+      runReceiptId = metaStore ? null : String(Date.now()) + '-' + String(++runSequence) + '-' + Math.random().toString(36).slice(2)
+    }
     ui.worldEventChoice = null
     ui.worldEventMarkers = []
     resetRun(s)
@@ -318,7 +372,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     hooks.content?.(s, { type: 'reset' })
     s.runMode = ui.runMode
     s.cosmetic = profileStore.get().equippedCosmetics[s.choice]
-    const permanent = profileStore.get().upgrades
+    const saved = metaStore?.get()
+    const permanent = metaStore
+      ? (saved?.status === 'ready' && saved.state
+        ? { power: saved.state.research.power ?? 0, vitality: saved.state.research.vitality ?? 0 }
+        : { power: 0, vitality: 0 })
+      : profileStore.get().upgrades
     if (s.hero) {
       s.hero.damage *= 1 + 0.04 * permanent.power
       s.hero.max += 12 * permanent.vitality
@@ -693,15 +752,24 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) { if (getMode(mode)) ui.runMode = mode },
     buyPermanentUpgrade(id: PermanentUpgrade) {
-      if (s.mode === 'menu' && profileStore.buyUpgrade(id)) ui.profile = profileStore.get()
+      if (s.mode !== 'menu') return
+      if (metaStore) {
+        const result = metaStore.purchaseResearch(id)
+        if (!result.ok) message('永久研究未完成：儲存失敗或條件不足')
+        else ui.profile = displayProfile()
+      } else if (profileStore.buyUpgrade(id)) ui.profile = displayProfile()
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
       if (s.mode === 'menu' && profileStore.selectCosmetic(hero, skin)) ui.profile = profileStore.get()
     },
     resetProgress() {
       if (s.mode !== 'menu') return
+      if (metaStore && !metaStore.reset().ok) {
+        message('永久資料無法安全重置，原有紀錄已保留')
+        return
+      }
       profileStore.reset()
-      ui.profile = profileStore.get()
+      ui.profile = displayProfile()
     },
     selectJob(job: JobId) { selectHero(job) },
     selectHero,
