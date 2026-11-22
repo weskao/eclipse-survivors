@@ -53,4 +53,15 @@ describe('ES2 world art live asset mapping', () => {
     expect(drawProductionBossFrame(ctx, { ...loaded(576, 192), complete: false } as HTMLImageElement, 1, 236, 246)).toBe(false)
     expect(calls).toHaveLength(2)
   })
+
+  it('reads 3x boss and enemy atlas cells without drawing neighboring frames', () => {
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawProductionBossFrame(ctx, loaded(2124, 708), 3, 236, 246)).toBe(true)
+    expect(calls[0]?.slice(1, 5)).toEqual([1416, 0, 708, 708])
+    expect(drawProductionEnemyFrame(ctx, loaded(1728, 288), 4, 96, 110)).toBe(true)
+    expect(calls[1]?.slice(1, 5)).toEqual([1152, 0, 288, 288])
+    expect(drawProductionBossFrame(ctx, loaded(2123, 708), 1, 236, 246)).toBe(false)
+    expect(drawProductionEnemyFrame(ctx, loaded(1727, 288), 1, 96, 110)).toBe(false)
+  })
 })
