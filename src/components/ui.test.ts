@@ -103,8 +103,8 @@ describe('MenuScreen', () => {
   it('shows an accessible, distinct chosen-hero emblem without mutating the hero artwork', () => {
     const w = mount(MenuScreen, { props: menuProps })
     expect(w.get('[data-job="knight"]').attributes('aria-pressed')).toBe('true')
-    expect(w.get('[data-job="knight"] .job-crest').exists()).toBe(true)
-    expect(w.get('[data-job="ranger"] .job-crest').exists()).toBe(true)
+    expect(w.find('[data-job="knight"] .job-crest').exists()).toBe(true)
+    expect(w.find('[data-job="ranger"] .job-crest').exists()).toBe(true)
     expect(w.find('#heroSpotlight img').exists()).toBe(false)
     w.unmount()
   })
@@ -230,7 +230,7 @@ describe('SettingsOverlay', () => {
     expect(w.findAll('#settings .settings-choice-icon')).toHaveLength(2)
     expect(w.get('#settingsSoft .settings-choice-copy').text()).toContain('柔和淡入')
     expect(w.get('#settingsStill .settings-choice-copy').text()).toContain('無動畫')
-    expect(w.get('#settings .settings-panel').exists()).toBe(true)
+    expect(w.find('#settings .settings-panel').exists()).toBe(true)
     w.unmount()
   })
 
@@ -252,7 +252,7 @@ describe('LevelUpOverlay', () => {
   const upgrades = UP.slice(0, 3)
   it('presents clearly separated rarity, ability and selection regions', () => {
     const w = mount(LevelUpOverlay, { props: { active: true, upgrades } })
-    expect(w.get('#level .level-headline').exists()).toBe(true)
+    expect(w.find('#level .level-headline').exists()).toBe(true)
     expect(w.findAll('#upgrades .upgrade-action')).toHaveLength(3)
     expect(w.findAll('#upgrades .upgrade-rarity')).toHaveLength(3)
     expect(w.findAll('#upgrades .upgrade-action').every(a => a.text().includes('選擇'))).toBe(true)
