@@ -1,0 +1,117 @@
+import { describe, expect, it } from 'vitest'
+import { createHero, createState } from '../../../src/game/state'
+import { step } from '../../../src/game/step'
+import { createRenderAssets, drawFrame } from '../../../src/game/render'
+import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from '../../../src/game/render/fakes'
+import { seeded, setRandom } from '../../../src/game/math'
+import { createStressScenario } from '../../../src/game/performance/es2/scenarios'
+import { createScopedCache } from '../../../src/game/performance/es2/cache'
+import { distribution, profileFrames } from '../../../src/game/performance/es2/metrics'
+import type { GameHooks } from '../../../src/game/types'
+
+const hooks: GameHooks = {
+  sfx() {}, message() {}, offerUpgrades() {},
+  end() { throw new Error('An Endless stress run must not finish itself') },
+}
+const drawCommands = new Set(['drawImage', 'fillRect', 'strokeRect', 'clearRect', 'fill', 'stroke', 'fillText', 'strokeText'])
+const heapBytes = (): number => process.memoryUsage().heapUsed
+
+describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
+  it('generates repeatable desktop and mobile/LOW workloads without dropping actors', () => {
+    const a = createStressScenario('desktop')
+    const b = createStressScenario('desktop')
+    expect(a.mobs).toHaveLength(130)
+    expect(a.shots).toHaveLength(96)
+    expect(a.enemyShots).toHaveLength(64)
+    expect(a.fx).toHaveLength(96)
+    expect(a.runMode).toBe('endless')
+    expect(a.mobs.map(m => [m.type, m.x, m.y])).toEqual(b.mobs.map(m => [m.type, m.x, m.y]))
+    const low = createStressScenario('mobile-low')
+    expect([low.W, low.H]).toEqual([390, 844])
+    expect(low.mobs).toHaveLength(130)
+    expect(createHero('knight')).toBeTruthy()
+    expect(createState().mobs).toHaveLength(0)
+  })
+
+  it('emits real timing distributions and Canvas command counts, with no FPS claim or timing gate', () => {
+    const state = createStressScenario('desktop')
+    const renderState = createStressScenario('mobile-low')
+    const fake = createFakeCtx()
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    assets.prefersReducedMotion = () => true
+    setRandom(seeded(20261122))
+    try {
+      for (let i = 0; i < 30; i++) step(state, 1 / 60, { x: 0, y: 0 }, hooks)
+      for (let i = 0; i < 10; i++) {
+        drawFrame(fake.ctx, renderState, 1, assets)
+        fake.calls.length = 0
+        fake.drawn.length = 0
+      }
+      const heapStart = heapBytes()
+      const sim = profileFrames(120, () => step(state, 1 / 60, { x: 0, y: 0 }, hooks))
+      const paintCalls: number[] = []
+      const render = profileFrames(120, () => {
+        fake.calls.length = 0
+        fake.drawn.length = 0
+        drawFrame(fake.ctx, renderState, 1, assets)
+        paintCalls.push(fake.calls.filter(command => drawCommands.has(command)).length)
+      })
+      const heapEnd = heapBytes()
+      const cache = createScopedCache<number>(16)
+      cache.configure({ scene: 0, width: renderState.W, height: renderState.H,
+        dpr: 1, quality: 'low', assetVersion: 'test', contextId: 'fake' })
+      for (let i = 0; i < 128; i++) cache.get(String(i % 8), () => i)
+      const report = {
+        label: 'ES2_DIAGNOSTIC_RECORDING_CANVAS_NOT_BROWSER_FPS',
+        scenario: { initialMonsters: 130, initialShots: 96, enemyShots: 64,
+          fx: 96, currentMonsters: state.mobs.length, viewport: [renderState.W, renderState.H],
+          quality: 'low/reduced-motion' },
+        simulatedTicks: 120,
+        renderedFrames: 120,
+        simulationMsPerTick: sim.summary,
+        mockedCanvasMsPerFrame: render.summary,
+        canvas2DPaintCommandsPerFrame: distribution(paintCalls),
+        observedHeapDeltaBytes: heapEnd - heapStart,
+        allocatedBytes: null,
+        gpuDrawCalls: null,
+        helperCacheProbe: cache.stats(),
+      }
+      console.info('ES2_PERFORMANCE ' + JSON.stringify(report))
+      expect(sim.samplesMs).toHaveLength(120)
+      expect(render.samplesMs).toHaveLength(120)
+      expect(paintCalls.every(n => n > 0)).toBe(true)
+      expect(report.helperCacheProbe.hitRate).toBeGreaterThan(0)
+      expect(state.mode).toBe('play')
+    } finally {
+      setRandom()
+    }
+  })
+
+  it.skipIf(process.env.ES2_PERF_LONG !== '1')('profiles a 10-minute simulated Endless run with heap checkpoints', () => {
+    const state = createStressScenario('desktop')
+    state.time = 3600
+    const heapSamples = [heapBytes()]
+    const snapshots: number[] = []
+    setRandom(seeded(20261122))
+    try {
+      const times = profileFrames(36_000, tick => {
+        step(state, 1 / 60, { x: 0, y: 0 }, hooks)
+        if ((tick + 1) % 3600 === 0) {
+          heapSamples.push(heapBytes())
+          snapshots.push(state.mobs.length)
+        }
+      })
+      console.info('ES2_ENDLESS_10MIN ' + JSON.stringify({
+        simulatedMinutes: 10, initialGameTimeSeconds: 3600,
+        timingMsPerTick: times.summary, heapCheckpointsBytes: heapSamples,
+        observedHeapGrowthBytes: heapSamples.at(-1)! - heapSamples[0]!,
+        actorCheckpoints: snapshots, allocationBytes: null,
+      }))
+      expect(heapSamples).toHaveLength(11)
+      expect(state.runMode).toBe('endless')
+      expect(state.mode).toBe('play')
+    } finally {
+      setRandom()
+    }
+  })
+})
