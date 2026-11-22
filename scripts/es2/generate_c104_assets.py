@@ -1,0 +1,240 @@
+"""Deterministic c104 source art normalization into ES2's actual 3x runtime assets.
+
+Never guess grids. Every cropped pose/prop/UI icon has one explicit, disjoint
+source ownership rectangle. Neighbouring art is never read outside the rectangle.
+Inputs: the ten immutable assets/images/imgs{1..10}.png files from c104b4be.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+from pathlib import Path
+from PIL import Image
+
+SOURCE_FILES = tuple(f'imgs{i}.png' for i in range(1, 11))
+ROOT = Path(__file__).resolve().parents[2]
+ASSET_BOXES: dict[int, dict[str, tuple[int,int,int,int]]] = {i:{} for i in range(1,11)}
+
+# Source 6 = shadow assassin, necromancer, archer, plague carrier, guardian.
+# Source 5 = phantom, fire imp, frost wraith, berserker, crystal sentinel.
+ROWS={
+  6:[('shadow-assassin', (0,204)), ('necromancer',(213,421)),
+     ('dark-archer',(434,631)), ('plague-carrier',(645,822)),
+     ('shield-guardian',(849,1067))],
+  5:[('phantom',(2,208)), ('fire-imp',(220,411)),
+     ('frost-wraith',(426,625)), ('berserker',(636,834)),
+     ('crystal-sentinel',(844,1075))]
+}
+SMALL_POSES={
+  6:[(0,240),(258,411),(428,585),(976,1138)],
+  5:[(0,238),(251,373),(381,504),(974,1107)]
+}
+TELEGRAPHS={6:(1156,1440),5:(1125,1441)}
+for source, rows in ROWS.items():
+  for name,(y0,y1) in rows:
+    for k,(x0,x1) in enumerate(SMALL_POSES[source]):
+      ASSET_BOXES[source][f'frame:{name}:{k}']=(x0,y0,x1,y1)
+    tx0,tx1=TELEGRAPHS[source]
+    ASSET_BOXES[source][f'telegraph:{name}']=(tx0,y0+1,tx1,y1-1)
+
+BOSSES={
+ 'abyss-monarch':(7,[(424,3,706,185),(735,3,1027,185),(1066,3,1431,185)]),
+ 'frost-sovereign':(7,[(421,538,703,700),(740,537,1032,700),(1065,537,1432,704)]),
+ 'infernal-titan':(8,[(371,6,570,308),(578,6,801,309),(810,5,1094,306)]),
+ 'eclipse-seraph':(8,[(371,541,568,817),(568,538,827,818),(836,530,1094,816)]),
+}
+for boss,(source,boxes) in BOSSES.items():
+  for i,b in enumerate(boxes):ASSET_BOXES[source][f'frame:boss:{boss}:{i}']=b
+
+SCENES={
+ 'abyssal-necropolis':(1,(14,15,687,412)),
+ 'celestial-rift':(1,(14,427,688,910)),
+ 'blood-moon-cathedral':(9,(14,42,714,437)),
+ 'cursed-forest':(9,(12,463,716,884)),
+}
+DECOR={
+ 'abyssal-necropolis':(1,[(698,23,827,154),(857,30,983,150),(1090,19,1239,155),(1316,22,1440,158)]),
+ 'celestial-rift':(1,[(700,435,835,566),(842,438,972,569),(984,437,1102,570),(1168,438,1308,573)]),
+ 'blood-moon-cathedral':(9,[(730,50,807,202),(811,53,883,201),(1024,50,1120,204),(1239,199,1361,332)]),
+ 'cursed-forest':(9,[(729,473,879,607),(886,473,1044,606),(1046,475,1183,605),(1390,475,1514,608)]),
+}
+for name,(source,b) in SCENES.items():ASSET_BOXES[source][f'scene:{name}']=b
+for name,(source,boxes) in DECOR.items():
+  for i,b in enumerate(boxes): ASSET_BOXES[source][f'frame:decor:{name}:{i}']=b
+
+UI_BOXES={
+ 'treasure-common':(40,55,242,216),
+ 'treasure-rare':(257,52,466,219),
+ 'treasure-legendary':(715,32,938,215),
+ 'treasure-cursed':(482,48,694,217),
+ 'rarity-common':(1250,17,1311,120),
+ 'rarity-rare':(1326,14,1398,119),
+ 'rarity-legendary':(1555,12,1635,122),
+ 'hud-health':(1035,221,1191,360),
+ 'hud-xp':(1210,222,1370,360),
+ 'hud-cooldown':(707,218,855,359),
+ 'hud-quest':(1400,528,1466,651),
+ 'achievement-boss':(659,726,823,914),
+ 'achievement-survivor':(20,730,170,921),
+ 'achievement-evolution':(327,736,490,922),
+ 'achievement-explorer':(1278,730,1424,915),
+ 'achievement-collector':(488,730,657,916),
+ 'achievement-flawless':(408,541,493,638),
+}
+for key,box in UI_BOXES.items():ASSET_BOXES[10][f'ui:{key}']=box
+
+# All three skills use an actual authored source atlas cell, not an unrelated icon.
+# Local 8x4 WebPs already contain individually validated 128-pixel direction cells.
+SPECIALS=('shadowblade','spirit-summoner','crimson-paladin')
+
+
+def validate_geometry(source_dir: Path)->None:
+    for source, rects in ASSET_BOXES.items():
+        with Image.open(source_dir/f'imgs{source}.png') as im:
+            for label,(x0,y0,x1,y1) in rects.items():
+                if not(0<=x0<x1<=im.width and 0<=y0<y1<=im.height):
+                    raise ValueError(f'Out-of-bounds {source}: {label}')
+            fr=[(k,b) for k,b in rects.items() if k.startswith('frame:')]
+            for i,(key,a) in enumerate(fr):
+                for key2,b in fr[i+1:]:
+                    overlap=max(a[0],b[0])<min(a[2],b[2]) and max(a[1],b[1])<min(a[3],b[3])
+                    if overlap:raise ValueError(f'Source frame crop overlap: {source} {key} {key2}')
+
+
+def matte(im:Image.Image, source:int)->Image.Image:
+    im=im.convert('RGBA')
+    # The two enemy sheets have baked alpha matte. Remove only low-opacity
+    # ghost pixels; keep fully opaque authored character details.
+    # RGB prop sheets have black matting, which must be keyed independently.
+    if source in (1,9):
+        rgba=[]
+        for r,g,b,a in im.getdata():
+            v=max(r,g,b)
+            rgba.append((r,g,b,0 if v<=30 else min(255,max(0,(v-30)*255//45))))
+        im.putdata(rgba)
+    elif source == 5:
+        # This PNG has a very pale baked matte, unlike the other transparent
+        # sheets. Eliminate neutral near-white background before trimming;
+        # never use an opaque rectangular sprite as a gameplay frame.
+        pixels=[]
+        for r,g,b,a in im.getdata():
+            neutral=max(r,g,b)-min(r,g,b)
+            remove=(min(r,g,b)>197 and neutral<42) or (min(r,g,b)>178 and neutral<24 and a<238)
+            aa=0 if remove or a<65 else min(255,(a-65)*255//165)
+            pixels.append((r,g,b,aa))
+        im.putdata(pixels)
+    else:
+        im.putalpha(im.getchannel('A').point(lambda a: 0 if a<45 else min(255,(a-45)*255//160)))
+    return im
+
+
+def fit(source:Image.Image, box:tuple[int,int,int,int], size:tuple[int,int], source_id:int, border:int=7)->Image.Image:
+    x0,y0,x1,y1=box
+    cut=matte(source.crop((x0,y0,x1,y1)),source_id)
+    alpha=cut.getchannel('A')
+    bbox=alpha.getbbox()
+    if bbox is None: raise ValueError(f'Empty source box: {source_id} {box}')
+    cut=cut.crop(bbox)
+    scale=min((size[0]-2*border)/cut.width, (size[1]-2*border)/cut.height)
+    shape=(max(1,round(cut.width*scale)),max(1,round(cut.height*scale)))
+    cut=cut.resize(shape,Image.Resampling.LANCZOS)
+    canvas=Image.new('RGBA',size,(0,0,0,0))
+    canvas.alpha_composite(cut,((size[0]-cut.width)//2,(size[1]-cut.height)//2))
+    return canvas
+
+
+def add_atlas(images:list[Image.Image],size:tuple[int,int])->Image.Image:
+    w,h=size
+    atlas=Image.new('RGBA',(w*len(images),h),(0,0,0,0))
+    for i,im in enumerate(images):
+        if im.size!=size:raise ValueError('Unequal animation cell dimensions')
+        atlas.alpha_composite(im,(i*w,0))
+    return atlas
+
+
+def generate_assets(source_dir:Path,output:Path)->list[dict]:
+    source_dir=Path(source_dir)
+    output=Path(output)
+    validate_geometry(source_dir)
+    sources={i:Image.open(source_dir/f'imgs{i}.png').convert('RGBA') for i in range(1,11)}
+    produced=[]
+    def emit(name:str,kind:str,image:Image.Image,frames:int,cell:tuple[int,int],source:int|None,boxes:list[tuple[int,int,int,int]],max_bytes:int)->None:
+        path=output/name
+        path.parent.mkdir(parents=True,exist_ok=True)
+        image.save(path,'WEBP',quality=80,alpha_quality=86,method=5)
+        if path.stat().st_size>=max_bytes:
+            image.save(path,'WEBP',quality=64,alpha_quality=72,method=5)
+        if path.stat().st_size>=max_bytes:raise ValueError(f'Budget exceeded: {name} {path.stat().st_size}')
+        produced.append({'path':name,'kind':kind,'size':list(image.size),'frames':frames,
+            'cell':list(cell),'source':f'imgs{source}.png' if source else 'hero-8dir-WebP',
+            'sourceBoxes':boxes,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+            'bytes':path.stat().st_size,'max_bytes':max_bytes})
+
+    for src_id, rows in ROWS.items():
+        for id, interval in rows:
+            poses=(0,1,3,1) if id in ('phantom','berserker','shadow-assassin','shield-guardian') else (0,1,2,3)
+            frames=[fit(sources[src_id], ASSET_BOXES[src_id][f'frame:{id}:{i}'], (96,96),src_id) for i in poses]
+            # Four REAL source poses, natural ping-pong (not generated extras).
+            sequence=[frames[i] for i in (0,1,2,3,2,1)]
+            emit(f'src/assets/es2/production/enemies/{id}-body@3x.webp','enemy-body',add_atlas(sequence,(96,96)),6,(96,96),src_id,
+                 [ASSET_BOXES[src_id][f'frame:{id}:{poses[i]}'] for i in (0,1,2,3,2,1)],110000)
+            tbox=ASSET_BOXES[src_id][f'telegraph:{id}']
+            emit(f'src/assets/es2/production/enemies/{id}-telegraph@3x.webp','enemy-telegraph',fit(sources[src_id],tbox,(96,96),src_id),1,(96,96),src_id,[tbox],50000)
+
+    for id,(src_id,boxes) in BOSSES.items():
+        images=[fit(sources[src_id],box,(192,192),src_id,10) for box in boxes]
+        emit(f'src/assets/es2/production/bosses/{id}-phases@3x.webp','boss-phases',add_atlas(images,(192,192)),3,(192,192),src_id,boxes,300000)
+
+    for id,(src_id,boxes) in DECOR.items():
+        ims=[fit(sources[src_id],box,(96,96),src_id) for box in boxes]
+        emit(f'src/assets/es2/production/biomes/{id}-decor@3x.webp','biome-decor',add_atlas(ims,(96,96)),4,(96,96),src_id,boxes,180000)
+    for id,(src_id,box) in SCENES.items():
+        # Cinematic biome illustration for real menu/UI use. NOT a repeat tile.
+        im=fit(sources[src_id],box,(768,432),src_id,6)
+        emit(f'src/assets/es2/production/biomes/{id}-scene@3x.webp','biome-scene',im,1,(768,432),src_id,[box],450000)
+
+    for id,box in UI_BOXES.items():
+        im=fit(sources[10],box,(192,192),10,11)
+        emit(f'src/assets/es2/production/ui/{id}@3x.webp','ui',im,1,(192,192),10,[box],75000)
+
+    for id in SPECIALS:
+        path=output/f'src/assets/es2/production/heroes/{id}-8dir@3x.webp'
+        if not path.exists():
+            # Local testing can point to previously validated source 8-direction atlas.
+            fallback=ROOT/f'src/assets/es2/production/heroes/{id}-8dir@3x.webp'
+            if fallback.exists():path=fallback
+        if not path.exists():raise FileNotFoundError(f'Need committed 8-dir atlas for skill: {id}')
+        with Image.open(path) as atlas:
+            if atlas.size!=(1024,512): raise ValueError(f'Unexpected hero atlas dimensions: {id}')
+            # last row = cast/action, fourth direction: isolated authored cell
+            box=(3*128,3*128,4*128,4*128)
+            crop=atlas.convert('RGBA').crop(box)
+            image=fit(crop,(0,0,128,128),(192,192),0,12)
+        emit(f'src/assets/es2/production/heroes/{id}-special@3x.webp','hero-special',image,1,(192,192),None,[box],75000)
+
+    for category in ('enemies','bosses','biomes','ui'):
+        manifest=output/f'src/assets/es2/production/{category}/manifest.json'
+        if not manifest.exists():continue
+        data=json.loads(manifest.read_text())
+        for art in data['assets']:
+            item=next((x for x in produced if x['path'].endswith('/'+category+'/'+art['path'])),None)
+            if item:
+                art['sha256']=item['sha256']
+                art['qaNote']=f"Explicit c104 source region(s): {item['source']}; visually review animation continuity and alpha."
+        manifest.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\n')
+    prov=output/'src/assets/es2/production/c104-provenance.json'
+    prov.parent.mkdir(parents=True,exist_ok=True)
+    prov.write_text(json.dumps({'schemaVersion':1,'sourceCommit':'c104b4be43fbfe9dad2dd8a1b270b9e47d63e1c0',
+      'sourceAssets':{f'imgs{i}.png':hashlib.sha256((source_dir/f'imgs{i}.png').read_bytes()).hexdigest() for i in range(1,11)},
+      'visualStatus':'review-required', 'derived':produced},ensure_ascii=False,indent=2)+'\n')
+    return produced
+
+
+if __name__=='__main__':
+    import argparse
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--source',type=Path,default=ROOT/'assets/images')
+    parser.add_argument('--output',type=Path,default=ROOT)
+    args=parser.parse_args()
+    items=generate_assets(args.source,args.output)
+    print(f'Generated {len(items)} exact-source images + c104-provenance.json')
