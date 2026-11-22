@@ -1,9 +1,10 @@
 // XP, level-ups, weighted blessings and evolution upgrades.
 import { MAX_LEVEL, UP } from './constants'
+import type { ContentRegistry } from './content/registry'
 import { EVOLUTIONS, eligibleEvolutions } from './evolutions'
 import { burst, impact } from './fx'
 import { random } from './math'
-import type { AbilityId, GameHooks, GameState, Hero, SkillRarity, UpgradeDef, UpgradeId } from './types'
+import type { AbilityId, ContentId, GameHooks, GameState, Hero, SkillRarity, UpgradeDef, UpgradeId } from './types'
 
 export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
@@ -25,10 +26,13 @@ export function addXp(s: GameState, n: number, hooks: GameHooks): void {
 const WEIGHT: Record<SkillRarity, number> = { common: 14, rare: 5, legendary: 1 }
 
 /** Seedable weighted sampling without replacement. Unlocked evolutions get one guaranteed slot. */
-export function pickUpgrades(hero?: Hero, rng: () => number = random): UpgradeDef[] {
+export function pickUpgrades(hero?: Hero, rng: () => number = random, registry?: ContentRegistry, state?: GameState): UpgradeDef[] {
   const candidates: UpgradeDef[] = hero
     ? UP.filter(u => (hero.skills[u.id] ?? 0) < MAX_LEVEL[u.id]).map(u => ({ ...u, level: hero.skills[u.id] ?? 0 }))
     : [...UP]
+  if (hero && registry && state) {
+    candidates.push(...registry.eligible(state).map(a => ({ ...a, level: state.content.levels[a.id] ?? 0 })))
+  }
   const available = hero ? eligibleEvolutions(hero) : []
   const selected: UpgradeDef[] = []
   if (available.length) {
@@ -54,16 +58,23 @@ const MESSAGES: Partial<Record<UpgradeId, string>> = {
 }
 
 /** Invalid or capped picks do not change state, stats, or the pending level queue. */
-export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks): boolean {
+export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks, registry?: ContentRegistry): boolean {
   const hero = s.hero
   if (!hero) return false
-  const evolution = EVOLUTIONS.find(e => e.id === id)
-  if (evolution) {
+  const custom = registry?.getAbility(id)
+  if (custom) {
+    if (!registry!.acquire(s, id as ContentId, hooks)) return false
+    hooks.message(`✦ ${custom.title}`)
+  } else if (id.includes(':')) {
+    return false
+  } else {
+    const evolution = EVOLUTIONS.find(e => e.id === id)
+    if (evolution) {
     if (!eligibleEvolutions(hero).some(e => e.id === id)) return false
     hero.evolutions[evolution.id] = true
     hero.evolutionCd[evolution.id] = 0
     hooks.message(`✦ ${evolution.title} · 傳說進化！`)
-  } else {
+    } else {
     const up = UP.find(u => u.id === id)
     if (!up || (hero.skills[up.id] ?? 0) >= MAX_LEVEL[up.id]) return false
     hero.skills[up.id] = (hero.skills[up.id] ?? 0) + 1
@@ -77,6 +88,7 @@ export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks): boo
     if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 25)
     const msg = MESSAGES[up.id]
     if (msg) hooks.message(msg)
+    }
   }
   s.levelQueue = Math.max(0, s.levelQueue - 1)
   hero.levelAnim = Math.max(hero.levelAnim, 0.8)

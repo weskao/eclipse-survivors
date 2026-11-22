@@ -78,6 +78,7 @@ function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks): bo
       break
   }
   hooks.sfx('pickup')
+  hooks.content?.(s, { type: 'pickup', kind: 'world' })
   return true
 }
 

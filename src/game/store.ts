@@ -1,7 +1,8 @@
 import { MAX_LEVEL, UP } from './constants'
+import type { ContentRegistry } from './content/registry'
 import type { Profile, RunModeId, RunRewards, RunStats, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { EVOLUTIONS, EVOLUTION_COOLDOWN } from './evolutions'
-import type { AbilityId, GameMode, Hero, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
+import type { AbilityId, GameMode, GameState, Hero, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
 
 export interface HudSkill {
   id: AbilityId; icon: string; title: string; rarity: SkillRarity
@@ -9,7 +10,7 @@ export interface HudSkill {
 }
 
 /** Pure projection of actual equipped abilities, not five hard-coded icon slots. */
-export function equippedSkillHud(hero: Hero): HudSkill[] {
+export function equippedSkillHud(hero: Hero, registry?: ContentRegistry, state?: GameState): HudSkill[] {
   const passive = UP.filter(u => (hero.skills[u.id] ?? 0) > 0).map(u => {
     const level = hero.skills[u.id] ?? 0
     const timers: Partial<Record<UpgradeId, [number, number]>> = {
@@ -36,7 +37,15 @@ export function equippedSkillHud(hero: Hero): HudSkill[] {
       cooldown: remaining, cooldownPct: Math.min(100, remaining / EVOLUTION_COOLDOWN[e.id] * 100), evolved: true,
     }
   })
-  return [...passive, ...evolved]
+  const custom: HudSkill[] = registry && state ? registry.abilities.flatMap(a => {
+    const level = state.content.levels[a.id] ?? 0
+    if (!level) return []
+    const cooldown = Math.max(0, state.content.cooldowns[a.id] ?? 0)
+    const duration = a.cooldownSeconds ?? 0
+    return [{ id: a.id, icon: a.icon, title: a.title, rarity: a.rarity, level, maxLevel: a.maxLevel,
+      cooldown, cooldownPct: duration ? Math.min(100, cooldown / duration * 100) : 0, evolved: a.kind === 'evolution' }]
+  }) : []
+  return [...passive, ...evolved, ...custom]
 }
 
 
