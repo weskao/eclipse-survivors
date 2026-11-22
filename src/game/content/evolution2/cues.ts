@@ -19,7 +19,7 @@ export const EVOLUTION2_CUES: Readonly<Record<ContentId, Evolution2Cue>> =
     }),
   ])) as Record<ContentId, Evolution2Cue>)
 
-function makeEffect(id: ContentId, title: string, cue: Evolution2Cue, index: number): ContentEffectDefinition {
+function makeEffect(title: string, cue: Evolution2Cue, index: number): ContentEffectDefinition {
   // Immutable spoke geometry is computed once, not inside every Canvas frame.
   const spokeCount = 4 + index % 5
   const directions = Array.from({ length: spokeCount }, (_, i) => {
@@ -51,5 +51,5 @@ function makeEffect(id: ContentId, title: string, cue: Evolution2Cue, index: num
 
 export const EVOLUTION2_EFFECTS: readonly ContentEffectDefinition[] =
   EVOLUTION2_RECIPES.map((recipe, index) => makeEffect(
-    recipe.id, `${recipe.title} effect`, EVOLUTION2_CUES[recipe.id]!, index,
+    `${recipe.title} effect`, EVOLUTION2_CUES[recipe.id]!, index,
   ))
