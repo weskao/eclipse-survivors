@@ -107,7 +107,7 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
     }
     for (const h of env.hazards(query.x, query.y, query.radius)) {
       if (!intersects(h, view)) continue
-      const phase = env.phase(h, time)
+      const phase = env.isSuppressed(h, time) ? 'idle' : env.phase(h, time)
       ctx.save()
       ctx.fillStyle = phase === 'warning' ? env.definition.atmosphere.telegraph : HAZARD_COLORS[h.kind]
       ctx.strokeStyle = phase === 'warning' ? '#fff3c6' : HAZARD_COLORS[h.kind]
