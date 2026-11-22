@@ -1,0 +1,26 @@
+name: Inspect c104 original sprite sheets
+on:
+  push:
+    branches: [feature/es2-c104-art-runtime-integration]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: c104b4be43fbfe9dad2dd8a1b270b9e47d63e1c0
+          path: reference
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow==11.3.0
+      - run: python scripts/es2/inspect_c104.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: c104-original-image-inspection
+          path: art-inspection/
+          if-no-files-found: error
