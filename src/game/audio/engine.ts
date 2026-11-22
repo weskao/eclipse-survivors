@@ -46,6 +46,8 @@ export interface AudioContextLike {
 
 export interface AudioSystemOptions {
   bgm: BgmElement
+  /** Pre-rendered title music; when omitted, retain the legacy synth for tests/fallback. */
+  menuBgm?: BgmElement
   /** Omit for `localStorage`; `null` disables persistence. */
   storage?: SettingsStorage | null
   /** Omit for `window.AudioContext ?? webkitAudioContext`. */
@@ -77,7 +79,7 @@ const MAX_SFX_PER_100MS = 8
 const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'boss', 'bossDefeat', 'victory', 'defeat'])
 
 export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
-  const { bgm } = opts
+  const { bgm, menuBgm } = opts
   const storage = opts.storage === undefined ? defaultStorage() : opts.storage
   const createContext = opts.createContext ?? defaultCreateContext
   let ac: AudioContextLike | null = null
@@ -119,20 +121,27 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     }
   }
 
+  const menuLevel = (): number => 0.78 * musicVolume / 100
+
   const mp3Level = (): number =>
     (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0.27 :
       intensity === 'combat' && mode === 'play' ? 0.35 : 0.38) * musicVolume / 100
 
   bgm.volume = mp3Level()
+  if (menuBgm) menuBgm.volume = menuLevel()
+
+  const activeTrack = (): BgmElement | undefined =>
+    mode === 'menu' ? menuBgm : mode === 'play' ? bgm : undefined
 
   const playScore = (): void => {
-    if (!musicOn || !musicVolume || interrupted || mode !== 'play' || !bgm.paused) return
-    // play() must run directly inside the input gesture to satisfy mobile browser policies.
+    const track = activeTrack()
+    if (!track || !musicOn || !musicVolume || interrupted || !track.paused) return
+    // Media playback must start from a trusted input gesture on iOS and Android.
     try {
-      Promise.resolve(bgm.play()).then(() => {
-        if (mode !== 'play' || !musicOn || interrupted) bgm.pause()
-      }).catch(() => { /* The synth score remains available until the next gesture. */ })
-    } catch { /* Unsupported/blocked media playback: retain the synth fallback. */ }
+      Promise.resolve(track.play()).then(() => {
+        if (activeTrack() !== track || !musicOn || !musicVolume || interrupted) track.pause()
+      }).catch(() => { /* Browser may require another gesture; keep user's preference. */ })
+    } catch { /* A restricted audio element must not break game input. */ }
   }
 
   const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): void => {
@@ -185,7 +194,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     try {
       // Mobile media can remain unpaused yet silent after an OS interruption.
       // Re-establish the HTMLMediaElement path on the next trusted gesture.
-      if (recovering && mode === 'play' && musicOn && !bgm.paused) bgm.pause()
+      const track = activeTrack()
+      if (recovering && musicOn && track && !track.paused) track.pause()
       if (!ac || ac.state === 'closed') {
         const created = createContext()
         if (!created) { playScore(); return }
@@ -213,6 +223,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     if (interrupted) return
     interrupted = true
     bgm.pause()
+    menuBgm?.pause()
     if (ac && ac.state === 'running') {
       void ac.suspend().catch(() => { /* Visibility can change during suspension. */ })
     }
@@ -232,8 +243,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (musicVolume > 0) previousMusicVolume = musicVolume
       try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
       bgm.volume = mp3Level()
+      if (menuBgm) menuBgm.volume = menuLevel()
       if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
-      if (!musicVolume) bgm.pause()
+      if (!musicVolume) { bgm.pause(); menuBgm?.pause() }
       else if (musicOn) playScore()
     },
     setSfxVolume(value: number) {
@@ -264,8 +276,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     tick(mode) {
       const ctx = running()
-      if (!musicOn || !ctx) return
-      if (mode === 'menu') { menu.schedule(ctx.currentTime, tone); return }
+      if (!musicOn || !musicVolume || !ctx) return
+      if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }
       if (mode !== 'play') return
       if (bgm.paused || intensity === 'boss') battle.schedule(ctx.currentTime, tone)
       else if (intensity === 'combat') battle.schedule(ctx.currentTime, combatPercussion)
@@ -276,17 +288,21 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       }
     },
     onScreen(nextMode: GameMode) {
+      const previous = mode
       mode = nextMode
+      if (mode !== 'menu') menuBgm?.pause()
       if (mode === 'menu' || mode === 'paused' || mode === 'result') bgm.pause()
       if (mode === 'menu') {
         intensity = 'calm'
         battle.setIntensity('calm')
         bgm.currentTime = 0
+        if (previous !== 'menu' && menuBgm) menuBgm.currentTime = 0
         menu.setClock(ac ? ac.currentTime + 0.06 : 0)
         menu.resetStep()
       }
       bgm.volume = mp3Level()
-      if (mode === 'play') playScore()
+      if (menuBgm) menuBgm.volume = menuLevel()
+      if (mode === 'play' || mode === 'menu') playScore()
     },
     resetBattleClock(delay) {
       battle.setClock(ac ? ac.currentTime + delay : 0)
@@ -297,9 +313,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         musicVolume = previousMusicVolume
         try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
         bgm.volume = mp3Level()
+        if (menuBgm) menuBgm.volume = menuLevel()
         if (musicOn) {
           if (ac && musicBus) musicBus.gain.setTargetAtTime(MUSIC_GAIN * musicVolume / 100, ac.currentTime, 0.06)
-          playScore()
+          wake()
           return true
         }
       }
@@ -314,6 +331,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         battle.setClock(t)
       } else {
         bgm.pause()
+        menuBgm?.pause()
       }
       return musicOn
     },
@@ -323,6 +341,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
         if (sfxOn) {
           if (ac && master) master.gain.setTargetAtTime(SFX_GAIN * sfxVolume / 100, ac.currentTime, 0.06)
+          wake()
           return true
         }
       }
@@ -335,6 +354,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     dispose() {
       interrupted = true
       bgm.pause()
+      menuBgm?.pause()
       ac?.close().catch(() => {})
       ac = null
       master = null

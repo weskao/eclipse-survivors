@@ -103,6 +103,19 @@ describe('engine commands fire the original cues', () => {
     expect(reloaded.ui.cameraShake).toBe(false)
   })
 
+  it('freezes upgrade-scene ambient motion only in still mode', () => {
+    engine.start()
+    engine.testApi.level()
+    const before = engine.state.worldClock
+    engine.advance(0.2)
+    expect(engine.state.worldClock).toBeGreaterThan(before)
+    engine.setUpgradeEffect('still')
+    const frozen = engine.state.worldClock
+    engine.advance(0.2)
+    expect(engine.state.worldClock).toBe(frozen)
+    expect(engine.ui.mode).toBe('level')
+  })
+
   it('sends slider changes to the audio system and updates the UI', () => {
     engine.setMusicVolume(43)
     engine.setSfxVolume(17)
@@ -206,6 +219,21 @@ describe('keyboard and focus', () => {
   let stop: () => void
   beforeEach(() => { stop = engine.listen(window) })
   afterEach(() => stop())
+
+  it('shows the menu music activation as pending until a user gesture unlocks audio', () => {
+    expect(engine.ui.audioUnlocked).toBe(false)
+    expect(engine.ui.musicOn).toBe(true)
+    key('KeyA')
+    expect(engine.ui.audioUnlocked).toBe(true)
+    expect(engine.ui.musicOn).toBe(true)
+  })
+
+  it("explicit menu music activation never toggles the user\'s music preference", () => {
+    expect(engine.ui.audioUnlocked).toBe(false)
+    engine.enableMenuAudio()
+    expect(engine.ui.audioUnlocked).toBe(true)
+    expect(engine.ui.musicOn).toBe(true)
+  })
 
   it('menu keydown unlocks audio only when music is on', () => {
     engine.toggleMusic()

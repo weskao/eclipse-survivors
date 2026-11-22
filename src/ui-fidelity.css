@@ -1,0 +1,235 @@
+/* Eclipse Survivors · premium dark-fantasy UI.
+ * Paint-only decoration; no new canvas passes, JS animation loops or assets. */
+:root{--es-brass:#e5bf7b;--es-ivory:#fff1d0;--es-mist:#b9c5d1;--es-night:#101a27}
+
+/* Hero selection: readable at a glance, tactile on pointer and touch. */
+#menu .job{
+  position:relative;border-radius:12px;
+  border-color:#ad956e99;
+  background:radial-gradient(ellipse at 50% 0%,#b99b6740,transparent 63%),linear-gradient(153deg,#2a3849,#131e2e 75%,#0c141f);
+  box-shadow:inset 0 1px 0 #fff4,0 9px 19px #0009,0 0 0 1px #080e14;
+  transition:border-color .18s ease,box-shadow .18s ease,filter .18s ease,transform .18s ease;
+}
+#menu .job .job-crest{
+  position:absolute;top:8px;right:8px;z-index:3;
+  display:grid;place-items:center;width:24px;height:24px;
+  border:1px solid #bea67d83;border-radius:7px;
+  background:linear-gradient(150deg,#344457e8,#111923ea);
+  color:#c9bb9b;font:800 15px/1 Georgia,serif;box-shadow:0 2px 8px #0008;
+}
+#menu .job .portrait{position:relative;isolation:isolate;overflow:visible}
+#menu .job .portrait img{position:relative;z-index:1;object-fit:contain}
+#menu .job .job-mark{padding-right:16px;font-weight:800;letter-spacing:1px}
+#menu .job strong{position:relative;z-index:1;color:var(--es-ivory);text-shadow:0 2px 5px #0009}
+#menu .job .job-choose{
+  align-self:center;margin-top:9px;padding:5px 9px;
+  border:1px solid #9e987d66;border-radius:5px;
+  background:#111c2b9c;color:#c9d0d6;letter-spacing:1px;font-weight:800;
+}
+#menu .job.selected{
+  border-color:#f7d795;
+  background:radial-gradient(ellipse at 50% 0%,#ddab5553,transparent 67%),linear-gradient(155deg,#3c3c46,#19283a 76%,#111924);
+  box-shadow:0 0 0 1px #ffdf9b8a,0 8px 26px #000c,0 0 20px #e8b86144,inset 0 1px 0 #fff5;
+}
+#menu .job.selected .job-crest{
+  color:#281e0c;border-color:#fff1c5;background:linear-gradient(145deg,#ffedbd,#d4a157);
+  box-shadow:0 0 12px #dfb46c89,0 2px 9px #0009;
+}
+#menu .job.selected .job-crest::after{
+  content:"";position:absolute;inset:-4px;border:1px solid #fff0b29e;border-radius:10px;
+  pointer-events:none;animation:es-seal-glow 3s ease-in-out infinite;
+}
+#menu .job.selected .job-choose{
+  color:#231d16;background:linear-gradient(#ffebba,#cda568);border-color:#fff2ce;
+  text-shadow:none;box-shadow:inset 0 1px 0 #fff6,0 0 12px #e0bb6455;
+}
+#menu .job:not(.selected){filter:saturate(.86) brightness(.96)}
+#menu .job:not(.selected):hover{filter:none;box-shadow:0 10px 24px #000b,0 0 0 1px #f1d59b61}
+#menu .job:focus-visible{outline:3px solid #ffe9a9;outline-offset:3px}
+
+/* Upgrade picker: tier is visible before reading, selection is unmistakable.
+ * Keep every effect internal to a card; never move the frozen gameplay background. */
+#level .level-headline{
+  display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,32px);
+  margin:5px 20px 17px;text-align:center;
+}
+#level .level-heading-copy{min-width:0}
+#level .level-headline .kicker{margin:0 0 5px;color:#e0c08a;font-size:11px;letter-spacing:1.6px}
+#level .level-headline h2{margin:0;color:#fff0d1;text-shadow:0 2px 8px #000e;letter-spacing:1.5px}
+#level .level-seal{
+  flex:none;display:grid;place-items:center;width:30px;height:30px;
+  border:1px solid #e4c38480;transform:rotate(45deg);background:#2631418c;
+  color:#f5d398;box-shadow:0 0 13px #bd905044;
+}
+#level .panel{border-radius:16px}
+#level .cards{gap:clamp(8px,1.8vw,17px)}
+#level .upgrade{
+  display:flex;flex-direction:column;align-items:center;position:relative;
+  padding:17px 12px 12px;min-width:0;min-height:278px;border-radius:13px;
+  background:radial-gradient(circle at 50% 16%,#536a8755,transparent 62%),linear-gradient(161deg,#2b3443,#121a28 83%);
+  box-shadow:0 10px 25px #000a,inset 0 1px 0 #ffffef28;
+  transform:none!important;
+  transition:border-color .17s ease,box-shadow .17s ease,filter .17s ease;
+}
+#level .upgrade::before{border-radius:10px;inset:4px}
+#level .upgrade.rare{background:radial-gradient(ellipse at 50% 13%,#3a849b70,transparent 67%),linear-gradient(#233a4d,#131b2b)}
+#level .upgrade.legendary{background:radial-gradient(ellipse at 50% 13%,#b17d3b77,transparent 67%),linear-gradient(#4a3740,#1d1a2a 90%)}
+#level .upgrade.evolution{box-shadow:0 0 0 1px #e8cb9659,0 0 23px #b58c565b,inset 0 1px 0 #fff4}
+#level .upgrade .upgrade-rarity{
+  align-self:stretch;text-align:center;display:block;
+  padding:5px 7px;border:1px solid #c3b29865;border-radius:6px;
+  background:#070e1794;color:#e6d6bf;font-size:10px;line-height:1.25;
+  text-transform:uppercase;letter-spacing:1.5px;font-weight:850;
+}
+#level .upgrade.rare .upgrade-rarity{border-color:#78d7ea8c;color:#b3efff;background:#102d3cce}
+#level .upgrade.legendary .upgrade-rarity{border-color:#f4ca8985;color:#ffe7a7;background:#48321cbd}
+#level .upgrade .portrait.skill-sigil{
+  flex:none;width:clamp(64px,8vw,86px);height:clamp(64px,8vw,86px);
+  margin:15px auto 11px;border-radius:18px;
+  box-shadow:0 0 0 1px #ffedb020,0 0 20px #b2a2754d,inset 0 0 22px #0009;
+}
+#level .upgrade .portrait.skill-sigil:before{border-radius:17px}
+#level .upgrade strong{color:#fff0d5;line-height:1.35;font-size:clamp(13px,1.25vw,16px)}
+#level .upgrade .upgrade-level{font-variant-numeric:tabular-nums;letter-spacing:.3px}
+#level .upgrade small.upgrade-desc{line-height:1.5;color:#cfd7e0}
+#level .upgrade small.upgrade-requirements{color:#f6d59a}
+#level .upgrade .upgrade-action{
+  align-self:stretch;display:flex;justify-content:center;align-items:center;gap:8px;
+  margin-top:auto;padding:9px 6px 0;border-top:1px solid #c8b18b3b;
+}
+#level .upgrade .upgrade-action .upgrade-key{margin:0;color:#f6e5c1!important;opacity:1!important;font-weight:850;font-size:11px}
+#level .upgrade .upgrade-select-mark{color:#dfbf80;font-size:10px}
+#level .upgrade:hover,#level .upgrade:focus-visible{filter:brightness(1.11);box-shadow:0 14px 29px #000c,0 0 22px #d6b4764d}
+#level .upgrade:focus-visible{outline:3px solid #fff0bb;outline-offset:3px}
+#level .upgrade.legendary::after{animation:es-seal-glow 3.6s ease-in-out infinite}
+
+/* Top HUD: compact information hierarchy, clearly readable against combat. */
+#hud .status{
+  overflow:visible;border-radius:11px;border-color:#ddbf82ab;
+  background:radial-gradient(ellipse at 0 0,#54617838,transparent 74%),linear-gradient(135deg,#233142f3,#0b1420f5);
+  box-shadow:0 10px 27px #000d,inset 0 1px 0 #ffecba36;
+}
+#hud .status::after{
+  content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;
+  border-radius:0 3px 3px 0;background:linear-gradient(#ffdf9a,#897047);
+  pointer-events:none;
+}
+#hud .hud-face{border-radius:9px;border-color:#ebcb8b;box-shadow:inset 0 0 18px #0005,0 0 0 2px #d1a86e3b,0 4px 12px #000c}
+#hud .status b{color:#fff4d7;font-weight:850;letter-spacing:.5px;text-shadow:0 2px 6px #000b}
+#hud .status .bar{
+  border-radius:8px;border-color:#efa6a67a;background:#070e15;
+  box-shadow:inset 0 2px 5px #000d,0 1px 0 #f4d79f22;
+}
+#hud .status .bar i{border-radius:6px;background:linear-gradient(90deg,#a23446,#df5260 62%,#ffac89);transition:width .12s linear}
+#hud .status .bar.exp{border-color:#6fbfd280}
+#hud .status .bar.exp i{background:linear-gradient(90deg,#247faf,#50c4d8,#bcf8ef)}
+#hud #hpLabel{font-variant-numeric:tabular-nums;color:#f3d4ce;font-weight:750;text-shadow:0 1px 4px #000b}
+#hud #hpLabel::before{content:"✚";display:inline-block;margin-right:5px;color:#ff9b8e;font-size:10px}
+#hud .status.status-critical{border-color:#f18b86;box-shadow:0 10px 27px #000d,0 0 0 1px #f56b6b77,inset 0 1px 0 #ffeded3b}
+#hud .status.status-critical::after{background:linear-gradient(#ffb1a2,#b8293a)}
+#hud .status.status-critical #hpLabel{color:#ffb7ad}
+#hud .stats .chip{
+  border-radius:10px;border-color:#d1b7849d;
+  background:radial-gradient(circle at 50% 0,#4d59703c,transparent 80%),linear-gradient(#273344ee,#0c1522ee);
+  box-shadow:0 7px 19px #000c,inset 0 1px 0 #f4e0b42b;
+  color:#f2e7d1;font-variant-numeric:tabular-nums;
+}
+#hud .stats #timer{color:#fbe4b0;letter-spacing:1.2px;text-shadow:0 0 9px #eac57a45}
+#hud .stats #timer::before{content:"◷";margin-right:6px;color:#d9c6a3}
+#hud .stats .hud-actions :is(.audio-trigger,.settings-trigger,#pauser){
+  border:1px solid #bda2728b;border-radius:7px;
+  color:#f8e2b4;background:linear-gradient(#334354,#1b2635);
+  box-shadow:inset 0 1px 0 #fff2,0 2px 6px #0007;
+  transition:border-color .15s ease,background .15s ease;
+}
+#hud .stats .hud-actions :is(.audio-trigger,.settings-trigger,#pauser):hover{
+  color:#fff2cf;border-color:#f8d99a;background:linear-gradient(#47556a,#263445);
+}
+#hud .hud-actions{isolation:isolate}
+
+/* Settings: grouped cards with visible selections, no duplicated audio controls. */
+#settings .settings-panel{
+  border-color:#e8c994a8;border-radius:18px;
+  background:radial-gradient(ellipse at 30% 0,#49536b5c,transparent 64%),linear-gradient(155deg,#263245,#111b29 75%);
+  box-shadow:0 28px 78px #000e,0 0 0 1px #eac48020,inset 0 1px 0 #fff3;
+}
+#settings .settings-header{background:radial-gradient(ellipse at 23% 0,#ba996042,transparent 70%),linear-gradient(#2837487d,#1d2733a1)}
+#settings h2{letter-spacing:2px;text-shadow:0 2px 9px #0009}
+#settings .settings-eyebrow{letter-spacing:2.4px;color:#f0ca87}
+#settings .settings-section{padding:20px 0 22px}
+#settings .settings-segments{gap:12px}
+#settings .settings-segments button{
+  display:flex;align-items:center;gap:11px;text-align:left;min-height:74px;
+  border-radius:12px;padding:13px 12px;
+  background:radial-gradient(ellipse at 0 0,#5b758238,transparent 90%),linear-gradient(150deg,#29384a,#141f2d);
+  border:1px solid #a4b1b888;box-shadow:inset 0 1px 0 #fff2,0 4px 10px #0005;
+  transition:border-color .17s ease,box-shadow .17s ease,background .17s ease;
+}
+#settings .settings-choice-icon{
+  flex:none;display:grid;place-items:center;width:41px;height:41px;
+  border-radius:10px;border:1px solid #aab9c17a;
+  background:linear-gradient(#384859,#222c3a);color:#d7e5e8;font-size:23px;
+}
+#settings .settings-choice-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+#settings .settings-choice-copy strong{font-size:13px;color:#fff1d5;line-height:1.35}
+#settings .settings-choice-copy small{font-size:10px;color:#b6c7d4;line-height:1.5;font-weight:500}
+#settings .settings-segments button[aria-pressed="true"]{
+  border-color:#f1d495;background:linear-gradient(160deg,#514633,#2b3440);
+  box-shadow:0 0 0 1px #edc77859,0 4px 13px #0008,inset 0 1px 0 #fff3;
+}
+#settings .settings-segments button[aria-pressed="true"] .settings-choice-icon{
+  border-color:#ffedc0;background:linear-gradient(#f9db98,#b88c52);color:#281e15;
+}
+#settings .settings-switch-row{
+  border:1px solid #a39c8661;border-radius:12px;
+  padding:14px 13px;margin-top:19px;background:linear-gradient(145deg,#29354699,#141f2b89);
+}
+#settings .settings-switch{border-color:#b0a48caa}
+#settings :is(.settings-segments button,.settings-switch,.settings-done,.settings-close):focus-visible{outline:3px solid #ffe4a7;outline-offset:3px}
+#settings .settings-done{border-radius:10px;box-shadow:inset 0 1px 0 #fff8,0 4px 12px #0008}
+
+/* Shared UI animation: a small opacity pulse, never whole-panel movement/shake. */
+@keyframes es-seal-glow{0%,100%{opacity:.52}50%{opacity:1}}
+#level.still-upgrades .panel,
+#level.still-upgrades .upgrade,
+#level.still-upgrades .upgrade::after{
+  animation:none!important;transition:none!important;transform:none!important;
+}
+@media(max-width:920px){
+  #menu .job .job-crest{width:21px;height:21px;top:6px;right:5px;font-size:13px}
+  #settings .settings-segments button{gap:8px}
+}
+@media(max-width:700px){
+  #menu .job{border-radius:9px}
+  #menu .job .job-crest{width:18px;height:18px;top:5px;right:5px;font-size:11px;border-radius:5px}
+  #menu .job .job-choose{padding:4px 3px;font-size:9px;letter-spacing:0}
+  #menu .job strong{font-size:clamp(10px,3vw,12px)}
+  #level .level-headline{gap:10px;margin:6px 23px 9px}
+  #level .level-seal{display:none}
+  #level .level-headline .kicker{font-size:9px;letter-spacing:1px}
+  #level .level-headline h2{font-size:clamp(18px,5vw,23px)}
+  #level .upgrade{min-height:215px;height:auto;padding:9px 6px 8px;border-radius:9px}
+  #level .upgrade .upgrade-rarity{font-size:9px;letter-spacing:.2px;padding:5px 3px}
+  #level .upgrade .portrait.skill-sigil{width:clamp(42px,12vw,58px);height:clamp(42px,12vw,58px);margin:8px auto 7px}
+  #level .upgrade strong{font-size:12px}
+  #level .upgrade .upgrade-action{gap:3px;margin-top:auto;padding:6px 0 0}
+  #level .upgrade .upgrade-action .upgrade-key{font-size:9px}
+  #hud .stats #timer::before{margin-right:3px}
+  #settings .settings-segments{gap:8px}
+  #settings .settings-segments button{flex-direction:column;align-items:flex-start;min-height:103px;padding:10px}
+  #settings .settings-choice-icon{width:33px;height:33px;font-size:19px}
+  #settings .settings-choice-copy strong{font-size:12px}
+  #settings .settings-choice-copy small{font-size:9px}
+}
+@media(max-width:390px){
+  #menu .job .job-crest{width:15px;height:15px;font-size:9px;top:4px;right:4px}
+  #level .upgrade{padding-inline:3px}
+  #level .upgrade .upgrade-action .upgrade-key{font-size:8px}
+}
+@media(prefers-reduced-motion: reduce){
+  #menu .job.selected .job-crest::after,
+  #level .upgrade.legendary::after{animation:none!important}
+  #menu .job,#level .upgrade,
+  #hud .stats .hud-actions :is(.audio-trigger,.settings-trigger,#pauser),
+  #settings .settings-segments button{transition:none!important}
+}
