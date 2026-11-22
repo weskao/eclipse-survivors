@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import App from './App.vue'
 import { createEngine } from './game/engine'
 
@@ -30,6 +31,21 @@ describe('App', () => {
     expect(w.find('#menu').exists()).toBe(false)
     expect(w.find('#hud').exists()).toBe(false)
     w.unmount()
+  })
+
+  it('applies accessibility preferences to the live page and restores the root on unmount', async () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const root = document.documentElement
+    const originalQuality = root.getAttribute('data-es2-quality')
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    expect(root.getAttribute('data-es2-quality')).not.toBeNull()
+    engine.openSettings()
+    await nextTick()
+    await wrapper.get('#es2-quality').setValue('low')
+    await nextTick()
+    expect(root.getAttribute('data-es2-quality')).toBe('low')
+    wrapper.unmount()
+    expect(root.getAttribute('data-es2-quality')).toBe(originalQuality)
   })
 
 })
