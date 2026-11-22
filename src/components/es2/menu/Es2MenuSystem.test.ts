@@ -85,9 +85,21 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('specialChoose')).toEqual([['relic:moon']])
   })
 
+  it('keeps the settings hit target stable when the audio unlock button disappears', async () => {
+    const wrapper = mounted({ audioUnlocked: false, musicOn: true })
+    const settings = find('[data-es2-settings]')
+    expect(find('[data-es2-audio-unlock]')).not.toBeNull()
+    await wrapper.setProps({ audioUnlocked: true })
+    await nextTick()
+    expect(document.querySelector('[data-es2-audio-unlock]')).toBeNull()
+    expect(find('[data-es2-settings]')).toBe(settings)
+    settings.click()
+    expect(wrapper.emitted('settings')).toHaveLength(1)
+  })
+
   it('forwards menu settings action to the host', async () => {
     const wrapper = mounted()
-    click('.es2-top-actions button:last-child')
+    click('[data-es2-settings]')
     await nextTick()
     expect(wrapper.emitted('settings')).toHaveLength(1)
   })

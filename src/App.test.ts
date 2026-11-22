@@ -26,7 +26,7 @@ describe('App', () => {
     const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
     const w = mount(App, { props: { engine }, attachTo: document.body })
     expect(engine.ui.settingsOpen).toBe(false)
-    document.querySelector<HTMLButtonElement>('.es2-top-actions button:last-child')!.click()
+    document.querySelector<HTMLButtonElement>('[data-es2-settings]')!.click()
     await nextTick()
     expect(engine.ui.settingsOpen).toBe(true)
     expect(document.querySelector('#es2-quality')).not.toBeNull()

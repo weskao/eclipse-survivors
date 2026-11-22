@@ -23,9 +23,10 @@
 .es2-menu-brand h1{font-size:clamp(2rem,4.3vw,4.4rem);line-height:1.12;letter-spacing:.075em;font-weight:600;margin:5px 0 9px;text-shadow:0 0 45px #dbbd8655}
 .es2-menu-brand h1 em{color:var(--es2-gold);font-style:normal;font-weight:400}
 .es2-menu-brand p{font-size:clamp(.82rem,1.2vw,1rem);color:var(--es2-muted);margin:0}
-.es2-top-actions{display:flex;gap:10px;align-items:center;white-space:nowrap}
+.es2-top-actions{display:flex;flex-wrap:wrap;min-width:0;gap:10px;align-items:center;white-space:nowrap}
 .es2-version{font:600 .72rem system-ui,sans-serif;color:var(--es2-muted)}
 .es2-icon-button{min-height:44px;padding:9px 13px;border-radius:8px;background:#122134d9;border:1px solid var(--es2-line)}
+@media(max-width:610px){.es2-top-actions{width:100%;gap:8px}.es2-top-actions .es2-icon-button{max-width:100%;white-space:normal}}
 .es2-menu-layout{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(310px,.86fr);gap:clamp(20px,3vw,45px);align-items:start}
 .es2-section-heading{margin-bottom:17px}
 .es2-section-heading>span{font:700 .71rem system-ui,sans-serif;letter-spacing:.13em;color:var(--es2-gold)}
