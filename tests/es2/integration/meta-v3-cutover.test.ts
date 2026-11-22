@@ -64,6 +64,24 @@ describe('integration cutover: one v3 currency writer and preserved v2 snapshot'
     expect(engine.state.hero?.damage).toBeCloseTo(32 * 1.04)
   })
 
+  it('equips an earned v3 cosmetic without mutating the legacy v2 save and persists the selection', () => {
+    const engine = createEngine({ audio })
+    finish(engine)
+    expect(engine.ui.metaState?.cosmetics).toContain('knight-gilded')
+    engine.goMenu()
+    expect(engine.ui.profile.unlockedCosmetics).toContain('knight-gilded')
+    const legacyBefore = localStorage.getItem(SAVE_KEY)
+
+    engine.selectCosmetic('knight', 'knight-gilded')
+    expect(engine.ui.profile.equippedCosmetics.knight).toBe('knight-gilded')
+    expect(localStorage.getItem(SAVE_KEY)).toBe(legacyBefore)
+
+    const reloaded = createEngine({ audio })
+    expect(reloaded.ui.profile.equippedCosmetics.knight).toBe('knight-gilded')
+    reloaded.start()
+    expect(reloaded.state.cosmetic).toBe('knight-gilded')
+  })
+
   it('never pays the original v2 writer from an ordinary new engine session', () => {
     const engine = createEngine({ audio })
     finish(engine)
