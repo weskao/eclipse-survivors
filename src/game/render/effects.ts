@@ -1,5 +1,5 @@
-import { TAU } from '../constants'
-import { easing } from '../math'
+import { LOW_HP_PCT, TAU } from '../constants'
+import { easing, minmax } from '../math'
 import type { GameState, Hero } from '../types'
 import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
@@ -87,6 +87,37 @@ export function drawEchoes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 /** Blaze ring, shield aura and level-up burst around the hero. */
+const HERO_BAR_WIDTH = 56
+const HERO_BAR_TRACK = '#070c11d9'
+
+/** Foot-level health and experience; values change live, so this runs per frame at O(1) with no allocation. */
+export function drawHeroBars(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, showHp: boolean, showXp: boolean): void {
+  if ((!showHp && !showXp) || s.mode === 'menu' || s.mode === 'result' || hero.hp <= 0) return
+  const left = hero.x + ox - HERO_BAR_WIDTH / 2
+  const y = hero.y + oy
+  ctx.save()
+  if (showHp) {
+    const ratio = minmax(hero.hp / hero.max, 0, 1)
+    const critical = ratio * 100 <= LOW_HP_PCT
+    ctx.fillStyle = HERO_BAR_TRACK
+    ctx.fillRect(left, y + 22, HERO_BAR_WIDTH, 6)
+    ctx.fillStyle = critical ? '#ff4250' : '#d65854'
+    ctx.fillRect(left, y + 22, HERO_BAR_WIDTH * ratio, 6)
+    if (critical) {
+      ctx.strokeStyle = '#ffe3d3'
+      ctx.lineWidth = 1
+      ctx.strokeRect(left, y + 22, HERO_BAR_WIDTH, 6)
+    }
+  }
+  if (showXp) {
+    ctx.fillStyle = HERO_BAR_TRACK
+    ctx.fillRect(left, y + 29, HERO_BAR_WIDTH, 3)
+    ctx.fillStyle = '#83e4ef'
+    ctx.fillRect(left, y + 29, HERO_BAR_WIDTH * minmax(hero.xp / hero.need, 0, 1), 3)
+  }
+  ctx.restore()
+}
+
 export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
   const q = reducedMotion ? 0 : s.worldClock
   const blaze = hero.skills.blaze

@@ -1,17 +1,25 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 type UpgradeEffect = 'soft' | 'still'
 const props = defineProps<{
   active: boolean
   upgradeEffect: UpgradeEffect
   cameraShake: boolean
+  heroHpBar: boolean
+  heroXpBar: boolean
 }>()
 const emit = defineEmits<{
   close: []
   upgradeEffect: [value: UpgradeEffect]
   cameraShake: [value: boolean]
+  heroHpBar: [value: boolean]
+  heroXpBar: [value: boolean]
 }>()
+const heroBars = computed(() => [
+  { id: 'settingsHeroHpBar', name: '人物生命條', hint: '在人物腳下顯示目前生命值', on: props.heroHpBar, toggle: () => emit('heroHpBar', !props.heroHpBar) },
+  { id: 'settingsHeroXpBar', name: '人物經驗條', hint: '在人物腳下顯示升級進度', on: props.heroXpBar, toggle: () => emit('heroXpBar', !props.heroXpBar) },
+])
 const closeButton = ref<HTMLButtonElement | null>(null)
 const dialog = ref<HTMLDivElement | null>(null)
 const trapTab = (event: KeyboardEvent): void => {
@@ -63,6 +71,10 @@ watch(() => props.active, async (active) => {
           <div class="settings-switch-row">
             <div><strong>戰鬥鏡頭震動</strong><small>戰鬥受到衝擊時的短暫回饋，不影響升級畫面</small></div>
             <button id="settingsCameraShake" type="button" class="settings-switch" :aria-pressed="cameraShake" :aria-label="cameraShake ? '關閉戰鬥鏡頭震動' : '開啟戰鬥鏡頭震動'" @click="emit('cameraShake', !cameraShake)"><span>{{ cameraShake ? '開啟' : '關閉' }}</span><i aria-hidden="true"></i></button>
+          </div>
+          <div v-for="bar in heroBars" :key="bar.id" class="settings-switch-row">
+            <div><strong>{{ bar.name }}</strong><small>{{ bar.hint }}</small></div>
+            <button :id="bar.id" type="button" class="settings-switch" :aria-pressed="bar.on" :aria-label="`${bar.on ? '關閉' : '開啟'}${bar.name}`" @click="bar.toggle"><span>{{ bar.on ? '開啟' : '關閉' }}</span><i aria-hidden="true"></i></button>
           </div>
         </section>
       </div>
