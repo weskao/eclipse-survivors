@@ -99,6 +99,7 @@ function chooseAttack(e: Mob): EnemyBrain['attack'] {
 export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
+  const canTarget = hooks.canTargetHero?.() ?? true
   for (const e of s.mobs) {
     if (e.hp <= 0) continue
     e.hit -= dt
@@ -110,6 +111,15 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
     if (ai.state === 'recover') {
       ai.timer -= dt
       if (ai.timer <= 0) ai.state = 'approach'
+      continue
+    }
+    if (!canTarget) {
+      // Continue status/phase/recovery simulation, but cancel locked-on attacks during stealth.
+      if (ai.state !== 'approach') {
+        ai.state = 'recover'
+        ai.timer = Math.max(0.2, ai.timer)
+        ai.hitThisAttack = false
+      }
       continue
     }
     if (ai.state === 'windup') {

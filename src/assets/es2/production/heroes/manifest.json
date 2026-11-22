@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "category": "heroes",
+  "status": "incomplete",
+  "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
+  "assets": [
+    {
+      "id": "shadowblade",
+      "path": "shadowblade-action@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 90000,
+      "frames": 4,
+      "status": "pending-visual-review",
+      "sha256": "724118fc59ffe260b73ac3e3752564d8da05196cd49f0e5dbd553f7461f28f9f",
+      "origin": "generated-original",
+      "poseSequence": [
+        "ready",
+        "windup",
+        "strike",
+        "recovery"
+      ]
+    },
+    {
+      "id": "spirit-summoner",
+      "path": "spirit-summoner-action@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 90000,
+      "frames": 4,
+      "status": "pending-visual-review",
+      "sha256": "9fb2e3097c058f071225175fb6423f388ea38ba6bf86966ab58ba8f22dd3bf12",
+      "origin": "generated-original",
+      "poseSequence": [
+        "ready",
+        "windup",
+        "strike",
+        "recovery"
+      ]
+    },
+    {
+      "id": "crimson-paladin",
+      "path": "crimson-paladin-action@3x.webp",
+      "width": 384,
+      "height": 96,
+      "scale": 3,
+      "alpha": true,
+      "maxBytes": 90000,
+      "frames": 4,
+      "status": "pending-visual-review",
+      "sha256": "0073967a8d924b405803a40ae3b144078acb799e80a3319dfd0152f6e497103f",
+      "origin": "generated-original",
+      "poseSequence": [
+        "ready",
+        "windup",
+        "strike",
+        "recovery"
+      ]
+    }
+  ],
+  "source": "Original generated artwork, generation d4c94649-508f-4147-b4fd-7245d4962552. Cropped from 3x4 source grid, alpha retained. NOT approved for final animation. Review continuity, clipping and 8-way locomotion."
+}

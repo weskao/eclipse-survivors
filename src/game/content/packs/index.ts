@@ -8,6 +8,7 @@ import { WAVES_PACK } from './waves'
 import { BIOMES_PACK } from './biomes'
 import { WORLD_EVENTS_PACK } from './events'
 import { COMBAT_VFX_PACK } from './combat-vfx'
+import { HERO_SPECIALIZATIONS_PACK } from '../heroes'
 
 /** Source registration is centralized here; runtime adapters remain explicit integration work. */
 export const CONTENT_PACKS: readonly ContentPack[] = Object.freeze([
@@ -20,4 +21,5 @@ export const CONTENT_PACKS: readonly ContentPack[] = Object.freeze([
   BIOMES_PACK,
   WORLD_EVENTS_PACK,
   COMBAT_VFX_PACK,
+  HERO_SPECIALIZATIONS_PACK,
 ])

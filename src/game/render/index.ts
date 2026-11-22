@@ -2,12 +2,16 @@ import type { Artwork } from '../art'
 import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
+import type { FactionBridge } from '../content/enemies/integration'
 import { drawBossTelegraphs } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
+import type { ProductionHeroArtwork } from './es2/production-heroes'
+import type { WorldRuntimeImages } from './es2/production-world'
+import { drawLiveFactionArt, drawLiveFactionProjectiles, type FactionArtwork } from './es2/production-factions'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
@@ -29,6 +33,10 @@ export interface RenderAssets {
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   heroSheets: HeroSheets
+  productionHeroes?: ProductionHeroArtwork
+  productionWorld?: WorldRuntimeImages
+  factions?: FactionBridge
+  factionArtwork?: FactionArtwork
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
   cameraShakeEnabled: () => boolean
@@ -87,7 +95,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }
-  paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy)
+  paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy, assets.productionWorld)
   const scene = currentSceneInfo(s)
   const cached = assets.weatherCache
   if (!cached || cached.ctx !== ctx || cached.width !== W || cached.height !== H || cached.weather !== scene.weather) {
@@ -109,8 +117,11 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   drawStars(ctx, s, ox, oy, reduced, assets.gems)
   drawEnemyTelegraphs(ctx, s, ox, oy)
-  if (assets.bosses) drawBossTelegraphs(ctx, assets.bosses.snapshot(s), ox, oy)
+  const bossSnapshot = assets.bosses?.snapshot(s)
+  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
+  if (assets.factions && assets.factionArtwork)
+    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy)
   const objects = assets.depthOrder
   objects.length = 0
   // Reject offscreen and dead mobs before sorting, not after the sort in drawCharacter.
@@ -122,13 +133,17 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
   for (const obj of objects) {
-    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint)
+    const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
+    const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase
+      ? { image: bossImage, phase: bossSnapshot.phase } : undefined
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt)
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)
   drawEnemyProjectiles(ctx, s, ox, oy)
+  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy)
   drawOrbs(ctx, s, hero, ox, oy)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)

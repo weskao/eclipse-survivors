@@ -1,24 +1,50 @@
 /**
- * Deterministic, run-scoped encounter scheduling. This module NEVER mutates
- * GameState or spawns entities. The integration owner adapts SpawnRequest to
- * spawn.ts, shows WaveEvent in the HUD and supplies terrain collision checks.
- *
- * Integration:
- *   const director = createWaveDirector({ mode: state.runMode, seed: runSeed })
- *   const plan = director.advance({
- *     timeSeconds: state.time, activeMobs: state.mobs.length,
- *     hero: { x: hero.x, y: hero.y }, viewport: { width: state.W, height: state.H },
- *     bossSpawned: state.bossSpawned, bossDefeated: state.bossDefeated,
- *     canSpawnAt: (x, y, radius) => isWalkable(x, y, radius),
- *   })
- *   // Respect plan.spawns, positions, elite flags, telegraphs and plan.events.
- *   // Do not also invoke legacy tickSpawning after enabling this director.
- *   // One required boss per run; integration marks bossSpawned after spawning it.
+ * Deterministic, run-scoped encounter planner. Neither this planner nor the
+ * engine adapter replaces the legacy spawn loop automatically. Integration
+ * must enable exactly one spawn policy per run, honor telegraphs and forward
+ * finalized kill evidence. Objective modes may schedule multiple bosses.
+ * See ./INTEGRATION.md for the handoff contract.
  */
 import { MAX_MOBS } from '../../constants'
 import { getMode } from '../../../meta/modes'
+import { getObjectiveMode, objectiveModeIds, type ObjectiveModeId } from '../modes/definitions'
 import type { RunModeId } from '../../../meta/types'
 import type { MobType } from '../../types'
+
+export type WaveModeId = RunModeId | ObjectiveModeId
+
+const LEGACY_MODES: readonly RunModeId[] = ['quick', 'standard', 'challenge', 'endless']
+function isLegacy(mode: WaveModeId): mode is RunModeId {
+  return LEGACY_MODES.some(id => id === mode)
+}
+
+interface ModeSchedule {
+  readonly bossTimes: readonly number[]
+  readonly waveTimes: readonly number[]
+  readonly spawnFrequency: number
+}
+
+/** Static per-mode contracts: no arrays/objects allocated while advancing a frame. */
+const MODE_SCHEDULES = new Map<WaveModeId, ModeSchedule>()
+for (const mode of LEGACY_MODES) {
+  const config = getMode(mode)
+  MODE_SCHEDULES.set(mode, {
+    bossTimes: [config.bossAt], waveTimes: [],
+    spawnFrequency: config.modifiers.spawnFrequency,
+  })
+}
+for (const mode of objectiveModeIds) {
+  const config = getObjectiveMode(mode)
+  MODE_SCHEDULES.set(mode, {
+    bossTimes: config.bossReadySeconds, waveTimes: config.waveReadySeconds,
+    spawnFrequency: config.spawnFrequency,
+  })
+}
+function schedule(mode: WaveModeId): ModeSchedule {
+  const config = MODE_SCHEDULES.get(mode)
+  if (!config) throw new RangeError('Invalid run mode')
+  return config
+}
 
 export const WAVE_CYCLE_SECONDS = 48
 const BOSS_PREP_SECONDS = 12
@@ -51,7 +77,7 @@ export interface WaveSnapshot {
 
 export interface WaveEvent {
   readonly id: string
-  readonly kind: 'stage' | 'reward' | 'boss-prep' | 'mini-boss' | 'boss'
+  readonly kind: 'stage' | 'reward' | 'boss-prep' | 'mini-boss' | 'boss' | 'wave'
   readonly title: string
   readonly atSeconds: number
   readonly durationSeconds: number
@@ -67,16 +93,32 @@ export interface SpawnRequest {
   readonly y: number
   /** Minimum warning before damage is allowed; integration must enforce this. */
   readonly telegraphSeconds: number
+  /** 1–8 for Chaos Arena; the adapter assigns only accepted actors to this wave. */
+  readonly waveIndex?: number
+  /** 1-based scheduled boss stage, for multi-boss objective modes. */
+  readonly encounterIndex?: number
 }
 
 export interface WaveFrame {
   readonly timeSeconds: number
-  /** All living ordinary mobs; a boss may use one additional reserved slot. */
+  /** Every actor sharing the 130-slot budget, including any living boss. */
   readonly activeMobs: number
   readonly hero: { readonly x: number; readonly y: number }
   readonly viewport: { readonly width: number; readonly height: number }
   readonly bossSpawned?: boolean
   readonly bossDefeated?: boolean
+  /** True while an accepted boss remains alive, regardless of its scheduled window. */
+  readonly bossActive?: boolean
+  /** Number of genuinely killed scheduled bosses, reported by the engine adapter. */
+  readonly completedBosses?: number
+  /** Only genuine, fully defeated actor cohorts count as completed waves. */
+  readonly completedWaves?: number
+  /** Relic Hunt's guardian is locked until four actual relic pickups. */
+  readonly completedRelics?: number
+  readonly activeWave?: boolean
+  /** Reserved but not yet fully materialized actors (telegraphs/spawn queues). */
+  readonly pendingActors?: number
+  readonly playing?: boolean
   /** Reject walls, hazards, blocked terrain or other gameplay restrictions. */
   readonly canSpawnAt?: (x: number, y: number, radius: number) => boolean
 }
@@ -84,48 +126,66 @@ export interface WaveFrame {
 export interface WaveDecision extends WaveSnapshot {
   readonly spawns: readonly SpawnRequest[]
   readonly events: readonly WaveEvent[]
+  readonly waveIndex?: number
 }
 
 export interface WaveDirector {
-  readonly mode: RunModeId
+  readonly mode: WaveModeId
   inspect(timeSeconds: number): WaveSnapshot
   advance(frame: WaveFrame): WaveDecision
   reset(): void
+  /** Release a rejected spawn reservation so the same encounter can retry. */
+  retryBoss(index: number): void
+  retryWave(index: number): void
 }
 
 function validTime(seconds: number): void {
-  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid wave time')
+  if (!Number.isFinite(seconds) || seconds < 0 || seconds > Number.MAX_SAFE_INTEGER) throw new RangeError('Invalid wave time')
 }
 
 const clamp = (value: number, maximum: number): number => Math.max(0, Math.min(value, maximum))
 
 /** O(1), no per-frame RNG, stored timeline, or difficulty dependence on graphics settings. */
-export function describeWave(mode: RunModeId, seed: number, timeSeconds: number): WaveSnapshot {
+export function describeWave(mode: WaveModeId, seed: number, timeSeconds: number): WaveSnapshot {
   validTime(timeSeconds)
   if (!Number.isSafeInteger(seed)) throw new RangeError('Wave seed must be a safe integer')
-  const config = getMode(mode)
+  const config = schedule(mode)
   const cycle = Math.floor(timeSeconds / WAVE_CYCLE_SECONDS)
   const offset = timeSeconds - cycle * WAVE_CYCLE_SECONDS
   const phase = STAGES.find(p => offset >= p.from && offset < p.to)!
   let stage: WaveStage = phase.stage
   let startsAt = cycle * WAVE_CYCLE_SECONDS + phase.from
   let endsAt = cycle * WAVE_CYCLE_SECONDS + phase.to
-  if (timeSeconds >= config.bossAt - BOSS_PREP_SECONDS && timeSeconds < config.bossAt) {
-    stage = 'boss-prep'
-    startsAt = config.bossAt - BOSS_PREP_SECONDS
-    endsAt = config.bossAt
-  } else if (timeSeconds >= config.bossAt && timeSeconds < config.bossAt + BOSS_ENCOUNTER_SECONDS) {
-    stage = 'boss'
-    startsAt = config.bossAt
-    endsAt = config.bossAt + BOSS_ENCOUNTER_SECONDS
-  }
-  // Boss staging takes precedence over the normal cycle, including boundary overlap.
-  if (stage !== 'boss' && stage !== 'boss-prep') {
-    if (startsAt < config.bossAt && endsAt > config.bossAt - BOSS_PREP_SECONDS) {
-      endsAt = config.bossAt - BOSS_PREP_SECONDS
+  if (mode === 'chaos-arena') {
+    // Eight explicit readiness gates, with recovery between encounters.
+    let waveIndex = -1
+    for (let i = 0; i < config.waveTimes.length; i++) {
+      if (timeSeconds >= config.waveTimes[i]!) waveIndex = i
     }
-    if (startsAt < config.bossAt + BOSS_ENCOUNTER_SECONDS && endsAt > config.bossAt) {
-      startsAt = Math.max(startsAt, config.bossAt + BOSS_ENCOUNTER_SECONDS)
+    if (waveIndex >= 0) {
+      const ready = config.waveTimes[waveIndex]!
+      const next = config.waveTimes[waveIndex + 1] ?? Infinity
+      stage = timeSeconds < ready + 12 ? 'assault' : 'recovery'
+      startsAt = timeSeconds < ready + 12 ? ready : ready + 12
+      endsAt = Math.min(timeSeconds < ready + 12 ? ready + 12 : next, next)
+    }
+  }
+  // Later scheduled bosses take precedence over ordinary and Chaos waves.
+  for (const bossAt of config.bossTimes) {
+    if (timeSeconds >= bossAt - BOSS_PREP_SECONDS && timeSeconds < bossAt) {
+      stage = 'boss-prep'
+      startsAt = bossAt - BOSS_PREP_SECONDS
+      endsAt = bossAt
+      break
+    }
+    if (timeSeconds >= bossAt && timeSeconds < bossAt + BOSS_ENCOUNTER_SECONDS) {
+      stage = 'boss'
+      startsAt = bossAt
+      endsAt = bossAt + BOSS_ENCOUNTER_SECONDS
+      break
+    }
+    if (startsAt < bossAt && endsAt > bossAt - BOSS_PREP_SECONDS) {
+      endsAt = bossAt - BOSS_PREP_SECONDS
     }
   }
 
@@ -133,12 +193,14 @@ export function describeWave(mode: RunModeId, seed: number, timeSeconds: number)
     ? PATTERNS[(cycle + ((seed % PATTERNS.length) + PATTERNS.length) % PATTERNS.length) % PATTERNS.length]!
     : 'mixed'
   // Escalate pacing/composition, not only enemy HP; all live-count budgets remain bounded.
-  const danger = 1 + Math.floor(timeSeconds / (mode === 'endless' ? 65 : 85))
-    + (mode === 'challenge' ? 2 : 0)
+  const danger = 1 + Math.floor(timeSeconds / (
+    mode === 'endless' || mode === 'endless-eclipse' ? 65 : mode === 'chaos-arena' ? 35 : 85
+  )) + (mode === 'challenge' || mode === 'chaos-arena' ? 2 : 0)
   const base = stage === 'assault' ? 4 : stage === 'build-up' ? 2 : 0
-  const spawnBudget = clamp(base + (base ? Math.floor(danger / 3) + (mode === 'challenge' ? 1 : 0) : 0), MAX_SPAWN_BUDGET)
+  const spawnBudget = clamp(base + (base ? Math.floor(danger / 3) +
+    (mode === 'challenge' || mode === 'chaos-arena' ? 1 : 0) : 0), MAX_SPAWN_BUDGET)
   const interval = stage === 'assault' ? 3.6 : 5.5
-  const spawnIntervalSeconds = interval / config.modifiers.spawnFrequency
+  const spawnIntervalSeconds = interval / config.spawnFrequency
   return { stage, pattern, cycle, startsAt, endsAt, danger, spawnBudget, spawnIntervalSeconds }
 }
 
@@ -206,22 +268,27 @@ const LABELS: Record<WaveStage, string> = {
   boss: '首領決戰',
 }
 
-export function createWaveDirector(opts: { mode: RunModeId; seed: number }): WaveDirector {
+export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): WaveDirector {
   const { mode, seed } = opts
   // Validate mode / seed at construction rather than failing during combat.
-  if (!['quick', 'standard', 'challenge', 'endless'].includes(mode)) throw new RangeError('Invalid run mode')
+  if (!isLegacy(mode) && !objectiveModeIds.includes(mode as ObjectiveModeId)) throw new RangeError('Invalid run mode')
   describeWave(mode, seed, 0)
-  const bossAt = getMode(mode).bossAt
+  const bossTimes = schedule(mode).bossTimes
+  const waveTimes = schedule(mode).waveTimes
   let lastTime = -1
   let lastStageKey = ''
   let lastSpawnKey = ''
   let bossIssued = false
+  let bossIssuedIndex = 0
+  let lastChaosWave = 0
 
   function reset(): void {
     lastTime = -1
     lastStageKey = ''
     lastSpawnKey = ''
     bossIssued = false
+    bossIssuedIndex = 0
+    lastChaosWave = 0
   }
 
   function advance(frame: WaveFrame): WaveDecision {
@@ -234,15 +301,24 @@ export function createWaveDirector(opts: { mode: RunModeId; seed: number }): Wav
       throw new RangeError('Invalid wave spawn inputs')
     }
     const wave = describeWave(mode, seed, t)
+    if (!Number.isInteger(frame.pendingActors ?? 0) || (frame.pendingActors ?? 0) < 0 ||
+        !Number.isInteger(frame.completedWaves ?? 0) || (frame.completedWaves ?? 0) < 0 ||
+        !Number.isInteger(frame.completedBosses ?? 0) || (frame.completedBosses ?? 0) < 0 ||
+        !Number.isInteger(frame.completedRelics ?? 0) || (frame.completedRelics ?? 0) < 0 ||
+        (mode === 'chaos-arena' && (frame.completedWaves ?? 0) > waveTimes.length) ||
+        (frame.completedBosses ?? 0) > bossTimes.length) {
+      throw new RangeError('Invalid wave progress')
+    }
+    if (frame.playing === false) return { ...wave, spawns: [], events: [] }
     const events: WaveEvent[] = []
     const spawns: SpawnRequest[] = []
     const stageKey = wave.stage + ':' + wave.startsAt
     if (stageKey !== lastStageKey) {
       // Announce a boss only when it exists or when placement succeeds below.
-      if (wave.stage !== 'boss' || frame.bossSpawned) {
+      if (wave.stage !== 'boss') {
         events.push({
           id: 'waves:' + wave.stage, kind: wave.stage === 'reward' ? 'reward'
-            : wave.stage === 'boss-prep' ? 'boss-prep' : wave.stage === 'boss' ? 'boss' : 'stage',
+            : wave.stage === 'boss-prep' ? 'boss-prep' : 'stage',
           title: LABELS[wave.stage], atSeconds: wave.startsAt,
           durationSeconds: Math.max(0, wave.endsAt - wave.startsAt), danger: wave.danger,
         })
@@ -250,63 +326,99 @@ export function createWaveDirector(opts: { mode: RunModeId; seed: number }): Wav
       lastStageKey = stageKey
     }
 
-    const bossDue = t >= bossAt && frame.activeMobs <= MAX_MOBS &&
-      !bossIssued && !frame.bossSpawned && !frame.bossDefeated
-    if (frame.bossSpawned || frame.bossDefeated) bossIssued = true
+    const completedBosses = frame.completedBosses ?? 0
+    const bossIndex = isLegacy(mode) ? 1 : completedBosses + 1
+    const bossAt = bossTimes[bossIndex - 1] ?? Infinity
+    const available = clamp(MAX_MOBS - frame.activeMobs - (frame.pendingActors ?? 0), MAX_MOBS)
+    if (isLegacy(mode) && (frame.bossSpawned || frame.bossDefeated)) bossIssued = true
+    const bossDue = t >= bossAt && !frame.bossActive &&
+      (mode !== 'chaos-arena' || (frame.completedWaves ?? 0) === waveTimes.length) &&
+      (mode !== 'relic-hunt' || frame.completedRelics === 4) &&
+      (isLegacy(mode)
+        ? !bossIssued && !frame.bossSpawned && !frame.bossDefeated
+        : bossIssuedIndex !== bossIndex)
+    // A late boss request must not simultaneously announce an ordinary wave.
+    if (bossDue || frame.bossActive) events.length = 0
 
-    function add(type: MobType, elite: boolean, role: SpawnRole, i: number, total: number, pulse: number): boolean {
+    function add(type: MobType, elite: boolean, role: SpawnRole, i: number, total: number, pulse: number, waveIndex?: number): boolean {
       const pos = place(frame, seed, wave.cycle, pulse, i, total, type, spawns)
       if (!pos) return false
       spawns.push({
-        type, elite, role, x: pos.x, y: pos.y,
+        type, elite, role, x: pos.x, y: pos.y, waveIndex,
+        encounterIndex: role === 'boss' ? bossIndex : undefined,
         formation: wave.pattern === 'elite' ? 'flanks' : wave.pattern === 'ranged' ? 'arc' : 'ring',
         telegraphSeconds: role === 'boss' ? 2.5 : role === 'mini-boss' ? 2 : 1.2,
       })
       return true
     }
 
-    // Boss slot is reserved above MAX_MOBS, matching existing spawnMob(boss).
-    // Retry on a later tick if every candidate was terrain-blocked.
+    let waveIndex: number | undefined
+    // The same 130 actor slots are shared by legacy mobs, elites and every boss.
+    // A due boss takes precedence, but cannot exceed the same hard cap.
     if (bossDue) {
-      if (add('boss', false, 'boss', 0, 1, Math.floor(t))) {
+      if (available > 0 && add('boss', false, 'boss', 0, 1, Math.floor(t))) {
         bossIssued = true
-        if (!events.some(e => e.kind === 'boss')) {
-          events.push({ id: 'waves:boss', kind: 'boss', title: LABELS.boss,
-            atSeconds: bossAt, durationSeconds: BOSS_ENCOUNTER_SECONDS, danger: wave.danger })
-        }
+        bossIssuedIndex = bossIndex
+        events.push({ id: 'waves:boss:' + bossIndex, kind: 'boss', title: LABELS.boss,
+          atSeconds: bossAt, durationSeconds: BOSS_ENCOUNTER_SECONDS, danger: wave.danger })
       }
-    } else {
-      const available = clamp(MAX_MOBS - frame.activeMobs, MAX_MOBS)
-      const lastMini = t >= MINI_BOSS_FIRST
-        ? MINI_BOSS_FIRST + Math.floor((t - MINI_BOSS_FIRST) / MINI_BOSS_INTERVAL) * MINI_BOSS_INTERVAL
-        : -1
-      // Drop stale optional encounters on resume; never dump a backlog in one tick.
-      const miniDue = available > 0 && lastMini > lastTime && t - lastMini <= 4 && lastMini <= t &&
-        Math.abs(lastMini - bossAt) > BOSS_PREP_SECONDS &&
-        // Do not surprise the player with elite encounters during recovery or a boss fight.
-        wave.stage !== 'boss-prep' && wave.stage !== 'boss' && wave.stage !== 'recovery'
-      if (miniDue && add('golem', true, 'mini-boss', 0, 1, Math.floor(lastMini))) {
-        events.push({ id: 'waves:mini-boss', kind: 'mini-boss', title: '精英首領襲來',
-          atSeconds: lastMini, durationSeconds: 12, danger: wave.danger })
-      }
-
-      if (wave.spawnBudget > 0 && spawns.length < available) {
-        const pulse = Math.floor((t - wave.startsAt) / wave.spawnIntervalSeconds)
-        const spawnKey = stageKey + ':' + pulse
-        if (spawnKey !== lastSpawnKey) {
-          lastSpawnKey = spawnKey
-          const count = Math.min(wave.spawnBudget - spawns.length, available - spawns.length)
+    } else if (!frame.bossActive && wave.stage !== 'boss' && wave.stage !== 'boss-prep') {
+      if (mode === 'chaos-arena') {
+        const nextWave = (frame.completedWaves ?? 0) + 1
+        if (nextWave <= waveTimes.length && t >= waveTimes[nextWave - 1]! &&
+            !frame.activeWave && lastChaosWave !== nextWave && available > 0) {
+          const count = Math.min(6 + Math.floor(nextWave / 2), MAX_SPAWN_BUDGET, available)
+          const pattern = PATTERNS[(nextWave - 1 + (seed % 3) + 3) % 3]!
           for (let i = 0; i < count; i++) {
-            const enemy = composition(wave.pattern, pulse, i, wave.danger)
-            add(enemy.type, enemy.elite, 'normal', i, count, pulse)
+            const enemy = composition(pattern, nextWave, i, wave.danger)
+            add(enemy.type, enemy.elite, 'normal', i, count, nextWave, nextWave)
+          }
+          if (spawns.length) {
+            waveIndex = nextWave
+            lastChaosWave = nextWave
+            events.push({ id: 'waves:wave:' + nextWave, kind: 'wave',
+              title: '競技場第 ' + nextWave + ' 波', atSeconds: waveTimes[nextWave - 1]!,
+              durationSeconds: 12, danger: wave.danger })
+          }
+        }
+      } else {
+        const lastMini = t >= MINI_BOSS_FIRST
+          ? MINI_BOSS_FIRST + Math.floor((t - MINI_BOSS_FIRST) / MINI_BOSS_INTERVAL) * MINI_BOSS_INTERVAL
+          : -1
+        const miniDue = available > 0 && lastMini > lastTime && t - lastMini <= 4 &&
+          bossTimes.every(at => Math.abs(lastMini - at) > BOSS_PREP_SECONDS) &&
+          wave.stage !== 'recovery'
+        if (miniDue && add('golem', true, 'mini-boss', 0, 1, Math.floor(lastMini))) {
+          events.push({ id: 'waves:mini-boss', kind: 'mini-boss', title: '精英首領襲來',
+            atSeconds: lastMini, durationSeconds: 12, danger: wave.danger })
+        }
+        if (wave.spawnBudget > 0 && spawns.length < available) {
+          const pulse = Math.floor((t - wave.startsAt) / wave.spawnIntervalSeconds)
+          const spawnKey = stageKey + ':' + pulse
+          if (spawnKey !== lastSpawnKey) {
+            lastSpawnKey = spawnKey
+            const count = Math.min(wave.spawnBudget - spawns.length, available - spawns.length)
+            for (let i = 0; i < count; i++) {
+              const enemy = composition(wave.pattern, pulse, i, wave.danger)
+              add(enemy.type, enemy.elite, 'normal', i, count, pulse)
+            }
           }
         }
       }
     }
 
     lastTime = t
-    return { ...wave, spawns, events }
+    return { ...wave, spawns, events, waveIndex }
   }
 
-  return Object.freeze({ mode, inspect: (t: number) => describeWave(mode, seed, t), advance, reset })
+  return Object.freeze({
+    mode, inspect: (t: number) => describeWave(mode, seed, t), advance, reset,
+    retryBoss(index: number): void {
+      if (bossIssuedIndex === index) bossIssuedIndex = 0
+      if (isLegacy(mode) && index === 1) bossIssued = false
+    },
+    retryWave(index: number): void {
+      if (lastChaosWave === index) lastChaosWave = 0
+    },
+  })
 }

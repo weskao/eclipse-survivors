@@ -1,0 +1,46 @@
+import { ENEMY_DEFINITIONS } from './definitions'
+import type { FactionRuntime } from './runtime'
+
+/**
+ * Read-only Canvas 2D warning overlay for the integration-owned renderer.
+ * No gradients, allocations, animation loops, or gameplay mutations.
+ */
+export function drawFactionTelegraphs(
+  ctx: CanvasRenderingContext2D, runtime: FactionRuntime, ox: number, oy: number,
+): void {
+  ctx.save()
+  ctx.lineWidth = 3
+  ctx.globalAlpha = 0.7
+  for (const enemy of runtime.enemies) {
+    if (enemy.hp <= 0 || (enemy.state !== 'windup' && enemy.state !== 'attack')) continue
+    ctx.strokeStyle = ENEMY_DEFINITIONS[enemy.kind].telegraphColor
+    ctx.beginPath()
+    if (enemy.kind === 'crystal-sentinel') {
+      // The beam uses the direction locked at windup, never the live hero position.
+      ctx.moveTo(enemy.x + ox, enemy.y + oy)
+      ctx.lineTo(enemy.x + enemy.facingX * 400 + ox, enemy.y + enemy.facingY * 400 + oy)
+    } else if (enemy.kind === 'shadow-assassin') {
+      ctx.moveTo(enemy.x + ox, enemy.y + oy)
+      ctx.lineTo(enemy.aimX + ox, enemy.aimY + oy)
+    } else {
+      const radius = enemy.kind === 'fire-imp' ? 82
+        : enemy.kind === 'plague-carrier' ? 75
+          : enemy.radius + 45
+      const aimed = enemy.kind === 'fire-imp' || enemy.kind === 'plague-carrier'
+      ctx.arc((aimed ? enemy.aimX : enemy.x) + ox,
+        (aimed ? enemy.aimY : enemy.y) + oy, radius, 0, Math.PI * 2)
+    }
+    ctx.stroke()
+  }
+  // Zones remain visible while armed and after activation until their finite lifetime ends.
+  for (const zone of runtime.zones) {
+    if (zone.life <= 0) continue
+    ctx.strokeStyle = zone.status === 'freeze' ? '#83defc'
+      : zone.status === 'poison' ? '#b4ed64' : '#ff956f'
+    ctx.globalAlpha = zone.delay > 0 ? 0.85 : 0.5
+    ctx.beginPath()
+    ctx.arc(zone.x + ox, zone.y + oy, zone.radius, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+  ctx.restore()
+}

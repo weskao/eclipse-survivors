@@ -85,10 +85,13 @@ export interface BiomeEnvironment {
   cell(i: number, j: number): BiomeCell
   obstacles(x: number, y: number, radius: number): Terrain[]
   hazards(x: number, y: number, radius: number): Hazard[]
+  interactions(x: number, y: number, radius: number): Interaction[]
   visibleDecorations(view: Bounds): Decoration[]
   minimap(x: number, y: number, radius: number): { obstacles: readonly Terrain[]; hazards: readonly Hazard[] }
   collide(position: Point, radius: number): Point
   phase(hazard: Hazard, time: number): HazardPhase
+  isSuppressed(hazard: Hazard, time: number): boolean
+  interactionAvailable(node: Interaction, time: number): boolean
   contact(position: Point, radius: number, time: number): HazardContact
   interact(position: Point, time: number): Interaction | null
   reset(): void
@@ -187,6 +190,7 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
   }
   const obstacles = (x: number, y: number, radius: number): Terrain[] => nearby(x, y, radius, 'terrain')
   const hazards = (x: number, y: number, radius: number): Hazard[] => nearby(x, y, radius, 'hazards')
+  const interactions = (x: number, y: number, radius: number): Interaction[] => nearby(x, y, radius, 'interactions')
 
   function visibleDecorations(view: Bounds): Decoration[] {
     for (const n of [view.left, view.top, view.right, view.bottom]) validCoord(n)
@@ -229,6 +233,14 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
     return t < hazard.quiet ? 'idle' : t < hazard.warn ? 'warning' : 'active'
   }
 
+  function isSuppressed(hazard: Hazard, time: number): boolean {
+    validCoord(time)
+    for (const ward of suppression.values()) {
+      if (ward.until > time && overlap(ward, hazard, 172)) return true
+    }
+    return false
+  }
+
   function contact(position: Point, radius: number, time: number): HazardContact {
     validCoord(time)
     const kinds: HazardKind[] = []
@@ -237,11 +249,7 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
     for (const h of hazards(position.x, position.y, radius)) {
       const current = phase(h, time)
       if (current === 'idle') continue
-      let suppressed = false
-      for (const ward of suppression.values()) {
-        if (ward.until > time && overlap(ward, h, 172)) { suppressed = true; break }
-      }
-      if (suppressed) continue
+      if (isSuppressed(h, time)) continue
       if (current === 'warning') { warning = true; continue }
       kinds.push(h.kind)
       damagePerSecond += h.damagePerSecond
@@ -256,6 +264,11 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
     return { phase: kinds.length ? 'active' : warning ? 'warning' : 'none', damagePerSecond, speedMultiplier, push: { x: px, y: py }, kinds }
   }
 
+  function interactionAvailable(node: Interaction, time: number): boolean {
+    validCoord(time)
+    return (suppression.get(node.id)?.until ?? -Infinity) <= time
+  }
+
   function interact(position: Point, time: number): Interaction | null {
     validCoord(position.x); validCoord(position.y); validCoord(time)
     for (const [key, value] of suppression) if (value.until <= time) suppression.delete(key)
@@ -268,9 +281,9 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
     return null
   }
   function reset(): void { cells.clear(); suppression.clear() }
-  return { definition, cell, obstacles, hazards, visibleDecorations,
+  return { definition, cell, obstacles, hazards, interactions, visibleDecorations,
     minimap: (x, y, radius) => ({ obstacles: obstacles(x, y, radius), hazards: hazards(x, y, radius) }),
-    collide, phase, contact, interact, reset, cacheSize: () => cells.size, activeInteractions: () => suppression.size }
+    collide, phase, isSuppressed, interactionAvailable, contact, interact, reset, cacheSize: () => cells.size, activeInteractions: () => suppression.size }
 }
 
 function hazardParameters(kind: HazardKind): Pick<Hazard, 'period' | 'quiet' | 'warn' | 'damagePerSecond' | 'speedMultiplier' | 'force'> {

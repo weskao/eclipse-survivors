@@ -59,7 +59,7 @@
   background: radial-gradient(circle at 50% 15%, #78664d, #202436 76%);
   box-shadow: 0 0 0 3px #151b2b, inset 0 0 16px #0009;
 }
-.es2-hud__portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+.es2-hud__portrait > :is(img, svg) { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
 .es2-hud__portrait-corner { position: absolute; right: 5px; bottom: 0; color: #ffe4a9; font-size: 18px; }
 .es2-hud__vitals { min-width: 0; flex: 1; }
 .es2-hud__identity { display: flex; flex-direction: column; gap: 1px; margin-bottom: 7px; }
@@ -142,7 +142,7 @@
   box-shadow: inset 0 1px #ffffff55, 0 3px 9px #0009;
   cursor: pointer; pointer-events: auto; transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
 }
-.es2-hud__skill img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.es2-hud__skill picture, .es2-hud__skill img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .es2-hud__skill-glyph { font-size: 28px; line-height: 52px; }
 .es2-hud__skill-level { position: absolute; bottom: 0; right: 0; background: #050a11e8; border-radius: 5px 0 0; padding: 2px 5px; font: 750 10px system-ui; color: #fff1c9; z-index: 2; }
 .es2-hud__cooldown { position: absolute; inset: 0; pointer-events: none; z-index: 1; background: conic-gradient(#030913d9 var(--es2-cooldown), transparent 0); transition: --es2-cooldown .12s linear; }

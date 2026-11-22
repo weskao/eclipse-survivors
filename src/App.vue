@@ -6,6 +6,10 @@ import './game/content/accessibility/presentation.css'
 import { inventorySnapshot } from './game/content/relics/runtime'
 import { RELIC_BY_ID } from './game/content/relics/catalog'
 import CombatHud from './components/es2/hud/CombatHud.vue'
+import HeroSpecialAction from './components/es2/hero-roster/HeroSpecialAction.vue'
+import ModeProgress from './components/es2/modes/ModeProgress.vue'
+import WorldEventPanel from './components/es2/world-event-ui/WorldEventPanel.vue'
+import { isSpecializationId } from './game/content/heroes'
 import type { CombatHudActions, CombatHudFeed } from './components/es2/hud/model'
 import Es2MenuSystem from './components/es2/menu/Es2MenuSystem.vue'
 import MobileControls from './components/es2/accessibility/MobileControls.vue'
@@ -30,6 +34,16 @@ const devShowcase = import.meta.env.DEV && typeof location !== 'undefined' &&
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas')
 const hudRef = useTemplateRef<InstanceType<typeof CombatHud>>('hud')
 const touchActive = computed(() => ui.mode === 'play' && ui.coarsePointer)
+const worldMarkerButtons = computed(() => {
+  void ui.hud
+  return ui.worldEventMarkers.flatMap(event => {
+    const state = engine.state
+    const x = event.x - state.cam.x + state.W * 0.5
+    const y = event.y - state.cam.y + state.H * 0.53
+    return x >= 20 && x <= state.W - 20 && y >= 80 && y <= state.H - 25
+      ? [{ event, left: (x / state.W * 100) + '%', top: (y / state.H * 100) + '%' }] : []
+  })
+})
 const menuScreen = computed<'menu' | 'level' | 'result' | 'hidden'>(() =>
   ui.mode === 'menu' || ui.mode === 'level' || ui.mode === 'result' ? ui.mode : 'hidden')
 
@@ -97,6 +111,7 @@ onBeforeUnmount(() => {
     :active="ui.mode !== 'menu'"
     :hud="ui.hud"
     :choice="ui.choice"
+    :hero-id="ui.heroId"
     :music-on="ui.musicOn && ui.musicVolume > 0"
     :music-volume="ui.musicVolume"
     :sfx-volume="ui.sfxVolume"
@@ -105,9 +120,28 @@ onBeforeUnmount(() => {
     :actions="combatActions"
     :feed="combatFeed"
   />
+  <div v-if="ui.mode === 'play' && ui.objectiveProgress" class="es2-objective-hud">
+    <ModeProgress :state="ui.objectiveProgress" />
+  </div>
+  <HeroSpecialAction
+    v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
+    :hero-id="ui.heroId"
+    :snapshot="ui.heroSpecial"
+    :active="ui.mode === 'play' && !ui.settingsOpen"
+    @activate="engine.activateHeroSpecial"
+  />
+  <div v-if="ui.mode === 'play' && !ui.settingsOpen" class="es2-world-markers" aria-label="世界事件標記">
+    <button v-for="marker in worldMarkerButtons" :key="marker.event.id" type="button"
+      class="es2-world-marker" :style="{ left: marker.left, top: marker.top }"
+      :aria-label="'互動世界事件 ' + marker.event.kind.slice(7)"
+      @click="engine.openWorldEvent(marker.event.id)">✧</button>
+  </div>
+  <WorldEventPanel :event="ui.worldEventChoice?.event ?? null"
+    :options="ui.worldEventChoice?.options ?? []" :feedback="ui.worldEventChoice?.feedback"
+    @choose="engine.chooseWorldEvent" @close="engine.closeWorldEvent" />
   <MobileControls
     :active="touchActive"
-    :blocked="ui.settingsOpen || ui.mode !== 'play'"
+    :blocked="ui.settingsOpen || ui.mode !== 'play' || !!ui.worldEventChoice"
     :preferences="accessibilityPreferences"
     @stick="engine.setStick"
     @dash="engine.dash"
@@ -115,9 +149,12 @@ onBeforeUnmount(() => {
   <Es2MenuSystem
     :screen="menuScreen"
     :choice="ui.choice"
+    :hero-id="ui.heroId"
     :run-mode="ui.runMode"
     :version="version"
     :profile="ui.profile"
+    :meta-state="ui.metaState"
+    :meta-status="ui.metaStatus"
     :upgrades="ui.upgrades"
     :audio-unlocked="ui.audioUnlocked"
     :music-on="ui.musicOn && ui.musicVolume > 0"
@@ -135,12 +172,16 @@ onBeforeUnmount(() => {
     :special-choice="ui.specialChoice"
     :accessibility-preferences="accessibilityPreferences"
     @select="engine.selectJob"
+    @select-hero="engine.selectHero"
     @mode="engine.selectRunMode"
     @start="engine.start"
     @choose="engine.chooseUpgrade"
     @special-choose="engine.chooseTreasure"
     @special-cancel="engine.cancelTreasure"
     @purchase="engine.buyPermanentUpgrade"
+    @research="engine.purchaseResearch"
+    @equipment="engine.purchaseEquipment"
+    @bonus="engine.purchaseBonus"
     @cosmetic="engine.selectCosmetic"
     @enable-audio="engine.enableMenuAudio"
     @reset="engine.resetProgress"
@@ -159,3 +200,21 @@ onBeforeUnmount(() => {
   <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
   <ContentShowcase v-if="devShowcase" :engine="engine" />
 </template>
+
+<style scoped>
+.es2-objective-hud {
+  position: fixed; top: max(116px, calc(env(safe-area-inset-top) + 84px));
+  right: max(12px, env(safe-area-inset-right)); z-index: 8;
+  width: min(320px, calc(100vw - 24px)); pointer-events: none;
+}
+@media (max-width: 640px) {
+  .es2-objective-hud { top: max(88px, calc(env(safe-area-inset-top) + 72px)); width: min(270px, 55vw); }
+}
+ .es2-world-markers { position: fixed; inset: 0; z-index: 9; pointer-events: none; }
+.es2-world-marker { position: absolute; transform: translate(-50%, -50%); pointer-events: auto;
+  min-height: 44px; min-width: 44px; border-radius: 50%; border: 2px solid #efd49f;
+  background: #34213bea; color: #fff0ba; font-size: 1.45rem; cursor: pointer;
+  box-shadow: 0 0 14px #b6787a88; }
+.es2-world-marker:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .es2-world-marker { transition: none; } }
+</style>

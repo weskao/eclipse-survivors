@@ -2,7 +2,12 @@ import { MAX_LEVEL, UP } from './constants'
 import type { ContentRegistry } from './content/registry'
 import type { Profile, RunModeId, RunRewards, RunStats, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { EVOLUTIONS, EVOLUTION_COOLDOWN } from './evolutions'
-import type { AbilityId, GameMode, GameState, Hero, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
+import type { AbilityId, GameMode, GameState, Hero, HeroId, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
+import type { SpecializationSnapshot } from './content/heroes'
+import type { ObjectiveState } from './content/objectives/evaluator'
+import type { MetaState } from './content/meta/state'
+import type { ActiveWorldEvent } from './content/world-events/types'
+import type { WorldEventOption } from './content/world-events/runtime'
 
 export interface HudSkill {
   id: AbilityId; icon: string; title: string; rarity: SkillRarity
@@ -80,6 +85,8 @@ export interface UiTreasureChoice {
 export interface UiState {
   mode: GameMode
   choice: JobId
+  heroId: HeroId
+  heroSpecial: SpecializationSnapshot | null
   musicOn: boolean
   /** Has a user gesture unlocked browser audio playback? */
   audioUnlocked: boolean
@@ -98,7 +105,13 @@ export interface UiState {
   ending: string
   summary: string
   runMode: RunModeId
+  /** Only actual objective-runtime evidence; null for original four modes. */
+  objectiveProgress: ObjectiveState | null
+  worldEventMarkers: readonly ActiveWorldEvent[]
+  worldEventChoice: { event: ActiveWorldEvent; options: readonly WorldEventOption[]; feedback: string | null } | null
   profile: Profile
+  metaState: MetaState | null
+  metaStatus: 'ready' | 'blocked' | null
   runResult: RunStats | null
   rewards: RunRewards | null
   /** `(pointer:coarse)` matched: show touch controls while playing. */
@@ -107,9 +120,17 @@ export interface UiState {
 
 export interface GameCommands {
   selectJob(job: JobId): void
+  selectHero(hero: HeroId): void
+  activateHeroSpecial(): boolean
   start(): void
+  openWorldEvent(id: string): boolean
+  chooseWorldEvent(eventId: string, choiceId: string): void
+  closeWorldEvent(): void
   selectRunMode(mode: RunModeId): void
   buyPermanentUpgrade(upgrade: PermanentUpgrade): void
+  purchaseResearch(id: string): void
+  purchaseEquipment(id: string): void
+  purchaseBonus(id: string): void
   selectCosmetic(hero: JobId, skin: CosmeticId): void
   resetProgress(): void
   chooseUpgrade(id: AbilityId): void

@@ -6,6 +6,9 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
+import { drawProductionHeroFrame, type ProductionHeroArtwork } from './es2/production-heroes'
+import { isSpecializationId } from '../content/heroes'
+import { drawProductionBossFrame } from './es2/production-world'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -217,6 +220,8 @@ export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
   tintCache?: MobTintCache,
+  productionHeroes?: ProductionHeroArtwork,
+  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3 },
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -265,25 +270,47 @@ export function drawCharacter(
   const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
   const source = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   const drawable = source && tint ? cachedMobTint(source, tint, sx, sy, tintCache) : source
+  const productionImage = hero && productionHeroes && Object.prototype.hasOwnProperty.call(productionHeroes, s.heroId)
+    ? productionHeroes[s.heroId as keyof ProductionHeroArtwork] : undefined
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
     if (hero && anim) {
-      // Always animate from the project's original realistic WebP artwork.
-      // Cached original-art frames avoid skinning every frame of gameplay.
-      const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
-      const prebaked = !!(heroSheets && im && drawable === im
-        && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
+      // Original three heroes keep their existing rig and equipment animation.
       ctx.save()
-      if (hero.face < 0) ctx.scale(-1, 1)
-      // Prebaked sheets contain the body ONLY. The exact current weapon angle
-      // and pre-release arrow / charge are composited live in their own layers.
-      if (prebaked) {
-        if (layers) drawRigidWeapon(ctx, layers, s.choice, hero, anim, sx, sy)
-      } else drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice, layers ?? undefined)
-      if (layers) drawLoadedProjectile(ctx, layers, s.choice, hero, anim, sx, sy)
-      drawPoseAccents(ctx, kind, hero, anim)
+      // Eight-direction atlases already contain an authored left-facing frame.
+      // Mirroring them produces the wrong direction and artwork. Keep the
+      // original fallback mirror for unloaded art.
+      const directionalReady = productionImage?.complete
+        && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512
+      if (hero.face < 0 && !directionalReady) ctx.scale(-1, 1)
+      let productionDrawn = productionImage
+        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
+      if (!productionDrawn && isSpecializationId(s.heroId)) {
+        // s.choice is the legacy base class: a specialization hero must never fall back to
+        // that rig. Unauthored poses (hurt/death/victory) hold the authored idle cell; while
+        // the atlas is not decoded nothing is drawn rather than showing another class.
+        anim.pose = 'idle' // anim is a throwaway per-call sample; no extra allocation
+        if (productionImage) drawProductionHeroFrame(ctx, productionImage, anim, sx, sy)
+        productionDrawn = true
+      }
+      if (!productionDrawn) {
+        // Preserve existing animation while the new WebP decodes or if it fails.
+        const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
+        const prebaked = !!(heroSheets && im && drawable === im
+          && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
+        if (prebaked) {
+          if (layers) drawRigidWeapon(ctx, layers, s.choice, hero, anim, sx, sy)
+        } else drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice, layers ?? undefined)
+        if (layers) drawLoadedProjectile(ctx, layers, s.choice, hero, anim, sx, sy)
+        drawPoseAccents(ctx, kind, hero, anim)
+      }
       ctx.restore()
-    } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
+    } else if (mob) {
+      // Use the controller's real phase; the original boss sprite remains the decode fallback.
+      const painted = mob.type === 'boss' && productionBoss
+        ? drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
+      if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy)
+    }
   }
   ctx.restore()
   if (mob && mob.hp < mob.max && mob.type !== 'boss') {

@@ -4,6 +4,7 @@ import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
 import type { GameHooks, GameState, Hero, Mob } from './types'
+import type { FactionBridge } from './content/enemies/integration'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
 export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
@@ -20,17 +21,19 @@ export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
+  const applied = hooks.modifyOutgoingDamage?.(d) ?? d
+  if (!Number.isFinite(applied) || applied <= 0) return
   const boss = e.type === 'boss'
-  const dealt = Math.min(e.hp, d)
+  const dealt = Math.min(e.hp, applied)
   s.damageDealt += dealt
-  e.hp = Math.max(0, e.hp - d)
+  e.hp = Math.max(0, e.hp - applied)
   e.hit = 0.16
   e.stagger = Math.min(0.22, e.stagger + (boss ? 0.04 : 0.12))
   const knock = dist(e.x - hero.x, e.y - hero.y) || 1
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
   impact(s, e.x, e.y, boss ? 68 : 30, boss ? '#ffab79' : '#ffe6ab', boss ? 1.5 : 0.3)
-  s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: 0.62, value: Math.round(d), boss })
+  s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: 0.62, value: Math.round(applied), boss })
   if (s.numberFx.length > 80) s.numberFx.shift()
   burst(s, e.x, e.y, '#fff3c4', 2)
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
@@ -63,13 +66,20 @@ export function dash(s: GameState, hooks: GameHooks): void {
   hooks.sfx('dash')
 }
 
-export function attack(s: GameState, hooks: GameHooks): void {
+export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge): void {
   const hero = s.hero
-  if (!hero || !s.mobs.length) return
+  if (!hero || (!s.mobs.length && !factions?.runtime.enemies.length)) return
   const choice = s.choice
   const close = nearestAlive(s.mobs, hero)
-  const target = close[0]
-  if (!target || dist(target.x - hero.x, target.y - hero.y) > hero.range + target.r) return
+  const legacy = close[0]
+  const faction = factions?.nearestFaction(hero.x, hero.y, hero.range + 64)
+  const useFaction = !!faction && (!legacy ||
+    dist(faction.x - hero.x, faction.y - hero.y) - faction.radius <
+    dist(legacy.x - hero.x, legacy.y - hero.y) - legacy.r)
+  const target = useFaction ? faction : legacy
+  if (!target) return
+  const targetRadius = 'radius' in target ? target.radius : target.r
+  if (dist(target.x - hero.x, target.y - hero.y) > hero.range + targetRadius) return
   const multi = Math.min(1 + (hero.skills.multi ?? 0), 4)
   const angle = Math.atan2(target.y - hero.y, target.x - hero.x)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
@@ -84,6 +94,16 @@ export function attack(s: GameState, hooks: GameHooks): void {
         const r = dist(e.x - hero.x, e.y - hero.y)
         const d = Math.atan2(e.y - hero.y, e.x - hero.x)
         if (r < hero.range + e.r && Math.cos(d - a) > 0.71) hit(s, e, hero.damage, hooks)
+      }
+      // The authored faction pool is separate from the legacy Mob array.
+      // Reuse its authoritative damage/reward bridge, never a fake Mob copy.
+      for (const e of factions?.factionsInRadius(hero.x, hero.y, hero.range + 35) ?? []) {
+        const r = dist(e.x - hero.x, e.y - hero.y)
+        const d = Math.atan2(e.y - hero.y, e.x - hero.x)
+        if (r < hero.range + e.radius && Math.cos(d - a) > 0.71) {
+          const damage = hooks.modifyOutgoingDamage?.(hero.damage) ?? hero.damage
+          factions!.hitFaction(s, e, damage, hero.x, hero.y, hooks)
+        }
       }
     }
     hooks.sfx('knight')
@@ -137,9 +157,12 @@ export function victoryConditionMet(
 export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play' || hero.hp <= 0 || hero.inv > 0 || hero.dash > 0 || !Number.isFinite(n) || n <= 0) return
+  const mitigated = hooks.mitigateIncomingDamage?.(n) ?? n
+  // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
+  if (!Number.isFinite(mitigated) || mitigated <= 0) return
   const shield = hero.skills.shield ?? 0
   const reduce = 1 - Math.min(0.52, shield * 0.12)
-  const taken = n * reduce
+  const taken = mitigated * reduce
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
   hero.hp = Math.max(0, hero.hp - taken)
@@ -172,5 +195,6 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   }
   hooks.sfx('hurt')
   hooks.content?.(s, { type: 'damage', amount: actuallyTaken })
+  hooks.afterDamage?.(actuallyTaken)
   if (hero.hp === 0) hooks.end(false)
 }

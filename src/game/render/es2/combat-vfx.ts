@@ -173,10 +173,13 @@ export function drawCombatEffect(
         break
       case 'lightning-chain': {
         ctx.strokeStyle = '#b3deff'; ctx.lineWidth = 4
-        ctx.beginPath(); ctx.moveTo(-57, -31)
+        // Align the bolt centerline with local +X, then rotate by the confirmed
+        // world-space strike heading; jagged deviations remain perpendicular.
+        ctx.beginPath(); ctx.moveTo(-57, 0)
         for (let i = 0; i < count; i++) {
           const p = i / (count - 1)
-          ctx.lineTo(-57 + p * 120, -31 + p * 71 + (i % 2 ? -13 : 13) * (1 - strike * 0.35))
+          const offset = i === 0 || i === count - 1 ? 0 : (i % 2 ? -13 : 13) * (1 - strike * 0.35)
+          ctx.lineTo(-57 + p * 120, offset)
         }
         ctx.stroke()
         ring(ctx, 7 + strike * 20, '#edf8ff', 2)
