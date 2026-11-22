@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import Es2Dialog from './Es2Dialog.vue'
+import AccessibilitySettings from '../accessibility/AccessibilitySettings.vue'
+import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 withDefaults(defineProps<{
   active: boolean; upgradeEffect: 'soft' | 'still'; cameraShake: boolean
   musicOn?: boolean; sfxOn?: boolean; musicVolume?: number; sfxVolume?: number
+  accessibilityPreferences?: AccessibilityPreferences
 }>(), { musicOn: true, sfxOn: true, musicVolume: 100, sfxVolume: 100 })
 const emit = defineEmits<{
   close: []; upgradeEffect: [value: 'soft' | 'still']; cameraShake: [value: boolean]
   musicVolume: [value: number]; sfxVolume: [value: number]; toggleMusic: []; toggleSfx: []
+  accessibility: [next: AccessibilityPreferences]
 }>()
 function volume(e: Event): number { return Number((e.target as HTMLInputElement).value) }
 </script>
@@ -28,6 +32,8 @@ function volume(e: Event): number { return Number((e.target as HTMLInputElement)
         </div></div>
         <div class="es2-setting-option"><span>戰鬥時鏡頭震動</span><button type="button" class="es2-secondary" :aria-pressed="cameraShake" @click="emit('cameraShake', !cameraShake)">{{ cameraShake ? '已開啟' : '已關閉' }}</button></div>
       </section>
+      <AccessibilitySettings v-if="accessibilityPreferences" :model-value="accessibilityPreferences"
+        @update:model-value="emit('accessibility', $event)" />
     </div>
     <template #actions><button class="es2-primary" type="button" @click="emit('close')">完成設定</button></template>
   </Es2Dialog>
