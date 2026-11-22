@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
+import Es2Select from '../menu/Es2Select.vue'
 import { computed } from 'vue'
 import {
   DEFAULT_ACCESSIBILITY_PREFERENCES,
@@ -23,9 +24,20 @@ const policy = computed(() => resolvePresentationPolicy(props.modelValue, {
 function update(changes: Partial<AccessibilityPreferences>): void {
   if (!props.disabled) emit('update:modelValue', updateAccessibilityPreferences(props.modelValue as AccessibilityPreferences, changes))
 }
-function selectQuality(event: Event): void { update({ quality: (event.target as HTMLSelectElement).value as QualitySetting }) }
-function selectVfx(event: Event): void { update({ vfxIntensity: (event.target as HTMLSelectElement).value as VfxIntensity }) }
-function selectSide(event: Event): void { update({ joystickSide: (event.target as HTMLSelectElement).value as 'left' | 'right' }) }
+const sideOptions = computed(() => [
+  { value: 'left', label: t('左側') }, { value: 'right', label: t('右側') },
+])
+const qualityOptions = computed(() => [
+  { value: 'auto', label: t('自動') }, { value: 'low', label: t('低') },
+  { value: 'medium', label: t('中') }, { value: 'high', label: t('高') },
+])
+const vfxOptions = computed(() => [
+  { value: 'full', label: t('完整') }, { value: 'medium', label: t('中等') },
+  { value: 'low', label: t('低') }, { value: 'off', label: t('關閉非必要特效') },
+])
+function selectQuality(value: string): void { update({ quality: value as QualitySetting }) }
+function selectVfx(value: string): void { update({ vfxIntensity: value as VfxIntensity }) }
+function selectSide(value: string): void { update({ joystickSide: value as 'left' | 'right' }) }
 function updateNumber(field: 'touchScale' | 'interfaceScale' | 'joystickBottom', event: Event): void {
   const value = Number((event.target as HTMLInputElement).value)
   if (field === 'touchScale') update({ touchScale: value })
@@ -49,9 +61,8 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
     <div class="es2-options">
       <div class="es2-field">
         <label for="es2-side">{{ t("搖桿位置") }}</label>
-        <select id="es2-side" :value="modelValue.joystickSide" :disabled="disabled" @change="selectSide">
-          <option value="left">{{ t("左側") }}</option><option value="right">{{ t("右側") }}</option>
-        </select>
+        <Es2Select id="es2-side" :label="t('搖桿位置')" :model-value="modelValue.joystickSide"
+          :options="sideOptions" :disabled="disabled" @update:model-value="selectSide" />
       </div>
       <div class="es2-field">
         <label for="es2-bottom">{{ t("離底部距離") }} <output>{{ modelValue.joystickBottom }}px</output></label>
@@ -67,19 +78,14 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
       </div>
       <div class="es2-field">
         <label for="es2-quality">{{ t("畫質") }}</label>
-        <select id="es2-quality" data-testid="es2-quality" :value="modelValue.quality" :disabled="disabled" @change="selectQuality">
-          <option value="auto">{{ t("自動") }}</option>
-          <option value="low">{{ t("低") }}</option>
-          <option value="medium">{{ t("中") }}</option>
-          <option value="high">{{ t("高") }}</option>
-        </select>
+        <Es2Select id="es2-quality" test-id="es2-quality" :label="t('畫質')"
+          :model-value="modelValue.quality" :options="qualityOptions" :disabled="disabled"
+          @update:model-value="selectQuality" />
       </div>
       <div class="es2-field">
         <label for="es2-vfx">{{ t("戰鬥特效強度") }}</label>
-        <select id="es2-vfx" :value="modelValue.vfxIntensity" :disabled="disabled" @change="selectVfx">
-          <option value="full">{{ t("完整") }}</option><option value="medium">{{ t("中等") }}</option>
-          <option value="low">{{ t("低") }}</option><option value="off">{{ t("關閉非必要特效") }}</option>
-        </select>
+        <Es2Select id="es2-vfx" :label="t('戰鬥特效強度')" :model-value="modelValue.vfxIntensity"
+          :options="vfxOptions" :disabled="disabled" @update:model-value="selectVfx" />
       </div>
     </div>
 
@@ -138,8 +144,7 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 .es2-field { display: flex; flex-direction: column; min-width: 0; gap: 7px; }
 .es2-field label { color: #f1dfc0; font-size: 13px; font-weight: 650; }
 .es2-field output { float: right; color: #ffdb97; font-variant-numeric: tabular-nums; }
-.es2-field :is(select, input[type="range"]) { width: 100%; min-width: 0; color: #f9ebd3; accent-color: #e4bf7d; }
-.es2-field select { min-height: 44px; border: 1px solid #ad986f; border-radius: 8px; padding: 8px 10px; background: #233042; }
+.es2-field input[type="range"] { width: 100%; min-width: 0; color: #f9ebd3; accent-color: #e4bf7d; }
 .es2-field input[type="range"] { min-height: 40px; cursor: pointer; touch-action: pan-x; }
 .es2-switches { border-block: 1px solid #b7a17955; }
 .es2-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; }
@@ -150,8 +155,8 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 .es2-switch-group { display: flex; flex: none; gap: 6px; }
 .es2-settings button { min-height: 44px; border: 1px solid #a9997d; border-radius: 8px; padding: 8px 12px; background: #243345; color: #e5e6e7; font: 700 12px/1.3 system-ui, sans-serif; cursor: pointer; }
 .es2-settings button[aria-pressed="true"] { border-color: #e9c98e; background: #534936; color: #fff0cc; box-shadow: inset 0 0 0 1px #f4c37c44; }
-.es2-settings :is(button, select, input):focus-visible { outline: 3px solid #ffe3a6; outline-offset: 2px; }
-.es2-settings :is(button, select, input):disabled { opacity: .5; cursor: not-allowed; }
+.es2-settings :is(button, input):focus-visible { outline: 3px solid #ffe3a6; outline-offset: 2px; }
+.es2-settings :is(button, input):disabled { opacity: .5; cursor: not-allowed; }
 .es2-reset { white-space: nowrap; }
 .es2-preview { margin-top: 16px; padding: 12px 14px; border: 1px solid #d4b57a80; border-radius: 10px; background: linear-gradient(150deg, #28384b, #151d29); }
 .es2-preview > strong { font-size: 12px; color: #ffe1ac; letter-spacing: .5px; }
