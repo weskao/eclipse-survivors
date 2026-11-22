@@ -1,6 +1,6 @@
 import { shallowReactive } from 'vue'
 import { createProfileStore, type ProfileStore } from '../meta/profile'
-import { getMode } from '../meta/modes'
+import { getMode, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
@@ -8,11 +8,15 @@ import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
+import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
+import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
+import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
+import { createMetaProgressionStore } from './content/meta/store'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
@@ -23,12 +27,17 @@ import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from
 import { minmax, random } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
+import { createFactionBridge } from './content/enemies/integration'
+import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
+import { loadProductionFactionArt } from './render/es2/production-factions'
+import { loadProductionHeroes } from './render/es2/production-heroes'
+import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
 import { spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
-import type { AbilityId, ContentEvent, ContentId, EvolutionId, GameHooks, GameMode, GameState, JobId, MoveInput, Point, UpgradeId } from './types'
+import type { AbilityId, ContentEvent, ContentId, EvolutionId, GameHooks, GameMode, GameState, HeroId, JobId, MoveInput, Point, UpgradeId } from './types'
 
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
@@ -99,6 +108,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     random,
   )
   const bossIds = Object.keys(BOSS_DEFINITIONS) as BossId[]
+  const factionIds = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
+  const factions = requestedPacks.some(pack => pack.id === 'factions') ? createFactionBridge({ random }) : null
+  let factionSequence = 0
+  let factionWindow = 0
   let bossSequence = 0
   const bossAdapter = bosses ? {
     spawn(state: GameState, hooks: GameHooks): void {
@@ -114,6 +127,33 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     tick(state: GameState, dt: number, hooks: GameHooks): void { bosses.tick(state, dt, hooks) },
   } : undefined
   const profileStore = opts.profileStore ?? createProfileStore()
+  // Injected legacy stores are retained for existing compatibility tests.
+  // In production the v3 writer owns all currency and run settlements.
+  const metaStore = opts.profileStore ? null : createMetaProgressionStore()
+  function displayProfile() {
+    const legacy = profileStore.get()
+    const persisted = metaStore?.get()
+    if (persisted?.status === 'ready' && persisted.state) {
+      const v3 = persisted.state
+      legacy.runs = v3.runs
+      legacy.wins = v3.wins
+      legacy.embers = v3.embers
+      legacy.upgrades.power = v3.research.power ?? 0
+      legacy.upgrades.vitality = v3.research.vitality ?? 0
+      legacy.achievements = [...new Set([...legacy.achievements, ...v3.achievements])]
+      const compatible = v3.cosmetics.filter(id =>
+        id === 'knight-gilded' || id === 'ranger-moonlit' || id === 'wizard-astral') as CosmeticId[]
+      legacy.unlockedCosmetics = [...new Set([...legacy.unlockedCosmetics, ...compatible])]
+      for (const hero of ['knight', 'ranger', 'wizard'] as const) {
+        const selected = v3.equippedCosmetics?.[hero] as CosmeticId | undefined
+        if (selected && legacy.unlockedCosmetics.includes(selected)) legacy.equippedCosmetics[hero] = selected
+      }
+    } else if (metaStore) {
+      // A corrupt committed v3 save cannot expose the old wallet for spending.
+      legacy.embers = 0
+    }
+    return legacy
+  }
   const audio = opts.audio ?? createAudioSystem({
     bgm: createBgm(BGM_URL),
     menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
@@ -126,21 +166,34 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
+    mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
-    runMode: 'quick', profile: profileStore.get(), runResult: null, rewards: null,
+    runMode: 'quick', objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
+    profile: displayProfile(), metaState: metaStore?.get().state ?? null,
+    metaStatus: metaStore?.get().status ?? null, runResult: null, rewards: null,
   })
+  function refreshMeta(): void {
+    const snapshot = metaStore?.get()
+    ui.metaState = snapshot?.state ?? null
+    ui.metaStatus = snapshot?.status ?? null
+    ui.profile = displayProfile()
+  }
   let resumeAfterSettings = false
   let toastTimer = 0
   let keys: KeyState = {}
   let stick: MoveInput = { x: 0, y: 0 }
   let runSequence = 0
+  let runReceiptId: string | null = null
   let frameDrawn = 0
   let presentationPolicy: VisualPresentationPolicy | null = null
   let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
+  let heroSpecialization: HeroSpecializationAdapter | null = null
+  let objectiveRuntime: ObjectiveRuntime | null = null
+  let worldEvents: LiveWorldEvents | null = null
+  let ending = false
 
   function wakeAudio(): void {
     audio.wake()
@@ -152,9 +205,22 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message,
     offerUpgrades,
     end,
+    modifyOutgoingDamage: amount => heroSpecialization?.modifyOutgoingDamage(amount) ?? amount,
+    mitigateIncomingDamage: amount => heroSpecialization?.mitigateIncomingDamage(amount) ?? amount,
+    afterDamage: amount => heroSpecialization?.afterDamage(amount),
+    canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
     // Skip all event-object allocation in the default empty-pack game.
     content: contentRegistry.packs.some(pack => pack.onEvent)
-      ? (state, event) => contentRegistry.emit(state, event, hooks)
+      ? (state, event) => {
+        contentRegistry.emit(state, event, hooks)
+        if (state === s) worldEvents?.onContentEvent(event)
+        // Only an actual finalized kill can advance an objective. The existing
+        // boss controller gets first chance to account for its original XP/reward.
+        if (state === s && event.type === 'kill' && objectiveRuntime) {
+          const accepted = objectiveRuntime.defeatMob(event.mob)
+          if (accepted && event.mob.type === 'boss') bosses?.reset(state)
+        }
+      }
       : undefined,
     openTreasure: relicsEnabled ? (state, chestId) => {
       const offer = openTreasure(state, chestId, random)
@@ -167,6 +233,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       screen('level')
       return true
     } : undefined,
+  }
+
+  // All 12 world events use the existing HP/XP, relic and combat writers.
+  // The adapter owns the per-run transaction ledger, never another game loop.
+  worldEvents = createLiveWorldEvents(s, hooks, { random })
+
+  // Special attacks and companion hits already own their damage; do not apply the normal
+  // attack critical/modifier hook a second time when they call legacy hit().
+  const heroHooks: GameHooks = {
+    ...hooks, modifyOutgoingDamage: undefined, mitigateIncomingDamage: undefined, afterDamage: undefined,
   }
 
   function screen(name: GameMode): void {
@@ -195,7 +271,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const boss = s.mobs.find(e => e.type === 'boss' && e.hp > 0)
     const xpPct = minmax(hero.xp / hero.need * 100, 0, 100)
     ui.hud = {
-      who: `${JOB[s.choice].label} · LV.${hero.level}`,
+      who: `${isSpecializationId(s.heroId) ? HERO_DEFINITIONS[s.heroId].label : JOB[s.choice].label} · LV.${hero.level}`,
       hpPct: minmax(hero.hp / hero.max * 100, 0, 100),
       hpLabel: `生命 ${Math.ceil(hero.hp)} / ${hero.max}`,
       xpPct,
@@ -205,6 +281,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
       skills: equippedSkillHud(hero, contentRegistry, s),
     }
+    ui.heroSpecial = heroSpecialization?.snapshot() ?? null
+    ui.objectiveProgress = objectiveRuntime?.snapshot() ?? null
+    ui.worldEventMarkers = worldEvents?.director.active ?? []
   }
 
   function offerUpgrades(): void {
@@ -221,12 +300,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function end(win: boolean): void {
-    if (s.mode === 'result') return
+    if (s.mode === 'result' || ending) return
+    // Objective modes never accept a forged timed-boss victory.
+    if (objectiveRuntime && win && objectiveRuntime.snapshot().status !== 'victory') return
+    ending = true
+    if (!win && objectiveRuntime?.snapshot().status === 'active') {
+      if (s.hero && s.hero.hp <= 0) objectiveRuntime.heroDefeated(s.hero)
+      else objectiveRuntime.withdraw()
+    }
     hooks.content?.(s, { type: 'run-complete', win })
     const h = s.hero
     const stats: RunStats = {
-      id: `${Date.now()}-${++runSequence}-${Math.random().toString(36).slice(2)}`,
-      mode: s.runMode, hero: s.choice, victory: win, seconds: Math.floor(s.time),
+      id: runReceiptId ?? `unsettled-${++runSequence}`,
+      mode: s.runMode, hero: s.choice,
+      specializationId: isSpecializationId(s.heroId) ? s.heroId : undefined,
+      victory: win, seconds: Math.floor(s.time),
       kills: s.kill, level: h?.level ?? 1, remainingHp: Math.max(0, Math.ceil(h?.hp ?? 0)),
       damageDealt: Math.round(s.damageDealt), damageTaken: Math.round(s.damageTaken),
       bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
@@ -237,21 +325,82 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ],
     }
     ui.runResult = stats
-    ui.rewards = profileStore.recordRun(stats)
-    ui.profile = profileStore.get()
+    let saveWarning = ''
+    if (metaStore) {
+      const before = metaStore.get()
+      const settled = runReceiptId && before.status === 'ready'
+        ? metaStore.settle({
+          stats,
+          modeId: isObjectiveModeId(stats.mode) ? 'modes:' + stats.mode : stats.mode,
+          heroId: stats.specializationId ? 'heroes:' + stats.specializationId : stats.hero,
+          relicIds: inventorySnapshot(s).items.map(item => item.id),
+        }) : null
+      const previousCosmetics = new Set(before.state?.cosmetics ?? [])
+      ui.rewards = {
+        embers: settled?.ok ? settled.rewards.reduce((sum, reward) => sum + reward.embers, 0) : 0,
+        newAchievements: settled?.ok
+          ? settled.rewards.filter(reward => reward.type === 'achievement').map(reward => reward.id) : [],
+        newCosmetics: settled?.ok && settled.state
+          ? settled.state.cosmetics.filter(id => !previousCosmetics.has(id) &&
+            (id === 'knight-gilded' || id === 'ranger-moonlit' || id === 'wizard-astral')) as CosmeticId[] : [],
+      }
+      if (!settled?.ok) saveWarning = ' · ⚠ 儲存未確認，未發放永久獎勵'
+    } else {
+      ui.rewards = profileStore.recordRun(stats)
+    }
+    refreshMeta()
     screen('result')
     audio.playSfx(win ? 'victory' : 'defeat')
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
-    ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}`
+    ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}` + saveWarning
     hud()
   }
 
+  function selectHero(id: HeroId): void {
+    if (s.mode !== 'menu' || ( !isSpecializationId(id) && !Object.prototype.hasOwnProperty.call(JOB, id))) return
+    const fallback = isSpecializationId(id) ? HERO_DEFINITIONS[id].legacyArtJob : id as JobId
+    s.heroId = id
+    ui.heroId = id
+    s.choice = fallback
+    ui.choice = fallback
+    s.cosmetic = displayProfile().equippedCosmetics[fallback]
+    ui.heroSpecial = null
+    wakeAudio()
+    audio.playSfx('select')
+  }
+
   function start(): void {
+    ending = false
+    if (metaStore && typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      const entropy = new Uint8Array(16)
+      crypto.getRandomValues(entropy)
+      runReceiptId = Array.from(entropy, byte => byte.toString(16).padStart(2, '0')).join('')
+    } else {
+      runReceiptId = metaStore ? null : String(Date.now()) + '-' + String(++runSequence) + '-' + Math.random().toString(36).slice(2)
+    }
+    ui.worldEventChoice = null
+    ui.worldEventMarkers = []
     resetRun(s)
+    factions?.reset()
+    factionSequence = 0
+    factionWindow = 0
+    objectiveRuntime = isObjectiveModeId(ui.runMode)
+      ? createObjectiveRuntime(ui.runMode, (_state, evaluation) => {
+        if (s.mode === 'play') end(evaluation.status === 'victory')
+      })
+      : null
+    if (objectiveRuntime) bossSequence = 0
+    heroSpecialization = createHeroRosterAdapter(s, s.heroId, heroHooks, random)
+    heroSpecialization?.reset()
     hooks.content?.(s, { type: 'reset' })
     s.runMode = ui.runMode
-    s.cosmetic = profileStore.get().equippedCosmetics[s.choice]
-    const permanent = profileStore.get().upgrades
+    s.cosmetic = displayProfile().equippedCosmetics[s.choice]
+    const saved = metaStore?.get()
+    const permanent = metaStore
+      ? (saved?.status === 'ready' && saved.state
+        ? { power: saved.state.research.power ?? 0, vitality: saved.state.research.vitality ?? 0 }
+        : { power: 0, vitality: 0 })
+      : profileStore.get().upgrades
     if (s.hero) {
       s.hero.damage *= 1 + 0.04 * permanent.power
       s.hero.max += 12 * permanent.vitality
@@ -271,6 +420,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message('幽暮之門已開啟')
     setScene(s, 0, false, hooks)
     for (let i = 0; i < 12; i++) spawnMob(s)
+    if (factions && s.hero) {
+      for (let i = 0; i < 4 && factions.availableSpawnSlots(s) > 0; i++) {
+        const theta = i * Math.PI / 2
+        factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
+          s.hero.x + Math.cos(theta) * 320, s.hero.y + Math.sin(theta) * 230)
+      }
+    }
     hud()
   }
 
@@ -336,10 +492,49 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function advance(dt: number): void {
+    // Event choices are deliberate atomic transactions; gameplay cannot run
+    // underneath the modal, even when the underlying screen is still 'play'.
+    if (ui.worldEventChoice) return
     // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
-    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter)
+    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
+    if (factions && s.mode === 'play' && s.hero) {
+      const window = Math.floor(s.time / 8)
+      if (window > factionWindow) {
+        factionWindow = window
+        if (factions.availableSpawnSlots(s) > 0) {
+          const theta = factionSequence * 2.399963229728653
+          factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
+            s.hero.x + Math.cos(theta) * 315, s.hero.y + Math.sin(theta) * 230)
+        }
+      }
+    }
+    if (s.mode !== 'play') return
+    heroSpecialization?.tick(dt)
+    worldEvents?.tick()
+    if (objectiveRuntime) {
+      objectiveRuntime.tick(dt, true)
+      if (s.mode !== 'play') return
+      // The first scheduled boss is a real controller-owned actor. A registered
+      // mob death, never a timer or a metadata-only ID, advances the objective.
+      // Endless events only advance on a real, committed world interaction.
+      const eventIndex = objectiveRuntime.plan().eventIndex
+      if (eventIndex !== null && worldEvents) {
+        const marker = worldEvents.director.active[0]
+        if (marker) objectiveRuntime.registerEvent(eventIndex, marker)
+      }
+      const stage = objectiveRuntime.plan().bossStage
+      const hero = s.hero
+      if (stage !== null && hero && bosses) {
+        const id = bossIds[(stage - 1) % bossIds.length]!
+        const spawned = bosses.spawn(s, id, { x: hero.x + 245, y: hero.y }, hooks)
+        if (spawned) {
+          objectiveRuntime.spawnBoss(stage, spawned)
+          hooks.message(`⚠ ${BOSS_DEFINITIONS[id].title} 降臨！`)
+        }
+      }
+    }
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
@@ -351,6 +546,37 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     if (Math.floor(s.time * 8) !== Math.floor((s.time - dt) * 8)) hud()
   }
+
+  function openWorldEvent(id: string): boolean {
+    if (s.mode !== 'play' || ui.settingsOpen || ui.worldEventChoice || !s.hero || !worldEvents) return false
+    const marker = worldEvents.director.active.find(event => event.id === id)
+    if (!marker) return false
+    const dx = marker.x - s.hero.x
+    const dy = marker.y - s.hero.y
+    if (dx * dx + dy * dy > 64 * 64) return false
+    ui.worldEventChoice = { event: marker, options: worldEvents.options(id), feedback: null }
+    keys = {}
+    stick = { x: 0, y: 0 }
+    return true
+  }
+
+  function chooseWorldEvent(eventId: string, choiceId: string): void {
+    if (!worldEvents || s.mode !== 'play' || !ui.worldEventChoice ||
+        ui.worldEventChoice.event.id !== eventId) return
+    const selected = ui.worldEventChoice.event
+    const outcome = worldEvents.choose(eventId, choiceId)
+    if (outcome === 'applied') {
+      objectiveRuntime?.resolveEvent(selected, true)
+      ui.worldEventChoice = null
+    } else {
+      const feedback = outcome === 'retry' ? '獎勵無法領取，請重新選擇'
+        : outcome === 'out-of-range' ? '請靠近事件' : '目前無法選擇此項目'
+      ui.worldEventChoice = { event: selected, options: worldEvents.options(eventId), feedback }
+    }
+    hud()
+  }
+
+  function closeWorldEvent(): void { ui.worldEventChoice = null }
 
   const testApi: TestApi = {
     get mode() { return s.mode },
@@ -502,6 +728,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    assets.productionHeroes = loadProductionHeroes()
+    assets.productionWorld = loadWorldRuntimeImages()
+    if (factions) {
+      assets.factions = factions
+      assets.factionArtwork = loadProductionFactionArt()
+    }
     if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
     if (bosses) assets.bosses = bosses
     assets.cameraShakeEnabled = () => ui.cameraShake
@@ -567,24 +799,56 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) { if (getMode(mode)) ui.runMode = mode },
     buyPermanentUpgrade(id: PermanentUpgrade) {
-      if (s.mode === 'menu' && profileStore.buyUpgrade(id)) ui.profile = profileStore.get()
+      if (s.mode !== 'menu') return
+      if (metaStore) {
+        const result = metaStore.purchaseResearch(id)
+        if (!result.ok) message('永久研究未完成：儲存失敗或條件不足')
+        else refreshMeta()
+      } else if (profileStore.buyUpgrade(id)) refreshMeta()
+    },
+    purchaseResearch(id: string) {
+      if (s.mode !== 'menu' || !metaStore) return
+      if (metaStore.purchaseResearch(id).ok) refreshMeta()
+      else message('研究未解鎖或儲存失敗')
+    },
+    purchaseEquipment(id: string) {
+      if (s.mode !== 'menu' || !metaStore) return
+      if (metaStore.purchaseEquipment(id).ok) refreshMeta()
+      else message('裝備未解鎖或儲存失敗')
+    },
+    purchaseBonus(id: string) {
+      if (s.mode !== 'menu' || !metaStore) return
+      if (metaStore.purchaseBonus(id).ok) refreshMeta()
+      else message('祝福未解鎖或儲存失敗')
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
-      if (s.mode === 'menu' && profileStore.selectCosmetic(hero, skin)) ui.profile = profileStore.get()
+      if (s.mode !== 'menu') return
+      if (metaStore) {
+        if (metaStore.selectCosmetic(hero, skin).ok) refreshMeta()
+        else message('造型尚未解鎖或儲存失敗')
+      } else if (profileStore.selectCosmetic(hero, skin)) refreshMeta()
     },
     resetProgress() {
       if (s.mode !== 'menu') return
+      if (metaStore && !metaStore.reset().ok) {
+        message('永久資料無法安全重置，原有紀錄已保留')
+        return
+      }
       profileStore.reset()
-      ui.profile = profileStore.get()
+      refreshMeta()
     },
-    selectJob(job: JobId) {
-      s.choice = job
-      ui.choice = job
-      s.cosmetic = profileStore.get().equippedCosmetics[job]
-      wakeAudio()
-      audio.playSfx('select')
+    selectJob(job: JobId) { selectHero(job) },
+    selectHero,
+    activateHeroSpecial() {
+      if (s.mode !== 'play' || ui.settingsOpen || !heroSpecialization) return false
+      const activated = heroSpecialization.activate()
+      if (activated) hud()
+      return activated
     },
     start,
+    openWorldEvent,
+    chooseWorldEvent,
+    closeWorldEvent,
     chooseUpgrade,
     chooseTreasure,
     cancelTreasure,
@@ -614,7 +878,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     openSettings,
     closeSettings,
-    goMenu: () => screen('menu'),
+    goMenu: () => {
+      ui.worldEventChoice = null
+      ui.worldEventMarkers = []
+      worldEvents?.reset()
+      heroSpecialization = null
+      ui.heroSpecial = null
+      screen('menu')
+    },
     setStick(v) { stick = v ?? { x: 0, y: 0 } },
   }
 }

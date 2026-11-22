@@ -1,0 +1,133 @@
+import { afterEach, describe, expect, it } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { nextTick, type Component } from 'vue'
+import HeroRoster from './HeroRoster.vue'
+import HeroSpecialAction from './HeroSpecialAction.vue'
+import Es2MainMenu from '../menu/Es2MainMenu.vue'
+
+const instances: Array<{ unmount(): void }> = []
+function render(component: Component, props: Record<string, unknown>) {
+  const wrapper = mount(component, { attachTo: document.body, props })
+  instances.push(wrapper)
+  return wrapper
+}
+afterEach(() => {
+  for (const wrapper of instances.splice(0)) wrapper.unmount()
+  document.body.innerHTML = ''
+})
+
+describe('ES2 three-hero selection UI', () => {
+  it('renders exactly three illustrated cards and shows equipment, stats, skills and strengths', () => {
+    const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
+    expect(wrapper.findAll('[data-hero-id]')).toHaveLength(3)
+    expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('false')
+    expect(wrapper.findAll('img[data-hero-skill-icon]')).toHaveLength(3)
+    expect(wrapper.text()).toContain('影刃')
+    expect(wrapper.text()).toContain('生命')
+    expect(wrapper.text()).toContain('起始武器')
+    expect(wrapper.text()).toContain('冷卻')
+  })
+
+
+  it('shows the selected hero\'s real 8-direction game illustration instead of the legacy SVG portraits', () => {
+    const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const portrait = wrapper.get(`[data-hero-id="${id}"] svg.es2-roster__portrait`)
+      expect(portrait.attributes('viewBox')).toBeTruthy()
+      expect(portrait.get('image').attributes('href')).toContain(id + '-8dir@3x.webp')
+    }
+  })
+
+  it('uses distinct generated art for each hero active skill in character cards', () => {
+    const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const image = wrapper.get(`[data-hero-id="${id}"] [data-hero-skill-icon]`)
+      expect(image.attributes('src')).toContain(id + '-special')
+      expect(image.attributes('alt')).toContain('主動技能')
+    }
+  })
+
+  it('selects through pointer and arrow-key focus, and respects disabled state', async () => {
+    const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
+    await wrapper.get('[data-hero-id="crimson-paladin"]').trigger('click')
+    expect(wrapper.emitted('select')?.[0]).toEqual(['crimson-paladin'])
+    const initial = wrapper.get('[data-hero-id="shadowblade"]')
+    await initial.trigger('keydown', { key: 'ArrowRight' })
+    await nextTick()
+    expect(wrapper.emitted('select')?.at(-1)).toEqual(['spirit-summoner'])
+    expect(document.activeElement).toBe(wrapper.get('[data-hero-id="spirit-summoner"]').element)
+    await wrapper.setProps({ disabled: true })
+    await wrapper.get('[data-hero-id="crimson-paladin"]').trigger('click')
+    expect(wrapper.emitted('select')).toHaveLength(2)
+  })
+})
+
+describe('ES2 dedicated hero special action', () => {
+  it('shows live cooldown, triggers one mouse/touch activation, and disables unavailable actions', async () => {
+    const wrapper = render(HeroSpecialAction, {
+      heroId: 'shadowblade', active: true,
+      snapshot: { cooldown: 0, stealth: 0, barrier: 0, companions: [] },
+    })
+    const action = wrapper.get('[data-hero-special]')
+    expect(action.attributes('aria-keyshortcuts')).toBe('Q')
+    await action.trigger('click')
+    expect(wrapper.emitted('activate')).toHaveLength(1)
+    await wrapper.setProps({ snapshot: { cooldown: 5.2, stealth: 0, barrier: 0, companions: [] } })
+    expect(wrapper.text()).toContain('5.2')
+    expect(action.attributes('disabled')).toBeDefined()
+    await action.trigger('click')
+    expect(wrapper.emitted('activate')).toHaveLength(1)
+  })
+
+  it('shows the distinct active-skill artwork on the live ability button', () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const wrapper = render(HeroSpecialAction, {
+        heroId: id, active: true,
+        snapshot: { cooldown: 0, stealth: 0, barrier: 0, companions: [] },
+      })
+      const image = wrapper.get('[data-hero-special-icon]')
+      expect(image.attributes('src')).toContain(id + '-special')
+      expect(image.attributes('alt')).toBe('')
+      expect(wrapper.get('[data-hero-special]').attributes('aria-label')).toContain('可施放')
+    }
+  })
+
+  it('supports Q, skips typing/repeats and removes the global listener on unmount', async () => {
+    const wrapper = render(HeroSpecialAction, {
+      heroId: 'spirit-summoner', active: true,
+      snapshot: { cooldown: 0, stealth: 0, barrier: 0, companions: [] },
+    })
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ', key: 'q', bubbles: true }))
+    expect(wrapper.emitted('activate')).toHaveLength(1)
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ', repeat: true, bubbles: true }))
+    expect(wrapper.emitted('activate')).toHaveLength(1)
+    const input = document.createElement('input')
+    document.body.append(input)
+    input.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ', bubbles: true }))
+    expect(wrapper.emitted('activate')).toHaveLength(1)
+    // Vue drops its emission store at unmount: keep the live array reference to
+    // prove global keydown no longer emits after the component is removed.
+    const emitted = wrapper.emitted('activate')!
+    wrapper.unmount()
+    instances.splice(instances.indexOf(wrapper), 1)
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ', bubbles: true }))
+    expect(emitted).toHaveLength(1)
+  })
+})
+
+describe('real menu roster integration', () => {
+  it('shows the original three plus three new heroes, with real selected identity', async () => {
+    const wrapper = render(Es2MainMenu, {
+      choice: 'knight', heroId: 'shadowblade', runMode: 'quick', version: '1.2.0',
+    })
+    expect(wrapper.findAll('.es2-hero-card')).toHaveLength(3)
+    expect(wrapper.findAll('[data-hero-id]')).toHaveLength(3)
+    expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-hero="knight"]').attributes('aria-pressed')).toBe('false')
+    await wrapper.get('[data-hero-id="spirit-summoner"]').trigger('click')
+    expect(wrapper.emitted('selectHero')?.[0]).toEqual(['spirit-summoner'])
+    await wrapper.get('[data-hero="wizard"]').trigger('click')
+    expect(wrapper.emitted('select')?.[0]).toEqual(['wizard'])
+  })
+})

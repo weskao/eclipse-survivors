@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
+import { animatedEs2ImageSrc, stillEs2ImageSrc, animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import type { AbilityId, UpgradeDef } from '../game/types'
 import SettingsButton from './SettingsButton.vue'
 
@@ -25,7 +25,12 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
           :data-up="u.id" @click="emit('choose', u.id)">
           <span class="upgrade-rarity">{{ rarityLabel[u.rarity] }}<span v-if="u.isEvolution"> · EVOLUTION</span></span>
           <span class="portrait skill-sigil" aria-hidden="true">
-            <picture v-if="hasGeneratedSkillArt(u.id)">
+            <picture v-if="animatedEs2ImageSrc(u.id)">
+              <source media="(prefers-reduced-motion: reduce)" :srcset="u.iconSrc ?? stillEs2ImageSrc(u.id)" />
+              <img class="skill-art" draggable="false" decoding="async"
+                :src="effect === 'still' ? (u.iconSrc ?? stillEs2ImageSrc(u.id)) : animatedEs2ImageSrc(u.id)" alt="" />
+            </picture>
+            <picture v-else-if="hasGeneratedSkillArt(u.id)">
               <source media="(prefers-reduced-motion: reduce)" :srcset="skillImageSrc(u.id)" />
               <img class="skill-art" draggable="false" decoding="async" :src="effect === 'still' ? skillImageSrc(u.id) : animatedSkillImageSrc(u.id)" alt="" />
             </picture>

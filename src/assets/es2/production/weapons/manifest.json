@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "status": "production",
+  "designUnit": 128,
+  "scale": 3,
+  "assets": [
+    {
+      "id": "weapons:shadow-daggers",
+      "path": "shadow-daggers@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-1 cell-1",
+      "sha256": "2a5c3bc8a99d0e5c8bb966f181b1371ba24c26071bbba5e41948686e84c7bbac",
+      "bytes": 47504,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:holy-lance",
+      "path": "holy-lance@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-1 cell-2",
+      "sha256": "0a8cc6c0494d726498e46c164c703d13f3cff2aa8ca279045c3ef915422e8e46",
+      "bytes": 40904,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:blood-scythe",
+      "path": "blood-scythe@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-1 cell-3",
+      "sha256": "0ca3262b5fa48987ae2ca960cd8f026888f7032e1346b23a08fd363c4c321a58",
+      "bytes": 44046,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:arcane-mines",
+      "path": "arcane-mines@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-1 cell-4",
+      "sha256": "7a8ccfce35ddf58ee44d3520b95793ac60991b0ab00305638a28c3e7358e54d2",
+      "bytes": 51432,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:bone-spears",
+      "path": "bone-spears@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-1 cell-5",
+      "sha256": "a4ab262bc1166a20eb9f9ef37938933d3c5082f39fc8538674dc884343287809",
+      "bytes": 37494,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:poison-cloud",
+      "path": "poison-cloud@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-1 cell-6",
+      "sha256": "dbaf27871536ab0a2954486fd6b1a4dd76bc5556f569ff4a81692267a87e8998",
+      "bytes": 42760,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:ricochet-blades",
+      "path": "ricochet-blades@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-5",
+      "sha256": "9724b2daa3b34b88ab858f3d39d45571ee086bee55c222575a4fe56ad3b902d9",
+      "bytes": 25446,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:spirit-wolves",
+      "path": "spirit-wolves@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration 4-cell generated sheet",
+      "sha256": "bea88e1465f83fe61f13e5017bf326b4d19f00814d0e88e38e33151051c089cd",
+      "bytes": 77814,
+      "reviewNote": "Two spectral wolves, uniquely recognisable"
+    },
+    {
+      "id": "weapons:solar-beam",
+      "path": "solar-beam@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration a_highly_detailed_cinematic_fantasy_sci_fi_magic.png",
+      "sha256": "46ebf76b3cf7c44afc8c9e1795d591d7b674fca00d7cdfbfe0ccb1f7427982eb",
+      "bytes": 47982,
+      "reviewNote": "Solar eclipse light ray"
+    },
+    {
+      "id": "weapons:gravity-orbs",
+      "path": "gravity-orbs@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-8",
+      "sha256": "348b33695e737204c7136beacf1537554ca0c53ca5b992c4bff995104d9456c0",
+      "bytes": 27256,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:spectral-bow",
+      "path": "spectral-bow@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration sheet-3 cell-3",
+      "sha256": "1c076b5bce4893301941ee5d8aa4583d994f4ad0da0cf6e43752607b729af3ed",
+      "bytes": 19598,
+      "reviewNote": "Subject appears consistent; final human art approval pending"
+    },
+    {
+      "id": "weapons:thorn-chain",
+      "path": "thorn-chain@3x.webp",
+      "width": 384,
+      "height": 384,
+      "status": "approved",
+      "source": "original-generated-illustration a_high_detail_fantasy_game_asset_on_a_transparent.png",
+      "sha256": "2016e89670181d0d282f81351e986728ddbd7fc3651a6c0b9eb9dd8b428b118f",
+      "bytes": 65412,
+      "reviewNote": "Gothic metal thorn-chain"
+    }
+  ],
+  "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
+  "reviewType": "Visual asset subject and style assessment; manual game viewport approval not yet available"
+}

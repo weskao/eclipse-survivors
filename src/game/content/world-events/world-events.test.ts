@@ -214,6 +214,12 @@ describe('world event contract', () => {
     w.time = 0
     w.hero.x = Number.POSITIVE_INFINITY
     expect(director.spawn('events:divine-shrine', w, point)).toBeNull()
+    w.hero.x = 0
+    w.hero.hp = Number.NaN
+    expect(director.spawn('events:divine-shrine', w, point)).toBeNull()
+    w.hero.hp = 175
+    w.hero.xp = Number.NaN
+    expect(director.spawn('events:divine-shrine', w, point)).toBeNull()
   })
 
   it('adapts terrain/hazards from existing world and uses an idempotent commit bridge', () => {

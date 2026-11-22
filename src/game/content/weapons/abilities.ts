@@ -6,6 +6,12 @@ import {
   type ArsenalRuntime, type MissileKind, type WeaponKey,
 } from './runtime'
 
+// Eager, build-time URLs: keep the 3x original illustrations in the existing
+// choice-card and HUD rendering path, with no per-frame network lookups.
+const productionArt = import.meta.glob('../../../assets/es2/production/weapons/*@3x.webp', {
+  eager: true, query: '?url', import: 'default',
+}) as Record<string, string>
+
 interface WeaponSpec {
   key: WeaponKey
   icon: string
@@ -339,7 +345,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
 
 export const WEAPON_ABILITIES: readonly ContentAbility[] = WEAPON_SPECS.map((spec): ContentAbility => ({
   id: `weapons:${spec.key}` as const,
-  kind: 'weapon', icon: spec.icon, title: spec.title, desc: spec.desc,
+  kind: 'weapon', icon: spec.icon, iconSrc: productionArt[`../../../assets/es2/production/weapons/${spec.key}@3x.webp`], title: spec.title, desc: spec.desc,
   rarity: spec.rarity, maxLevel: 5,
   // These are continuous-tick weapons: attack cadence lives in the per-run timer.
   // A positive registry cooldown would freeze their active missiles or companions.

@@ -1,13 +1,26 @@
 <script setup lang="ts">
-import { nextTick } from 'vue'
+import { computed, nextTick } from 'vue'
 import { ART_URLS } from '../../../game/art'
-import type { JobId } from '../../../game/types'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
+import type { HeroId, JobId } from '../../../game/types'
+import HeroRoster from '../hero-roster/HeroRoster.vue'
+import ModeChooser from '../modes/ModeChooser.vue'
+import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
 import type { MenuView } from './model'
-defineProps<{ choice: JobId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+const props = defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+const biomeScenes = [
+  'blood-moon-cathedral', 'cursed-forest', 'abyssal-necropolis', 'celestial-rift',
+] as const
+const sceneIllustration = computed(() => {
+  const index = Math.max(0, modeIds.indexOf(props.runMode))
+  return WORLD_ART.biomes[biomeScenes[index % biomeScenes.length]!].scene
+})
+const objectiveSelection = computed<ObjectiveModeId | null>(() => objectiveModeIds.includes(props.runMode as ObjectiveModeId)
+  ? props.runMode as ObjectiveModeId : null)
 const emit = defineEmits<{
-  select: [hero: JobId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
+  select: [hero: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
 }>()
 const heroes: readonly { id: JobId; name: string; role: string; number: string }[] = [
   { id: 'knight', name: '曙鋼騎士', role: '重甲反擊 · 近戰爆發', number: '01' },
@@ -34,7 +47,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
 </script>
 <template>
   <main class="es2-menu" aria-label="Eclipse Survivors 主選單">
-    <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /></div>
+    <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div class="es2-menu-shell">
       <header class="es2-menu-header">
         <div class="es2-menu-brand"><span class="es2-eyebrow">✦ THE CELESTIAL ECLIPSE ✦</span><h1>ECLIPSE <em>SURVIVORS</em></h1><p>穿越失落的國度，成為黑夜之後的第一道曙光。</p></div>
@@ -48,13 +61,15 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <div class="es2-section-heading"><span>01 / THE CHOSEN</span><h2 id="es2HeroTitle">選擇命運的繼承者</h2><p>每位英雄都擁有專屬的戰鬥風格。</p></div>
           <div class="es2-hero-grid" role="group" aria-label="選擇英雄">
             <button v-for="hero in heroes" :key="hero.id" type="button" :data-hero="hero.id" class="es2-hero-card"
-              :class="{ 'es2-hero-active': choice === hero.id }" :aria-pressed="choice === hero.id"
+              :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
               <span class="es2-hero-number">{{ hero.number }} / HERO</span>
               <img :src="ART_URLS[hero.id]" :alt="hero.name + ' 原始角色插畫'" decoding="async" draggable="false" />
-              <span class="es2-hero-copy"><strong>{{ hero.name }}</strong><small>{{ hero.role }}</small><span class="es2-hero-selection">{{ choice === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span></span>
+              <span class="es2-hero-copy"><strong>{{ hero.name }}</strong><small>{{ hero.role }}</small><span class="es2-hero-selection">{{ (heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄' }}</span></span>
             </button>
           </div>
+          <h3 class="es2-section-heading">NEW HEROES · 新增英雄</h3>
+          <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" />
         </section>
         <section class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>02 / THE EXPEDITION</span><h2 id="es2ModeTitle">選擇遠征命運</h2><p>每一條道路都通往不同的試煉。</p></div>
@@ -67,6 +82,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
             </button>
           </div>
+          <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
           <button class="es2-primary es2-start" type="button" @click="emit('start')">踏入幽暮之門 <span aria-hidden="true">✦</span></button>
           <p class="es2-hint">WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作</p>
         </section>

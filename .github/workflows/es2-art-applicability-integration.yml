@@ -1,0 +1,24 @@
+name: ES2 all-present production art combined CI
+on:
+  push:
+    branches: [feature/es2-art-applicability-integration]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  complete-verification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run src/game/content/production-art-links.test.ts src/game/render/es2/production-heroes.test.ts src/game/render/es2/production-paint.test.ts src/components/es2/menu/Es2ProductionHeroes.test.ts
+      - run: pnpm test
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm check-release

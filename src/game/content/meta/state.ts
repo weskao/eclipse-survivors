@@ -19,6 +19,8 @@ export interface MetaState {
   discoveries: Record<DiscoveryKind, string[]>
   modeRecords: Record<string, ModeRecord>
   cosmetics: string[]
+  /** Optional for compatibility with already committed v3 envelopes. */
+  equippedCosmetics?: Partial<Record<JobId, string>>
   /** No eviction: when full, settlement must stop rather than repay old IDs. */
   runIds: string[]
 }
@@ -39,6 +41,7 @@ export function createMetaState(): MetaState {
   return {
     version: 3, embers: 0, runs: 0, wins: 0, bossWins: 0,
     achievements: [], claimedMilestones: [], equipment: [], bonuses: [], cosmetics: [],
+    equippedCosmetics: { knight: 'knight-default', ranger: 'ranger-default', wizard: 'wizard-default' },
     research: Object.fromEntries(RESEARCH.map(x => [x.id, 0])) as Record<string, number>,
     mastery: Object.fromEntries(heroes.map(x => [x, { xp: 0, level: 1 }])) as Record<string, Mastery>,
     discoveries: { relics: [], weapons: [], evolutions: [], bosses: [] },
@@ -51,6 +54,7 @@ export const cloneMetaState = (state: MetaState): MetaState => ({
   research: { ...state.research },
   mastery: Object.fromEntries(Object.entries(state.mastery).map(([k, v]) => [k, { ...v }])),
   equipment: [...state.equipment], bonuses: [...state.bonuses], cosmetics: [...state.cosmetics],
+  equippedCosmetics: { ...state.equippedCosmetics },
   discoveries: {
     relics: [...state.discoveries.relics], weapons: [...state.discoveries.weapons],
     evolutions: [...state.discoveries.evolutions], bosses: [...state.discoveries.bosses],
@@ -95,6 +99,13 @@ export function validateMetaState(raw: unknown): raw is MetaState {
     if (!validMode(id) || !isObj(record) || !whole(record.runs) || !whole(record.wins)
       || !nonNegativeNumber(record.bestKills) || !nonNegativeNumber(record.bestSeconds)
       || record.wins > record.runs) return false
+  }
+  if (raw.equippedCosmetics !== undefined) {
+    if (!isObj(raw.equippedCosmetics)) return false
+    for (const [hero, skin] of Object.entries(raw.equippedCosmetics)) {
+      if (!heroes.includes(hero as JobId) || !isCosmeticId(skin) || !skin.startsWith(hero + '-')
+        || (skin !== hero + '-default' && !(raw.cosmetics as string[]).includes(skin))) return false
+    }
   }
   return true
 }

@@ -1,6 +1,6 @@
 import { hit } from '../../combat'
 import type { ContentContext } from '../contracts'
-import type { GameState, Hero, Mob } from '../../types'
+import type { GameState, Mob } from '../../types'
 import { EVOLUTION2_CUES } from './cues'
 import type { Evolution2Recipe } from './recipes'
 
@@ -8,18 +8,17 @@ interface Candidate { mob: Mob; distance2: number; order: number }
 const MAX_HITS_PER_CAST = 12
 const MAX_VOLLEY_PROJECTILES = 80
 
-/** Only runs after an owned evolution's cooldown expires; never on every frame. */
-function targetsInRange(state: GameState, hero: Hero, range: number): Mob[] {
+/** Choose at most 24 nearest living targets. Ties use insertion order. */
+function targetsNear(state: GameState, x: number, y: number, range: number): Mob[] {
   const results: Candidate[] = []
   for (let i = 0; i < state.mobs.length; i++) {
     const mob = state.mobs[i]!
     if (mob.hp <= 0) continue
-    const dx = mob.x - hero.x, dy = mob.y - hero.y
-    const max = range + mob.r
+    const dx = mob.x - x, dy = mob.y - y
+    const reach = range + mob.r
     const distance2 = dx * dx + dy * dy
-    if (distance2 <= max * max) results.push({ mob, distance2, order: i })
+    if (distance2 <= reach * reach) results.push({ mob, distance2, order: i })
   }
-  // Stable ties must not depend on the host sort implementation.
   results.sort((a, b) => a.distance2 - b.distance2 || a.order - b.order)
   return results.slice(0, 24).map(entry => entry.mob)
 }
@@ -30,9 +29,14 @@ function targetsInRange(state: GameState, hero: Hero, range: number): Mob[] {
  */
 export function executeEvolution(context: ContentContext, recipe: Evolution2Recipe): void {
   const { state, hooks } = context
+  // The shared registry may be ticked by an integration host outside gameplay.
+  if (state.mode !== 'play') {
+    state.content.cooldowns[recipe.id] = 0
+    return
+  }
   const hero = state.hero
   if (!hero) return
-  const nearby = targetsInRange(state, hero, recipe.radius)
+  const nearby = targetsNear(state, hero.x, hero.y, recipe.radius)
   if (!nearby.length) return
 
   const cue = EVOLUTION2_CUES[recipe.id]!
@@ -50,12 +54,11 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     context.addEffect({ id: cue.effectId, x, y, life: 0.75, max: 0.75 })
   }
   const area = (x: number, y: number, radius: number, power: number, pull = 0): void => {
-    for (const mob of state.mobs) {
+    // Deterministic nearest-first AoE prevents distant array entries from
+    // exhausting a cast's hit budget before enemies at the blast center.
+    for (const mob of targetsNear(state, x, y, radius)) {
       if (hitCount >= MAX_HITS_PER_CAST) break
       if (mob.hp <= 0 || hitMobs.has(mob)) continue
-      const dx = mob.x - x, dy = mob.y - y
-      const range = radius + mob.r
-      if (dx * dx + dy * dy > range * range) continue
       if (pull > 0) {
         const k = mob.type === 'boss' ? pull * 0.25 : pull
         mob.x += (x - mob.x) * k
@@ -154,17 +157,18 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
       break
     }
     case 'evolution2:spectral-volley': {
-      if (state.shots.length <= MAX_VOLLEY_PROJECTILES - 5) {
-        const first = nearby[0]!
-        const base = Math.atan2(first.y - hero.y, first.x - hero.x)
-        for (let i = 0; i < 5; i++) {
-          const angle = base + (i - 2) * 0.12
-          state.shots.push({
-            x: hero.x, y: hero.y - 8,
-            vx: Math.cos(angle) * 570, vy: Math.sin(angle) * 570,
-            life: 1.25, d: hero.damage * 1.05, kind: 'arrow', r: 6,
-          })
-        }
+      const count = Math.min(5, Math.max(0, MAX_VOLLEY_PROJECTILES - state.shots.length))
+      // No phantom cast: an exhausted shared projectile budget cannot spawn arrows.
+      if (count === 0) return
+      const first = nearby[0]!
+      const base = Math.atan2(first.y - hero.y, first.x - hero.x)
+      for (let i = 0; i < count; i++) {
+        const angle = base + (i - (count - 1) / 2) * 0.12
+        state.shots.push({
+          x: hero.x, y: hero.y - 8,
+          vx: Math.cos(angle) * 570, vy: Math.sin(angle) * 570,
+          life: 1.25, d: hero.damage * 1.05, kind: 'arrow', r: 6,
+        })
       }
       cueAt(hero.x, hero.y)
       break

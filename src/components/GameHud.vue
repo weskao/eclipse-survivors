@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
+import { animatedEs2ImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
+import { LOW_HP_PCT } from '../game/constants'
 import SettingsButton from './SettingsButton.vue'
 import AudioControl from './AudioControl.vue'
 import type { HudView } from '../game/store'
@@ -28,7 +29,7 @@ defineExpose({ minimap })
 <template>
   <div id="hud" :class="{ active }">
     <div class="top">
-      <div class="status" :class="{ 'status-critical': hud.hpPct <= 25 }">
+      <div class="status" :class="{ 'status-critical': hud.hpPct <= LOW_HP_PCT }">
         <div class="hud-face" id="hudFace"><img :src="ART_URLS[choice]" :alt="choice" /></div>
         <b id="who">{{ hud.who }}</b>
         <div id="hudHealthMeter" class="bar" role="progressbar" aria-label="生命值" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>
@@ -60,7 +61,15 @@ defineExpose({ minimap })
         <div v-for="skill in hud.skills" :key="skill.id" class="skill" :class="[skill.rarity, { evolved: skill.evolved }]"
           :data-skill="skill.id" :title="`${skill.title} · Lv.${skill.level}/${skill.maxLevel}${skill.cooldown > 0 ? ' · 冷卻 ' + skill.cooldown.toFixed(1) + ' 秒' : ''}`"
           :aria-label="`${skill.title} 等級 ${skill.level}，${skill.cooldown > 0 ? '冷卻 ' + skill.cooldown.toFixed(1) + ' 秒' : '可用'}`">
-          <span class="skill-sigil" aria-hidden="true"><img v-if="skill.iconSrc || (!skill.id.includes(':') && !hasGeneratedSkillArt(skill.id))" class="skill-art" draggable="false" decoding="async" :src="skill.iconSrc ?? skillImageSrc(skill.id)" alt="" />{{ skill.icon }}</span>
+          <span class="skill-sigil" aria-hidden="true">
+            <picture v-if="animatedEs2ImageSrc(skill.id)">
+              <source media="(prefers-reduced-motion: reduce)" :srcset="skill.iconSrc" />
+              <img class="skill-art" draggable="false" decoding="async" :src="animatedEs2ImageSrc(skill.id)" alt="" />
+            </picture>
+            <img v-else-if="skill.iconSrc || (!skill.id.includes(':') && !hasGeneratedSkillArt(skill.id))"
+              class="skill-art" draggable="false" decoding="async" :src="skill.iconSrc ?? skillImageSrc(skill.id)" alt="" />
+            {{ skill.icon }}
+          </span>
           <span class="skill-cooldown" :style="{ height: skill.cooldownPct + '%' }"></span>
           <small class="skill-level">{{ skill.level }}</small>
           <span v-if="skill.evolved" class="skill-evolved" aria-hidden="true">✦</span>

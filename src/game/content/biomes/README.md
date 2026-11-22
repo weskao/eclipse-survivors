@@ -45,3 +45,49 @@ All palettes, tile/landmark/ambient keys and a high-contrast telegraph color are
 5. Required pre-integration checks: `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release`.
 
 No shared engine, rendering, profile, world-generation or save-schema files are changed by this feature branch.
+
+
+## ES2 remediation: opt-in runtime and Canvas adapters
+
+The following files are owned by this branch and **do not replace the original four stages**:
+
+- `runtime.ts`: deterministic movement with swept circular collision; obstacle LOS; bounded corridor waypoints; pause-safe hazard sampling, interaction and transitions
+- `../../render/es2-biomes/index.ts`: cached 192-unit floor tiles, cullable decorations and obstacle glyphs; world-space, exact-radius hazard telegraphs; interactions and a 152×110 minimap
+- `runtime.test.ts` and `../../render/es2-biomes/renderer.test.ts`: collision/LOS/navigation, seed/cache, phase/damage, layer-geometry and scene/DPR invalidation contracts
+
+**Integration example (integration-owned shared files only):**
+
+```ts
+import { createBiomeRuntime } from './game/content/biomes/runtime'
+import { createBiomeRenderer } from './game/render/es2-biomes'
+
+const biome = createBiomeRuntime('blood-moon-cathedral', { seed: 42, maxCells: 256 })
+const painter = createBiomeRenderer((w, h) => {
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  return canvas
+})
+
+// Once per simulation tick, never once per rendered frame:
+const next = biome.step(heroPosition, desiredVelocity, hitRadius, dt, isPaused)
+heroPosition = next.position
+// Pass next.hazardDamage to the existing damage/invulnerability handler.
+// Do not directly subtract HP or mutate mobs in this module.
+// For AI, biome.findPath(start, target, mobRadius) supplies navigable waypoints.
+// Interaction button: biome.interact(heroPosition).
+// A scene event: biome.enter('cursed-forest') and painter.reset().
+
+// Renderer is called using the existing WORLD-space Canvas transform:
+painter.setPixelRatio(Math.min(3, devicePixelRatio))
+painter.drawGround(ctx, biome.environment, viewport, biome.time)
+painter.drawProps(ctx, biome.environment, viewport, biome.time)
+// Draw heroes, enemies, projectiles, enemy attack telegraphs and HUD ABOVE these.
+painter.drawMinimap(minimapCtx, biome.environment, heroPosition, biome.time)
+```
+
+The shared stage-selection UI, `step.ts`, `world.ts`, content manifest, rendering index and profile are intentionally **not changed here**. The integration owner must install the new `biomes:<id>` stage IDs, choose this adapter only for an ES2 biome, route collision/contact/minimap/LOS to it and keep the four numeric legacy scenes on their original providers. Without that wiring, this branch is an independently testable adapter, **not an in-game selectable stage**.
+
+**Lifetime and performance:** procedural cells are seed+biome+cell deterministic, LRU-bounded (default 256). Renderer prepaints only static tiles/obstacles (up to one tile, one detail glyph and two prop sprites per active biome), resets on biome change, context recreation (create a new renderer), or DPI change. Hazard phase/damage and used interactions are live, never cached. The minimap and ground danger indicators query the same hazard objects used by the simulation; suppressed hazards are visually muted. All frame queries are viewport-bounded, and pathfinding must run on changes of target/obstacle state rather than for every enemy every tick. Draw foreground hostile attack telegraphs above environmental scenery; no offscreen culling should disable gameplay simulation.
+
+**Validation:** `pnpm install --frozen-lockfile && pnpm test && pnpm typecheck && pnpm build && pnpm check-release`. Run the complete integration suite again after installing the adapters, and check mobile DPR/safe-area, 130 actors, repeated scene entry and visual artifact captures on actual devices. A test runner is needed to establish green test/CI status; file presence alone cannot.

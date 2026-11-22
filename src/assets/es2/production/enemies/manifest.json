@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "category": "enemies",
-  "status": "incomplete",
+  "status": "visual-review-required",
   "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
   "assets": [
     {
@@ -13,7 +13,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "9e28e4801e8bc4df9c744a7ce30d6de9f1cd721ce7205f5f8f7bdf542b43af29",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "shadow-assassin:telegraph",
@@ -24,7 +30,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "bb1dddb40b86eaf47aa36a24a69389c7c7ff2b01f332c612344ebef5d058509e",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "necromancer",
@@ -35,7 +47,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "56fc06dc490b7f51c71f994aa3b72464111bcfe9a9dbb37714aa5bef3682918e",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "necromancer:telegraph",
@@ -46,7 +64,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "d0a8c75ec72ef9668f98dae541be58f4bc9db54b312f5d09b8380784d9a4a063",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "dark-archer",
@@ -57,7 +81,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "3beb62ea74b6f619f3fa632f454de9fd6969a4ffb8071b6484bd5cb71e703f65",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "dark-archer:telegraph",
@@ -68,7 +98,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "d41d7b6ff01ee13e06d54c8098d3939243abe6d92c32ee034e032bc4f17098a5",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "plague-carrier",
@@ -79,7 +115,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "8de0311486c093deef00d22ff3fd8ceca353e548c7c97ac8691272ca45f7692e",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "plague-carrier:telegraph",
@@ -90,7 +132,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "89f1a97d59674ee89b57117c302138d1b0ba377c9bdc7609f0155263159c43c6",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "shield-guardian",
@@ -101,7 +149,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "bc84ebd2a669e315cc36306a32b24c4308a0a3b02c0077944a6e540d65d40f11",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "shield-guardian:telegraph",
@@ -112,7 +166,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "28ab6f430aef6ff27a2c7cc6e08d30f77d88a69f204bd1db3816d0242bb48ee6",
+      "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
       "id": "phantom",
@@ -123,7 +183,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "12b2477da7dc74b33e353c2c6a450c34baf86a210a83867d3c83625a426bd854",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "phantom:telegraph",
@@ -134,7 +200,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "105e1b8a00f5eeb5db03452204dc94ce1962b87dab12b40f19d78ec2f958544c",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "fire-imp",
@@ -145,7 +217,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "f8199e36e2b3098862b8bdffb3814c024a1a35e292854a20b9dd405ed5edbce2",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "fire-imp:telegraph",
@@ -156,7 +234,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "7e6b3c36007afe952a5b8f5deffdecf1740d39ee001408b262b789d913c5e64b",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "frost-wraith",
@@ -167,7 +251,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "ee347e3bd72a2dc86bffe3fb3b7d638465978ff91f53c558151247b52fa0f6d1",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "frost-wraith:telegraph",
@@ -178,7 +268,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "3b73712ecbb906607b9374e98298734ee95e0d9d5d0afba20831f4010806cc29",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "berserker",
@@ -189,7 +285,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "5c2f4a803d520f9cb46c82b21552cb99504bba37ce5081abd2de8e68a1365e8c",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "berserker:telegraph",
@@ -200,7 +302,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "a04468f75374b65971096ba418b3dda3be6d77e1856e2b270670ae2feb85c685",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "crystal-sentinel",
@@ -211,7 +319,13 @@
       "alpha": true,
       "maxBytes": 110000,
       "frames": 6,
-      "status": "not-delivered"
+      "columns": 6,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "f0212487c17b3b6a7405878dbd7854497533eea2b2d1fb85472612712e1d8278",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
       "id": "crystal-sentinel:telegraph",
@@ -222,7 +336,13 @@
       "alpha": true,
       "maxBytes": 50000,
       "frames": 1,
-      "status": "not-delivered"
+      "columns": 1,
+      "rows": 1,
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "status": "needs-human-approval",
+      "sha256": "a3a1cb35f929c27d24dc840b48b33ed1314b70ceb63dd5ced2860c2d9f70f570",
+      "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     }
   ]
 }

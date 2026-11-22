@@ -132,6 +132,16 @@ describe('ES2 combat VFX contract', () => {
     }
   })
 
+  it('keeps the lightning centerline aligned with the confirmed segment heading', () => {
+    const { registry, s } = queue('lightning-chain', 0)
+    const { ctx, calls } = fakeCanvas()
+    registry.render(ctx, s, 0, 0)
+    // World-space segment direction is +X at angle=0; offsets are lateral.
+    expect(calls).toContain('rotate:0')
+    expect(calls).toContain('moveTo:-57,0')
+    expect(calls.some(call => call.startsWith('lineTo:63,'))).toBe(true)
+  })
+
   it('supports a new context and preserves direction after the hero turns', () => {
     const { registry, s } = queue('projectile-trail', -Math.PI / 4)
     s.hero!.aimAngle = Math.PI

@@ -1,6 +1,7 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { attack, hit, victoryConditionMet } from './combat'
 import type { ContentRegistry } from './content/registry'
+import type { FactionBridge } from './content/enemies/integration'
 import { hasWonRun } from '../meta/modes'
 import { tickWorld } from './events'
 import { resolveObstacleCollision } from './world'
@@ -35,7 +36,7 @@ function tickTimers(s: GameState, hero: Hero, dt: number): void {
   s.cameraKick = Math.max(0, s.cameraKick - dt * 27)
 }
 
-function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
+function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, factions?: FactionBridge): void {
   for (const b of s.shots) {
     b.prevX = b.x
     b.prevY = b.y
@@ -44,6 +45,9 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void
     b.y += b.vy * travel
     b.life -= dt
     if (travel <= 0) continue
+    // The faction bridge computes first contact against both legacy and new
+    // actors, preventing double hits and keeping existing XP ownership.
+    if (factions && factions.resolveShot(s, b, hooks, { x: b.prevX!, y: b.prevY! })) continue
     const dx = b.x - b.prevX
     const dy = b.y - b.prevY
     const lengthSquared = dx * dx + dy * dy
@@ -148,19 +152,19 @@ export interface BossStepAdapter {
   tick(state: GameState, dt: number, hooks: GameHooks): void
 }
 
-export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter): void {
+export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter, factions?: FactionBridge): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
   tickTimers(s, hero, dt)
   registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
-  tickSpawning(s, dt, hooks, bosses?.spawn)
-  moveHero(s, input, dt)
+  tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0)
+  moveHero(s, input, dt, factions?.movementMultiplier ?? 1)
   const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
   hero.x = free.x; hero.y = free.y
   if (hero.attack <= 0) {
-    attack(s, hooks)
+    attack(s, hooks, factions)
     hero.attack = hero.delay
   }
   tickEnemies(s, dt, hooks)
@@ -171,9 +175,10 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
     e.x = safe.x; e.y = safe.y
   }
   tickEnemyProjectiles(s, dt, hooks)
+  factions?.tick(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
   tickSkills(s, dt, hooks)
-  moveShots(s, hero, dt, hooks)
+  moveShots(s, hero, dt, hooks, factions)
   collectStars(s, hero, dt, hooks)
   tickWorld(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
