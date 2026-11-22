@@ -119,6 +119,10 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave aria-label="波次">
       <span class="es2-hud__eyebrow">WAVE {{ view.wave.number }}</span>
       <strong v-if="view.wave.announcement">{{ view.wave.announcement }}</strong>
+      <div v-if="view.wave.progressPct !== undefined" class="es2-hud__wave-track" role="progressbar" aria-label="波次進度"
+        :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100">
+        <span :style="{ width: view.wave.progressPct + '%' }"></span>
+      </div>
     </div>
     <section v-if="view.objective || view.objectives.length" class="es2-hud__objectives es2-hud__plate" aria-label="任務目標">
       <div class="es2-hud__section-label">✥ 目前目標</div>
@@ -181,6 +185,18 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
 
 <style scoped>
 /* Only HUD-owned overrides: leave the legacy stylesheet, engine canvas and controls untouched. */
+.es2-hud__wave-track {
+  width: min(200px, 35vw); height: 5px; overflow: hidden; margin: 6px auto 0;
+  border-radius: 6px; background: #070d17; border: 1px solid #d8b78366;
+}
+.es2-hud__wave-track > span {
+  display: block; height: 100%; border-radius: inherit;
+  background: linear-gradient(90deg, #b78b57, #f7deb0);
+  transition: width .12s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .es2-hud__wave-track > span { transition: none; }
+}
 .es2-hud__sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
