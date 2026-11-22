@@ -348,6 +348,8 @@ export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): Wa
       (isLegacy(mode)
         ? !bossIssued && !frame.bossSpawned && !frame.bossDefeated
         : bossIssuedIndex !== bossIndex)
+    // A late boss request must not simultaneously announce an ordinary wave.
+    if (bossDue || frame.bossActive) events.length = 0
 
     function add(type: MobType, elite: boolean, role: SpawnRole, i: number, total: number, pulse: number, waveIndex?: number): boolean {
       const pos = place(frame, seed, wave.cycle, pulse, i, total, type, spawns)
