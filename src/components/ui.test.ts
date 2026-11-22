@@ -153,6 +153,19 @@ describe('SettingsOverlay', () => {
     await w.find('#settingsClose').trigger('click')
     expect(w.emitted('close')).toHaveLength(1)
   })
+
+  it('keeps keyboard tab focus inside the settings dialog', async () => {
+    const w = mount(SettingsOverlay, { props, attachTo: document.body })
+    const last = w.find('.settings-done').element as HTMLButtonElement
+    const first = w.find('#settingsClose').element as HTMLButtonElement
+    last.focus()
+    await w.find('#settings').trigger('keydown', { key: 'Tab' })
+    expect(document.activeElement).toBe(first)
+    first.focus()
+    await w.find('#settings').trigger('keydown', { key: 'Tab', shiftKey: true })
+    expect(document.activeElement).toBe(last)
+    w.unmount()
+  })
 })
 
 describe('LevelUpOverlay', () => {
