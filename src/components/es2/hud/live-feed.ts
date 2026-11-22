@@ -11,13 +11,14 @@ import type { CombatHudFeed, CombatHudSnapshot } from './model'
  * No polling, alternative game state, or self-generated gameplay events exist here.
  */
 export interface LiveHudSources {
-  readonly state: Pick<GameState, 'mode' | 'mobs'>
+  readonly state: Pick<GameState, 'mode' | 'mobs' | 'time'>
   readonly snapshot: CombatHudSnapshot
   /** Only from the authoritative boss encounter metadata. */
   readonly bossName?: string
   readonly totalBossPhases?: number
   /** Only from an active WaveDirector decision; NEVER derive a wave from elapsed time. */
-  readonly wave?: { readonly cycle: number; readonly events: readonly Pick<WaveEvent, 'id' | 'title'>[] }
+  readonly wave?: { readonly cycle: number; readonly startsAt?: number; readonly endsAt?: number;
+    readonly events: readonly Pick<WaveEvent, 'id' | 'title'>[] }
   /** Only from the objective evaluator after real gameplay events. */
   readonly objective?: Pick<ObjectiveEvaluation, 'status' | 'progress'>
   /** Only from the real combo counter, if installed. */
@@ -40,6 +41,11 @@ export function buildLiveCombatHudFeed(source: LiveHudSources): CombatHudFeed {
   const total = source.totalBossPhases
   const wave = source.wave
   const progress = source.objective?.progress
+  const waveProgress = wave && wave.startsAt !== undefined && wave.endsAt !== undefined &&
+    Number.isFinite(state.time) && Number.isFinite(wave.startsAt) && Number.isFinite(wave.endsAt) &&
+    wave.endsAt > wave.startsAt
+    ? Math.max(0, Math.min(100, Math.round((state.time - wave.startsAt) / (wave.endsAt - wave.startsAt) * 100)))
+    : undefined
   const relics = source.relicInventory?.items.slice(0, RELIC_CAPACITY).flatMap(({ id, stacks }) => {
     const definition = RELIC_BY_ID.get(id)
     if (!definition || !Number.isSafeInteger(stacks) || stacks <= 0) return []
@@ -57,7 +63,8 @@ export function buildLiveCombatHudFeed(source: LiveHudSources): CombatHudFeed {
       ...(total !== undefined && Number.isSafeInteger(total) && total > 0 ? { totalPhases: total } : {}),
     } } : {}),
     ...(wave && Number.isSafeInteger(wave.cycle) && wave.cycle >= 0
-      ? { wave: { number: wave.cycle + 1, ...(wave.events.at(-1)?.title ? { announcement: wave.events.at(-1)!.title } : {}) } }
+      ? { wave: { number: wave.cycle + 1, ...(wave.events.at(-1)?.title ? { announcement: wave.events.at(-1)!.title } : {}),
+        ...(waveProgress !== undefined ? { progressPct: waveProgress } : {}) } }
       : {}),
     ...(source.comboCount !== undefined && Number.isSafeInteger(source.comboCount) && source.comboCount > 1
       ? { combo: { count: source.comboCount } } : {}),
