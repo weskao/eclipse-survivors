@@ -363,7 +363,9 @@ export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): Wa
         events.push({ id: 'waves:boss:' + bossIndex, kind: 'boss', title: LABELS.boss,
           atSeconds: bossAt, durationSeconds: BOSS_ENCOUNTER_SECONDS, danger: wave.danger })
       }
-    } else if (!frame.bossActive && wave.stage !== 'boss' && wave.stage !== 'boss-prep') {
+    } else if (!frame.bossActive &&
+      ((wave.stage !== 'boss' && wave.stage !== 'boss-prep') ||
+       (mode === 'chaos-arena' && (frame.completedWaves ?? 0) < waveTimes.length))) {
       if (mode === 'chaos-arena') {
         const nextWave = (frame.completedWaves ?? 0) + 1
         if (nextWave <= waveTimes.length && t >= waveTimes[nextWave - 1]! &&
