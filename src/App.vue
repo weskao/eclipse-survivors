@@ -7,6 +7,7 @@ import LevelUpOverlay from './components/LevelUpOverlay.vue'
 import PauseOverlay from './components/PauseOverlay.vue'
 import ResultOverlay from './components/ResultOverlay.vue'
 import TouchControls from './components/TouchControls.vue'
+import SettingsOverlay from './components/SettingsOverlay.vue'
 import './meta/ui.css'
 import './visual-polish.css'
 
@@ -40,6 +41,7 @@ onBeforeUnmount(() => unmount?.())
     @toggle-music="engine.toggleMusic"
     @toggle-sfx="engine.toggleSfx"
     @pause="engine.togglePause"
+    @settings="engine.openSettings"
   />
   <TouchControls :active="touchActive" @stick="engine.setStick" @dash="engine.dash" />
   <MenuScreen
@@ -56,11 +58,12 @@ onBeforeUnmount(() => unmount?.())
     @reset="engine.resetProgress"
     @select="engine.selectJob"
     @start="engine.start"
+    @settings="engine.openSettings"
     @toggle-music="engine.toggleMusic"
     @toggle-sfx="engine.toggleSfx"
   />
-  <LevelUpOverlay :active="ui.mode === 'level'" :upgrades="ui.upgrades" @choose="engine.chooseUpgrade" />
-  <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" />
+  <LevelUpOverlay :active="ui.mode === 'level'" :upgrades="ui.upgrades" :effect="ui.upgradeEffect" @choose="engine.chooseUpgrade" @settings="engine.openSettings" />
+  <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
   <ResultOverlay
     :active="ui.mode === 'result'"
     :ending="ui.ending"
@@ -69,5 +72,21 @@ onBeforeUnmount(() => unmount?.())
     :rewards="ui.rewards"
     @again="engine.start"
     @home="engine.goMenu"
+  />
+  <SettingsOverlay
+    :active="ui.settingsOpen"
+    :music-on="ui.musicOn"
+    :sfx-on="ui.sfxOn"
+    :music-volume="ui.musicVolume"
+    :sfx-volume="ui.sfxVolume"
+    :upgrade-effect="ui.upgradeEffect"
+    :camera-shake="ui.cameraShake"
+    @close="engine.closeSettings"
+    @toggle-music="engine.toggleMusic"
+    @toggle-sfx="engine.toggleSfx"
+    @music-volume="engine.setMusicVolume"
+    @sfx-volume="engine.setSfxVolume"
+    @upgrade-effect="engine.setUpgradeEffect"
+    @camera-shake="engine.setCameraShake"
   />
 </template>
