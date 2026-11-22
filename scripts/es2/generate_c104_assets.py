@@ -242,8 +242,20 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
             tbox=ASSET_BOXES[src_id][f'telegraph:{id}']
             emit(f'src/assets/es2/production/enemies/{id}-telegraph@3x.webp','enemy-telegraph',fit(sources[src_id],tbox,(96,96),src_id),1,(96,96),src_id,[tbox],50000)
 
+    # Exact masks for five already-confirmed neighboring-source fragments.
+    # Each lies outside the corresponding boss silhouette on the 192px frame;
+    # do not discard floating spell effects elsewhere in the illustration.
+    boss_bleed_masks = {
+        'frost-sovereign': {0: [(0,0,192,32)], 1: [(0,0,192,55)]},
+        'eclipse-seraph': {0: [(0,0,33,192)], 1: [(0,0,20,192)],
+                           2: [(0,0,192,14)]},
+    }
     for id,(src_id,boxes) in BOSSES.items():
         images=[fit(sources[src_id],box,(192,192),src_id,10) for box in boxes]
+        for pose,rects in boss_bleed_masks.get(id,{}).items():
+            alpha=images[pose].getchannel('A')
+            for rect in rects: alpha.paste(0,rect)
+            images[pose].putalpha(alpha)
         emit(f'src/assets/es2/production/bosses/{id}-phases@3x.webp','boss-phases',add_atlas(images,(192,192)),3,(192,192),src_id,boxes,300000)
 
     for id,(src_id,boxes) in DECOR.items():
