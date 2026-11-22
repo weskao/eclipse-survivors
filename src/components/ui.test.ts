@@ -149,6 +149,18 @@ describe('GameHud', () => {
     expect(w.find('canvas#minimap').exists()).toBe(true)
   })
 
+  it('keeps top-right volume, settings and pause actions in a padded, spaced row', () => {
+    const w = mount(GameHud, { props })
+    const actions = w.get('#hud .hud-actions')
+    expect(Array.from(actions.element.children).map(child =>
+      child.classList.contains('audio-control') ? 'audio' :
+      child.classList.contains('settings-trigger') ? 'settings' : child.id
+    )).toEqual(['audio', 'settings', 'pauser'])
+    const css = readFileSync(resolve(process.cwd(), 'src/settings.css'), 'utf8')
+    expect(css).toMatch(/#hud \.stats \.chip\.hud-actions\s*\{[^}]*display:flex;[^}]*gap:8px;[^}]*padding:6px 13px;/)
+    expect(css).toMatch(/#hud \.stats \.chip\.hud-actions\s*\{[^}]*gap:5px;[^}]*padding:5px 8px;/)
+  })
+
   it('shows boss bar only when bossPct is set', async () => {
     const w = mount(GameHud, { props })
     expect(w.find('#bossWrap').classes()).not.toContain('show')

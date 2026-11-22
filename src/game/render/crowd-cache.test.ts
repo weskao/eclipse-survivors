@@ -58,11 +58,11 @@ describe('crowd bitmap cache contracts', () => {
     const second = s.mobs[1]!
     const originalCount = made.length
     const frame = createFakeCtx()
-    drawCharacter(frame.ctx, s, assets.art, assets.sprites, first, 480, 286, false, assets.mobTint, assets.mobShadows)
+    drawCharacter(frame.ctx, s, assets.art, assets.sprites, first, 480, 286, false, assets.heroSheets, assets.mobTint, assets.mobShadows)
     expect(frame.calls).not.toContain('ellipse')
     const shadow = made[originalCount]!.canvas
     expect(frame.drawn).toContain(shadow)
-    drawCharacter(frame.ctx, s, assets.art, assets.sprites, second, 480, 286, false, assets.mobTint, assets.mobShadows)
+    drawCharacter(frame.ctx, s, assets.art, assets.sprites, second, 480, 286, false, assets.heroSheets, assets.mobTint, assets.mobShadows)
     expect(frame.drawn.filter(img => img === shadow)).toHaveLength(2)
     // The second mob needs no additional shadow bitmap.
     expect(made.filter(item => item.canvas === shadow)).toHaveLength(1)

@@ -3,6 +3,7 @@ import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
@@ -20,6 +21,7 @@ export type { Ctx2D } from './ctx'
 export interface RenderAssets {
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
+  heroSheets: HeroSheets
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
   cameraShakeEnabled: () => boolean
@@ -39,6 +41,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     : null
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
+    heroSheets: createHeroSheets(makeCanvas),
     prefersReducedMotion: () => query?.matches ?? false,
     cameraShakeEnabled: () => true,
     depthOrder: [],
@@ -111,7 +114,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
-  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.mobTint, assets.mobShadows)
+  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.mobShadows)
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)

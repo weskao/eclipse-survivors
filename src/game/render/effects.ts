@@ -13,7 +13,7 @@ const vignetteGradients = new WeakMap<Ctx2D, { W: number; H: number; gradient: C
 
 export interface GemSprites { common: HTMLCanvasElement; rare: HTMLCanvasElement }
 
-/** Two static crystal shapes, cached at 3x. Position and rotation remain dynamic. */
+/** Rasterize the same two static crystal paintings once at 3x resolution. */
 export function buildGemSprites(makeCanvas: MakeCanvas): GemSprites {
   const gem = (rare: boolean): HTMLCanvasElement => {
     const canvas = makeCanvas(96, 96)
@@ -66,7 +66,7 @@ export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, redu
     if (gems) {
       ctx.drawImage(star.value > 10 ? gems.rare : gems.common, -16, -16, 32, 32)
     } else {
-      // Standalone callers retain the procedural renderer without asset setup.
+      // Standalone callers still support the procedural fallback.
       ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
       ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(7, -1); ctx.lineTo(0, 10); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill()
       ctx.shadowBlur = 0; ctx.fillStyle = '#ffffffb8'
@@ -164,9 +164,14 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue
     const a = Math.atan2(b.vy, b.vx)
     // Motion history is drawn in world space to avoid faking a longer shaft.
-    const tx = (b.prevX ?? b.x) + ox
-    const ty = (b.prevY ?? b.y) + oy
-    const history = Math.hypot(x - tx, y - ty)
+    const prevX = (b.prevX ?? b.x) + ox
+    const prevY = (b.prevY ?? b.y) + oy
+    const history = Math.hypot(x - prevX, y - prevY)
+    // Never stretch a trail all the way back to the firing hand on a laggy tick.
+    // This is a short moving tracer, not a second bow/arrow or magical residue.
+    const extent = Math.min(1, 14 / Math.max(1, history))
+    const tx = x - (x - prevX) * extent
+    const ty = y - (y - prevY) * extent
     if (history > 2) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55

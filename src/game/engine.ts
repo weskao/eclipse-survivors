@@ -65,8 +65,8 @@ export interface Engine extends GameCommands {
   mount(canvas: HTMLCanvasElement, minimap: HTMLCanvasElement | null): () => void
 }
 
-function createBgm(): HTMLAudioElement {
-  const bgm = new Audio(BGM_URL)
+function createBgm(source: string): HTMLAudioElement {
+  const bgm = new Audio(source)
   bgm.loop = true
   bgm.preload = 'auto'
   bgm.volume = 0.38
@@ -78,7 +78,10 @@ const pad2 = (n: number): string => String(n).padStart(2, '0')
 export function createEngine(opts: { audio?: AudioSystem; profileStore?: ProfileStore } = {}): Engine {
   const s = createState()
   const profileStore = opts.profileStore ?? createProfileStore()
-  const audio = opts.audio ?? createAudioSystem({ bgm: createBgm() })
+  const audio = opts.audio ?? createAudioSystem({
+    bgm: createBgm(BGM_URL),
+    menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
+  })
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = true
