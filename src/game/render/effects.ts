@@ -286,17 +286,62 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
   }
 }
 
-export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+/** Cached text labels are bounded so endless runs cannot retain every damage value. */
+export interface DamageNumberCache {
+  makeCanvas: MakeCanvas
+  labels: Map<string, { image: HTMLCanvasElement; width: number; height: number; baseline: number }>
+}
+
+function numberRaster(value: number, boss: boolean, cache: DamageNumberCache) {
+  const key = `${boss ? 'b' : 'n'}:${value}`
+  let entry = cache.labels.get(key)
+  if (entry) return entry
+  const font = boss ? 21 : 16
+  const text = String(value)
+  const width = Math.max(32, Math.ceil(text.length * font * 0.83 + 14))
+  const height = font + 16
+  const baseline = font + 6
+  const image = cache.makeCanvas(width * 2, height * 2)
+  const paint = image.getContext('2d')
+  if (!paint) return null
+  paint.scale(2, 2)
+  paint.font = `900 ${font}px system-ui`
+  paint.textAlign = 'center'
+  paint.lineJoin = 'round'
+  paint.lineWidth = 4
+  paint.strokeStyle = '#151019e8'
+  paint.strokeText(text, width / 2, baseline)
+  paint.fillStyle = boss ? '#ffca7c' : '#fff1d0'
+  paint.fillText(text, width / 2, baseline)
+  entry = { image, width, height, baseline }
+  if (cache.labels.size >= 96) {
+    const oldest = cache.labels.keys().next()
+    if (!oldest.done) cache.labels.delete(oldest.value)
+  }
+  cache.labels.set(key, entry)
+  return entry
+}
+
+export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, cache?: DamageNumberCache): void {
   for (const z of s.numberFx) {
     const x = z.x + ox, y = z.y + oy
     if (x < -60 || x > s.W + 60 || y < -60 || y > s.H + 60) continue
     const a = Math.max(0, Math.min(1, z.life / 0.4))
-    ctx.save(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.lineJoin = 'round'
-    ctx.font = `900 ${z.boss ? '21' : '16'}px system-ui`
-    ctx.lineWidth = 4; ctx.strokeStyle = '#151019e8'
-    ctx.strokeText(String(z.value), x, y)
-    ctx.fillStyle = z.boss ? '#ffca7c' : '#fff1d0'
-    ctx.fillText(String(z.value), x, y)
+    ctx.save()
+    ctx.globalAlpha = a
+    const raster = cache && numberRaster(z.value, z.boss, cache)
+    if (raster) {
+      // Time-dependent opacity and world position remain live.
+      ctx.drawImage(raster.image, x - raster.width / 2, y - raster.baseline, raster.width, raster.height)
+    } else {
+      // Canvas standalone fallback keeps its original text painting behavior.
+      ctx.textAlign = 'center'; ctx.lineJoin = 'round'
+      ctx.font = `900 ${z.boss ? '21' : '16'}px system-ui`
+      ctx.lineWidth = 4; ctx.strokeStyle = '#151019e8'
+      ctx.strokeText(String(z.value), x, y)
+      ctx.fillStyle = z.boss ? '#ffca7c' : '#fff1d0'
+      ctx.fillText(String(z.value), x, y)
+    }
     ctx.restore()
   }
 }
