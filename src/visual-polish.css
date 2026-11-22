@@ -305,3 +305,13 @@
 @media (hover: hover) and (pointer: fine){
   #hud #pauser .pause-shortcut{display:flex}
 }
+
+/* The upgrade picker is a calm decision moment: no camera-like UI motion. */
+@keyframes level-soft-reveal{from{opacity:0}to{opacity:1}}
+#level.overlay.active .panel{animation:level-soft-reveal .32s ease-out both}
+#level .upgrade{animation:level-soft-reveal .38s ease-out both;transition:border-color .2s ease,box-shadow .2s ease,filter .2s ease}
+#level .upgrade.legendary{animation:level-soft-reveal .38s ease-out both,eclipse-legendary-breathe 3.8s ease-in-out infinite 1s}
+#level .upgrade:hover,#level .upgrade:focus-visible,#level .upgrade:active{transform:none}
+@media(prefers-reduced-motion:reduce){
+  #level.overlay.active .panel,#level .upgrade,#level .upgrade.legendary{animation:none!important;transition:none!important}
+}
