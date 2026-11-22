@@ -81,12 +81,12 @@ class TestC104ProductionArt(unittest.TestCase):
                     file = output / entry['path']
                     with Image.open(file) as image:
                         self.assertEqual(image.size, tuple(entry['size']))
-                        self.assertEqual(image.mode, 'RGBA')
+                        self.assertEqual(image.mode, 'RGB' if entry['kind'] == 'biome-scene' else 'RGBA')
                         self.assertEqual(image.format, 'WEBP')
                         width, height = entry['cell']
                         for index in range(entry['frames']):
                             cell = image.crop((index*width, 0, (index+1)*width, height))
-                            alpha = cell.getchannel('A')
+                            alpha = cell.convert('RGBA').getchannel('A')
                             if entry['kind'] == 'biome-scene':
                                 self.assertEqual(alpha.getextrema(), (255, 255),
                                                  'Full-scene art must preserve dark pixels without transparent holes')
