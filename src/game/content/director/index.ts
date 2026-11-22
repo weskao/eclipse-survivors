@@ -233,16 +233,20 @@ export function createWaveDirector(opts: { mode: RunModeId; seed: number }): Wav
     const spawns: SpawnRequest[] = []
     const stageKey = wave.stage + ':' + wave.startsAt
     if (stageKey !== lastStageKey) {
-      events.push({
-        id: 'waves:' + wave.stage, kind: wave.stage === 'reward' ? 'reward'
-          : wave.stage === 'boss-prep' ? 'boss-prep' : wave.stage === 'boss' ? 'boss' : 'stage',
-        title: LABELS[wave.stage], atSeconds: wave.startsAt,
-        durationSeconds: Math.max(0, wave.endsAt - wave.startsAt), danger: wave.danger,
-      })
+      // Announce a boss only when it exists or when placement succeeds below.
+      if (wave.stage !== 'boss' || frame.bossSpawned) {
+        events.push({
+          id: 'waves:' + wave.stage, kind: wave.stage === 'reward' ? 'reward'
+            : wave.stage === 'boss-prep' ? 'boss-prep' : wave.stage === 'boss' ? 'boss' : 'stage',
+          title: LABELS[wave.stage], atSeconds: wave.startsAt,
+          durationSeconds: Math.max(0, wave.endsAt - wave.startsAt), danger: wave.danger,
+        })
+      }
       lastStageKey = stageKey
     }
 
-    const bossDue = t >= bossAt && !bossIssued && !frame.bossSpawned && !frame.bossDefeated
+    const bossDue = t >= bossAt && frame.activeMobs <= MAX_MOBS &&
+      !bossIssued && !frame.bossSpawned && !frame.bossDefeated
     if (frame.bossSpawned || frame.bossDefeated) bossIssued = true
 
     function add(type: MobType, elite: boolean, role: SpawnRole, i: number, total: number, pulse: number): boolean {
