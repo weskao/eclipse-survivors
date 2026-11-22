@@ -8,7 +8,7 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, type GemSprites, type DamageNumberCache, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
@@ -29,6 +29,7 @@ export interface RenderAssets {
   depthOrder: (Hero | Mob)[]
   magicGlow: HTMLCanvasElement | null
   gems: GemSprites
+  numbers: DamageNumberCache
   mobTint: MobTintCache
   mobShadows: MobShadowCache
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
@@ -48,6 +49,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     biomes: buildBiomeArt(makeCanvas),
     magicGlow: buildMagicGlow(makeCanvas),
     gems: buildGemSprites(makeCanvas),
+    numbers: { makeCanvas, labels: new Map() },
     mobTint: { makeCanvas, variants: new WeakMap() },
     mobShadows: { makeCanvas, shadows: new Map() },
   }
@@ -123,7 +125,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
-  drawNumbers(ctx, s, ox, oy)
+  drawNumbers(ctx, s, ox, oy, assets.numbers)
   drawVignette(ctx, s)
   drawBossPhaseIndicator(ctx, s)
 }
