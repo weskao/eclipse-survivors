@@ -2,6 +2,7 @@
 import { computed, ref, shallowRef, watch } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
+import AudioControl from '../../AudioControl.vue'
 import type { HudView } from '../../../game/store'
 import type { JobId } from '../../../game/types'
 import { projectCombatHud, type CombatHudActions, type CombatHudFeed } from './model'
@@ -15,6 +16,9 @@ const props = defineProps<{
   feed?: CombatHudFeed
   musicOn?: boolean
   sfxOn?: boolean
+  musicVolume?: number
+  sfxVolume?: number
+  audioActive?: boolean
 }>()
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed))
@@ -68,12 +72,12 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
           </div>
         </div>
         <nav class="es2-hud__controls es2-hud__plate" aria-label="戰鬥操作">
-          <button v-if="actions.toggleMusic && musicOn !== undefined" type="button" data-es2-music
-            :aria-label="musicOn ? '關閉背景音樂' : '開啟背景音樂'" :aria-pressed="musicOn"
-            :title="musicOn ? '背景音樂：開' : '背景音樂：關'" @click="actions.toggleMusic()">♫</button>
-          <button v-if="actions.toggleSfx && sfxOn !== undefined" type="button" data-es2-sfx
-            :aria-label="sfxOn ? '關閉音效' : '開啟音效'" :aria-pressed="sfxOn"
-            :title="sfxOn ? '音效：開' : '音效：關'" @click="actions.toggleSfx()">◖))</button>
+          <AudioControl v-if="actions.toggleMusic && actions.toggleSfx && actions.setMusicVolume && actions.setSfxVolume && musicOn !== undefined && sfxOn !== undefined"
+            context="hud" compact :active="active && (audioActive ?? true)"
+            :music-on="musicOn ?? false" :sfx-on="sfxOn ?? false"
+            :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100"
+            @toggle-music="actions.toggleMusic?.()" @toggle-sfx="actions.toggleSfx?.()"
+            @music-volume="actions.setMusicVolume?.($event)" @sfx-volume="actions.setSfxVolume?.($event)" />
           <button type="button" data-es2-settings aria-label="開啟設定" title="設定" @click="actions.settings()">⚙</button>
           <button type="button" data-es2-pause aria-label="暫停遊戲" aria-keyshortcuts="P" title="暫停（P）" @click="actions.pause()">Ⅱ</button>
         </nav>
