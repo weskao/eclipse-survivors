@@ -238,11 +238,15 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
             # Never overwrite a real specialized ability icon with a cropped
             # directional-character pose during the final integration.
             with Image.open(existing) as icon:
-                if icon.size != (192,192):raise ValueError(f'Invalid existing hero ability icon dimensions: {id}')
+                width,height=icon.size
+                if width<64 or height<64 or width>1024 or height>1024:
+                    raise ValueError(f'Invalid existing hero ability icon dimensions: {id} {icon.size}')
+                if not icon.convert('RGBA').getchannel('A').getbbox():
+                    raise ValueError(f'Empty existing hero ability icon: {id}')
             raw=existing.read_bytes()
             if len(raw)>=75000:raise ValueError(f'Existing hero skill exceeds budget: {id}')
             produced.append({'path':str(existing.relative_to(output)),'kind':'hero-special',
-                'size':[192,192],'frames':1,'cell':[192,192],
+                'size':[width,height],'frames':1,'cell':[width,height],
                 'source':'existing-integrated-hero-special','sourceBoxes':[],
                 'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'max_bytes':75000})
             continue
