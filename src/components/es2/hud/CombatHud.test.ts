@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { mount, type VueWrapper } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { emptyHud, type HudView } from '../../../game/store'
 import CombatHud from './CombatHud.vue'
@@ -12,13 +12,13 @@ const equipped: HudView = {
     { id: 'shield', icon: '⛨', title: '護盾', rarity: 'common', level: 1, maxLevel: 5, cooldown: 0, cooldownPct: 0, evolved: false },
   ],
 }
-const instances: VueWrapper[] = []
+const instances: Array<{ unmount(): void }> = []
 function render(override: Record<string, unknown> = {}) {
   const pause = vi.fn()
   const settings = vi.fn()
   const wrapper = mount(CombatHud, {
     attachTo: document.body,
-    props: { active: true, choice: 'ranger', hud: equipped, actions: { pause, settings }, ...override },
+    props: { active: true, choice: 'ranger' as const, hud: equipped, actions: { pause, settings }, ...override },
   })
   instances.push(wrapper)
   return { wrapper, pause, settings }
@@ -43,6 +43,12 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.find('[data-es2-wave]').exists()).toBe(false)
     expect(wrapper.find('[data-es2-relic]').exists()).toBe(false)
     expect(wrapper.get('canvas[aria-label="戰場小地圖"]').exists()).toBe(true)
+    // A replaced engine snapshot updates bars without a component-local timer.
+    return wrapper.setProps({ hud: { ...equipped, hpPct: 28, xpPct: 83, kill: 78 } }).then(() => {
+      expect(wrapper.get('[role="progressbar"][aria-label="生命值"]').attributes('aria-valuenow')).toBe('28')
+      expect(wrapper.get('[role="progressbar"][aria-label="經驗值"]').attributes('aria-valuenow')).toBe('83')
+      expect(wrapper.text()).toContain('78')
+    })
   })
 
   it('selects an actual equipped skill by pointer or keyboard-focusable button and shows live cooldowns', async () => {
