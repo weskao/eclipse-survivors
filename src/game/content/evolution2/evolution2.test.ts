@@ -152,3 +152,78 @@ describe('Evolution2 independent ContentPack', () => {
     expect(state.mobs).toHaveLength(130)
   })
 })
+
+
+describe('Evolution2 combat remediation regressions', () => {
+  it('never attacks or emits effects while paused, and can fire when gameplay resumes', () => {
+    const state = game()
+    const id = unlock(state, 0)
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    const target = enemy(60, 0, 1000)
+    state.mobs = [target]
+    state.mode = 'paused'
+    const before = state.damageDealt
+    registry.tick(state, 0.016, hooks)
+    expect(target.hp).toBe(1000)
+    expect(state.damageDealt).toBe(before)
+    expect(state.content.effects).toHaveLength(0)
+    state.mode = 'play'
+    registry.tick(state, 0.016, hooks)
+    expect(target.hp).toBeLessThan(1000)
+  })
+
+  it('fills only available volley slots and never exceeds eighty shots', () => {
+    const state = game()
+    const id = unlock(state, 9)
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    state.mobs = [enemy(120)]
+    state.shots = Array.from({ length: 79 }, () => ({
+      x: 0, y: 0, vx: 0, vy: 0, life: 1, d: 1, kind: 'arrow' as const, r: 6,
+    }))
+    registry.tick(state, 0.016, hooks)
+    expect(state.shots).toHaveLength(80)
+    expect(state.shots[79]!.vx).toBeGreaterThan(0)
+    registry.tick(state, 10, hooks)
+    expect(state.shots).toHaveLength(80)
+  })
+
+  it('prioritizes nearest AoE targets rather than crowd insertion order', () => {
+    const state = game()
+    const id = unlock(state, 3)
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    const farther = Array.from({ length: 12 }, (_, i) => enemy(143 + i, 0, 1000))
+    const center = enemy(60, 0, 1000)
+    state.mobs = [...farther, center]
+    registry.tick(state, 0.016, hooks)
+    expect(center.hp).toBeLessThan(1000)
+    expect(state.mobs.filter(mob => mob.hp < 1000).length).toBeLessThanOrEqual(12)
+  })
+
+  it('attributes real damage and single kills to the combat hook without replay', () => {
+    const state = game()
+    const id = unlock(state, 0)
+    const observed: string[] = []
+    const observedHooks: GameHooks = {
+      ...hooks,
+      content: (_game, event) => observed.push(event.type),
+    }
+    expect(registry.acquire(state, id, observedHooks)).toBe(true)
+    state.mobs = [enemy(60, 0, 1)]
+    registry.tick(state, 0.016, observedHooks)
+    expect(observed).toEqual(['hit', 'kill'])
+    expect(state.kill).toBe(1)
+    expect(state.damageDealt).toBe(1)
+    registry.tick(state, 0.016, observedHooks)
+    expect(observed).toEqual(['hit', 'kill'])
+    expect(registry.acquire(state, id, observedHooks)).toBe(false)
+  })
+
+  it('provides actual defensive invulnerability for Dawn Judgment while active', () => {
+    const state = game()
+    const id = unlock(state, 1)
+    state.mobs = [enemy(70, 0)]
+    expect(registry.acquire(state, id, hooks)).toBe(true)
+    registry.tick(state, 0.016, hooks)
+    expect(state.hero!.inv).toBeGreaterThan(0)
+  })
+})
