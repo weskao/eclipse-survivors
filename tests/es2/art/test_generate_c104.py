@@ -7,6 +7,32 @@ from scripts.es2.generate_c104_assets import generate_assets, ASSET_BOXES, UI_BO
 
 ROOT = Path(__file__).resolve().parents[3]
 
+
+def alpha_component_sizes(alpha):
+    """8-connected opaque regions: detect accidentally imported adjacent sprites."""
+    width, height = alpha.size
+    pixels = alpha.tobytes()
+    seen = bytearray(width * height)
+    areas = []
+    for start, value in enumerate(pixels):
+        if value <= 32 or seen[start]:
+            continue
+        seen[start] = 1
+        pending = [start]
+        count = 0
+        while pending:
+            pos = pending.pop()
+            count += 1
+            x, y = pos % width, pos // width
+            for yy in range(max(0, y - 1), min(height, y + 2)):
+                for xx in range(max(0, x - 1), min(width, x + 2)):
+                    q = yy * width + xx
+                    if pixels[q] > 32 and not seen[q]:
+                        seen[q] = 1
+                        pending.append(q)
+        areas.append(count)
+    return sorted(areas, reverse=True)
+
 class TestC104ProductionArt(unittest.TestCase):
     def test_explicit_boxes_are_nonoverlapping_and_in_source(self):
         for source, rects in ASSET_BOXES.items():
@@ -64,6 +90,14 @@ class TestC104ProductionArt(unittest.TestCase):
                             if entry['kind'] == 'biome-scene':
                                 self.assertEqual(alpha.getextrema(), (255, 255),
                                                  'Full-scene art must preserve dark pixels without transparent holes')
+                            if entry['kind'] == 'enemy-body':
+                                self.assertEqual(len({tuple(bounds) for bounds in entry['sourceBoxes']}), 4,
+                                                 'Six playback slots must reuse four distinct authored poses')
+                                areas = alpha_component_sizes(alpha)
+                                self.assertTrue(areas)
+                                self.assertLessEqual(areas[1] if len(areas) > 1 else 0,
+                                                     max(45, areas[0] * 0.035),
+                                                     f'Neighboring pose contamination: {entry["path"]} cell {index}')
                             self.assertIsNotNone(alpha.getbbox())
                             edges = [alpha.crop((0, 0, width, 2)),
                                      alpha.crop((0, height-2, width, height)),
