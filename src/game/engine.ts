@@ -79,11 +79,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const s = createState()
   const profileStore = opts.profileStore ?? createProfileStore()
   const audio = opts.audio ?? createAudioSystem({ bgm: createBgm() })
+  const settingsStorage = (() => { try { return localStorage } catch { return null } })()
+  let initialEffect: 'soft' | 'still' = 'soft'
+  let initialShake = true
+  try {
+    if (settingsStorage?.getItem('eclipseUpgradeEffect') === 'still') initialEffect = 'still'
+    if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
+  } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, sfxOn: audio.sfxOn, hud: emptyHud(),
+    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, sfxOn: audio.sfxOn,
+    musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
+    settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
     runMode: 'quick', profile: profileStore.get(), runResult: null, rewards: null,
   })
+  let resumeAfterSettings = false
   let toastTimer = 0
   let keys: KeyState = {}
   let stick: MoveInput = { x: 0, y: 0 }
@@ -219,6 +229,24 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
   }
 
+  function openSettings(): void {
+    if (ui.settingsOpen) return
+    resumeAfterSettings = s.mode === 'play'
+    if (resumeAfterSettings) togglePause()
+    ui.settingsOpen = true
+  }
+
+  function closeSettings(): void {
+    if (!ui.settingsOpen) return
+    ui.settingsOpen = false
+    if (resumeAfterSettings && s.mode === 'paused') togglePause()
+    resumeAfterSettings = false
+  }
+
+  function saveSetting(key: string, value: string): void {
+    try { settingsStorage?.setItem(key, value) } catch { /* unavailable */ }
+  }
+
   function advance(dt: number): void {
     s.worldClock += s.mode === 'play' ? 0 : dt * 0.3
     if (s.mode !== 'play') return
@@ -318,6 +346,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   function listen(win: Window = window): () => void {
     const doc = win.document
     const onKeyDown = (e: KeyboardEvent): void => {
+      if (ui.settingsOpen) {
+        if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
+        return
+      }
       if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') audio.wake()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
@@ -375,6 +407,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    assets.cameraShakeEnabled = () => ui.cameraShake
     let dpr = 1
     let last = 0
     let raf = 0
@@ -444,6 +477,20 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     dash: () => heroDash(s, hooks),
     toggleMusic() { ui.musicOn = audio.toggleMusic(s.mode) },
     toggleSfx() { ui.sfxOn = audio.toggleSfx() },
+    setMusicVolume(value) { audio.setMusicVolume(value); ui.musicVolume = audio.musicVolume },
+    setSfxVolume(value) { audio.setSfxVolume(value); ui.sfxVolume = audio.sfxVolume },
+    setUpgradeEffect(effect) {
+      if (effect !== 'soft' && effect !== 'still') return
+      ui.upgradeEffect = effect
+      saveSetting('eclipseUpgradeEffect', effect)
+    },
+    setCameraShake(enabled) {
+      ui.cameraShake = enabled
+      saveSetting('eclipseCameraShake', enabled ? 'on' : 'off')
+      if (!enabled) s.cameraKick = 0
+    },
+    openSettings,
+    closeSettings,
     goMenu: () => screen('menu'),
     setStick(v) { stick = v ?? { x: 0, y: 0 } },
   }
