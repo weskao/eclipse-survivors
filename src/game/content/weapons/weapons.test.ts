@@ -171,6 +171,7 @@ describe('density, simultaneity, lifecycle and determinism', () => {
     for (const id of ['shadow-daggers', 'poison-cloud', 'solar-beam', 'ricochet-blades'])
       expect(registry.acquire(s, `weapons:${id}`, hooks)).toBe(true)
     s.mobs[0]!.hp = 8
+    s.mobs.push(mob(140, 10, 10000))
     advance(s, registry, 6)
     expect(s.kill).toBe(1)
     expect(s.stars).toHaveLength(1)
