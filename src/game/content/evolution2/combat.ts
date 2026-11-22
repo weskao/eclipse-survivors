@@ -50,7 +50,6 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     context.addEffect({ id: cue.effectId, x, y, life: 0.75, max: 0.75 })
   }
   const area = (x: number, y: number, radius: number, power: number, pull = 0): void => {
-    const r2 = radius * radius
     for (const mob of state.mobs) {
       if (hitCount >= MAX_HITS_PER_CAST) break
       if (mob.hp <= 0 || hitMobs.has(mob)) continue
@@ -64,7 +63,6 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
       }
       damage(mob, power)
     }
-    void r2
   }
 
   switch (recipe.id) {
