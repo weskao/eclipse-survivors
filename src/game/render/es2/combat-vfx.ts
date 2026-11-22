@@ -52,9 +52,9 @@ const ease = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t) }
 const live = <T>(setting: LiveSetting<T> | undefined, fallback: T): T =>
   typeof setting === 'function' ? (setting as () => T)() : (setting ?? fallback)
 
-function ring(ctx: Ctx2D, r: number, color: string, width = 2, y = 0, aspect = 1): void {
+function ring(ctx: Ctx2D, r: number, color: string, width = 2, y = 0, aspect = 1, x = 0): void {
   ctx.strokeStyle = color; ctx.lineWidth = width
-  ctx.beginPath(); ctx.ellipse(0, y, Math.max(0.1, r), Math.max(0.1, r * aspect), 0, 0, TAU); ctx.stroke()
+  ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.1, r), Math.max(0.1, r * aspect), 0, 0, TAU); ctx.stroke()
 }
 function rays(ctx: Ctx2D, count: number, inner: number, outer: number, color: string, offset = 0): void {
   ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineCap = 'round'
@@ -201,7 +201,7 @@ export function drawCombatEffect(
         for (let i = 0; i < count; i++) {
           const v = DIRS[Math.floor(i * 24 / count)]!
           ring(ctx, 7 + (i % 3) * 4 + strike * 6, i % 2 ? '#80b66b' : '#ad8bc2', 2,
-            v.y * (25 + strike * 46), 0.55)
+            v.y * (25 + strike * 46), 0.55, v.x * (25 + strike * 46))
         }
         break
       case 'gravity-vortex':
@@ -241,6 +241,16 @@ export function drawCombatEffect(
         rays(ctx, count, 37, 54 + strike * 75, '#bc95f5', t)
         break
       case 'chest-opening':
+        // The hinged lid opens upward, then the reward rays bloom. This is
+        // articulated geometry, not a scaled static treasure image.
+        ctx.fillStyle = '#a96a3b'
+        ctx.fillRect(-24, 2, 48, 25)
+        ctx.fillStyle = '#f6c378'
+        ctx.fillRect(-26, 1, 52, 5)
+        ctx.fillStyle = '#583550'
+        ctx.fillRect(-23, -4 - strike * 29, 46, 8)
+        ctx.fillStyle = '#ffda8d'
+        ctx.fillRect(-3, -4 - strike * 29, 6, 8)
         ring(ctx, 13 + strike * 67, '#ffca72', 3, 0, 0.44)
         rays(ctx, count, 9 + strike * 18, 40 + strike * 76, '#fff0ba', t)
         shards(ctx, count, 24 + strike * 66, 6, '#f8a654', strike)
