@@ -16,7 +16,7 @@ describe('rigid non-deforming equipment layers', () => {
     source.height = 390
     const layers = createRigidWeaponLayers(source, job, factory.make)
     expect(layers).not.toBeNull()
-    expect(factory.made).toHaveLength(2)
+    expect(factory.made).toHaveLength(job === 'knight' ? 2 : 3)
     expect(layers!.body).toBe(factory.made[0]!.canvas)
     expect(layers!.weapon).toBe(factory.made[1]!.canvas)
     expect(factory.made[0]!.fake.drawn).toContain(source)
