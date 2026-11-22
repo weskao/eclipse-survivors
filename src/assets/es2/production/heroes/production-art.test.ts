@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 type Asset = {
@@ -10,7 +9,7 @@ type Asset = {
   status: string; sha256?: string
 }
 type Manifest = { schemaVersion: number; category: string; status: string; assets: Asset[] }
-const root = resolve(fileURLToPath(new URL('../', import.meta.url)))
+const root = resolve(process.cwd(), 'src/assets/es2/production')
 const expected: Record<string, string[]> = {"heroes":["shadowblade","spirit-summoner","crimson-paladin"],"enemies":["shadow-assassin","shadow-assassin:telegraph","necromancer","necromancer:telegraph","dark-archer","dark-archer:telegraph","plague-carrier","plague-carrier:telegraph","shield-guardian","shield-guardian:telegraph","phantom","phantom:telegraph","fire-imp","fire-imp:telegraph","frost-wraith","frost-wraith:telegraph","berserker","berserker:telegraph","crystal-sentinel","crystal-sentinel:telegraph"],"bosses":["abyss-monarch","frost-sovereign","infernal-titan","eclipse-seraph"],"biomes":["blood-moon-cathedral:ground","blood-moon-cathedral:decor","cursed-forest:ground","cursed-forest:decor","abyssal-necropolis:ground","abyssal-necropolis:decor","celestial-rift:ground","celestial-rift:decor"],"ui":["treasure-common","treasure-rare","treasure-legendary","treasure-cursed","rarity-common","rarity-rare","rarity-legendary","hud-health","hud-xp","hud-cooldown","hud-quest","achievement-boss","achievement-survivor","achievement-evolution","achievement-explorer","achievement-collector","achievement-flawless"]}
 const categories = Object.keys(expected)
 const manifests = Object.fromEntries(categories.map(category => {
