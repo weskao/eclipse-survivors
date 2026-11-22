@@ -75,8 +75,23 @@ describe('ES2 final host audio wiring', () => {
     audio.tick('play')
     expect(context.oscillators).toHaveLength(previous)
     engine.goMenu()
+    // The title screen keeps the previous pre-rendered overture; ES2 only scores runs.
     expect(bgm.played).toBe(0)
-    expect(menu.played).toBe(0)
+    expect(menu.played).toBe(1)
+    const menuOscillators = context.oscillators.length
+    context.currentTime = 2
+    audio.tick('menu')
+    expect(context.oscillators).toHaveLength(menuOscillators)
+  })
+
+  it('real engine plays the old overture on the title screen and hands off to ES2 on start', () => {
+    const { audio, bgm, menu } = setup()
+    const engine = createEngine({ audio, contentPacks: [] })
+    audio.wake()
+    expect(menu.played).toBe(1)
+    expect(bgm.played).toBe(0)
+    engine.start()
+    expect(menu.paused).toBe(true)
   })
 
   it('legacy audio remains independently usable and is not globally silenced', () => {

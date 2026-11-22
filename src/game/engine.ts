@@ -174,7 +174,6 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         }
       },
     }) : null
-  if (es2Audio) audio.setExternalScoreActive?.(true)
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = true
@@ -293,7 +292,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.mode = name
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
+    // Title screen keeps the previous pre-rendered overture; ES2 scores runs only.
+    // Order matters: hand off before onScreen when leaving the title, after it when entering,
+    // so the shared owner never briefly starts the wrong track.
+    if (es2Audio && name !== 'menu') audio.setExternalScoreActive?.(true)
     audio.onScreen(name)
+    if (es2Audio && name === 'menu') audio.setExternalScoreActive?.(false)
     if (name === 'menu') es2Audio?.setScene('menu')
     else if (name === 'play') es2Audio?.setScene('exploration')
     if (name !== 'play') {
@@ -457,6 +461,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     keys = {}
     stick = { x: 0, y: 0 }
     audio.setCombatIntensity('calm')
+    if (es2Audio) audio.setExternalScoreActive?.(true) // before wake: never restart the overture
     wakeAudio()
     screen('play')
     hooks.content?.(s, { type: 'start' })
@@ -807,7 +812,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       frameDrawn++
       drawFrame(ctx, s, dpr, assets)
       if (s.hero && mini && frameDrawn % 7 === 0) drawMiniMap(mini, s, assets)
-      if (es2Audio) es2Audio.tick(s.mode)
+      if (es2Audio && s.mode !== 'menu') es2Audio.tick(s.mode)
       else audio.tick(s.mode)
       raf = requestAnimationFrame(frame)
     }
