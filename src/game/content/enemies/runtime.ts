@@ -400,9 +400,10 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
     }
     // Flanking/spacing movement is deterministic; no A* or per-frame crowd scan.
     move(e, hero, dt)
-    if (visibleToHero(a, e) && hasSight(a, e)
+    if (visibleToHero(a, e)
       && squared(hero.x - e.x, hero.y - e.y) <= def.range * def.range
-      && (e.kind !== 'necromancer' || e.summonsMade < 8)) telegraph(a, e)
+      && (e.kind !== 'necromancer' || e.summonsMade < 8)
+      && hasSight(a, e)) telegraph(a, e)
   }
   tickProjectiles(a, dt)
   tickZones(a, dt)
