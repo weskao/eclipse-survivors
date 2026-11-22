@@ -13,6 +13,10 @@ class SpyAudio implements AudioSystem {
   interruptions = 0
   musicOn = true
   sfxOn = true
+  musicVolume = 100
+  sfxVolume = 100
+  setMusicVolume(value: number): void { this.musicVolume = value }
+  setSfxVolume(value: number): void { this.sfxVolume = value }
   wake(): void { this.unlocked = true; this.wakeCalls++ }
   interrupt(): void { this.interruptions++ }
   setCombatIntensity(): void {}
