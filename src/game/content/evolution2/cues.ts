@@ -1,5 +1,5 @@
 import type { ContentEffectDefinition } from '../contracts'
-import type { ContentId, ContentVisualFx, SfxCue } from '../../types'
+import type { ContentId, ContentVisualFx, GameState, SfxCue } from '../../types'
 import type { Ctx2D } from '../../render/ctx'
 import { EVOLUTION2_RECIPES } from './recipes'
 
@@ -29,7 +29,7 @@ function makeEffect(title: string, cue: Evolution2Cue, index: number): ContentEf
   return {
     id: cue.effectId,
     title,
-    draw(ctx: Ctx2D, _state, effect: ContentVisualFx, ox: number, oy: number): void {
+    draw(ctx: Ctx2D, _state: GameState, effect: ContentVisualFx, ox: number, oy: number): void {
       const progress = 1 - effect.life / effect.max
       const radius = Math.min(110, cue.radius * 0.35) * (0.45 + progress * 0.55)
       const x = effect.x - ox, y = effect.y - oy
