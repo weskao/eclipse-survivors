@@ -179,6 +179,15 @@
 .es2-hud__no-skills { padding: 12px; color: #c9c9cf; }
 @keyframes es2-hud-reveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
+/* Reserve the whole top row for minimap/counters on medium desktops. */
+@media (min-width: 1061px) and (max-width: 1399px) {
+  .es2-hud {
+    --es2-encounter-top: max(174px, calc(env(safe-area-inset-top) + 158px));
+    --es2-side-top: max(310px, calc(env(safe-area-inset-top) + 288px));
+    --es2-status-top: var(--es2-side-top);
+  }
+  .es2-hud__encounter { width: min(500px, 55vw); }
+}
 @media (max-width: 1060px) {
   .es2-hud__map { display: none; }
   .es2-hud {
@@ -241,7 +250,7 @@
 @media (orientation: landscape) and (max-height: 520px) {
   .es2-hud {
     --es2-encounter-top: max(8px, env(safe-area-inset-top));
-    --es2-side-top: max(126px, calc(env(safe-area-inset-top) + 105px));
+    --es2-side-top: max(142px, calc(env(safe-area-inset-top) + 123px));
     --es2-status-top: var(--es2-side-top);
     --es2-footer-clear: max(118px, calc(env(safe-area-inset-bottom) + 109px));
   }

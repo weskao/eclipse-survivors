@@ -26,6 +26,7 @@ describe('responsive ES2 encounter and information rail', () => {
   it('supports phones, landscape height limits, safe areas and status scrolling', () => {
     expect(css).toContain('@media (max-width: 700px)')
     expect(css).toContain('@media (max-width: 400px)')
+    expect(css).toContain('@media (min-width: 1061px) and (max-width: 1399px)')
     expect(css).toContain('@media (orientation: landscape) and (max-height: 520px)')
     expect(css).toContain('safe-area-inset-bottom')
     expect(css).toContain('safe-area-inset-left')
