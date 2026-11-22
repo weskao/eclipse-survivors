@@ -3,6 +3,7 @@ import { createEngine, type Engine } from './engine'
 import type { AudioSystem } from './audio/types'
 import { DURATION } from './constants'
 import { seeded, setRandom } from './math'
+import { inventorySnapshot } from './content/relics/runtime'
 import type { GameMode, SfxCue, UpgradeId } from './types'
 
 class SpyAudio implements AudioSystem {
@@ -172,7 +173,8 @@ describe('engine commands fire the original cues', () => {
     }
     expect(engine.ui.hud.skills.length).toBeGreaterThan(0)
     expect(engine.ui.hud.skills.every(item =>
-      item.id in engine.state.hero!.skills || item.id in engine.state.hero!.evolutions,
+      item.id in engine.state.hero!.skills || item.id in engine.state.hero!.evolutions ||
+      item.id in engine.state.content.levels,
     )).toBe(true)
   })
 
@@ -212,6 +214,30 @@ describe('engine commands fire the original cues', () => {
     engine.start()
     engine.goMenu()
     expect(engine.ui.mode).toBe('menu')
+  })
+})
+
+describe('ES2 live treasure selection', () => {
+  it('turns a real chest pickup into exactly one selectable relic without losing original XP behavior', () => {
+    engine.start()
+    const s = engine.state
+    const hero = s.hero!
+    s.mobs = []
+    s.spawnT = 100
+    s.nextEventAt = Infinity
+    s.events = [{ id: 1, kind: 'chest', x: hero.x, y: hero.y, expiresAt: s.time + 30 }]
+    engine.advance(0.016)
+    expect(engine.ui.mode).toBe('level')
+    expect(engine.ui.specialChoice?.kind).toBe('treasure')
+    expect(engine.ui.specialChoice?.items).toHaveLength(3)
+    expect(hero.xp).toBe(0)
+    const id = engine.ui.specialChoice!.items[0]!.id
+    engine.chooseTreasure(id)
+    expect(engine.ui.specialChoice).toBeNull()
+    expect(engine.ui.mode).toBe('play')
+    expect(inventorySnapshot(s).items).toHaveLength(1)
+    engine.chooseTreasure(id)
+    expect(inventorySnapshot(s).items).toHaveLength(1)
   })
 })
 

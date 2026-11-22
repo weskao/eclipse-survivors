@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eclipse Survivors · ES2 Combat VFX</title>
+  <style>
+    :root { color-scheme: dark; font: 15px system-ui, sans-serif; background: #0a0e16; color: #e9e1d4; }
+    body { max-width: 920px; margin: 18px auto; padding: 0 16px; }
+    h1 { font: 600 24px Georgia, serif; }
+    .tools { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+    label { display: inline-flex; gap: 6px; align-items: center; }
+    select, button { color: inherit; background: #222a39; border: 1px solid #65728b; border-radius: 7px; padding: 8px 12px; }
+    button { cursor: pointer; }
+    button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid #e5c48c; outline-offset: 2px; }
+    canvas { display: block; width: 100%; height: auto; border: 1px solid #495368; background: #151f2b; border-radius: 10px; }
+    p { color: #aeb9c9; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>ES2 · Combat VFX Showcase</h1>
+  <p>Isolated content-pack preview. No gameplay, collisions or damage are simulated. Use Pause to freeze any frame for screenshots.</p>
+  <div class="tools">
+    <label for="effect">Effect <select id="effect"></select></label>
+    <label for="quality">Quality <select id="quality"><option>high</option><option>medium</option><option>low</option></select></label>
+    <label><input id="motion" type="checkbox" /> Reduced motion</label>
+    <label><input id="flashing" type="checkbox" /> Reduced flashing</label>
+    <button id="replay">Replay</button><button id="pause">Pause</button><button id="next">Next effect</button>
+  </div>
+  <canvas id="stage" width="840" height="530" aria-label="Animated combat effect preview"></canvas>
+  <p id="caption" aria-live="polite"></p>
+  <script type="module" src="./demo.ts"></script>
+</body>
+</html>

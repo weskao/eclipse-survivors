@@ -70,6 +70,12 @@ export interface HudView {
   skills: HudSkill[]
 }
 
+export interface UiTreasureChoice {
+  readonly kind: 'treasure'
+  readonly items: readonly { id: string; title: string; description?: string; icon?: string;
+    rarity: SkillRarity | 'epic' }[]
+}
+
 /** Reactive UI snapshot (engine owns it as a `shallowReactive`; replace nested objects, don't mutate). */
 export interface UiState {
   mode: GameMode
@@ -85,6 +91,7 @@ export interface UiState {
   cameraShake: boolean
   hud: HudView
   upgrades: readonly UpgradeDef[]
+  specialChoice: UiTreasureChoice | null
   toastText: string
   toastVisible: boolean
   /** `#ending` / `#summary` text. */
@@ -106,6 +113,8 @@ export interface GameCommands {
   selectCosmetic(hero: JobId, skin: CosmeticId): void
   resetProgress(): void
   chooseUpgrade(id: AbilityId): void
+  chooseTreasure(id: string): void
+  cancelTreasure(): void
   /** Original `pause()`: play → paused, paused → play. */
   togglePause(): void
   dash(): void

@@ -1,4 +1,4 @@
-import { TAU } from '../constants'
+import { DASH_COOLDOWN, LOW_HP_PCT, TAU } from '../constants'
 import { easing } from '../math'
 import type { GameState, Hero } from '../types'
 import type { Ctx2D } from './ctx'
@@ -128,6 +128,56 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.save(); ctx.globalAlpha = t; ctx.textAlign = 'center'; ctx.font = '900 28px system-ui'
     ctx.fillStyle = '#fff5d5'; ctx.strokeStyle = '#5c4722'; ctx.lineWidth = 5
     ctx.strokeText('LEVEL UP!', hero.x + ox, hero.y - 88 + oy); ctx.fillText('LEVEL UP!', hero.x + ox, hero.y - 88 + oy)
+    ctx.restore()
+  }
+}
+
+const DASH_READY_FLASH = 0.28
+const STATUS_BAR_WIDTH = 56
+
+/** Foot-level dash and health readouts; a healthy hero with dash ready draws nothing. */
+export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+  if (s.mode === 'menu' || s.mode === 'result' || hero.hp <= 0) return
+  const x = hero.x + ox
+  const y = hero.y + oy
+  const cd = hero.dashCd
+  // dashCd keeps falling below zero, and a real recovery needs one full cooldown of run time.
+  const recovered = cd <= 0 && cd > -DASH_READY_FLASH && s.time >= DASH_COOLDOWN
+  if (cd > 0 || recovered) {
+    const start = -Math.PI / 2
+    ctx.save()
+    ctx.lineWidth = 3
+    ctx.lineCap = 'round'
+    if (cd > 0) {
+      ctx.globalAlpha = 0.45
+      ctx.strokeStyle = '#07141c'
+      ctx.beginPath(); ctx.ellipse(x, y + 2, 44, 15, 0, 0, TAU); ctx.stroke()
+      ctx.globalAlpha = 0.95
+    } else {
+      ctx.globalAlpha = reducedMotion ? 0.9 : 1 + cd / DASH_READY_FLASH
+    }
+    ctx.strokeStyle = recovered ? '#f4feff' : '#8fe6ff'
+    ctx.beginPath()
+    ctx.ellipse(x, y + 2, 44, 15, 0, start, start + TAU * (cd > 0 ? 1 - cd / DASH_COOLDOWN : 1))
+    ctx.stroke()
+    ctx.restore()
+  }
+  if (hero.hp < hero.max) {
+    const pct = hero.hp / hero.max * 100
+    const critical = pct <= LOW_HP_PCT
+    const left = x - STATUS_BAR_WIDTH / 2
+    const top = y + 22
+    ctx.save()
+    ctx.fillStyle = '#070c11d9'
+    ctx.fillRect(left, top, STATUS_BAR_WIDTH, 6)
+    ctx.fillStyle = critical ? '#ff4250' : '#d65854'
+    ctx.fillRect(left, top, STATUS_BAR_WIDTH * pct / 100, 6)
+    if (critical) {
+      // Outline keeps the critical state readable without relying on hue alone.
+      ctx.strokeStyle = '#ffe3d3'
+      ctx.lineWidth = 1
+      ctx.strokeRect(left, top, STATUS_BAR_WIDTH, 6)
+    }
     ctx.restore()
   }
 }

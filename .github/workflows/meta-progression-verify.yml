@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
@@ -22,7 +22,7 @@ jobs:
       - run: pnpm build
   screenshots:
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
@@ -34,8 +34,9 @@ jobs:
       - run: pnpm build
       - name: Install isolated browser for screenshots
         run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps chromium
+          # npm crashes on pnpm's node_modules; the parent dir is still on Node's resolve path.
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
       - name: Launch real game and capture desktop/mobile UI
         run: |
           pnpm preview --host 127.0.0.1 --port 4173 > /tmp/meta-preview.log 2>&1 &

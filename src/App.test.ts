@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import App from './App.vue'
 import { createEngine } from './game/engine'
 
@@ -21,4 +22,33 @@ describe('App', () => {
     w.unmount()
     expect(stop).toHaveBeenCalledOnce()
   })
+  it('uses the ES2 menu, combat HUD and mobile controls without mounting legacy copies', () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const w = mount(App, { props: { engine }, attachTo: document.body })
+    expect(w.find('.es2-menu').exists()).toBe(true)
+    expect(w.find('.es2-hud').exists()).toBe(true)
+    expect(w.find('.es2-mobile-controls').exists()).toBe(true)
+    expect(w.find('#menu').exists()).toBe(false)
+    expect(w.find('#hud').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('applies accessibility preferences to the live page and restores the root on unmount', async () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const root = document.documentElement
+    const originalQuality = root.getAttribute('data-es2-quality')
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    expect(root.getAttribute('data-es2-quality')).not.toBeNull()
+    engine.openSettings()
+    await nextTick()
+    const quality = document.querySelector<HTMLSelectElement>('#es2-quality')
+    expect(quality).not.toBeNull()
+    quality!.value = 'low'
+    quality!.dispatchEvent(new Event('change', { bubbles: true }))
+    await nextTick()
+    expect(root.getAttribute('data-es2-quality')).toBe('low')
+    wrapper.unmount()
+    expect(root.getAttribute('data-es2-quality')).toBe(originalQuality)
+  })
+
 })

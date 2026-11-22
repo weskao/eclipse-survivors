@@ -1,0 +1,27 @@
+/* Imported by the integration owner only; CSS never changes game simulation. */
+[data-es2-reduce-motion="true"] *,
+[data-es2-reduce-motion="true"] *::before,
+[data-es2-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0ms !important;
+  scroll-behavior: auto !important;
+}
+[data-es2-reduce-flashing="true"] .toast,
+[data-es2-reduce-flashing="true"] .chip,
+[data-es2-reduce-flashing="true"] .skill {
+  animation: none !important;
+  filter: none !important;
+}
+[data-es2-status-symbols="true"] #hpLabel::before {
+  content: '♥ ';
+  color: #fff2d5;
+}
+[data-es2-status-symbols="true"] #hpLabel::after {
+  content: ' · ✦ 經驗';
+  color: #dcefff;
+}
+[data-es2-reduce-flashing="true"] .toast {
+  transition: none !important;
+  text-shadow: 0 1px 4px #000;
+}

@@ -43,7 +43,7 @@ export const spawnInterval = (time: number, currentScene: number, frequency = 1)
   Math.max(0.18, 0.75 - time * 0.003 - sceneBonus(currentScene)) / frequency
 
 /** Counts down `spawnT`, spawns the wave (plus a 32%+ extra after 38s) and the boss after 92s. */
-export function tickSpawning(s: GameState, dt: number, hooks: GameHooks): void {
+export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void): void {
   s.spawnT -= dt
   if (s.spawnT <= 0) {
     s.spawnT = spawnInterval(s.time, s.currentScene, getMode(s.runMode).modifiers.spawnFrequency)
@@ -51,9 +51,12 @@ export function tickSpawning(s: GameState, dt: number, hooks: GameHooks): void {
     if (s.time > 38 && random() < 0.32 + sceneBonus(s.currentScene)) spawnMob(s)
   }
   if (!s.bossSpawned && s.time > getMode(s.runMode).bossAt) {
-    s.bossSpawned = true
-    spawnMob(s, 'boss')
-    hooks.sfx('boss')
-    hooks.message('⚠ 魔王降臨！')
+    if (spawnBoss) spawnBoss(s, hooks)
+    else {
+      s.bossSpawned = true
+      spawnMob(s, 'boss')
+      hooks.sfx('boss')
+      hooks.message('⚠ 魔王降臨！')
+    }
   }
 }

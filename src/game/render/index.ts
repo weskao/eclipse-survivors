@@ -1,5 +1,8 @@
 import type { Artwork } from '../art'
 import type { ContentRegistry } from '../content/registry'
+import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
+import type { BossEncounterController } from '../content/bosses/controller'
+import { drawBossTelegraphs } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
@@ -9,7 +12,7 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroStatus, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
@@ -21,6 +24,8 @@ export type { Ctx2D } from './ctx'
 
 export interface RenderAssets {
   content?: ContentRegistry
+  presentation?: () => VisualPresentationPolicy | null
+  bosses?: BossEncounterController
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   heroSheets: HeroSheets
@@ -71,7 +76,8 @@ function weatherGrade(ctx: Ctx2D, W: number, H: number, weather: string): Canvas
 export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderAssets): void {
   const { W, H } = s
   const hero = s.hero
-  const reduced = assets.prefersReducedMotion()
+  const policy = assets.presentation?.()
+  const reduced = policy?.reduceMotion ?? assets.prefersReducedMotion()
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.fillStyle = '#27352d'
   ctx.fillRect(0, 0, W, H)
@@ -89,7 +95,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
-  if (!reduced) drawAmbient(ctx, s, ox, oy)
+  if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
   drawWorldMarkers(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
   ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
@@ -103,6 +109,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   drawStars(ctx, s, ox, oy, reduced, assets.gems)
   drawEnemyTelegraphs(ctx, s, ox, oy)
+  if (assets.bosses) drawBossTelegraphs(ctx, assets.bosses.snapshot(s), ox, oy)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   const objects = assets.depthOrder
   objects.length = 0
@@ -118,6 +125,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint)
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
+  drawHeroStatus(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)
   drawEnemyProjectiles(ctx, s, ox, oy)
@@ -126,7 +134,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
   assets.content?.render(ctx, s, ox, oy)
-  drawNumbers(ctx, s, ox, oy)
+  if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy)
   drawVignette(ctx, s)
   drawBossPhaseIndicator(ctx, s)
 }

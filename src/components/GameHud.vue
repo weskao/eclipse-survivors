@@ -2,6 +2,7 @@
 import { hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
+import { LOW_HP_PCT } from '../game/constants'
 import SettingsButton from './SettingsButton.vue'
 import AudioControl from './AudioControl.vue'
 import type { HudView } from '../game/store'
@@ -28,7 +29,7 @@ defineExpose({ minimap })
 <template>
   <div id="hud" :class="{ active }">
     <div class="top">
-      <div class="status" :class="{ 'status-critical': hud.hpPct <= 25 }">
+      <div class="status" :class="{ 'status-critical': hud.hpPct <= LOW_HP_PCT }">
         <div class="hud-face" id="hudFace"><img :src="ART_URLS[choice]" :alt="choice" /></div>
         <b id="who">{{ hud.who }}</b>
         <div id="hudHealthMeter" class="bar" role="progressbar" aria-label="生命值" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>

@@ -2,7 +2,7 @@
 import { burst, impact, pushEcho, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
-import { DURATION } from './constants'
+import { DASH_COOLDOWN, DURATION } from './constants'
 import type { GameHooks, GameState, Hero, Mob } from './types'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
@@ -55,7 +55,7 @@ export function dash(s: GameState, hooks: GameHooks): void {
   const hero = s.hero
   if (s.mode !== 'play' || !hero || hero.dashCd > 0) return
   hero.dash = 0.22
-  hero.dashCd = 3
+  hero.dashCd = DASH_COOLDOWN
   hero.inv = Math.max(hero.inv, 0.35)
   burst(s, hero.x, hero.y, '#d8f8ff', 15)
   impact(s, hero.x, hero.y, 55, '#c6f7ff', 0.4)
