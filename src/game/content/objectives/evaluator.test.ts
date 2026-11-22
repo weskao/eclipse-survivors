@@ -112,7 +112,7 @@ describe('mode-specific victory, defeat and progress', () => {
   it('publishes distinct, finite and capped difficulty and rewards for each mode', () => {
     const ids = ['boss-rush','endless-eclipse','relic-hunt','cursed-expedition','chaos-arena'] as const
     const baseline = ids.map(id => getObjectiveDifficulty(createObjectiveState(id)))
-    expect(new Set(baseline.map(x => x.enemyHp))).toHaveLength(5)
+    expect(new Set(baseline.map(x => x.enemyHp)).size).toBe(5)
     for (const id of ids) {
       const s = advanceObjective(createObjectiveState(id), tick(60_000))
       const d = getObjectiveDifficulty(s)
@@ -123,5 +123,20 @@ describe('mode-specific victory, defeat and progress', () => {
     }
     const huge = apply('endless-eclipse', [tick(100_000_000), { type: 'abandon' }])
     expect(evaluateObjective(huge).rewards.embers).toBeLessThanOrEqual(1500)
+  })
+})
+
+describe('deadline and explicit withdrawal regression', () => {
+  it('cannot win Cursed Expedition after crossing the hard deadline with both wardens defeated', () => {
+    const late = apply('cursed-expedition', [tick(100), boss(1), tick(140), boss(2), tick(181)])
+    expect(late).toMatchObject({ status: 'defeat', defeatReason: 'timeout' })
+  })
+
+  it('represents voluntary withdrawal separately from defeat in all five modes', () => {
+    for (const id of ['boss-rush','endless-eclipse','relic-hunt','cursed-expedition','chaos-arena'] as const) {
+      const withdrawn = advanceObjective(createObjectiveState(id), { type: 'abandon' })
+      expect(withdrawn).toMatchObject({ status: 'withdrawn', defeatReason: 'abandoned' })
+      expect(advanceObjective(withdrawn, { type: 'player-defeated' })).toBe(withdrawn)
+    }
   })
 })

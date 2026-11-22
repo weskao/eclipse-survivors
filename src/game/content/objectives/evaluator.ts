@@ -1,6 +1,6 @@
 import { getObjectiveMode, type ObjectiveModeId } from '../modes/definitions'
 
-export type ObjectiveStatus = 'active' | 'victory' | 'defeat'
+export type ObjectiveStatus = 'active' | 'victory' | 'defeat' | 'withdrawn'
 export type ObjectiveDefeatReason = 'fallen' | 'abandoned' | 'timeout' | 'relic-lost'
 
 /** Small, serializable per-run state; no history arrays or unbounded IDs. */
@@ -74,8 +74,12 @@ function finish(s: ObjectiveState): ObjectiveState {
   if (s.mode === 'relic-hunt' && s.relicIntegrity <= 0) {
     return { ...s, status: 'defeat', defeatReason: 'relic-lost' }
   }
-  if (victorySatisfied(s)) return { ...s, status: 'victory' }
+  // A late jump beyond a hard deadline must never produce a victory.
   const limit = getObjectiveMode(s.mode).timeLimitSeconds
+  if (limit !== null && s.seconds > limit) {
+    return { ...s, status: 'defeat', defeatReason: 'timeout' }
+  }
+  if (victorySatisfied(s)) return { ...s, status: 'victory' }
   if (limit !== null && s.seconds >= limit) {
     return { ...s, status: 'defeat', defeatReason: 'timeout' }
   }
@@ -90,7 +94,7 @@ export function advanceObjective(state: ObjectiveState, event: ObjectiveEvent): 
     case 'player-defeated':
       return { ...state, status: 'defeat', defeatReason: 'fallen' }
     case 'abandon':
-      return { ...state, status: 'defeat', defeatReason: 'abandoned' }
+      return { ...state, status: 'withdrawn', defeatReason: 'abandoned' }
     case 'tick': {
       if (!Number.isFinite(event.seconds) || event.seconds <= 0) return state
       const nextSeconds = state.seconds + event.seconds
