@@ -1,19 +1,9 @@
 /**
- * Deterministic, run-scoped encounter scheduling. This module NEVER mutates
- * GameState or spawns entities. The integration owner adapts SpawnRequest to
- * spawn.ts, shows WaveEvent in the HUD and supplies terrain collision checks.
- *
- * Integration:
- *   const director = createWaveDirector({ mode: state.runMode, seed: runSeed })
- *   const plan = director.advance({
- *     timeSeconds: state.time, activeMobs: state.mobs.length,
- *     hero: { x: hero.x, y: hero.y }, viewport: { width: state.W, height: state.H },
- *     bossSpawned: state.bossSpawned, bossDefeated: state.bossDefeated,
- *     canSpawnAt: (x, y, radius) => isWalkable(x, y, radius),
- *   })
- *   // Respect plan.spawns, positions, elite flags, telegraphs and plan.events.
- *   // Do not also invoke legacy tickSpawning after enabling this director.
- *   // One required boss per run; integration marks bossSpawned after spawning it.
+ * Deterministic, run-scoped encounter planner. Neither this planner nor the
+ * engine adapter replaces the legacy spawn loop automatically. Integration
+ * must enable exactly one spawn policy per run, honor telegraphs and forward
+ * finalized kill evidence. Objective modes may schedule multiple bosses.
+ * See ./INTEGRATION.md for the handoff contract.
  */
 import { MAX_MOBS } from '../../constants'
 import { getMode } from '../../../meta/modes'
