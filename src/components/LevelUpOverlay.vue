@@ -12,8 +12,14 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
   <div id="level" class="overlay" :class="{ active, 'still-upgrades': effect === 'still' }">
     <div class="panel">
       <SettingsButton compact class="level-settings-button" @open="emit('settings')" />
-      <div class="kicker">LEVEL UP · CHOOSE YOUR BLESSING</div>
-      <h2>獲得新的命運刻印</h2>
+      <header class="level-headline">
+        <span class="level-seal" aria-hidden="true">✦</span>
+        <div class="level-heading-copy">
+          <div class="kicker">LEVEL UP · CHOOSE YOUR BLESSING</div>
+          <h2>獲得新的命運刻印</h2>
+        </div>
+        <span class="level-seal" aria-hidden="true">✦</span>
+      </header>
       <div class="cards" id="upgrades">
         <button v-for="(u, i) in upgrades" :key="u.id" class="upgrade" :class="[u.rarity, { evolution: u.isEvolution }]"
           :data-up="u.id" @click="emit('choose', u.id)">
@@ -32,7 +38,7 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
           </span>
           <small class="upgrade-desc">{{ u.desc }}</small>
           <small v-if="u.requirements" class="upgrade-requirements">{{ u.requirements }}</small>
-          <small class="upgrade-key">按 {{ i + 1 }} 選擇</small>
+          <span class="upgrade-action"><small class="upgrade-key">按 {{ i + 1 }} 選擇</small><span class="upgrade-select-mark" aria-hidden="true">◆</span></span>
         </button>
       </div>
       <p>選擇其中一項能力後繼續冒險</p>
