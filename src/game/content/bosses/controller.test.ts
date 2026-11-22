@@ -9,8 +9,6 @@ import { BOSS_DEFINITIONS, type BossId } from './definitions'
 import { createBossEncounterController, intersectsTelegraph, MAX_BOSS_PROJECTILES } from './controller'
 
 function setup() {
-  const events: ReturnType<ReturnType<typeof createBossEncounterController>['snapshot']>[] = []
-  void events
   const notices: string[] = []
   const audio: string[] = []
   const controller = createBossEncounterController({
@@ -97,6 +95,17 @@ describe('independent premium boss content', () => {
     expect(state.hero!.hp).toBe(state.hero!.max)
   })
 
+  it('resolves a locked melee telegraph against the actual live hero hitbox', () => {
+    const { state, hooks, controller } = setup()
+    controller.spawn(state, 'infernal-titan', { x: 140, y: 0 }, hooks)
+    controller.tick(state, 0.01, hooks)
+    const warning = controller.snapshot(state).telegraphs[0]!
+    expect(intersectsTelegraph(warning, state.hero!.x, state.hero!.y, 15)).toBe(true)
+    controller.tick(state, 1.71, hooks)
+    expect(state.hero!.hp).toBeLessThan(state.hero!.max)
+    expect(state.damageTaken).toBeGreaterThan(0)
+  })
+
   it('bounds active projectiles even over repeated attacks and applies swept hits only once', () => {
     const { state, hooks, controller } = setup()
     controller.spawn(state, 'abyss-monarch', { x: 160, y: 0 }, hooks)
@@ -111,9 +120,15 @@ describe('independent premium boss content', () => {
     const { state, hooks, controller } = setup()
     const boss = controller.spawn(state, 'abyss-monarch', { x: 180, y: 0 }, hooks)!
     boss.hp = boss.max * 0.6
+    state.hero!.inv = 1_000 // deterministic survival during this isolated AI test
     for (let i = 0; i < 450; i++) controller.tick(state, 0.1, hooks)
-    expect(state.mobs.filter(m => m.summonedByBoss && m.hp > 0).length).toBeLessThanOrEqual(6)
+    const minions = state.mobs.filter(m => m.summonedByBoss && m.hp > 0)
+    expect(minions.length).toBeGreaterThan(0)
+    expect(minions.length).toBeLessThanOrEqual(6)
     expect(state.mobs.length).toBeLessThanOrEqual(MAX_MOBS + 1)
+    controller.onContentEvent(state, { type: 'scene-change', index: 1 }, hooks)
+    expect(state.mobs).toContain(boss)
+    expect(state.mobs.some(m => m.summonedByBoss)).toBe(false)
   })
 
   it('awards no duplicate XP or boss death event, and keeps original boss-gated victory', () => {
