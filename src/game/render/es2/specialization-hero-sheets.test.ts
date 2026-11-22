@@ -40,8 +40,10 @@ describe('ES2 new heroes match the original high-resolution, cached-illustration
     expect(drawn.at(-1)).toBe(factory.made[a.frame]?.canvas)
     expect(sheets.drawSpecialization(ctx, portrait, a, 117, 147)).toBe(true)
     expect(factory.made.length).toBe(made)
+    // The portrait has only one authored view; direction changes must reuse
+    // the same generated frames instead of allocating eight identical copies.
     expect(sheets.drawSpecialization(ctx, portrait, animation('attack', 3), 117, 147)).toBe(true)
-    expect(factory.made.length).toBe(made * 2)
+    expect(factory.made.length).toBe(made)
   })
 
   it('does not allocate a sheet during reduced motion and never draws an unrelated legacy knight', () => {
