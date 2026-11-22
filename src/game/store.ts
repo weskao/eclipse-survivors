@@ -5,6 +5,7 @@ import { EVOLUTIONS, EVOLUTION_COOLDOWN } from './evolutions'
 import type { AbilityId, GameMode, GameState, Hero, HeroId, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
 import type { SpecializationSnapshot } from './content/heroes'
 import type { ObjectiveState } from './content/objectives/evaluator'
+import type { MetaState } from './content/meta/state'
 import type { ActiveWorldEvent } from './content/world-events/types'
 import type { WorldEventOption } from './content/world-events/runtime'
 
@@ -109,6 +110,8 @@ export interface UiState {
   worldEventMarkers: readonly ActiveWorldEvent[]
   worldEventChoice: { event: ActiveWorldEvent; options: readonly WorldEventOption[]; feedback: string | null } | null
   profile: Profile
+  metaState: MetaState | null
+  metaStatus: 'ready' | 'blocked' | null
   runResult: RunStats | null
   rewards: RunRewards | null
   /** `(pointer:coarse)` matched: show touch controls while playing. */
@@ -125,6 +128,9 @@ export interface GameCommands {
   closeWorldEvent(): void
   selectRunMode(mode: RunModeId): void
   buyPermanentUpgrade(upgrade: PermanentUpgrade): void
+  purchaseResearch(id: string): void
+  purchaseEquipment(id: string): void
+  purchaseBonus(id: string): void
   selectCosmetic(hero: JobId, skin: CosmeticId): void
   resetProgress(): void
   chooseUpgrade(id: AbilityId): void

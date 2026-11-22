@@ -158,8 +158,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
     runMode: 'quick', objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
-    profile: displayProfile(), runResult: null, rewards: null,
+    profile: displayProfile(), metaState: metaStore?.get().state ?? null,
+    metaStatus: metaStore?.get().status ?? null, runResult: null, rewards: null,
   })
+  function refreshMeta(): void {
+    const snapshot = metaStore?.get()
+    ui.metaState = snapshot?.state ?? null
+    ui.metaStatus = snapshot?.status ?? null
+    ui.profile = displayProfile()
+  }
   let resumeAfterSettings = false
   let toastTimer = 0
   let keys: KeyState = {}
@@ -328,7 +335,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     } else {
       ui.rewards = profileStore.recordRun(stats)
     }
-    ui.profile = displayProfile()
+    refreshMeta()
     screen('result')
     audio.playSfx(win ? 'victory' : 'defeat')
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
@@ -756,8 +763,23 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (metaStore) {
         const result = metaStore.purchaseResearch(id)
         if (!result.ok) message('永久研究未完成：儲存失敗或條件不足')
-        else ui.profile = displayProfile()
-      } else if (profileStore.buyUpgrade(id)) ui.profile = displayProfile()
+        else refreshMeta()
+      } else if (profileStore.buyUpgrade(id)) refreshMeta()
+    },
+    purchaseResearch(id: string) {
+      if (s.mode !== 'menu' || !metaStore) return
+      if (metaStore.purchaseResearch(id).ok) refreshMeta()
+      else message('研究未解鎖或儲存失敗')
+    },
+    purchaseEquipment(id: string) {
+      if (s.mode !== 'menu' || !metaStore) return
+      if (metaStore.purchaseEquipment(id).ok) refreshMeta()
+      else message('裝備未解鎖或儲存失敗')
+    },
+    purchaseBonus(id: string) {
+      if (s.mode !== 'menu' || !metaStore) return
+      if (metaStore.purchaseBonus(id).ok) refreshMeta()
+      else message('祝福未解鎖或儲存失敗')
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
       if (s.mode === 'menu' && profileStore.selectCosmetic(hero, skin)) ui.profile = profileStore.get()
@@ -769,7 +791,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         return
       }
       profileStore.reset()
-      ui.profile = displayProfile()
+      refreshMeta()
     },
     selectJob(job: JobId) { selectHero(job) },
     selectHero,
