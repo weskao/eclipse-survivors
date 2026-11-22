@@ -4,6 +4,8 @@ import { step } from '../../../src/game/step'
 import { createRenderAssets, drawFrame } from '../../../src/game/render'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from '../../../src/game/render/fakes'
 import { seeded, setRandom } from '../../../src/game/math'
+import { resolvePresentationPolicy } from '../../../src/game/content/accessibility/presentation'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../../../src/game/content/accessibility/preferences'
 import { createStressScenario } from '../../../src/game/performance/es2/scenarios'
 import { createScopedCache } from '../../../src/game/performance/es2/cache'
 import { distribution, profileFrames } from '../../../src/game/performance/es2/metrics'
@@ -38,7 +40,16 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
     const renderState = createStressScenario('mobile-low')
     const fake = createFakeCtx()
     const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
-    assets.prefersReducedMotion = () => true
+    const lowPolicy = resolvePresentationPolicy({
+      ...DEFAULT_ACCESSIBILITY_PREFERENCES, quality: 'low', reducedMotion: 'on',
+    })
+    assets.presentation = () => lowPolicy
+    const desktopFake = createFakeCtx()
+    const desktopAssets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    desktopAssets.presentation = () => resolvePresentationPolicy({
+      ...DEFAULT_ACCESSIBILITY_PREFERENCES, quality: 'high', reducedMotion: 'off',
+    })
+    const desktopState = createStressScenario('desktop')
     setRandom(seeded(20261122))
     try {
       for (let i = 0; i < 30; i++) step(state, 1 / 60, { x: 0, y: 0 }, hooks)
@@ -46,6 +57,11 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
         drawFrame(fake.ctx, renderState, 1, assets)
         fake.calls.length = 0
         fake.drawn.length = 0
+      }
+      for (let i = 0; i < 10; i++) {
+        drawFrame(desktopFake.ctx, desktopState, 2, desktopAssets)
+        desktopFake.calls.length = 0
+        desktopFake.drawn.length = 0
       }
       const heapStart = heapBytes()
       const sim = profileFrames(120, () => step(state, 1 / 60, { x: 0, y: 0 }, hooks))
@@ -55,6 +71,13 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
         fake.drawn.length = 0
         drawFrame(fake.ctx, renderState, 1, assets)
         paintCalls.push(fake.calls.filter(command => drawCommands.has(command)).length)
+      })
+      const desktopPaintCalls: number[] = []
+      const desktopRender = profileFrames(120, () => {
+        desktopFake.calls.length = 0
+        desktopFake.drawn.length = 0
+        drawFrame(desktopFake.ctx, desktopState, 2, desktopAssets)
+        desktopPaintCalls.push(desktopFake.calls.filter(command => drawCommands.has(command)).length)
       })
       const heapEnd = heapBytes()
       const cache = createScopedCache<number>(16)
@@ -67,10 +90,12 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
           fx: 96, currentMonsters: state.mobs.length, viewport: [renderState.W, renderState.H],
           quality: 'low/reduced-motion' },
         simulatedTicks: 120,
-        renderedFrames: 120,
+        renderedFramesPerViewport: 120,
         simulationMsPerTick: sim.summary,
-        mockedCanvasMsPerFrame: render.summary,
-        canvas2DPaintCommandsPerFrame: distribution(paintCalls),
+        mobileLowMockedCanvasMsPerFrame: render.summary,
+        desktopHighMockedCanvasMsPerFrame: desktopRender.summary,
+        mobileLowCanvasPaintCalls: distribution(paintCalls),
+        desktopHighCanvasPaintCalls: distribution(desktopPaintCalls),
         observedHeapDeltaBytes: heapEnd - heapStart,
         allocatedBytes: null,
         gpuDrawCalls: null,
@@ -79,6 +104,9 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
       console.info('ES2_PERFORMANCE ' + JSON.stringify(report))
       expect(sim.samplesMs).toHaveLength(120)
       expect(render.samplesMs).toHaveLength(120)
+      expect(desktopRender.samplesMs).toHaveLength(120)
+      expect(lowPolicy.quality).toBe('low')
+      expect(desktopPaintCalls.every(n => n > 0)).toBe(true)
       expect(paintCalls.every(n => n > 0)).toBe(true)
       expect(report.helperCacheProbe.hitRate).toBeGreaterThan(0)
       expect(state.mode).toBe('play')
