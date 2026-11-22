@@ -339,7 +339,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
   }
 }
 
-export const WEAPON_ABILITIES: readonly ContentAbility[] = WEAPON_SPECS.map(spec => ({
+export const WEAPON_ABILITIES: readonly ContentAbility[] = WEAPON_SPECS.map((spec): ContentAbility => ({
   id: `weapons:${spec.key}` as const,
   kind: 'weapon', icon: spec.icon, title: spec.title, desc: spec.desc,
   rarity: spec.rarity, maxLevel: 5,
