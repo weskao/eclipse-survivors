@@ -132,6 +132,33 @@ describe('drawFrame', () => {
     expect(f.calls.filter((c) => c === 'lineTo').length).toBeGreaterThan(0)
   })
 
+  it('disables combat recoil when the camera-shake preference is off', () => {
+    const state = busyState()
+    state.cameraKick = 9
+    state.mode = 'play'
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const firstTile = (): [number, number] => {
+      const { ctx } = createFakeCtx()
+      let position: [number, number] | null = null
+      const original = ctx.drawImage
+      ctx.drawImage = ((...args: unknown[]) => {
+        if (!position && args[0] === assets.biomes[0]!.tile) {
+          position = [args[1] as number, args[2] as number]
+        }
+        return (original as (...args: unknown[]) => void)(...args)
+      }) as typeof ctx.drawImage
+      drawFrame(ctx, state, 1, assets)
+      if (!position) throw new Error('Missing background tile')
+      return position
+    }
+    assets.cameraShakeEnabled = () => false
+    const still = firstTile()
+    state.worldClock += 0.3
+    expect(firstTile()).toEqual(still)
+    assets.cameraShakeEnabled = () => true
+    expect(firstTile()).not.toEqual(still)
+  })
+
   it('applies a live reduced-motion preference change on the next frame', () => {
     const s = busyState()
     const { make } = fakeCanvasFactory()
