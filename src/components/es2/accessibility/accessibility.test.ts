@@ -47,7 +47,8 @@ describe('isolated mobile controls', () => {
 
   it('honors side/scale, supports native keyboard dash and avoids duplicate pointers', async () => {
     const prefs = { ...DEFAULT_ACCESSIBILITY_PREFERENCES, joystickSide: 'right' as const, touchScale: 1.2 }
-    const w = mount(MobileControls, { props: { active: true, preferences: prefs } })
+    // Native keyboard bubbling reaches window only from a connected DOM subtree.
+    const w = mount(MobileControls, { attachTo: document.body, props: { active: true, preferences: prefs } })
     expect(w.attributes('data-side')).toBe('right')
     expect(w.attributes('style')).toContain('--es2-touch-scale: 1.2')
     expect(w.attributes('style')).toContain('--es2-stick-offset: 30px')
