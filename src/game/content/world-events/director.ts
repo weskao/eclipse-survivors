@@ -13,6 +13,7 @@ const TAU = Math.PI * 2
 
 interface PendingObjective extends Omit<ActiveWorldObjective, 'count'> {
   count: number
+  readonly countedMobs: WeakSet<object>
   readonly definition: WorldEventDefinition
   readonly choice: WorldEventChoice
   readonly objective: WorldEventObjectiveDef
@@ -52,11 +53,11 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
   function spawn(kind: WorldEventId, world: EventWorld, position?: { x: number; y: number }): ActiveWorldEvent | null {
     const hero = world.hero
     if (lastBiome === undefined) lastBiome = world.biome
-    if (!world.playing || !hero || hero.hp <= 0 || active.length >= MAX_ACTIVE || !DEFINITIONS.has(kind)) return null
-    const target = position ?? {
-      x: hero.x + Math.cos(roll() * TAU) * (210 + roll() * 120),
-      y: hero.y + Math.sin(roll() * TAU) * (210 + roll() * 120),
-    }
+    if (!world.playing || !hero || hero.hp <= 0 || active.length >= MAX_ACTIVE || !DEFINITIONS.has(kind) ||
+      !Number.isFinite(world.time) || !Number.isFinite(hero.x) || !Number.isFinite(hero.y)) return null
+    const angle = roll() * TAU
+    const radius = 210 + roll() * 120
+    const target = position ?? { x: hero.x + Math.cos(angle) * radius, y: hero.y + Math.sin(angle) * radius }
     if (!Number.isFinite(target.x) || !Number.isFinite(target.y) ||
         !world.canPlace(target, 42) || !world.canApproach(hero, target) || world.isOccupied(target, 52)) return null
     for (const e of active) {
@@ -118,7 +119,7 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
       pending.push({
         eventId: event.id, choiceId: choice.id, kind: choice.objective.kind,
         deadline: world.time + choice.objective.seconds, x: event.x, y: event.y,
-        count: 0, target: choice.objective.count ?? 0,
+        count: 0, countedMobs: new WeakSet<object>(), target: choice.objective.count ?? 0,
         eliteOnly: choice.objective.eliteOnly ?? false,
         definition, choice, objective: choice.objective,
       })
@@ -126,10 +127,14 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
     return 'applied'
   }
 
-  /** Only report kills of a tagged encounter mob, not unrelated world combat kills. */
-  function reportKill(elite: boolean, sourceEventId: string): void {
+  /** Only count unique, tagged encounter deaths inside the event time window. */
+  function reportKill(elite: boolean, sourceEventId: string, atTime: number, mob: object): void {
+    if (!Number.isFinite(atTime)) return
     for (const obj of pending) {
-      if (obj.eventId !== sourceEventId || obj.kind !== 'kill' || (obj.eliteOnly && !elite)) continue
+      if (obj.eventId !== sourceEventId || obj.kind !== 'kill' || (obj.eliteOnly && !elite) ||
+        atTime < obj.deadline - obj.objective.seconds || atTime > obj.deadline ||
+        obj.countedMobs.has(mob)) continue
+      obj.countedMobs.add(mob)
       obj.count = Math.min(obj.target, obj.count + 1)
     }
   }
