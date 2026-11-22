@@ -76,7 +76,7 @@ export function projectCombatHud(
   hud: HudView, choice: JobId, feed: CombatHudFeed = {}, expectedSnapshot?: CombatHudSnapshot,
 ): CombatHudView {
   // A stale or unauthenticated feed cannot persist across runs/screens when the host supplies a snapshot key.
-  const live = !expectedSnapshot || (feed.snapshot?.runId === expectedSnapshot.runId &&
+  const live: CombatHudFeed = !expectedSnapshot || (feed.snapshot?.runId === expectedSnapshot.runId &&
     feed.snapshot.sequence === expectedSnapshot.sequence) ? feed : {}
   const bossPhase = live.boss?.phase
   const bossTotal = live.boss?.totalPhases
