@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import type { AbilityId, UpgradeDef } from '../game/types'
+import SettingsButton from './SettingsButton.vue'
 
-defineProps<{ active: boolean; upgrades: readonly UpgradeDef[] }>()
-const emit = defineEmits<{ choose: [id: AbilityId] }>()
+defineProps<{ active: boolean; upgrades: readonly UpgradeDef[]; effect?: 'soft' | 'still' }>()
+const emit = defineEmits<{ choose: [id: AbilityId]; settings: [] }>()
 const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as const
 </script>
 
 <template>
-  <div id="level" class="overlay" :class="{ active }">
+  <div id="level" class="overlay" :class="{ active, 'still-upgrades': effect === 'still' }">
     <div class="panel">
+      <SettingsButton compact class="level-settings-button" @open="emit('settings')" />
       <div class="kicker">LEVEL UP · CHOOSE YOUR BLESSING</div>
       <h2>獲得新的命運刻印</h2>
       <div class="cards" id="upgrades">

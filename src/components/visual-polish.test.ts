@@ -21,6 +21,14 @@ describe('fantasy UI art polish', () => {
     expect(menu.find('[data-job="ranger"]').attributes('aria-pressed')).toBe('false')
   })
 
+  it('keeps upgrade selection entrance and hover feedback free from positional motion', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/visual-polish.css'), 'utf8')
+    expect(css).toContain('@keyframes level-soft-reveal{from{opacity:0}to{opacity:1}}')
+    expect(css).toContain('#level.overlay.active .panel{animation:level-soft-reveal')
+    expect(css).toContain('#level .upgrade{animation:level-soft-reveal')
+    expect(css).toContain('#level .upgrade:hover,#level .upgrade:focus-visible,#level .upgrade:active{transform:none}')
+  })
+
   it('includes generated spell art and readable interaction states', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/visual-polish.css'), 'utf8')
     expect(css).toContain('skill-art-atlas@3x.webp')

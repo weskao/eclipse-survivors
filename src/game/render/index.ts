@@ -21,6 +21,7 @@ export interface RenderAssets {
   sprites: Record<string, HTMLCanvasElement>
   props: { tree: HTMLCanvasElement; ruin: HTMLCanvasElement; crystal: HTMLCanvasElement }
   prefersReducedMotion: () => boolean
+  cameraShakeEnabled: () => boolean
   biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
   magicGlow: HTMLCanvasElement | null
@@ -35,6 +36,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     prefersReducedMotion: () => query?.matches ?? false,
+    cameraShakeEnabled: () => true,
     depthOrder: [],
     biomes: buildBiomeArt(makeCanvas),
     magicGlow: buildMagicGlow(makeCanvas),
@@ -65,7 +67,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillRect(0, 0, W, H)
   let ox = W * 0.5 - (hero ? s.cam.x : 0)
   let oy = H * 0.53 - (hero ? s.cam.y : 0)
-  if (hero && s.cameraKick > 0 && !reduced) {
+  if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced && assets.cameraShakeEnabled()) {
     ox += Math.sin(s.worldClock * 89) * s.cameraKick
     oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
   }

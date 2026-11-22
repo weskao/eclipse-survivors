@@ -79,11 +79,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const s = createState()
   const profileStore = opts.profileStore ?? createProfileStore()
   const audio = opts.audio ?? createAudioSystem({ bgm: createBgm() })
+  const settingsStorage = (() => { try { return localStorage } catch { return null } })()
+  let initialEffect: 'soft' | 'still' = 'soft'
+  let initialShake = true
+  try {
+    if (settingsStorage?.getItem('eclipseUpgradeEffect') === 'still') initialEffect = 'still'
+    if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
+  } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, sfxOn: audio.sfxOn, hud: emptyHud(),
+    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, sfxOn: audio.sfxOn,
+    musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
+    settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
     runMode: 'quick', profile: profileStore.get(), runResult: null, rewards: null,
   })
+  let resumeAfterSettings = false
   let toastTimer = 0
   let keys: KeyState = {}
   let stick: MoveInput = { x: 0, y: 0 }
@@ -99,6 +109,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function screen(name: GameMode): void {
+    // A level-up freezes gameplay: discard pending hit recoil before the picker opens.
+    if (name === 'level') s.cameraKick = 0
     s.mode = name
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
@@ -217,6 +229,24 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
   }
 
+  function openSettings(): void {
+    if (ui.settingsOpen) return
+    resumeAfterSettings = s.mode === 'play'
+    if (resumeAfterSettings) togglePause()
+    ui.settingsOpen = true
+  }
+
+  function closeSettings(): void {
+    if (!ui.settingsOpen) return
+    ui.settingsOpen = false
+    if (resumeAfterSettings && s.mode === 'paused') togglePause()
+    resumeAfterSettings = false
+  }
+
+  function saveSetting(key: string, value: string): void {
+    try { settingsStorage?.setItem(key, value) } catch { /* unavailable */ }
+  }
+
   function advance(dt: number): void {
     s.worldClock += s.mode === 'play' ? 0 : dt * 0.3
     if (s.mode !== 'play') return
@@ -316,6 +346,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   function listen(win: Window = window): () => void {
     const doc = win.document
     const onKeyDown = (e: KeyboardEvent): void => {
+      if (ui.settingsOpen) {
+        if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
+        return
+      }
       if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') audio.wake()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
@@ -328,14 +362,19 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     const onKeyUp = (e: KeyboardEvent): void => { keys[e.code] = false }
     const onBlur = (): void => {
+      // Release held controls without changing the player's pause state.
       keys = {}
       stick = { x: 0, y: 0 }
-      audio.interrupt()
-      if (s.mode === 'play') screen('paused')
     }
     const onVisibility = (): void => {
-      if (doc.hidden) onBlur()
-      // Visibility alone must never restart audio or unpause gameplay.
+      if (doc.hidden) {
+        onBlur()
+        audio.interrupt()
+      }
+    }
+    const onPageHide = (): void => {
+      onBlur()
+      audio.interrupt()
     }
     const onPointerDown = (e: PointerEvent): void => {
       audio.wake()
@@ -347,7 +386,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('keydown', onKeyDown)
     win.addEventListener('keyup', onKeyUp)
     win.addEventListener('blur', onBlur)
-    win.addEventListener('pagehide', onBlur)
+    win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
     doc.addEventListener('pointerdown', onPointerDown)
     doc.addEventListener('pointerover', onPointerOver)
@@ -355,7 +394,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('keydown', onKeyDown)
       win.removeEventListener('keyup', onKeyUp)
       win.removeEventListener('blur', onBlur)
-      win.removeEventListener('pagehide', onBlur)
+      win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
       doc.removeEventListener('pointerdown', onPointerDown)
       doc.removeEventListener('pointerover', onPointerOver)
@@ -368,6 +407,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    assets.cameraShakeEnabled = () => ui.cameraShake
     let dpr = 1
     let last = 0
     let raf = 0
@@ -435,8 +475,28 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     chooseUpgrade,
     togglePause,
     dash: () => heroDash(s, hooks),
-    toggleMusic() { ui.musicOn = audio.toggleMusic(s.mode) },
-    toggleSfx() { ui.sfxOn = audio.toggleSfx() },
+    toggleMusic() {
+      ui.musicOn = audio.toggleMusic(s.mode)
+      ui.musicVolume = audio.musicVolume
+    },
+    toggleSfx() {
+      ui.sfxOn = audio.toggleSfx()
+      ui.sfxVolume = audio.sfxVolume
+    },
+    setMusicVolume(value) { audio.setMusicVolume(value); ui.musicVolume = audio.musicVolume },
+    setSfxVolume(value) { audio.setSfxVolume(value); ui.sfxVolume = audio.sfxVolume },
+    setUpgradeEffect(effect) {
+      if (effect !== 'soft' && effect !== 'still') return
+      ui.upgradeEffect = effect
+      saveSetting('eclipseUpgradeEffect', effect)
+    },
+    setCameraShake(enabled) {
+      ui.cameraShake = enabled
+      saveSetting('eclipseCameraShake', enabled ? 'on' : 'off')
+      if (!enabled) s.cameraKick = 0
+    },
+    openSettings,
+    closeSettings,
     goMenu: () => screen('menu'),
     setStick(v) { stick = v ?? { x: 0, y: 0 } },
   }
