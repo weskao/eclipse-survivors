@@ -4,6 +4,7 @@ import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../.
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
+import type { MetaState } from '../../../game/content/meta/state'
 import type { Profile, PermanentUpgrade, CosmeticId, RunModeId, RunRewards, RunStats } from '../../../meta/types'
 import '../../../styles/es2/menu.css'
 import Es2MainMenu from './Es2MainMenu.vue'
@@ -19,7 +20,8 @@ import type { MenuChoice, MenuView, RelicEntry } from './model'
 const props = withDefaults(defineProps<{
   screen: 'menu' | 'level' | 'result' | 'hidden'
   choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string
-  profile?: Profile; upgrades?: readonly UpgradeDef[]
+  profile?: Profile; metaState?: MetaState | null; metaStatus?: 'ready' | 'blocked' | null
+  upgrades?: readonly UpgradeDef[]
   ending?: string; summary?: string; runResult?: RunStats | null; rewards?: RunRewards | null
   settingsOpen?: boolean; upgradeEffect?: 'soft' | 'still'; cameraShake?: boolean
   audioUnlocked?: boolean; musicOn?: boolean; sfxOn?: boolean
@@ -38,6 +40,7 @@ const emit = defineEmits<{
   select: [job: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; choose: [id: AbilityId]
   specialChoose: [id: string]; specialCancel: []
   purchase: [upgrade: PermanentUpgrade]; cosmetic: [hero: JobId, skin: CosmeticId]
+  research: [id: string]; equipment: [id: string]; bonus: [id: string]
   enableAudio: []; reset: []; again: []; home: []; settings: []; closeSettings: []
   upgradeEffect: [effect: 'soft' | 'still']; cameraShake: [enabled: boolean]
   musicVolume: [value: number]; sfxVolume: [value: number]
@@ -77,8 +80,11 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       @select="emit('select', $event)" @select-hero="emit('selectHero', $event)" @mode="emit('mode', $event)" @start="emit('start')"
       @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')" />
     <Es2Archive :active="archiveActive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
-      :hero="choice" :relics="relics" @close="archive = 'main'" @navigate="navigate"
-      @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)" @reset="resetOpen = true" />
+      :hero="choice" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"
+      @close="archive = 'main'" @navigate="navigate"
+      @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)"
+      @research="emit('research', $event)" @equipment="emit('equipment', $event)"
+      @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
     <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still'"
       @choose="chooseUpgrade" @settings="emit('settings')" />
     <Es2ChoiceDialog v-if="specialChoice" :active="specialActive" :kind="specialChoice.kind" :items="specialChoice.items"

@@ -7,16 +7,21 @@ import { encyclopedia } from '../../../meta/compendium'
 import type { Profile, PermanentUpgrade, CosmeticId } from '../../../meta/types'
 import type { JobId, MobType } from '../../../game/types'
 import Es2Dialog from './Es2Dialog.vue'
+import ProgressionPanel from '../progression/ProgressionPanel.vue'
+import { createMetaState, type MetaState } from '../../../game/content/meta/state'
 import type { MenuView, RelicEntry } from './model'
 import { upgradeCost } from './model'
 const props = defineProps<{
   active: boolean; view: Exclude<MenuView, 'main'>; profile: Profile; hero: JobId; relics?: readonly RelicEntry[]
+  metaState?: MetaState | null; metaStatus?: 'ready' | 'blocked' | null
 }>()
 const emit = defineEmits<{
   close: []; navigate: [view: Exclude<MenuView, 'main'>]; purchase: [id: PermanentUpgrade]
   reset: []; cosmetic: [hero: JobId, skin: CosmeticId]
+  research: [id: string]; equipment: [id: string]; bonus: [id: string]
 }>()
 const entries = computed(() => encyclopedia(props.profile))
+const emptyMeta = createMetaState()
 const title: Record<Exclude<MenuView, 'main'>, string> = {
   relics: '聖物收藏庫', progression: '永久強化 · 英雄傳承',
   monsters: '魔物圖鑑', skills: '覺醒能力圖鑑', achievements: '遠征成就殿堂',
@@ -46,6 +51,10 @@ const monsterImage = (id: MobType): string | undefined => id === 'warlock' ? und
         :class="{ 'es2-tab-current': view === tab.id }" @click="emit('navigate', tab.id)">{{ tab.title }}</button>
     </nav>
     <section v-if="view === 'progression'" class="es2-archive-section" aria-label="永久強化">
+      <ProgressionPanel v-if="metaStatus" :state="metaState ?? emptyMeta" :hero="hero"
+        :status="metaStatus" @research="emit('research', $event)"
+        @equipment="emit('equipment', $event)" @bonus="emit('bonus', $event)" />
+      <div v-else>
       <div class="es2-stat-strip"><div><b>{{ profile.runs }}</b><small>遠征次數</small></div><div><b>{{ profile.wins }}</b><small>勝利</small></div><div><b>{{ profile.embers }}</b><small>暮光餘燼</small></div></div>
       <p class="es2-hint">目前職業：{{ hero }} · 永久能力於下一次遠征生效。</p>
       <div class="es2-archive-grid"><article v-for="entry in upgrades" :key="entry.id" class="es2-archive-card">
@@ -53,6 +62,7 @@ const monsterImage = (id: MobType): string | undefined => id === 'warlock' ? und
         <button class="es2-secondary" type="button" :disabled="profile.upgrades[entry.id] >= 3 || profile.embers < upgradeCost(profile.upgrades[entry.id])"
           @click="emit('purchase', entry.id)">{{ profile.upgrades[entry.id] >= 3 ? '已滿階' : `升級 · ${upgradeCost(profile.upgrades[entry.id])} ✧` }}</button>
       </article></div>
+      </div>
       <h3>英雄造型 <small>只影響外觀 · 不影響戰鬥數值</small></h3>
       <div class="es2-skins" role="group" aria-label="英雄造型">
         <button v-for="skin in skins.filter(item => item.hero === hero)" :key="skin.id" type="button"
