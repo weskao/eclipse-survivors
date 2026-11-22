@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { createEngine, type Engine } from './game/engine'
 import { applyPresentation, resolvePresentationPolicy } from './game/content/accessibility/presentation'
 import './game/content/accessibility/presentation.css'
 import { inventorySnapshot } from './game/content/relics/runtime'
 import { RELIC_BY_ID } from './game/content/relics/catalog'
 import CombatHud from './components/es2/hud/CombatHud.vue'
+import Es2Dialog from './components/es2/menu/Es2Dialog.vue'
+import { t, applyDocumentLocale } from './i18n'
 import HeroSpecialAction from './components/es2/hero-roster/HeroSpecialAction.vue'
 import ModeProgress from './components/es2/modes/ModeProgress.vue'
 import WorldEventPanel from './components/es2/world-event-ui/WorldEventPanel.vue'
@@ -52,7 +54,23 @@ const accessibilityPreferences = shallowRef<AccessibilityPreferences>(accessibil
 const changeAccessibility = (next: AccessibilityPreferences): void => {
   accessibilityPreferences.value = accessibility.update(next)
 }
+const homeConfirmOpen = ref(false)
+function requestHome(): void {
+  if (homeConfirmOpen.value || ui.mode !== 'play' || ui.settingsOpen || !!ui.worldEventChoice) return
+  engine.togglePause()
+  homeConfirmOpen.value = ui.mode === 'paused'
+}
+function cancelHome(): void {
+  homeConfirmOpen.value = false
+  if (ui.mode === 'paused') engine.togglePause()
+}
+function confirmHome(): void {
+  homeConfirmOpen.value = false
+  engine.goMenu()
+}
+watch(() => ui.mode, mode => { if (mode !== 'paused') homeConfirmOpen.value = false })
 const combatActions: CombatHudActions = {
+  home: requestHome,
   pause: engine.togglePause,
   settings: engine.openSettings,
   toggleMusic: engine.toggleMusic,
@@ -96,6 +114,7 @@ function syncPresentation(): void {
 watch(accessibilityPreferences, syncPresentation)
 onMounted(() => {
   syncPresentation()
+  applyDocumentLocale()
   if (canvas.value) unmount = engine.mount(canvas.value, hudRef.value?.minimap ?? null)
 })
 onBeforeUnmount(() => {
@@ -109,6 +128,7 @@ onBeforeUnmount(() => {
   <CombatHud
     ref="hud"
     :active="ui.mode !== 'menu'"
+    :can-return-home="ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice"
     :hud="ui.hud"
     :choice="ui.choice"
     :hero-id="ui.heroId"
@@ -198,7 +218,16 @@ onBeforeUnmount(() => {
     @sfx-volume="engine.setSfxVolume"
     @accessibility="changeAccessibility"
   />
-  <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
+  <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
+  <Es2Dialog :active="homeConfirmOpen" :title="t('返回主選單？')"
+    :subtitle="t('戰鬥已暫停。返回主選單將結束本次遠征，未結算的戰鬥進度不會保留。確定要離開嗎？')"
+    @cancel="cancelHome">
+    <p data-es2-home-confirm class="es2-warning">{{ t('離開後將無法繼續本次遠征。') }}</p>
+    <template #actions>
+      <button type="button" data-es2-home-cancel class="es2-secondary" @click="cancelHome">{{ t('繼續戰鬥') }}</button>
+      <button type="button" data-es2-home-accept class="es2-danger-filled" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
+    </template>
+  </Es2Dialog>
   <ContentShowcase v-if="devShowcase" :engine="engine" />
 </template>
 
