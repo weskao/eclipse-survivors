@@ -8,7 +8,7 @@ import type { JobId } from '../../../game/types'
 import { projectCombatHud, type CombatHudActions, type CombatHudFeed } from './model'
 import '../../../styles/es2/hud.css'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   active: boolean
   choice: JobId
   hud: HudView
@@ -19,7 +19,7 @@ const props = defineProps<{
   musicVolume?: number
   sfxVolume?: number
   audioActive?: boolean
-}>()
+}>(), { audioActive: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed))
 const selectedId = ref<string | null>(null)
