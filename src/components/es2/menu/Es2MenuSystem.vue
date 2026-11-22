@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../../../game/ui-art'
 import type { AbilityId, JobId, UpgradeDef } from '../../../game/types'
+import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
 import type { Profile, PermanentUpgrade, CosmeticId, RunModeId, RunRewards, RunStats } from '../../../meta/types'
 import '../../../styles/es2/menu.css'
@@ -23,6 +24,7 @@ const props = withDefaults(defineProps<{
   settingsOpen?: boolean; upgradeEffect?: 'soft' | 'still'; cameraShake?: boolean
   audioUnlocked?: boolean; musicOn?: boolean; sfxOn?: boolean
   musicVolume?: number; sfxVolume?: number
+  accessibilityPreferences?: AccessibilityPreferences
   specialChoice?: { kind: 'evolution' | 'treasure'; items: readonly MenuChoice[] } | null
   relics?: readonly RelicEntry[]
   notification?: { title: string; message: string } | null
@@ -40,6 +42,7 @@ const emit = defineEmits<{
   upgradeEffect: [effect: 'soft' | 'still']; cameraShake: [enabled: boolean]
   musicVolume: [value: number]; sfxVolume: [value: number]
   toggleMusic: []; toggleSfx: []; dismissNotification: []
+  accessibility: [next: AccessibilityPreferences]
 }>()
 const fallbackProfile = emptyProfile()
 const currentProfile = computed(() => props.profile ?? fallbackProfile)
@@ -90,9 +93,11 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       @confirm="emit('dismissNotification')" @cancel="emit('dismissNotification')" />
     <Es2Settings :active="settingsOpen && !loading" :upgrade-effect="upgradeEffect" :camera-shake="cameraShake"
       :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume" :sfx-volume="sfxVolume"
+      :accessibility-preferences="accessibilityPreferences"
       @close="emit('closeSettings')" @upgrade-effect="emit('upgradeEffect', $event)"
       @camera-shake="emit('cameraShake', $event)" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')"
-      @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)" />
+      @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)"
+      @accessibility="emit('accessibility', $event)" />
     <Es2Loading :active="!!loading" :message="loading?.message" :hero="loading?.hero" :progress="loading?.progress" />
   </div>
 </template>
