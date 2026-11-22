@@ -91,6 +91,7 @@ export interface BiomeEnvironment {
   collide(position: Point, radius: number): Point
   phase(hazard: Hazard, time: number): HazardPhase
   isSuppressed(hazard: Hazard, time: number): boolean
+  interactionAvailable(node: Interaction, time: number): boolean
   contact(position: Point, radius: number, time: number): HazardContact
   interact(position: Point, time: number): Interaction | null
   reset(): void
@@ -263,6 +264,11 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
     return { phase: kinds.length ? 'active' : warning ? 'warning' : 'none', damagePerSecond, speedMultiplier, push: { x: px, y: py }, kinds }
   }
 
+  function interactionAvailable(node: Interaction, time: number): boolean {
+    validCoord(time)
+    return (suppression.get(node.id)?.until ?? -Infinity) <= time
+  }
+
   function interact(position: Point, time: number): Interaction | null {
     validCoord(position.x); validCoord(position.y); validCoord(time)
     for (const [key, value] of suppression) if (value.until <= time) suppression.delete(key)
@@ -277,7 +283,7 @@ export function createBiomeEnvironment(id: BiomeId, options: { seed?: number; ma
   function reset(): void { cells.clear(); suppression.clear() }
   return { definition, cell, obstacles, hazards, interactions, visibleDecorations,
     minimap: (x, y, radius) => ({ obstacles: obstacles(x, y, radius), hazards: hazards(x, y, radius) }),
-    collide, phase, isSuppressed, contact, interact, reset, cacheSize: () => cells.size, activeInteractions: () => suppression.size }
+    collide, phase, isSuppressed, interactionAvailable, contact, interact, reset, cacheSize: () => cells.size, activeInteractions: () => suppression.size }
 }
 
 function hazardParameters(kind: HazardKind): Pick<Hazard, 'period' | 'quiet' | 'warn' | 'damagePerSecond' | 'speedMultiplier' | 'force'> {
