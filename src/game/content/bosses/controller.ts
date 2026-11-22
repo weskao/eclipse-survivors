@@ -168,6 +168,8 @@ function clearTransient(e: Encounter): void {
   e.windup = null
   e.hazards.length = 0
   e.projectiles.length = 0
+  // Clear only this pack's transient VFX; never touch another feature pack.
+  e.state.content.effects = e.state.content.effects.filter(fx => !fx.id.startsWith('bosses:'))
 }
 
 function strike(state: GameState, t: BossTelegraph, hooks: GameHooks): void {
