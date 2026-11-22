@@ -34,7 +34,7 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+      "sha256": "1bcc99c772d7f1cd50bcdad8f62f4124a235ee1d7d1dcaa889fc58db8877aaf0",
       "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha."
     },
     {
@@ -68,7 +68,7 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+      "sha256": "0955a1225262e9468a29d297f126e91464a5675a843bad7599b872df0e1b0fa6",
       "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha."
     }
   ]

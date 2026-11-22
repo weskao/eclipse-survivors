@@ -17,7 +17,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "9e28e4801e8bc4df9c744a7ce30d6de9f1cd721ce7205f5f8f7bdf542b43af29",
+      "sha256": "d9e63b2e0f36a21ea7446ee349e5285bb4ec5b9acd11e80ac3a18c9bf17f8227",
       "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
@@ -51,7 +51,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "56fc06dc490b7f51c71f994aa3b72464111bcfe9a9dbb37714aa5bef3682918e",
+      "sha256": "37b4f8a2c08094beed848f44d938d233567a8ad53750a23650751fc6bdfdf150",
       "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
@@ -85,7 +85,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "3beb62ea74b6f619f3fa632f454de9fd6969a4ffb8071b6484bd5cb71e703f65",
+      "sha256": "07432ee5d00960b109c2c8988f0383bbaa6a1a885183a875fffcb6aaa8905df2",
       "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
@@ -119,7 +119,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "8de0311486c093deef00d22ff3fd8ceca353e548c7c97ac8691272ca45f7692e",
+      "sha256": "21ddc0ba2b0765284a97be9e5ad75680606bd6b38dc3721eabcd8bcabe99122c",
       "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
@@ -153,7 +153,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "bc84ebd2a669e315cc36306a32b24c4308a0a3b02c0077944a6e540d65d40f11",
+      "sha256": "3aa684005963bc760b84b3afe955f912bc331056d8abb8fc3c3822cef0a88059",
       "qaNote": "Explicit c104 source region(s): imgs6.png; visually review animation continuity and alpha."
     },
     {
@@ -187,7 +187,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "12b2477da7dc74b33e353c2c6a450c34baf86a210a83867d3c83625a426bd854",
+      "sha256": "26341be31392092c4e67f0d53d2e3271aaffc6e8afdf84879328e5181fe24b98",
       "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
@@ -221,7 +221,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "f8199e36e2b3098862b8bdffb3814c024a1a35e292854a20b9dd405ed5edbce2",
+      "sha256": "20e0f0751291674dfdab2ada09ed79eed94e89575f1390a670bdb1b778ec7682",
       "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
@@ -255,7 +255,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "ee347e3bd72a2dc86bffe3fb3b7d638465978ff91f53c558151247b52fa0f6d1",
+      "sha256": "12683e7656ae889c776c66b262f8b3dc5bfe68347a2b948abdfc1749b7335bab",
       "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
@@ -289,7 +289,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "5c2f4a803d520f9cb46c82b21552cb99504bba37ce5081abd2de8e68a1365e8c",
+      "sha256": "e9ab8908ef17e67030306e658e6a5beff0403bf2056aae7b0c2bd4239c58b03b",
       "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
@@ -323,7 +323,7 @@
       "frameWidth": 96,
       "frameHeight": 96,
       "status": "needs-human-approval",
-      "sha256": "f0212487c17b3b6a7405878dbd7854497533eea2b2d1fb85472612712e1d8278",
+      "sha256": "8d2128ee7f5297ea89b1640ff24d24dab2dc8e5c21a5135e6dc651aa1a50d042",
       "qaNote": "Explicit c104 source region(s): imgs5.png; visually review animation continuity and alpha."
     },
     {
