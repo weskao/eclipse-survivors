@@ -70,6 +70,9 @@ const defaultStorage = (): SettingsStorage | null => {
 }
 
 const MUSIC_GAIN = 0.65
+const SFX_GAIN = 0.52
+const clampVolume = (value: number, fallback: number): number =>
+  Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
 const MAX_SFX_PER_100MS = 8
 const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'boss', 'bossDefeat', 'victory', 'defeat'])
 
@@ -82,6 +85,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let musicBus: GainLike | null = null
   let musicOn = true
   let sfxOn = true
+  let musicVolume = 100
+  let sfxVolume = 100
   let interrupted = false
   let mode: GameMode = 'menu'
   let intensity: CombatIntensity = 'calm'
@@ -95,6 +100,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   try {
     musicOn = storage?.getItem('starMusic') !== 'off'
     sfxOn = storage?.getItem('starSfx') !== 'off'
+    const storedMusic = storage?.getItem('eclipseMusicVolume')
+    const storedSfx = storage?.getItem('eclipseSfxVolume')
+    if (storedMusic !== null && storedMusic !== undefined) musicVolume = clampVolume(Number(storedMusic), 100)
+    if (storedSfx !== null && storedSfx !== undefined) sfxVolume = clampVolume(Number(storedSfx), 100)
   } catch {
     /* storage blocked: keep defaults */
   }
@@ -107,8 +116,14 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     }
   }
 
+  const mp3Level = (): number =>
+    (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0.27 :
+      intensity === 'combat' && mode === 'play' ? 0.35 : 0.38) * musicVolume / 100
+
+  bgm.volume = mp3Level()
+
   const playScore = (): void => {
-    if (!musicOn || interrupted || mode !== 'play' || !bgm.paused) return
+    if (!musicOn || !musicVolume || interrupted || mode !== 'play' || !bgm.paused) return
     // play() must run directly inside the input gesture to satisfy mobile browser policies.
     try {
       Promise.resolve(bgm.play()).then(() => {
@@ -174,10 +189,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         ac = created
         noiseBuffer = null
         master = ac.createGain()
-        master.gain.value = 0.52
+        master.gain.value = sfxOn ? SFX_GAIN * sfxVolume / 100 : 0
         master.connect(ac.destination)
         musicBus = ac.createGain()
-        musicBus.gain.value = musicOn ? MUSIC_GAIN : 0
+        musicBus.gain.value = musicOn ? MUSIC_GAIN * musicVolume / 100 : 0
         musicBus.connect(ac.destination)
       }
       if (ac.state !== 'running' && ac.state !== 'closed') {
@@ -207,6 +222,21 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     get unlocked() { return ac !== null },
     get musicOn() { return musicOn },
     get sfxOn() { return sfxOn },
+    get musicVolume() { return musicVolume },
+    get sfxVolume() { return sfxVolume },
+    setMusicVolume(value: number) {
+      musicVolume = clampVolume(value, musicVolume)
+      try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
+      bgm.volume = mp3Level()
+      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
+      if (!musicVolume) bgm.pause()
+      else if (musicOn) playScore()
+    },
+    setSfxVolume(value: number) {
+      sfxVolume = clampVolume(value, sfxVolume)
+      try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
+      if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
+    },
     wake,
     interrupt,
     setCombatIntensity(next) {
@@ -217,7 +247,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     playSfx(cue) {
       const ctx = running()
-      if (!sfxOn || !ctx) return
+      if (!sfxOn || !sfxVolume || !ctx) return
       const now = ctx.currentTime
       if (now - (sfxLast.get(cue) ?? -100) < SFX_COOLDOWN[cue]) return
       while (recentSfx.length && now - recentSfx[0]! >= 0.1) recentSfx.shift()
@@ -235,7 +265,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (bgm.paused || intensity === 'boss') battle.schedule(ctx.currentTime, tone)
       else if (intensity === 'combat') battle.schedule(ctx.currentTime, combatPercussion)
       if (!bgm.paused) {
-        const target = intensity === 'boss' ? 0.27 : intensity === 'combat' ? 0.35 : 0.38
+        const target = mp3Level()
         const delta = target - bgm.volume
         if (Math.abs(delta) > 0.001) bgm.volume += Math.sign(delta) * Math.min(Math.abs(delta), 0.012)
       }
@@ -250,7 +280,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         menu.setClock(ac ? ac.currentTime + 0.06 : 0)
         menu.resetStep()
       }
-      bgm.volume = mode === 'level' ? 0.2 : 0.38
+      bgm.volume = mp3Level()
       if (mode === 'play') playScore()
     },
     resetBattleClock(delay) {
@@ -260,7 +290,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       mode = screen
       musicOn = !musicOn
       save('starMusic', musicOn)
-      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN : 0, ac.currentTime, 0.06)
+      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
       if (musicOn) {
         wake()
         if (screen === 'play') playScore()
@@ -275,6 +305,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     toggleSfx() {
       sfxOn = !sfxOn
       save('starSfx', sfxOn)
+      if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
       if (sfxOn) wake()
       return sfxOn
     },
