@@ -51,4 +51,30 @@ describe('App', () => {
     expect(root.getAttribute('data-es2-quality')).toBe(originalQuality)
   })
 
+
+  it('pauses before asking to leave a live run, resumes on cancel and returns home only after confirmation', async () => {
+    const runtime = createEngine()
+    const engine = { ...runtime, mount: vi.fn(() => vi.fn()) }
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    engine.start()
+    await nextTick()
+    expect(engine.ui.mode).toBe('play')
+    expect(wrapper.find('[data-es2-home]').exists()).toBe(true)
+    await wrapper.get('[data-es2-home]').trigger('click')
+    await nextTick()
+    expect(engine.ui.mode).toBe('paused')
+    expect(document.querySelector('[data-es2-home-confirm]')).not.toBeNull()
+    expect(document.querySelector('#paused.active')).toBeNull()
+    document.querySelector<HTMLButtonElement>('[data-es2-home-cancel]')!.click()
+    await nextTick()
+    expect(engine.ui.mode).toBe('play')
+    expect(document.querySelector('[data-es2-home-confirm]')).toBeNull()
+    await wrapper.get('[data-es2-home]').trigger('click')
+    document.querySelector<HTMLButtonElement>('[data-es2-home-accept]')!.click()
+    await nextTick()
+    expect(engine.ui.mode).toBe('menu')
+    expect(wrapper.find('[data-es2-home]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
 })
