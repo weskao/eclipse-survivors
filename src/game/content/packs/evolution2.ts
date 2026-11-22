@@ -1,4 +1,4 @@
-import type { ContentPack } from '../contracts'
+import type { ContentContext, ContentPack } from '../contracts'
 import { executeEvolution } from '../evolution2/combat'
 import { EVOLUTION2_EFFECTS } from '../evolution2/cues'
 import { EVOLUTION2_RECIPES } from '../evolution2/recipes'
@@ -25,7 +25,7 @@ export const EVOLUTION2_PACK: ContentPack = {
       { id: recipe.passiveId, level: recipe.passiveLevel },
     ],
     requirements: `${recipe.weaponTitle} Lv.${recipe.weaponLevel} + ${recipe.passiveTitle} Lv.${recipe.passiveLevel}`,
-    onTick(context) { executeEvolution(context, recipe) },
+    onTick(context: ContentContext) { executeEvolution(context, recipe) },
   })),
   effects: EVOLUTION2_EFFECTS,
 }
