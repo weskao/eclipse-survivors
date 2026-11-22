@@ -4,6 +4,9 @@ import { getMode, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
+import { createLiveCombatVfxAdapter } from './render/es2/live-events'
+import type { CombatFxKind } from './render/es2/combat-vfx'
+import type { ConfirmedCombatVfxEvent } from './render/es2/live-events'
 import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
@@ -120,6 +123,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (!hero) return
       const spawned = bosses.spawn(state, id, { x: hero.x + 245, y: hero.y }, hooks)
       if (spawned) {
+        const spawnedBoss = state.mobs.find(mob => mob.type === 'boss' && mob.hp > 0)
+        if (spawnedBoss) confirmedVfx('boss-entrance', spawnedBoss.x, spawnedBoss.y)
         bossSequence++
         hooks.message(`⚠ ${BOSS_DEFINITIONS[id].title} 降臨！`)
       }
@@ -194,6 +199,45 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let objectiveRuntime: ObjectiveRuntime | null = null
   let worldEvents: LiveWorldEvents | null = null
   let ending = false
+  // All cues share the existing content registry's 96-effect cap and 4-second lifetime.
+  const liveVfx = contentRegistry.packs.some(pack => pack.id === 'combat-vfx')
+    ? createLiveCombatVfxAdapter(effect => contentRegistry.addEffect(s, effect)) : null
+  let vfxSequence = 0
+  let observedBossPhase: number | null = null
+  function confirmedVfx(kind: CombatFxKind, x: number, y: number, angle?: number): void {
+    if (!liveVfx) return
+    liveVfx.emit({ sequence: ++vfxSequence, kind, x, y, angle } as ConfirmedCombatVfxEvent)
+  }
+  function playConfirmedCue(cue: Parameters<AudioSystem['playSfx']>[0]): void {
+    audio.playSfx(cue)
+    const hero = s.hero
+    if (!hero || s.mode !== 'play' || !liveVfx) return
+    if (cue === 'knight') {
+      const swipe = s.swipes.at(-1)
+      if (swipe?.life && swipe.life > 0) confirmedVfx('sword-slash', swipe.x, swipe.y, swipe.a)
+    } else if (cue === 'ranger' || cue === 'wizard') {
+      const shot = s.shots.at(-1)
+      if (shot && shot.life > 0) {
+        const angle = Math.atan2(shot.vy, shot.vx)
+        confirmedVfx('projectile-trail', shot.x, shot.y, angle)
+        if (cue === 'wizard') confirmedVfx('spell-cast', shot.x, shot.y)
+      }
+    } else if (cue === 'dash' && hero.dash > 0) {
+      confirmedVfx('dash-afterimage', hero.x, hero.y,
+        Math.hypot(hero.vx, hero.vy) > 0.01 ? Math.atan2(hero.vy, hero.vx) : hero.aimAngle)
+    } else if (cue === 'chain') {
+      const pts = s.lightningFx.at(-1)?.pts
+      if (pts && pts.length >= 2) confirmedVfx('lightning-chain', pts[1]!.x, pts[1]!.y,
+        Math.atan2(pts[1]!.y - pts[0]!.y, pts[1]!.x - pts[0]!.x))
+    } else if (cue === 'frost') {
+      confirmedVfx('frost-impact', hero.x, hero.y)
+    } else if (cue === 'meteor') {
+      const last = s.fx.at(-1)
+      if (last?.type === 'meteor') confirmedVfx('fire-eruption', last.x, last.y)
+    } else if (cue === 'vortex') {
+      confirmedVfx('gravity-vortex', hero.x, hero.y)
+    }
+  }
 
   function wakeAudio(): void {
     audio.wake()
@@ -201,7 +245,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   const hooks: GameHooks = {
-    sfx: cue => audio.playSfx(cue),
+    sfx: playConfirmedCue,
     message,
     offerUpgrades,
     end,
@@ -230,6 +274,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity }
       }) }
       ui.upgrades = []
+      const chest = state.events.find(event => event.id === chestId)
+      if (chest) confirmedVfx('chest-opening', chest.x, chest.y)
       screen('level')
       return true
     } : undefined,
@@ -381,6 +427,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.worldEventChoice = null
     ui.worldEventMarkers = []
     resetRun(s)
+    liveVfx?.reset()
+    vfxSequence = 0
+    observedBossPhase = null
     factions?.reset()
     factionSequence = 0
     factionWindow = 0
@@ -433,6 +482,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   function chooseUpgrade(id: AbilityId): void {
     if (s.mode !== 'level' || !s.hero || ui.specialChoice || !ui.upgrades.some(up => up.id === id)) return
     if (!applyUpgrade(s, id, hooks, contentRegistry)) return
+    if (s.hero && (id.startsWith('evolution2:') || EVOLUTIONS.some(evo => evo.id === id)))
+      confirmedVfx('evolution-awakening', s.hero.x, s.hero.y)
     screen('play')
     if (s.levelQueue) offerUpgrades()
     audio.playSfx('upgrade')
@@ -499,6 +550,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
+    const bossSnapshot = bosses?.snapshot(s)
+    const actualBoss = s.mobs.find(mob => mob.type === 'boss' && mob.hp > 0)
+    if (bossSnapshot?.phase && actualBoss) {
+      if (observedBossPhase !== null && observedBossPhase !== bossSnapshot.phase)
+        confirmedVfx('boss-phase', actualBoss.x, actualBoss.y)
+      observedBossPhase = bossSnapshot.phase
+    } else observedBossPhase = null
     if (factions && s.mode === 'play' && s.hero) {
       const window = Math.floor(s.time / 8)
       if (window > factionWindow) {
@@ -773,6 +831,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       removeEventListener('resize', resize)
       unlisten()
       delete window.__test
+      liveVfx?.dispose()
       audio.dispose()
     }
   }
@@ -842,6 +901,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     activateHeroSpecial() {
       if (s.mode !== 'play' || ui.settingsOpen || !heroSpecialization) return false
       const activated = heroSpecialization.activate()
+      if (activated && s.hero) confirmedVfx('ultimate-attack', s.hero.x, s.hero.y)
       if (activated) hud()
       return activated
     },

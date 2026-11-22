@@ -59,7 +59,7 @@ describe('ES2 combat VFX in the actual game, not the standalone demo', () => {
     engine.advance(0.016)
     const shot = s.shots.at(-1)!
     const trail = s.content.effects.find(f => f.id === 'combat-vfx:projectile-trail')
-    expect(trail).toMatchObject({ x: shot.x, y: shot.y })
+    expect(trail).toMatchObject({ x: shot.prevX, y: shot.prevY })
     expect((trail as { angle?: number })?.angle).toBeCloseTo(Math.atan2(shot.vy, shot.vx))
     expect(s.content.effects.length).toBeLessThanOrEqual(MAX_CONTENT_EFFECTS)
   })
