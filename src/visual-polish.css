@@ -279,3 +279,29 @@
     background-image:url('./assets/ui/skill-art-atlas@3x-animated.webp');
   }
 }
+
+/* Desktop-only keyboard affordance: sits at the pause control's lower-right edge. */
+#hud #pauser{position:relative;isolation:isolate}
+#hud #pauser .pause-shortcut{
+  display:none;
+  position:absolute;
+  right:-9px;
+  bottom:-10px;
+  box-sizing:border-box;
+  min-width:17px;
+  height:17px;
+  padding:0 3px;
+  align-items:center;
+  justify-content:center;
+  color:#fff1c9;
+  background:linear-gradient(145deg,#384453,#161d29);
+  border:1px solid #dec18b;
+  border-radius:4px;
+  box-shadow:0 2px 6px #000a,inset 0 1px 0 #ffffff30;
+  font:700 10px/1 system-ui,sans-serif;
+  letter-spacing:0;
+  pointer-events:none;
+}
+@media (hover: hover) and (pointer: fine){
+  #hud #pauser .pause-shortcut{display:flex}
+}

@@ -95,6 +95,9 @@ describe('GameHud', () => {
     expect(w.find('#music').attributes('aria-pressed')).toBe('true')
     expect(w.find('#sfx').text()).toBe('♩')
     expect(w.find('#sfx').attributes('aria-pressed')).toBe('false')
+    expect(w.find('#pauser').attributes('aria-keyshortcuts')).toBe('P')
+    expect(w.find('#pauser .pause-shortcut').text()).toBe('P')
+    expect(w.find('#pauser .pause-shortcut').attributes('aria-hidden')).toBe('true')
     expect(w.find('canvas#minimap').exists()).toBe(true)
   })
 
@@ -207,5 +210,11 @@ describe('TouchControls', () => {
 describe('style.css', () => {
   it('keeps the reduced-motion rule', () => {
     expect(readFileSync(resolve(process.cwd(), 'src/style.css'), 'utf8')).toContain('prefers-reduced-motion')
+  })
+
+  it('shows the pause shortcut only for fine-pointer desktop devices', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/visual-polish.css'), 'utf8')
+    expect(css).toContain('#hud #pauser .pause-shortcut')
+    expect(css).toContain('@media (hover: hover) and (pointer: fine)')
   })
 })

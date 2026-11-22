@@ -163,10 +163,17 @@ describe('keyboard and focus', () => {
     expect(engine.state.hero!.skills[first as UpgradeId]).toBe(1)
   })
 
-  it('window blur pauses a running game', () => {
+  it('window blur does not pause a run or leave movement stuck', () => {
     engine.start()
+    key('KeyD')
+    engine.advance(0.05)
+    const movingSpeed = engine.state.hero!.vx
+    expect(movingSpeed).toBeGreaterThan(0)
     window.dispatchEvent(new Event('blur'))
-    expect(engine.ui.mode).toBe('paused')
+    expect(engine.ui.mode).toBe('play')
+    expect(audio.interruptions).toBe(0)
+    engine.advance(0.05)
+    expect(engine.state.hero!.vx).toBeLessThan(movingSpeed)
   })
 
   it('pointerdown on a button wakes audio and plays the ui cue', () => {
@@ -208,20 +215,22 @@ describe('interruption and input lifecycle', () => {
     stop()
   })
 
-  it('pauses on hidden or pagehide, never silently resumes on visibility return', () => {
+  it('keeps gameplay running when hidden or pagehide, while interrupting background audio', () => {
     const stop = engine.listen(window)
     const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
     engine.start()
     document.dispatchEvent(new Event('visibilitychange'))
-    expect(engine.ui.mode).toBe('paused')
+    expect(engine.ui.mode).toBe('play')
     expect(audio.interruptions).toBe(1)
+    const elapsed = engine.state.time
+    engine.advance(0.016)
+    expect(engine.state.time).toBeGreaterThan(elapsed)
     hidden.mockReturnValue(false)
     document.dispatchEvent(new Event('visibilitychange'))
-    expect(engine.ui.mode).toBe('paused')
-    engine.togglePause()
     expect(engine.ui.mode).toBe('play')
+    key('KeyA')
     window.dispatchEvent(new Event('pagehide'))
-    expect(engine.ui.mode).toBe('paused')
+    expect(engine.ui.mode).toBe('play')
     expect(audio.interruptions).toBe(2)
     hidden.mockRestore()
     stop()
