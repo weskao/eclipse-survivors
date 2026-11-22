@@ -175,7 +175,7 @@ export function loadedProjectileVisible(job: JobId, hero: Hero, anim: HeroAnimat
 /** Pre-rendered source art, only overlaid during ready/windup. Never in an atlas. */
 export function drawLoadedProjectile(
   ctx: Ctx2D, layers: RigidWeaponLayers, job: JobId, hero: Hero, anim: HeroAnimation,
-  width: number, height: number,
+  _width: number, height: number,
 ): void {
   if (!layers.projectile || !loadedProjectileVisible(job, hero, anim)) return
   const rigidWidth = height * layers.projectile.width / layers.projectile.height
