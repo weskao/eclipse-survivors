@@ -10,6 +10,12 @@ describe.each(BIOME_IDS)('%s playable runtime', id => {
     const from = { x: obstacle.x - obstacle.r - 65, y: obstacle.y }
     const to = { x: obstacle.x + obstacle.r + 65, y: obstacle.y }
     expect(game.lineOfSight(from, to, 8)).toBe(false)
+    const route = game.findPath(from, to, 8)
+    expect(route.length).toBeGreaterThan(1)
+    expect(route.at(-1)).toEqual(to)
+    for (let i = 0, last = from; i < route.length; last = route[i]!, i++) {
+      expect(game.lineOfSight(last, route[i]!, 8)).toBe(true)
+    }
     const moved = game.move(from, { x: 3000, y: 0 }, .1, 17)
     expect(moved.x).toBeLessThanOrEqual(obstacle.x - obstacle.r - 17 + 1e-6)
     expect(game.lineOfSight({ x: 0, y: 0 }, { x: 0, y: 0 }, 17)).toBe(true)
