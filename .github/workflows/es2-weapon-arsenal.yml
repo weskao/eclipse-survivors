@@ -1,0 +1,36 @@
+name: ES2 weapon arsenal verification
+
+on:
+  push:
+    branches: [feature/es2-weapon-arsenal]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: es2-weapon-arsenal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Arsenal TDD, types and release guards
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install frozen lockfile
+        run: pnpm install --frozen-lockfile
+      - name: Run Vitest suite
+        run: pnpm test
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Build production bundle
+        run: pnpm build
+      - name: Verify release guards
+        run: pnpm check-release
