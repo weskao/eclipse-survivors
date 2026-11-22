@@ -190,6 +190,29 @@ describe('world-event live integration', () => {
     expect(live.director.objectives).toHaveLength(0)
   })
 
+
+  it('cleans scene-owned markers, buffs and event actors even when scene changes while paused', () => {
+    const { state, live, spawn } = setup()
+    const unrelated = {
+      x: 0, y: 0, type: 'slime' as const, hp: 10, max: 10, r: 10,
+      speed: 0, dmg: 0, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
+    }
+    const marker = spawn('events:monster-ambush')
+    expect(live.choose(marker.id, 'fight')).toBe('applied')
+    state.mobs.push(unrelated)
+    expect(state.mobs).toHaveLength(4)
+    state.mode = 'paused'
+    state.currentScene = 1
+    live.sceneChange()
+    expect(state.mobs).toEqual([unrelated])
+    expect(live.director.active).toHaveLength(0)
+    expect(live.director.objectives).toHaveLength(0)
+    state.mode = 'play'
+    state.time = 1
+    live.tick()
+    expect(live.director.active).toHaveLength(0)
+  })
+
   it('holds the world director still while paused and expires markers when play resumes', () => {
     const { state, live, spawn } = setup()
     const marker = spawn('events:divine-shrine')
