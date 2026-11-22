@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "visualStatus": "QA_PENDING: separate portrait/animation drawings, one-facing action strips only; do not misrepresent as 8-direction",
+  "heroes": [
+    {
+      "id": "shadowblade",
+      "portrait": {
+        "path": "shadowblade-portrait@3x.webp",
+        "pixels": [
+          900,
+          900
+        ],
+        "displayMaxCSS": [
+          300,
+          300
+        ]
+      },
+      "action": {
+        "path": "shadowblade-run-attack@3x.webp",
+        "pixels": [
+          3584,
+          448
+        ],
+        "frameSize": [
+          448,
+          448
+        ],
+        "count": 8,
+        "order": "run:0-2; attack/cast/recovery:3-7",
+        "directions": [
+          "right"
+        ]
+      },
+      "skill": {
+        "path": "shadowblade-special@3x.webp",
+        "pixels": [
+          192,
+          192
+        ]
+      }
+    },
+    {
+      "id": "spirit-summoner",
+      "portrait": {
+        "path": "spirit-summoner-portrait@3x.webp",
+        "pixels": [
+          900,
+          900
+        ],
+        "displayMaxCSS": [
+          300,
+          300
+        ]
+      },
+      "action": {
+        "path": "spirit-summoner-run-attack@3x.webp",
+        "pixels": [
+          3584,
+          448
+        ],
+        "frameSize": [
+          448,
+          448
+        ],
+        "count": 8,
+        "order": "run:0-2; attack/cast/recovery:3-7",
+        "directions": [
+          "right"
+        ]
+      },
+      "skill": {
+        "path": "spirit-summoner-special@3x.webp",
+        "pixels": [
+          192,
+          192
+        ]
+      }
+    },
+    {
+      "id": "crimson-paladin",
+      "portrait": {
+        "path": "crimson-paladin-portrait@3x.webp",
+        "pixels": [
+          900,
+          900
+        ],
+        "displayMaxCSS": [
+          300,
+          300
+        ]
+      },
+      "action": {
+        "path": "crimson-paladin-run-attack@3x.webp",
+        "pixels": [
+          3584,
+          448
+        ],
+        "frameSize": [
+          448,
+          448
+        ],
+        "count": 8,
+        "order": "run:0-2; attack/cast/recovery:3-7",
+        "directions": [
+          "right"
+        ]
+      },
+      "skill": {
+        "path": "crimson-paladin-special@3x.webp",
+        "pixels": [
+          192,
+          192
+        ]
+      }
+    }
+  ]
+}
