@@ -94,6 +94,21 @@ describe('MenuScreen', () => {
     expect(w.emitted('start')).toHaveLength(1)
   })
 
+  it('keeps the music unlock prompt in layout after unlocking so a tap on start cannot shift away', async () => {
+    // pointerdown unlocks audio; removing the prompt mid-tap moved #start before mouseup on phones.
+    const w = mount(MenuScreen, { props: { ...menuProps, audioUnlocked: false } })
+    expect(w.get('#enableMenuMusic').attributes('aria-hidden')).toBeUndefined()
+    await w.setProps({ audioUnlocked: true })
+    const prompt = w.find('#enableMenuMusic')
+    expect(prompt.exists()).toBe(true)
+    expect(prompt.classes()).toContain('is-unlocked')
+    expect(prompt.attributes('aria-hidden')).toBe('true')
+    expect(prompt.attributes('tabindex')).toBe('-1')
+    expect(prompt.attributes('disabled')).toBeDefined()
+    await w.setProps({ musicOn: false })
+    expect(w.find('#enableMenuMusic').exists()).toBe(false)
+  })
+
   it('opens the shared settings dialog from the main menu', async () => {
     const w = mount(MenuScreen, { props: menuProps })
     await w.find('.settings-trigger').trigger('click')
