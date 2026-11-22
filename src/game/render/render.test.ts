@@ -171,8 +171,8 @@ describe('drawFrame', () => {
     reducedMotion = true
     const reduced = createFakeCtx()
     drawFrame(reduced.ctx, s, 1, assets)
-    expect(normal.calls.filter((name) => name === 'drawImage').length)
-      .toBeGreaterThan(reduced.calls.filter((name) => name === 'drawImage').length)
+    // Reduced motion skips ambient, echoes and swipes, which are path draws (not drawImage).
+    expect(normal.calls.length).toBeGreaterThan(reduced.calls.length)
   })
 
   it.each([0, 1, 2, 3])('scene %i draws', (scene) => {

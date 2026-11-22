@@ -1,4 +1,5 @@
 import type { Artwork } from '../art'
+import type { ContentRegistry } from '../content/registry'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
@@ -19,6 +20,7 @@ import type { MobTintCache } from './tint-cache'
 export type { Ctx2D } from './ctx'
 
 export interface RenderAssets {
+  content?: ContentRegistry
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   heroSheets: HeroSheets
@@ -123,6 +125,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
+  assets.content?.render(ctx, s, ox, oy)
   drawNumbers(ctx, s, ox, oy)
   drawVignette(ctx, s)
   drawBossPhaseIndicator(ctx, s)
