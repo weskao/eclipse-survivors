@@ -5,6 +5,7 @@ import type { GameState, JobId, Mob } from '../types'
 import { sampleHeroAnimation } from './animation'
 import { drawRigSprite } from './characters'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
+import { createHeroSheets } from './hero-sheets'
 import { createRigidWeaponLayers, drawLoadedProjectile, loadedProjectileVisible } from './rigid-weapons'
 
 function fixture(job: JobId): GameState {
@@ -104,5 +105,29 @@ describe('expanded hero animation frame budgets', () => {
     expect(recover.actionStage).toBe('recover')
     expect(recover.frame).toBeGreaterThan(release.frame)
     expect(loadedProjectileVisible(job, hero, recover)).toBe(false)
+  })
+})
+
+describe('cached frame isolation', () => {
+  it.each(['ranger', 'wizard'] as const)('%s bakes clean body-only frames and clears each cell', job => {
+    const s = fixture(job)
+    s.hero!.strike = 0.18
+    const anim = sampleHeroAnimation(s, s.hero!)
+    const image = document.createElement('canvas')
+    image.width = 340
+    image.height = 390
+    const factory = fakeCanvasFactory()
+    const sheets = createHeroSheets(factory.make)
+    const { ctx } = createFakeCtx()
+    expect(sheets.draw(ctx, image, job, s.hero!, anim, 110, 145)).toBe(true)
+    const baked = factory.made[0]!.fake
+    const body = factory.made[1]!.canvas
+    const weapon = factory.made[2]!.canvas
+    const held = factory.made[3]!.canvas
+    expect(baked.calls.filter(name => name === 'clearRect')).toHaveLength(anim.count)
+    expect(baked.drawn).toContain(body)
+    expect(baked.drawn).not.toContain(image)
+    expect(baked.drawn).not.toContain(weapon)
+    expect(baked.drawn).not.toContain(held)
   })
 })
