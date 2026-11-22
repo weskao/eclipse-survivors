@@ -82,7 +82,7 @@ export function createEs2Score(): Es2Score {
   let interrupted = false
   let disposed = false
 
-  const emit = (layer: Layer, now: number, tone: ToneFn, gain: number): void => {
+  const emit = (layer: Layer, now: number, tone: ToneFn, gainAt: (at: number) => number): void => {
     const theme = THEMES[layer.scene]
     if (theme.oneShot && layer.step >= theme.melody.length) return
     // Mobile backgrounding and jank must not cause thousands of catch-up notes.
@@ -95,7 +95,7 @@ export function createEs2Score(): Es2Score {
       const root = theme.roots[Math.floor(step / 4) % theme.roots.length]!
       const melody = theme.melody[step % theme.melody.length]
       const sound = (pitch: number, delay: number, duration: number, volume: number, wave: OscillatorType): void => {
-        const level = gain * volume
+        const level = gainAt(at) * volume
         if (level > 0.0002) tone(pitch, at + delay, duration, Math.min(level, 0.14), wave, 'music')
       }
       if (step % 4 === 0) {
@@ -132,14 +132,15 @@ export function createEs2Score(): Es2Score {
       if (volume <= 0) return
       if (!initialized) initialized = true
       if (!previous) {
-        emit(current, now, tone, volume)
+        emit(current, now, tone, () => volume)
         return
       }
-      const incoming = clamp((now - fadeStartedAt) / CROSSFADE_SECONDS)
-      const outgoing = 1 - incoming
-      if (outgoing > 0) emit(previous, now, tone, volume * outgoing)
-      emit(current, now, tone, volume * incoming)
-      if (incoming >= 1) previous = null
+      // Evaluate the fade at each actual note time, not at the RAF time:
+      // otherwise the incoming theme loses its first downbeat at gain = 0.
+      const fadeInAt = (at: number): number => clamp((at - fadeStartedAt) / CROSSFADE_SECONDS)
+      emit(previous, now, tone, at => volume * (1 - fadeInAt(at)))
+      emit(current, now, tone, at => volume * fadeInAt(at))
+      if (now - fadeStartedAt >= CROSSFADE_SECONDS) previous = null
     },
     interrupt() {
       interrupted = true

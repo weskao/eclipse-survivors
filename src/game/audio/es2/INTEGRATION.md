@@ -20,9 +20,9 @@ It does not install another Web Audio engine, rewrite `src/game/audio/engine.ts`
 
 1. Keep exactly one `createAudioSystem(...)` instance in `src/game/engine.ts`.
 2. Export/inject a **ToneFn from that existing audio engine** into
-   `createEs2AudioAdapter({ audio, now: () => audioContext.currentTime, tone })`.
+   `createEs2AudioAdapter({ audio, now: () => audioContext.currentTime, tone, isRunning: () => audioContext.state === 'running' })`.
    The tone callback must use the existing `musicBus`/`master` Web Audio
-   buses and gain envelopes; do **not** create a second `AudioContext`.
+   buses and gain envelopes; ES2 supplies pre-bus linear amplitude so do not\n   multiply user volume again. Do **not** create a second `AudioContext`.
    If `tone` is omitted, new cues use legacy SFX and `tick` uses legacy music.
 3. Replace *only* the legacy music tick with `adapter.tick(mode)`. Do not
    call both music tick functions (that doubles scores). Call

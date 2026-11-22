@@ -11,6 +11,8 @@ export interface Es2AudioOptions {
   now: () => number
   /** Optional existing engine tone method; omit to use legacy SFX/music fallback. */
   tone?: ToneFn
+  /** Check the shared context's state; prevents scheduling while Safari/iOS suspends it. */
+  isRunning?: () => boolean
 }
 
 export interface Es2AudioAdapter {
@@ -43,7 +45,7 @@ const MAX_CUES_PER_100MS = 8
  * An opt-in extension, not a new audio engine. Existing audio retains AudioContext,
  * HTML media, gain buses, user preference keys, autoplay policy and lifecycle.
  */
-export function createEs2AudioAdapter({ audio, now, tone }: Es2AudioOptions): Es2AudioAdapter {
+export function createEs2AudioAdapter({ audio, now, tone, isRunning }: Es2AudioOptions): Es2AudioAdapter {
   const score = createEs2Score()
   const cooldowns = new Map<Es2Cue, number>()
   const recent: number[] = []
@@ -85,16 +87,17 @@ export function createEs2AudioAdapter({ audio, now, tone }: Es2AudioOptions): Es
     },
     resumeFromGesture: wake,
     tick(mode) {
-      if (disposed || interrupted || !awake || !audio.musicOn || audio.musicVolume <= 0 || !musicalMode(mode)) return
+      if (disposed || interrupted || !awake || !audio.musicOn || audio.musicVolume <= 0 || !musicalMode(mode) || isRunning?.() === false) return
       if (!tone) {
         // Integration can adopt ES2 cues first and wire music separately.
         audio.tick(mode)
         return
       }
-      score.schedule(now(), tone, audio.musicVolume / 100)
+      // The existing musicBus already applies the user's music volume.
+      score.schedule(now(), tone, 1)
     },
     play(cue) {
-      if (disposed || interrupted || !awake || !audio.sfxOn || audio.sfxVolume <= 0) return
+      if (disposed || interrupted || !awake || !audio.sfxOn || audio.sfxVolume <= 0 || isRunning?.() === false) return
       const at = now()
       if (!Number.isFinite(at)) return
       const definition = CUE_MAP[cue]
@@ -107,9 +110,8 @@ export function createEs2AudioAdapter({ audio, now, tone }: Es2AudioOptions): Es
       cooldowns.set(cue, at)
       audio.playSfx(definition.legacy)
       if (!tone) return
-      const gain = audio.sfxVolume / 100
       for (const [pitch, delay, duration, volume, wave] of definition.notes) {
-        tone(pitch, at + delay, duration, volume * gain, wave, 'sfx')
+        tone(pitch, at + delay, duration, volume, wave, 'sfx')
       }
     },
     setMusicVolume(value) { if (!disposed) audio.setMusicVolume(value) },
