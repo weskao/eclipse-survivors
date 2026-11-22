@@ -51,6 +51,13 @@
 
 Run `pnpm test`, `pnpm typecheck`, `pnpm build`, and `pnpm check-release` before claiming completion. Keep `src/game/crowd-benchmark.test.ts` **diagnostic**, not a brittle timing gate. Compare same-workload multi-run timings, allocations and memory; verify real desktop and iOS/Android browser performance separately. A mocked Canvas benchmark is **not** real-world FPS.
 
+## Preserve the original realistic playable heroes
+- `src/assets/knight.webp`, `src/assets/ranger.webp` and `src/assets/wizard.webp` are the authoritative character identities. Never silently replace the in-game characters with pixel-art or other stylized substitutes, even when generating demonstration sprite sheets.
+- Any sequential frames must be generated from these exact originals or separately approved illustrations that match their faces, costume, colors, proportions and rigid equipment. The menu portraits remain unchanged.
+- In-game rendering must use the original realistic images as the animation source. Do not import unrelated combat/run atlases as a higher-priority character override.
+- Test the actual `drawFrame` path with all three original hero sources and all eight headings; verify the source art is sampled during atlas baking and stale alternate-style art is never displayed.
+- Runtime-cached frames derived from the original portraits are an interim animation technique, not a substitute for artist-produced keyframes: document that distinction truthfully when reporting fidelity.
+
 ## Rigid weapons are never deformable body texture
 - Knight swords, ranger bows, and wizard staffs must keep their original silhouette and aspect ratio in movement, attack, cast, and direction changes. The bow's original curvature is intentional and must be retained.
 - Never send weapon pixels through per-cell skinning, mesh bending, scaling/stretching, or differential transforms. Render isolated weapon pixels as one solid image with translation and rotation; left-right mirroring is permitted.
