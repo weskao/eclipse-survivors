@@ -95,8 +95,8 @@ describe('render contract', () => {
     source.height = 390
     const layers = createRigidWeaponLayers(source, 'ranger', fakeCanvasFactory().make)!
     drawRigSprite(ctx, source, 111, 144, s.hero!, sampleHeroAnimation(s, s.hero!), 'ranger', layers)
-    expect(spy.mock.calls.filter(args => args[0] === layers.body && args.length === 9).length).toBeGreaterThan(8)
-    expect(spy.mock.calls.filter(args => args[0] === layers.weapon && Array.from(args).length === 5)).toHaveLength(1)
+    expect(spy.mock.calls.filter(args => args[0] === layers.body && (args as unknown[]).length === 9).length).toBeGreaterThan(8)
+    expect(spy.mock.calls.filter(args => args[0] === layers.weapon && (args as unknown[]).length === 5)).toHaveLength(1)
   })
 
   it('draws one intact original sprite when reduced motion is enabled', () => {

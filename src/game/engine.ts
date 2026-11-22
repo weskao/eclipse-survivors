@@ -7,11 +7,14 @@ import { createAudioSystem } from './audio/engine'
 import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
 import { JOB, SCENE_SECONDS } from './constants'
+import { createContentRegistry, type ContentRegistry } from './content/registry'
+import { CONTENT_PACKS } from './content/packs'
+import type { ContentPack } from './content/contracts'
 import { trySpawnEvent } from './events'
 import { impact } from './fx'
 import { EVOLUTIONS } from './evolutions'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
-import { minmax } from './math'
+import { minmax, random } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
 import { setScene } from './scene'
@@ -19,7 +22,7 @@ import { spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
-import type { AbilityId, EvolutionId, GameHooks, GameMode, GameState, JobId, MoveInput, Point, UpgradeId } from './types'
+import type { AbilityId, ContentEvent, ContentId, EvolutionId, GameHooks, GameMode, GameState, JobId, MoveInput, Point, UpgradeId } from './types'
 
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
@@ -54,6 +57,10 @@ declare global {
 }
 
 export interface Engine extends GameCommands {
+  readonly contentRegistry: ContentRegistry
+  /** Only active in development with ?content-showcase=1. */
+  showcaseGrant(id: ContentId): boolean
+  showcaseEmit(event: ContentEvent): void
   readonly ui: UiState
   readonly state: GameState
   readonly testApi: TestApi
@@ -65,8 +72,8 @@ export interface Engine extends GameCommands {
   mount(canvas: HTMLCanvasElement, minimap: HTMLCanvasElement | null): () => void
 }
 
-function createBgm(): HTMLAudioElement {
-  const bgm = new Audio(BGM_URL)
+function createBgm(source: string): HTMLAudioElement {
+  const bgm = new Audio(source)
   bgm.loop = true
   bgm.preload = 'auto'
   bgm.volume = 0.38
@@ -75,10 +82,14 @@ function createBgm(): HTMLAudioElement {
 
 const pad2 = (n: number): string => String(n).padStart(2, '0')
 
-export function createEngine(opts: { audio?: AudioSystem; profileStore?: ProfileStore } = {}): Engine {
+export function createEngine(opts: { audio?: AudioSystem; profileStore?: ProfileStore; contentPacks?: readonly ContentPack[] } = {}): Engine {
   const s = createState()
+  const contentRegistry = createContentRegistry(opts.contentPacks ?? CONTENT_PACKS, random)
   const profileStore = opts.profileStore ?? createProfileStore()
-  const audio = opts.audio ?? createAudioSystem({ bgm: createBgm() })
+  const audio = opts.audio ?? createAudioSystem({
+    bgm: createBgm(BGM_URL),
+    menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
+  })
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = true
@@ -87,7 +98,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, sfxOn: audio.sfxOn,
+    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
@@ -101,11 +112,20 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let frameDrawn = 0
   let art: Artwork | null = null
 
+  function wakeAudio(): void {
+    audio.wake()
+    ui.audioUnlocked = audio.unlocked
+  }
+
   const hooks: GameHooks = {
     sfx: cue => audio.playSfx(cue),
     message,
     offerUpgrades,
     end,
+    // Skip all event-object allocation in the default empty-pack game.
+    content: contentRegistry.packs.some(pack => pack.onEvent)
+      ? (state, event) => contentRegistry.emit(state, event, hooks)
+      : undefined,
   }
 
   function screen(name: GameMode): void {
@@ -142,12 +162,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       timer: `${pad2(Math.floor(s.time / 60))}:${pad2(Math.floor(s.time % 60))}`,
       bossPct: boss ? Math.max(0, boss.hp / boss.max * 100) : null,
       quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
-      skills: equippedSkillHud(hero),
+      skills: equippedSkillHud(hero, contentRegistry, s),
     }
   }
 
   function offerUpgrades(): void {
-    const choices = pickUpgrades(s.hero ?? undefined)
+    const choices = pickUpgrades(s.hero ?? undefined, random, contentRegistry, s)
     if (!choices.length) {
       s.levelQueue = 0
       screen('play')
@@ -161,6 +181,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function end(win: boolean): void {
     if (s.mode === 'result') return
+    hooks.content?.(s, { type: 'run-complete', win })
     const h = s.hero
     const stats: RunStats = {
       id: `${Date.now()}-${++runSequence}-${Math.random().toString(36).slice(2)}`,
@@ -170,6 +191,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
       abilities: [
         ...(Object.keys(h?.skills ?? {}) as UpgradeId[]),
+        ...(Object.keys(s.content.levels) as ContentId[]),
         ...(Object.entries(h?.evolutions ?? {}).filter(([, active]) => active).map(([id]) => id as EvolutionId)),
       ],
     }
@@ -185,6 +207,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function start(): void {
     resetRun(s)
+    hooks.content?.(s, { type: 'reset' })
     s.runMode = ui.runMode
     s.cosmetic = profileStore.get().equippedCosmetics[s.choice]
     const permanent = profileStore.get().upgrades
@@ -198,8 +221,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     keys = {}
     stick = { x: 0, y: 0 }
     audio.setCombatIntensity('calm')
-    audio.wake()
+    wakeAudio()
     screen('play')
+    hooks.content?.(s, { type: 'start' })
     audio.playSfx('start')
     audio.resetBattleClock(0.06)
     message('幽暮之門已開啟')
@@ -210,7 +234,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function chooseUpgrade(id: AbilityId): void {
     if (s.mode !== 'level' || !s.hero || !ui.upgrades.some(up => up.id === id)) return
-    if (!applyUpgrade(s, id, hooks)) return
+    if (!applyUpgrade(s, id, hooks, contentRegistry)) return
     screen('play')
     if (s.levelQueue) offerUpgrades()
     audio.playSfx('upgrade')
@@ -222,7 +246,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       audio.playSfx('pause')
       screen('paused')
     } else if (s.mode === 'paused') {
-      audio.wake()
+      wakeAudio()
       audio.playSfx('resume')
       audio.resetBattleClock(0.05)
       screen('play')
@@ -251,7 +275,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
-    step(s, dt, moveVector(keys, stick), hooks)
+    step(s, dt, moveVector(keys, stick), hooks, contentRegistry)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
       audio.setCombatIntensity(bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
@@ -351,7 +375,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') audio.wake()
+      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
@@ -378,7 +402,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       audio.interrupt()
     }
     const onPointerDown = (e: PointerEvent): void => {
-      audio.wake()
+      wakeAudio()
       if (e.target instanceof Element && e.target.closest('button')) audio.playSfx('ui')
     }
     const onPointerOver = (e: PointerEvent): void => {
@@ -408,6 +432,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
     assets.cameraShakeEnabled = () => ui.cameraShake
     let dpr = 1
     let last = 0
@@ -446,13 +471,25 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
   }
 
+  const devShowcase = (): boolean => import.meta.env.DEV && typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('content-showcase') === '1'
+
   return {
+    contentRegistry,
+    showcaseGrant(id) {
+      if (!devShowcase() || s.mode !== 'play' || !s.hero) return false
+      const ok = contentRegistry.acquire(s, id, hooks)
+      if (ok) hud()
+      return ok
+    },
+    showcaseEmit(event) { if (devShowcase() && s.mode === 'play') hooks.content?.(s, event) },
     ui,
     state: s,
     testApi,
     advance,
     listen,
     mount,
+    enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) { if (getMode(mode)) ui.runMode = mode },
     buyPermanentUpgrade(id: PermanentUpgrade) {
       if (s.mode === 'menu' && profileStore.buyUpgrade(id)) ui.profile = profileStore.get()
@@ -469,7 +506,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       s.choice = job
       ui.choice = job
       s.cosmetic = profileStore.get().equippedCosmetics[job]
-      audio.wake()
+      wakeAudio()
       audio.playSfx('select')
     },
     start,
@@ -478,10 +515,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     dash: () => heroDash(s, hooks),
     toggleMusic() {
       ui.musicOn = audio.toggleMusic(s.mode)
+      ui.audioUnlocked = audio.unlocked
       ui.musicVolume = audio.musicVolume
     },
     toggleSfx() {
       ui.sfxOn = audio.toggleSfx()
+      ui.audioUnlocked = audio.unlocked
       ui.sfxVolume = audio.sfxVolume
     },
     setMusicVolume(value) { audio.setMusicVolume(value); ui.musicVolume = audio.musicVolume },

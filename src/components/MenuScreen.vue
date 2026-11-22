@@ -6,9 +6,10 @@ import MenuSceneArt from './MenuSceneArt.vue'
 import ModeSelector from './modes/ModeSelector.vue'
 import ProgressionPanel from './progression/ProgressionPanel.vue'
 import SettingsButton from './SettingsButton.vue'
+import AudioControl from './AudioControl.vue'
 import type { Profile, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 
-const props = defineProps<{ active: boolean; choice: JobId; musicOn: boolean; sfxOn: boolean; version: string; runMode?: RunModeId; profile?: Profile }>()
+const props = defineProps<{ active: boolean; choice: JobId; musicOn: boolean; audioUnlocked: boolean; sfxOn: boolean; musicVolume?: number; sfxVolume?: number; audioActive?: boolean; version: string; runMode?: RunModeId; profile?: Profile }>()
 const emit = defineEmits<{
   select: [job: JobId]
   start: []
@@ -17,7 +18,10 @@ const emit = defineEmits<{
   cosmetic: [hero: JobId, skin: CosmeticId]
   reset: []
   toggleMusic: []
+  enableAudio: []
   toggleSfx: []
+  musicVolume: [value: number]
+  sfxVolume: [value: number]
   settings: []
 }>()
 
@@ -42,6 +46,7 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
         <div class="menu-title-rule"><span>✧</span></div>
         <p class="menu-lede">黑夜吞沒失落王國，只有最後的冒險者能迎接黎明。<br>踏入幽暮遺跡，與無盡魔物決一死戰。</p>
         <div class="menu-chapter"><span class="chapter-icon">◈</span><span>CHAPTER I <b>·</b> THE FALLEN KINGDOM</span></div>
+        <button v-if="musicOn && !audioUnlocked" id="enableMenuMusic" class="menu-music-unlock" @click="emit('enableAudio')">♫ 點擊啟用主題音樂</button>
       </header>
       <div class="menu-showcase" aria-live="polite" :data-cosmetic="profile?.equippedCosmetics[choice]">
         <div class="showcase-halo" aria-hidden="true"></div>
@@ -61,13 +66,13 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
             :data-job="card.id"
             :aria-pressed="card.id === choice"
             @click="emit('select', card.id)"
-          ><span class="job-mark">{{ card.mark }}</span><span class="portrait" :data-portrait="card.id"><img :src="ART_URLS[card.id]" :alt="card.id" /></span><strong>{{ card.name }}</strong><small>{{ card.role }}</small><span class="job-choose" aria-hidden="true">{{ card.id === choice ? "✓ 已選擇" : "點擊選擇" }}</span></button>
+          ><span class="job-crest" aria-hidden="true">{{ card.id === 'knight' ? '♜' : card.id === 'ranger' ? '✧' : '✦' }}</span><span class="job-mark">{{ card.mark }}</span><span class="portrait" :data-portrait="card.id"><img :src="ART_URLS[card.id]" :alt="card.id" /></span><strong>{{ card.name }}</strong><small>{{ card.role }}</small><span class="job-choose" aria-hidden="true">{{ card.id === choice ? "✓ 已選擇" : "點擊選擇" }}</span></button>
         </div>
         <ModeSelector :value="runMode ?? 'quick'" @select="emit('mode', $event)" />
         <div class="menu-cta-wrap"><button id="start" class="cta start-adventure" @click="emit('start')"><span>踏入幽暮之門</span><span class="start-spark" aria-hidden="true">✦</span></button><p>自動攻擊 · 收集精華 · 覺醒全新能力</p></div>
         <ProgressionPanel v-if="profile" :profile="profile" :hero="choice" @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)" @reset="emit('reset')" />
       </section>
-      <footer class="menu-bottom"><span class="menu-controls">⌨ WASD / 方向鍵移動 <b>·</b> SPACE 衝刺 <b>·</b> P 暫停 <b>·</b> 手機支援觸控操作 <span class="menu-version" id="gameVersion">v{{ version }}</span></span><div class="menu-audio-controls"><button id="menuMusic" class="ghost" :aria-pressed="musicOn" @click="emit('toggleMusic')">♫ 背景音樂：{{ musicOn ? '開' : '關' }}</button><button id="menuSfx" class="ghost" :aria-pressed="sfxOn" @click="emit('toggleSfx')">♬ 音效：{{ sfxOn ? '開' : '關' }}</button><SettingsButton @open="emit('settings')" /></div></footer>
+      <footer class="menu-bottom"><span class="menu-controls">⌨ WASD / 方向鍵移動 <b>·</b> SPACE 衝刺 <b>·</b> P 暫停 <b>·</b> 手機支援觸控操作 <span class="menu-version" id="gameVersion">v{{ version }}</span></span><div class="menu-audio-controls"><AudioControl context="menu" :active="active && (audioActive ?? true)" :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume ?? 100" :sfx-volume="sfxVolume ?? 100" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')" @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)" /><SettingsButton @open="emit('settings')" /></div></footer>
     </main>
   </div>
 </template>

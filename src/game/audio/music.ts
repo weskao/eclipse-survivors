@@ -20,9 +20,16 @@ export interface MenuScore extends Score {
 }
 
 const MENU_ROOTS = [45, 41, 43, 40]
-const MENU_RUN = [12, 15, 19, 22]
+// Original title theme: a brighter A-minor procession with an audible lead,
+// low string pulses and ceremonial accents. One phrase per chord.
+const MENU_MELODY = [
+  69, 72, 76, 74, 72, 69, 72, 76,
+  77, 76, 72, 69, 72, 74, 72, 69,
+  71, 74, 79, 77, 74, 71, 74, 79,
+  76, 74, 71, 68, 71, 74, 76, 69,
+]
 
-/** A low cinematic minor-key title motif (original `menuScore`, minus the mode/state gate). */
+/** Layered dark-fantasy title music; no downloaded assets or realtime allocations. */
 export function createMenuScore(): MenuScore {
   let noteTime = 0
   let step = 0
@@ -33,15 +40,20 @@ export function createMenuScore(): MenuScore {
       if (noteTime < now - 0.5) noteTime = now + 0.04
       let queued = 0
       while (noteTime < now + 0.2 && queued++ < 2) {
-        const root = MENU_ROOTS[Math.floor(step / 8) % 4]
+        const root = MENU_ROOTS[Math.floor(step / 8) % MENU_ROOTS.length]!
         const beat = step % 8
         if (beat === 0) {
-          tone(root - 12, noteTime, 2.55, 0.033, 'sine', 'music')
-          tone(root + 7, noteTime + 0.12, 2.15, 0.024, 'triangle', 'music')
-          tone(root + 15, noteTime + 0.27, 1.7, 0.015, 'sine', 'music')
+          tone(root + 12, noteTime, 1.8, 0.06, 'triangle', 'music')
+          tone(root + 19, noteTime + 0.04, 1.5, 0.04, 'triangle', 'music')
+          tone(root + 24, noteTime + 0.07, 1.2, 0.024, 'sine', 'music')
         }
-        if (beat === 2 || beat === 5) tone(root + MENU_RUN[(step >> 1) % 4], noteTime, 0.65, 0.019, 'sine', 'music')
-        noteTime += 0.45
+        // A crisp low-string ostinato is audible even on small phone speakers.
+        if (beat % 2 === 0) tone(root, noteTime, 0.16, beat === 0 ? 0.11 : 0.08, 'sawtooth', 'music')
+        if (beat === 2 || beat === 6) tone(root + 12, noteTime, 0.11, 0.055, 'sawtooth', 'music')
+        const melody = MENU_MELODY[step % MENU_MELODY.length]!
+        tone(melody, noteTime, beat === 3 || beat === 7 ? 0.15 : 0.23, beat % 2 === 0 ? 0.13 : 0.10, 'triangle', 'music')
+        if (beat === 0 || beat === 4) tone(melody - 12, noteTime + 0.04, 0.22, 0.03, 'sine', 'music')
+        noteTime += 0.3
         step++
       }
     },

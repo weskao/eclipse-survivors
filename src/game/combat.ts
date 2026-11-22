@@ -21,7 +21,8 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
   const boss = e.type === 'boss'
-  s.damageDealt += Math.min(e.hp, d)
+  const dealt = Math.min(e.hp, d)
+  s.damageDealt += dealt
   e.hp = Math.max(0, e.hp - d)
   e.hit = 0.16
   e.stagger = Math.min(0.22, e.stagger + (boss ? 0.04 : 0.12))
@@ -32,6 +33,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: 0.62, value: Math.round(d), boss })
   if (s.numberFx.length > 80) s.numberFx.shift()
   burst(s, e.x, e.y, '#fff3c4', 2)
+  hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     s.kill++
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
@@ -44,6 +46,8 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
       hooks.message('🏆 擊敗森林魔王！')
       impact(s, e.x, e.y, 210, '#ffdca4', 3)
     }
+    // Observers see a fully finalized kill, including the boss flag and spawned XP.
+    hooks.content?.(s, { type: 'kill', mob: e, damage: dealt })
   }
 }
 
@@ -136,7 +140,8 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   const shield = hero.skills.shield ?? 0
   const reduce = 1 - Math.min(0.52, shield * 0.12)
   const taken = n * reduce
-  s.damageTaken += Math.min(Math.max(0, hero.hp), taken)
+  const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
+  s.damageTaken += actuallyTaken
   hero.hp = Math.max(0, hero.hp - taken)
   hero.inv = 1
   s.cameraKick = Math.min(12, s.cameraKick + 4)
@@ -166,5 +171,6 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
     e.stagger = Math.max(e.stagger, boss ? 0.04 : 0.14)
   }
   hooks.sfx('hurt')
+  hooks.content?.(s, { type: 'damage', amount: actuallyTaken })
   if (hero.hp === 0) hooks.end(false)
 }
