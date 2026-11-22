@@ -29,7 +29,7 @@ This branch intentionally does **not** change `src/game/content/packs/index.ts`,
      hero: { x: state.hero.x, y: state.hero.y },
      width: state.W, height: state.H,
      legacyMobCount: state.mobs.filter(m => m.hp > 0).length,
-     lineOfSight: (x1, y1, x2, y2) => /* authoritative world raycast */,
+     lineOfSight: worldHasLineOfSight, // Integration must supply its own world raycast.
      onHeroDamage: (amount, hit) => {
        // Apply status (poison/freeze/burn) through integration-owned hero state.
        // Existing damageHero() returns void; compare HP before/after and
@@ -57,13 +57,16 @@ This branch intentionally does **not** change `src/game/content/packs/index.ts`,
    ```ts
    damageFactionEnemy(runtime, target, damage, sourceX, sourceY, reward => {
      // Increment kill/defeated stats exactly once; award XP via the existing
-     // XP drop/collection flow; then emit the appropriate content kill event.
+     // XP drop/collection flow. Do NOT cast this to the legacy ContentEvent.kill.
      // Callers own game hooks and audiovisual effects.
    })
    ```
 
    This is the damage **origin**, not the hero's current location if a
-   projectile was launched earlier. Use the same first-contact ordering,
+   projectile was launched earlier. The legacy `ContentEvent` union accepts
+   `Mob` for hit/kill, not `FactionEnemy`: to publish faction kill events,
+   the integration owner must explicitly extend the shared event contract or
+   use a separate typed faction event, not force-cast it to `Mob`. Use the same first-contact ordering,
    broad phase and collision correctness as legacy shots. Passive effects,
    lightning, melee cones and all hero attack classes also need to consider
    faction targets.
