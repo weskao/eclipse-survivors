@@ -53,8 +53,10 @@ describe('live language switching', () => {
     setLocale('zh-TW', s)
     const wrapper = mount(Es2Settings, { props: { active: true, upgradeEffect: 'soft', cameraShake: false } })
     expect(document.body.textContent).toContain('遊戲設定')
-    const select = wrapper.get('#es2-language')
-    await select.trigger('click')
+    const select = document.querySelector<HTMLButtonElement>('#es2-language')!
+    expect(select).not.toBeNull()
+    select.click()
+    await nextTick()
     document.querySelector<HTMLElement>('[data-es2-value="en"]')!.click()
     await nextTick()
     expect(document.body.textContent).toContain('Game Settings')

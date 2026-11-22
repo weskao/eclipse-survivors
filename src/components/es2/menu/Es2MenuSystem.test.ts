@@ -85,6 +85,13 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('specialChoose')).toEqual([['relic:moon']])
   })
 
+  it('forwards menu settings action to the host', async () => {
+    const wrapper = mounted()
+    click('.es2-top-actions button:last-child')
+    await nextTick()
+    expect(wrapper.emitted('settings')).toHaveLength(1)
+  })
+
   it('keeps settings controlled and emits immediate volume, animation and shake changes', async () => {
     const wrapper = mounted({ settingsOpen: true, musicVolume: 70, sfxVolume: 50 })
     await nextTick()

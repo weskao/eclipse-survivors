@@ -33,6 +33,7 @@ describe('shared in-game dropdown', () => {
     expect(document.querySelectorAll('#quality-listbox [role="option"]')).toHaveLength(3)
     document.querySelector<HTMLElement>('[data-es2-value="low"]')!.click()
     expect(wrapper.emitted('update:modelValue')).toEqual([['low']])
+    await nextTick()
     expect(button.attributes('aria-expanded')).toBe('false')
     await wrapper.setProps({ modelValue: 'low' })
     expect(button.text()).toContain('低')

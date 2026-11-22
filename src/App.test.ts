@@ -22,6 +22,17 @@ describe('App', () => {
     w.unmount()
     expect(stop).toHaveBeenCalledOnce()
   })
+  it('opens the live settings dialog from its menu action', async () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const w = mount(App, { props: { engine }, attachTo: document.body })
+    expect(engine.ui.settingsOpen).toBe(false)
+    document.querySelector<HTMLButtonElement>('.es2-top-actions button:last-child')!.click()
+    await nextTick()
+    expect(engine.ui.settingsOpen).toBe(true)
+    expect(document.querySelector('#es2-quality')).not.toBeNull()
+    w.unmount()
+  })
+
   it('uses the ES2 menu, combat HUD and mobile controls without mounting legacy copies', () => {
     const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
     const w = mount(App, { props: { engine }, attachTo: document.body })
@@ -41,10 +52,11 @@ describe('App', () => {
     expect(root.getAttribute('data-es2-quality')).not.toBeNull()
     engine.openSettings()
     await nextTick()
-    const quality = document.querySelector<HTMLSelectElement>('#es2-quality')
+    const quality = document.querySelector<HTMLButtonElement>('#es2-quality')
     expect(quality).not.toBeNull()
-    quality!.value = 'low'
-    quality!.dispatchEvent(new Event('change', { bubbles: true }))
+    quality!.click()
+    await nextTick()
+    document.querySelector<HTMLElement>('#es2-quality-listbox [data-es2-value="low"]')!.click()
     await nextTick()
     expect(root.getAttribute('data-es2-quality')).toBe('low')
     wrapper.unmount()
