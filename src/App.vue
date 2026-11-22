@@ -7,6 +7,7 @@ import { inventorySnapshot } from './game/content/relics/runtime'
 import { RELIC_BY_ID } from './game/content/relics/catalog'
 import CombatHud from './components/es2/hud/CombatHud.vue'
 import HeroSpecialAction from './components/es2/hero-roster/HeroSpecialAction.vue'
+import ModeProgress from './components/es2/modes/ModeProgress.vue'
 import { isSpecializationId } from './game/content/heroes'
 import type { CombatHudActions, CombatHudFeed } from './components/es2/hud/model'
 import Es2MenuSystem from './components/es2/menu/Es2MenuSystem.vue'
@@ -108,6 +109,9 @@ onBeforeUnmount(() => {
     :actions="combatActions"
     :feed="combatFeed"
   />
+  <div v-if="ui.mode === 'play' && ui.objectiveProgress" class="es2-objective-hud">
+    <ModeProgress :state="ui.objectiveProgress" />
+  </div>
   <HeroSpecialAction
     v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
     :hero-id="ui.heroId"
@@ -171,3 +175,14 @@ onBeforeUnmount(() => {
   <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
   <ContentShowcase v-if="devShowcase" :engine="engine" />
 </template>
+
+<style scoped>
+.es2-objective-hud {
+  position: fixed; top: max(116px, calc(env(safe-area-inset-top) + 84px));
+  right: max(12px, env(safe-area-inset-right)); z-index: 8;
+  width: min(320px, calc(100vw - 24px)); pointer-events: none;
+}
+@media (max-width: 640px) {
+  .es2-objective-hud { top: max(88px, calc(env(safe-area-inset-top) + 72px)); width: min(270px, 55vw); }
+}
+</style>

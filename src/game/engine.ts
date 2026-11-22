@@ -1,6 +1,6 @@
 import { shallowReactive } from 'vue'
 import { createProfileStore, type ProfileStore } from '../meta/profile'
-import { getMode } from '../meta/modes'
+import { getMode, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
@@ -14,6 +14,7 @@ import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
+import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
@@ -131,7 +132,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
-    runMode: 'quick', profile: profileStore.get(), runResult: null, rewards: null,
+    runMode: 'quick', objectiveProgress: null, profile: profileStore.get(), runResult: null, rewards: null,
   })
   let resumeAfterSettings = false
   let toastTimer = 0
@@ -143,6 +144,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
   let heroSpecialization: HeroSpecializationAdapter | null = null
+  let objectiveRuntime: ObjectiveRuntime | null = null
+  let ending = false
 
   function wakeAudio(): void {
     audio.wake()
@@ -160,7 +163,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
     // Skip all event-object allocation in the default empty-pack game.
     content: contentRegistry.packs.some(pack => pack.onEvent)
-      ? (state, event) => contentRegistry.emit(state, event, hooks)
+      ? (state, event) => {
+        contentRegistry.emit(state, event, hooks)
+        // Only an actual finalized kill can advance an objective. The existing
+        // boss controller gets first chance to account for its original XP/reward.
+        if (state === s && event.type === 'kill' && objectiveRuntime) {
+          const accepted = objectiveRuntime.defeatMob(event.mob)
+          if (accepted && event.mob.type === 'boss') bosses?.reset(state)
+        }
+      }
       : undefined,
     openTreasure: relicsEnabled ? (state, chestId) => {
       const offer = openTreasure(state, chestId, random)
@@ -218,6 +229,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       skills: equippedSkillHud(hero, contentRegistry, s),
     }
     ui.heroSpecial = heroSpecialization?.snapshot() ?? null
+    ui.objectiveProgress = objectiveRuntime?.snapshot() ?? null
   }
 
   function offerUpgrades(): void {
@@ -234,7 +246,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function end(win: boolean): void {
-    if (s.mode === 'result') return
+    if (s.mode === 'result' || ending) return
+    // Objective modes never accept a forged timed-boss victory.
+    if (objectiveRuntime && win && objectiveRuntime.snapshot().status !== 'victory') return
+    ending = true
+    if (!win && objectiveRuntime?.snapshot().status === 'active') {
+      if (s.hero && s.hero.hp <= 0) objectiveRuntime.heroDefeated(s.hero)
+      else objectiveRuntime.withdraw()
+    }
     hooks.content?.(s, { type: 'run-complete', win })
     const h = s.hero
     const stats: RunStats = {
@@ -275,7 +294,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function start(): void {
+    ending = false
     resetRun(s)
+    objectiveRuntime = isObjectiveModeId(ui.runMode)
+      ? createObjectiveRuntime(ui.runMode, (_state, evaluation) => {
+        if (s.mode === 'play') end(evaluation.status === 'victory')
+      })
+      : null
+    if (objectiveRuntime) bossSequence = 0
     heroSpecialization = createHeroRosterAdapter(s, s.heroId, heroHooks, random)
     heroSpecialization?.reset()
     hooks.content?.(s, { type: 'reset' })
@@ -370,7 +396,24 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter)
+    if (s.mode !== 'play') return
     heroSpecialization?.tick(dt)
+    if (objectiveRuntime) {
+      objectiveRuntime.tick(dt, true)
+      if (s.mode !== 'play') return
+      // The first scheduled boss is a real controller-owned actor. A registered
+      // mob death, never a timer or a metadata-only ID, advances the objective.
+      const stage = objectiveRuntime.plan().bossStage
+      const hero = s.hero
+      if (stage !== null && hero && bosses) {
+        const id = bossIds[(stage - 1) % bossIds.length]!
+        const spawned = bosses.spawn(s, id, { x: hero.x + 245, y: hero.y }, hooks)
+        if (spawned) {
+          objectiveRuntime.spawnBoss(stage, spawned)
+          hooks.message(`⚠ ${BOSS_DEFINITIONS[id].title} 降臨！`)
+        }
+      }
+    }
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)

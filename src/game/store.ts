@@ -4,6 +4,7 @@ import type { Profile, RunModeId, RunRewards, RunStats, PermanentUpgrade, Cosmet
 import { EVOLUTIONS, EVOLUTION_COOLDOWN } from './evolutions'
 import type { AbilityId, GameMode, GameState, Hero, HeroId, JobId, SkillRarity, UpgradeDef, UpgradeId } from './types'
 import type { SpecializationSnapshot } from './content/heroes'
+import type { ObjectiveState } from './content/objectives/evaluator'
 
 export interface HudSkill {
   id: AbilityId; icon: string; title: string; rarity: SkillRarity
@@ -101,6 +102,8 @@ export interface UiState {
   ending: string
   summary: string
   runMode: RunModeId
+  /** Only actual objective-runtime evidence; null for original four modes. */
+  objectiveProgress: ObjectiveState | null
   profile: Profile
   runResult: RunStats | null
   rewards: RunRewards | null
