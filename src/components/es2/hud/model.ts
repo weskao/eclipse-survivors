@@ -35,6 +35,8 @@ export interface CombatHudActions {
   readonly settings: () => void
   readonly toggleMusic?: () => void
   readonly toggleSfx?: () => void
+  readonly setMusicVolume?: (value: number) => void
+  readonly setSfxVolume?: (value: number) => void
 }
 
 export interface CombatHudView {
