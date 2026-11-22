@@ -119,8 +119,10 @@ const distanceToSegmentSquared = (
 }
 
 function visibleToHero(a: FactionArena, e: FactionEnemy): boolean {
-  const radius = Math.max(280, Math.min(a.width, a.height) * 0.72)
-  return squared(a.hero.x - e.x, a.hero.y - e.y) <= radius * radius
+  // An enemy outside the hero-centered viewport cannot secretly begin an attack.
+  // Leave a small culling margin so large actors remain visible at the edge.
+  return Math.abs(a.hero.x - e.x) <= Math.max(0, a.width) * 0.5 + 40
+    && Math.abs(a.hero.y - e.y) <= Math.max(0, a.height) * 0.5 + 40
 }
 
 function hasSight(a: FactionArena, e: FactionEnemy): boolean {
@@ -289,7 +291,8 @@ function tickProjectiles(a: FactionArena, dt: number): void {
     const travel = Math.min(dt, Math.max(0, p.life))
     const dx = p.vx * travel, dy = p.vy * travel
     p.x += dx; p.y += dy; p.life -= dt
-    if (p.life > 0 && distanceToSegmentSquared(a.hero.x, a.hero.y, x, y, dx, dy) <= (p.radius + 15) ** 2) {
+    if (p.life > 0 && distanceToSegmentSquared(a.hero.x, a.hero.y, x, y, dx, dy) <= (p.radius + 15) ** 2
+      && (!a.lineOfSight || a.lineOfSight(x, y, a.hero.x, a.hero.y))) {
       // The parent may already be dead; projectiles still deliver their own locked payload.
       const landed = a.onHeroDamage(p.damage, {
         kind: p.kind,
@@ -320,7 +323,8 @@ function tickZones(a: FactionArena, dt: number): void {
       zone.tick -= dt
       if (zone.tick <= 0) {
         zone.tick = zone.interval
-        if (squared(zone.x - a.hero.x, zone.y - a.hero.y) <= (zone.radius + 15) ** 2) {
+        if (squared(zone.x - a.hero.x, zone.y - a.hero.y) <= (zone.radius + 15) ** 2
+          && (!a.lineOfSight || a.lineOfSight(zone.x, zone.y, a.hero.x, a.hero.y))) {
           a.onHeroDamage(zone.damage, {
             kind: zone.kind,
             sourceId: zone.sourceId,
