@@ -39,15 +39,17 @@ describe('crowd bitmap cache contracts', () => {
     })
     drawFrame(frame.ctx, s, 1, assets)
     expect(filteredOnScreen).toBe(0)
-    expect(made.length - initial).toBe(3)
-    const variants = made.slice(initial).map(item => item.canvas)
+    // Three filtered variants plus three shared shadow stamps are created once.
+    const variants = made.slice(initial).filter(item => item.fake.calls.includes('drawImage')).map(item => item.canvas)
+    expect(variants).toHaveLength(3)
     for (const variant of variants) {
       expect(frame.drawn.filter(src => src === variant).length).toBeGreaterThan(10)
     }
     const painted = variants.map(variant => made.find(item => item.canvas === variant)!.fake)
     expect(painted.every(entry => entry.calls.filter(name => name === 'drawImage').length === 1)).toBe(true)
+    const created = made.length - initial
     drawFrame(frame.ctx, s, 1, assets)
-    expect(made.length - initial).toBe(3)
+    expect(made.length - initial).toBe(created)
   })
 
   it('reuses a prepainted ground shadow across same-sized mobs', () => {
