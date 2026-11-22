@@ -77,7 +77,7 @@ describe('articulated-body and equipment integration', () => {
     drawRigSprite(ctx, source, 108, 144, state.hero, sampleHeroAnimation(state, state.hero), job, layers)
     // The deformable grid receives ONLY weapon-erased body art.
     expect(draw.mock.calls.filter(args => args[0] === layers.body && args.length === 9)).toHaveLength(96)
-    // Every original weapon pixel moves as exactly one unscaled image.
+    // Every original weapon pixel moves as one rigid image; the uniform scale preserves the source ratio.
     expect(draw.mock.calls.filter(args => args[0] === layers.weapon && args.length === 5)).toHaveLength(1)
     expect(draw.mock.calls.some(args => args[0] === source)).toBe(false)
   })
