@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { nextTick } from 'vue'
+import { computed, nextTick } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import type { HeroId, JobId } from '../../../game/types'
 import HeroRoster from '../hero-roster/HeroRoster.vue'
+import ModeChooser from '../modes/ModeChooser.vue'
+import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
 import type { MenuView } from './model'
-defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+const props = defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+const objectiveSelection = computed<ObjectiveModeId | null>(() => objectiveModeIds.includes(props.runMode as ObjectiveModeId)
+  ? props.runMode as ObjectiveModeId : null)
 const emit = defineEmits<{
   select: [hero: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
 }>()
@@ -70,6 +74,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
             </button>
           </div>
+          <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
           <button class="es2-primary es2-start" type="button" @click="emit('start')">踏入幽暮之門 <span aria-hidden="true">✦</span></button>
           <p class="es2-hint">WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作</p>
         </section>

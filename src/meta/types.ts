@@ -1,7 +1,8 @@
 import type { AbilityId, JobId, MobType } from '../game/types'
 import type { SpecializationId } from '../game/content/heroes'
+import type { ObjectiveModeId } from '../game/content/modes/definitions'
 
-export type RunModeId = 'quick' | 'standard' | 'endless' | 'challenge'
+export type RunModeId = 'quick' | 'standard' | 'endless' | 'challenge' | ObjectiveModeId
 export type PermanentUpgrade = 'power' | 'vitality'
 export type CosmeticId =
   | 'knight-default' | 'ranger-default' | 'wizard-default'
