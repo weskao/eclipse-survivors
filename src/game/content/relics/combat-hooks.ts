@@ -21,8 +21,8 @@ export function createRelicCombatHooks(state: GameState, random: () => number,
   emit: (event: ContentEvent) => void) {
   let lastOutgoing = 0
   let lastIncoming = 0
-  const outgoing = new Map<number, true>()
-  const incomingContacts = new Map<number, { dodged: boolean; reflect: number }>()
+  const outgoing = new Map<number, number>()
+  const incomingContacts = new Map<number, { dodged: boolean; reflect: number; damage: number }>()
 
   return {
     attack(serial: number, damage: number, context: AttackContext): AttackResult | null {
@@ -31,18 +31,19 @@ export function createRelicCombatHooks(state: GameState, random: () => number,
       const result = calculateRelicAttack(state, damage, context, random)
       if (!Number.isFinite(result.damage)) return null
       lastOutgoing = serial
-      trimOldest(outgoing)
-      outgoing.set(serial, true)
       // Execute is a real lethal damage floor when the host supplies pre-hit HP.
-      if (result.execute && Number.isFinite(context.targetHp) && context.targetHp! > 0) {
-        return { ...result, damage: Math.max(result.damage, context.targetHp!) }
-      }
-      return result
+      const resolved = result.execute && Number.isFinite(context.targetHp) && context.targetHp! > 0
+        ? { ...result, damage: Math.max(result.damage, context.targetHp!) } : result
+      trimOldest(outgoing)
+      outgoing.set(serial, resolved.damage)
+      return resolved
     },
 
     confirmHit(serial: number, mob: Mob, appliedDamage: number, killed: boolean): boolean {
-      if (!outgoing.has(serial) || !validDamage(appliedDamage) ||
-        (killed && (!Number.isFinite(mob.hp) || mob.hp > 0)) || !mob) return false
+      const maximum = outgoing.get(serial)
+      if (maximum === undefined || !mob || !validDamage(appliedDamage) ||
+        appliedDamage > maximum + 1e-9 ||
+        (killed && (appliedDamage === 0 || !Number.isFinite(mob.hp) || mob.hp > 0))) return false
       outgoing.delete(serial)
       if (appliedDamage > 0) {
         emit({ type: 'hit', mob, damage: appliedDamage })
@@ -58,7 +59,7 @@ export function createRelicCombatHooks(state: GameState, random: () => number,
       if (!Number.isFinite(result.damage)) return null
       lastIncoming = serial
       trimOldest(incomingContacts)
-      incomingContacts.set(serial, { dodged: result.dodged,
+      incomingContacts.set(serial, { dodged: result.dodged, damage: result.damage,
         reflect: Math.max(0, relicBonuses(state).reflect ?? 0) })
       return result
     },
@@ -66,7 +67,8 @@ export function createRelicCombatHooks(state: GameState, random: () => number,
     /** Only actual hero HP damage may reflect; shield/immunity hits reflect zero. */
     confirmIncoming(serial: number, actualDamage: number): number | null {
       const contact = incomingContacts.get(serial)
-      if (!contact || !validDamage(actualDamage) || (contact.dodged && actualDamage > 0)) return null
+      if (!contact || !validDamage(actualDamage) || actualDamage > contact.damage + 1e-9 ||
+        (contact.dodged && actualDamage > 0)) return null
       incomingContacts.delete(serial)
       if (actualDamage === 0) return 0
       emit({ type: 'damage', amount: actualDamage })
