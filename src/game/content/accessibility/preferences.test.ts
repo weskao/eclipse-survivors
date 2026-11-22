@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { ACCESSIBILITY_STORAGE_KEY, DEFAULT_ACCESSIBILITY_PREFERENCES, loadAccessibilityPreferences, saveAccessibilityPreferences, updateAccessibilityPreferences } from './preferences'
+import { ACCESSIBILITY_STORAGE_KEY, DEFAULT_ACCESSIBILITY_PREFERENCES, createAccessibilityPreferencesController, loadAccessibilityPreferences, saveAccessibilityPreferences, updateAccessibilityPreferences } from './preferences'
 import { applyPresentation, resolvePresentationPolicy } from './presentation'
 
 describe('accessibility preferences', () => {
@@ -23,6 +23,20 @@ describe('accessibility preferences', () => {
     expect(() => saveAccessibilityPreferences({ getItem: () => null, setItem: () => { throw Error('quota') } }, prefs)).not.toThrow()
   })
 
+  it('reopens the saved preferences without sharing profile storage', () => {
+    const values = new Map<string, string>()
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => { values.set(key, value) },
+    }
+    const controller = createAccessibilityPreferencesController(storage)
+    controller.update({ joystickSide: 'right', showDamageNumbers: false })
+    expect(createAccessibilityPreferencesController(storage).current).toMatchObject({
+      joystickSide: 'right', showDamageNumbers: false,
+    })
+    expect([...values.keys()]).toEqual([ACCESSIBILITY_STORAGE_KEY])
+  })
+
   it('updates individual settings immediately while retaining all others', () => {
     const prefs = updateAccessibilityPreferences(DEFAULT_ACCESSIBILITY_PREFERENCES, { joystickSide: 'right', touchScale: 1.25, quality: 'low' })
     expect(prefs.joystickSide).toBe('right')
@@ -40,6 +54,7 @@ describe('visual presentation only', () => {
     expect(values.map(v => v.quality)).toEqual(['low', 'medium', 'high', 'high'])
     expect(values.map(v => v.ambientDensity)).toEqual([0.35, 0.65, 1, 1])
     expect(values.map(v => v.pixelRatioCap)).toEqual([1, 1.5, 2, 2])
+    expect(resolvePresentationPolicy(DEFAULT_ACCESSIBILITY_PREFERENCES, { coarsePointer: true, hardwareConcurrency: 8 }).quality).toBe('medium')
     for (const value of values) {
       expect(value).not.toHaveProperty('damage')
       expect(value).not.toHaveProperty('enemyCount')
