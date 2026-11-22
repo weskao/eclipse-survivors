@@ -86,3 +86,12 @@
 .audio-volume input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:2px solid #fff0c5;background:#cda15a}
 .audio-popover-hint{margin:10px 0 0;color:#b7c4cc;font:10px/1.4 system-ui,sans-serif;text-align:center}
 @media (prefers-reduced-motion: reduce){.audio-trigger{transition:none}}
+
+/* Consistent breathing room for the three top-right quick actions. */
+#hud .stats .chip.hud-actions{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;padding:6px 13px;min-width:0}
+#hud .hud-actions>.audio-control,#hud .hud-actions>.settings-trigger,#hud .hud-actions>#pauser{flex:0 0 auto}
+#hud .hud-actions>#pauser{display:inline-flex;align-items:center;justify-content:center;min-width:29px;min-height:30px}
+@media(max-width:700px){
+  #hud .stats .chip.hud-actions{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:5px;padding:5px 8px;min-width:0}
+  #hud .hud-actions>#pauser{min-width:26px;min-height:26px}
+}

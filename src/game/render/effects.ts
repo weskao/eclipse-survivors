@@ -11,6 +11,30 @@ const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff
 // Reuse the full-screen grade between frames, but rebuild it on resize.
 const vignetteGradients = new WeakMap<Ctx2D, { W: number; H: number; gradient: CanvasGradient }>()
 
+export interface GemSprites { common: HTMLCanvasElement; rare: HTMLCanvasElement }
+
+/** Two static crystal shapes, cached at 3x. Position and rotation remain dynamic. */
+export function buildGemSprites(makeCanvas: MakeCanvas): GemSprites {
+  const gem = (rare: boolean): HTMLCanvasElement => {
+    const canvas = makeCanvas(96, 96)
+    const paint = canvas.getContext('2d')
+    if (!paint) return canvas
+    paint.scale(3, 3)
+    paint.translate(16, 16)
+    paint.shadowBlur = 12
+    paint.shadowColor = rare ? '#f8bd67' : '#75cfff'
+    paint.fillStyle = rare ? '#ffc77c' : '#8ddffe'
+    paint.beginPath()
+    paint.moveTo(0, -11); paint.lineTo(7, -1); paint.lineTo(0, 10); paint.lineTo(-7, -1); paint.closePath(); paint.fill()
+    paint.shadowBlur = 0
+    paint.fillStyle = '#ffffffb8'
+    paint.beginPath()
+    paint.moveTo(0, -9); paint.lineTo(0, 6); paint.lineTo(-3, -1); paint.closePath(); paint.fill()
+    return canvas
+  }
+  return { common: gem(false), rare: gem(true) }
+}
+
 /** Rasterize the local-space bolt glow once; drawing the image preserves its position after translate(). */
 export function buildMagicGlow(makeCanvas: MakeCanvas): HTMLCanvasElement | null {
   // Paint at 3x resolution; the 56 CSS-pixel bolt stays crisp on high-DPI displays.
@@ -31,7 +55,7 @@ export function buildMagicGlow(makeCanvas: MakeCanvas): HTMLCanvasElement | null
 }
 
 // Magical gems have faceted highlights and small animated coronae.
-export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
+export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, gems?: GemSprites): void {
   const { W, H } = s
   for (const star of s.stars) {
     const x = star.x + ox
@@ -39,10 +63,15 @@ export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, redu
     if (x < -25 || x > W + 25 || y < -25 || y > H + 25) continue
     const bob = reducedMotion ? 0 : Math.sin(star.t * 4) * 3
     ctx.save(); ctx.translate(x, y + bob - 7); if (!reducedMotion) ctx.rotate(Math.sin(star.t * 2) * 0.11)
-    ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
-    ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(7, -1); ctx.lineTo(0, 10); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill()
-    ctx.shadowBlur = 0; ctx.fillStyle = '#ffffffb8'
-    ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(0, 6); ctx.lineTo(-3, -1); ctx.closePath(); ctx.fill()
+    if (gems) {
+      ctx.drawImage(star.value > 10 ? gems.rare : gems.common, -16, -16, 32, 32)
+    } else {
+      // Standalone callers retain the procedural renderer without asset setup.
+      ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
+      ctx.beginPath(); ctx.moveTo(0, -11); ctx.lineTo(7, -1); ctx.lineTo(0, 10); ctx.lineTo(-7, -1); ctx.closePath(); ctx.fill()
+      ctx.shadowBlur = 0; ctx.fillStyle = '#ffffffb8'
+      ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(0, 6); ctx.lineTo(-3, -1); ctx.closePath(); ctx.fill()
+    }
     ctx.restore()
   }
 }
@@ -135,9 +164,14 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue
     const a = Math.atan2(b.vy, b.vx)
     // Motion history is drawn in world space to avoid faking a longer shaft.
-    const tx = (b.prevX ?? b.x) + ox
-    const ty = (b.prevY ?? b.y) + oy
-    const history = Math.hypot(x - tx, y - ty)
+    const prevX = (b.prevX ?? b.x) + ox
+    const prevY = (b.prevY ?? b.y) + oy
+    const history = Math.hypot(x - prevX, y - prevY)
+    // Never stretch a trail all the way back to the firing hand on a laggy tick.
+    // This is a short moving tracer, not a second bow/arrow or magical residue.
+    const extent = Math.min(1, 14 / Math.max(1, history))
+    const tx = x - (x - prevX) * extent
+    const ty = y - (y - prevY) * extent
     if (history > 2) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
