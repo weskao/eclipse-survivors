@@ -134,6 +134,41 @@ describe('deterministic actor state machines', () => {
     advance(a, 40)
     expect(damage).toBe(0)
   })
+  it('narrow viewports suppress attacks from enemies beyond the horizontal edge', () => {
+    const r = createFactionRuntime()
+    const e = spawnFactionEnemy(r, 'dark-archer', 275, 0)!
+    e.speed = 0
+    advance({ ...arena(r), width: 360, height: 640 }, 60)
+    expect(r.projectiles).toHaveLength(0)
+    expect(e.state).toBe('approach')
+  })
+  it('projectiles cannot damage the hero through obstacles after leaving the archer', () => {
+    const r = createFactionRuntime()
+    r.projectiles.push({
+      x: 65, y: 0, vx: -200, vy: 0, radius: 7,
+      damage: 12, life: 1.2, sourceId: 31, kind: 'dark-archer', status: undefined,
+    })
+    let taken = 0
+    tickFactionEnemies({
+      ...arena(r), lineOfSight: () => false,
+      onHeroDamage: () => { taken++; return true },
+    }, 0.5)
+    expect(taken).toBe(0)
+  })
+  it('delayed hazards do not damage through a wall', () => {
+    const r = createFactionRuntime()
+    r.zones.push({
+      x: 0, y: 0, radius: 80, damage: 9, life: 1,
+      delay: 0.1, interval: 0.6, tick: 0,
+      status: 'poison', sourceId: 11, kind: 'plague-carrier',
+    })
+    let taken = 0
+    tickFactionEnemies({
+      ...arena(r), lineOfSight: () => false,
+      onHeroDamage: () => { taken++; return true },
+    }, 0.25)
+    expect(taken).toBe(0)
+  })
   it('ranged units cannot attack when outside a visible encounter or through blocked sight', () => {
     const r = createFactionRuntime()
     const e = spawnFactionEnemy(r, 'crystal-sentinel', 700, 0)!
