@@ -34,13 +34,13 @@ export interface FactionEnemy {
 export interface FactionProjectile {
   x: number; y: number; vx: number; vy: number
   radius: number; damage: number; life: number
-  sourceId: number; status: FactionStatus
+  sourceId: number; kind: FactionKind; status: FactionStatus
 }
 
 export interface FactionZone {
   x: number; y: number; radius: number
   damage: number; life: number; delay: number; interval: number; tick: number
-  status: FactionStatus; sourceId: number
+  status: FactionStatus; sourceId: number; kind: FactionKind
 }
 
 export interface FactionRuntime {
@@ -48,6 +48,8 @@ export interface FactionRuntime {
   projectiles: FactionProjectile[]
   zones: FactionZone[]
   nextId: number
+  /** Set from GameState.mobs.length when the legacy and faction simulations coexist. */
+  legacyMobCount: number
 }
 
 export interface FactionHit {
@@ -70,6 +72,8 @@ export interface FactionArena {
   hero: { x: number; y: number }
   width: number
   height: number
+  /** Integrator supplies the current live legacy population for a shared 130-mob cap. */
+  legacyMobCount?: number
   /** Required by the integrating game when walls can obstruct an attack. */
   lineOfSight?(fromX: number, fromY: number, toX: number, toY: number): boolean
   /** Return true only if damage actually landed (not dashing, shielded or invulnerable). */
@@ -79,7 +83,7 @@ export interface FactionArena {
 }
 
 export function createFactionRuntime(): FactionRuntime {
-  return { enemies: [], projectiles: [], zones: [], nextId: 1 }
+  return { enemies: [], projectiles: [], zones: [], nextId: 1, legacyMobCount: 0 }
 }
 
 /** Spawn is explicit: ContentPack registration never calls this function. */
@@ -90,7 +94,7 @@ export function spawnFactionEnemy(
   y: number,
   options: { affix?: FactionAffix; summonedBy?: number } = {},
 ): FactionEnemy | null {
-  if (!Number.isFinite(x) || !Number.isFinite(y) || runtime.enemies.length >= MAX_FACTION_ENEMIES) return null
+  if (!Number.isFinite(x) || !Number.isFinite(y) || runtime.enemies.length + runtime.legacyMobCount >= MAX_FACTION_ENEMIES) return null
   const def = ENEMY_DEFINITIONS[kind]
   if (!def) return null
   const elite = !!options.affix
@@ -136,7 +140,7 @@ function addZone(
 ): void {
   if (r.zones.length >= MAX_FACTION_ZONES) return
   r.zones.push({ x, y, radius, damage, life, delay, interval: 0.65, tick: 0,
-    status, sourceId: e.id })
+    status, sourceId: e.id, kind: e.kind })
 }
 
 function addProjectile(
@@ -148,7 +152,7 @@ function addProjectile(
   const angle = Math.atan2(dy, dx) + spread
   r.projectiles.push({
     x: e.x, y: e.y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-    radius: 7, damage: e.damage, life: 2.8, sourceId: e.id, status,
+    radius: 7, damage: e.damage, life: 2.8, sourceId: e.id, kind: e.kind, status,
   })
 }
 
@@ -217,7 +221,7 @@ function summon(r: FactionRuntime, e: FactionEnemy, hero: FactionArena['hero']):
   if (e.summonsMade >= 8 || e.hp <= 0) return
   let living = 0
   for (const other of r.enemies) if (other.hp > 0 && other.summonedBy === e.id) living++
-  const count = Math.min(2, 4 - living, 8 - e.summonsMade, MAX_FACTION_ENEMIES - r.enemies.length)
+  const count = Math.min(2, 4 - living, 8 - e.summonsMade, MAX_FACTION_ENEMIES - r.enemies.length - r.legacyMobCount)
   for (let i = 0; i < count; i++) {
     const angle = (e.summonsMade + i) * 2.399963229728653
     let x = e.x + Math.cos(angle) * 110
@@ -287,11 +291,17 @@ function tickProjectiles(a: FactionArena, dt: number): void {
     p.x += dx; p.y += dy; p.life -= dt
     if (p.life > 0 && distanceToSegmentSquared(a.hero.x, a.hero.y, x, y, dx, dy) <= (p.radius + 15) ** 2) {
       // The parent may already be dead; projectiles still deliver their own locked payload.
-      a.onHeroDamage(p.damage, {
-        kind: a.runtime.enemies.find(e => e.id === p.sourceId)?.kind ?? 'dark-archer',
+      const landed = a.onHeroDamage(p.damage, {
+        kind: p.kind,
         sourceId: p.sourceId,
         ...(p.status ? { status: p.status, duration: 1.2 } : {}),
       })
+      if (landed) {
+        // A rare hit may look up its source; never scan all enemies per projectile/frame.
+        const source = a.runtime.enemies.find(e => e.id === p.sourceId)
+        if (source?.affix === 'vampiric' && source.hp > 0)
+          source.hp = Math.min(source.max, source.hp + p.damage * 0.35)
+      }
       p.life = 0
     }
     if (p.life > 0) projectiles[write++] = p
@@ -312,7 +322,7 @@ function tickZones(a: FactionArena, dt: number): void {
         zone.tick = zone.interval
         if (squared(zone.x - a.hero.x, zone.y - a.hero.y) <= (zone.radius + 15) ** 2) {
           a.onHeroDamage(zone.damage, {
-            kind: a.runtime.enemies.find(e => e.id === zone.sourceId)?.kind ?? 'plague-carrier',
+            kind: zone.kind,
             sourceId: zone.sourceId,
             ...(zone.status ? { status: zone.status, duration: zone.status === 'poison' ? 2 : 1.2 } : {}),
           })
@@ -328,6 +338,8 @@ function tickZones(a: FactionArena, dt: number): void {
 export function tickFactionEnemies(a: FactionArena, dt: number): void {
   if (!Number.isFinite(dt) || dt <= 0) return
   const { runtime: r, hero } = a
+  if (a.legacyMobCount !== undefined)
+    r.legacyMobCount = Math.max(0, Math.floor(a.legacyMobCount))
   // Snapshot length: necromancer summons start acting on the following tick.
   const count = r.enemies.length
   for (let i = 0; i < count; i++) {
