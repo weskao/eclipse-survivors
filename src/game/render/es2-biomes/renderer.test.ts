@@ -42,6 +42,33 @@ describe.each(BIOME_IDS)('%s cached biome renderer', id => {
     expect(renderer.cacheSize()).toBe(0)
   })
 
+
+  it('dims suppressed hazard telegraphs so rendered danger agrees with live contact', () => {
+    const env = createBiomeEnvironment(id, { seed: 42 })
+    let match: { node: { x: number; y: number }; hazard: ReturnType<typeof env.hazards>[number] } | undefined
+    for (let i = -16; i <= 16 && !match; i++) for (let j = -16; j <= 16 && !match; j++) {
+      const cell = env.cell(i, j)
+      const node = cell.interactions[0]
+      const hazard = cell.hazards[0]
+      if (node && hazard && Math.hypot(node.x - hazard.x, node.y - hazard.y) < 172) match = { node, hazard }
+    }
+    expect(match).toBeDefined()
+    const { node, hazard } = match!
+    const t = ((hazard.period * ((hazard.warn + 1) / 2) - hazard.offset) % hazard.period + hazard.period) % hazard.period
+    expect(env.contact(hazard, 0, t).damagePerSecond).toBeGreaterThan(0)
+    expect(env.interact(node, t)).not.toBeNull()
+    expect(env.contact(hazard, 0, t).damagePerSecond).toBe(0)
+    const renderer = createBiomeRenderer(fakeCanvasFactory().make)
+    const { ctx } = createFakeCtx()
+    const alphas: number[] = []
+    ctx.arc = ((x: number, y: number) => {
+      if (x === hazard.x && y === hazard.y) alphas.push(ctx.globalAlpha)
+    }) as typeof ctx.arc
+    renderer.drawGround(ctx, env, { left: hazard.x - 80, top: hazard.y - 80,
+      right: hazard.x + 80, bottom: hazard.y + 80 }, t)
+    expect(alphas).toContain(.13)
+  })
+
   it('prepares exact minimap geometry and rejects oversized mobile render regions', () => {
     const env = createBiomeEnvironment(id, { seed: 17 })
     const renderer = createBiomeRenderer(fakeCanvasFactory().make)
