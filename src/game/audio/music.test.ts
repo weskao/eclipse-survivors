@@ -40,7 +40,7 @@ describe('menu title theme', () => {
     menu.schedule(0, tone)
     const opening = notes.map(n => [n.midi, n.dur, n.vol, n.wave])
     for (let beat = 1; beat <= 8; beat++) menu.schedule(beat * 0.3, tone)
-    expect(notes.some(n => n.at === 2.4 && n.midi === 53)).toBe(true)
+    expect(notes.some(n => Math.abs(n.at - 2.4) < 0.001 && n.midi === 53)).toBe(true)
     const before = notes.length
     menu.resetStep()
     menu.setClock(5)

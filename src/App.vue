@@ -49,6 +49,7 @@ onBeforeUnmount(() => unmount?.())
     :active="ui.mode === 'menu'"
     :choice="ui.choice"
     :music-on="ui.musicOn && ui.musicVolume > 0"
+    :audio-unlocked="ui.audioUnlocked"
     :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :version="version"
     :run-mode="ui.runMode"
@@ -62,6 +63,7 @@ onBeforeUnmount(() => unmount?.())
     @settings="engine.openSettings"
     @toggle-music="engine.toggleMusic"
     @toggle-sfx="engine.toggleSfx"
+    @enable-audio="engine.enableMenuAudio"
   />
   <LevelUpOverlay :active="ui.mode === 'level'" :upgrades="ui.upgrades" :effect="ui.upgradeEffect" @choose="engine.chooseUpgrade" @settings="engine.openSettings" />
   <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />

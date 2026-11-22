@@ -87,7 +87,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, sfxOn: audio.sfxOn,
+    mode: 'menu', choice: s.choice, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
@@ -100,6 +100,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let runSequence = 0
   let frameDrawn = 0
   let art: Artwork | null = null
+
+  function wakeAudio(): void {
+    audio.wake()
+    ui.audioUnlocked = audio.unlocked
+  }
 
   const hooks: GameHooks = {
     sfx: cue => audio.playSfx(cue),
@@ -198,7 +203,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     keys = {}
     stick = { x: 0, y: 0 }
     audio.setCombatIntensity('calm')
-    audio.wake()
+    wakeAudio()
     screen('play')
     audio.playSfx('start')
     audio.resetBattleClock(0.06)
@@ -222,7 +227,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       audio.playSfx('pause')
       screen('paused')
     } else if (s.mode === 'paused') {
-      audio.wake()
+      wakeAudio()
       audio.playSfx('resume')
       audio.resetBattleClock(0.05)
       screen('play')
@@ -351,7 +356,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') audio.wake()
+      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
@@ -378,7 +383,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       audio.interrupt()
     }
     const onPointerDown = (e: PointerEvent): void => {
-      audio.wake()
+      wakeAudio()
       if (e.target instanceof Element && e.target.closest('button')) audio.playSfx('ui')
     }
     const onPointerOver = (e: PointerEvent): void => {
@@ -453,6 +458,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     advance,
     listen,
     mount,
+    enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) { if (getMode(mode)) ui.runMode = mode },
     buyPermanentUpgrade(id: PermanentUpgrade) {
       if (s.mode === 'menu' && profileStore.buyUpgrade(id)) ui.profile = profileStore.get()
@@ -469,7 +475,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       s.choice = job
       ui.choice = job
       s.cosmetic = profileStore.get().equippedCosmetics[job]
-      audio.wake()
+      wakeAudio()
       audio.playSfx('select')
     },
     start,
@@ -478,10 +484,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     dash: () => heroDash(s, hooks),
     toggleMusic() {
       ui.musicOn = audio.toggleMusic(s.mode)
+      ui.audioUnlocked = audio.unlocked
       ui.musicVolume = audio.musicVolume
     },
     toggleSfx() {
       ui.sfxOn = audio.toggleSfx()
+      ui.audioUnlocked = audio.unlocked
       ui.sfxVolume = audio.sfxVolume
     },
     setMusicVolume(value) { audio.setMusicVolume(value); ui.musicVolume = audio.musicVolume },
