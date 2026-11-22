@@ -26,7 +26,7 @@ describe('menu title theme', () => {
     menu.setClock(0)
     menu.schedule(0, tone)
     const first = notes.length
-    menu.schedule(0.1, tone)
+    menu.schedule(0.05, tone)
     expect(notes).toHaveLength(first)
     menu.schedule(0.3, tone)
     expect(notes.length).toBeGreaterThan(first)
