@@ -243,6 +243,11 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     if (attack.kind === 'summon') {
       // Reuse the existing six-minion implementation rather than introducing
       // another spawning system; track exactly the minions this encounter owns.
+      // The cap tracks LIVING minions, not a lifetime quota. Prune killed or
+      // culled references at summon time, not on every animation frame.
+      for (const minion of e.summoned) {
+        if (minion.hp <= 0 || !e.state.mobs.includes(minion)) e.summoned.delete(minion)
+      }
       const before = new Set(e.state.mobs)
       if (e.summoned.size < MAX_OWNED_MINIONS) summonBossMinions(e.state, e.boss)
       for (const mob of e.state.mobs) if (!before.has(mob)) e.summoned.add(mob)
