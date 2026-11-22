@@ -121,7 +121,8 @@ describe('director scheduling and budgets', () => {
     for (let cycle = 0; cycle < 9; cycle++) {
       const director = createWaveDirector({ mode: 'endless', seed: 3 })
       const time = cycle * 48 + 14
-      const wave = director.advance(frame(time))
+      // Isolate ordinary wave composition: the required timed boss has its own scheduling tests.
+      const wave = director.advance({ ...frame(time), bossSpawned: time >= 180 })
       patterns.add(wave.pattern)
       if (wave.pattern === 'ranged') expect(wave.spawns.some(s => s.type === 'warlock')).toBe(true)
       if (wave.pattern === 'elite') expect(wave.spawns.some(s => s.elite)).toBe(true)
