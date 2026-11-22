@@ -175,7 +175,8 @@ export interface IncomingResult { damage: number; dodged: boolean; reflected: nu
 export function calculateRelicIncoming(state: GameState, amount: number, rng: () => number): IncomingResult {
   if (!Number.isFinite(amount) || amount <= 0) return { damage: 0, dodged: false, reflected: 0 }
   const b = relicBonuses(state)
-  if (rng() < Math.min(0.6, Math.max(0, b.dodge ?? 0))) return { damage: 0, dodged: true, reflected: 0 }
+  const dodgeChance = Math.min(0.6, Math.max(0, b.dodge ?? 0))
+  if (dodgeChance > 0 && rng() < dodgeChance) return { damage: 0, dodged: true, reflected: 0 }
   let resist = b.resistance ?? 0
   const hero = state.hero
   if (hero && hero.hp / hero.max < 0.35) resist += b.protectLowHp ?? 0
