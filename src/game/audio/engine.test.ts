@@ -109,6 +109,23 @@ describe('independent, persisted audio volumes', () => {
     expect(audio.sfxOn).toBe(false)
   })
 
+  it('restores the previous audible level from zero when toggling sound on', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.setMusicVolume(37)
+    audio.setSfxVolume(28)
+    audio.setMusicVolume(0)
+    audio.setSfxVolume(0)
+    expect(bgm.volume).toBe(0)
+    audio.toggleMusic('play')
+    expect(audio.musicOn).toBe(true)
+    expect(audio.musicVolume).toBe(37)
+    audio.toggleSfx()
+    expect(audio.sfxOn).toBe(true)
+    expect(audio.sfxVolume).toBe(28)
+  })
+
   it('sanitizes corrupt stored values and clamps invalid changes', () => {
     const storage = new MemStorage()
     storage.setItem('eclipseMusicVolume', 'Infinity')
