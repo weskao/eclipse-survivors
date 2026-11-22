@@ -27,6 +27,9 @@ import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from
 import { minmax, random } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
+import { createFactionBridge } from './content/enemies/integration'
+import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
+import { loadProductionFactionArt } from './render/es2/production-factions'
 import { loadProductionHeroes } from './render/es2/production-heroes'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
@@ -105,6 +108,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     random,
   )
   const bossIds = Object.keys(BOSS_DEFINITIONS) as BossId[]
+  const factionIds = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
+  const factions = requestedPacks.some(pack => pack.id === 'factions') ? createFactionBridge({ random }) : null
+  let factionSequence = 0
+  let factionWindow = 0
   let bossSequence = 0
   const bossAdapter = bosses ? {
     spawn(state: GameState, hooks: GameHooks): void {
@@ -374,6 +381,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.worldEventChoice = null
     ui.worldEventMarkers = []
     resetRun(s)
+    factions?.reset()
+    factionSequence = 0
+    factionWindow = 0
     objectiveRuntime = isObjectiveModeId(ui.runMode)
       ? createObjectiveRuntime(ui.runMode, (_state, evaluation) => {
         if (s.mode === 'play') end(evaluation.status === 'victory')
@@ -410,6 +420,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message('幽暮之門已開啟')
     setScene(s, 0, false, hooks)
     for (let i = 0; i < 12; i++) spawnMob(s)
+    if (factions && s.hero) {
+      for (let i = 0; i < 4 && factions.availableSpawnSlots(s) > 0; i++) {
+        const theta = i * Math.PI / 2
+        factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
+          s.hero.x + Math.cos(theta) * 320, s.hero.y + Math.sin(theta) * 230)
+      }
+    }
     hud()
   }
 
@@ -481,7 +498,18 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
-    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter)
+    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
+    if (factions && s.mode === 'play' && s.hero) {
+      const window = Math.floor(s.time / 8)
+      if (window > factionWindow) {
+        factionWindow = window
+        if (factions.availableSpawnSlots(s) > 0) {
+          const theta = factionSequence * 2.399963229728653
+          factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
+            s.hero.x + Math.cos(theta) * 315, s.hero.y + Math.sin(theta) * 230)
+        }
+      }
+    }
     if (s.mode !== 'play') return
     heroSpecialization?.tick(dt)
     worldEvents?.tick()
@@ -702,6 +730,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const assets: RenderAssets = createRenderAssets(art)
     assets.productionHeroes = loadProductionHeroes()
     assets.productionWorld = loadWorldRuntimeImages()
+    if (factions) {
+      assets.factions = factions
+      assets.factionArtwork = loadProductionFactionArt()
+    }
     if (contentRegistry.packs.some(pack => pack.effects?.length)) assets.content = contentRegistry
     if (bosses) assets.bosses = bosses
     assets.cameraShakeEnabled = () => ui.cameraShake
