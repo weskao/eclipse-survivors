@@ -42,6 +42,9 @@ export interface ArsenalRuntime {
   volleyAngle: number
   orbitHits: WeakMap<Mob, number>
   chainPulse: number
+  slashLife: number
+  slashAngle: number
+  beamAngle: number
 }
 
 /** Weak per-run ownership: resetRun replaces GameState.content, releasing all old objects. */
@@ -57,6 +60,7 @@ export function runtimeOf(state: GameState): ArsenalRuntime {
       projectiles: [], zones: [], wolves: [], beam: null, links: [], timers: {},
       charge: 0, volley: 0, volleyInterval: 0, volleyX: 0, volleyY: 0,
       volleyAngle: 0, orbitHits: new WeakMap(), chainPulse: 0,
+      slashLife: 0, slashAngle: 0, beamAngle: 0,
     }
     runs.set(state.content, r)
   }
