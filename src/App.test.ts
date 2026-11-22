@@ -21,4 +21,15 @@ describe('App', () => {
     w.unmount()
     expect(stop).toHaveBeenCalledOnce()
   })
+  it('uses the ES2 menu, combat HUD and mobile controls without mounting legacy copies', () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const w = mount(App, { props: { engine }, attachTo: document.body })
+    expect(w.find('.es2-menu').exists()).toBe(true)
+    expect(w.find('.es2-hud').exists()).toBe(true)
+    expect(w.find('.es2-mobile-controls').exists()).toBe(true)
+    expect(w.find('#menu').exists()).toBe(false)
+    expect(w.find('#hud').exists()).toBe(false)
+    w.unmount()
+  })
+
 })
