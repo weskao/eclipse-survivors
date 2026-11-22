@@ -8,13 +8,13 @@ const animation = (changes: Partial<HeroAnimation> = {}): HeroAnimation => ({
   ...changes,
 })
 
-describe('real eight-direction production hero atlases', () => {
-  it('loads a different 8×4 atlas for each new hero, not a report screenshot or legacy 4-strip', () => {
+describe('real specialization illustrations and retained legacy atlas compatibility', () => {
+  it('loads a distinct authored 3x portrait for every hero, not a tiny direction atlas', () => {
     expect(Object.keys(PRODUCTION_HERO_SOURCES).sort())
       .toEqual(['crimson-paladin', 'shadowblade', 'spirit-summoner'])
     expect(new Set(Object.values(PRODUCTION_HERO_SOURCES)).size).toBe(3)
     for (const [hero, url] of Object.entries(PRODUCTION_HERO_SOURCES)) {
-      expect(url, hero).toContain(hero + '-8dir@3x.webp')
+      expect(url, hero).toContain(hero + '-portrait@3x.webp')
     }
   })
 
