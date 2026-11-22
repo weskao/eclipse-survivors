@@ -2,7 +2,7 @@
 export interface Presentation { icon: string; title: string; description: string; rarity: 'common' | 'rare' | 'epic' | 'legendary' }
 export interface AchievementDef extends Presentation { id: string; embers: number; cosmetic?: string }
 export interface MilestoneDef extends Presentation { id: string; embers: number }
-export interface ResearchDef extends Presentation { id: string; maxRank: number; firstCost: number; costStep: number; benefitPerRank: number; benefit: 'damagePct' | 'hpPct' | 'xpPct' | 'lootPct' | 'goldPct' }
+export interface ResearchDef extends Presentation { id: string; maxRank: number; firstCost: number; costStep: number; benefitPerRank: number; benefit: 'damagePct' | 'hpFlat' | 'xpPct' | 'lootPct' | 'goldPct' }
 export interface UnlockDef extends Presentation { id: string; cost: number; hero?: string; masteryLevel?: number; research?: string; effect: string }
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
@@ -32,8 +32,8 @@ export const MILESTONES: readonly MilestoneDef[] = [
 
 /** Small starter-only bonuses; existing legacy power/vitality caps are preserved. */
 export const RESEARCH: readonly ResearchDef[] = [
-  { id: 'power', icon: '⚔', title: '攻擊研究', description: '每級 +2% 起始攻擊', rarity: 'common', maxRank: 3, firstCost: 25, costStep: 25, benefitPerRank: 0.02, benefit: 'damagePct' },
-  { id: 'vitality', icon: '♥', title: '生存研究', description: '每級 +2% 起始生命', rarity: 'common', maxRank: 3, firstCost: 25, costStep: 25, benefitPerRank: 0.02, benefit: 'hpPct' },
+  { id: 'power', icon: '⚔', title: '攻擊研究', description: '每級 +4% 起始攻擊（沿用 v2）', rarity: 'common', maxRank: 3, firstCost: 25, costStep: 25, benefitPerRank: 0.04, benefit: 'damagePct' },
+  { id: 'vitality', icon: '♥', title: '生存研究', description: '每級 +12 起始生命（沿用 v2）', rarity: 'common', maxRank: 3, firstCost: 25, costStep: 25, benefitPerRank: 12, benefit: 'hpFlat' },
   { id: 'insight', icon: '✧', title: '洞察研究', description: '每級 +1% 起始經驗加成', rarity: 'rare', maxRank: 2, firstCost: 80, costStep: 60, benefitPerRank: 0.01, benefit: 'xpPct' },
   { id: 'scavenging', icon: '◈', title: '拾荒研究', description: '每級 +1% 拾取收益', rarity: 'rare', maxRank: 2, firstCost: 90, costStep: 70, benefitPerRank: 0.01, benefit: 'lootPct' },
   { id: 'ember-study', icon: '✦', title: '餘燼研究', description: '每級 +1% 未來結算餘燼', rarity: 'epic', maxRank: 2, firstCost: 120, costStep: 90, benefitPerRank: 0.01, benefit: 'goldPct' },
