@@ -47,20 +47,20 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveChoice(ev
 const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoice(event, id, modeIds, '.es2-mode-card', next => emit('mode', next as RunModeId)) }
 </script>
 <template>
-  <main class="es2-menu" :aria-label="t("Eclipse Survivors 主選單")">
+  <main class="es2-menu" :aria-label="t('Eclipse Survivors 主選單')">
     <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div class="es2-menu-shell">
       <header class="es2-menu-header">
         <div class="es2-menu-brand"><span class="es2-eyebrow">✦ THE CELESTIAL ECLIPSE ✦</span><h1>ECLIPSE <em>SURVIVORS</em></h1><p>{{ t("穿越失落的國度，成為黑夜之後的第一道曙光。") }}</p></div>
         <div class="es2-top-actions"><span id="gameVersion" class="es2-version menu-version">v{{ version }}</span>
           <button v-if="needsAudioUnlock" type="button" class="es2-icon-button" @click="emit('enableAudio')">{{ t("♫ 啟用音樂") }}</button>
-          <button type="button" class="es2-icon-button" :aria-label="t("開啟遊戲設定")" @click="emit('settings')">⚙ <span>{{ t("設定") }}</span></button>
+          <button type="button" class="es2-icon-button" :aria-label="t('開啟遊戲設定')" @click="emit('settings')">⚙ <span>{{ t("設定") }}</span></button>
         </div>
       </header>
       <div class="es2-menu-layout">
         <section class="es2-hero-section" aria-labelledby="es2HeroTitle">
           <div class="es2-section-heading"><span>01 / THE CHOSEN</span><h2 id="es2HeroTitle">{{ t("選擇命運的繼承者") }}</h2><p>{{ t("每位英雄都擁有專屬的戰鬥風格。") }}</p></div>
-          <div class="es2-hero-grid" role="group" :aria-label="t("選擇英雄")">
+          <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
             <button v-for="hero in heroes" :key="hero.id" type="button" :data-hero="hero.id" class="es2-hero-card"
               :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
@@ -74,7 +74,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         </section>
         <section class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>02 / THE EXPEDITION</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
-          <div class="es2-mode-grid" role="radiogroup" :aria-label="t("遠征模式")">
+          <div class="es2-mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
             <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" class="es2-mode-card"
               :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
               @click="emit('mode', id)" @keydown="moveMode($event, id)">

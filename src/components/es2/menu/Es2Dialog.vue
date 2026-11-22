@@ -60,7 +60,7 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKeydown); rest
         role="dialog" aria-modal="true" :aria-labelledby="headingId" tabindex="-1" @pointerdown.stop>
         <header class="es2-dialog-header">
           <div><span class="es2-eyebrow">✦ ECLIPSE SURVIVORS ✦</span><h2 :id="headingId">{{ title }}</h2><p v-if="subtitle">{{ subtitle }}</p></div>
-          <button v-if="dismissible" type="button" class="es2-close" :aria-label="t("關閉對話視窗")" @click="emit('cancel')">×</button>
+          <button v-if="dismissible" type="button" class="es2-close" :aria-label="t('關閉對話視窗')" @click="emit('cancel')">×</button>
         </header>
         <div class="es2-dialog-body"><slot /></div>
         <footer v-if="$slots.actions" class="es2-dialog-actions"><slot name="actions" /></footer>
