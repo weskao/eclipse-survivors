@@ -88,3 +88,15 @@ describe('ES2 relic chest reward overlay', () => {
     expect(wrapper.emitted('decline')).toEqual([[5]])
   })
 })
+
+it('recovers when a host rejects a reroll without changing its offer', async () => {
+  const { wrapper } = mountOffer()
+  await nextTick()
+  const reroll = document.querySelector<HTMLButtonElement>('[data-relic-reroll]')!
+  reroll.click()
+  expect(wrapper.emitted('reroll')).toHaveLength(1)
+  await nextTick()
+  expect(reroll.disabled).toBe(false)
+  reroll.click()
+  expect(wrapper.emitted('reroll')).toHaveLength(2)
+})
