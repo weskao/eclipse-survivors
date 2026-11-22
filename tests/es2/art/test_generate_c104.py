@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from PIL import Image
 
-from scripts.es2.generate_c104_assets import generate_assets, ASSET_BOXES
+from scripts.es2.generate_c104_assets import generate_assets, ASSET_BOXES, UI_BOXES
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -20,6 +20,16 @@ class TestC104ProductionArt(unittest.TestCase):
                     for other, b in frames[index+1:]:
                         overlaps = max(a[0], b[0]) < min(a[2], b[2]) and max(a[1], b[1]) < min(a[3], b[3])
                         self.assertFalse(overlaps, (source, name, other))
+
+    def test_ui_source_cells_never_overlap_other_icons(self):
+        # c104's health halo protrudes into the old XP crop by four pixels.
+        # Enforce exclusive source-rect ownership for every future UI asset.
+        for index, (name, a) in enumerate(UI_BOXES.items()):
+            for other, b in list(UI_BOXES.items())[index + 1:]:
+                dx = min(a[2], b[2]) - max(a[0], b[0])
+                dy = min(a[3], b[3]) - max(a[1], b[1])
+                self.assertFalse(dx > 0 and dy > 0,
+                                 f'c104 source crops overlap: {name} and {other} ({dx}x{dy})')
 
     def test_production_assets_preserve_independent_alpha_padded_cells(self):
         with tempfile.TemporaryDirectory() as directory:
