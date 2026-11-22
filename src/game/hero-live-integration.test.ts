@@ -39,7 +39,7 @@ describe('live hero integration, including original roster regressions', () => {
     engine.advance(3)
     expect(engine.ui.heroSpecial!.cooldown).toBe(cooldown)
     engine.togglePause()
-    engine.advance(0.1)
+    engine.advance(0.13) // Crosses the existing 8 Hz HUD snapshot boundary.
     expect(engine.ui.heroSpecial!.cooldown).toBeLessThan(cooldown)
     engine.goMenu()
     expect(engine.ui.heroSpecial).toBeNull()

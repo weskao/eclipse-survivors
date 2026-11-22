@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import { nextTick, type Component } from 'vue'
 import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
+import Es2MainMenu from '../menu/Es2MainMenu.vue'
 
 const instances: Array<{ unmount(): void }> = []
 function render(component: Component, props: Record<string, unknown>) {
@@ -73,9 +74,28 @@ describe('ES2 dedicated hero special action', () => {
     document.body.append(input)
     input.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ', bubbles: true }))
     expect(wrapper.emitted('activate')).toHaveLength(1)
+    // Vue drops its emission store at unmount: keep the live array reference to
+    // prove global keydown no longer emits after the component is removed.
+    const emitted = wrapper.emitted('activate')!
     wrapper.unmount()
     instances.splice(instances.indexOf(wrapper), 1)
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ', bubbles: true }))
-    expect(wrapper.emitted('activate')).toHaveLength(1)
+    expect(emitted).toHaveLength(1)
+  })
+})
+
+describe('real menu roster integration', () => {
+  it('shows the original three plus three new heroes, with real selected identity', async () => {
+    const wrapper = render(Es2MainMenu, {
+      choice: 'knight', heroId: 'shadowblade', runMode: 'quick', version: '1.2.0',
+    })
+    expect(wrapper.findAll('.es2-hero-card')).toHaveLength(3)
+    expect(wrapper.findAll('[data-hero-id]')).toHaveLength(3)
+    expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-hero="knight"]').attributes('aria-pressed')).toBe('false')
+    await wrapper.get('[data-hero-id="spirit-summoner"]').trigger('click')
+    expect(wrapper.emitted('selectHero')?.[0]).toEqual(['spirit-summoner'])
+    await wrapper.get('[data-hero="wizard"]').trigger('click')
+    expect(wrapper.emitted('select')?.[0]).toEqual(['wizard'])
   })
 })
