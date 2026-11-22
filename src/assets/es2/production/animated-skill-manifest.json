@@ -137,6 +137,32 @@
       "sha256": "9913a456dd34b38fc53e84846e08091f06bf04fcf332a667e0ac97c08a7bad66"
     },
     {
+      "id": "weapons:spectral-bow",
+      "file": "weapons/spectral-bow@3x-animated.webp",
+      "source": "weapons/spectral-bow@3x.webp",
+      "scale": 3,
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "durationMs": 100,
+      "motionFamily": "lance",
+      "bytes": 188224,
+      "sha256": "5d0444886b615405746e5d0c198fe93e285167be7855f6edb3c6a6eb28e24751"
+    },
+    {
+      "id": "weapons:thorn-chain",
+      "file": "weapons/thorn-chain@3x-animated.webp",
+      "source": "weapons/thorn-chain@3x.webp",
+      "scale": 3,
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "durationMs": 100,
+      "motionFamily": "vine",
+      "bytes": 516946,
+      "sha256": "b96fed2d8a7d9e570fdbf48f0ba768a82a8a50ed97e534abd80a9cf5c3ece4a7"
+    },
+    {
       "id": "evolution2:nightfall-torrent",
       "file": "evolutions/nightfall-torrent@3x-animated.webp",
       "source": "evolutions/nightfall-torrent@3x.webp",
@@ -254,6 +280,19 @@
       "sha256": "8a28d5ebad1d9c8bc794280aa9e7f222d4e3ab3bff10ab34db9238ad2660d425"
     },
     {
+      "id": "evolution2:spectral-volley",
+      "file": "evolutions/spectral-volley@3x-animated.webp",
+      "source": "evolutions/spectral-volley@3x.webp",
+      "scale": 3,
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "durationMs": 100,
+      "motionFamily": "lance",
+      "bytes": 334450,
+      "sha256": "970658f23f3b803ff1335e17b1faddb5b735d723c6b683e6727de3bc3591f5d6"
+    },
+    {
       "id": "evolution2:bonefire-barrage",
       "file": "evolutions/bonefire-barrage@3x-animated.webp",
       "source": "evolutions/bonefire-barrage@3x.webp",
@@ -265,6 +304,19 @@
       "motionFamily": "solar",
       "bytes": 665406,
       "sha256": "c4e67ed286a990ff382aa48ce4e4ac2cd7ab974e3a865cdffcc815e7d1be93e3"
+    },
+    {
+      "id": "evolution2:verdant-snare",
+      "file": "evolutions/verdant-snare@3x-animated.webp",
+      "source": "evolutions/verdant-snare@3x.webp",
+      "scale": 3,
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "durationMs": 100,
+      "motionFamily": "vine",
+      "bytes": 497124,
+      "sha256": "4145c17a88eca26523f95a5a1957d2145a8f4f145f26678c26a40e48556b69eb"
     }
   ]
 }
