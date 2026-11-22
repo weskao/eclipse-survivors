@@ -7,6 +7,7 @@ import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, type ProductionHeroArtwork } from './es2/production-heroes'
+import { isSpecializationId } from '../content/heroes'
 import { drawProductionBossFrame } from './es2/production-world'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
@@ -278,14 +279,21 @@ export function drawCharacter(
       ctx.save()
       // Eight-direction atlases already contain an authored left-facing frame.
       // Mirroring them produces the wrong direction and artwork. Keep the
-      // original fallback mirror for unloaded art and unsupported poses.
+      // original fallback mirror for unloaded art.
       const directionalReady = productionImage?.complete
         && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512
       if (hero.face < 0 && !directionalReady) ctx.scale(-1, 1)
-      const productionDrawn = productionImage
+      let productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
+      if (!productionDrawn && isSpecializationId(s.heroId)) {
+        // s.choice is the legacy base class: a specialization hero must never fall back to
+        // that rig. Unauthored poses (hurt/death/victory) hold the authored idle cell; while
+        // the atlas is not decoded nothing is drawn rather than showing another class.
+        anim.pose = 'idle' // anim is a throwaway per-call sample; no extra allocation
+        if (productionImage) drawProductionHeroFrame(ctx, productionImage, anim, sx, sy)
+        productionDrawn = true
+      }
       if (!productionDrawn) {
-        if (hero.face < 0 && directionalReady) ctx.scale(-1, 1)
         // Preserve existing animation while the new WebP decodes or if it fails.
         const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
         const prebaked = !!(heroSheets && im && drawable === im
