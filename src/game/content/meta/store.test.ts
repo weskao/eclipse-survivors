@@ -160,6 +160,24 @@ describe('v3 progression durable transactions', () => {
   })
 })
 
+describe('explicit crash-safe full reset', () => {
+  it('resets v3 only after a durable head commit, leaving the old profile available for explicit cleanup', () => {
+    const storage = memoryStorage()
+    storage.setItem(SAVE_KEY, JSON.stringify(emptyProfile()))
+    const meta = createMetaProgressionStore(storage)
+    expect(meta.settle({ stats: run('first') }).ok).toBe(true)
+    const prior = meta.get()
+    storage.failOn(META_V3_HEAD_KEY)
+    expect(meta.reset().ok).toBe(false)
+    expect(meta.get()).toEqual(prior)
+    storage.failOn()
+    expect(meta.reset().ok).toBe(true)
+    expect(meta.get().state).toMatchObject({ runs: 0, wins: 0, embers: 0, runIds: [] })
+    expect(meta.get().legacyProfile).toBeNull()
+    expect(storage.getItem(SAVE_KEY)).not.toBeNull()
+  })
+})
+
 describe('uncertain post-write storage acknowledgement', () => {
   it('does not pay the same receipt again when setItem throws after the head was stored', () => {
     const disk = memoryStorage()
