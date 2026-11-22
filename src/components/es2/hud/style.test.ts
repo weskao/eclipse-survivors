@@ -1,7 +1,5 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-const css = readFileSync(resolve(process.cwd(), 'src/styles/es2/hud.css'), 'utf8')
+import css from '../../../styles/es2/hud.css?raw'
 
 describe('isolated ES2 HUD visual contract', () => {
   it('keeps styles namespaced and does not change the legacy HUD', () => {
