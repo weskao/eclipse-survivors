@@ -205,8 +205,9 @@ export function drawCombatEffect(
           for (let i = parity; i < count; i += 2) {
             const v = DIRS[Math.floor(i * 24 / count)]!
             const r = 7 + (i % 3) * 4 + strike * 6
-            ctx.ellipse(v.x * (25 + strike * 46), v.y * (25 + strike * 46),
-              r, r * 0.55, 0, 0, TAU)
+            const px = v.x * (25 + strike * 46), py = v.y * (25 + strike * 46)
+            ctx.moveTo(px + r, py)
+            ctx.ellipse(px, py, r, r * 0.55, 0, 0, TAU)
           }
           ctx.stroke()
         }
