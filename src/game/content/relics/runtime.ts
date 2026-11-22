@@ -144,13 +144,15 @@ export function calculateRelicAttack(state: GameState, damage: number, context: 
   else if (context.moving === false) multiplier *= 1 + (b.stationary ?? 0)
   if (context.afterDash) multiplier *= 1 + (b.dashDamage ?? 0)
   if (context.boss) multiplier *= 1 + (b.bossDamage ?? 0)
-  const critical = rng() < Math.min(0.75, Math.max(0, b.critChance ?? 0))
+  const critChance = Math.min(0.75, Math.max(0, b.critChance ?? 0))
+  const critical = critChance > 0 && rng() < critChance
   if (critical) multiplier *= 1.5 + (b.critPower ?? 0)
   const execute = !context.boss && Number.isFinite(context.targetHpFraction) &&
     context.targetHpFraction! > 0 && context.targetHpFraction! <= Math.min(0.3, b.execute ?? 0)
   const pierce = Math.max(0, Math.floor((b.pierce ?? 0) +
     (hasRelic(state, 'relics:celestial-lens') && hasRelic(state, 'relics:echo-gem') ? 1 : 0)))
-  const extraProjectile = rng() < Math.min(0.6, Math.max(0, b.extraProjectile ?? 0))
+  const extraChance = Math.min(0.6, Math.max(0, b.extraProjectile ?? 0))
+  const extraProjectile = extraChance > 0 && rng() < extraChance
   return { damage: damage * multiplier, critical, execute, pierce, extraProjectile }
 }
 export interface IncomingResult { damage: number; dodged: boolean; reflected: number }
