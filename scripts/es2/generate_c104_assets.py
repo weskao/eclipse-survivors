@@ -67,19 +67,19 @@ UI_BOXES={
  'treasure-rare':(257,52,466,219),
  'treasure-legendary':(715,32,938,215),
  'treasure-cursed':(482,48,694,217),
- 'rarity-common':(1250,17,1311,120),
+ 'rarity-common':(1239,14,1319,140),
  'rarity-rare':(1326,14,1398,119),
- 'rarity-legendary':(1555,12,1635,122),
- 'hud-health':(1035,221,1191,360),
- 'hud-xp':(1210,222,1370,360),
+ 'rarity-legendary':(1550,10,1640,139),
+ 'hud-health':(1025,216,1206,366),
+ 'hud-xp':(1202,215,1372,367),
  'hud-cooldown':(707,218,855,359),
- 'hud-quest':(1400,528,1466,651),
+ 'hud-quest':(1376,520,1471,652),
  'achievement-boss':(659,726,823,914),
- 'achievement-survivor':(20,730,170,921),
- 'achievement-evolution':(327,736,490,922),
- 'achievement-explorer':(1278,730,1424,915),
- 'achievement-collector':(488,730,657,916),
- 'achievement-flawless':(408,541,493,638),
+ 'achievement-survivor':(30,737,165,913),
+ 'achievement-evolution':(331,741,486,916),
+ 'achievement-explorer':(1252,718,1434,917),
+ 'achievement-collector':(493,737,654,913),
+ 'achievement-flawless':(1577,718,1647,912),
 }
 for key,box in UI_BOXES.items():ASSET_BOXES[10][f'ui:{key}']=box
 
@@ -143,6 +143,38 @@ def fit(source:Image.Image, box:tuple[int,int,int,int], size:tuple[int,int], sou
     return canvas
 
 
+def isolate_main_alpha_component(image:Image.Image)->Image.Image:
+    """Remove detached neighbouring-sheet fragments without touching the main silhouette."""
+    from collections import deque
+    im=image.copy().convert('RGBA')
+    w,h=im.size
+    pixels=im.getchannel('A').tobytes()
+    visited=bytearray(w*h)
+    largest=[]
+    for i,a in enumerate(pixels):
+        if a<24 or visited[i]: continue
+        visited[i]=1
+        q=deque([i]);group=[]
+        while q:
+            k=q.popleft();group.append(k)
+            x=k%w;y=k//w
+            for j in ((k-1 if x else -1),(k+1 if x+1<w else -1),(k-w if y else -1),(k+w if y+1<h else -1)):
+                if j>=0 and not visited[j] and pixels[j]>=24:
+                    visited[j]=1;q.append(j)
+        if len(group)>len(largest):largest=group
+    if not largest:return im
+    # Retain 1px anti-aliased edge around the selected main silhouette.
+    keep=bytearray(w*h)
+    for k in largest:
+        x=k%w;y=k//w;keep[k]=1
+        if x:keep[k-1]=1
+        if x+1<w:keep[k+1]=1
+        if y:keep[k-w]=1
+        if y+1<h:keep[k+w]=1
+    im.putalpha(Image.frombytes('L',(w,h),bytes(a if keep[i] else 0 for i,a in enumerate(pixels))))
+    return im
+
+
 def add_atlas(images:list[Image.Image],size:tuple[int,int])->Image.Image:
     w,h=size
     atlas=Image.new('RGBA',(w*len(images),h),(0,0,0,0))
@@ -195,6 +227,8 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
 
     for id,box in UI_BOXES.items():
         im=fit(sources[10],box,(192,192),10,11)
+        if id in {'achievement-flawless','achievement-explorer','rarity-legendary','rarity-common','hud-health','hud-quest','hud-xp'}:
+            im=isolate_main_alpha_component(im)
         emit(f'src/assets/es2/production/ui/{id}@3x.webp','ui',im,1,(192,192),10,[box],75000)
 
     for id in SPECIALS:
