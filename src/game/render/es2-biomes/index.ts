@@ -140,8 +140,9 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
   }
 
   /** Layer 2: static props and interaction targets. Call BEFORE actors/projectiles. */
-  function drawProps(ctx: Ctx2D, env: BiomeEnvironment, view: Bounds): void {
+  function drawProps(ctx: Ctx2D, env: BiomeEnvironment, view: Bounds, time = 0): void {
     const query = validate(view)
+    if (!Number.isFinite(time)) throw new RangeError('Invalid biome simulation time')
     scene(env)
     for (const obstacle of env.obstacles(query.x, query.y, query.radius)) {
       if (!intersects(obstacle, view)) continue
@@ -154,7 +155,7 @@ export function createBiomeRenderer(makeCanvas: CanvasFactory) {
       ctx.save()
       ctx.strokeStyle = env.definition.atmosphere.glow
       ctx.fillStyle = env.definition.atmosphere.accent
-      ctx.globalAlpha = .68
+      ctx.globalAlpha = env.interactionAvailable(node, time) ? .68 : .2
       ctx.lineWidth = 2
       ctx.beginPath(); ctx.arc(node.x, node.y, node.r, 0, TAU); ctx.stroke()
       ctx.font = 'bold 18px Georgia'
