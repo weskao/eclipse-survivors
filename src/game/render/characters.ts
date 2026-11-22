@@ -6,6 +6,7 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
+import { cachedMobTint, type MobTintCache } from './tint-cache'
 
 type Drawable = HTMLImageElement | HTMLCanvasElement
 const ease = (n: number): number => {
@@ -199,7 +200,7 @@ const DIMS: Record<string, [number, number]> = {
 
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
-  e: Hero | Mob, ox: number, oy: number, reducedMotion = false,
+  e: Hero | Mob, ox: number, oy: number, reducedMotion = false, tintCache?: MobTintCache,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -240,12 +241,16 @@ export function drawCharacter(
   ctx.save(); ctx.translate(x, y)
   if (hero && hero.face < 0) ctx.scale(-1, 1)
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
-  if (mob && mob.elite) ctx.filter = 'hue-rotate(75deg) saturate(1.5) brightness(1.1)'
-  if (mob && mob.type === 'warlock') ctx.filter = 'hue-rotate(15deg) saturate(1.2)'
-  if (mob && mob.hit > 0 && !reducedMotion) ctx.filter = 'brightness(1.3) sepia(.25)'
+  // Hit tint takes priority over warlock tint, which takes priority over elite.
+  // Reuse a 2x bitmap instead of a Canvas CSS filter on every visible enemy.
+  const tint = mob?.hit && mob.hit > 0 && !reducedMotion ? 'brightness(1.3) sepia(.25)'
+    : mob?.type === 'warlock' ? 'hue-rotate(15deg) saturate(1.2)'
+      : mob?.elite ? 'hue-rotate(75deg) saturate(1.5) brightness(1.1)' : null
   const im = art[kind === 'warlock' ? 'wizard' : kind]
   const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
-  const drawable = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
+  const source = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
+  const drawable = source && tint ? cachedMobTint(source, tint, sx, sy, tintCache) : source
+  if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
     if (hero && anim) {
       drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice)

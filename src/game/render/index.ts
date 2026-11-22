@@ -7,12 +7,13 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  buildMagicGlow, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
 import { buildProps } from './props'
 import { buildSprites, domCanvas, type MakeCanvas } from './sprites'
+import type { MobTintCache } from './tint-cache'
 
 export type { Ctx2D } from './ctx'
 
@@ -25,6 +26,8 @@ export interface RenderAssets {
   biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
   magicGlow: HTMLCanvasElement | null
+  gems: GemSprites
+  mobTint: MobTintCache
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -40,6 +43,8 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     depthOrder: [],
     biomes: buildBiomeArt(makeCanvas),
     magicGlow: buildMagicGlow(makeCanvas),
+    gems: buildGemSprites(makeCanvas),
+    mobTint: { makeCanvas, variants: new WeakMap() },
   }
 }
 
@@ -91,7 +96,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     ctx.fillRect(0, 0, W, H)
     return
   }
-  drawStars(ctx, s, ox, oy, reduced)
+  drawStars(ctx, s, ox, oy, reduced, assets.gems)
   drawEnemyTelegraphs(ctx, s, ox, oy)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   const objects = assets.depthOrder
@@ -104,7 +109,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
-  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced)
+  for (const obj of objects) drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.mobTint)
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
   drawShots(ctx, s, ox, oy, assets.magicGlow)
