@@ -99,6 +99,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function screen(name: GameMode): void {
+    // A level-up freezes gameplay: discard pending hit recoil before the picker opens.
+    if (name === 'level') s.cameraKick = 0
     s.mode = name
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
