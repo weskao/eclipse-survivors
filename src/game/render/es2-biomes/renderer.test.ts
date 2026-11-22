@@ -34,6 +34,9 @@ describe.each(BIOME_IDS)('%s cached biome renderer', id => {
     renderer.drawProps(ctx, env, view)
     expect(made).toHaveLength(first)
     expect(renderer.cacheSize()).toBeLessThanOrEqual(12)
+    const other = BIOME_IDS[(BIOME_IDS.indexOf(id) + 1) % BIOME_IDS.length]!
+    renderer.drawGround(ctx, createBiomeEnvironment(other), view, 0)
+    expect(renderer.cacheSize()).toBe(1)
     renderer.setPixelRatio(2)
     expect(renderer.cacheSize()).toBe(0)
     renderer.drawGround(ctx, env, view, 0)
