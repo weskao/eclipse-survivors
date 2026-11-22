@@ -33,7 +33,9 @@ import { loadProductionFactionArt } from './render/es2/production-factions'
 import { loadProductionHeroes } from './render/es2/production-heroes'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
-import { spawnMob } from './spawn'
+import { spawnDirectedMob, spawnMob } from './spawn'
+import { pointIsClear } from './world'
+import { createWaveEngineAdapter, type WaveEngineAdapter } from './content/director/adapter'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
@@ -192,6 +194,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let art: Artwork | null = null
   let heroSpecialization: HeroSpecializationAdapter | null = null
   let objectiveRuntime: ObjectiveRuntime | null = null
+  let waveDirector: WaveEngineAdapter | null = null
   let worldEvents: LiveWorldEvents | null = null
   let ending = false
 
@@ -216,9 +219,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (state === s) worldEvents?.onContentEvent(event)
         // Only an actual finalized kill can advance an objective. The existing
         // boss controller gets first chance to account for its original XP/reward.
-        if (state === s && event.type === 'kill' && objectiveRuntime) {
-          const accepted = objectiveRuntime.defeatMob(event.mob)
-          if (accepted && event.mob.type === 'boss') bosses?.reset(state)
+        if (state === s && event.type === 'kill') {
+          waveDirector?.killed(event.mob)
+          if (objectiveRuntime) {
+            const accepted = objectiveRuntime.defeatMob(event.mob)
+            if (accepted && event.mob.type === 'boss') bosses?.reset(state)
+          }
         }
       }
       : undefined,
@@ -390,6 +396,29 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       })
       : null
     if (objectiveRuntime) bossSequence = 0
+    waveDirector = requestedPacks.some(pack => pack.id === 'waves')
+      ? createWaveEngineAdapter({
+        mode: ui.runMode, seed: ++runSequence,
+        spawn(state, request) {
+          if (request.waveIndex && objectiveRuntime?.plan().waveIndex !== request.waveIndex) return null
+          if (request.role === 'boss') {
+            const stage = request.encounterIndex ?? 1
+            if (objectiveRuntime && objectiveRuntime.plan().bossStage !== stage) return null
+            const actor = bosses
+              ? bosses.spawn(state, bossIds[(stage - 1) % bossIds.length]!, { x: request.x, y: request.y }, hooks)
+              : spawnDirectedMob(state, request, factions?.runtime.enemies.length ?? 0)
+            if (actor) {
+              actor.telegraphUntil = state.time + request.telegraphSeconds
+              if (objectiveRuntime) objectiveRuntime.spawnBoss(stage, actor)
+            }
+            return actor
+          }
+          return spawnDirectedMob(state, request, factions?.runtime.enemies.length ?? 0)
+        },
+        onEvent(event) {
+          if (event.kind === 'boss-prep' || event.kind === 'boss' || event.kind === 'wave') message(event.title)
+        },
+      }) : null
     heroSpecialization = createHeroRosterAdapter(s, s.heroId, heroHooks, random)
     heroSpecialization?.reset()
     hooks.content?.(s, { type: 'reset' })
@@ -498,7 +527,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     // Preserve gentle ambient life by default; keep the upgrade backdrop fully still when requested.
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
-    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
+    step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined, !!waveDirector)
     if (factions && s.mode === 'play' && s.hero) {
       const window = Math.floor(s.time / 8)
       if (window > factionWindow) {
@@ -524,7 +553,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         const marker = worldEvents.director.active[0]
         if (marker) objectiveRuntime.registerEvent(eventIndex, marker)
       }
-      const stage = objectiveRuntime.plan().bossStage
+      const stage = waveDirector ? null : objectiveRuntime.plan().bossStage
       const hero = s.hero
       if (stage !== null && hero && bosses) {
         const id = bossIds[(stage - 1) % bossIds.length]!
@@ -533,6 +562,18 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
           objectiveRuntime.spawnBoss(stage, spawned)
           hooks.message(`⚠ ${BOSS_DEFINITIONS[id].title} 降臨！`)
         }
+      }
+    }
+    if (waveDirector && s.mode === 'play' && s.W > 0 && s.H > 0) {
+      const beforeCount = s.mobs.length
+      const plan = waveDirector.advance(s, {
+        pendingActors: factions?.runtime.enemies.length ?? 0,
+        completedRelics: objectiveRuntime?.snapshot().relics,
+        canSpawnAt: (x, y, radius) => pointIsClear(s.currentScene, { x, y }, radius),
+      })
+      if (plan?.waveIndex && objectiveRuntime) {
+        const actors = s.mobs.slice(beforeCount).filter(mob => mob.waveIndex === plan.waveIndex && mob.hp > 0)
+        if (actors.length) objectiveRuntime.spawnWave(plan.waveIndex, actors)
       }
     }
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)

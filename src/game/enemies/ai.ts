@@ -102,6 +102,7 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
   const canTarget = hooks.canTargetHero?.() ?? true
   for (const e of s.mobs) {
     if (e.hp <= 0) continue
+    if (e.telegraphUntil !== undefined && s.time < e.telegraphUntil) continue
     e.hit -= dt
     e.phase += dt * 5
     e.stagger = Math.max(0, e.stagger - dt)
