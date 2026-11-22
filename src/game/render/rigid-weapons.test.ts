@@ -1,0 +1,61 @@
+import { describe, expect, it, vi } from 'vitest'
+import { createHero, createState } from '../state'
+import type { JobId } from '../types'
+import { sampleHeroAnimation } from './animation'
+import { createFakeCtx, fakeCanvasFactory } from './fakes'
+import { createRigidWeaponLayers, drawRigidWeapon } from './rigid-weapons'
+
+const jobs = ['knight', 'ranger', 'wizard'] as const
+
+describe('rigid non-deforming equipment layers', () => {
+  it.each(jobs)('%s isolates weapon pixels from the deformable body exactly once', job => {
+    const factory = fakeCanvasFactory()
+    const source = document.createElement('canvas')
+    source.width = 340
+    source.height = 390
+    const layers = createRigidWeaponLayers(source, job, factory.make)
+    expect(layers).not.toBeNull()
+    expect(factory.made).toHaveLength(2)
+    expect(layers!.body).toBe(factory.made[0]!.canvas)
+    expect(layers!.weapon).toBe(factory.made[1]!.canvas)
+    expect(factory.made[0]!.fake.drawn).toContain(source)
+    expect(factory.made[1]!.fake.drawn).toContain(source)
+    expect(layers!.weapon).not.toBe(source)
+  })
+
+  it.each(jobs)('%s preserves exact weapon dimensions while running and attacking in all eight directions', job => {
+    const factory = fakeCanvasFactory()
+    const source = document.createElement('canvas')
+    source.width = 340
+    source.height = 390
+    const layers = createRigidWeaponLayers(source, job, factory.make)!
+    const state = createState()
+    state.choice = job
+    state.mode = 'play'
+    state.hero = createHero(job)
+    const hero = state.hero!
+    const { ctx } = createFakeCtx()
+    const draw = vi.spyOn(ctx, 'drawImage')
+    const scale = vi.spyOn(ctx, 'scale')
+
+    for (const pose of ['run', job === 'wizard' ? 'cast' : 'attack'] as const) {
+      for (let direction = 0; direction < 8; direction++) {
+        hero.aimAngle = direction * Math.PI / 4
+        hero.vx = Math.cos(hero.aimAngle) * 70
+        hero.vy = Math.sin(hero.aimAngle) * 70
+        hero.moveAmount = 1
+        hero.strike = pose === 'run' ? 0 : 0.16
+        const anim = sampleHeroAnimation(state, hero)
+        drawRigidWeapon(ctx, layers, job, hero, anim, 110, 150)
+      }
+    }
+    expect(draw).toHaveBeenCalledTimes(16)
+    // Only rigid translation + rotation: never squash, stretch, or separately warp bow, sword or staff.
+    expect(scale).not.toHaveBeenCalled()
+    for (const args of draw.mock.calls) {
+      expect(args[0]).toBe(layers.weapon)
+      expect(args[3]).toBe(110)
+      expect(args[4]).toBe(150)
+    }
+  })
+})
