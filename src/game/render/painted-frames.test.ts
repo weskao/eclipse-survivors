@@ -123,5 +123,32 @@ describe('real raster frame art in gameplay', () => {
     const { ctx, drawn } = createFakeCtx()
     drawFrame(ctx, state, 1, assets)
     expect(drawn).toContain(atlas)
+    expect(drawn.filter(image => image === atlas)).toHaveLength(1)
+    expect(drawn).not.toContain(assets.art.ranger)
+    expect(assets.heroSheets.size).toBe(0)
+  })
+
+  it('the integrated live render path uses running artwork instead of attack poses while walking', () => {
+    const state = createState()
+    state.mode = 'play'
+    state.choice = 'wizard'
+    state.hero = createHero('wizard')
+    state.hero.moveAmount = 1
+    state.hero.vx = 100
+    state.hero.step = 2
+    state.W = 900
+    state.H = 600
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const run = new Image()
+    Object.defineProperty(run, 'complete', { value: true })
+    Object.defineProperty(run, 'naturalWidth', { value: 512 })
+    Object.defineProperty(run, 'naturalHeight', { value: 240 })
+    assets.paintedFrames = readyAtlas()
+    assets.paintedRunFrames = run
+    const f = createFakeCtx()
+    drawFrame(f.ctx, state, 1, assets)
+    expect(f.drawn).toContain(run)
+    expect(f.drawn).not.toContain(assets.paintedFrames)
+    expect(assets.heroSheets.size).toBe(0)
   })
 })
