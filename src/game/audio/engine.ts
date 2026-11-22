@@ -108,6 +108,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     /* storage blocked: keep defaults */
   }
 
+  let previousMusicVolume = musicVolume || 100
+  let previousSfxVolume = sfxVolume || 100
+
   const save = (key: string, on: boolean): void => {
     try {
       storage?.setItem(key, on ? 'on' : 'off')
@@ -226,6 +229,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     get sfxVolume() { return sfxVolume },
     setMusicVolume(value: number) {
       musicVolume = clampVolume(value, musicVolume)
+      if (musicVolume > 0) previousMusicVolume = musicVolume
       try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
       bgm.volume = mp3Level()
       if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
@@ -234,6 +238,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     setSfxVolume(value: number) {
       sfxVolume = clampVolume(value, sfxVolume)
+      if (sfxVolume > 0) previousSfxVolume = sfxVolume
       try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
       if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
     },
@@ -288,6 +293,16 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     toggleMusic(screen) {
       mode = screen
+      if (musicVolume === 0) {
+        musicVolume = previousMusicVolume
+        try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
+        bgm.volume = mp3Level()
+        if (musicOn) {
+          if (ac && musicBus) musicBus.gain.setTargetAtTime(MUSIC_GAIN * musicVolume / 100, ac.currentTime, 0.06)
+          playScore()
+          return true
+        }
+      }
       musicOn = !musicOn
       save('starMusic', musicOn)
       if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
@@ -303,6 +318,14 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       return musicOn
     },
     toggleSfx() {
+      if (sfxVolume === 0) {
+        sfxVolume = previousSfxVolume
+        try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
+        if (sfxOn) {
+          if (ac && master) master.gain.setTargetAtTime(SFX_GAIN * sfxVolume / 100, ac.currentTime, 0.06)
+          return true
+        }
+      }
       sfxOn = !sfxOn
       save('starSfx', sfxOn)
       if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
