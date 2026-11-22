@@ -148,7 +148,9 @@ export function createMetaProgressionStore(
       storage.setItem(META_V3_HEAD_KEY, head)
       if (storage.getItem(META_V3_HEAD_KEY) !== head) throw Error('unverified head')
       const verified = load(storage)
-      if (verified.status !== 'ready' || verified.revision !== revision || verified.slot !== slot)
+      if (verified.status !== 'ready' || verified.revision !== revision || verified.slot !== slot
+        || storage.getItem(META_V3_SLOT_KEYS[slot]) !== data
+        || storage.getItem(META_V3_HEAD_KEY) !== head)
         throw Error('unverified commit')
       return { ok: true, state: cloneMetaState(next), rewards }
     } catch {
