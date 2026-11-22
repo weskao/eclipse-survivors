@@ -7,6 +7,7 @@ import type { AbilityId, GameMode, GameState, Hero, JobId, SkillRarity, UpgradeD
 export interface HudSkill {
   id: AbilityId; icon: string; title: string; rarity: SkillRarity
   level: number; maxLevel: number; cooldown: number; cooldownPct: number; evolved: boolean
+  iconSrc?: string
 }
 
 /** Pure projection of actual equipped abilities, not five hard-coded icon slots. */
@@ -42,7 +43,7 @@ export function equippedSkillHud(hero: Hero, registry?: ContentRegistry, state?:
     if (!level) return []
     const cooldown = Math.max(0, state.content.cooldowns[a.id] ?? 0)
     const duration = a.cooldownSeconds ?? 0
-    return [{ id: a.id, icon: a.icon, title: a.title, rarity: a.rarity, level, maxLevel: a.maxLevel,
+    return [{ id: a.id, icon: a.icon, iconSrc: a.iconSrc, title: a.title, rarity: a.rarity, level, maxLevel: a.maxLevel,
       cooldown, cooldownPct: duration ? Math.min(100, cooldown / duration * 100) : 0, evolved: a.kind === 'evolution' }]
   }) : []
   return [...passive, ...evolved, ...custom]

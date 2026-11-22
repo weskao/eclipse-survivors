@@ -1,6 +1,6 @@
 import { random } from '../math'
 import type { Ctx2D } from '../render/ctx'
-import type { AbilityId, ContentEvent, ContentId, ContentVisualFx, GameHooks, GameState } from '../types'
+import type { AbilityId, ContentEvent, ContentId, ContentVisualFx, EvolutionId, GameHooks, GameState, UpgradeId } from '../types'
 import type { ContentAbility, ContentContext, ContentEffectDefinition, ContentPack } from './contracts'
 
 export const MAX_CONTENT_EFFECTS = 96
@@ -54,9 +54,10 @@ export function createContentRegistry(packs: readonly ContentPack[] = [], rng: (
           const a = cloned as ContentAbility
           if (!Number.isInteger(a.maxLevel) || a.maxLevel < 1 || !['common','rare','legendary'].includes(a.rarity)
             || !['ability','weapon','evolution'].includes(a.kind) || !Number.isFinite(a.cooldownSeconds ?? 0)
-            || (a.cooldownSeconds ?? 0) < 0 || (a.kind === 'evolution' && a.maxLevel !== 1)) {
+            || (a.cooldownSeconds ?? 0) < 0 || (a.kind === 'evolution' && (a.maxLevel !== 1 || a.rarity !== 'legendary'))) {
             throw new Error('Invalid content ability: ' + a.id)
           }
+          if (a.kind === 'evolution') Object.assign(cloned, { isEvolution: true })
           abilityMap.set(a.id, a)
         }
         if (kind === 'effects') effectMap.set(cloned.id, cloned as ContentEffectDefinition)
@@ -81,8 +82,8 @@ export function createContentRegistry(packs: readonly ContentPack[] = [], rng: (
   }
   const levelOf = (state: GameState, id: AbilityId): number => {
     if (isContentId(id)) return state.content.levels[id] ?? 0
-    return state.hero?.skills[id as keyof typeof state.hero.skills] ??
-      (state.hero?.evolutions[id as keyof typeof state.hero.evolutions] ? 1 : 0)
+    return state.hero?.skills[id as UpgradeId] ??
+      (state.hero?.evolutions[id as EvolutionId] ? 1 : 0)
   }
   function eligible(state: GameState): ContentAbility[] {
     if (!state.hero) return []
@@ -106,8 +107,11 @@ export function createContentRegistry(packs: readonly ContentPack[] = [], rng: (
     },
     tick(state: GameState, dt: number, hooks: GameHooks): void {
       if (!Number.isFinite(dt) || dt <= 0) return
-      for (const effect of state.content.effects) effect.life -= dt
-      state.content.effects = state.content.effects.filter(effect => effect.life > 0)
+      if (!abilities.length && !state.content.effects.length) return
+      if (state.content.effects.length) {
+        for (const effect of state.content.effects) effect.life -= dt
+        state.content.effects = state.content.effects.filter(effect => effect.life > 0)
+      }
       if (!state.hero) return
       for (const ability of abilities) {
         const level = state.content.levels[ability.id] ?? 0

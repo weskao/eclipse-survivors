@@ -24,6 +24,7 @@ export interface ContentAbility extends Omit<UpgradeDef, 'id'> {
   readonly kind: 'ability' | 'weapon' | 'evolution'
   readonly requires?: readonly ContentRequirement[]
   readonly cooldownSeconds?: number
+  // iconSrc?: string is inherited from UpgradeDef (use an imported local asset URL).
   eligible?(state: GameState): boolean
   onAcquire?(context: ContentContext, level: number): void
   onTick?(context: ContentContext, dt: number, level: number): void
@@ -133,7 +134,7 @@ state.hero = createHero('knight')
 registry.eligible(state)
 ~~~ 
 
-For a custom evolution, use kind: 'evolution', maxLevel: 1 and requirements for original or registered abilities. Rarity is the existing common/rare/legendary union; candidates participate in the existing weighted selection, and owned/capped abilities are excluded. A pack can register metadata for enemies/stages/world events, but doing so alone does NOT spawn enemies, modify AI, or install a new stage; a separate feature module must implement and test the actual behavior, and integration must explicitly wire it.
+For a custom evolution, use kind: 'evolution', rarity: 'legendary', maxLevel: 1 and requirements for original or registered abilities. Registration automatically marks it as an evolution for the original level-up UI. A pack may provide an optional iconSrc imported from a local Vite asset. Without iconSrc, the HUD and upgrade picker show the icon glyph without attempting to fetch a nonexistent built-in SVG. Rarity is the existing common/rare/legendary union; candidates participate in the existing weighted selection, and owned/capped abilities are excluded. A pack can register metadata for enemies/stages/world events, but doing so alone does NOT spawn enemies, modify AI, or install a new stage; a separate feature module must implement and test the actual behavior, and integration must explicitly wire it.
 
 ## Persistence and default compatibility
 Profile storage keeps SAVE_KEY eclipse-survivors.profile.v2 and version 2; valid namespaced discovered abilities persist across reloads even when the defining pack is not installed. Invalid, unnamespaced IDs remain rejected. No player save migration, new global registry or forced content unlock occurs from merely adding a pack. With CONTENT_PACKS empty, all old gameplay remains active.

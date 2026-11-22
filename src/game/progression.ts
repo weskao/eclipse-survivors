@@ -62,32 +62,32 @@ export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks, regi
   const hero = s.hero
   if (!hero) return false
   const custom = registry?.getAbility(id)
-  if (custom) {
-    if (!registry!.acquire(s, id as ContentId, hooks)) return false
+  if (custom && registry) {
+    if (!registry.acquire(s, id as ContentId, hooks)) return false
     hooks.message(`✦ ${custom.title}`)
   } else if (id.includes(':')) {
     return false
   } else {
     const evolution = EVOLUTIONS.find(e => e.id === id)
     if (evolution) {
-    if (!eligibleEvolutions(hero).some(e => e.id === id)) return false
-    hero.evolutions[evolution.id] = true
-    hero.evolutionCd[evolution.id] = 0
-    hooks.message(`✦ ${evolution.title} · 傳說進化！`)
+      if (!eligibleEvolutions(hero).some(e => e.id === id)) return false
+      hero.evolutions[evolution.id] = true
+      hero.evolutionCd[evolution.id] = 0
+      hooks.message(`✦ ${evolution.title} · 傳說進化！`)
     } else {
-    const up = UP.find(u => u.id === id)
-    if (!up || (hero.skills[up.id] ?? 0) >= MAX_LEVEL[up.id]) return false
-    hero.skills[up.id] = (hero.skills[up.id] ?? 0) + 1
-    if (id === 'damage') hero.damage *= 1.25
-    if (id === 'speed') hero.speed *= 1.12
-    if (id === 'haste') hero.delay *= 0.85
-    if (id === 'maxhp') {
-      hero.max += 35
-      hero.hp = Math.min(hero.max, hero.hp + 55)
-    }
-    if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 25)
-    const msg = MESSAGES[up.id]
-    if (msg) hooks.message(msg)
+      const up = UP.find(u => u.id === id)
+      if (!up || (hero.skills[up.id] ?? 0) >= MAX_LEVEL[up.id]) return false
+      hero.skills[up.id] = (hero.skills[up.id] ?? 0) + 1
+      if (id === 'damage') hero.damage *= 1.25
+      if (id === 'speed') hero.speed *= 1.12
+      if (id === 'haste') hero.delay *= 0.85
+      if (id === 'maxhp') {
+        hero.max += 35
+        hero.hp = Math.min(hero.max, hero.hp + 55)
+      }
+      if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 25)
+      const msg = MESSAGES[up.id]
+      if (msg) hooks.message(msg)
     }
   }
   s.levelQueue = Math.max(0, s.levelQueue - 1)

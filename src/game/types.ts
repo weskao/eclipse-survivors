@@ -26,6 +26,8 @@ export interface JobDef { label: string; hp: number; speed: number; damage: numb
 export interface UpgradeDef {
   id: AbilityId; icon: string; title: string; desc: string; rarity: SkillRarity
   maxLevel: number; level?: number; requirements?: string; isEvolution?: boolean
+  /** Optional Vite-imported asset URL for content packs; built-ins keep existing art lookup. */
+  iconSrc?: string
 }
 export interface BaseUpgradeDef extends UpgradeDef { id: UpgradeId }
 export interface SceneDef { name: string; weather: Weather; label: string }
