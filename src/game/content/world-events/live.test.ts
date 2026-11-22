@@ -202,6 +202,22 @@ describe('world-event live integration', () => {
     expect(live.director.active).toHaveLength(0)
   })
 
+
+  it('rejects corrupted hero coordinates and resources without consuming events', () => {
+    const { state, live, spawn } = setup()
+    const marker = spawn('events:healing-fountain')
+    state.hero!.x = Number.NaN
+    expect(live.choose(marker.id, 'drink')).toBe('unavailable')
+    expect(live.director.active).toHaveLength(1)
+    state.hero!.x = 0
+    state.hero!.hp = Number.NaN
+    expect(live.choose(marker.id, 'drink')).toBe('unavailable')
+    state.hero!.hp = 100
+    state.hero!.xp = Number.NaN
+    expect(live.choose(marker.id, 'drink')).toBe('unavailable')
+    expect(live.director.active).toHaveLength(1)
+  })
+
   it('keeps encounter rewards absent on failed, expired objectives', () => {
     const { state, live, spawn } = setup()
     const marker = spawn('events:monster-ambush')
