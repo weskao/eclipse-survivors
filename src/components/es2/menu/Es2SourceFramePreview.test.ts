@@ -23,7 +23,8 @@ describe('ES2 production sheet previews keep every atlas cell isolated', () => {
   }
 
   it('draws square biome decor cells without stretching into a taller silhouette', () => {
-    expect(environment).toContain('ctx.drawImage(decor, (o.variant % 4) * 96, 0, 96, 96, x - 55, y - 105, 110, 110)')
+    expect(environment).toContain('const sourceSide = decor.naturalHeight')
+    expect(environment).toContain('ctx.drawImage(decor, (o.variant % 4) * sourceSide, 0, sourceSide, sourceSide, x - 55, y - 105, 110, 110)')
   })
 
   it('shows complete biome illustrations without cover-cropping the composition', () => {
