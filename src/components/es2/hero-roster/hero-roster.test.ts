@@ -29,6 +29,16 @@ describe('ES2 three-hero selection UI', () => {
     expect(wrapper.text()).toContain('冷卻')
   })
 
+
+  it('shows the selected hero\'s real 8-direction game illustration instead of the legacy SVG portraits', () => {
+    const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      const portrait = wrapper.get(`[data-hero-id="${id}"] svg.es2-roster__portrait`)
+      expect(portrait.attributes('viewBox')).toBeTruthy()
+      expect(portrait.get('image').attributes('href')).toContain(id + '-8dir@3x.webp')
+    }
+  })
+
   it('uses distinct generated art for each hero active skill in character cards', () => {
     const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
