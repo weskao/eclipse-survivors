@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "artDirection": "Realistic Dark Fantasy, Gothic Magic, Celestial Eclipse",
+  "contract": {
+    "frameWidth": 128,
+    "frameHeight": 128,
+    "columns": 8,
+    "rows": 4,
+    "directionOrder": [
+      "E",
+      "SE",
+      "S",
+      "SW",
+      "W",
+      "NW",
+      "N",
+      "NE"
+    ],
+    "poseRows": [
+      "idle",
+      "run",
+      "attack",
+      "cast"
+    ]
+  },
+  "status": "awaiting-complete-animation-qa",
+  "note": "Eight independent facings and four independent action poses. This atlas does NOT contain 8 temporal frames per action, hit/death/victory pose sets, or continuity-approved motion. Those states preserve the legacy art fallback.",
+  "cropQA": "96/96 occupied cells, no boundary-alpha pixels, no overlapping authoring crop rectangles",
+  "assets": [
+    {
+      "id": "shadowblade",
+      "file": "shadowblade-8dir@3x.webp",
+      "width": 1024,
+      "height": 512,
+      "bytes": 128260,
+      "sha256": "de1926d1d81163a2d63cea8d6e839b92bc69fad70450040d1464353c017af039"
+    },
+    {
+      "id": "spirit-summoner",
+      "file": "spirit-summoner-8dir@3x.webp",
+      "width": 1024,
+      "height": 512,
+      "bytes": 145670,
+      "sha256": "f64403d65be2c2255a1f5769bb95334f0fb58b43ee7ba5d35c7b024e97eaaef5"
+    },
+    {
+      "id": "crimson-paladin",
+      "file": "crimson-paladin-8dir@3x.webp",
+      "width": 1024,
+      "height": 512,
+      "bytes": 168886,
+      "sha256": "6a0c9fcb35e74dcbc365aebfa15c9c641b9661b26b299a11c34519e8b9bad81a"
+    }
+  ]
+}

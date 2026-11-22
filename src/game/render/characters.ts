@@ -284,6 +284,8 @@ export function drawCharacter(
       const productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
       if (!productionDrawn) {
+        // Legacy art still needs facing-mirror when a directional pose is not authored.
+        if (isDirectional && hero.face < 0) ctx.scale(-1, 1)
         // Preserve existing animation while the new WebP decodes or if it fails.
         const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
         const prebaked = !!(heroSheets && im && drawable === im
