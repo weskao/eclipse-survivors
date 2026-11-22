@@ -123,6 +123,8 @@ export interface WaveFrame {
   readonly completedBosses?: number
   /** Only genuine, fully defeated actor cohorts count as completed waves. */
   readonly completedWaves?: number
+  /** Relic Hunt's guardian is locked until four actual relic pickups. */
+  readonly completedRelics?: number
   readonly activeWave?: boolean
   /** Reserved but not yet fully materialized actors (telegraphs/spawn queues). */
   readonly pendingActors?: number
@@ -312,7 +314,10 @@ export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): Wa
     const wave = describeWave(mode, seed, t)
     if (!Number.isInteger(frame.pendingActors ?? 0) || (frame.pendingActors ?? 0) < 0 ||
         !Number.isInteger(frame.completedWaves ?? 0) || (frame.completedWaves ?? 0) < 0 ||
-        !Number.isInteger(frame.completedBosses ?? 0) || (frame.completedBosses ?? 0) < 0) {
+        !Number.isInteger(frame.completedBosses ?? 0) || (frame.completedBosses ?? 0) < 0 ||
+        !Number.isInteger(frame.completedRelics ?? 0) || (frame.completedRelics ?? 0) < 0 ||
+        (mode === 'chaos-arena' && (frame.completedWaves ?? 0) > waveTimes.length) ||
+        (frame.completedBosses ?? 0) > bossTimes.length) {
       throw new RangeError('Invalid wave progress')
     }
     if (frame.playing === false) return { ...wave, spawns: [], events: [] }
@@ -339,6 +344,7 @@ export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): Wa
     if (isLegacy(mode) && (frame.bossSpawned || frame.bossDefeated)) bossIssued = true
     const bossDue = t >= bossAt && !frame.bossActive &&
       (mode !== 'chaos-arena' || (frame.completedWaves ?? 0) === waveTimes.length) &&
+      (mode !== 'relic-hunt' || frame.completedRelics === 4) &&
       (isLegacy(mode)
         ? !bossIssued && !frame.bossSpawned && !frame.bossDefeated
         : bossIssuedIndex !== bossIndex)
