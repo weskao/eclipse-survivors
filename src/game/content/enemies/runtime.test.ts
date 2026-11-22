@@ -194,6 +194,21 @@ describe('elite affixes, rewards and high-density safety', () => {
     cleanupFactionEnemies(r)
     expect(r.enemies).toHaveLength(0)
   })
+  it('respects the shared legacy plus faction crowd budget at the boundary', () => {
+    const r = createFactionRuntime()
+    r.legacyMobCount = 125
+    for (let i = 0; i < 20; i++) spawnFactionEnemy(r, 'phantom', 100, i * 2)
+    expect(r.enemies).toHaveLength(5)
+    expect(spawnFactionEnemy(r, 'phantom', 100, 100)).toBeNull()
+  })
+  it('rejects invalid time deltas without moving enemies or producing attacks', () => {
+    const r = createFactionRuntime()
+    spawnFactionEnemy(r, 'crystal-sentinel', 180, 0)
+    const before = JSON.stringify(r)
+    tickFactionEnemies(arena(r), Number.NaN)
+    tickFactionEnemies(arena(r), -1)
+    expect(JSON.stringify(r)).toBe(before)
+  })
   it('caps dense scenes, projectiles and zones without per-frame global pathfinding', () => {
     const r = createFactionRuntime()
     for (let i = 0; i < 180; i++) spawnFactionEnemy(r, 'fire-imp', 90 + i % 7, i % 9)
