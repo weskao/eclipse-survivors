@@ -139,4 +139,17 @@ describe('ES2 combat HUD', () => {
     instances.splice(instances.indexOf(wrapper), 1)
     expect(document.querySelector('.es2-hud')).toBeNull()
   })
+
+  it('offers an accessible home control only during an active run', async () => {
+    const home = vi.fn()
+    const { wrapper } = render({ canReturnHome: true, actions: { pause: vi.fn(), settings: vi.fn(), home } })
+    const button = wrapper.get('[data-es2-home]')
+    expect(button.attributes('aria-label')).toBeTruthy()
+    expect(button.find('svg[aria-hidden="true"]').exists()).toBe(true)
+    await button.trigger('click')
+    expect(home).toHaveBeenCalledOnce()
+    await wrapper.setProps({ canReturnHome: false })
+    expect(wrapper.find('[data-es2-home]').exists()).toBe(false)
+  })
+
 })
