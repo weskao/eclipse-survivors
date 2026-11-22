@@ -45,7 +45,7 @@ describe('ES2 world art live asset mapping', () => {
     expect(calls[1]?.slice(1, 5)).toEqual([480, 0, 96, 96])
     // Each atlas source frame is square: preserve silhouette proportions and bottom anchor.
     for (const call of calls) {
-      const [, , , , , dx, dy, dw, dh] = call as number[]
+      const [, , , , , dx, dy, dw, dh] = call as [unknown, number, number, number, number, number, number, number, number]
       expect(dw).toBe(dh)
       expect(dx).toBe(-dw / 2)
       expect(dy + dh).toBe(4)
