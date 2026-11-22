@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 34%;
+  width: 30%;
   aspect-ratio: 1;
   border: 2px solid #fff1c9;
   border-radius: 50%;

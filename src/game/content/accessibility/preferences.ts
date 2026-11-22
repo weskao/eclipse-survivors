@@ -49,7 +49,7 @@ const bounded = (value: unknown, fallback: number, lo: number, hi: number): numb
 
 /** Whitelist persisted keys and clamp all user-configurable geometry. */
 export function normalizeAccessibilityPreferences(value: unknown): AccessibilityPreferences {
-  const p = value && typeof value === 'object' && !Array.isArray(value)
+  const p: Partial<AccessibilityPreferences> = value && typeof value === 'object' && !Array.isArray(value)
     ? value as Partial<AccessibilityPreferences> : {}
   const d = DEFAULT_ACCESSIBILITY_PREFERENCES
   return {

@@ -14,6 +14,7 @@ describe('isolated mobile controls', () => {
     Object.defineProperty(pad.element, 'getBoundingClientRect', { value: () => ({ left: 0, top: 0, width: 122, height: 122 }), configurable: true })
     const down = (id: number) => pad.trigger('pointerdown', { pointerId: id, clientX: 100, clientY: 61 })
     await down(1)
+    await pad.trigger('pointermove', { pointerId: 1, clientX: 82, clientY: 61 })
     expect(w.emitted('stick')?.at(-1)?.[0]).toMatchObject({ x: expect.any(Number) })
     await pad.trigger('pointercancel', { pointerId: 1 })
     expect(w.emitted('stick')?.at(-1)).toEqual([null])
