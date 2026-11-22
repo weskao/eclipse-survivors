@@ -43,6 +43,8 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${actionSprites[hero.id]})` }" aria-hidden="true"></span>
       <img class="es2-roster__portrait" :src="hero.portraitSrc" :alt="hero.label + ' 角色插畫'"
         width="280" height="320" decoding="async" loading="lazy" draggable="false" />
+      <img class="es2-roster__special-icon" :src="hero.specialIconSrc" :alt="hero.label + ' 主動技能圖示'"
+        data-hero-skill-icon width="54" height="54" decoding="async" loading="lazy" draggable="false" />
       <span class="es2-roster__copy">
         <strong>{{ hero.label }}</strong>
         <span class="es2-roster__subtitle">{{ hero.subtitle }}</span>
@@ -64,12 +66,13 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 .es2-roster__card:hover, .es2-roster__card:focus-visible, .es2-roster__card--selected { outline: 2px solid #e6bd7b; outline-offset: 2px; border-color: #e6bd7b; }
 .es2-roster__card:disabled { cursor: not-allowed; opacity: .55; }
 .es2-roster__portrait { display: block; width: 100%; height: 210px; object-fit: contain; background: #241b30; }
+.es2-roster__special-icon { position: absolute; right: 10px; top: 144px; z-index: 2; width: 54px; height: 54px; object-fit: contain; padding: 3px; border: 1px solid #d7b07a88; background: #101624eb; border-radius: 12px; box-shadow: 0 5px 12px #0008; pointer-events: none; }
 .es2-roster__copy { display: grid; gap: .3rem; padding: .75rem; }
 .es2-roster__copy strong { font-size: 1.1rem; }
 .es2-roster__subtitle, .es2-roster__traits { color: #cebeb6; font-size: .8rem; }
 .es2-roster__description, .es2-roster__skill { font-size: .86rem; line-height: 1.45; }
 .es2-roster__stats, .es2-roster__gear { color: #edc58e; font-size: .83rem; }
 .es2-roster__selection { padding-top: .55rem; font-weight: 700; }
-@media (max-width: 760px) { .es2-roster { grid-template-columns: 1fr; } .es2-roster__portrait { height: 180px; } }
+@media (max-width: 760px) { .es2-roster { grid-template-columns: 1fr; } .es2-roster__portrait { height: 180px; } .es2-roster__special-icon { top: 117px; } }
 @media (prefers-reduced-motion: reduce) { .es2-roster__card { transition: none; } }
 </style>
