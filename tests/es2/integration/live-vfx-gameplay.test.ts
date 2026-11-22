@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { createEngine } from '../../../src/game/engine'
 import { MAX_CONTENT_EFFECTS } from '../../../src/game/content/registry'
+import { acquireRelic } from '../../../src/game/content/relics/runtime'
+import { setRandom } from '../../../src/game/math'
+import { runtimeOf } from '../../../src/game/content/weapons/runtime'
 import type { AudioSystem } from '../../../src/game/audio/types'
 import type { Mob } from '../../../src/game/types'
 
@@ -69,5 +72,55 @@ describe('ES2 combat VFX in the actual game, not the standalone demo', () => {
     engine.start()
     engine.dash()
     expect(engine.state.content.effects).toHaveLength(0)
+  })
+
+  it('emits critical impact only after a real crit-enhanced hit and at its actual target', () => {
+    const engine = createEngine({ audio: audio() })
+    engine.start()
+    const s = engine.state, hero = s.hero!
+    s.mobs.length = 0
+    s.spawnT = 99999
+    hero.attack = 0
+    const enemy = mob(hero.x + 32, hero.y)
+    s.mobs.push(enemy)
+    acquireRelic(s, 'relics:ritual-dagger')
+    setRandom(() => 0)
+    try {
+      engine.advance(0.016)
+      const visual = s.content.effects.find(fx => fx.id === 'combat-vfx:critical-hit')
+      expect(visual).toMatchObject({ x: enemy.x, y: enemy.y })
+      expect(s.damageDealt).toBeGreaterThan(hero.damage)
+    } finally { setRandom() }
+  })
+
+  it('renders barrier impact on genuine shield mitigation, not on an untouched incoming hit', () => {
+    const engine = createEngine({ audio: audio() })
+    engine.selectHero('crimson-paladin')
+    engine.start()
+    const s = engine.state, hero = s.hero!
+    s.mobs.length = 0
+    s.spawnT = 99999
+    s.enemyShots.push({ x: hero.x, y: hero.y, vx: 0, vy: 0,
+      radius: 14, damage: 50, life: 1 })
+    engine.advance(0.016)
+    const effect = s.content.effects.find(fx => fx.id === 'combat-vfx:shield-impact')
+    expect(effect).toMatchObject({ x: hero.x, y: hero.y })
+  })
+
+  it('renders a poison miasma where the weapon actually created an active zone', () => {
+    const engine = createEngine({ audio: audio() })
+    engine.start()
+    const s = engine.state, hero = s.hero!
+    s.mobs.length = 0
+    s.spawnT = 99999
+    hero.attack = 99999
+    s.content.levels['weapons:poison-cloud'] = 1
+    s.mobs.push(mob(hero.x + 55, hero.y))
+    engine.advance(0.016)
+    const zone = runtimeOf(s).zones.find(z => z.kind === 'poison')
+    expect(zone).toBeDefined()
+    expect(s.content.effects.some(fx => fx.id === 'combat-vfx:poison-cloud' &&
+      fx.x === zone?.x && fx.y === zone?.y)).toBe(true)
+    expect(s.content.effects.some(fx => fx.id === 'combat-vfx:gravity-vortex')).toBe(false)
   })
 })
