@@ -1,0 +1,23 @@
+name: ES2 art runtime staged TDD verification
+on:
+  push:
+    branches: [feature/es2-art-runtime-safe-staging]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hero-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run src/game/render/es2/production-heroes.test.ts src/game/render/es2/production-paint.test.ts src/components/es2/menu/Es2ProductionHeroes.test.ts src/components/es2/menu/Es2MenuSystem.test.ts src/game/render/render.test.ts
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm check-release

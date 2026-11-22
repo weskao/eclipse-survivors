@@ -6,6 +6,7 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
+import { drawProductionHeroFrame, type ProductionHeroArtwork } from './es2/production-heroes'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -217,6 +218,7 @@ export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
   tintCache?: MobTintCache,
+  productionHeroes?: ProductionHeroArtwork,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -265,23 +267,29 @@ export function drawCharacter(
   const spriteKey = kind === 'golem' ? 'goblin' : kind === 'warlock' ? 'wizard' : kind
   const source = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   const drawable = source && tint ? cachedMobTint(source, tint, sx, sy, tintCache) : source
+  const productionImage = hero && productionHeroes && Object.prototype.hasOwnProperty.call(productionHeroes, s.heroId)
+    ? productionHeroes[s.heroId as keyof ProductionHeroArtwork] : undefined
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
     if (hero && anim) {
       // Always animate from the project's original realistic WebP artwork.
       // Cached original-art frames avoid skinning every frame of gameplay.
-      const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
-      const prebaked = !!(heroSheets && im && drawable === im
-        && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
       ctx.save()
       if (hero.face < 0) ctx.scale(-1, 1)
-      // Prebaked sheets contain the body ONLY. The exact current weapon angle
-      // and pre-release arrow / charge are composited live in their own layers.
-      if (prebaked) {
-        if (layers) drawRigidWeapon(ctx, layers, s.choice, hero, anim, sx, sy)
-      } else drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice, layers ?? undefined)
-      if (layers) drawLoadedProjectile(ctx, layers, s.choice, hero, anim, sx, sy)
-      drawPoseAccents(ctx, kind, hero, anim)
+      const productionDrawn = productionImage
+        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
+      if (!productionDrawn) {
+        // Preserve the original three heroes and the legacy fallback while WebP decodes.
+        const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
+        const prebaked = !!(heroSheets && im && drawable === im
+          && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
+        if (prebaked) {
+          if (layers) drawRigidWeapon(ctx, layers, s.choice, hero, anim, sx, sy)
+        } else drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice, layers ?? undefined)
+        if (layers) drawLoadedProjectile(ctx, layers, s.choice, hero, anim, sx, sy)
+      }
+      // New hero art already includes its attack flourishes. Never overlay the legacy knight/wizard weapon rig.
+      if (!productionDrawn) drawPoseAccents(ctx, kind, hero, anim)
       ctx.restore()
     } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
   }
