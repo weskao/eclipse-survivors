@@ -4,6 +4,7 @@ import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
 import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
+import type { HeroSheets } from './hero-sheets'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 
@@ -199,7 +200,7 @@ const DIMS: Record<string, [number, number]> = {
 
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
-  e: Hero | Mob, ox: number, oy: number, reducedMotion = false,
+  e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -238,7 +239,6 @@ export function drawCharacter(
     }
   }
   ctx.save(); ctx.translate(x, y)
-  if (hero && hero.face < 0) ctx.scale(-1, 1)
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
   if (mob && mob.elite) ctx.filter = 'hue-rotate(75deg) saturate(1.5) brightness(1.1)'
   if (mob && mob.type === 'warlock') ctx.filter = 'hue-rotate(15deg) saturate(1.2)'
@@ -248,8 +248,16 @@ export function drawCharacter(
   const drawable = im && im.complete && im.naturalWidth ? im : sprites[spriteKey]
   if (drawable) {
     if (hero && anim) {
-      drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice)
+      // The WebP is the authoritative artwork. Cache its direction/pose frames
+      // once instead of skinning 96 texture cells on every gameplay draw.
+      const prebaked = !!(heroSheets && im && drawable === im
+        && heroSheets.draw(ctx, drawable, s.choice, hero, anim, sx, sy))
+      ctx.save()
+      if (hero.face < 0) ctx.scale(-1, 1)
+      if (!prebaked) drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice)
+      // Accents always use the precise live aim, not the quantized frame angle.
       drawPoseAccents(ctx, kind, hero, anim)
+      ctx.restore()
     } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
   }
   ctx.restore()
