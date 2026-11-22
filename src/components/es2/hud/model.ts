@@ -40,6 +40,7 @@ export interface CombatHudFeed {
 export interface CombatHudActions {
   readonly pause: () => void
   readonly settings: () => void
+  readonly home?: () => void
   readonly toggleMusic?: () => void
   readonly toggleSfx?: () => void
   readonly setMusicVolume?: (value: number) => void
