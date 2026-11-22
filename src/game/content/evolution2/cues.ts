@@ -17,7 +17,7 @@ export const EVOLUTION2_CUES: Readonly<Record<ContentId, Evolution2Cue>> =
       effectId: `evolution2:${recipe.id.slice('evolution2:'.length)}-fx` as ContentId,
       sound: recipe.sound, color: recipe.color, radius: recipe.radius,
     }),
-  ])) as Record<ContentId, Evolution2Cue>)
+  ] as const)) as Record<ContentId, Evolution2Cue>)
 
 function makeEffect(title: string, cue: Evolution2Cue, index: number): ContentEffectDefinition {
   // Immutable spoke geometry is computed once, not inside every Canvas frame.
