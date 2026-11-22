@@ -111,11 +111,14 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
       let current = nearby[0]!
       for (let bounce = 0; bounce < 9; bounce++) {
         damage(current, Math.max(0.5, 1.35 - bounce * 0.1))
-        const next = nearby.find(mob => {
-          if (hitMobs.has(mob) || mob.hp <= 0) return false
+        let next: Mob | undefined
+        let nearest2 = 200 * 200
+        for (const mob of nearby) {
+          if (hitMobs.has(mob) || mob.hp <= 0) continue
           const dx = mob.x - current.x, dy = mob.y - current.y
-          return dx * dx + dy * dy <= 200 * 200
-        })
+          const distance2 = dx * dx + dy * dy
+          if (distance2 < nearest2) { nearest2 = distance2; next = mob }
+        }
         if (!next) break
         current = next
       }
