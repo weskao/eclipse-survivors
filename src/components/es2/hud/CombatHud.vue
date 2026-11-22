@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
-import { ART_URLS } from '../../../game/art'
 import { animatedEs2ImageSrc, skillImageSrc } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
+import HeroPortrait from '../hero-roster/HeroPortrait.vue'
 import type { HudView } from '../../../game/store'
 import type { HeroId, JobId } from '../../../game/types'
-import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
 import { projectCombatHud, type CombatHudActions, type CombatHudFeed, type CombatHudSnapshot } from './model'
 import '../../../styles/es2/hud.css'
 
@@ -26,8 +25,6 @@ const props = withDefaults(defineProps<{
 }>(), { audioActive: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
-const portrait = computed(() => props.heroId && isSpecializationId(props.heroId)
-  ? HERO_DEFINITIONS[props.heroId].portraitSrc : ART_URLS[props.choice])
 const selectedId = ref<string | null>(null)
 const hudRoot = shallowRef<HTMLElement | null>(null)
 watch(() => props.active, active => {
@@ -65,7 +62,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <header class="es2-hud__top">
       <div class="es2-hud__hero es2-hud__plate">
         <div class="es2-hud__portrait">
-          <img :src="portrait" alt="" decoding="async" draggable="false" />
+          <HeroPortrait :hero-id="heroId ?? choice" alt="" />
           <span aria-hidden="true" class="es2-hud__portrait-corner">✧</span>
         </div>
         <div class="es2-hud__vitals">
