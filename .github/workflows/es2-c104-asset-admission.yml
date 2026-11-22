@@ -33,6 +33,18 @@ jobs:
           if-no-files-found: error
       - name: Produce 52 exact-source WebP assets in canonical project directories
         run: python scripts/es2/generate_c104_assets.py --output .
+      - name: Upload actual generated 3x artwork for pixel-level acceptance review
+        uses: actions/upload-artifact@v4
+        with:
+          name: c104-52-production-webps-review
+          path: |
+            src/assets/es2/production/enemies/*.webp
+            src/assets/es2/production/bosses/*.webp
+            src/assets/es2/production/biomes/*.webp
+            src/assets/es2/production/ui/*.webp
+            src/assets/es2/production/heroes/*-special@3x.webp
+            src/assets/es2/production/c104-provenance.json
+          if-no-files-found: error
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vitest run src/game/render/es2/c104-source-art.test.ts
       - run: pnpm test
