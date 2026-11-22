@@ -4,6 +4,7 @@ import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
 import { ACHIEVEMENTS } from '../../../meta/achievements'
 import { WORLD_ART, WORLD_UI_IDS } from '../../../game/render/es2/production-world'
+import { C104_SOURCES, C104_SURFACES } from '../../../game/render/es2/c104-source-art'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../../game/content/enemies/definitions'
 import { BOSS_DEFINITIONS } from '../../../game/content/bosses/definitions'
 import { BIOMES } from '../../../game/content/biomes'
@@ -57,6 +58,8 @@ const worldBiomes = BIOMES.map(biome => ({
   id: biome.id, title: biome.title, ...WORLD_ART.biomes[biome.id],
 }))
 const worldIcons = WORLD_UI_IDS.map(id => ({ id, src: WORLD_ART.ui[id] }))
+const c104Gallery = Object.entries(C104_SURFACES).flatMap(([category, spec]) =>
+  spec.sources.map(id => ({ id, category, src: C104_SOURCES[id] })))
 </script>
 <template>
   <Es2Dialog :active="active" :title="title[view]" subtitle="冒險者殿堂 · 記錄每一場遠征留下的印記" wide @cancel="emit('close')">
@@ -125,6 +128,17 @@ const worldIcons = WORLD_UI_IDS.map(id => ({ id, src: WORLD_ART.ui[id] }))
           <strong>{{ entry.title }}</strong>
         </article>
       </div>
+      <details data-es2-c104-gallery class="es2-c104-source-gallery">
+        <summary>查看 c104 原始美術圖集（10 張 PNG · 待逐格驗收）</summary>
+        <p class="es2-hint">原圖已存入專案並由本介面直接引用；尚未通過精靈邊界審核的接觸圖不得當成遊戲動作影格。</p>
+        <div class="es2-c104-source-grid">
+          <figure v-for="entry in c104Gallery" :key="entry.id">
+            <img :src="entry.src" :data-es2-c104-source="entry.id"
+              :alt="entry.category + ' 原始圖板 ' + entry.id" loading="lazy" decoding="async" draggable="false" />
+            <figcaption>{{ entry.category }} · {{ entry.id }}</figcaption>
+          </figure>
+        </div>
+      </details>
     </section>
     <section v-else-if="view === 'skills'" class="es2-archive-section" aria-label="技能圖鑑">
       <div class="es2-archive-grid"><article v-for="ability in entries.abilities" :key="ability.id" class="es2-archive-card" :class="{ 'es2-locked': !ability.discovered }">
@@ -152,6 +166,12 @@ const worldIcons = WORLD_UI_IDS.map(id => ({ id, src: WORLD_ART.ui[id] }))
 </template>
 
 <style scoped>
+.es2-c104-source-gallery{border:1px solid #88779155;border-radius:11px;padding:12px;margin:20px 0}
+.es2-c104-source-gallery summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#e2c895}
+.es2-c104-source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.es2-c104-source-grid figure{margin:0;padding:8px;border:1px solid #a3889455;background:#11131e;border-radius:8px}
+.es2-c104-source-grid img{display:block;width:100%;max-height:230px;object-fit:contain;aspect-ratio:1.4}
+.es2-c104-source-grid figcaption{font:500 .75rem/1.5 system-ui,sans-serif;color:#d8c9df;margin-top:5px}
 .es2-world-art-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,155px),1fr));gap:12px;margin:10px 0 20px}
 .es2-world-art-card{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:8px;border:1px solid #8a67855e;background:#1b1726;border-radius:12px;padding:10px;text-align:center;color:#f2e3d1}
 .es2-world-art-card strong{font-size:.78rem;overflow-wrap:anywhere}
