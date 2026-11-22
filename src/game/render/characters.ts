@@ -288,7 +288,8 @@ export function drawCharacter(
         } else drawRigSprite(ctx, drawable, sx, sy, hero, anim, s.choice, layers ?? undefined)
         if (layers) drawLoadedProjectile(ctx, layers, s.choice, hero, anim, sx, sy)
       }
-      drawPoseAccents(ctx, kind, hero, anim)
+      // New hero art already includes its attack flourishes. Never overlay the legacy knight/wizard weapon rig.
+      if (!productionDrawn) drawPoseAccents(ctx, kind, hero, anim)
       ctx.restore()
     } else if (mob) drawMobBody(ctx, s, mob, drawable, sx, sy)
   }
