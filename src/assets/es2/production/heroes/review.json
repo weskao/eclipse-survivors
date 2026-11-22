@@ -1,0 +1,217 @@
+{
+  "status": "NOT_APPROVED",
+  "count": 3,
+  "assets": [
+    {
+      "id": "shadowblade",
+      "bytes": 22308,
+      "sha256": "724118fc59ffe260b73ac3e3752564d8da05196cd49f0e5dbd553f7461f28f9f",
+      "dimensions": [
+        384,
+        96
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "frames": [
+        {
+          "pose": "ready",
+          "alphaNonzero": 7516,
+          "transparentPixels": 1700,
+          "opaquePixels": 1073,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "windup",
+          "alphaNonzero": 7979,
+          "transparentPixels": 1237,
+          "opaquePixels": 1073,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "strike",
+          "alphaNonzero": 7986,
+          "transparentPixels": 1230,
+          "opaquePixels": 747,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "recovery",
+          "alphaNonzero": 7572,
+          "transparentPixels": 1644,
+          "opaquePixels": 875,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        }
+      ],
+      "status": "technical-valid-visual-pending"
+    },
+    {
+      "id": "spirit-summoner",
+      "bytes": 22312,
+      "sha256": "9fb2e3097c058f071225175fb6423f388ea38ba6bf86966ab58ba8f22dd3bf12",
+      "dimensions": [
+        384,
+        96
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "frames": [
+        {
+          "pose": "ready",
+          "alphaNonzero": 8081,
+          "transparentPixels": 1135,
+          "opaquePixels": 1539,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "windup",
+          "alphaNonzero": 8099,
+          "transparentPixels": 1117,
+          "opaquePixels": 1341,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "strike",
+          "alphaNonzero": 8098,
+          "transparentPixels": 1118,
+          "opaquePixels": 1371,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "recovery",
+          "alphaNonzero": 8057,
+          "transparentPixels": 1159,
+          "opaquePixels": 1339,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        }
+      ],
+      "status": "technical-valid-visual-pending"
+    },
+    {
+      "id": "crimson-paladin",
+      "bytes": 22088,
+      "sha256": "0073967a8d924b405803a40ae3b144078acb799e80a3319dfd0152f6e497103f",
+      "dimensions": [
+        384,
+        96
+      ],
+      "alphaRange": [
+        0,
+        255
+      ],
+      "frames": [
+        {
+          "pose": "ready",
+          "alphaNonzero": 7808,
+          "transparentPixels": 1408,
+          "opaquePixels": 2531,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "windup",
+          "alphaNonzero": 7756,
+          "transparentPixels": 1460,
+          "opaquePixels": 2639,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "strike",
+          "alphaNonzero": 7835,
+          "transparentPixels": 1381,
+          "opaquePixels": 1882,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        },
+        {
+          "pose": "recovery",
+          "alphaNonzero": 7642,
+          "transparentPixels": 1574,
+          "opaquePixels": 2302,
+          "alphaBounds": [
+            3,
+            3,
+            93,
+            93
+          ],
+          "edgePixels": 0
+        }
+      ],
+      "status": "technical-valid-visual-pending"
+    }
+  ],
+  "blockingVisualIssues": [
+    "Only four illustrated key poses per hero; continuous run cycles and eight facing directions are absent.",
+    "Recovery returns to a near-identical ready pose rather than a verified seamless sequence.",
+    "Bright strike effects touch or cross individual frame bounds and need per-frame retouch.",
+    "Pixel alpha and identity are checked; there is no in-game 1x/on-device readability signoff.",
+    "Unrelated enemy, boss, biome, and UI categories have not been delivered."
+  ]
+}

@@ -13,3 +13,12 @@ This is the independent art-only branch based on exact commit `7d7517752466d0a83
 **RED → GREEN acceptance:** run `pnpm test -- src/assets/es2/production/heroes/production-art.test.ts` then the full repository checks. The tests intentionally fail while assets or approval are missing; do not disable them to make CI appear green. They verify exact ID inventory, actual RIFF/extended WebP geometry, declared alpha feature, 3× frame math, budgets, SHA-256 where recorded, binary duplicates and approval status. Byte checks cannot prove animation continuity or perceptual non-duplication: those require rendered contact sheets with manual review and pixel-based duplicate analysis, not guessed results.
 
 **Scope:** all files live only under `src/assets/es2/production/{heroes,enemies,bosses,biomes,ui}/`; this branch does not wire the engine, UI or shared manifests and must not change weapon/evolution art.
+
+## Real pixel review (not a production signoff)
+
+- `contact-sheet-heroes.webp`: 4 poses per hero, 3× enlarged on a checkerboard.
+- `contact-sheet-32px.webp`: 1× visibility check. Review on actual supported phones is still required.
+- `review.json`: Pillow-decoded alpha, geometry, SHA-256 and individual pose bounds; **NOT_APPROVED** because full movement, eight-direction continuity, frame-by-frame strike cleanup and gameplay integration have not been verified.
+- `review-pixels.py`: optional local QA helper (requires Pillow, not installed as a project dependency). Run manually; this does not replace the Vitest acceptance gate.
+
+Do not interpret generated UI/report mockups with green checkmarks as evidence of CI success; only repository Actions run results and independent local checks count.
