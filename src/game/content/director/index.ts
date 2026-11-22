@@ -28,18 +28,32 @@ function isLegacy(mode: WaveModeId): mode is RunModeId {
   return LEGACY_MODES.some(id => id === mode)
 }
 
-function schedule(mode: WaveModeId): {
-  bossTimes: readonly number[]; waveTimes: readonly number[]; spawnFrequency: number
-} {
-  if (isLegacy(mode)) {
-    const legacy = getMode(mode)
-    return { bossTimes: [legacy.bossAt], waveTimes: [], spawnFrequency: legacy.modifiers.spawnFrequency }
-  }
+interface ModeSchedule {
+  readonly bossTimes: readonly number[]
+  readonly waveTimes: readonly number[]
+  readonly spawnFrequency: number
+}
+
+/** Static per-mode contracts: no arrays/objects allocated while advancing a frame. */
+const MODE_SCHEDULES = new Map<WaveModeId, ModeSchedule>()
+for (const mode of LEGACY_MODES) {
+  const config = getMode(mode)
+  MODE_SCHEDULES.set(mode, {
+    bossTimes: [config.bossAt], waveTimes: [],
+    spawnFrequency: config.modifiers.spawnFrequency,
+  })
+}
+for (const mode of objectiveModeIds) {
   const config = getObjectiveMode(mode)
-  return {
+  MODE_SCHEDULES.set(mode, {
     bossTimes: config.bossReadySeconds, waveTimes: config.waveReadySeconds,
     spawnFrequency: config.spawnFrequency,
-  }
+  })
+}
+function schedule(mode: WaveModeId): ModeSchedule {
+  const config = MODE_SCHEDULES.get(mode)
+  if (!config) throw new RangeError('Invalid run mode')
+  return config
 }
 
 export const WAVE_CYCLE_SECONDS = 48
@@ -97,7 +111,7 @@ export interface SpawnRequest {
 
 export interface WaveFrame {
   readonly timeSeconds: number
-  /** All living ordinary mobs; a boss may use one additional reserved slot. */
+  /** Every actor sharing the 130-slot budget, including any living boss. */
   readonly activeMobs: number
   readonly hero: { readonly x: number; readonly y: number }
   readonly viewport: { readonly width: number; readonly height: number }
@@ -343,7 +357,7 @@ export function createWaveDirector(opts: { mode: WaveModeId; seed: number }): Wa
 
     let waveIndex: number | undefined
     // The same 130 actor slots are shared by legacy mobs, elites and every boss.
-    // Keep a pending boss's remaining slot free; never substitute an ordinary mob.
+    // A due boss takes precedence, but cannot exceed the same hard cap.
     if (bossDue) {
       if (available > 0 && add('boss', false, 'boss', 0, 1, Math.floor(t))) {
         bossIssued = true
