@@ -1,5 +1,6 @@
 import { migrateProfile, SAVE_KEY } from '../../../meta/profile'
-import type { Profile } from '../../../meta/types'
+import type { CosmeticId, Profile } from '../../../meta/types'
+import type { JobId } from '../../types'
 import {
   applyCompletedRun, buyResearch, unlockStartingBonus, unlockStartingEquipment,
   type GrantedReward, type ProgressResult, type PurchaseResult, type RunReceipt,
@@ -46,6 +47,7 @@ export interface MetaProgressionStore {
   purchaseResearch(id: string): MetaTransactionResult
   purchaseEquipment(id: string): MetaTransactionResult
   purchaseBonus(id: string): MetaTransactionResult
+  selectCosmetic(hero: JobId, skin: CosmeticId): MetaTransactionResult
   /** User-initiated reset. Never erase a committed save before the new head verifies. */
   reset(): MetaTransactionResult
 }
@@ -184,6 +186,18 @@ export function createMetaProgressionStore(
     purchaseResearch: id => purchase(id, buyResearch),
     purchaseEquipment: id => purchase(id, unlockStartingEquipment),
     purchaseBonus: id => purchase(id, unlockStartingBonus),
+    selectCosmetic(hero, skin) {
+      const current = load(storage)
+      if (current.status !== 'ready' || !current.state) return rejected('blocked', null)
+      if (!['knight', 'ranger', 'wizard'].includes(hero) || !skin.startsWith(hero + '-')
+        || (skin !== hero + '-default' && !current.state.cosmetics.includes(skin)))
+        return rejected('ineligible', current.state)
+      if (current.state.equippedCosmetics?.[hero] === skin)
+        return { ok: true, state: cloneMetaState(current.state), rewards: [] }
+      const next = cloneMetaState(current.state)
+      next.equippedCosmetics = { ...next.equippedCosmetics, [hero]: skin }
+      return commit(current, next, [])
+    },
     reset() {
       const current = load(storage)
       if (current.status !== 'ready' || !current.state) return rejected('blocked', null)

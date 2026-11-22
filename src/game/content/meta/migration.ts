@@ -34,6 +34,7 @@ export function proposeV2Migration(raw: unknown): MetaMigrationProposal | null {
   next.research.power = legacy.upgrades.power
   next.research.vitality = legacy.upgrades.vitality
   next.cosmetics = [...legacy.unlockedCosmetics]
+  next.equippedCosmetics = { ...legacy.equippedCosmetics }
   // Passive v2 upgrades (e.g. damage/haste) remain in legacyProfile, not weapon discoveries.
   const weapons = legacy.discoveredAbilities.filter(id => isDiscoverableId(id) && !LEGACY_EVOLUTIONS.includes(id))
   const evolutions = legacy.discoveredAbilities.filter(id => LEGACY_EVOLUTIONS.includes(id))

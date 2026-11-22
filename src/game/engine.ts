@@ -135,6 +135,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const compatible = v3.cosmetics.filter(id =>
         id === 'knight-gilded' || id === 'ranger-moonlit' || id === 'wizard-astral') as CosmeticId[]
       legacy.unlockedCosmetics = [...new Set([...legacy.unlockedCosmetics, ...compatible])]
+      for (const hero of ['knight', 'ranger', 'wizard'] as const) {
+        const selected = v3.equippedCosmetics?.[hero] as CosmeticId | undefined
+        if (selected && legacy.unlockedCosmetics.includes(selected)) legacy.equippedCosmetics[hero] = selected
+      }
     } else if (metaStore) {
       // A corrupt committed v3 save cannot expose the old wallet for spending.
       legacy.embers = 0
@@ -350,7 +354,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.heroId = id
     s.choice = fallback
     ui.choice = fallback
-    s.cosmetic = profileStore.get().equippedCosmetics[fallback]
+    s.cosmetic = displayProfile().equippedCosmetics[fallback]
     ui.heroSpecial = null
     wakeAudio()
     audio.playSfx('select')
@@ -378,7 +382,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     heroSpecialization?.reset()
     hooks.content?.(s, { type: 'reset' })
     s.runMode = ui.runMode
-    s.cosmetic = profileStore.get().equippedCosmetics[s.choice]
+    s.cosmetic = displayProfile().equippedCosmetics[s.choice]
     const saved = metaStore?.get()
     const permanent = metaStore
       ? (saved?.status === 'ready' && saved.state
@@ -782,7 +786,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       else message('祝福未解鎖或儲存失敗')
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
-      if (s.mode === 'menu' && profileStore.selectCosmetic(hero, skin)) ui.profile = profileStore.get()
+      if (s.mode !== 'menu') return
+      if (metaStore) {
+        if (metaStore.selectCosmetic(hero, skin).ok) refreshMeta()
+        else message('造型尚未解鎖或儲存失敗')
+      } else if (profileStore.selectCosmetic(hero, skin)) refreshMeta()
     },
     resetProgress() {
       if (s.mode !== 'menu') return
