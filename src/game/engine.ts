@@ -13,6 +13,8 @@ import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import type { ContentPack } from './content/contracts'
+import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
+import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
 import { impact } from './fx'
 import { EVOLUTIONS } from './evolutions'
@@ -88,6 +90,7 @@ const pad2 = (n: number): string => String(n).padStart(2, '0')
 export function createEngine(opts: { audio?: AudioSystem; profileStore?: ProfileStore; contentPacks?: readonly ContentPack[] } = {}): Engine {
   const s = createState()
   const requestedPacks = opts.contentPacks ?? CONTENT_PACKS
+  const relicsEnabled = requestedPacks.some(pack => pack.id === 'relics')
   const bosses = requestedPacks.some(pack => pack.id === 'bosses') ? createBossEncounterController() : null
   const contentRegistry = createContentRegistry(
     bosses ? requestedPacks.map(pack => pack.id === 'bosses' ? createBossEncounterPack(bosses) : pack) : requestedPacks,
@@ -124,7 +127,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     mode: 'menu', choice: s.choice, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
-    upgrades: [], toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
+    upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
     runMode: 'quick', profile: profileStore.get(), runResult: null, rewards: null,
   })
   let resumeAfterSettings = false
@@ -149,6 +152,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     content: contentRegistry.packs.some(pack => pack.onEvent)
       ? (state, event) => contentRegistry.emit(state, event, hooks)
       : undefined,
+    openTreasure: relicsEnabled ? (state, chestId) => {
+      const offer = openTreasure(state, chestId, random)
+      if (!offer) return false
+      ui.specialChoice = { kind: 'treasure', items: offer.options.map(id => {
+        const relic = RELIC_BY_ID.get(id)!
+        return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity }
+      }) }
+      ui.upgrades = []
+      screen('level')
+      return true
+    } : undefined,
   }
 
   function screen(name: GameMode): void {
@@ -241,6 +255,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     ui.runResult = null
     ui.rewards = null
+    ui.specialChoice = null
     keys = {}
     stick = { x: 0, y: 0 }
     audio.setCombatIntensity('calm')
@@ -256,11 +271,33 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function chooseUpgrade(id: AbilityId): void {
-    if (s.mode !== 'level' || !s.hero || !ui.upgrades.some(up => up.id === id)) return
+    if (s.mode !== 'level' || !s.hero || ui.specialChoice || !ui.upgrades.some(up => up.id === id)) return
     if (!applyUpgrade(s, id, hooks, contentRegistry)) return
     screen('play')
     if (s.levelQueue) offerUpgrades()
     audio.playSfx('upgrade')
+    hud()
+  }
+
+  function chooseTreasure(id: string): void {
+    const offer = inventorySnapshot(s).pending
+    if (!offer || s.mode !== 'level' || !ui.specialChoice ||
+        !ui.specialChoice.items.some(item => item.id === id)) return
+    if (!claimTreasure(s, offer.chestId, id as RelicId)) return
+    ui.specialChoice = null
+    audio.playSfx('upgrade')
+    message('✦ 已獲得聖物：' + RELIC_BY_ID.get(id as RelicId)!.title)
+    screen('play')
+    if (s.levelQueue) offerUpgrades()
+    hud()
+  }
+
+  function cancelTreasure(): void {
+    const offer = inventorySnapshot(s).pending
+    if (!offer || s.mode !== 'level' || !ui.specialChoice || !declineTreasure(s, offer.chestId)) return
+    ui.specialChoice = null
+    screen('play')
+    if (s.levelQueue) offerUpgrades()
     hud()
   }
 
@@ -299,6 +336,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter)
+    if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
       audio.setCombatIntensity(bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
@@ -405,8 +443,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (e.code === 'Space' && s.mode === 'play') heroDash(s, hooks)
       if (e.code === 'KeyP' || e.code === 'Escape') togglePause()
       const n = upgradeKeyIndex(e.code)
-      const pick = ui.upgrades[n]
-      if (s.mode === 'level' && pick) chooseUpgrade(pick.id)
+      if (s.mode === 'level' && ui.specialChoice) {
+        const choice = ui.specialChoice.items[n]
+        if (choice) chooseTreasure(choice.id)
+      } else {
+        const pick = ui.upgrades[n]
+        if (s.mode === 'level' && pick) chooseUpgrade(pick.id)
+      }
     }
     const onKeyUp = (e: KeyboardEvent): void => { keys[e.code] = false }
     const onBlur = (): void => {
@@ -535,6 +578,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     start,
     chooseUpgrade,
+    chooseTreasure,
+    cancelTreasure,
     togglePause,
     dash: () => heroDash(s, hooks),
     toggleMusic() {
