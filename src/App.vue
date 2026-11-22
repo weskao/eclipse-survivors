@@ -35,8 +35,8 @@ onBeforeUnmount(() => unmount?.())
     :active="ui.mode !== 'menu'"
     :hud="ui.hud"
     :choice="ui.choice"
-    :music-on="ui.musicOn"
-    :sfx-on="ui.sfxOn"
+    :music-on="ui.musicOn && ui.musicVolume > 0"
+    :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :toast-text="ui.toastText"
     :toast-visible="ui.toastVisible"
     @toggle-music="engine.toggleMusic"
@@ -48,8 +48,8 @@ onBeforeUnmount(() => unmount?.())
   <MenuScreen
     :active="ui.mode === 'menu'"
     :choice="ui.choice"
-    :music-on="ui.musicOn"
-    :sfx-on="ui.sfxOn"
+    :music-on="ui.musicOn && ui.musicVolume > 0"
+    :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :version="version"
     :run-mode="ui.runMode"
     :profile="ui.profile"
@@ -76,8 +76,8 @@ onBeforeUnmount(() => unmount?.())
   />
   <SettingsOverlay
     :active="ui.settingsOpen"
-    :music-on="ui.musicOn"
-    :sfx-on="ui.sfxOn"
+    :music-on="ui.musicOn && ui.musicVolume > 0"
+    :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :music-volume="ui.musicVolume"
     :sfx-volume="ui.sfxVolume"
     :upgrade-effect="ui.upgradeEffect"
