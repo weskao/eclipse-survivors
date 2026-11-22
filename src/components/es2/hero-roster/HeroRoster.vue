@@ -10,6 +10,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{ select: [id: SpecializationId] }>()
 const heroes = Object.values(HERO_DEFINITIONS)
 const root = ref<HTMLElement | null>(null)
+function select(id: SpecializationId): void { if (!props.disabled) emit('select', id) }
 
 async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
   if (props.disabled || event.altKey || event.ctrlKey || event.metaKey) return
@@ -30,7 +31,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
     <button v-for="hero in heroes" :key="hero.id" type="button" class="es2-roster__card"
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
-      @click="emit('select', hero.id)" @keydown="move($event, hero.id)">
+      @click="select(hero.id)" @keydown="move($event, hero.id)">
       <img class="es2-roster__portrait" :src="hero.portraitSrc" :alt="hero.label + ' 角色插畫'"
         width="280" height="320" decoding="async" loading="lazy" draggable="false" />
       <span class="es2-roster__copy">

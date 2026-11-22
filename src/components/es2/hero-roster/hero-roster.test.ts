@@ -1,12 +1,12 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
+import { nextTick, type Component } from 'vue'
 import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
 
 const instances: Array<{ unmount(): void }> = []
-function render(component: typeof HeroRoster | typeof HeroSpecialAction, props: Record<string, unknown>) {
-  const wrapper = mount(component, { attachTo: document.body, props } as never)
+function render(component: Component, props: Record<string, unknown>) {
+  const wrapper = mount(component, { attachTo: document.body, props })
   instances.push(wrapper)
   return wrapper
 }

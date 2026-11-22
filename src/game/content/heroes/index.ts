@@ -112,7 +112,7 @@ export interface SpecializationSnapshot {
   readonly cooldown: number
   readonly stealth: number
   readonly barrier: number
-  readonly barrierSeconds: number
+  readonly barrierSeconds?: number
   readonly companions: readonly CompanionKind[]
 }
 

@@ -34,7 +34,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
       aria-keyshortcuts="Q" :aria-label="hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒')"
       :disabled="!ready" @click="trigger">
       <span class="es2-hero-special__name">{{ hero.special.split('：')[0] }}</span>
-      <span class="es2-hero-special__hint">{{ ready ? 'Q · 施放' : !active ? '不可施放' : remaining.toFixed(1) + 's' }}</span>
+      <span class="es2-hero-special__hint">{{ ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放' }}</span>
       <span class="es2-hero-special__fill" aria-hidden="true" :style="{ width: progress + '%' }"></span>
     </button>
     <span v-if="snapshot.stealth > 0" class="es2-hero-special__status" role="status">潛行 {{ snapshot.stealth.toFixed(1) }} 秒</span>
