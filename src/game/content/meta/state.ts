@@ -1,5 +1,5 @@
 import type { JobId } from '../../types'
-import { ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT, isDiscoverableId } from './catalog'
+import { ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT, isCosmeticId, isDiscoverableId } from './catalog'
 
 export type DiscoveryKind = 'relics' | 'weapons' | 'evolutions' | 'bosses'
 export interface Mastery { xp: number; level: number }
@@ -9,6 +9,7 @@ export interface MetaState {
   embers: number
   runs: number
   wins: number
+  bossWins: number
   achievements: string[]
   claimedMilestones: string[]
   research: Record<string, number>
@@ -26,6 +27,7 @@ export const MAX_DISCOVERIES = 1024
 const heroes: readonly JobId[] = ['knight', 'ranger', 'wizard']
 const isObj = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v)
 const whole = (v: unknown, max = Number.MAX_SAFE_INTEGER): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 && v <= max
+const nonNegativeNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0
 const isRunId = (id: unknown): id is string => typeof id === 'string' && id.length > 0 && id.length < 128
 const validMode = (id: string): boolean => ['quick', 'standard', 'endless', 'challenge'].includes(id) || isDiscoverableId(id)
 const uniqueStrings = (v: unknown, max: number, valid: (x: unknown) => x is string): v is string[] =>
@@ -35,7 +37,7 @@ const validTier = (v: unknown, max: number): boolean => whole(v, max)
 
 export function createMetaState(): MetaState {
   return {
-    version: 3, embers: 0, runs: 0, wins: 0,
+    version: 3, embers: 0, runs: 0, wins: 0, bossWins: 0,
     achievements: [], claimedMilestones: [], equipment: [], bonuses: [], cosmetics: [],
     research: Object.fromEntries(RESEARCH.map(x => [x.id, 0])) as Record<string, number>,
     mastery: Object.fromEntries(heroes.map(x => [x, { xp: 0, level: 1 }])) as Record<string, Mastery>,
@@ -59,7 +61,7 @@ export const cloneMetaState = (state: MetaState): MetaState => ({
 
 /** Strict trust-boundary check. Nothing is coerced and unknown schema versions are refused. */
 export function validateMetaState(raw: unknown): raw is MetaState {
-  if (!isObj(raw) || raw.version !== 3 || !whole(raw.embers) || !whole(raw.runs) || !whole(raw.wins)
+  if (!isObj(raw) || raw.version !== 3 || !whole(raw.embers) || !whole(raw.runs) || !whole(raw.wins) || !whole(raw.bossWins)
     || raw.wins > raw.runs || !isObj(raw.research) || !isObj(raw.mastery)
     || !isObj(raw.discoveries) || !isObj(raw.modeRecords)
     || !uniqueStrings(raw.runIds, MAX_RUN_IDS, isRunId)) return false
@@ -72,7 +74,7 @@ export function validateMetaState(raw: unknown): raw is MetaState {
     || !uniqueStrings(raw.claimedMilestones, milestones.length, fromIds(milestones))
     || !uniqueStrings(raw.equipment, gear.length, fromIds(gear))
     || !uniqueStrings(raw.bonuses, bonuses.length, fromIds(bonuses))
-    || !uniqueStrings(raw.cosmetics, 1024, isRunId)
+    || !uniqueStrings(raw.cosmetics, 1024, isCosmeticId)
     || !validKeys(raw.research, RESEARCH.map(x => x.id))
     || RESEARCH.some(def => !validTier(raw.research[def.id], def.maxRank))) return false
   for (const [id, value] of Object.entries(raw.mastery)) {
@@ -86,7 +88,7 @@ export function validateMetaState(raw: unknown): raw is MetaState {
   if (Object.keys(raw.modeRecords).length > 256) return false
   for (const [id, record] of Object.entries(raw.modeRecords)) {
     if (!validMode(id) || !isObj(record) || !whole(record.runs) || !whole(record.wins)
-      || !whole(record.bestKills, 1_000_000) || !whole(record.bestSeconds, 86_400)
+      || !nonNegativeNumber(record.bestKills) || !nonNegativeNumber(record.bestSeconds)
       || record.wins > record.runs) return false
   }
   return true

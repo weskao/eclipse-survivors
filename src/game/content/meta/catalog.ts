@@ -58,6 +58,14 @@ export const LEGACY_WEAPONS: readonly string[] = [
   'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain', 'orb', 'multi',
 ]
 
+export const LEGACY_COSMETICS: readonly string[] = [
+  'knight-default', 'ranger-default', 'wizard-default',
+  'knight-gilded', 'ranger-moonlit', 'wizard-astral',
+]
+export const isCosmeticId = (id: unknown): id is string =>
+  typeof id === 'string' && (LEGACY_COSMETICS.includes(id)
+    || /^[a-z][a-z0-9-]{0,31}:[a-z][a-z0-9-]{0,63}$/.test(id))
+
 export const isDiscoverableId = (id: unknown): id is string =>
   typeof id === 'string' &&
   (LEGACY_EVOLUTIONS.includes(id) || LEGACY_WEAPONS.includes(id)

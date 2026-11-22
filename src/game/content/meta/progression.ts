@@ -1,7 +1,7 @@
 import type { RunStats } from '../../../meta/types'
 import {
   ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT,
-  LEGACY_EVOLUTIONS, LEGACY_WEAPONS, isDiscoverableId,
+  LEGACY_EVOLUTIONS, LEGACY_WEAPONS, isCosmeticId, isDiscoverableId,
   type AchievementDef, type MilestoneDef, type Presentation, type UnlockDef,
 } from './catalog'
 import {
@@ -28,7 +28,7 @@ const whole = (v: unknown, cap: number): v is number => typeof v === 'number' &&
 const nonnegative = (v: unknown, cap: number): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= cap
 const validContentList = (v: unknown): v is readonly string[] =>
   Array.isArray(v) && v.length <= 256 && v.every(isDiscoverableId)
-const validOptionalList = (v: unknown): v is readonly string[] =>
+const validOptionalList = (v: unknown): boolean =>
   v === undefined || validContentList(v)
 const modeValid = (v: unknown): v is string =>
   typeof v === 'string' && (['quick', 'standard', 'endless', 'challenge'].includes(v) || isDiscoverableId(v))
@@ -52,7 +52,7 @@ function isReceiptValid(receipt: RunReceipt): boolean {
   if (!validOptionalList(receipt.relicIds) || !validOptionalList(receipt.weaponIds)
     || !validOptionalList(receipt.evolutionIds) || !validOptionalList(receipt.bossIds)) return false
   if (receipt.cosmeticIds !== undefined &&
-    (!Array.isArray(receipt.cosmeticIds) || receipt.cosmeticIds.length > 256 || !receipt.cosmeticIds.every(validId))) return false
+    (!Array.isArray(receipt.cosmeticIds) || receipt.cosmeticIds.length > 256 || !receipt.cosmeticIds.every(isCosmeticId))) return false
   return true
 }
 const dedupe = (target: string[], incoming: readonly string[]): void => {
@@ -64,12 +64,12 @@ export function achievementEligible(id: string, s: MetaState, run?: RunReceipt):
     case 'first-blood': return !!run && run.stats.kills > 0
     case 'first-victory': return s.wins > 0
     case 'monster-hunter': return !!run && run.stats.kills >= 100
-    case 'boss-slayer': return s.discoveries.bosses.length > 0
+    case 'boss-slayer': return s.bossWins > 0
     case 'survivor': return !!run && run.stats.seconds >= 300
-    case 'three-heroes': return ['knight', 'ranger', 'wizard'].every(id => s.mastery[id]?.xp > 0)
+    case 'three-heroes': return ['knight', 'ranger', 'wizard'].every(id => (s.mastery[id]?.xp ?? 0) > 0)
     case 'veteran-explorer': return s.runs >= 10
     case 'victorious-five': return s.wins >= 5
-    case 'abyss-conqueror': return s.discoveries.bosses.length >= 3
+    case 'abyss-conqueror': return s.bossWins >= 3
     case 'endless-walker': return !!run && (run.modeId ?? run.stats.mode) === 'endless' && run.stats.seconds >= 600
     case 'relic-collector': return s.discoveries.relics.length >= 5
     case 'evolution-scholar': return s.discoveries.evolutions.length >= 3
@@ -80,7 +80,7 @@ export function achievementEligible(id: string, s: MetaState, run?: RunReceipt):
 }
 export function milestoneEligible(id: string, s: MetaState): boolean {
   switch (id) {
-    case 'first-boss': return s.discoveries.bosses.length > 0
+    case 'first-boss': return s.bossWins > 0
     case 'three-wins': return s.wins >= 3
     case 'ten-runs': return s.runs >= 10
     case 'five-relics': return s.discoveries.relics.length >= 5
@@ -120,6 +120,7 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   next.runIds.push(stats.id)
   next.runs++
   next.wins += Number(stats.victory)
+  next.bossWins += Number(stats.bossDefeated)
   const previous = next.mastery[hero] ?? { xp: 0, level: 1 }
   const xp = previous.xp + 10 + Math.floor(stats.kills / 10) + (stats.victory ? 20 : 0)
   if (xp > 10_000_000) return rejected('invalid')

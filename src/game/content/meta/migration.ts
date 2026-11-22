@@ -1,8 +1,8 @@
-import { emptyProfile, migrateProfile } from '../../../meta/profile'
+import { migrateProfile } from '../../../meta/profile'
 import type { Profile } from '../../../meta/types'
 import { ACHIEVEMENTS, LEGACY_EVOLUTIONS, MILESTONES } from './catalog'
 import { achievementEligible, milestoneEligible } from './progression'
-import { createMetaState, type MetaState } from './state'
+import { createMetaState, validateMetaState, type MetaState } from './state'
 
 export interface MetaMigrationProposal {
   readonly fromVersion: 2
@@ -26,6 +26,7 @@ export function proposeV2Migration(raw: unknown): MetaMigrationProposal | null {
   next.embers = legacy.embers
   next.runs = legacy.runs
   next.wins = legacy.wins
+  next.bossWins = Math.floor(legacy.discoveredMonsters.boss ?? 0)
   next.runIds = [...legacy.recentRunIds]
   next.research.power = legacy.upgrades.power
   next.research.vitality = legacy.upgrades.vitality
@@ -48,8 +49,6 @@ export function proposeV2Migration(raw: unknown): MetaMigrationProposal | null {
   for (const entry of MILESTONES) {
     if (milestoneEligible(entry.id, next)) next.claimedMilestones.push(entry.id)
   }
-  return { fromVersion: 2, toVersion: 3, requiresIntegration: true, next }
+  return validateMetaState(next) ? { fromVersion: 2, toVersion: 3, requiresIntegration: true, next } : null
 }
 
-/** For tests and integration previews only: never mutates the persisted profile. */
-export const legacyV2Default = (): Profile => emptyProfile()
