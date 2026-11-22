@@ -17,7 +17,7 @@ export interface CombatHudSnapshot {
 export interface CombatHudFeed {
   readonly snapshot?: CombatHudSnapshot
   readonly boss?: { readonly name: string; readonly phase?: number; readonly totalPhases?: number }
-  readonly wave?: { readonly number: number; readonly announcement?: string }
+  readonly wave?: { readonly number: number; readonly announcement?: string; readonly progressPct?: number }
   readonly combo?: { readonly count: number }
   readonly relics?: readonly {
     readonly id: string; readonly title: string; readonly icon: string; readonly rarity: CombatHudRarity
@@ -113,7 +113,8 @@ export function projectCombatHud(
       cooldown: Number.isFinite(skill.cooldown) ? Math.max(0, skill.cooldown) : 0,
       cooldownPct: percent(skill.cooldownPct),
     })),
-    wave: live.wave && validCount(live.wave.number) ? live.wave : undefined,
+    wave: live.wave && validCount(live.wave.number) ? { ...live.wave,
+      ...(live.wave.progressPct !== undefined ? { progressPct: percent(live.wave.progressPct) } : {}) } : undefined,
     combo: live.combo && Number.isSafeInteger(live.combo.count) && live.combo.count > 1 ? live.combo : undefined,
     relics: (live.relics ?? []).filter(relic => relic.id && relic.title).slice(0, MAX_RELICS),
     statuses: (live.statuses ?? []).filter(status =>
