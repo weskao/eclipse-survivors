@@ -38,7 +38,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
     <div class="es2-menu-shell">
       <header class="es2-menu-header">
         <div class="es2-menu-brand"><span class="es2-eyebrow">✦ THE CELESTIAL ECLIPSE ✦</span><h1>ECLIPSE <em>SURVIVORS</em></h1><p>穿越失落的國度，成為黑夜之後的第一道曙光。</p></div>
-        <div class="es2-top-actions"><span class="es2-version">v{{ version }}</span>
+        <div class="es2-top-actions"><span id="gameVersion" class="es2-version menu-version">v{{ version }}</span>
           <button v-if="needsAudioUnlock" type="button" class="es2-icon-button" @click="emit('enableAudio')">♫ 啟用音樂</button>
           <button type="button" class="es2-icon-button" aria-label="開啟遊戲設定" @click="emit('settings')">⚙ <span>設定</span></button>
         </div>
