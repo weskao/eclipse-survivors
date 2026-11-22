@@ -2,6 +2,11 @@
 
 This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Preserve this stack, existing game art, combat mechanics, accessibility, and mobile support. Follow the existing architecture and work on a dedicated branch; do not create a PR, merge, or modify `main` unless asked.
 
+## Feature acceptance
+
+- Verify new behavior from the real player entry point through the engine to the resulting state and visible feedback. Use [es-content-integration](.claude/skills/es-content-integration/SKILL.md) for pack or shared runtime integration and [es-browser-qa](.claude/skills/es-browser-qa/SKILL.md) for browser-facing changes.
+- Put approved local source-derived or original assets in the project before implementing their consumers. Preserve the established hero identities and visual style, then verify the assets in their actual Vue or Canvas surface. Use [es-asset-runtime](.claude/skills/es-asset-runtime/SKILL.md).
+
 ## Mandatory real-time performance rules
 
 **Always read and follow [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md)** when modifying game simulation, mob AI, combat, skills, collisions, procedural environments, rendering, effects, or performance-critical UI.
