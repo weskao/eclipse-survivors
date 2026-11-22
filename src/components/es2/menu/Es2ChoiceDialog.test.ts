@@ -15,7 +15,7 @@ const button = (id: string) => document.querySelector<HTMLButtonElement>(`[data-
 const press = (key: string, extra: KeyboardEventInit = {}) => document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...extra }))
 const wrappers: VueWrapper[] = []
 function mounted<T extends object>(component: T, props: object) {
-  const wrapper = mount(component as never, { attachTo: document.body, props })
+  const wrapper: VueWrapper = mount(component as never, { attachTo: document.body, props: props as never })
   wrappers.push(wrapper as VueWrapper)
   return wrapper
 }
