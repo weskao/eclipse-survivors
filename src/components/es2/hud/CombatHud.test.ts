@@ -100,8 +100,11 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.text()).toContain('開啟祭壇')
     await wrapper.get('[data-es2-pause]').trigger('click')
     await wrapper.get('[data-es2-settings]').trigger('click')
-    await wrapper.get('#hudAudioTrigger').trigger('click')
+    const audioTrigger = wrapper.get('#hudAudioTrigger')
+    await audioTrigger.trigger('click')
     await nextTick()
+    expect(audioTrigger.attributes('aria-expanded')).toBe('true')
+    expect(document.querySelector('#hudAudioPopover')).not.toBeNull()
     const range = document.querySelector<HTMLInputElement>('#hudMusicVolume')
     expect(range).not.toBeNull()
     range!.value = '37'
