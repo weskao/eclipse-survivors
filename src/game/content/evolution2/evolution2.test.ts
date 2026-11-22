@@ -3,7 +3,7 @@ import { createContentRegistry, MAX_CONTENT_EFFECTS } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
 import { applyUpgrade } from '../../progression'
 import { EVOLUTIONS, eligibleEvolutions } from '../../evolutions'
-import type { GameHooks, GameState, Mob } from '../../types'
+import type { ContentId, GameHooks, GameState, Mob } from '../../types'
 import { EVOLUTION2_PACK } from '../packs/evolution2'
 import { EVOLUTION2_RECIPES } from './recipes'
 import { EVOLUTION2_CUES } from './cues'
@@ -20,7 +20,7 @@ function enemy(x = 70, y = 0, hp = 1000): Mob {
   return { x, y, hp, max: hp, r: 18, type: 'slime', speed: 0, dmg: 0,
     phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }
 }
-function unlock(state: GameState, index: number): string {
+function unlock(state: GameState, index: number): ContentId {
   const ability = EVOLUTION2_PACK.abilities![index]!
   for (const requirement of ability.requires!) {
     if (requirement.id.includes(':')) state.content.levels[requirement.id as `${string}:${string}`] = requirement.level
