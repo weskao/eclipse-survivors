@@ -3,7 +3,7 @@ import type { GameState, Hero, JobId, SceneDef } from './types'
 
 export function createState(): GameState {
   return {
-    mode: 'menu', choice: 'knight', hero: null,
+    mode: 'menu', choice: 'knight', hero: null, content: { levels: {}, cooldowns: {}, effects: [] },
     mobs: [], shots: [], enemyShots: [], stars: [], fx: [], swipes: [],
     numberFx: [], impactWaves: [], lightningFx: [], motionEchoes: [],
     cameraKick: 0, time: 0, kill: 0, spawnT: 0, bossSpawned: false, bossDefeated: false,
@@ -29,6 +29,7 @@ export function createHero(job: JobId): Hero {
 /** Original `start()` run reset (everything except audio/UI side effects). */
 export function resetRun(s: GameState): void {
   s.hero = createHero(s.choice)
+  s.content = { levels: {}, cooldowns: {}, effects: [] }
   s.mobs = []; s.shots = []; s.enemyShots = []; s.stars = []; s.fx = []; s.swipes = []
   s.time = 0; s.kill = 0; s.spawnT = 0; s.bossSpawned = false; s.bossDefeated = false
   s.damageDealt = 0; s.damageTaken = 0; s.defeatedTypes = {}

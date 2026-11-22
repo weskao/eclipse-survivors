@@ -9,7 +9,8 @@ export type UpgradeId =
   | 'damage' | 'speed' | 'haste' | 'maxhp' | 'multi' | 'orb' | 'magnet' | 'heal'
   | 'bolt' | 'frost' | 'meteor' | 'blaze' | 'vortex' | 'shield' | 'chain'
 export type EvolutionId = 'frozen-thunderstorm' | 'infernal-singularity' | 'apocalypse-rain' | 'blade-tempest' | 'guardian-sanctuary'
-export type AbilityId = UpgradeId | EvolutionId
+export type ContentId = `${string}:${string}`
+export type AbilityId = UpgradeId | EvolutionId | ContentId
 export type SkillRarity = 'common' | 'rare' | 'legendary'
 export type Weather = 'sunshower' | 'storm' | 'snow' | 'embers'
 export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard'
@@ -80,6 +81,22 @@ export interface Fx {
   color: string; r: number; type?: FxType; a?: number
 }
 
+/** A bounded, per-run canvas effect emitted by registered content. */
+export interface ContentVisualFx { id: ContentId; x: number; y: number; life: number; max: number }
+export interface ContentRuntime {
+  levels: Partial<Record<ContentId, number>>
+  cooldowns: Partial<Record<ContentId, number>>
+  effects: ContentVisualFx[]
+}
+
+export type ContentEvent =
+  | { type: 'hit' | 'kill'; mob: Mob; damage: number }
+  | { type: 'damage'; amount: number }
+  | { type: 'pickup'; kind: 'xp' | 'world'; amount?: number }
+  | { type: 'start' | 'reset' }
+  | { type: 'scene-change'; index: number }
+  | { type: 'run-complete'; win: boolean }
+
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
 export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean }
 export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number }
@@ -95,6 +112,8 @@ export interface GameState {
   mode: GameMode
   choice: JobId
   hero: Hero | null
+  /** Owned by this run; never stored in a module singleton or rebuilt per frame. */
+  content: ContentRuntime
   mobs: Mob[]
   shots: Shot[]
   enemyShots: EnemyProjectile[]
@@ -148,4 +167,6 @@ export interface GameHooks {
   offerUpgrades(): void
   /** Original `end(win)`. */
   end(win: boolean): void
+  /** Optional for standalone combat/unit tests and legacy call sites. */
+  content?(state: GameState, event: ContentEvent): void
 }
