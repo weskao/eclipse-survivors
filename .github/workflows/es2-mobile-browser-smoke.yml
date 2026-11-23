@@ -50,3 +50,27 @@ jobs:
           name: es2-mobile-browser-screenshots
           path: artifacts/es2-mobile-browser/
           if-no-files-found: warn
+      # Actual repository originals + 49 WebPs are needed for pixel-level QA.
+      # This is a read-only evidence archive, not an art-approval or release step.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-world-art-source-review
+          path: |
+            src/assets/es2/production/enemies/*.webp
+            src/assets/es2/production/enemies/manifest.json
+            src/assets/es2/production/bosses/*.webp
+            src/assets/es2/production/bosses/manifest.json
+            src/assets/es2/production/biomes/*.webp
+            src/assets/es2/production/biomes/manifest.json
+            src/assets/es2/production/ui/*.webp
+            src/assets/es2/production/ui/manifest.json
+            assets/images/imgs1.png
+            assets/images/imgs5.png
+            assets/images/imgs6.png
+            assets/images/imgs7.png
+            assets/images/imgs8.png
+            assets/images/imgs9.png
+            assets/images/imgs10.png
+          retention-days: 7
+          if-no-files-found: error
