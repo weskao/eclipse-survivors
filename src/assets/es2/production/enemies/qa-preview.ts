@@ -1,16 +1,18 @@
 /** Browser-only inspection view; does not change production rendering or gameplay. */
 import { ENEMY_DEFINITIONS } from '../../../../game/content/enemies/definitions'
 import manifest from './manifest.json'
+import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'
 import { inspectAtlasPixels } from './frame-qa'
 
 const urls = import.meta.glob('./*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const candidateUrls = import.meta.glob('./candidates/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const findings: unknown[] = []
 const root = document.querySelector<HTMLElement>('#candidates')!
 const summary = document.querySelector<HTMLElement>('#summary')!
 
-function load(path: string): Promise<HTMLImageElement> {
+function load(path: string, previewOnly = false): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
-    const url = urls['./' + path]
+    const url = (previewOnly ? candidateUrls : urls)[(previewOnly ? './candidates/' : './') + path]
     if (!url) return reject(new Error('Missing Vite asset: ' + path))
     const image = new Image()
     image.onload = () => resolve(image)
@@ -78,6 +80,37 @@ async function inspectCandidate(body: (typeof manifest.assets)[number]): Promise
     figure.append(caption)
     frames.append(figure)
     section.append(frames)
+
+    // Opt-in browser-only compare: candidate does NOT replace the gameplay sprite.
+    if (kind === 'crystal-sentinel') {
+      const proposal = crystalSentinelCandidate
+      const candidateImage = await load(proposal.runtime.file, true)
+      if (candidateImage.naturalWidth !== proposal.runtime.width ||
+          candidateImage.naturalHeight !== proposal.runtime.height) {
+        throw new Error('Crystal Sentinel QA candidate atlas dimensions do not match source record')
+      }
+      const heading = document.createElement('p')
+      heading.textContent = 'QA CANDIDATE ONLY — compare heavier armored silhouette with canonical enemy; not active in gameplay'
+      section.append(heading)
+      const candidateFrames = document.createElement('div')
+      candidateFrames.className = 'frames'
+      for (let i = 0; i < proposal.runtime.frames; i++) {
+        const figure = document.createElement('figure')
+        figure.append(frameCanvas(candidateImage, i, proposal.runtime.frameWidth, display))
+        const caption = document.createElement('figcaption')
+        caption.textContent = 'QA candidate · ' + proposal.poseNames[i]
+        figure.append(caption)
+        candidateFrames.append(figure)
+      }
+      section.append(candidateFrames)
+      const candidateQa = checkPixels(candidateImage, proposal.runtime.frameWidth, proposal.runtime.frames)
+      const review = document.createElement('p')
+      review.className = 'warnings'
+      review.textContent = 'QA only: ' + proposal.status + '; alpha-border risk ' +
+        (candidateQa.borderRiskFrames.join(', ') || 'none') +
+        '; identity approval pending; real gameplay review still required.'
+      section.append(review)
+    }
 
     const bodyQa = checkPixels(sprite, body.frameWidth, body.frames)
     const cueQa = checkPixels(warning, cue.frameWidth, cue.frames)
