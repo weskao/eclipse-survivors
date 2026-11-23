@@ -5,7 +5,7 @@ import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
 import { ACHIEVEMENTS } from '../../../meta/achievements'
 import { COSMETICS } from '../../../meta/cosmetics'
-import { WORLD_ART, WORLD_UI_IDS } from '../../../game/render/es2/production-world'
+import { WORLD_ART, WORLD_UI_IDS, WORLD_UI_LABELS } from '../../../game/render/es2/production-world'
 import { C104_SOURCES, C104_SURFACES } from '../../../game/render/es2/c104-source-art'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../../game/content/enemies/definitions'
 import { BOSS_DEFINITIONS } from '../../../game/content/bosses/definitions'
@@ -52,7 +52,7 @@ const worldBosses = Object.values(BOSS_DEFINITIONS).map(boss => ({
 const worldBiomes = BIOMES.map(biome => ({
   id: biome.id, title: biome.title, ...WORLD_ART.biomes[biome.id],
 }))
-const worldIcons = WORLD_UI_IDS.map(id => ({ id, src: WORLD_ART.ui[id] }))
+const worldIcons = WORLD_UI_IDS.map(id => ({ id, title: WORLD_UI_LABELS[id], src: WORLD_ART.ui[id] }))
 const achievementArt: Record<string, string> = {
   'first-blood': WORLD_ART.ui['achievement-flawless'],
   'first-victory': WORLD_ART.ui['achievement-explorer'],
@@ -160,11 +160,11 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
         <small>{{ t(profile.achievements.includes(achievement.id) ? '✓ 已達成' : '尚未達成') }}</small>
       </article></div>
       <h3>{{ t("寶箱、稀有度、HUD 與成就裝飾 · 美術預覽") }}</h3>
-      <p class="es2-hint">{{ t("以下 17 張圖尚待美術驗收，展示不會增加成就或變更存檔。") }}</p>
+      <p class="es2-hint">{{ t('以下 17 張 UI 美術已通過人工美術驗收，預覽不會增加成就或修改存檔。') }}</p>
       <div class="es2-world-art-grid" :aria-label="t('UI 美術素材')">
         <article v-for="entry in worldIcons" :key="entry.id" class="es2-world-art-card" :data-es2-world-ui="entry.id">
-          <img class="es2-world-art-icon" :src="entry.src" :alt="t(entry.id + ' 裝飾圖案')" loading="lazy" decoding="async" />
-          <strong>{{ entry.id }}</strong>
+          <img class="es2-world-art-icon" :src="entry.src" :alt="t('{name} 裝飾圖案', { name: t(entry.title) })" loading="lazy" decoding="async" />
+          <strong>{{ t(entry.title) }}</strong>
         </article>
       </div>
     </section>
