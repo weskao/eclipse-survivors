@@ -8,6 +8,7 @@ on:
       - 'src/game/render/es2/hero-candidate-preview.test.ts'
       - 'src/game/render/es2/hero-candidate-atlas.ts'
       - 'src/game/render/es2/hero-candidate-atlas.test.ts'
+      - 'src/game/render/es2/combat-vfx.test.ts'
       - '.github/workflows/es2-hero-candidate-review-qa.yml'
   workflow_dispatch:
 permissions:
