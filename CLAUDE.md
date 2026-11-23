@@ -91,6 +91,14 @@ Use `src/game/crowd-benchmark.test.ts` as a **diagnostic** 130-mob benchmark (si
 
 Write concise notes about why any necessary real-time computation cannot be precomputed and what invalidates each new cache. Favor the simplest correct optimization over speculative abstractions.
 
+## Mandatory BOSS orchestration and adaptive soundtrack — EVERY BOSS
+
+**Before creating, editing, reviewing or removing any BOSS, read [`.claude/rules/boss-music-production.md`](.claude/rules/boss-music-production.md).** This is a release blocker for existing and future bosses, not an optional visual enhancement.
+
+- Each boss must have **its own original cinematic orchestral identity** in `scripts/compose-boss-ost.mjs`, three perfectly phase-aligned MP3 variations in `public/audio/boss/`, the 15-second gameplay-clock warning path, localization and distinct intro/transition/defeat cues.
+- Sampled orchestration replaces simple synthesized boss beeps during real battles. Route playback through the existing shared Web Audio owner: phase crossfades preserve beat offset, boss defeat restores standard combat music, pause/mute/interruption and user volume remain correct on all devices. Keep synth as an explicitly tested asset-load fallback only.
+- Update tests, locally owned file/score manifest, sample provenance and soundfont license receipt. Require desktop, portrait/landscape phone, tablet/foldable UI evidence and audio playback/mix listening review before marking `APPROVED`. Never silently substitute another boss's soundtrack.
+
 ## Mandatory UI sound and music review
 
 **When creating, modifying or removing ANY player-facing UI, interaction, dialog, button, menu, selector, HUD control, reward, onboarding step or gameplay flow, explicitly consider audio feedback as part of the UI/UX acceptance criteria.**
