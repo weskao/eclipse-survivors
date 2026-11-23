@@ -10,7 +10,7 @@ export function lowHealthTier(percent: number): LowHealthTier {
   const hp = Math.round(percent * 100) / 100
   if (hp <= 0) return 'dead'
   if (hp <= BALANCE.world.lowHpEmergencyPct return 'emergency'
-  if (percent <= LOW_HP_PCT) return 'critical'
-  if (percent <= BALANCE.world.lowHpWarningPct) return 'warning'
+  if (hp <= LOW_HP_PCT) return 'critical'
+  if (hp <= BALANCE.world.lowHpWarningPct) return 'warning'
   return 'normal'
 }
