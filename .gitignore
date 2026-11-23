@@ -5,4 +5,3 @@ node_modules/
 dist/
 __pycache__/
 public/audio/eclipse-overture.wav
-public/audio/eclipse-victory.wav
