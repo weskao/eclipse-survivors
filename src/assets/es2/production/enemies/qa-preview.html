@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>ES2 · Enemies 20 · Source QA</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #f0e6d4; background: #12151c; }
+    body { margin: 0 auto; padding: 1rem max(1rem, env(safe-area-inset-right)); max-width: 1480px; }
+    header { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+    h1 { font-size: clamp(1.3rem, 3vw, 2rem); }
+    h2 { font-size: 1.05rem; margin: 0 0 .35rem; }
+    .candidate { background: #1d2330; border: 1px solid #3a4454; border-radius: 12px; padding: 1rem; margin: 1rem 0; }
+    .candidate p { margin: .4rem 0 1rem; color: #c3c9d3; font-size: .85rem; }
+    .frames { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; }
+    figure { margin: 0; min-width: 70px; text-align: center; }
+    canvas { max-width: 100%; height: auto; background: #303a48; background-image: linear-gradient(45deg, #384251 25%, transparent 25%), linear-gradient(-45deg, #384251 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #384251 75%), linear-gradient(-45deg, transparent 75%, #384251 75%); background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0; }
+    figcaption { font-size: .75rem; color: #aeb7c9; }
+    .warnings { color: #f8c97b !important; }
+    .error { color: #ff9292 !important; }
+    button { background: #d8ad72; color: #181818; border: 0; border-radius: 8px; padding: .6rem 1rem; font-weight: 700; cursor: pointer; }
+    @media (max-width: 650px) { .frames { gap: .6rem; } .candidate { padding: .75rem; } }
+  </style>
+</head>
+<body>
+  <header><div><h1>ES2 · 10 Enemy Atlases + 10 Warnings</h1><p id="summary">Loading original committed assets…</p></div><button id="export" type="button">Export actual pixel findings</button></header>
+  <p>1× gameplay-scale previews and per-frame decoded-WebP checks. Border contact is a review signal, not proof of clipping. No asset or approval status is changed here; actual combat screenshots and manual sign-off are separate requirements.</p>
+  <main id="candidates"></main>
+  <script type="module" src="./qa-preview.ts"></script>
+</body>
+</html>
