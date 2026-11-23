@@ -66,8 +66,8 @@ try {
               seamLr: +(leftRight/(h*3)).toFixed(2), seamTb: +(topBottom/(w*3)).toFixed(2) }
           }))
         })
-        // Also inspect the four *current* legacy atlas sources without pretending
-        // their 96px native cells meet the 330px premium 3x art requirement.
+        // Inspect all four newly authored 330px atlases in the live game,
+        // including their five-pixel transparent safety gutters.
         const decors = await page.evaluate(async () => {
           const urls = performance.getEntriesByType('resource').map(r => r.name)
             .filter(s => /-decor@3x-.*\.webp/.test(s))
@@ -92,7 +92,7 @@ try {
                   const alpha = data[(y*w + frame * frameSide + x)*4 + 3]
                   if (alpha <= 16) continue
                   opaque++
-                  if (x === 0 || y === 0 || x === frameSide-1 || y === frameSide-1)
+                  if (x < 5 || y < 5 || x >= frameSide-5 || y >= frameSide-5)
                     edgeTouches++
                 }
               frames.push({ frame, visiblePixels: opaque, edgeTouches })
