@@ -422,6 +422,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     keys = {}
     stick = { x: 0, y: 0 }
     audio.setCombatIntensity('calm')
+    audio.setBossTheme?.(null)
     wakeAudio()
     screen('play')
     hooks.content?.(s, { type: 'start' })
@@ -558,8 +559,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
-      const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
-      audio.setCombatIntensity(bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
+      const liveBoss = s.mobs.find(m => m.type === 'boss' && m.hp > 0)
+      audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
+      audio.setCombatIntensity(liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
     }
     if (toastTimer > 0) {
       toastTimer -= dt
