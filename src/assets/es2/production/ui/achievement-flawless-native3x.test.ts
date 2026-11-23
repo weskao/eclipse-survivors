@@ -12,7 +12,7 @@ const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')) as
       generatedMasterCommitted: boolean; approval: string } }>
 }
 
-describe('ES2 flawless achievement icon — honest 3x pending gate', () => {
+describe('ES2 flawless achievement icon — honest 3x source plus owner-approved art', () => {
   it('must not approve a source smaller than 3x its 72px actual display size', () => {
     const icon = manifest.assets.find(asset => asset.id === 'achievement-flawless')
     expect(icon).toBeDefined()
@@ -25,15 +25,12 @@ describe('ES2 flawless achievement icon — honest 3x pending gate', () => {
       expect(createHash('sha256').update(master).digest('hex')).toBe(qa.generatedMasterSha256)
     }
     const sourceIs3x = icon!.width >= 216 && icon!.height >= 216
-    if (!sourceIs3x) {
-      // Existing 192px candidate is only 2.67x at the 72px real game badge.
-      expect(icon!.status).toBe('needs-human-approval')
-    } else {
-      // Dimension alone is not enough: preserve an authentic authored source trail.
-      expect(icon!.qa?.nativeSourcePixels).toBeGreaterThanOrEqual(216)
-      expect(icon!.qa?.generatedMasterSha256).toMatch(/^[a-f0-9]{64}$/)
-      expect(icon!.qa?.generatedMasterCommitted).toBe(true)
-      expect(icon!.qa?.approval).toBe('pending')
-    }
+    expect(sourceIs3x).toBe(true)
+    // Approval does not waive source-detail provenance or native 3x sizing.
+    expect(icon!.status).toBe('approved')
+    expect(icon!.qa?.nativeSourcePixels).toBeGreaterThanOrEqual(216)
+    expect(icon!.qa?.generatedMasterSha256).toMatch(/^[a-f0-9]{64}$/)
+    expect(icon!.qa?.generatedMasterCommitted).toBe(true)
+    expect(icon!.qa?.approval).toBe('approved')
   })
 })
