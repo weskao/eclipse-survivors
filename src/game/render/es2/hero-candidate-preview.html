@@ -22,9 +22,10 @@
 </head>
 <body>
   <h1>ES2 Character Action Art — Candidate Review</h1>
-  <p>These are <strong>real committed local WebP assets</strong>, not gameplay screenshots. Nine panels have four East-facing source frames, and one Shadowblade panel has four South-facing run frames. QA_PENDING: missing other directions, missing unique frames, incomplete native-3× approval and some original-edge clipping. The production game is unchanged.</p>
+  <p id="candidate-summary" aria-live="polite">Loading committed candidate inventory…</p>
+  <p>These are <strong>real committed local WebP assets</strong>, not gameplay screenshots. QA_PENDING: missing directions, missing unique frames, incomplete native-3× approval and original-edge clipping risks. The production game is unchanged.</p>
   <button id="pause" type="button" aria-pressed="false">Pause frames</button>
-  <main id="grid" class="grid" aria-label="Ten candidate animation strips"></main>
+  <main id="grid" class="grid" aria-label="Candidate animation strips"></main>
   <script type="module" src="./hero-candidate-preview.ts"></script>
 </body>
 </html>
