@@ -31,6 +31,17 @@ jobs:
           for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4173/ >/dev/null
           node scripts/es2-mobile-browser-smoke.mjs
+      - name: Convert genuine Playwright recordings to MP4
+        if: always()
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          for source in artifacts/es2-mobile-browser/*-live.webm; do
+            test -f "$source" || continue
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i "$source" -an -c:v libx264 -preset veryfast -crf 24 -pix_fmt yuv420p -movflags +faststart "${source%.webm}.mp4"
+          done
+          test -s artifacts/es2-mobile-browser/portrait-375-live.mp4
+          test -s artifacts/es2-mobile-browser/landscape-640-live.mp4
       - uses: actions/upload-artifact@v4
         if: always()
         with:

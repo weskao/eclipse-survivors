@@ -19,6 +19,9 @@ try {
       viewport: { width: viewport.width, height: viewport.height },
       deviceScaleFactor: 2, isMobile: true, hasTouch: true,
       reducedMotion: viewport.name === 'portrait-320' ? 'reduce' : 'no-preference',
+      ...(viewport.name === 'portrait-375' || viewport.name === 'landscape-640'
+        ? { recordVideo: { dir: directory, size: { width: viewport.width, height: viewport.height } } }
+        : {}),
     })
     const page = await context.newPage()
     const errors = []
@@ -137,6 +140,7 @@ try {
       throw error
     } finally {
       await context.close()
+      if (page.video()) await page.video().saveAs(`${directory}/${viewport.name}-live.webm`)
     }
   }
 
