@@ -39,7 +39,7 @@ export const WEAPON_SPECS: readonly WeaponSpec[] = [
 function ready(r: ArsenalRuntime, key: WeaponKey, dt: number, interval: number, level: number): boolean {
   const left = Math.max(0, (r.timers[key] ?? 0) - dt)
   if (left > 0) { r.timers[key] = left; return false }
-  r.timers[key] = Math.max(0.35, interval * (1 - 0.075 * (level - 1)))
+  r.timers[key] = Math.max(0.35, interval * (1 - 0.085 * (level - 1)))
   return true
 }
 
@@ -70,14 +70,14 @@ function fireStraight(
   const e = target(context, range)
   if (!e) return false
   fireMissile(r, kind, h.x, h.y, e, speed,
-    h.damage * (multiplier + 0.23 * (level - 1)), pierce, 0,
+    h.damage * (multiplier + 0.26 * (level - 1)), pierce, 0,
     kind === 'lance' ? 14 : kind === 'bone' ? 7 : 9)
   return true
 }
 
 function slash(context: ContentContext, level: number): boolean {
   const h = context.state.hero!
-  const e = target(context, 165 + 8 * level)
+  const e = target(context, 165 + 9 * level)
   if (!e) return false
   const a = Math.atan2(e.y - h.y, e.x - h.x)
   const ux = Math.cos(a), uy = Math.sin(a)
@@ -85,18 +85,18 @@ function slash(context: ContentContext, level: number): boolean {
   for (const mob of context.state.mobs) {
     if (mob.hp <= 0) continue
     const dx = mob.x - h.x, dy = mob.y - h.y
-    const reach = 140 + 9 * level + mob.r
+    const reach = 140 + 10 * level + mob.r
     if (dx * dx + dy * dy > reach * reach) continue
     const forward = dx * ux + dy * uy
     if (forward < 0 || forward * forward < (dx * dx + dy * dy) * 0.12) continue
-    const damage = h.damage * (0.92 + 0.19 * level)
-    stolen += Math.min(mob.hp, damage) * 0.09
+    const damage = h.damage * (0.96 + 0.21 * level)
+    stolen += Math.min(mob.hp, damage) * 0.095
     hit(context.state, mob, damage, context.hooks)
   }
   const r = runtimeOf(context.state)
   r.slashLife = 0.3
   r.slashAngle = a
-  h.hp = Math.min(h.max, h.hp + Math.min(5 + 0.8 * level, stolen))
+  h.hp = Math.min(h.max, h.hp + Math.min(5 + 1 * level, stolen))
   return true
 }
 
@@ -113,8 +113,8 @@ function tickWolves(context: ContentContext, dt: number, level: number): void {
     const attackRange = (enemy?.r ?? 0) + 23
     if (enemy && d2 < attackRange * attackRange) {
       if (wolf.attackIn <= 0) {
-        hit(context.state, enemy, h.damage * (0.65 + level * 0.12), context.hooks)
-        wolf.attackIn = Math.max(0.52, 1.1 - 0.09 * level)
+        hit(context.state, enemy, h.damage * (0.7 + level * 0.14), context.hooks)
+        wolf.attackIn = Math.max(0.52, 1.1 - 0.095 * level)
         context.hooks.sfx('knight')
       }
     } else if (d2 > 4) {
@@ -135,7 +135,7 @@ function tickGravity(context: ContentContext, dt: number, level: number): void {
     for (const e of context.state.mobs) {
       if (e.hp <= 0) continue
       const dx = ox - e.x, dy = oy - e.y
-      const reach = 112 + e.r
+      const reach = 116 + e.r
       const d2 = dx * dx + dy * dy
       if (d2 > reach * reach) continue
       // Smooth attraction without a sqrt; disabled on bosses to preserve boss telegraphs.
@@ -149,7 +149,7 @@ function tickGravity(context: ContentContext, dt: number, level: number): void {
         const last = r.orbitHits.get(e) ?? -Infinity
         if (context.state.worldClock - last >= 0.32) {
           r.orbitHits.set(e, context.state.worldClock)
-          hit(context.state, e, h.damage * (0.33 + 0.09 * level), context.hooks)
+          hit(context.state, e, h.damage * (0.35 + 0.1 * level), context.hooks)
         }
       }
     }
@@ -168,7 +168,7 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
     // Freeze direction at windup: a moving target cannot silently redirect a telegraphed attack.
     const ux = Math.cos(r.beamAngle), uy = Math.sin(r.beamAngle)
     const range = 690 + 20 * level
-    const width = 16 + level * 2.5
+    const width = 16 + level * 2.8
     r.beam = { x: h.x, y: h.y, ux, uy, range, width, life: 0.4 }
     for (const mob of context.state.mobs) {
       if (mob.hp <= 0) continue
@@ -178,7 +178,7 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
       const side = dx * uy - dy * ux
       const reach = width + mob.r
       if (side * side <= reach * reach)
-        hit(context.state, mob, h.damage * (2.6 + 0.58 * level), context.hooks)
+        hit(context.state, mob, h.damage * (2.75 + 0.63 * level), context.hooks)
     }
     context.hooks.sfx('bolt')
     return
@@ -204,7 +204,7 @@ function tickChain(context: ContentContext, dt: number, level: number): void {
     const visited = new Set<Mob>()
     for (const link of r.links) {
       if (!visited.has(link.from)) {
-        hit(context.state, link.from, h.damage * (0.18 + level * 0.065), context.hooks)
+        hit(context.state, link.from, h.damage * (0.2 + level * 0.072), context.hooks)
         visited.add(link.from)
       }
       if (!visited.has(link.to)) {
@@ -214,9 +214,9 @@ function tickChain(context: ContentContext, dt: number, level: number): void {
     }
   }
   if (!ready(r, 'thorn-chain', dt, 2.5, level)) return
-  const nearby = nearest(context.state, h.x, h.y, 410, Math.min(6, 2 + level))
+  const nearby = nearest(context.state, h.x, h.y, 420, Math.min(6, 2 + level))
   if (!nearby.length) return
-  const firstDamage = h.damage * (0.42 + 0.13 * level)
+  const firstDamage = h.damage * (0.45 + 0.145 * level)
   for (const enemy of nearby) hit(context.state, enemy, firstDamage, context.hooks)
   r.links.length = 0
   for (let i = 1; i < nearby.length; i++) {
@@ -239,7 +239,7 @@ function tickBoneVolley(context: ContentContext, dt: number, level: number): voi
         const dx = Math.cos(angle), dy = Math.sin(angle)
         addMissile(r, {
           kind: 'bone', x: h.x, y: h.y, vx: dx * 690, vy: dy * 690,
-          life: 1.3, damage: h.damage * (0.54 + level * 0.16), radius: 7,
+          life: 1.3, damage: h.damage * (0.58 + level * 0.18), radius: 7,
           pierce: 2 + Math.floor(level / 3), jumps: 0, visited: new Set<Mob>(),
         })
       }
@@ -269,14 +269,14 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
         if (enemy) {
           for (let i = 0; i < Math.min(6, 1 + level); i++)
             fireMissile(r, 'dagger', h.x + (i - level / 2) * 12, h.y,
-              enemy, 470, h.damage * (0.4 + level * 0.1), 1, 2 + Math.floor(level / 2), 7)
+              enemy, 470, h.damage * (0.42 + level * 0.115), 1, 2 + Math.floor(level / 2), 7)
           context.hooks.sfx('ranger')
         }
       }
       break
     case 'holy-lance':
       moveMissiles(context, 'lance', dt)
-      if (ready(r, key, dt, 2.15, level) && fireStraight(context, r, 'lance', level, 880, 1.05, 2 + level, 850))
+      if (ready(r, key, dt, 2.15, level) && fireStraight(context, r, 'lance', level, 880, 1.12, 2 + level, 850))
         context.hooks.sfx('bolt')
       break
     case 'blood-scythe':
@@ -290,7 +290,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
         if (enemy) {
           const jitter = (context.random() - 0.5) * 24
           addZone(r, { kind: 'mine', x: enemy.x + jitter, y: enemy.y - jitter,
-            radius: 77 + 9 * level, damage: h.damage * (1.3 + 0.27 * level),
+            radius: 80 + 10 * level, damage: h.damage * (1.35 + 0.3 * level),
             life: 1.2, fuse: 0.85, pulse: 0 })
           context.hooks.sfx('meteor')
         }
@@ -306,7 +306,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
         const enemy = target(context, 500)
         if (enemy) {
           addZone(r, { kind: 'poison', x: enemy.x, y: enemy.y,
-            radius: 85 + 7 * level, damage: h.damage * (0.12 + level * 0.045),
+            radius: 88 + 8 * level, damage: h.damage * (0.13 + level * 0.05),
             life: 3.15, fuse: 0, pulse: 0.17 })
           context.hooks.sfx('vortex')
         }
@@ -318,7 +318,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
         const enemy = target(context, 520)
         if (enemy) {
           fireMissile(r, 'blade', h.x, h.y, enemy, 560,
-            h.damage * (0.57 + 0.12 * level), 1, 2 + level, 10)
+            h.damage * (0.62 + 0.135 * level), 1, 2 + level, 10)
           context.hooks.sfx('chain')
         }
       }
@@ -334,7 +334,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'spectral-bow':
       moveMissiles(context, 'arrow', dt)
-      if (ready(r, key, dt, 2.6, level) && fireStraight(context, r, 'arrow', level, 640, 1.8, 1 + Math.ceil(level / 2), 720))
+      if (ready(r, key, dt, 2.6, level) && fireStraight(context, r, 'arrow', level, 640, 1.9, 1 + Math.ceil(level / 2), 720))
         context.hooks.sfx('ranger')
       break
     case 'thorn-chain':
