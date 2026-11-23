@@ -95,6 +95,19 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(0)
   })
 
+  it('does not waste draw calls on small enemies fully below the viewport', () => {
+    const state=createState(); resetRun(state)
+    state.W=300; state.H=200
+    const runtime=createFactionRuntime()
+    const size=FACTION_VISUAL_SIZE['fire-imp']
+    const enemy=spawnFactionEnemy(runtime,'fire-imp',150,state.H+size+12)!
+    const image=loaded(1260,210)
+    const images={ 'fire-imp':{body:image,telegraph:loaded(150,150)} } as FactionArtwork
+    const {ctx,drawn}=createFakeCtx()
+    expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(0)
+    expect(drawn).not.toContain(image)
+  })
+
   it('never paints offscreen, dead or malformed source sheets', () => {
     const state=createState(); resetRun(state);state.W=200;state.H=200
     const runtime=createFactionRuntime()
