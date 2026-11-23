@@ -5,7 +5,7 @@ import { createContentRegistry } from '../registry'
 import { createHero, createState } from '../../state'
 import type { ContentEvent, GameHooks, GameState } from '../../types'
 import { BOSS_PACK } from '../packs/bosses'
-import { BOSS_DEFINITIONS, type BossId } from './definitions'
+import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossId } from './definitions'
 import { createBossEncounterController, intersectsTelegraph, MAX_BOSS_PROJECTILES } from './controller'
 
 function setup() {
@@ -134,6 +134,49 @@ describe('independent premium boss content', () => {
     controller.onContentEvent(state, { type: 'scene-change', index: 1 }, hooks)
     expect(state.mobs).toContain(boss)
     expect(state.mobs.some(m => m.summonedByBoss)).toBe(false)
+  })
+
+  it.each(Object.keys(BOSS_DEFINITIONS) as BossId[])('%s: continuously tracks the hero during attack recovery', id => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, id, { x: 520, y: 0 }, hooks)!
+    controller.tick(state, 0.01, hooks)
+    const warning = controller.snapshot(state).telegraphs[0]!
+    const originalX = boss.x
+    controller.tick(state, 0.3, hooks)
+    expect(boss.x).toBe(originalX) // Warning hitboxes stay locked while the boss telegraphs.
+    controller.tick(state, BOSS_ATTACKS[warning.attackId as keyof typeof BOSS_ATTACKS].windup, hooks)
+    controller.tick(state, 0.3, hooks)
+    expect(boss.x).toBeLessThan(originalX - 8)
+    expect(boss.bossMoving).toBe(true)
+  })
+
+  it('respects a safe stop distance and freezes pursuit while paused', () => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, 'infernal-titan', { x: 220, y: 0 }, hooks)!
+    controller.tick(state, 0.01, hooks)
+    controller.tick(state, 1.71, hooks)
+    controller.tick(state, 1.1, hooks)
+    expect(boss.x).toBeGreaterThanOrEqual(118)
+    const x = boss.x, y = boss.y
+    state.mode = 'level'
+    controller.tick(state, 2, hooks)
+    expect({ x: boss.x, y: boss.y }).toEqual({ x, y })
+  })
+
+  it('increases pursuit speed as the boss reaches its third phase', () => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, 'eclipse-seraph', { x: 900, y: 0 }, hooks)!
+    controller.tick(state, 0.01, hooks)
+    controller.tick(state, 1.5, hooks)
+    let before = boss.x
+    controller.tick(state, 0.25, hooks)
+    const phaseOneMove = before - boss.x
+    boss.hp = boss.max * 0.25
+    controller.tick(state, 0.01, hooks)
+    expect(controller.hud(state)?.phase).toBe(3)
+    before = boss.x
+    controller.tick(state, 0.25, hooks)
+    expect(before - boss.x).toBeGreaterThan(phaseOneMove)
   })
 
   it('awards no duplicate XP or boss death event, and keeps original boss-gated victory', () => {
