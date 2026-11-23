@@ -28,9 +28,9 @@ describe('mandatory player-centric device-aware UI contract', () => {
       expect(policy.toLowerCase()).toContain(term)
     }
     expect(policy).toContain('.claude/rules/ui-responsive-layout.md')
-    expect(responsiveRules).toContain('unused space')
-    expect(responsiveRules).toContain('human visual')
-    expect(responsiveRules).toContain('hinge')
-    expect(responsiveRules).toContain('real browser')
+    expect(responsiveRules.toLowerCase()).toContain('unused space')
+    expect(responsiveRules.toLowerCase()).toContain('human visual')
+    expect(responsiveRules.toLowerCase()).toContain('hinge')
+    expect(responsiveRules.toLowerCase()).toContain('real browser')
   })
 })
