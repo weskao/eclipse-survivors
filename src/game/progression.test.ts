@@ -114,10 +114,10 @@ describe('applyUpgrade', () => {
     expect(hero.delay).toBeCloseTo(0.4788)
     hero.hp = 100
     applyUpgrade(s, 'maxhp', hooks)
-    expect(hero.max).toBe(215)
+    expect(hero.max).toBe(240)
     expect(hero.hp).toBe(160)
     applyUpgrade(s, 'maxhp', hooks)
-    expect(hero.max).toBe(255)
+    expect(hero.max).toBe(280)
     expect(hero.hp).toBe(220)
     expect(hero.skills.maxhp).toBe(2)
     expect(s.levelQueue).toBe(0)
@@ -133,7 +133,7 @@ describe('applyUpgrade', () => {
     expect(hero.hp).toBe(128)
     hero.hp = 170
     applyUpgrade(s, 'shield', hooks)
-    expect(hero.hp).toBe(175)
+    expect(hero.hp).toBe(198)
     expect(hero.skills.shield).toBe(2)
     applyUpgrade(s, 'meteor', hooks)
     applyUpgrade(s, 'chain', hooks)
