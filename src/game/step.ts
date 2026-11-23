@@ -104,7 +104,7 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
     }
     if (squared < BALANCE.combat.starPickupDistance * BALANCE.combat.starPickupDistance) {
       star.dead = true
-      addXp(s, star.value, hooks)
+      addXp(s, star.value * s.pickupGainMultiplier, hooks)
       hooks.sfx('pickup')
       hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
     }
