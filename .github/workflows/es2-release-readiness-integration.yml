@@ -26,6 +26,8 @@ jobs:
         run: python3 scripts/test_import_es2_hero_bundle.py
       - name: Verify real staged candidate WebP and PNG bytes
         run: python3 scripts/test_es2_candidate_assets.py
+      - name: Verify nine authored hero pose candidates and source QA
+        run: node scripts/verify-es2-candidate-pose-art.mjs
       - run: pnpm test
       - run: pnpm typecheck
         if: success() || failure()
