@@ -3,6 +3,7 @@ import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
 import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
+import { RELIC_BY_ID, type RelicId } from '../../../game/content/relics/catalog'
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
@@ -73,7 +74,7 @@ const specialCards = computed(() => {
   if (!offer || offer.kind !== 'treasure') return offer
   return { ...offer, items: offer.items.map(item => ({
     ...item,
-    imageSrc: /cursed|curse/i.test(item.id) ? WORLD_ART.ui['treasure-cursed']
+    imageSrc: RELIC_BY_ID.get(item.id as RelicId)?.cursed ? WORLD_ART.ui['treasure-cursed']
       : item.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary']
         : item.rarity === 'rare' || item.rarity === 'epic' ? WORLD_ART.ui['treasure-rare']
           : WORLD_ART.ui['treasure-common'],
