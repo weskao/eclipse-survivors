@@ -19,7 +19,7 @@ beforeEach(() => setRandom(seeded(7)))
 afterEach(() => setRandom())
 
 describe('addXp', () => {
-  it('follows the 16 → 27 → 42 → 61 curve and queues levels', () => {
+  it('follows the 16 → 27 → 41 → 59 curve and queues levels', () => {
     const { s, hero } = setup()
     const hooks = spyHooks()
     addXp(s, 15, hooks)
@@ -30,10 +30,22 @@ describe('addXp', () => {
     expect(s.levelQueue).toBe(1)
     expect(hooks.message).toHaveBeenCalledWith('✨ 等級提升！ Lv.2')
     expect(hooks.offerUpgrades).toHaveBeenCalledTimes(1)
-    addXp(s, 27 + 42 + 5, hooks)
-    expect(hero).toMatchObject({ level: 4, xp: 5, need: 61 })
+    addXp(s, 27 + 41 + 5, hooks)
+    expect(hero).toMatchObject({ level: 4, xp: 5, need: 59 })
     expect(s.levelQueue).toBe(3)
     expect(s.impactWaves.at(-1)).toMatchObject({ size: 88, color: '#ffe1a8' })
+  })
+  it('slightly reduces XP requirements without changing the starting threshold', () => {
+    const { s, hero } = setup()
+    const hooks = spyHooks()
+    addXp(s, 16, hooks)
+    expect(hero.need).toBe(27)
+    addXp(s, 27, hooks)
+    expect(hero.need).toBe(41)
+    addXp(s, 41, hooks)
+    expect(hero.need).toBe(59)
+    expect(hero.level).toBe(4)
+    expect(s.levelQueue).toBe(3)
   })
   it('only offers upgrades while playing', () => {
     const { s } = setup()
