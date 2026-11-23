@@ -66,3 +66,19 @@ The three South-run and nine East run/attack/special 2×2 WebP atlases are now b
 - Default gameplay and production builds remain unchanged; `runtimeApplied: false` in candidate manifests remains correct for the release game.
 - **Still QA_PENDING:** these are only four frames per action/direction, not the required 10 Run, 12 Attack and 8 Special distinct native-detail poses per direction, nor hurt/death/victory coverage. Cropping and texture quality need desktop/mobile gameplay screenshots and visual sign-off. No gameplay MP4 or complete native-3× approval is claimed.
 - The latest separately uploaded Shadowblade 1254×1254 source (SHA-256 `85a4f5880fb640be08ff37ba70d10ce6453508f4ce775515127639c7bcde79b4`) was locally inspected and repacked without resampling into a 1536×1536 QA WebP. That **separate repack has not been uploaded to GitHub**; the in-game QA hook uses the pre-existing committed South-run WebP, not this local repack. Never conflate the two sources.
+
+## 2026-11-24 — real-gameplay candidate evidence pipeline
+
+GitHub workflow `.github/workflows/es2-hero-animation-video.yml` has **two deliberately separate** capture passes:
+
+- **Production:** `pnpm build` + `pnpm preview` on port 4173. Captures the actual released hero artwork and three MP4s in `artifacts/es2-hero-video/`.
+- **Unapproved candidate QA:** `pnpm dev` on port 4174 + `ES2_HERO_QA=1` uses the existing **development-only** `?es2HeroArtQA=1` renderer switch. Captures each of the three heroes in live combat as MP4, plus genuine in-game screenshots while moving East and South, under `artifacts/es2-hero-video/candidate-qa/`. The files and `capture-metrics.json` explicitly identify `QA_PENDING`.
+
+Run the opt-in pass locally with a development server on port 4174:
+
+```sh
+pnpm dev --host 127.0.0.1 --port 4174 --strictPort
+PREVIEW_URL=http://127.0.0.1:4174/ ES2_HERO_QA=1 node scripts/es2-hero-animation-video.mjs
+```
+
+The CI artifact is named `es2-three-heroes-production-and-candidate-gameplay-qa` and is available on the workflow run's **Artifacts** section after successful capture. These are **true gameplay captures of existing candidate images**, not newly authored additional direction frames. Screenshots and MP4s permit visual assessment but do **not** prove native-3× authoring, frame completeness, correct original-alpha edges, or human art acceptance. The production renderer still rejects candidate activation by default; every relevant manifest remains `QA_PENDING`.
