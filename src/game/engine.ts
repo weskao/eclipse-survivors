@@ -4,8 +4,9 @@ import { getMode, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
+import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
-import { dash as heroDash } from './combat'
+import { dash as heroDash, hit } from './combat'
 import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
@@ -22,7 +23,7 @@ import { createMetaProgressionStore } from './content/meta/store'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
-import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
+import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
 import { impact } from './fx'
 import { emitCombatVfx } from './content/packs/combat-vfx'
@@ -173,8 +174,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     return legacy
   }
   const bossTrackUrls = Object.fromEntries(bossIds.map(id => [
-    id, [1, 2, 3].map(phase => import.meta.env.BASE_URL + 'audio/boss/' + id + '-p' + phase + '.mp3'),
-  ])) as Record<BossId, readonly [string, string, string]>
+    id, [1, 2, 3].map(phase => import.meta.env.BASE_URL + 'audio/boss/' + id + '-p' + phase + '.mp3') as [string, string, string],
+  ]))
   const audio = opts.audio ?? createAudioSystem({
     bgm: createBgm(BGM_URL),
     menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
@@ -182,6 +183,30 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     warningTrack: import.meta.env.BASE_URL + 'audio/boss/arrival-warning.mp3',
     victoryTrack: import.meta.env.BASE_URL + 'audio/eclipse-victory.wav',
   })
+  // The original audio owner provides the context and buses. Never start a second BGM.
+  // Older injected AudioSystem fakes retain their original behaviour unchanged.
+  let adaptiveScoreActive = false
+  let adaptiveScoreFailed = false
+  function setAdaptiveScore(active: boolean): void {
+    const next = !!es2Audio && !adaptiveScoreFailed && active
+    if (adaptiveScoreActive === next) return
+    adaptiveScoreActive = next
+    audio.setExternalScoreActive?.(next)
+  }
+  const es2Port = audio.createEs2Port?.()
+  const es2Audio = es2Port && audio.setExternalScoreActive
+    ? createEs2AudioAdapter({
+      audio, ...es2Port,
+      tone: (...args) => {
+        try { es2Port.tone(...args) }
+        catch (error) {
+          // The adapter falls back to legacy scheduling after any synthesis failure.
+          adaptiveScoreFailed = true
+          setAdaptiveScore(false)
+          throw error
+        }
+      },
+    }) : null
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = false
@@ -220,7 +245,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let ending = false
 
   function wakeAudio(): void {
-    audio.wake()
+    if (es2Audio) es2Audio.wakeFromGesture()
+    else audio.wake()
     ui.audioUnlocked = audio.unlocked
   }
 
@@ -229,10 +255,34 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message,
     offerUpgrades,
     end,
-    modifyOutgoingDamage: amount => heroSpecialization?.modifyOutgoingDamage(amount) ?? amount,
+    modifyOutgoingDamage: (amount, target) => {
+      const modified = heroSpecialization?.modifyOutgoingDamage(amount) ?? amount
+      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
+      const result = calculateRelicAttack(s, modified, {
+        moving: s.hero.moveAmount > 0,
+        boss: target?.type === 'boss',
+        targetHp: target?.hp,
+        targetHpFraction: target && target.max > 0 ? target.hp / target.max : undefined,
+      }, random)
+      return result.execute && target ? Math.max(result.damage, target.hp) : result.damage
+    },
     consumeCriticalHit: () => heroSpecialization?.consumeCriticalHit() ?? false,
-    mitigateIncomingDamage: amount => heroSpecialization?.mitigateIncomingDamage(amount) ?? amount,
-    afterDamage: amount => heroSpecialization?.afterDamage(amount),
+    mitigateIncomingDamage: amount => {
+      const modified = heroSpecialization?.mitigateIncomingDamage(amount) ?? amount
+      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
+      return calculateRelicIncoming(s, modified, random).damage
+    },
+    afterDamage: (amount, source) => {
+      heroSpecialization?.afterDamage(amount)
+      if (!relicsEnabled || !source || source.hp <= 0 || !s.hero || s.hero.hp <= 0 ||
+        s.mode !== 'play' || amount <= 0) return
+      const reflect = relicBonuses(s).reflect ?? 0
+      if (reflect > 0) {
+        // Only the original colliding Mob receives reflected damage.
+        // Do not roll relic critical hits a second time for the reflected strike.
+        hit(s, source, amount * reflect, { ...hooks, modifyOutgoingDamage: undefined, consumeCriticalHit: undefined })
+      }
+    },
     canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
     // Skip all event-object allocation in the default empty-pack game.
     content: contentRegistry.packs.some(pack => pack.onEvent)
@@ -267,7 +317,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // Special attacks and companion hits already own their damage; do not apply the normal
   // attack critical/modifier hook a second time when they call legacy hit().
   const heroHooks: GameHooks = {
-    ...hooks, modifyOutgoingDamage: undefined, mitigateIncomingDamage: undefined, afterDamage: undefined,
+    ...hooks, modifyOutgoingDamage: undefined, consumeCriticalHit: undefined, mitigateIncomingDamage: undefined, afterDamage: undefined,
   }
 
   function screen(name: GameMode): void {
@@ -276,7 +326,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.mode = name
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
+    // Switch back to the host after entering the title screen so the battle track stays paused.
     audio.onScreen(name)
+    if (name === 'menu' || (name === 'result' && audio.setResultTheme)) setAdaptiveScore(false)
+    else if (name === 'result') setAdaptiveScore(true)
+    if (name === 'menu') es2Audio?.setScene('menu')
+    else if (name === 'play') es2Audio?.setScene('exploration')
     if (name !== 'play') {
       keys = {}
       stick = { x: 0, y: 0 }
@@ -376,6 +431,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     refreshMeta()
     audio.setResultTheme?.(win ? 'victory' : 'defeat')
     screen('result')
+    es2Audio?.setScene(win ? 'victory' : 'defeat')
     audio.playSfx(win ? 'victory' : 'defeat')
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
     ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}` + saveWarning
@@ -453,6 +509,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     audio.setCombatIntensity('calm')
     audio.setBossTheme?.(null)
     audio.setBossWarning?.(null)
+    setAdaptiveScore(true) // before wake: never restart the overture
     wakeAudio()
     screen('play')
     hooks.content?.(s, { type: 'start' })
@@ -593,7 +650,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const upcoming = getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null)
       audio.setBossWarning?.(upcoming?.seconds ?? null)
       audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
-      audio.setCombatIntensity(liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
+      const phase = liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
+      audio.setCombatIntensity(phase)
+      setAdaptiveScore(
+        !(liveBoss && audio.setBossTheme) && !(upcoming && audio.setBossWarning),
+      )
+      es2Audio?.setScene(phase === 'boss' ? 'boss' : phase === 'combat' ? 'combat' : 'exploration')
     }
     if (toastTimer > 0) {
       toastTimer -= dt
@@ -786,12 +848,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const onVisibility = (): void => {
       if (doc.hidden) {
         onBlur()
-        audio.interrupt()
+        if (es2Audio) es2Audio.interrupt()
+        else audio.interrupt()
       }
     }
     const onPageHide = (): void => {
       onBlur()
-      audio.interrupt()
+      if (es2Audio) es2Audio.interrupt()
+      else audio.interrupt()
     }
     const onPointerDown = (): void => { wakeAudio() }
     // Click covers touch, mouse and keyboard activation, including teleported dialogs.
@@ -873,7 +937,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       frameDrawn++
       drawFrame(ctx, s, dpr, assets)
       if (s.hero && mini && frameDrawn % 7 === 0) drawMiniMap(mini, s, assets)
-      audio.tick(s.mode)
+      if (es2Audio && adaptiveScoreActive) es2Audio.tick(s.mode)
+      else audio.tick(s.mode)
       raf = requestAnimationFrame(frame)
     }
     resizeRenderer = resize
@@ -888,6 +953,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       removeEventListener('resize', resize)
       unlisten()
       delete window.__test
+      es2Audio?.dispose()
       audio.dispose()
     }
   }

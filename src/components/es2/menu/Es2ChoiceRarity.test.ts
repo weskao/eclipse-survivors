@@ -36,7 +36,7 @@ describe('ES2 three-choice rarity presentation', () => {
     expect(css).toContain('.es2-choice .es2-rarity-label{font-size:calc(.91rem * var(--es2-ui-scale,1))}')
     expect(css).toContain('.es2-choice .es2-rarity-label{font-size:calc(.86rem * var(--es2-ui-scale,1))}')
     expect(css).toContain('.es2-choice{display:grid;grid-template-columns:clamp(74px,24vw,104px)')
-    expect(css).toContain('.es2-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))}')
+    expect(css).toMatch(/\.es2-choice-grid\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)[;}]/)
   })
 
   it('renders correct Chinese and English rarity labels including epic', async () => {

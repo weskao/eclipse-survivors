@@ -37,6 +37,6 @@ describe('development-only unlocked playtest storage', () => {
     expect(first.reset().ok).toBe(true)
     expect(first.get().state?.research.power).toBe(0)
     const second = createMetaProgressionStore(createUnlockedPlaytestMetaStorage())
-    expect(second.get().state?.research.power).toBe(3)
+    expect(second.get().state?.research.power).toBe(RESEARCH.find(item => item.id === 'power')!.maxRank)
   })
 })

@@ -43,7 +43,7 @@ describe('Crystal Sentinel six-pose 3x QA candidate (not production release)', (
     expect(qa.humanApproval).toBe('pending')
   })
 
-  it('exposes a side-by-side candidate in the isolated browser QA page, leaving the default gameplay art untouched', () => {
+  it('shows the candidate beside the native runtime art and preserves pending approval', () => {
     const source = readFileSync(join(parent, 'qa-preview.ts'), 'utf8')
     expect(source).toContain('crystalSentinelCandidate')
     expect(source).toContain("import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'")
@@ -53,6 +53,6 @@ describe('Crystal Sentinel six-pose 3x QA candidate (not production release)', (
     expect(canonical).toBeDefined()
     expect(canonical?.path).toBe('crystal-sentinel-body@3x.webp')
     expect(canonical?.status).toBe('needs-human-approval')
-    expect(canonical?.native3x).toBe(false)
+    expect(canonical?.native3x).toBe(true)
   })
 })

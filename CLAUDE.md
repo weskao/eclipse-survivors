@@ -1,6 +1,6 @@
 # Eclipse Survivors — Repository Development Rules
 
-This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Preserve this stack, existing game art, combat mechanics, accessibility, and mobile support. Follow the existing architecture and work on a dedicated branch; do not create a PR, merge, or modify `main` unless asked.
+Stack: **Vue 3, TypeScript, Vite, pnpm, Vitest, Canvas 2D**. Preserve the stack, existing game art, combat mechanics, accessibility and mobile support. Follow the existing architecture and work on a dedicated branch; do not create a PR, merge, or modify `main` unless asked.
 
 ## Mandatory high-fidelity VFX performance gate
 
@@ -23,15 +23,15 @@ For any skill CRUD, ability option, projectile, enemy bullet, damage feedback, o
 - Keep probabilities normalized, thresholds finite, build/rarity choices fair, endgame challenge intact, mob/projectile counts bounded, and formulas deterministic. Move gameplay-tunable numeric constants out of touched legacy modules; do not mistakenly move non-gameplay coordinates, art geometry or mathematical constants.
 - Mandatory TDD and CI: cover config schema and complete enum keys, hero creation/HUD/menu, XP progression, pickups/chests, skill effects and capped levels, weapon damage and mobile performance. Refer to `src/game/balance.test.ts` and the more specific gameplay tests. Run the standard `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release` gates.
 
-## Mandatory image-first asset workflow
+## Feature acceptance
 
-**For every feature that needs images, create or generate the actual image files inside this repository before writing the code that uses them.** This applies to all game/UI features, including characters, enemies, bosses, scenes, props, skill icons, VFX, animations, and previews.
+Verify new behavior from the real player entry point through the engine to the resulting state and visible feedback.
 
-1. **Asset first:** Produce the images in their final owned project directory (normally `src/assets/<feature>/`; ES2 production uses `src/assets/es2/production/<category>/`). Preserve original source art where needed and commit the optimized runtime PNG/WebP files. Do not finish with a chat-only image, local-only export, external URL, placeholder, mock icon, or an unused asset manifest.
-2. **Code second:** Import the committed local asset URL with Vite or a typed local asset map and connect it to the actual visible UI/Canvas/gameplay state. An image merely existing in a folder or an isolated gallery is **not** considered applied; keep an explicitly documented fallback for images that fail to load.
-3. **Spritesheets:** Inspect the original at full resolution. Use verified per-frame source rectangles, direction/pose order and alpha boundaries. **Never guess the grid, cut into a neighboring frame, stretch a whole contact sheet as one sprite, or invent missing animation frames.** Repair or re-render bad source frames first. Preserve hitbox/telegraph geometry independently of the visual pixels.
-4. **Acceptance:** Store the dimensions, frame geometry, source ID, transparency, SHA-256 and asset budget in a manifest where appropriate. Use RED → GREEN → REFACTOR tests for asset presence, mapping, source-rectangle bounds, atlas direction/state selection and fallback. Review contact sheets and real in-game screenshots, including mobile, reduced-motion and visual continuity, before calling art production-ready.
-5. **Merge gate:** Include both the image files and their real code consumers in the same verified integration, run the repository-wide checks below, and do not merge incomplete art as if it were final.
+| Situation | Skill |
+|-----------|-------|
+| Content pack or shared runtime integration | [es-content-integration](.claude/skills/es-content-integration/SKILL.md) |
+| Browser-facing change (menus, touch, a11y, Canvas art, audio, perf) | [es-browser-qa](.claude/skills/es-browser-qa/SKILL.md) |
+| Adding or replacing sprites, animation, scenery, icons, VFX | [es-asset-runtime](.claude/skills/es-asset-runtime/SKILL.md) |
 
 ## Mandatory character art: native 3× artwork rendered at 1×
 
@@ -70,17 +70,17 @@ Follow [`.claude/rules/no-native-ui.md`](.claude/rules/no-native-ui.md) when edi
 
 The above applies **even when the user does not explicitly request RWD**. A viewport-safe screen with unreadably small art/text is not acceptable. During combat, keep the center battlefield, HP, boss health, timer and controls unobstructed by secondary information.
 
-## Mandatory real-time performance rules
+## Rules
 
-**Always read and follow [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md)** when modifying game simulation, mob AI, combat, skills, collisions, procedural environments, rendering, effects, or performance-critical UI.
+- **Images: asset first, code second.** Commit the real image files in the project before writing their consumer → [`.claude/rules/asset-workflow.md`](.claude/rules/asset-workflow.md).
+- **Real-time performance:** game simulation, AI, combat, skills, collisions, world, rendering, effects, perf-critical UI → [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md). Preference order: eliminate work → precompute immutable data → reuse bounded/valid caches → reject out-of-range work cheaply → optimize only measured bottlenecks. Never trade correctness, determinism, mobile, readability or fairness for speed.
+- **Hero animation and weapons:** knight/ranger/wizard sprites, rigid weapons, held projectiles, body atlas → [`.claude/rules/hero-weapon-rendering.md`](.claude/rules/hero-weapon-rendering.md).
 
-The order of preference is **eliminate unnecessary work → precompute immutable data → reuse bounded/valid caches → reject out-of-range work cheaply → optimize only measured bottlenecks**. Never trade off combat correctness, deterministic simulation, mobile compatibility, visual readability, or player fairness for speed.
+## TDD and verification
 
-## Mandatory TDD and measurable verification
+Every gameplay or performance change follows **RED → GREEN → REFACTOR**: reproduce with a deterministic test that fails for the expected reason, make the smallest fix, rerun. Keep regression tests for boundaries, the boss, hitboxes, skills, offscreen objects, viewport resize, biome changes and long-running cache bounds.
 
-For every gameplay or performance change: **RED → GREEN → REFACTOR**. First reproduce the issue with a deterministic test and verify it fails for the expected reason; then make the smallest change and run the tests again. Keep regression tests for boundary cases, the boss, hitboxes, skills, offscreen objects, viewport resize, biome changes, and long-running cache bounds.
-
-Before claiming completion run:
+Before claiming completion:
 
 ```sh
 pnpm install --frozen-lockfile

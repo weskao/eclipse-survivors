@@ -2,6 +2,7 @@
 Thumbs.db
 *.log
 node_modules/
+/.pnpm-store/
 dist/
 __pycache__/
 public/audio/eclipse-overture.wav

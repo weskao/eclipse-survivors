@@ -345,7 +345,7 @@ function particleSprite(cache: ParticleSpriteCache, color: string, radius: numbe
 }
 
 // Subpixel glowing debris, capped pool and reusable shape geometry.
-export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, cache?: ParticleSpriteCache): void {
+export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, cache?: ParticleSpriteCache, projectiles?: Partial<ProjectileSprites>): void {
   const { W, H } = s
   let painted = 0
   for (const f of s.fx) {
@@ -371,11 +371,19 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
       const t = 1 - f.life / f.max
       ctx.strokeStyle = '#ffd6a7'; ctx.lineWidth = 4
       ctx.beginPath(); ctx.moveTo(x - 18 - t * 22, y - 42 - t * 90); ctx.lineTo(x, y); ctx.stroke()
-      ctx.fillStyle = '#ffb065'; ctx.shadowColor = '#ffb065'; ctx.shadowBlur = 16
-      ctx.beginPath(); ctx.arc(x, y, 12 + 12 * (1 - t), 0, TAU); ctx.fill()
+      const radius = 12 + 12 * (1 - t)
+      ctx.translate(x, y)
+      if (!drawProjectileSprite(ctx, projectiles, 'enemy-ember', radius * 2)) {
+        ctx.fillStyle = '#ffb065'; ctx.shadowColor = '#ffb065'; ctx.shadowBlur = 16
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, TAU); ctx.fill()
+      }
     } else if (f.type === 'vortex') {
-      ctx.strokeStyle = f.color; ctx.lineWidth = 2.2; ctx.shadowColor = f.color; ctx.shadowBlur = 8
-      ctx.beginPath(); ctx.arc(x, y, 8 + Math.sin(f.life * 9) * 6, 0, TAU); ctx.stroke()
+      const radius = 8 + Math.sin(f.life * 9) * 6
+      ctx.translate(x, y)
+      if (!drawProjectileSprite(ctx, projectiles, 'gravity-core', radius * 2)) {
+        ctx.strokeStyle = f.color; ctx.lineWidth = 2.2; ctx.shadowColor = f.color; ctx.shadowBlur = 8
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, TAU); ctx.stroke()
+      }
     } else if (f.type === 'ice') {
       ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = reducedMotion ? 0 : 10
       ctx.beginPath(); ctx.moveTo(x, y - f.r); ctx.lineTo(x + f.r * 0.55, y + f.r); ctx.lineTo(x - f.r * 0.55, y + f.r); ctx.closePath(); ctx.fill()

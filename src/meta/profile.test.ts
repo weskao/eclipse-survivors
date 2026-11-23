@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { BALANCE, researchCost } from '../game/config'
-import { createProfileStore, migrateProfile, SAVE_KEY } from './profile'
+import { createProfileStore, emptyProfile, migrateProfile, SAVE_KEY } from './profile'
 import type { RunStats } from './types'
 
 const run = (id = 'run-1', overrides: Partial<RunStats> = {}): RunStats => ({

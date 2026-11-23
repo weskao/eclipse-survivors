@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { WORLD_UI_IDS } from '../../../game/render/es2/production-world'
+import { WORLD_UI_IDS } from '../../../../game/render/es2/production-world'
 
 interface Approval {
   status: string

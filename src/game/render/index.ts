@@ -157,7 +157,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawOrbs(ctx, s, hero, ox, oy, projectiles)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
-  drawFx(ctx, s, ox, oy, reduced, assets.particles)
+  drawFx(ctx, s, ox, oy, reduced, assets.particles, projectiles)
   if (bossSnapshot) drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H)
   assets.content?.render(ctx, s, ox, oy)
   if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)

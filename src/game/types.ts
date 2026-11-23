@@ -188,10 +188,10 @@ export interface GameHooks {
   /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
   openTreasure?(state: GameState, chestId: number): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
-  modifyOutgoingDamage?(amount: number): number
+  modifyOutgoingDamage?(amount: number, target?: Mob): number
   /** One-shot metadata from the authoritative outgoing-damage roll. */
   consumeCriticalHit?(): boolean
   mitigateIncomingDamage?(amount: number): number
-  afterDamage?(amount: number): void
+  afterDamage?(amount: number, source?: Mob): void
   canTargetHero?(): boolean
 }

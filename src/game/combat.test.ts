@@ -134,8 +134,9 @@ describe('damageHero', () => {
   it('each shield rank mitigates 13% up to the existing 52% cap', () => {
     const { s, hero } = setup()
     hero.skills.shield = 1
+    const initialHp = hero.hp
     damageHero(s, 100, spyHooks())
-    expect(hero.hp).toBeCloseTo(88)
+    expect(initialHp - hero.hp).toBeCloseTo(87)
   })
   it('death clamps hp to 0 and ends the run', () => {
     const { s, hero } = setup()

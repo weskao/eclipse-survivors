@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-const cwd = fileURLToPath(new URL('../', import.meta.url))
+const cwd = process.cwd()
 const make = (...args: string[]) =>
   execFileSync('make', ['--no-print-directory', '-n', ...args], { cwd, encoding: 'utf8' })
 
@@ -19,7 +19,7 @@ describe('Makefile development and release shortcuts', () => {
     const phone = make('phone')
     expect(phone).toContain('0.0.0.0')
     expect(phone).toContain('phone_dev.py')
-    const unlocked = readFileSync(new URL('../Makefile', import.meta.url), 'utf8')
+    const unlocked = readFileSync(resolve(cwd, 'Makefile'), 'utf8')
     expect(unlocked).toMatch(/phone-unlocked: export VITE_ES2_UNLOCKED := 1/)
   })
 

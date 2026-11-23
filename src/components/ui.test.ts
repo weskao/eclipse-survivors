@@ -280,7 +280,7 @@ describe('LevelUpOverlay', () => {
     const items = w.findAll('#upgrades .upgrade')
     expect(items).toHaveLength(3)
     expect(items[1]!.attributes('data-up')).toBe(upgrades[1]!.id)
-    expect(items[1]!.find('.portrait').text()).toBe(upgrades[1]!.icon)
+    expect(items[1]!.get('.portrait img').attributes('src')).toBeTruthy()
     expect(items[1]!.find('strong').text()).toBe(upgrades[1]!.title)
     expect(items[1]!.text()).toContain('按 2 選擇')
     await items[1]!.trigger('click')

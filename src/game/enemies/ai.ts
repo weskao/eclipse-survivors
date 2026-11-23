@@ -61,13 +61,13 @@ function resolveStrike(s: GameState, e: Mob, hooks: GameHooks): void {
   else if (ai.attack === 'summon') summonBossMinions(s, e)
   else if (ai.attack === 'slam') {
     const radius = e.type === 'boss' ? AI.slamRadius.boss : e.elite ? AI.slamRadius.elite : AI.slamRadius.default
-    if (dist(hero.x - ai.aimX, hero.y - ai.aimY) <= radius + AI.slamContactMargin) damageHero(s, e.dmg, hooks)
+    if (dist(hero.x - ai.aimX, hero.y - ai.aimY) <= radius + AI.slamContactMargin) damageHero(s, e.dmg, hooks, e)
   } else if (ai.attack === 'pounce' || ai.attack === 'jab') {
     const maxDistance = ai.attack === 'pounce' ? AI.lungeDistance.pounce : AI.lungeDistance.jab
     const length = Math.min(maxDistance, dist(ai.aimX - e.x, ai.aimY - e.y))
     e.x += ai.dirX * length
     e.y += ai.dirY * length
-    if (dist(hero.x - e.x, hero.y - e.y) < e.r + AI.lungeContactMargin) damageHero(s, e.dmg, hooks)
+    if (dist(hero.x - e.x, hero.y - e.y) < e.r + AI.lungeContactMargin) damageHero(s, e.dmg, hooks, e)
   }
   recover(e, e.type === 'boss' ? AI.recoverySeconds.boss : e.type === 'golem' ? AI.recoverySeconds.golem : AI.recoverySeconds.default)
 }
@@ -144,7 +144,7 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
       const vx = e.x - oldX, vy = e.y - oldY
       const t = Math.max(0, Math.min(1, ((hero.x - oldX) * vx + (hero.y - oldY) * vy) / Math.max(0.0001, vx * vx + vy * vy)))
       if (!ai.hitThisAttack && dist(hero.x - (oldX + vx * t), hero.y - (oldY + vy * t)) < e.r + AI.hitMargin) {
-        damageHero(s, e.dmg, hooks)
+        damageHero(s, e.dmg, hooks, e)
         ai.hitThisAttack = true
       }
       ai.timer -= dt

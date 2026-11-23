@@ -23,7 +23,7 @@ describe('result celebration rendering contract', () => {
     expect(css).toContain('[data-es2-reduce-flashing="true"]')
     expect(css).toContain('pointer-events: none')
     expect(css).toContain('animation-iteration-count: 1')
-    expect(css).not.toContain('infinite')
+    expect(css.replace(/\/\*[\s\S]*?\*\//g, '')).not.toContain('infinite')
   })
 })
 
@@ -43,16 +43,17 @@ describe('localized expedition results', () => {
     expect(document.body.querySelector('.es2-dialog-header p')?.textContent).toContain(
       'Survived 68s · Defeated 12 enemies · Lv.4',
     )
-    expect(wrapper.text()).toContain(t('初臨戰場'))
-    expect(wrapper.text()).toContain(t('曙光鎏金'))
-    expect(wrapper.text()).not.toContain('first-blood')
-    expect(wrapper.text()).not.toContain('knight-gilded')
+    const rewards = document.body.querySelector('.es2-reward-strip')
+    expect(rewards?.textContent).toContain(t('初臨戰場'))
+    expect(rewards?.textContent).toContain(t('曙光鎏金'))
+    expect(rewards?.textContent).not.toContain('first-blood')
+    expect(rewards?.textContent).not.toContain('knight-gilded')
     setLocale('zh-TW', storage)
     await nextTick()
     expect(document.body.querySelector('.es2-dialog-header p')?.textContent).toContain(
       '存活 68 秒 · 擊敗 12 隻魔物 · 等級 4',
     )
-    expect(wrapper.text()).toContain('初臨戰場')
+    expect(rewards?.textContent).toContain('初臨戰場')
     wrapper.unmount()
   })
 })

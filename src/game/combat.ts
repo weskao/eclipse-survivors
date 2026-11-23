@@ -22,7 +22,7 @@ export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
-  const applied = hooks.modifyOutgoingDamage?.(d) ?? d
+  const applied = hooks.modifyOutgoingDamage?.(d, e) ?? d
   if (!Number.isFinite(applied) || applied <= 0) return
   const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
@@ -155,7 +155,7 @@ export function victoryConditionMet(
   return survived && bossDefeated
 }
 
-export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
+export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: Mob): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play' || hero.hp <= 0 || hero.inv > 0 || hero.dash > 0 || !Number.isFinite(n) || n <= 0) return
   const mitigated = hooks.mitigateIncomingDamage?.(n) ?? n
@@ -201,6 +201,6 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   }
   hooks.sfx('hurt')
   hooks.content?.(s, { type: 'damage', amount: actuallyTaken })
-  hooks.afterDamage?.(actuallyTaken)
+  hooks.afterDamage?.(actuallyTaken, source)
   if (hero.hp === 0) hooks.end(false)
 }
