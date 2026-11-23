@@ -413,5 +413,123 @@
       "guardian-sanctuary": 5.5
     },
     "unlockSkillLevel": 3
+  },
+  "modes": {
+    "normalModifiers": {
+      "enemyHp": 1,
+      "enemyDamage": 1,
+      "spawnFrequency": 1
+    },
+    "classic": {
+      "quick": {
+        "duration": 150,
+        "bossAt": 92
+      },
+      "standard": {
+        "duration": 480,
+        "bossAt": 300
+      },
+      "endless": {
+        "duration": null,
+        "bossAt": 180,
+        "spawnFrequency": 1.08
+      },
+      "challenge": {
+        "duration": 210,
+        "bossAt": 130,
+        "enemyHp": 1.25,
+        "enemyDamage": 1.3,
+        "spawnFrequency": 1.28
+      }
+    },
+    "objectives": {
+      "boss-rush": {
+        "timeLimitSeconds": 480,
+        "surviveSeconds": null,
+        "bossReadySeconds": [
+          25,
+          70,
+          125,
+          185,
+          250
+        ],
+        "relicReadySeconds": [],
+        "waveReadySeconds": [],
+        "majorEventIntervalSeconds": null,
+        "rewardEmbers": 300,
+        "enemyHp": 1.18,
+        "enemyDamage": 1.12,
+        "spawnFrequency": 1.05
+      },
+      "endless-eclipse": {
+        "timeLimitSeconds": null,
+        "surviveSeconds": null,
+        "bossReadySeconds": [],
+        "relicReadySeconds": [],
+        "waveReadySeconds": [],
+        "majorEventIntervalSeconds": 180,
+        "rewardEmbers": 28,
+        "enemyHp": 1.32,
+        "enemyDamage": 1.18,
+        "spawnFrequency": 1.21
+      },
+      "relic-hunt": {
+        "timeLimitSeconds": 480,
+        "surviveSeconds": null,
+        "bossReadySeconds": [
+          220
+        ],
+        "relicReadySeconds": [
+          25,
+          65,
+          110,
+          155
+        ],
+        "waveReadySeconds": [],
+        "majorEventIntervalSeconds": null,
+        "rewardEmbers": 240,
+        "enemyHp": 1.1,
+        "enemyDamage": 1.15,
+        "spawnFrequency": 1.13
+      },
+      "cursed-expedition": {
+        "timeLimitSeconds": 420,
+        "surviveSeconds": 360,
+        "bossReadySeconds": [
+          100,
+          240
+        ],
+        "relicReadySeconds": [],
+        "waveReadySeconds": [],
+        "majorEventIntervalSeconds": null,
+        "rewardEmbers": 280,
+        "enemyHp": 1.42,
+        "enemyDamage": 1.34,
+        "spawnFrequency": 1.29
+      },
+      "chaos-arena": {
+        "timeLimitSeconds": 330,
+        "surviveSeconds": null,
+        "bossReadySeconds": [
+          170
+        ],
+        "relicReadySeconds": [],
+        "waveReadySeconds": [
+          15,
+          33,
+          51,
+          69,
+          87,
+          105,
+          123,
+          141
+        ],
+        "majorEventIntervalSeconds": null,
+        "rewardEmbers": 260,
+        "enemyHp": 1.26,
+        "enemyDamage": 1.24,
+        "spawnFrequency": 1.38
+      }
+    }
   }
 }
