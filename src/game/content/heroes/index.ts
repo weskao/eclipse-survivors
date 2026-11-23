@@ -130,6 +130,7 @@ export interface HeroSpecializationAdapter {
   activate(): boolean
   /** Apply BEFORE normal hit() to support shadow crit and low-health damage. */
   modifyOutgoingDamage(amount: number): number
+  consumeCriticalHit(): boolean
   /** Apply BEFORE damageHero(); pass the returned amount to the legacy damage path. */
   mitigateIncomingDamage(amount: number): number
   /** Call only after damageHero() reports actual HP damage. */
@@ -177,6 +178,7 @@ export function createHeroSpecializationAdapter(
   random: () => number = simulationRandom,
 ): HeroSpecializationAdapter {
   const def = HERO_DEFINITIONS[id]
+  let lastCritical = false
   let cooldown = 0
   let stealth = 0
   let barrier = 0
@@ -196,6 +198,7 @@ export function createHeroSpecializationAdapter(
     id,
     reset(): void {
       cooldown = stealth = barrier = barrierLife = counterCooldown = companionTimer = 0
+      lastCritical = false
       state.choice = def.legacyArtJob
       state.hero = createHero(def.legacyArtJob)
       Object.assign(state.hero, {
@@ -253,14 +256,21 @@ export function createHeroSpecializationAdapter(
       return true
     },
     modifyOutgoingDamage(amount: number): number {
+      lastCritical = false
       if (!Number.isFinite(amount) || amount <= 0) return 0
       if (!alive()) return amount
       if (id === 'shadowblade') {
-        return random() < 0.24 ? amount * (1.7 + upgrades() * 0.15) : amount
+        lastCritical = random() < 0.24
+        return lastCritical ? amount * (1.7 + upgrades() * 0.15) : amount
       }
       if (id === 'spirit-summoner') return amount * (1 + (companions().includes('wisp') ? 0.06 : 0))
       const hpRatio = state.hero!.hp / state.hero!.max
       return amount * (hpRatio < 0.4 ? 1.35 + upgrades() * 0.06 : 1)
+    },
+    consumeCriticalHit(): boolean {
+      const critical = lastCritical
+      lastCritical = false
+      return critical
     },
     mitigateIncomingDamage(amount: number): number {
       if (!Number.isFinite(amount) || amount <= 0) return 0
