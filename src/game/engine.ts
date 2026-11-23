@@ -215,6 +215,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     offerUpgrades,
     end,
     modifyOutgoingDamage: amount => heroSpecialization?.modifyOutgoingDamage(amount) ?? amount,
+    consumeCriticalHit: () => heroSpecialization?.consumeCriticalHit() ?? false,
     mitigateIncomingDamage: amount => heroSpecialization?.mitigateIncomingDamage(amount) ?? amount,
     afterDamage: amount => heroSpecialization?.afterDamage(amount),
     canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
