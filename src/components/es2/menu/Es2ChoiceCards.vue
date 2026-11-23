@@ -49,7 +49,7 @@ async function navigate(event: KeyboardEvent, id: string): Promise<void> {
       <strong class="es2-card-name">{{ t(item.title) }}</strong>
       <span v-if="item.level !== undefined" class="es2-card-level">Lv.{{ item.level }} <template v-if="item.maxLevel">→ {{ Math.min(item.maxLevel, item.level + 1) }} / {{ item.maxLevel }}</template></span>
       <small v-if="item.description" class="es2-card-description">{{ t(item.description) }}</small>
-      <small v-if="item.requirements" class="es2-card-requirements">◈ {{ item.requirements }}</small>
+      <small v-if="item.requirements" class="es2-card-requirements">◈ {{ t(item.requirements) }}</small>
       <span v-if="selectedId === item.id" class="es2-card-selected-text">{{ t("✓ 已選擇") }}</span>
     </button>
   </div>

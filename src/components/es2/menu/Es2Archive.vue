@@ -83,7 +83,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
         @equipment="emit('equipment', $event)" @bonus="emit('bonus', $event)" />
       <div v-else>
       <div class="es2-stat-strip"><div><b>{{ profile.runs }}</b><small>{{ t("遠征次數") }}</small></div><div><b>{{ profile.wins }}</b><small>{{ t("勝利") }}</small></div><div><b>{{ profile.embers }}</b><small>{{ t("暮光餘燼") }}</small></div></div>
-      <p class="es2-hint">{{ t("目前職業：") }}{{ hero }} {{ t("· 永久能力於下一次遠征生效。") }}</p>
+      <p class="es2-hint">{{ t("目前職業：") }}{{ t(hero) }} {{ t("· 永久能力於下一次遠征生效。") }}</p>
       <div class="es2-archive-grid"><article v-for="entry in upgrades" :key="entry.id" class="es2-archive-card">
         <div class="es2-archive-glyph" aria-hidden="true">{{ entry.icon }}</div><strong>{{ t(entry.title) }}</strong><p>{{ t(entry.bonus) }}</p><small>{{ t("第") }} {{ profile.upgrades[entry.id] }} {{ t("/ 3 階") }}</small>
         <button class="es2-secondary" type="button" :disabled="profile.upgrades[entry.id] >= 3 || profile.embers < upgradeCost(profile.upgrades[entry.id])"
@@ -146,7 +146,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
           <figure v-for="entry in c104Gallery" :key="entry.id">
             <img :src="entry.src" :data-es2-c104-source="entry.id"
               :alt="t(entry.category + ' 原始圖板 ' + entry.id)" loading="lazy" decoding="async" draggable="false" />
-            <figcaption>{{ entry.category }} · {{ entry.id }}</figcaption>
+            <figcaption>{{ t(entry.category) }} · {{ entry.id }}</figcaption>
           </figure>
         </div>
       </details>

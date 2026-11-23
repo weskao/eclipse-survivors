@@ -29,7 +29,7 @@ const progressLabel = computed(() => result.value.progress.required === null
       :aria-label="t(result.progress.label)" />
     <div class="es2-mode-progress-extra">
       <small v-if="state.mode === 'relic-hunt'">{{ t("聖物完整度") }} {{ state.relicIntegrity }}%</small>
-      <small v-if="difficulty.activeModifier">{{ t("目前異變：") }}{{ difficulty.activeModifier }}</small>
+      <small v-if="difficulty.activeModifier">{{ t("目前異變：") }}{{ t(difficulty.activeModifier) }}</small>
       <small v-if="state.status !== 'active'">{{ t("預估餘燼：") }}{{ result.rewards.embers }}</small>
     </div>
   </section>

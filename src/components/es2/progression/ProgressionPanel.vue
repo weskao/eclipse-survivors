@@ -61,7 +61,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
     <section :aria-label="t('英雄專精')" class="es2-progression-section">
       <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
-        <span>{{ heroName }}</span><strong>Lv. {{ mastery.level }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
+        <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
       </div>
     </section>
 

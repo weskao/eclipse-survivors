@@ -85,7 +85,7 @@ function shortcut(event: KeyboardEvent): void {
           <button type="button" class="relic-rewards__claim" :data-relic-claim="relic.id" :disabled="busy"
             :aria-label="t('領取 ' + relic.title + '，' + relic.description)" @click="claim(relic.id)">
             <span class="relic-rewards__icon" aria-hidden="true"><img :src="relic.cursed ? WORLD_ART.ui['treasure-cursed'] : relic.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary'] : relic.rarity === 'rare' || relic.rarity === 'epic' ? WORLD_ART.ui['treasure-rare'] : WORLD_ART.ui['treasure-common']" alt="" decoding="async" /></span>
-            <span class="relic-rewards__rarity">{{ { common: '普通', rare: '稀有', epic: '史詩', legendary: '傳說' }[relic.rarity] }} · {{ index + 1 }}</span>
+            <span class="relic-rewards__rarity">{{ t({ common: '普通', rare: '稀有', epic: '史詩', legendary: '傳說' }[relic.rarity]) }} · {{ index + 1 }}</span>
             <strong>{{ t(relic.title) }}</strong>
             <span class="relic-rewards__description">{{ t(relic.description) }}</span>
             <span v-if="relic.cursed" class="relic-rewards__curse">{{ t("⚠ 詛咒遺物：包含負面代價") }}</span>
@@ -99,7 +99,7 @@ function shortcut(event: KeyboardEvent): void {
       </div>
       <p v-else data-relic-empty role="status">{{ t("目前沒有可領取的遺物，可關閉寶箱繼續遊戲。") }}</p>
       <footer class="relic-rewards__actions">
-        <button type="button" data-relic-reroll :disabled="busy || !canReroll" @click="reroll">{{ t("重抽選項（") }}{{ inventory.rerolls }}）</button>
+        <button type="button" data-relic-reroll :disabled="busy || !canReroll" @click="reroll">{{ t('重抽選項（') }}{{ inventory.rerolls }}{{ t('）') }}</button>
         <button type="button" :disabled="busy" @click="decline">{{ t("放棄寶箱") }}</button>
       </footer>
       <p class="relic-rewards__hint">{{ t("按 1–3 選取 · Tab 移動焦點 · Esc 關閉") }}</p>
