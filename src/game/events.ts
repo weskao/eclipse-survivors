@@ -6,8 +6,8 @@ import type { GameHooks, GameState, WorldEventKind } from './types'
 import { clearApproach, hazardPhase, nearbyHazards, pointIsClear, radialPoint } from './world'
 
 const WEIGHTS: readonly [WorldEventKind, number][] = [
-  ['chest', 0.23], ['shrine', 0.18], ['invasion', 0.14],
-  ['blessing', 0.19], ['bargain', 0.14], ['challenge', 0.12],
+  ['chest', 0.27], ['shrine', 0.21], ['invasion', 0.12],
+  ['blessing', 0.19], ['bargain', 0.11], ['challenge', 0.10],
 ]
 
 export function rollEventKind(rng: () => number = random): WorldEventKind {
@@ -29,7 +29,7 @@ export function trySpawnEvent(s: GameState, kind: WorldEventKind, rng: () => num
     if (!pointIsClear(s.currentScene, point, 35) || !clearApproach(s.currentScene, hero, point)) continue
     if (s.events.some(e => Math.hypot(e.x - point.x, e.y - point.y) < 120)) continue
     if (s.mobs.some(e => e.hp > 0 && Math.hypot(e.x - point.x, e.y - point.y) < e.r + 42)) continue
-    s.events.push({ id: ++s.eventSerial, kind, ...point, expiresAt: s.time + 16 })
+    s.events.push({ id: ++s.eventSerial, kind, ...point, expiresAt: s.time + 20 })
     return true
   }
   return false
@@ -93,7 +93,7 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
   s.events = s.events.filter(e => e.expiresAt > s.time)
   if (s.time >= s.nextEventAt) {
     s.nextEventAt = s.time + 11 + random() * 5
-    if (random() < 0.66) trySpawnEvent(s, rollEventKind())
+    if (random() < 0.75) trySpawnEvent(s, rollEventKind())
   }
   for (const event of s.events) {
     if (Math.hypot(event.x - hero.x, event.y - hero.y) > 39) continue
