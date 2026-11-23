@@ -104,7 +104,7 @@ describe('engine commands fire the original cues', () => {
 
   it('persists still/soft upgrade effects and combat camera motion preferences', () => {
     expect(engine.ui.upgradeEffect).toBe('soft')
-    expect(engine.ui.cameraShake).toBe(true)
+    expect(engine.ui.cameraShake).toBe(false)
     engine.setUpgradeEffect('still')
     engine.setCameraShake(false)
     expect(engine.ui.upgradeEffect).toBe('still')
@@ -114,6 +114,16 @@ describe('engine commands fire the original cues', () => {
     const reloaded = createEngine({ audio })
     expect(reloaded.ui.upgradeEffect).toBe('still')
     expect(reloaded.ui.cameraShake).toBe(false)
+  })
+
+  it('starts stable for new players and restores explicitly enabled camera shake', () => {
+    expect(localStorage.getItem('eclipseCameraShake')).toBeNull()
+    expect(engine.ui.cameraShake).toBe(false)
+    engine.setCameraShake(true)
+    expect(localStorage.getItem('eclipseCameraShake')).toBe('on')
+    expect(createEngine({ audio }).ui.cameraShake).toBe(true)
+    engine.setCameraShake(false)
+    expect(createEngine({ audio }).ui.cameraShake).toBe(false)
   })
 
   it('freezes upgrade-scene ambient motion only in still mode', () => {
