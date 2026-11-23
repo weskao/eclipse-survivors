@@ -1,5 +1,8 @@
 # 49 項既有 Production Art 清點（無須整批重新產生）
 
+> **2026-11-24 更新：UI 17/17 正式素材已由專案擁有者確認通過人工美術驗收，Manifest 已逐項改為 `approved`。** 簽核紀錄：[10-ui-17-owner-approval-2026-11-24.md](10-ui-17-owner-approval-2026-11-24.md)。下方 2026-11-23 以前的 `needs-human-approval`／`visual-review-required` 描述只代表歷史快照，**不能再用來表示目前 17 項 UI 的人工美術狀態**。此批准不等於其他 32 項素材、英雄、原生 3×來源或最新 HEAD 全專案 CI 已全部通過。
+
+
 > **可直接執行的 Agent Prompt｜繁體中文**  
 > GitHub: https://github.com/weskao/eclipse-survivors  
 > 程式整合目標：feature/es2-release-readiness-integration  
@@ -26,7 +29,7 @@
 | enemies | 20/20 | visual-review-required | 已存在／待視覺 QA |
 | bosses | 4/4 | visual-review-required | 已存在／待視覺 QA |
 | biomes | 8/8 | visual-review-required | 已存在／待視覺 QA |
-| ui | 17/17 | visual-review-required | 已存在／待視覺 QA |
+| ui | 17/17 | approved（2026-11-24 人工美術） | 17/17 專案擁有者核准；其他技術項目另驗 |
 
 ## 各項現有 ID 與檔名
 
