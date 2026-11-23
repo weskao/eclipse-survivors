@@ -4,7 +4,7 @@ import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
 import type { FactionBridge } from '../content/enemies/integration'
-import { drawBossTelegraphs } from '../content/bosses/render'
+import { drawBossImpacts, drawBossTelegraphs } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
@@ -127,7 +127,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawStars(ctx, s, ox, oy, reduced, assets.gems)
   drawEnemyTelegraphs(ctx, s, ox, oy)
   const bossSnapshot = assets.bosses?.snapshot(s)
-  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy)
+  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)
     drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy)
@@ -158,6 +158,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced, assets.particles)
+  if (bossSnapshot) drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H)
   assets.content?.render(ctx, s, ox, oy)
   if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)
   drawVignette(ctx, s)

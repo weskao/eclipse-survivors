@@ -7,6 +7,7 @@ import type { ContentEvent, GameHooks, GameState, Mob, Point } from '../../types
 import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossAttack, type BossAttackId, type BossCueId, type BossId, type BossShape } from './definitions'
 
 export const MAX_BOSS_PROJECTILES = 48
+export const MAX_BOSS_IMPACTS = 12
 const MAX_OWNED_MINIONS = 6
 const HERO_HIT_RADIUS = 15
 const SAFE_HALF_ANGLE = Math.PI / 5
@@ -26,6 +27,9 @@ export interface BossTelegraph {
   readonly damage: number
   readonly color: string
   readonly harmless: boolean
+  /** Presentation-only: never used by intersectsTelegraph or strike. */
+  readonly stage?: 'warning' | 'active'
+  readonly progress?: number
 }
 
 export interface BossProjectile {
@@ -37,6 +41,11 @@ export interface BossProjectile {
   readonly damage: number
   readonly life: number
   readonly color: string
+}
+
+export interface BossImpact extends BossTelegraph {
+  readonly life: number
+  readonly max: number
 }
 
 export interface BossFinishFrame { readonly at: number; readonly cue: BossCueId; readonly vfx: string }
@@ -58,6 +67,7 @@ export interface BossSnapshot {
   readonly phase: 1 | 2 | 3 | null
   readonly telegraphs: readonly BossTelegraph[]
   readonly projectiles: readonly BossProjectile[]
+  readonly impacts?: readonly BossImpact[]
 }
 
 export interface BossHud {
@@ -73,6 +83,7 @@ export interface BossHud {
 
 interface Windup { readonly attackId: BossAttackId; readonly telegraphs: BossTelegraph[]; remaining: number }
 interface Hazard { readonly telegraph: BossTelegraph; remaining: number; pulse: number }
+interface MutableImpact { readonly telegraph: BossTelegraph; life: number; readonly max: number }
 interface MutableProjectile {
   x: number; y: number; vx: number; vy: number; radius: number
   damage: number; life: number; color: string
@@ -88,6 +99,7 @@ interface Encounter {
   windup: Windup | null
   hazards: Hazard[]
   projectiles: MutableProjectile[]
+  impacts: MutableImpact[]
   readonly summoned: Set<Mob>
   rewarded: boolean
 }
@@ -189,6 +201,7 @@ function clearTransient(e: Encounter): void {
   e.windup = null
   e.hazards.length = 0
   e.projectiles.length = 0
+  e.impacts.length = 0
   // Clear only this pack's transient VFX; never touch another feature pack.
   e.state.content.effects = e.state.content.effects.filter(fx => !fx.id.startsWith('bosses:'))
 }
@@ -259,6 +272,11 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
 
   function release(e: Encounter, windup: Windup, hooks: GameHooks): void {
     const attack: BossAttack = BOSS_ATTACKS[windup.attackId]
+    // Capped, deterministic release accents. The collision geometry remains untouched.
+    for (const telegraph of windup.telegraphs) {
+      if (e.impacts.length >= MAX_BOSS_IMPACTS) break
+      e.impacts.push({ telegraph, life: 0.56, max: 0.56 })
+    }
     notify({ type: 'attack', boss: e.id, phase: e.phase, attack: windup.attackId })
     cue(BOSS_DEFINITIONS[e.id].attackCue)
     if (attack.kind === 'summon') {
@@ -338,7 +356,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       state.bossDefeated = false
       encounter = {
         state, boss, id, phase: 1, turn: 0, safeTurn: 0, recovery: 0,
-        windup: null, hazards: [], projectiles: [], summoned: new Set<Mob>(),
+        windup: null, hazards: [], projectiles: [], impacts: [], summoned: new Set<Mob>(),
         rewarded: false,
       }
       hooks.sfx('boss')
@@ -365,6 +383,11 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         notify({ type: 'phase', boss: e.id, phase })
         hooks.message(`${BOSS_DEFINITIONS[e.id].title} — ${BOSS_DEFINITIONS[e.id].phaseNames[phase - 1]}`)
         return
+      }
+      // Fade release accents in simulation time; paused encounters do not advance.
+      for (let i = e.impacts.length - 1; i >= 0; i--) {
+        e.impacts[i]!.life -= dt
+        if (e.impacts[i]!.life <= 0) e.impacts.splice(i, 1)
       }
       advanceProjectiles(e, dt, hooks)
       advanceHazards(e, dt, hooks)
@@ -416,14 +439,19 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     reset,
     snapshot(state) {
       const e = current(state)
-      if (!e) return { id: null, phase: null, telegraphs: [], projectiles: [] }
+      if (!e) return { id: null, phase: null, telegraphs: [], projectiles: [], impacts: [] }
       return {
         id: e.id, phase: e.phase,
         telegraphs: [
-          ...(e.windup?.telegraphs ?? []),
-          ...e.hazards.map(h => h.telegraph),
-        ].map(t => ({ ...t })),
+          ...(e.windup?.telegraphs.map(t => ({ ...t, stage: 'warning' as const,
+            progress: Math.max(0, Math.min(1, 1 - e.windup!.remaining / BOSS_ATTACKS[e.windup!.attackId].windup)),
+          })) ?? []),
+          ...e.hazards.map(h => ({ ...h.telegraph, stage: 'active' as const,
+            progress: Math.max(0, Math.min(1, 1 - h.remaining / Math.max(0.01, BOSS_ATTACKS[h.telegraph.attackId as BossAttackId].duration ?? 2))),
+          })),
+        ],
         projectiles: e.projectiles.map(p => ({ ...p })),
+        impacts: e.impacts.map(i => ({ ...i.telegraph, life: i.life, max: i.max })),
       }
     },
     hud(state) {
