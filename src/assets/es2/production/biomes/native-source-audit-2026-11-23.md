@@ -1,4 +1,50 @@
-# ES2 Biomes 8 — genuine 3× ground art application and real browser QA (2026-11-23)
+# Current ES2 Biomes 8 status — 2026-11-24
+
+> **CURRENT VERDICT: 8/8 sources committed at native 3× dimensions; strict technical source gate green; 8/8 still need human visual art approval.** The historical November 23 notes below describe earlier intermediate states and are superseded by this status.
+
+**Repository:** `weskao/eclipse-survivors`  
+**Owned workstream:** `feature/es2-art-qa-biomes`  
+**Integration destination (NOT merged):** `feature/es2-release-readiness-integration`
+
+## Verified actual repository assets
+
+| Source | Authored dimensions | Four-cell/one-tile geometry | Actual byte size | Review |
+|---|---|---|---:|---|
+| Blood Moon Cathedral ground | 1152×1152 | 1× 1152 | 467,142 | human pending |
+| Blood Moon Cathedral decor | 1320×330 | 4× 330×330 | 109,110 | human pending |
+| Cursed Forest ground | 1152×1152 | 1× 1152 | 549,912 | human pending |
+| Cursed Forest decor | 1320×330 | 4× 330×330 | 164,574 | human pending |
+| Abyssal Necropolis ground | 1152×1152 | 1× 1152 | 509,626 | human pending |
+| Abyssal Necropolis decor | 1320×330 | 4× 330×330 | 125,582 | human pending |
+| Celestial Rift ground | 1152×1152 | 1× 1152 | 516,518 | human pending |
+| Celestial Rift decor | 1320×330 | 4× 330×330 | 166,372 | human pending |
+
+The source hashes, authored 1254px ground masters or 2172×724 prop masters, transparency flags, size limits, and original scene IDs are recorded in the adjacent `manifest.json`. All 8 remain `needs-human-approval`; no manual signoff is invented.
+
+## Actual source-art commit chain and CI evidence
+
+- Ground: `fd6e9e335cf41a3df6c057bc19b5c9a1cff13a74` (three sources) and `858f36c0d8d45f3bf1c9111845b0499f4f5e3623` (fourth).
+- Decoration art: `1e899e2dd7778ddd540706c97ac404d03b99c329` (Cathedral, Forest) and `7192d1d770721fb4b117cbf1bef82a908e6dc73c` (Necropolis, Rift).
+- Forest frame-2 adjacent red-pixel contamination repaired using original newly authored source (not re-encoded WebP): `7626c9971d57f9e50c486c18c47188b423d5d6ca`. Manifest SHA now `68da345af7cc13cb57eb865b64518f3ad5e56bb129b14bfa5f0c90c9d3d8e1cb`; source master SHA remains unchanged.
+- [Final two-source installation CI 45245142163](https://github.com/weskao/eclipse-survivors/actions/runs/45245142163): strict native 3× 8/8, existing world-art tests, typecheck, build and release checks **PASS**, followed by normal fast-forward commit.
+- [Forest source cleanup CI 45246520820](https://github.com/weskao/eclipse-survivors/actions/runs/45246520820): exact patch and source SHA, strict 3× and image mapping, typecheck, production build, release validation **PASS**. Its one-off workflow and patch fragments were removed during the normal commit.
+- Full repository `pnpm test` remains **non-green** due to two independently owned gates (hero sprite source-edge risk; canonical world-art manual approval): 1126 passed, 2 failed, 1 skipped. Do not weaken either gate to force a green result.
+
+## Real browser, alpha-source frames and mobile evidence
+
+- [Chromium Run 45245840938](https://github.com/weskao/eclipse-survivors/actions/runs/45245840938) **PASS** on the fully installed 8-source state before the tiny Forest bleed cleanup. Artifact `es2-biomes-native-source-real-browser-evidence` ID `14854172480`: 12 true gameplay Canvas screenshots (four scenes × desktop 1440×900, phone portrait 375×812, phone landscape 812×375), three video recordings, and per-source decoded geometry and edge measurement JSON.
+- Real Chromium decoded **4 decoration sheets, 16 distinct source cells each viewport**, and found 330px source cells, nonempty alpha on every cell and zero 1px-edge touches. All ground files decode as 1152×1152 and pass the existing numerical edge-difference budget. The newest Forest red-pixel cleanup has a separate successful exact-binary verification; latest screenshot rerun should be checked before final human review.
+- The updated `qa-live-browser.mjs` also enforces 330px native cells and zero boundary bleed. Reviewer must still assess actual art style, repeated floor appearance, clarity during combat, mobile HUD overlaps and any possible unwanted occlusions; a technical browser pass is **not** an art signoff.
+- Existing mobile screenshots show unrelated top-of-screen title/HUD overlap risk; changes to shared UI are reserved for the integration owner.
+
+## Integration boundary
+
+Do not merge this branch into `feature/es2-release-readiness-integration` until the current independent artwork has its human visual approvals and integration owner checks current HEAD for conflicts. Do not touch `develop`, `main`, heroes, balancing or shared Canvas consumers, and do not make PRs, force-push or deploy.
+
+---
+
+## Historical workstream evidence (November 23 snapshot; superseded above)
+
 
 **Source branch:** `feature/es2-art-qa-biomes`  
 **Status:** THREE ground replacements **actually installed and runtime verified**; FIVE assets still blocked; all 8 remain `needs-human-approval`. No integration or release approval is implied.
