@@ -162,7 +162,7 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.get('[data-es2-settings]').attributes('aria-label')).toBe('開啟設定')
     setLocale('en', storage)
     await nextTick()
-    expect(wrapper.text()).toContain('TIME')
+    expect(wrapper.text()).toContain('Time')
     expect(wrapper.get('[data-es2-settings]').attributes('aria-label')).toBe('Open settings')
     setLocale('zh-TW', storage)
   })

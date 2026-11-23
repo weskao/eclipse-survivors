@@ -1613,7 +1613,6 @@ const english = new Map<string, string>([
 , ["首領即將降臨","Boss Incoming"]
 , ["首領決戰","Boss Battle"]
 , ["競技場第 ","Arena Wave "]
-, [" 波",""]
 , ["精英首領襲來","Elite Boss Approaching"]
 , ["本次遠征獲得的餘燼","Embers Earned This Expedition"]
 , ["）",")"]
@@ -1651,7 +1650,17 @@ const english = new Map<string, string>([
 , ["敵人數量已達上限","Enemy capacity reached"]
 , ["獎勵已領取","Reward Claimed"]
 , [" 降臨！"," Arrives!"]
-, ["LEVEL UP!","LEVEL UP!"]
+, ["選擇","Select"]
+, ["🏅 新成就：","🏅 New achievement: "]
+, ["✧ 新造型：","✧ New cosmetic: "]
+, ["✧ 冒險者殿堂","✧ Adventurer Hall"]
+, ["✦ 暮光餘燼","✦ Twilight Embers"]
+, ["擊殺 ·","Kills ·"]
+, ["秒 · Lv.","sec · Lv."]
+, ["能力圖鑑","Ability Compendium"]
+, ["本次遠征英雄：","Expedition Hero: "]
+, ["領取 ","Claim "]
+, ["放逐 ","Banish "]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],
@@ -1659,7 +1668,7 @@ const chinese = new Map<string, string>([
   ['VICTORY', '勝利'], ['DEFEAT', '失敗'],
 ])
 
-const chineseByEnglish = new Map([...english].map(([zh, en]) => [en, zh]))
+const chineseByEnglish = new Map([...english].filter(([, en]) => en.trim().length > 0).map(([zh, en]) => [en, zh]))
 
 export function detectLocale(languages: Iterable<unknown> = []): Locale {
   for (const language of languages) {

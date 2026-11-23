@@ -43,7 +43,7 @@ describe('world event dialog', () => {
     expect(card('invoke').textContent).toContain('犧牲 18 生命')
     expect(card('invoke').textContent).toContain('獲得 15 秒詛咒之力')
     expect(card('purify').disabled).toBe(true)
-    expect(document.body.textContent).toContain('Insufficient XP')
+    expect(document.body.textContent).toContain('經驗值不足')
     expect(card('leave').getBoundingClientRect).toBeDefined()
   })
 
