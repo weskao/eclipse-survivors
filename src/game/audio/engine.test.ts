@@ -324,6 +324,50 @@ describe('tick', () => {
   })
 })
 
+describe('result scene music', () => {
+  it('switches from battle music to the authored joyful victory theme, and plays only on the music bus', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    expect(bgm.paused).toBe(false)
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    expect(bgm.paused).toBe(true)
+    audio.tick('result')
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+    const pitches = ctx.oscillators.map(note => Math.round(69 + 12 * Math.log2(note.frequency.value / 440)))
+    expect(pitches).toContain(72)
+    expect(ctx.oscillators.some(note => note.targets[0] === ctx.gains[2])).toBe(true)
+  })
+
+  it('silences the result score when music is muted without muting independent victory SFX', () => {
+    const audio = make()
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    audio.toggleMusic('result')
+    audio.tick('result')
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.playSfx('victory')
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('does not loop the victory theme forever and stops after leaving results', () => {
+    const audio = make()
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    for (let i = 0; i < 100; i++) { ctx.currentTime = i * 0.3; audio.tick('result') }
+    const end = ctx.oscillators.length
+    ctx.currentTime = 50
+    audio.tick('result')
+    expect(ctx.oscillators.length).toBe(end)
+    audio.onScreen('menu')
+    audio.tick('result')
+    expect(ctx.oscillators.length).toBe(end)
+  })
+})
+
 describe('toggles', () => {
   it('reads initial values and persists on|off', () => {
     const storage = new MemStorage()
