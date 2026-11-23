@@ -145,6 +145,9 @@ export interface GameState {
   cosmetic: CosmeticId
   damageDealt: number
   damageTaken: number
+  /** Applied once when starting a run; no in-combat config reads. */
+  xpGainMultiplier: number
+  pickupGainMultiplier: number
   defeatedTypes: Partial<Record<MobType, number>>
   worldClock: number
   sceneFxClock: number
