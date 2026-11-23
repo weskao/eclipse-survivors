@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
-import { UP } from './constants'
+import { MAX_LEVEL, UP } from './constants'
+import { createContentRegistry } from './content/registry'
+import { WEAPONS_PACK } from './content/packs/weapons'
 import { seeded, setRandom } from './math'
 import { createHero, createState } from './state'
 import type { GameHooks, GameState, Hero } from './types'
@@ -69,6 +71,34 @@ describe('pickUpgrades', () => {
     expect(new Set(items.map((u) => u.id)).size).toBe(3)
     for (const u of items) expect(UP).toContain(u)
   })
+  it('favors repeated skill choices without forcing them or showing capped skills', () => {
+    const baseline = setup().hero
+    const focused = setup().hero
+    focused.skills.meteor = 4
+    const sample = (hero: Hero, id: string) => Array.from({ length: 600 }, (_, i) =>
+      pickUpgrades(hero, seeded(i + 1)).some(item => item.id === id)).filter(Boolean).length
+    expect(sample(focused, 'meteor')).toBeGreaterThan(sample(baseline, 'meteor') * 1.5)
+    expect(sample(focused, 'damage')).toBeGreaterThan(0)
+    focused.skills.meteor = MAX_LEVEL.meteor
+    expect(sample(focused, 'meteor')).toBe(0)
+    expect(sample(focused, 'frost')).toBeGreaterThan(sample(baseline, 'frost'))
+  })
+  it('favors an already-upgraded expansion weapon using per-run content levels', () => {
+    const make = () => {
+      const s = createState()
+      s.hero = createHero('ranger')
+      return s
+    }
+    const baseline = make()
+    const focused = make()
+    const registry = createContentRegistry([WEAPONS_PACK])
+    focused.content.levels['weapons:holy-lance'] = 4
+    const sample = (s: GameState) => Array.from({ length: 500 }, (_, i) =>
+      pickUpgrades(s.hero!, seeded(i + 1), registry, s).some(item => item.id === 'weapons:holy-lance')).filter(Boolean).length
+    expect(sample(focused)).toBeGreaterThan(sample(baseline) * 1.5)
+    focused.content.levels['weapons:holy-lance'] = 5
+    expect(sample(focused)).toBe(0)
+  })
 })
 
 describe('applyUpgrade', () => {
@@ -77,18 +107,18 @@ describe('applyUpgrade', () => {
     const hooks = spyHooks()
     s.levelQueue = 5
     applyUpgrade(s, 'damage', hooks)
-    expect(hero.damage).toBeCloseTo(40)
+    expect(hero.damage).toBeCloseTo(40.96)
     applyUpgrade(s, 'speed', hooks)
-    expect(hero.speed).toBeCloseTo(212.8)
+    expect(hero.speed).toBeCloseTo(214.7)
     applyUpgrade(s, 'haste', hooks)
-    expect(hero.delay).toBeCloseTo(0.4845)
+    expect(hero.delay).toBeCloseTo(0.4788)
     hero.hp = 100
     applyUpgrade(s, 'maxhp', hooks)
-    expect(hero.max).toBe(210)
-    expect(hero.hp).toBe(155)
+    expect(hero.max).toBe(215)
+    expect(hero.hp).toBe(160)
     applyUpgrade(s, 'maxhp', hooks)
-    expect(hero.max).toBe(245)
-    expect(hero.hp).toBe(210)
+    expect(hero.max).toBe(255)
+    expect(hero.hp).toBe(220)
     expect(hero.skills.maxhp).toBe(2)
     expect(s.levelQueue).toBe(0)
     expect(hero.levelAnim).toBe(0.8)
@@ -100,7 +130,7 @@ describe('applyUpgrade', () => {
     const hooks = spyHooks()
     hero.hp = 100
     applyUpgrade(s, 'shield', hooks)
-    expect(hero.hp).toBe(125)
+    expect(hero.hp).toBe(128)
     hero.hp = 170
     applyUpgrade(s, 'shield', hooks)
     expect(hero.hp).toBe(175)
