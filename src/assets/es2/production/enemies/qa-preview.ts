@@ -1,5 +1,6 @@
 /** Browser-only inspection view; does not change production rendering or gameplay. */
 import { ENEMY_DEFINITIONS } from '../../../../game/content/enemies/definitions'
+import { FACTION_VISUAL_SIZE } from '../../../../game/render/es2/production-factions'
 import manifest from './manifest.json'
 import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'
 import { inspectAtlasPixels } from './frame-qa'
@@ -58,9 +59,9 @@ async function inspectCandidate(body: (typeof manifest.assets)[number]): Promise
         warning.naturalWidth !== cue.width || warning.naturalHeight !== cue.height) {
       throw new Error('Actual decoded image dimensions differ from the manifest')
     }
-    const display = Math.max(70, ENEMY_DEFINITIONS[kind].radius * 4)
+    const display = FACTION_VISUAL_SIZE[kind]
     const info = document.createElement('p')
-    info.textContent = 'World size: ' + display + 'px · body cell: ' + body.frameWidth +
+    info.textContent = 'Actual combat size: ' + display + 'px · runtime body cell: ' + body.frameWidth +
       'px · native 3× target: ' + (display * 3) + 'px · warning: 40px / 120px source target'
     section.append(info)
 
@@ -122,7 +123,14 @@ async function inspectCandidate(body: (typeof manifest.assets)[number]): Promise
       '; edge-contact frames ' + (bodyQa.borderRiskFrames.join(', ') || 'none') +
       '. Warning: edge-contact ' + (cueQa.borderRiskFrames.join(', ') || 'none') + '. Human review required.'
     section.append(status)
-    findings.push(buildEnemyQaFinding(kind, display, body, cue, bodyQa, cueQa))
+    const finding = buildEnemyQaFinding(kind, display, body, cue, bodyQa, cueQa)
+    if (!finding.bodyNative3x) {
+      const notice = document.createElement('p')
+      notice.className = 'warnings'
+      notice.textContent = 'Runtime strip is below native 3× display resolution. Inspect the genuine authoring master and the actual game renderer; this WebP cannot be approved on source size alone.'
+      section.append(notice)
+    }
+    findings.push(finding)
   } catch (error) {
     const failure = document.createElement('p')
     failure.className = 'error'

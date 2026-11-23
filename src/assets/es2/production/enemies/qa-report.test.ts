@@ -25,32 +25,32 @@ describe('browser enemy QA export is truthful and never grants approval', () => 
 
 
   it('exports the actual native 3x provenance for the body and its cue', () => {
-    const report = buildEnemyQaFinding('frost-wraith', 76, base, cue, pixels, pixels)
+    const report = buildEnemyQaFinding('frost-wraith', FACTION_VISUAL_SIZE['frost-wraith'], base, cue, pixels, pixels)
     expect(report).toMatchObject({
       kind: 'frost-wraith', source: 'frost-wraith-body@3x.webp',
-      displayedPx: 76, minimumNative3xPx: 228, actualSourcePx: 228,
-      bodyNative3x: true, cueNative3x: true, native3x: true,
+      displayedPx: FACTION_VISUAL_SIZE['frost-wraith'], minimumNative3xPx: 498, actualSourcePx: 228,
+      bodyNative3x: false, cueNative3x: true, native3x: false,
       humanApproval: 'pending',
     })
   })
 
   it('does not mistake a native3x label for genuinely sufficient resolution', () => {
-    expect(buildEnemyQaFinding('frost-wraith', 76,
+    expect(buildEnemyQaFinding('frost-wraith', FACTION_VISUAL_SIZE['frost-wraith'],
       { ...base, frameWidth: 96, frameHeight: 96 }, cue, pixels, pixels).native3x).toBe(false)
-    expect(buildEnemyQaFinding('frost-wraith', 76,
+    expect(buildEnemyQaFinding('frost-wraith', FACTION_VISUAL_SIZE['frost-wraith'],
       base, { ...cue, frameWidth: 96, frameHeight: 96 }, pixels, pixels).native3x).toBe(false)
   })
 
   it('does not approve either source unless both have explicit approval', () => {
-    expect(buildEnemyQaFinding('frost-wraith', 76,
+    expect(buildEnemyQaFinding('frost-wraith', FACTION_VISUAL_SIZE['frost-wraith'],
       { ...base, status: 'approved' }, cue, pixels, pixels).humanApproval).toBe('pending')
-    expect(buildEnemyQaFinding('frost-wraith', 76,
+    expect(buildEnemyQaFinding('frost-wraith', FACTION_VISUAL_SIZE['frost-wraith'],
       { ...base, status: 'approved' }, { ...cue, status: 'approved' }, pixels, pixels).humanApproval).toBe('approved')
   })
 
   it('keeps decoded-alpha findings available for evidence', () => {
     const flags: AtlasFindings = { duplicatePairs: [[0, 1]], borderRiskFrames: [4], blankFrames: [] }
-    const finding = buildEnemyQaFinding('frost-wraith', 76, base, cue, flags, pixels)
+    const finding = buildEnemyQaFinding('frost-wraith', FACTION_VISUAL_SIZE['frost-wraith'], base, cue, flags, pixels)
     expect(finding.bodyQa).toEqual(flags)
     expect(finding.cueQa).toEqual(pixels)
   })
