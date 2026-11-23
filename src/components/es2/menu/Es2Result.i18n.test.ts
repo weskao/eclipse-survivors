@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'import { nextTick } from 'vue'
 import { setLocale, t } from '../../../i18n'
 import type { RunStats } from '../../../meta/types'
 import Es2Result from './Es2Result.vue'
