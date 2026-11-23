@@ -27,9 +27,13 @@
     "kind": "newly-generated-2172x724-RGB-with-alpha-keyed",
     "originalGeneratedFramePixels": 724,
     "upscaledFromExisting192px": false,
-    "masterCommittedToRepo": false,
-    "originalSourceStillNeedsImport": true,
-    "sourceExport": "sources/infernal-titan-master@source.webp"
+    "masterCommittedToRepo": true,
+    "originalSourceStillNeedsImport": false,
+    "sourceExport": "sources/infernal-titan-master@source.webp",
+    "masterFile": "sources/infernal-titan-master@source.webp",
+    "masterBytes": 1812232,
+    "masterSha256": "5f183e3661f14d39ee8337d595ce4ad6815ff07578e1c35396e87e6ed980c951",
+    "notes": "Lossless WebP encoding of the 2172x724 generated source; nontransparent visible RGBA pixels and alpha verified identical to source PNG. Visual identity and fringe review remain pending."
   },
   "runtimeTarget": {
     "maxDrawPx": 236,

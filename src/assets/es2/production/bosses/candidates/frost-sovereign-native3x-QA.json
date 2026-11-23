@@ -27,9 +27,13 @@
     "kind": "newly-generated-2172x724-RGBA-png",
     "originalGeneratedFramePixels": 724,
     "upscaledFromExisting192px": false,
-    "masterCommittedToRepo": false,
-    "originalSourceStillNeedsImport": true,
-    "sourceExport": "sources/frost-sovereign-master@source.webp"
+    "masterCommittedToRepo": true,
+    "originalSourceStillNeedsImport": false,
+    "sourceExport": "sources/frost-sovereign-master@source.webp",
+    "masterFile": "sources/frost-sovereign-master@source.webp",
+    "masterBytes": 1980438,
+    "masterSha256": "9b20d73cf438c6bb243d54a3e9540c81e17f2c145092f326835ca268e7ab823a",
+    "notes": "Lossless WebP encoding of the 2172x724 generated source; nontransparent visible RGBA pixels and alpha verified identical to source PNG. Visual identity and fringe review remain pending."
   },
   "runtimeTarget": {
     "maxDrawPx": 236,
