@@ -300,7 +300,8 @@
 
 /* Mobile portrait: reserve the top for vitals/boss, bottom for touch controls. */
 @media (orientation: portrait) and (max-width: 700px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
+       (orientation: landscape) and (max-height: 520px) and (max-width: 900px),
+       (pointer: coarse) and (min-width: 701px) and (max-width: 1100px) {
   .es2-hud {
     --es2-encounter-top: max(140px, calc(env(safe-area-inset-top) + 124px));
     --es2-compact-info-top: max(222px, calc(env(safe-area-inset-top) + 206px));
@@ -393,4 +394,12 @@
     left: 34%;
     width: min(32vw, 190px);
   }
+}
+
+/* Touch tablets have a third input control: hero specials. Keep the desktop
+   equipment strip in the shared information drawer, not across those controls. */
+@media (pointer: coarse) and (min-width: 701px) and (max-width: 1100px) {
+  .es2-hud__hero { width: min(34vw, 285px); }
+  .es2-hud__encounter { width: min(470px, calc(100vw - 24px)); }
+  .es2-hud__info-drawer { width: min(330px, calc(100vw - 16px)); }
 }
