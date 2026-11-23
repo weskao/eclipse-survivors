@@ -142,6 +142,53 @@ try {
   await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
   await page.screenshot({ path: output + '/gameplay-current-encounter-real-browser.png', animations: 'disabled' })
   assert.deepEqual(browserErrors, [], 'Uncaught browser exceptions while reviewing world art')
+  // Preserve real gameplay evidence for all four production biomes rather than
+  // treating image decode in an archive gallery as proof of correct world rendering.
+  // The existing showcase switch uses the actual engine, state transitions,
+  // Vite-loaded sprites and Canvas renderer; it never mocks a gameplay screenshot.
+  for (const [viewportName, width, height, touch] of [
+    ['desktop-1440', 1440, 900, false],
+    ['mobile-375', 375, 812, true],
+  ]) {
+    const context = await browser.newContext({
+      viewport: { width, height }, deviceScaleFactor: touch ? 2 : 1,
+      isMobile: touch, hasTouch: touch,
+    })
+    const page = await context.newPage()
+    const errors = []
+    page.on('pageerror', error => errors.push(error.message))
+    try {
+      const scenarioUrl = new URL(base)
+      scenarioUrl.searchParams.set('showcase', '1')
+      await page.goto(scenarioUrl.href, { waitUntil: 'domcontentloaded' })
+      await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
+      await page.locator('.es2-start').click()
+      await page.waitForFunction(() => window.__test?.mode === 'play', null, { timeout: 30000 })
+
+      const sceneNames = new Set()
+      for (const index of [0, 1, 2, 3]) {
+        const previousFrames = await page.evaluate(() => window.__test?.frames ?? -1)
+        const sceneName = await page.evaluate(index => {
+          window.__test.previewBiome(index)
+          return window.__test.scene
+        }, index)
+        assert.ok(sceneName, viewportName + ': missing scene name for biome ' + index)
+        sceneNames.add(sceneName)
+        await page.waitForFunction(previousFrames => window.__test?.frames > previousFrames,
+          previousFrames, { timeout: 30000 })
+        await page.screenshot({
+          path: output + '/gameplay-biome-' + index + '-' + viewportName + '.png',
+          animations: 'disabled',
+        })
+      }
+      assert.equal(sceneNames.size, 4,
+        viewportName + ': not all four authored biomes changed the actual gameplay scene')
+      assert.deepEqual(errors, [], viewportName + ': uncaught runtime exceptions while switching biomes')
+      console.log('PASS: four distinct live Canvas biomes captured at ' + viewportName)
+    } finally {
+      await context.close()
+    }
+  }
   console.log('PASS: 49/49 production WebPs decoded, source geometry/alpha verified in real Chromium')
   console.log('ATTENTION: Native 3x source provenance, full combat state coverage and human approval remain pending')
 } finally {
