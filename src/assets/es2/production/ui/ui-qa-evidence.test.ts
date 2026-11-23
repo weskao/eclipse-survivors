@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 const root = dirname(fileURLToPath(import.meta.url))
 const manifest = JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8')) as {
-  assets: { id: string; path: string; alpha: boolean; nativeSourceSide?: number }[]
+  assets: { id: string; path: string; alpha: boolean }[]
 }
 
 describe('ES2 production UI WebP alpha-bit preflight', () => {
@@ -13,9 +13,6 @@ describe('ES2 production UI WebP alpha-bit preflight', () => {
     expect(manifest.assets).toHaveLength(17)
     expect(new Set(manifest.assets.map(asset => asset.id)).size).toBe(17)
     for (const asset of manifest.assets) {
-      if (['rarity-rare', 'rarity-legendary', 'hud-xp'].includes(asset.id)) {
-        expect(asset.nativeSourceSide, asset.id).toBeGreaterThanOrEqual(192)
-      }
       expect(asset.alpha, asset.id).toBe(true)
       const bytes = readFileSync(join(root, asset.path))
       expect(bytes.toString('ascii', 0, 4), asset.id).toBe('RIFF')

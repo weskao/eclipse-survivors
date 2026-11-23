@@ -103,10 +103,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "d543433a10d6b0c5a7a3e1d9656c44fd8f0b71a61619d3849f272bbbdd260e96",
-      "qaNote": "Re-authored original detailed 724px source cell into 192px transparent WebP for local runtime. Suspected neighboring-pixel contamination from c104 source removed. Per-pixel alpha and real mobile gameplay/visual sign-off remain pending.",
-      "nativeSourceSide": 724,
-      "sourceMaster": "generated clean transparent 3-cell atlas; image generation e0ae89ca-a466-4ecd-9e7b-254f2406c140; source cell 1/3"
+      "sha256": "3c07ca5eeb2025daccf1becf2102b15a1308e3e8fea363ad42837ea289734695",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "rarity-legendary",
@@ -122,10 +120,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "3d9718230ef347ecf1d08821204c2d8763baef822d1a9b756912161d652b5e59",
-      "qaNote": "Re-authored original detailed 724px source cell into 192px transparent WebP for local runtime. Suspected neighboring-pixel contamination from c104 source removed. Per-pixel alpha and real mobile gameplay/visual sign-off remain pending.",
-      "nativeSourceSide": 724,
-      "sourceMaster": "generated clean transparent 3-cell atlas; image generation e0ae89ca-a466-4ecd-9e7b-254f2406c140; source cell 2/3"
+      "sha256": "5ef5630631c525c3970f017acc0c421f5cb30bd18400719fc5c70f525973e05c",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-health",
@@ -158,10 +154,8 @@
       "frameWidth": 192,
       "frameHeight": 192,
       "status": "needs-human-approval",
-      "sha256": "58622e18ffaee41ef252d98d35dd31d7f322bb278b9112354a794bb8d9e42b0d",
-      "qaNote": "Re-authored original detailed 724px source cell into 192px transparent WebP for local runtime. Suspected neighboring-pixel contamination from c104 source removed. Per-pixel alpha and real mobile gameplay/visual sign-off remain pending.",
-      "nativeSourceSide": 724,
-      "sourceMaster": "generated clean transparent 3-cell atlas; image generation e0ae89ca-a466-4ecd-9e7b-254f2406c140; source cell 3/3"
+      "sha256": "b8c396c67d8da45cde11603a771e2c2f49cde578e30faef996221292505a47c6",
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
     },
     {
       "id": "hud-cooldown",
