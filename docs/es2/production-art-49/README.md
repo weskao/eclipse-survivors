@@ -35,3 +35,5 @@
 ~~~
 
 四類可平行 QA，合回目標分支時需逐一以最新 HEAD 驗證，不用同時寫 shared 文件。不動 develop/main；不開 PR、不 force-push、不部署。若現有素材合格，只保存審核證據並重用，不需要重複產圖。沒有人工視覺核准，不得冒充全綠 CI。
+
+- [12-biomes-8-owner-approval-2026-11-24.md](12-biomes-8-owner-approval-2026-11-24.md)：原生 3× 地板與裝飾正式整合／核准紀錄。

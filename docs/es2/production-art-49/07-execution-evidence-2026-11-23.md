@@ -1,5 +1,7 @@
 # ES2 49 項世界美術 — 實際執行、整合與驗收證據（2026-11-23）
 
+> **2026-11-24 Biomes 整合更新：四種場景的 4 張 1152×1152 地板、4 組 330px ×4 裝飾（共 8 項）由專案擁有者明確人工核准。** 正式 WebP 直接取自 [feature/es2-art-qa-biomes](https://github.com/weskao/eclipse-survivors/tree/feature/es2-art-qa-biomes) 中已完成 native 3× 及 Chromium QA 的原始 Git blob，未插值重製。Manifest 與 `world-art-candidates.test.ts` 已嚴格檢查這八項的人工作品批准記錄；其他 20 敵人／預警及 4 BOSS（共 24 項）仍待核准，英雄獨立。詳見 [12-biomes-8-owner-approval-2026-11-24.md](12-biomes-8-owner-approval-2026-11-24.md)。歷史 8 項 pending／768px 記錄已過期。
+
 > **2026-11-24 更新：UI 17/17 正式素材已由專案擁有者確認通過人工美術驗收，Manifest 已逐項改為 `approved`。** 簽核紀錄：[10-ui-17-owner-approval-2026-11-24.md](10-ui-17-owner-approval-2026-11-24.md)。下方 2026-11-23 以前的 `needs-human-approval`／`visual-review-required` 描述只代表歷史快照，**不能再用來表示目前 17 項 UI 的人工美術狀態**。此批准不等於其他 32 項素材、英雄、原生 3×來源或最新 HEAD 全專案 CI 已全部通過。
 
 

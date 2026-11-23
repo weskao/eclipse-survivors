@@ -38,12 +38,12 @@ describe('ES2 world art - blocking candidate asset integrity', () => {
       expect(existsSync(manifestPath), `Missing manifest ${category}`).toBe(true)
       const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as ArtManifest
       expect(manifest.category).toBe(category)
-      // Owner signed off only the 17 UI icons; every other art group still has its original blocking gate.
-      expect(manifest.status).toBe(category === 'ui' ? 'approved' : 'visual-review-required')
+      // Explicit project-owner approvals exist only for UI 17 and Biomes 8; enemies/bosses retain their blocking gate.
+      expect(manifest.status).toBe(category === 'ui' || category === 'biomes' ? 'approved' : 'visual-review-required')
       expect(manifest.assets).toHaveLength(count)
       for (const asset of manifest.assets) {
-        expect(asset.status).toBe(category === 'ui' ? 'approved' : 'needs-human-approval')
-        if (category === 'ui') {
+        expect(asset.status).toBe(category === 'ui' || category === 'biomes' ? 'approved' : 'needs-human-approval')
+        if (category === 'ui' || category === 'biomes') {
           expect(asset.humanApproval, asset.id).toEqual({
             status: 'approved', confirmedBy: 'project-owner',
             confirmedOn: '2026-11-24', scope: 'visual-art', evidence: 'explicit-user-confirmation',
