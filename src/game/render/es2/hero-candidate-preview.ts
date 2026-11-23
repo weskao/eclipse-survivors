@@ -1,6 +1,11 @@
 import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atlas'
 
 const grid = document.querySelector<HTMLElement>('#grid')!
+const eastCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'E').length
+const southCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'S').length
+document.querySelector<HTMLElement>('#candidate-summary')!.textContent =
+  `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing and ${southCount} South-facing four-frame strips.`
+grid.setAttribute('aria-label', `${HERO_CANDIDATE_ATLASES.length} candidate animation strips`)
 const pause = document.querySelector<HTMLButtonElement>('#pause')!
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 let paused = still
