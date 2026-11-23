@@ -78,3 +78,13 @@ Target: `feature/es2-release-readiness-integration`
 | 完整 CI 全綠 | **未達，保留正式美術 gate** |
 
 請保留全部原始 WebP。若之後各來源高解析重繪獲得可驗證的人工核准，依 [05-integration.md](05-integration.md) 的 asset first → TDD → runtime consumer → screenshots → review → CI 流程逐項更新，絕不可用批次更改 status 取得假綠燈。英雄仍是其他聊天的獨立前置依賴。
+
+
+## 六、後續真實修正與驗證（2026-11-23）
+
+- [05e6cef0](https://github.com/weskao/eclipse-survivors/commit/05e6cef0962673088f52de6f2f4e80ddc84cd947)：已將原有 `treasure-common@3x.webp` 接入實際 Canvas 世界地圖的古代寶箱標記；圖片載入時以 192px 原圖繪製為 48px（4×），載入失敗時保留既有 ◆ fallback。對應 `environment.world-art.test.ts` 與 `production-world.test.ts` 已經在 CI 中由失敗轉為通過。沒有重新生成既有寶箱圖。
+- [f6af207c](https://github.com/weskao/eclipse-survivors/commit/f6af207cba8028c43f28f83987bd62a1eaad4a8c)：`achievement-flawless` 舊圖 192px 來源透明內容主體僅 47px 寬。已針對此可量化問題繪製新的黃金星芒徽章，將真正原生 1254px master（SHA256 `454a88b645054f769d24dfe03b81f9504d4b2c18c1edb3e8bcefeeca94c0933b`）和 240px 正式透明 WebP（SHA256 `d071d42a11ec82317b71c1f70f51416f592d2dd8dbfd1a03efe3ea7f9ceaf701`）都提交入庫。
+- [Chromium Run 45177106201](https://github.com/weskao/eclipse-survivors/actions/runs/45177106201)：正式建置成功；真實 UI 圖鑑底部可看到新版本獎章，並完成 49/49 WebP browser decode。此 run 不等於對所有戰鬥狀態的逐角色審核。
+- [9bf21fde](https://github.com/weskao/eclipse-survivors/commit/9bf21fdea24354f0e49e84304af1e11f07cb9b2a)：修正新增的 strict TS master-metadata assertion，不變更遊戲行為。
+
+**仍然 pending：**其他敵人、魔王、地板／裝飾等真正原生 3×來源及完整各狀態戰鬥視覺 QA；另一對話的英雄；全部 52 項美術正式人工核准門檻。不可為了讓 CI 全綠擅自修改 status。
