@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
-import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../../../game/ui-art'
+import { resolveSkillChoiceArt } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { RELIC_BY_ID, type RelicId } from '../../../game/content/relics/catalog'
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
@@ -10,6 +10,7 @@ import { emptyProfile } from '../../../meta/profile'
 import type { MetaState } from '../../../game/content/meta/state'
 import type { Profile, PermanentUpgrade, CosmeticId, RunModeId, RunRewards, RunStats } from '../../../meta/types'
 import '../../../styles/es2/menu.css'
+import '../../../styles/es2/skill-polish.css'
 import Es2MainMenu from './Es2MainMenu.vue'
 import Es2Archive from './Es2Archive.vue'
 import Es2ChoiceDialog from './Es2ChoiceDialog.vue'
@@ -36,7 +37,7 @@ const props = withDefaults(defineProps<{
   loading?: { message?: string; hero?: JobId; progress?: number } | null
 }>(), {
   upgrades: () => [], ending: '', summary: '', settingsOpen: false,
-  upgradeEffect: 'soft', cameraShake: true, audioUnlocked: true,
+  upgradeEffect: 'soft', cameraShake: false, audioUnlocked: true,
   musicOn: true, sfxOn: true, musicVolume: 100, sfxVolume: 100,
 })
 const emit = defineEmits<{
@@ -58,17 +59,12 @@ watch(() => props.screen, screen => { if (screen !== 'menu') { archive.value = '
 const archiveActive = computed(() => props.screen === 'menu' && archive.value !== 'main' && !resetOpen.value && !props.settingsOpen && !props.notification && !props.loading)
 const levelActive = computed(() => props.screen === 'level' && !props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const specialActive = computed(() => !!props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
-const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => {
-  const native = !upgrade.id.includes(':')
-  const stillSrc = native ? skillImageSrc(upgrade.id) : upgrade.iconSrc
-  const movingSrc = native && hasGeneratedSkillArt(upgrade.id) ? animatedSkillImageSrc(upgrade.id) : stillSrc
-  return {
-    id: upgrade.id, title: upgrade.title, description: upgrade.desc, icon: upgrade.icon,
-    imageSrc: props.upgradeEffect === 'still' ? stillSrc : movingSrc,
-    reducedMotionSrc: stillSrc, rarity: upgrade.rarity, level: upgrade.level,
-    maxLevel: upgrade.maxLevel, requirements: upgrade.requirements, evolution: upgrade.isEvolution,
-  }
-}))
+const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
+  id: upgrade.id, title: upgrade.title, description: upgrade.desc, icon: upgrade.icon,
+  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, props.upgradeEffect === 'still'),
+  rarity: upgrade.rarity, level: upgrade.level, maxLevel: upgrade.maxLevel,
+  requirements: upgrade.requirements, evolution: upgrade.isEvolution,
+})))
 const specialCards = computed(() => {
   const offer = props.specialChoice
   if (!offer || offer.kind !== 'treasure') return offer
