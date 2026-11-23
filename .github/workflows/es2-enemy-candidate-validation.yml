@@ -1,0 +1,81 @@
+name: ES2 independent enemy 3x art and real-browser QA
+on:
+  push:
+    branches: [feature/es2-world-art-candidate-runtime]
+permissions:
+  contents: read
+concurrency:
+  group: es2-enemy-candidate-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  targeted-and-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify real enemy art, provenance, renderer and 49 candidate integrity
+        run: >
+          pnpm exec vitest run
+          src/assets/es2/production/enemies/frame-qa.test.ts
+          src/assets/es2/production/enemies/native-3x.test.ts
+          src/assets/es2/production/enemies/berserker-native-source.test.ts
+          src/assets/es2/production/enemies/telegraph-native-sources.test.ts
+          src/assets/es2/production/world-art-candidates.test.ts
+          src/game/render/es2/production-factions.test.ts
+          src/game/render/es2/production-world.test.ts
+      - run: pnpm typecheck
+      - run: pnpm build
+  real-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install isolated Chromium
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Real responsive gameplay and world art smoke
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/es2-preview.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node scripts/es2-mobile-browser-smoke.mjs
+          node scripts/es2-responsive-layout-matrix.mjs
+      - name: Encode evidence to MP4
+        if: always()
+        run: |
+          for source in artifacts/es2-mobile-browser/*-live.webm; do
+            test -f "$source" || continue
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i "$source" -an -c:v libx264 -preset veryfast -crf 24 -pix_fmt yuv420p -movflags +faststart "${source%.webm}.mp4"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-enemy-candidate-real-browser-evidence
+          path: artifacts/es2-mobile-browser/
+          if-no-files-found: warn
+  release-blockers:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check-release
