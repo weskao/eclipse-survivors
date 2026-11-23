@@ -56,6 +56,8 @@ export interface AudioSystemOptions {
   menuBgm?: BgmElement
   bossTracks?: Partial<Record<BossId, readonly [string, string, string]>>
   warningTrack?: string
+  /** Pre-rendered, non-looping victory theme (falls back to ES2 synthesis on load error). */
+  victoryTrack?: string
   loadMusic?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Omit for `localStorage`; `null` disables persistence. */
   storage?: SettingsStorage | null
@@ -109,7 +111,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const bossScore = createBossScore()
   let fallbackBossId: BossId | null = null
   const cinematic = createCinematicMusic(opts, () => ac, () => musicBus,
-    () => mode === 'play' && !interrupted && musicOn && musicVolume > 0)
+    () => (mode === 'play' || mode === 'result') && !interrupted && musicOn && musicVolume > 0)
   let resultScore = createEs2Score()
   let resultScene: 'victory' | 'defeat' | null = null
   const sfxLast = new Map<SfxCue, number>()
@@ -282,6 +284,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       resultScore.dispose()
       resultScore = createEs2Score()
       if (next) resultScore.change(next, ac ? ac.currentTime + 0.02 : 0)
+      cinematic.result(next === 'victory')
     },
     setCombatIntensity(next) {
       if (intensity === next) return
@@ -317,6 +320,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }
       if (mode === 'result') {
+        if (resultScene === 'victory' && opts.victoryTrack) {
+          cinematic.sync()
+          if (!cinematic.resultFallback) return
+        }
         if (resultScene) resultScore.schedule(ctx.currentTime, tone, 0.88)
         return
       }
@@ -341,9 +348,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         resultScene = null
         resultScore.dispose()
         resultScore = createEs2Score()
+        cinematic.result(false)
       }
       if (mode !== 'menu') menuBgm?.pause()
-      if (mode !== 'play') cinematic.stop(mode === 'paused' || mode === 'level')
+      if (mode !== 'play' && mode !== 'result') cinematic.stop(mode === 'paused' || mode === 'level')
       if (mode === 'menu' || mode === 'paused' || mode === 'result') bgm.pause()
       if (mode === 'menu') {
         intensity = 'calm'
@@ -361,7 +369,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       bgm.volume = mp3Level()
       if (menuBgm) menuBgm.volume = menuLevel()
       if (mode === 'play' || mode === 'menu') playScore()
-      if (mode === 'play') cinematic.sync()
+      if (mode === 'play' || mode === 'result') cinematic.sync()
     },
     resetBattleClock(delay) {
       battle.setClock(ac ? ac.currentTime + delay : 0)

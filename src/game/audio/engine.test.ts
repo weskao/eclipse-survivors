@@ -368,6 +368,84 @@ describe('result scene music', () => {
   })
 })
 
+describe('sampled orchestral expedition victory', () => {
+  it('plays a finite pre-rendered theme through the existing music bus', async () => {
+    const requested: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: '/audio/eclipse-victory.wav',
+      loadMusic: async url => {
+        requested.push(url)
+        return ctx.createBuffer(2, 672000, 24000)
+      },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(requested).toEqual(['/audio/eclipse-victory.wav'])
+    const source = ctx.sources.at(-1)!
+    expect(source.loop).toBe(false)
+    expect(source.targets[0]).toBe(ctx.gains.at(-1))
+    expect(ctx.gains.at(-1)?.targets[0]).toBe(ctx.gains[1])
+    audio.tick('result')
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.onScreen('menu')
+    expect(source.stoppedAt).not.toBeNull()
+  })
+
+  it('honors music mute and resumes without starting a loop', async () => {
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: 'victory.wav',
+      loadMusic: async () => ctx.createBuffer(2, 672000, 24000),
+    })
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    audio.toggleMusic('result')
+    expect(first.stoppedAt).not.toBeNull()
+    audio.toggleMusic('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources).toHaveLength(2)
+    expect(ctx.sources.at(-1)?.loop).toBe(false)
+    audio.interrupt()
+    expect(ctx.sources.at(-1)?.stoppedAt).not.toBeNull()
+  })
+
+  it('falls back to finite synth if the file is unavailable', async () => {
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: 'missing.wav', loadMusic: async () => null,
+    })
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    audio.tick('result')
+    expect(ctx.sources).toHaveLength(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('does not request the victory file on defeat', () => {
+    const loaded: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: 'victory.wav',
+      loadMusic: async url => { loaded.push(url); return null },
+    })
+    audio.wake()
+    audio.setResultTheme?.('defeat')
+    audio.onScreen('result')
+    audio.tick('result')
+    expect(loaded).toHaveLength(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+})
+
 describe('toggles', () => {
   it('reads initial values and persists on|off', () => {
     const storage = new MemStorage()

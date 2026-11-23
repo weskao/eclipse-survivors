@@ -177,6 +177,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
     bossTracks: bossTrackUrls,
     warningTrack: import.meta.env.BASE_URL + 'audio/boss/arrival-warning.mp3',
+    victoryTrack: import.meta.env.BASE_URL + 'audio/eclipse-victory.wav',
   })
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'

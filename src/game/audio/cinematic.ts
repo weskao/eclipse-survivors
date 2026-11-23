@@ -18,12 +18,14 @@ interface Voice {
  * musical offset; a short gain crossfade replaces abrupt track restarts.
  */
 export function createCinematicMusic(
-  opts: Pick<AudioSystemOptions, 'bossTracks' | 'warningTrack' | 'loadMusic'>,
+  opts: Pick<AudioSystemOptions, 'bossTracks' | 'warningTrack' | 'victoryTrack' | 'loadMusic'>,
   context: () => AudioContextLike | null,
   musicBus: () => GainLike | null,
   allowed: () => boolean,
 ): {
   readonly playingBoss: boolean
+  readonly resultFallback: boolean
+  result(active: boolean): void
   boss(id: BossId | null, phase?: number): void
   warning(seconds: number | null): void
   sync(): void
@@ -33,6 +35,7 @@ export function createCinematicMusic(
   let bossId: BossId | null = null
   let phase = 1
   let remaining: number | null = null
+  let resultActive = false
   let voice: Voice | null = null
   let paused: { key: string; offset: number } | null = null
   let loading: string | null = null
@@ -41,6 +44,8 @@ export function createCinematicMusic(
   const failed = new Set<string>()
 
   const wanted = (): { key: string; url: string; loop: boolean } | null => {
+    if (resultActive) return opts.victoryTrack
+      ? { key: 'result:victory', url: opts.victoryTrack, loop: false } : null
     if (bossId) {
       const url = opts.bossTracks?.[bossId]?.[phase - 1]
       return url ? { key: 'boss:' + bossId + ':' + phase, url, loop: true } : null
@@ -124,6 +129,13 @@ export function createCinematicMusic(
 
   return {
     get playingBoss() { return !!(voice && voice.key.startsWith('boss:')) },
+    get resultFallback() { return !opts.victoryTrack || failed.has(opts.victoryTrack) },
+    result(active) {
+      if (active === resultActive) return
+      resultActive = active
+      if (active) { bossId = null; remaining = null }
+      sync()
+    },
     boss(id, newPhase = 1) {
       const targetPhase = Number.isFinite(newPhase) ? Math.max(1, Math.min(3, Math.floor(newPhase))) : 1
       if (id === bossId && phase === targetPhase) return
@@ -146,6 +158,7 @@ export function createCinematicMusic(
       failed.clear()
       bossId = null
       remaining = null
+      resultActive = false
     },
   }
 }
