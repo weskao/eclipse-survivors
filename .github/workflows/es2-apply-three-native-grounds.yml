@@ -1,0 +1,78 @@
+name: ES2 apply authored biome ground candidates for QA
+on:
+  push:
+    branches: [feature/es2-art-qa-biomes]
+    paths:
+      - 'src/assets/es2/production/biomes/.art-patch-parts/**'
+permissions:
+  contents: write
+concurrency:
+  group: es2-biome-ground-patch-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  apply-native-sources:
+    if: "github.event.head_commit.message == 'chore(es2): stage verified native-3x ground candidates'"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Reassemble and verify exact native-art Git binary patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat src/assets/es2/production/biomes/.art-patch-parts/part-*.txt > /tmp/es2-biome-art.patch
+          test "$(wc -c < /tmp/es2-biome-art.patch)" -eq 2470776
+          printf '%s  %s\n' 'eb7753690e34a0f1531a58f3599337b37c793e6d1cd1b3f1766089b911681a10' /tmp/es2-biome-art.patch | sha256sum -c -
+          git apply --check --binary /tmp/es2-biome-art.patch
+          git apply --binary /tmp/es2-biome-art.patch
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'; import crypto from 'node:crypto';
+          const base='src/assets/es2/production/biomes/';
+          const m=JSON.parse(fs.readFileSync(base+'manifest.json','utf8'));
+          if (m.category!=='biomes'||m.status!=='visual-review-required'||m.assets.length!==8) throw Error('Invalid manifest');
+          const chosen=['blood-moon-cathedral','cursed-forest','abyssal-necropolis'];
+          for (const a of m.assets) {
+            if (a.status!=='needs-human-approval') throw Error('Unapproved art was promoted: '+a.id);
+            const file=fs.readFileSync(base+a.path);
+            const hash=crypto.createHash('sha256').update(file).digest('hex');
+            if (hash!==a.sha256) throw Error('Asset byte SHA mismatch: '+a.id);
+            if (file.length>a.maxBytes) throw Error('Asset too large: '+a.id);
+            if (chosen.includes(a.id.split(':')[0])&&a.id.endsWith(':ground')) {
+              if (a.width!==1152||a.height!==1152||a.frameWidth!==1152||a.native3x!==true) throw Error('Unfinished native 3x candidate: '+a.id);
+              if (!a.authoredMasterSha256||!a.authoredMasterDimensions) throw Error('No source provenance: '+a.id);
+            }
+          }
+          NODE
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Existing world art binary integrity and mapping
+        run: pnpm exec vitest run src/assets/es2/production/world-art-candidates.test.ts src/game/render/es2/production-world.test.ts
+      - name: TypeScript
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build
+      - name: Release invariant checks
+        run: pnpm check-release
+      - name: Capture remaining explicit RED acceptance gates
+        continue-on-error: true
+        run: pnpm exec vitest run src/assets/es2/production/biomes/native-3x-candidates.test.ts
+      - name: Commit on the authorized workstream only, without force
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF}" = 'refs/heads/feature/es2-art-qa-biomes'
+          git rm -r src/assets/es2/production/biomes/.art-patch-parts
+          git add src/assets/es2/production/biomes/manifest.json
+          git add src/assets/es2/production/biomes/abyssal-necropolis-ground@3x.webp
+          git add src/assets/es2/production/biomes/blood-moon-cathedral-ground@3x.webp
+          git add src/assets/es2/production/biomes/cursed-forest-ground@3x.webp
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'art(es2): install three authentic 3x biome ground candidates for QA'
+          git fetch origin feature/es2-art-qa-biomes
+          test "$(git rev-parse origin/feature/es2-art-qa-biomes)" = "${GITHUB_SHA}"
+          git push origin HEAD:feature/es2-art-qa-biomes
