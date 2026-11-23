@@ -1,3 +1,4 @@
+import { BALANCE } from '../game/config'
 import type { RunModeId } from './types'
 import { getObjectiveMode, objectiveModeIds, type ObjectiveModeId } from '../game/content/modes/definitions'
 
@@ -12,7 +13,7 @@ export interface ModeConfig {
 }
 
 export const modeIds: readonly RunModeId[] = ['quick', 'standard', 'endless', 'challenge']
-const normal = { enemyHp: 1, enemyDamage: 1, spawnFrequency: 1 }
+const normal = BALANCE.modes.normalModifiers
 export const isObjectiveModeId = (mode: RunModeId): mode is ObjectiveModeId =>
   objectiveModeIds.includes(mode as ObjectiveModeId)
 
@@ -27,10 +28,10 @@ const objectiveConfig = (id: ObjectiveModeId): ModeConfig => {
   }
 }
 export const MODES: Record<RunModeId, ModeConfig> = {
-  quick: { id: 'quick', label: '迅捷遠征', description: '150 秒決戰 · 擊敗首領迎接黎明', duration: 150, bossAt: 92, victory: 'timed-boss', modifiers: normal },
-  standard: { id: 'standard', label: '王國征途', description: '8 分鐘遠征 · 征服深淵魔王', duration: 480, bossAt: 300, victory: 'timed-boss', modifiers: normal },
-  endless: { id: 'endless', label: '無盡生存', description: '沒有時間限制 · 魔物愈來愈強', duration: null, bossAt: 180, victory: 'endless', modifiers: { ...normal, spawnFrequency: 1.08 } },
-  challenge: { id: 'challenge', label: '詛咒試煉', description: '210 秒 · 強敵侵襲與高壓戰鬥', duration: 210, bossAt: 130, victory: 'timed-boss', modifiers: { enemyHp: 1.25, enemyDamage: 1.3, spawnFrequency: 1.28 } },
+  quick: { id: 'quick', label: '迅捷遠征', description: '150 秒決戰 · 擊敗首領迎接黎明', duration: BALANCE.modes.classic.quick.duration, bossAt: BALANCE.modes.classic.quick.bossAt, victory: 'timed-boss', modifiers: normal },
+  standard: { id: 'standard', label: '王國征途', description: '8 分鐘遠征 · 征服深淵魔王', duration: BALANCE.modes.classic.standard.duration, bossAt: BALANCE.modes.classic.standard.bossAt, victory: 'timed-boss', modifiers: normal },
+  endless: { id: 'endless', label: '無盡生存', description: '沒有時間限制 · 魔物愈來愈強', duration: BALANCE.modes.classic.endless.duration, bossAt: BALANCE.modes.classic.endless.bossAt, victory: 'endless', modifiers: { ...normal, spawnFrequency: BALANCE.modes.classic.endless.spawnFrequency } },
+  challenge: { id: 'challenge', label: '詛咒試煉', description: '210 秒 · 強敵侵襲與高壓戰鬥', duration: BALANCE.modes.classic.challenge.duration, bossAt: BALANCE.modes.classic.challenge.bossAt, victory: 'timed-boss', modifiers: { enemyHp: BALANCE.modes.classic.challenge.enemyHp, enemyDamage: BALANCE.modes.classic.challenge.enemyDamage, spawnFrequency: BALANCE.modes.classic.challenge.spawnFrequency } },
   'boss-rush': objectiveConfig('boss-rush'),
   'endless-eclipse': objectiveConfig('endless-eclipse'),
   'relic-hunt': objectiveConfig('relic-hunt'),
