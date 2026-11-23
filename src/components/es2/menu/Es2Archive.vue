@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
 import { ACHIEVEMENTS } from '../../../meta/achievements'
+import { COSMETICS } from '../../../meta/cosmetics'
 import { WORLD_ART, WORLD_UI_IDS } from '../../../game/render/es2/production-world'
 import { C104_SOURCES, C104_SURFACES } from '../../../game/render/es2/c104-source-art'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../../game/content/enemies/definitions'
@@ -36,14 +37,7 @@ const tabs: readonly { id: Exclude<MenuView, 'main'>; title: string }[] = [
   { id: 'progression', title: '永久強化' }, { id: 'relics', title: '聖物' },
   { id: 'monsters', title: '魔物' }, { id: 'skills', title: '能力' }, { id: 'achievements', title: '成就' },
 ]
-const skins: readonly { id: CosmeticId; hero: JobId; name: string }[] = [
-  { id: 'knight-default', hero: 'knight', name: '原初鎧甲' },
-  { id: 'knight-gilded', hero: 'knight', name: '曙光鎏金' },
-  { id: 'ranger-default', hero: 'ranger', name: '森林斗篷' },
-  { id: 'ranger-moonlit', hero: 'ranger', name: '月影獵裝' },
-  { id: 'wizard-default', hero: 'wizard', name: '初學星袍' },
-  { id: 'wizard-astral', hero: 'wizard', name: '星界法衣' },
-]
+const skins = COSMETICS
 const upgrades: readonly { id: PermanentUpgrade; title: string; icon: string; bonus: string }[] = [
   { id: 'power', title: '破曉之刃', icon: '⚔', bonus: '永久傷害 +4% / 階' },
   { id: 'vitality', title: '不滅之心', icon: '✚', bonus: '永久生命 +12 / 階' },
