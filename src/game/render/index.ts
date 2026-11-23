@@ -93,8 +93,10 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   let ox = W * 0.5 - (hero ? s.cam.x : 0)
   let oy = H * 0.53 - (hero ? s.cam.y : 0)
   if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced && assets.cameraShakeEnabled()) {
-    ox += Math.sin(s.worldClock * 89) * s.cameraKick
-    oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
+    // Cap even externally-triggered recoil; avoid high-frequency screen oscillation.
+    const nudge = Math.min(s.cameraKick, 1.6)
+    ox += Math.sin(s.worldClock * 19) * nudge
+    oy += Math.cos(s.worldClock * 17) * nudge * 0.55
   }
   paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy, assets.productionWorld)
   const scene = currentSceneInfo(s)
@@ -150,7 +152,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
   assets.content?.render(ctx, s, ox, oy)
-  if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy)
+  if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)
   drawVignette(ctx, s)
   drawBossPhaseIndicator(ctx, s)
 }
