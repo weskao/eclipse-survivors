@@ -39,12 +39,14 @@ export const WORLD_ART = Object.freeze({
 })
 
 export interface WorldRuntimeImages {
+  /** Reuse authored treasure art in live world events. */
+  chest: HTMLImageElement
   bosses: Record<BossId, HTMLImageElement>
   ground: Record<BiomeId, HTMLImageElement>
   decor: Record<BiomeId, HTMLImageElement>
 }
 
-/** Allocate the twelve scene and boss images once on engine mount, never during rAF. */
+/** Allocate world and common treasure images once on engine mount, never during rAF. */
 export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image()): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
@@ -52,6 +54,7 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
     return image
   }
   return {
+    chest: load(WORLD_ART.ui['treasure-common']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
       [id, load(WORLD_ART.bosses[id])])) as Record<BossId, HTMLImageElement>,
     ground: Object.fromEntries(BIOME_IDS.map(id =>

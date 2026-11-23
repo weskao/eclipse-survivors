@@ -35,7 +35,7 @@ describe('ES2 world art live asset mapping', () => {
     expect(assigned).toHaveLength(13)
   })
 
-  it('only loads visible game categories once at mount, not all 49 UI resources', () => {
+  it('loads only live world image categories once at mount, not all 49 UI resources', () => {
     const assigned: string[] = []
     const makeImage = (): HTMLImageElement => ({
       complete: false,
@@ -45,7 +45,7 @@ describe('ES2 world art live asset mapping', () => {
     expect(Object.keys(runtime.bosses)).toHaveLength(4)
     expect(Object.keys(runtime.ground)).toHaveLength(4)
     expect(Object.keys(runtime.decor)).toHaveLength(4)
-    expect(assigned).toHaveLength(12)
+    expect(assigned).toHaveLength(13)
   })
 
   it('crops the real phase and enemy atlas cells without redrawing a blank image', () => {

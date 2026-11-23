@@ -105,7 +105,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
   if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
-  drawWorldMarkers(ctx, s, ox, oy)
+  drawWorldMarkers(ctx, s, ox, oy, assets.productionWorld)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
   ctx.fillText(t(scene.name) + ' · ' + t(scene.label), W / 2, 34)
   ctx.restore()
