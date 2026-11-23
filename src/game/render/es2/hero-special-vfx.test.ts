@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createEngine } from '../../engine'
 import type { AudioSystem } from '../../audio/types'
 import { createContentRegistry } from '../../content/registry'
@@ -6,11 +6,12 @@ import { createCombatVfxPack, emitCombatVfx } from '../../content/packs/combat-v
 import { createHero, createState } from '../../state'
 import type { Ctx2D } from '../ctx'
 import { COMBAT_FX_SPECS } from './combat-vfx'
+import { drawHeroSpecialFx, preloadHeroSpecialVfx } from './hero-special-vfx'
 
 const specials = [
-  ['shadowblade', 'hero-shadowblade', '#bea0ff'],
-  ['spirit-summoner', 'hero-spirit-summoner', '#8cecff'],
-  ['crimson-paladin', 'hero-crimson-paladin', '#ffd99b'],
+  ['shadowblade', 'hero-shadowblade', '#c3b5c6'],
+  ['spirit-summoner', 'hero-spirit-summoner', '#a0d9d6'],
+  ['crimson-paladin', 'hero-crimson-paladin', '#d6b580'],
 ] as const
 
 const audio = (): AudioSystem => ({
@@ -77,10 +78,37 @@ describe('three hero Q specials cinematic visuals', () => {
     const still = canvas()
     quiet.render(still.ctx, s, 0, 0)
     expect(still.calls.some(call => call.startsWith('alpha:') && Number(call.slice(6)) > 0.55)).toBe(false)
-    expect(still.calls.filter(call => call.startsWith('lineTo:')).length)
-      .toBeLessThan(peak.calls.filter(call => call.startsWith('lineTo:')).length)
+    expect(still.calls.filter(call => call.startsWith('ellipse:')).length)
+      .toBeLessThan(peak.calls.filter(call => call.startsWith('ellipse:')).length)
     full.tick(s, 4, { end() {}, sfx() {}, message() {}, offerUpgrades() {} })
     expect(s.content.effects).toHaveLength(0)
+  })
+
+  it('uses four cached textured art sprites and no per-frame gradient allocations', () => {
+    let constructions = 0
+    class FakeImage {
+      complete = true
+      naturalWidth = 512
+      decoding = ''
+      src = ''
+      constructor() { constructions++ }
+    }
+    vi.stubGlobal('Image', FakeImage)
+    try {
+      preloadHeroSpecialVfx()
+      preloadHeroSpecialVfx()
+      expect(constructions).toBe(4)
+      for (const [, kind] of specials) {
+        const { ctx, calls } = canvas()
+        drawHeroSpecialFx(ctx, kind, 0.42, 0.65, 12, false)
+        expect(calls.some(call => call.startsWith('drawImage:'))).toBe(true)
+        expect(calls.some(call => call.startsWith('createRadialGradient:'))).toBe(false)
+        expect(calls.some(call => call.startsWith('createLinearGradient:'))).toBe(false)
+      }
+      expect(constructions).toBe(4)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('culls all three cosmetic casts fully outside the viewport', () => {
