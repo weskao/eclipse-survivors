@@ -888,5 +888,218 @@
         "damage": 22
       }
     }
+  },
+  "relics": {
+    "rarityWeights": {
+      "common": 12,
+      "rare": 5,
+      "epic": 2,
+      "legendary": 0.75
+    },
+    "curseWeightMultiplier": 0.65,
+    "items": {
+      "vampire-fang": {
+        "maxStacks": 2,
+        "bonuses": {
+          "lifeSteal": 0.02
+        }
+      },
+      "storm-crown": {
+        "maxStacks": 2,
+        "bonuses": {
+          "lightning": 0.24
+        }
+      },
+      "guardian-sigil": {
+        "maxStacks": 1,
+        "bonuses": {
+          "protectLowHp": 0.25
+        }
+      },
+      "phantom-boots": {
+        "maxStacks": 2,
+        "bonuses": {
+          "dodge": 0.09
+        }
+      },
+      "celestial-lens": {
+        "maxStacks": 1,
+        "bonuses": {
+          "pierce": 1
+        }
+      },
+      "wolf-totem": {
+        "maxStacks": 2,
+        "bonuses": {
+          "summon": 0.28
+        }
+      },
+      "frost-rune": {
+        "maxStacks": 3,
+        "bonuses": {
+          "frost": 0.22
+        }
+      },
+      "ember-ring": {
+        "maxStacks": 3,
+        "bonuses": {
+          "fire": 0.2
+        }
+      },
+      "thunder-rod": {
+        "maxStacks": 2,
+        "bonuses": {
+          "bossDamage": 0.18
+        }
+      },
+      "grave-bell": {
+        "maxStacks": 2,
+        "bonuses": {
+          "execute": 0.06
+        }
+      },
+      "ritual-dagger": {
+        "maxStacks": 3,
+        "bonuses": {
+          "critChance": 0.07
+        }
+      },
+      "hunter-lens": {
+        "maxStacks": 2,
+        "bonuses": {
+          "critPower": 0.3
+        }
+      },
+      "battle-standard": {
+        "maxStacks": 1,
+        "bonuses": {
+          "moving": 0.18
+        }
+      },
+      "stillwater-orb": {
+        "maxStacks": 1,
+        "bonuses": {
+          "stationary": 0.22
+        }
+      },
+      "merciful-seed": {
+        "maxStacks": 3,
+        "bonuses": {
+          "healOnKill": 1.2
+        }
+      },
+      "dawn-feather": {
+        "maxStacks": 2,
+        "bonuses": {
+          "regeneration": 0.8
+        }
+      },
+      "tempered-plate": {
+        "maxStacks": 2,
+        "bonuses": {
+          "maxHp": 24
+        }
+      },
+      "pilgrim-compass": {
+        "maxStacks": 2,
+        "bonuses": {
+          "speed": 0.08
+        }
+      },
+      "quicksilver-hourglass": {
+        "maxStacks": 2,
+        "bonuses": {
+          "haste": 0.1
+        }
+      },
+      "mirror-charm": {
+        "maxStacks": 2,
+        "bonuses": {
+          "reflect": 0.2
+        }
+      },
+      "kinetic-pauldrons": {
+        "maxStacks": 1,
+        "bonuses": {
+          "dashDamage": 0.35
+        }
+      },
+      "bulwark-ring": {
+        "maxStacks": 3,
+        "bonuses": {
+          "resistance": 0.07
+        }
+      },
+      "echo-gem": {
+        "maxStacks": 2,
+        "bonuses": {
+          "extraProjectile": 0.12
+        }
+      },
+      "magnetic-amulet": {
+        "maxStacks": 2,
+        "bonuses": {
+          "pickupRange": 0.3
+        }
+      },
+      "ashen-heart": {
+        "maxStacks": 1,
+        "bonuses": {
+          "damage": 0.3,
+          "maxHpRate": -0.25
+        }
+      },
+      "cursed-chalice": {
+        "maxStacks": 1,
+        "bonuses": {
+          "lifeSteal": 0.06,
+          "incoming": 0.25
+        }
+      },
+      "doom-mask": {
+        "maxStacks": 1,
+        "bonuses": {
+          "critChance": 0.22,
+          "incoming": 0.2
+        }
+      },
+      "blood-coin": {
+        "maxStacks": 1,
+        "bonuses": {
+          "execute": 0.15,
+          "healingPenalty": 0.5
+        }
+      },
+      "shadow-chain": {
+        "maxStacks": 1,
+        "bonuses": {
+          "summon": 0.65,
+          "speed": -0.15
+        }
+      },
+      "fragile-crown": {
+        "maxStacks": 1,
+        "bonuses": {
+          "fire": 0.55,
+          "frost": 0.55,
+          "lightning": 0.55,
+          "incoming": 0.35
+        }
+      },
+      "hollow-idol": {
+        "maxStacks": 1,
+        "bonuses": {
+          "haste": 0.3,
+          "regeneration": -1
+        }
+      },
+      "black-mirror": {
+        "maxStacks": 1,
+        "bonuses": {
+          "reflect": 0.85,
+          "resistance": -0.2
+        }
+      }
+    }
   }
 }
