@@ -8,6 +8,7 @@ import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summo
 import summonerAttack from '../../../assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/attack-east-4frames@3x.webp'
 import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/special-east-4frames@3x.webp'
 import paladinRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/run-east-4frames@3x.webp'
+import paladinSouthRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-23/run-south-4frames@3x.webp'
 import paladinAttack from '../../../assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/attack-east-4frames@3x.webp'
 import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/special-east-4frames@3x.webp'
 
@@ -23,6 +24,7 @@ export const HERO_CANDIDATE_ATLASES = [
   { hero: 'crimson-paladin', pose: 'special', direction: 'E', cellPixels: 704, url: paladinSpecial },
   { hero: 'shadowblade', pose: 'run', direction: 'S', cellPixels: 768, url: shadowSouthRun },
   { hero: 'spirit-summoner', pose: 'run', direction: 'S', cellPixels: 768, url: summonerSouthRun },
+  { hero: 'crimson-paladin', pose: 'run', direction: 'S', cellPixels: 768, url: paladinSouthRun },
 ] as const
 
 /** Each isolated 2×2 atlas is sampled using its declared exact source-cell size. */
