@@ -48,7 +48,7 @@ describe('phone homepage viewport-first navigation', () => {
       setLocale('en')
       const wrapper = menu({ choice: 'wizard' })
       expect(wrapper.get('[data-es2-classic-details]').text()).toContain('HP')
-      expect(wrapper.get('[data-es2-classic-details]').text()).toContain('Attack')
+      expect(wrapper.get('[data-es2-classic-details]').text()).toContain('ATK')
       expect(wrapper.get('[data-es2-classic-role]').text()).not.toMatch(/[\u3400-\u9fff]/)
     } finally {
       setLocale(locale)
