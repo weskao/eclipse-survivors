@@ -27,8 +27,6 @@ export const FACTION_VISUAL_SIZE: Readonly<Record<FactionKind, number>> = {
 }
 
 /** Bounds computed once rather than scanning sizes in the hot draw loop. */
-const MAX_FACTION_VISUAL_SIZE = Math.max(...Object.values(FACTION_VISUAL_SIZE))
-
 /** One decode per art asset on game mount, no new Image allocations in the rAF loop. */
 export function loadProductionFactionArt(makeImage: () => HTMLImageElement = () => new Image()): FactionArtwork {
   const out = {} as FactionArtwork
@@ -66,7 +64,12 @@ export function drawLiveFactionArt(
   for (const enemy of runtime.enemies) {
     if (enemy.hp <= 0) continue
     const x = enemy.x + ox, y = enemy.y + oy
-    if (x < -110 || y < -170 || x > width + 110 || y > height + MAX_FACTION_VISUAL_SIZE) continue
+    const size = FACTION_VISUAL_SIZE[enemy.kind]
+    const half = size / 2
+    // One bounded test per visible actor: preserve telegraph decoration within 24px.
+    // A shared max-size margin needlessly drew small enemies below the screen.
+    if (x + half < -24 || x - half > width + 24 ||
+        y + 5 < -24 || y - size + 5 > height + 24) continue
     const pair = images[enemy.kind]
     const body = pair?.body
     const master = pair?.highResBody
@@ -77,7 +80,6 @@ export function drawLiveFactionArt(
         : enemy.state === 'attack' ? 3
           : enemy.state === 'recover' ? 4
             : (Math.floor(state.worldClock * 6 + enemy.id) & 1)
-    const size = FACTION_VISUAL_SIZE[enemy.kind]
     const h = size // Preserve square source-cell proportions and the existing feet anchor.
     ctx.save()
     ctx.translate(x, y)
