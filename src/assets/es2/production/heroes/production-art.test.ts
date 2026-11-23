@@ -24,11 +24,31 @@ function inspectWebP(path: string, maxBytes: number) {
   expect(data.toString('ascii', 0, 4), path).toBe('RIFF')
   expect(data.toString('ascii', 8, 12), path).toBe('WEBP')
   expect(data.readUInt32LE(4) + 8, path).toBe(data.length)
-  expect(data.toString('ascii', 12, 16), path).toBe('VP8X')
+  // VP8 (opaque), VP8L (lossless) and VP8X (extended) are all valid WebP.
+  // Validate their real dimensions and alpha bits; don't require VP8X for an opaque tile.
+  const chunk = data.toString('ascii', 12, 16)
+  let width: number
+  let height: number
+  let alpha: boolean
+  if (chunk === 'VP8X') {
+    width = data.readUIntLE(24, 3) + 1
+    height = data.readUIntLE(27, 3) + 1
+    alpha = !!(data[20]! & 0x10)
+  } else if (chunk === 'VP8 ') {
+    expect(data.subarray(23, 26), path).toEqual(Buffer.from([0x9d, 0x01, 0x2a]))
+    width = data.readUInt16LE(26) & 0x3fff
+    height = data.readUInt16LE(28) & 0x3fff
+    alpha = false
+  } else if (chunk === 'VP8L') {
+    expect(data[20], path).toBe(0x2f)
+    width = 1 + data[21]! + ((data[22]! & 0x3f) << 8)
+    height = 1 + (data[22]! >> 6) + (data[23]! << 2) + ((data[24]! & 0x0f) << 10)
+    alpha = !!(data[24]! & 0x10)
+  } else {
+    throw new Error(`Unsupported WebP chunk ${chunk}: ${path}`)
+  }
   return {
-    width: data.readUIntLE(24, 3) + 1,
-    height: data.readUIntLE(27, 3) + 1,
-    alpha: !!(data[20]! & 0x10),
+    width, height, alpha,
     sha256: createHash('sha256').update(data).digest('hex'),
   }
 }
