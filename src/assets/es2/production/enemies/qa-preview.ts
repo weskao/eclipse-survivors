@@ -3,6 +3,7 @@ import { ENEMY_DEFINITIONS } from '../../../../game/content/enemies/definitions'
 import manifest from './manifest.json'
 import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'
 import { inspectAtlasPixels } from './frame-qa'
+import { buildEnemyQaFinding } from './qa-report'
 
 const urls = import.meta.glob('./*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const candidateUrls = import.meta.glob('./candidates/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
@@ -121,8 +122,7 @@ async function inspectCandidate(body: (typeof manifest.assets)[number]): Promise
       '; edge-contact frames ' + (bodyQa.borderRiskFrames.join(', ') || 'none') +
       '. Warning: edge-contact ' + (cueQa.borderRiskFrames.join(', ') || 'none') + '. Human review required.'
     section.append(status)
-    findings.push({ kind, source: body.path, displayedPx: display, minimumNative3xPx: display * 3,
-      actualSourcePx: body.frameWidth, native3x: false, bodyQa, cueQa, humanApproval: 'pending' })
+    findings.push(buildEnemyQaFinding(kind, display, body, cue, bodyQa, cueQa))
   } catch (error) {
     const failure = document.createElement('p')
     failure.className = 'error'

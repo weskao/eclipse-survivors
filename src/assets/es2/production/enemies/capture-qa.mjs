@@ -44,7 +44,9 @@ try {
         throw new Error('Expected all 10 decoded faction artworks with no errors')
       }
       for (const entry of findings) {
-        if (!entry.bodyQa || !entry.cueQa || entry.bodyQa.blankFrames.length ||
+        if (!entry.native3x || !entry.bodyNative3x || !entry.cueNative3x ||
+            !entry.bodyQa || !entry.cueQa ||
+            entry.bodyQa.blankFrames.length ||
             entry.cueQa.blankFrames.length || entry.bodyQa.borderRiskFrames.length ||
             entry.cueQa.borderRiskFrames.length) {
           throw new Error('Pixel integrity regression: ' + entry.kind)
