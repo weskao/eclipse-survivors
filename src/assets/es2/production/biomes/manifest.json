@@ -114,8 +114,8 @@
       "frameWidth": 330,
       "frameHeight": 330,
       "status": "needs-human-approval",
-      "sha256": "a692cdcc010f81ab77c7503bc2657cd38c1a0d71ad8d02bf5e69c8906f27d3e4",
-      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending.",
+      "sha256": "68da345af7cc13cb57eb865b64518f3ad5e56bb129b14bfa5f0c90c9d3d8e1cb",
+      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending. Re-authored from the same original master without double re-encoding; removed disconnected red neighboring-frame bleed in frame 2; local zero-red-fragment test and 5px alpha-gutter checks passed; human review still pending.",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
