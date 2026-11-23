@@ -10,7 +10,7 @@ import type { AbilityId, ContentId, GameHooks, GameState, Hero, SkillRarity, Upg
 export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero) return
-  hero.xp += n
+  hero.xp += n * s.xpGainMultiplier
   while (hero.xp >= hero.need) {
     hero.xp -= hero.need
     hero.level++
