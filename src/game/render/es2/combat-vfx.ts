@@ -1,5 +1,6 @@
 import type { ContentVisualFx, GameState } from '../../types'
 import type { Ctx2D } from '../ctx'
+import { drawHeroSpecialFx } from './hero-special-vfx'
 
 /** Lightweight ES2 VFX: cached immutable directions, bounded geometry, no per-frame gradients. */
 export const COMBAT_FX_SPECS = [
@@ -21,6 +22,9 @@ export const COMBAT_FX_SPECS = [
   { kind: 'enemy-death', id: 'combat-vfx:enemy-death', title: 'Soul Dissolution', duration: 0.7, radius: 124 },
   { kind: 'ultimate-attack', id: 'combat-vfx:ultimate-attack', title: 'Ultimate Release', duration: 1.1, radius: 190 },
   { kind: 'victory-finish', id: 'combat-vfx:victory-finish', title: 'Victory Benediction', duration: 2.4, radius: 195 },
+  { kind: 'hero-shadowblade', id: 'combat-vfx:hero-shadowblade', title: 'Shadowblade · Nightfall Ambush', duration: 1.08, radius: 210 },
+  { kind: 'hero-spirit-summoner', id: 'combat-vfx:hero-spirit-summoner', title: 'Spirit Summoner · Soul Convergence', duration: 1.32, radius: 200 },
+  { kind: 'hero-crimson-paladin', id: 'combat-vfx:hero-crimson-paladin', title: 'Crimson Paladin · Scarlet Aegis', duration: 1.26, radius: 210 },
 ] as const
 
 export type CombatFxKind = (typeof COMBAT_FX_SPECS)[number]['kind']
@@ -278,6 +282,11 @@ export function drawCombatEffect(
         ring(ctx, 42 + strike * 109, '#be7fdf', 3)
         rays(ctx, count, 28 + strike * 35, 91 + strike * 89, '#e8ccff', t)
         shards(ctx, count, 44 + strike * 119, 10, '#efb77d', strike)
+        break
+      case 'hero-shadowblade':
+      case 'hero-spirit-summoner':
+      case 'hero-crimson-paladin':
+        drawHeroSpecialFx(ctx, kind, t, strike, count, reduced)
         break
       case 'victory-finish':
         ring(ctx, 43 + strike * 74, '#ffd893', 4, 0, 0.58)
