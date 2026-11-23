@@ -59,7 +59,7 @@ describe('ES2 all twelve candidate hero motion atlases (real assets, QA only)', 
       if (!expected) continue
       const path = resolve(root, clip.hero, 'candidates',
         clip.direction === 'E' ? 'east-2026-11-23' : 'south-2026-11-23',
-        clip.pose + '-' + clip.direction.toLowerCase() + '-4frames@3x.webp')
+        clip.pose + '-' + (clip.direction === 'E' ? 'east' : 'south') + '-4frames@3x.webp')
       expect(path.startsWith(root + sep)).toBe(true)
       const data = readFileSync(path)
       expect(data.length).toBe(expected.bytes)
