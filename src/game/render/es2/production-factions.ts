@@ -1,4 +1,5 @@
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
+import assassinMasterUrl from '../../../assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
 import type { FactionRuntime } from '../../content/enemies/runtime'
 import type { GameState } from '../../types'
 import { WORLD_ART } from './production-world'
@@ -6,7 +7,7 @@ import { drawFactionTelegraphs } from '../../content/enemies/telegraphs'
 import type { Ctx2D } from '../ctx'
 import { drawProjectileSprite, type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
 
-export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement }>
+export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement; highResBody?: HTMLImageElement }>
 
 /** Visual-only sizes, calibrated against legacy develop mobs (87–139px wide).
  * Do not reuse gameplay collision radii: new art must be tuned independently.
@@ -33,7 +34,12 @@ export function loadProductionFactionArt(makeImage: () => HTMLImageElement = () 
     const telegraph = makeImage()
     body.src = WORLD_ART.enemies[kind].body
     telegraph.src = WORLD_ART.enemies[kind].telegraph
-    out[kind] = { body, telegraph }
+    if (kind === 'shadow-assassin') {
+      // Existing, genuinely authored 512px-per-pose 3×2 master; one decode per mount.
+      const highResBody = makeImage()
+      highResBody.src = assassinMasterUrl
+      out[kind] = { body, telegraph, highResBody }
+    } else out[kind] = { body, telegraph }
   }
   return out
 }
@@ -60,7 +66,9 @@ export function drawLiveFactionArt(
     if (x < -110 || y < -170 || x > width + 110 || y > height + 90) continue
     const pair = images[enemy.kind]
     const body = pair?.body
-    if (!ready(body, 6)) continue
+    const master = pair?.highResBody
+    const masterReady = !!master?.complete && master.naturalWidth === 1536 && master.naturalHeight === 1024
+    if (!masterReady && !ready(body, 6)) continue
     const frame = enemy.state === 'phase' ? 5
       : enemy.state === 'windup' ? 2
         : enemy.state === 'attack' ? 3
@@ -73,8 +81,15 @@ export function drawLiveFactionArt(
     // These 6-frame strips share one artist-authored facing. This mirroring is
     // separate from the 8-direction hero atlas, which must NEVER be mirrored.
     if (enemy.facingX < 0) ctx.scale(-1, 1)
-    const sourceSide = body.naturalHeight
-    ctx.drawImage(body, frame * sourceSide, 0, sourceSide, sourceSide, -size / 2, -h + 5, size, h)
+    if (masterReady && master) {
+      // Master grid: 3 columns × 2 rows, 512px full-detail authored frames.
+      const cell = 512
+      ctx.drawImage(master, (frame % 3) * cell, Math.floor(frame / 3) * cell,
+        cell, cell, -size / 2, -h + 5, size, h)
+    } else if (body) {
+      const sourceSide = body.naturalHeight
+      ctx.drawImage(body, frame * sourceSide, 0, sourceSide, sourceSide, -size / 2, -h + 5, size, h)
+    }
     if (enemy.state === 'windup' && pair && ready(pair.telegraph)) {
       // Decorative cue only; the true world-sized hitbox is drawn above.
       ctx.drawImage(pair.telegraph, 0, 0, pair.telegraph.naturalWidth, pair.telegraph.naturalHeight, -20, -h - 18, 40, 40)
