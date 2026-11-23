@@ -54,6 +54,8 @@ export interface TestApi {
   /** Stage an evolution for browser capture without changing normal play. */
   prepareEvolution(id: EvolutionId): void
   readonly hp: number | undefined
+  /** Vite DEV + explicit showcase flags only; capture true Canvas/HUD states without cheats in production. */
+  previewLowHealth(percent: number): void
   readonly active: boolean
   readonly sceneArtLoaded: boolean
   readonly animated: boolean
@@ -660,6 +662,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       hud()
     },
     get hp() { return s.hero?.hp },
+    previewLowHealth(percent: number) {
+      const params = import.meta.env.DEV && typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search) : null
+      if (params?.get('showcase') !== '1' || params.get('lowHpQa') !== '1' ||
+          s.mode !== 'play' || !s.hero || !Number.isFinite(percent) || percent <= 0 || percent > 100) return
+      s.hero.hp = s.hero.max * percent / 100
+      s.hero.inv = Math.max(s.hero.inv, 20) // Keep automated real-canvas comparison stable.
+      hud()
+    },
     get active() { return s.hero != null },
     get sceneArtLoaded() { return !!art?.courtyard.complete && art.courtyard.naturalWidth > 0 },
     get animated() { return !!s.hero },
