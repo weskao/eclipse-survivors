@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { BALANCE } from '../game/config'
 import { createProfileStore, migrateProfile, SAVE_KEY } from './profile'
 import type { RunStats } from './types'
 
@@ -9,6 +10,19 @@ const run = (id = 'run-1', overrides: Partial<RunStats> = {}): RunStats => ({
   abilities: ['frost', 'orb'], ...overrides,
 })
 beforeEach(() => localStorage.clear())
+
+describe('permanent upgrade balance compatibility', () => {
+  it('allows six legacy purchase tiers, prevents exceeding the cap and restores them', () => {
+    const store = createProfileStore(localStorage)
+    for (let i = 0; i < 10; i++)
+      store.recordRun(run('farm-' + i, { seconds: 800, kills: 600 }))
+    expect(store.get().embers).toBeGreaterThan(1000)
+    for (let n = 0; n < BALANCE.meta.research.power.maxRank; n++) expect(store.buyUpgrade('power')).toBe(true)
+    expect(store.get().upgrades.power).toBe(BALANCE.meta.research.power.maxRank)
+    expect(store.buyUpgrade('power')).toBe(false)
+    expect(createProfileStore(localStorage).get().upgrades.power).toBe(BALANCE.meta.research.power.maxRank)
+  })
+})
 
 describe('versioned local progress', () => {
   it('saves, loads and maintains personal best per mode', () => {
