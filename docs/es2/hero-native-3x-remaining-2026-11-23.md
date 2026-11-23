@@ -57,12 +57,12 @@ This hero workstream owns only hero art. Avoid modifying other workstreams' enem
 - Browser event/console logs, performance and memory checks, reduced-motion support and real MP4s at the exact final commit SHA.
 - Keep `QA_PENDING` until visual approval is actually supplied and documented, even if binary tests and CI build succeed. Never weaken the 52-asset approval gate to produce a green CI check.
 
-## 2026-11-23 — real gameplay QA hook for three South-run candidates
+## 2026-11-23 — opt-in real gameplay QA hook for all 12 authored candidates
 
-The three already committed South-run 2×2 WebP atlases are now bound through `src/game/render/es2/production-heroes.ts` **only in Vite development mode** when the URL includes `?es2HeroSouthQA=1`. This is an opt-in in-game Canvas QA path (not an isolated contact-sheet playback), with 768px exact cell crops, four ordered frame indexes, one atlas decode per active hero, a same-character fallback until decoding, and reduced-motion fallback. It does not modify hitboxes or the real combat animation state.
+The three South-run and nine East run/attack/special 2×2 WebP atlases are now bound through `src/game/render/es2/production-heroes.ts` **only in Vite development mode** when the URL includes `?es2HeroArtQA=1` (the earlier `?es2HeroSouthQA=1` alias still works). This is opt-in real-gameplay Canvas QA, not isolated contact-sheet playback. Exact 768px (South) or 704px (East) source rectangles, four authored frame indexes, lazy loading by active hero and pose, same-character fallback and reduced-motion mode are retained. No West mirroring or fabricated eight-direction clips. It does not modify hitboxes or the real combat animation state.
 
-- Source files: `<hero>/candidates/south-2026-11-23/run-south-4frames@3x.webp` for `shadowblade`, `spirit-summoner`, `crimson-paladin`.
+- Source files: each hero's `candidates/south-2026-11-23/run-south-4frames@3x.webp`, plus the three `candidates/east-2026-11-23/{run,attack,special}-east-4frames@3x.webp` files.
 - Regression tests: `src/game/render/es2/production-south-run-qa.test.ts`.
 - Default gameplay and production builds remain unchanged; `runtimeApplied: false` in candidate manifests remains correct for the release game.
-- **Still QA_PENDING:** these are only four frames per hero, not the required 10 distinct native-detail South-run frames, let alone eight facings and complete attack/special/hurt/death/victory coverage. Cropping and texture quality need desktop/mobile gameplay screenshots and visual sign-off. No gameplay MP4 or complete native-3× approval is claimed.
+- **Still QA_PENDING:** these are only four frames per action/direction, not the required 10 Run, 12 Attack and 8 Special distinct native-detail poses per direction, nor hurt/death/victory coverage. Cropping and texture quality need desktop/mobile gameplay screenshots and visual sign-off. No gameplay MP4 or complete native-3× approval is claimed.
 - The latest separately uploaded Shadowblade 1254×1254 source (SHA-256 `85a4f5880fb640be08ff37ba70d10ce6453508f4ce775515127639c7bcde79b4`) was locally inspected and repacked without resampling into a 1536×1536 QA WebP. That **separate repack has not been uploaded to GitHub**; the in-game QA hook uses the pre-existing committed South-run WebP, not this local repack. Never conflate the two sources.
