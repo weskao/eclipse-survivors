@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "S",
+  "frameCount": 4,
+  "sourceOriginalPixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "sourceSHA256": "0f3c465c3611d663081fe3751f3e1a40ddbd4ab664efd47a65c4e77374bc6373",
+  "webpSHA256": "b4410d959684382bf6851c3cd3a4a030b2e5f48a6972789ffdfc41144b4ea57e",
+  "bytes": 690004,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "allSourceEdgesSafe": false,
+  "frameQA": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        0,
+        15,
+        611,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        0,
+        0,
+        615,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    }
+  ],
+  "note": "Same canonical silver-haired summoner with blue orb staff; 4 South-facing run poses. Original edge-touching cells may be clipped; QA_PENDING. No production renderer substitution.",
+  "originalSourcePath": "source-south-4frames.png"
+}
