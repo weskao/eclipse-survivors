@@ -83,7 +83,7 @@ export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
   sourceInset?: number,
 ): boolean {
-  if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || phase < 1 || phase > 3) return false
+  if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || !Number.isInteger(phase) || phase < 1 || phase > 3) return false
   const inset = sourceInset ?? bossQaInsets.get(image) ?? 0
   const side = Math.min(width, height)
   const sourceSide = image.naturalHeight - inset * 2
