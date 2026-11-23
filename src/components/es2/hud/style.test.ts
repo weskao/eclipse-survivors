@@ -9,7 +9,7 @@ const app = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf8')
 describe('responsive ES2 encounter and information rail', () => {
   it('stacks the boss and wave without separate fixed positions', () => {
     expect(component).toContain('data-es2-encounter')
-    expect(component).toContain('v-if="view.boss || view.wave"')
+    expect(component).toContain('v-if="view.boss || view.wave || view.bossWarning"')
     expect(css).toMatch(/\.es2-hud__encounter\s*\{[^}]*flex-direction: column/s)
     expect(css).not.toMatch(/\.es2-hud__boss\s*\{[^}]*position:\s*absolute/s)
     expect(css).not.toMatch(/\.es2-hud__wave\s*\{[^}]*top:\s*\d+px/s)
