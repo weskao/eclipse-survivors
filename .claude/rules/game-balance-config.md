@@ -1,0 +1,21 @@
+# Mandatory centralized gameplay balance configuration
+
+Applies to every Create / Read / Update / Delete of gameplay numbers, character attributes, XP, leveling, skills, weapons, effects, enemies, bosses, pickups, treasure, events, difficulty modes and future systems.
+
+## Single source of truth
+
+1. **Data first:** Place designer-tunable numerical parameters in `src/game/balance/balance.json`. The shared, type-checked access point is `src/game/config.ts` exporting `BALANCE`. Do not duplicate a balance value in a Vue component, combat loop, test fixture, description or separate hidden constant.
+2. **Domain-based organization:** Reuse and extend `world`, `heroes.classic`, `heroes.special`, `progression`, `skills`, `weapons`, `events`, `enemies`, `combat` and `evolutions`. Add a named, typed nested domain for future bosses, relics, difficulty modifiers, pickups, economy, map modifiers or new content packs rather than scattering magic numbers among implementation files. A specific hero/weapon may override a shared default by named key; never copy an entire common formula unnecessarily.
+3. **Typed consumers:** Access `BALANCE` from TypeScript runtime code and validate complete union-key coverage via `satisfies` in `src/game/config.ts` (e.g. `JobId`, `UpgradeId`, `MobType`, `WorldEventKind`, `WeaponKey`). When adding an ID, make missing config entries a type error. Use immutable imported values; no runtime writes to config or per-frame parsing.
+4. **Separate data from behavior:** Keep `Math.round`, cooldown, target selection, collision and sampling algorithms in their existing small modules, but move tunable multipliers, absolute values, probabilities, caps, durations, radii and thresholds to the JSON. Preserve deterministic seeded RNG, max-target/projectile limits and player fairness. Physics epsilon values, generated coordinates, frame geometry, artwork colors, UI spacing and mathematical constants such as `Math.PI` are **not** gameplay-balance knobs; do not move them blindly.
+5. **Real code and UI must agree:** Hero selection reads the same `JOB`/`HERO_DEFINITIONS` data as combat. XP bars follow `BALANCE.progression`; ability cards and translations must reflect actual configured effects. Keep English and zh-TW in `src/i18n.ts`; when numbers appear in text use parameterized `t()` templates when possible, not stale literal percentages.
+6. **Balance invariants:** Nonnegative finite HP, attack, speeds, durations and costs; probabilities in `[0,1]`; event weights sum to 1; sensible growth curve; level caps reached and removed from offers; no unbounded high-rank AoE, stacking, FX or projectiles. Explicitly preserve special constraints on boss/elite encounters and mid/late-game challenge.
+7. **TDD and verification:** Add a RED failing test for every new numeric domain or balance rule before changing the JSON and consumers. Verify `src/game/balance.test.ts`, hero HP/runtime/menu, progression curves, event weights, skill radius/damage, weapons, and seeded simulations. Run `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release`; capture real desktop and mobile portrait/landscape screenshots for UI changes. Document the changed values and the baseline vs updated difficulty. Never claim CI green while it fails for unrelated reasons.
+8. **Incremental migration:** On any touch of legacy gameplay files, move their remaining player-facing tuning literals into the appropriate `balance.json` domain in the same change. Avoid massive unrelated rewrites or automatically extracting coordinate and shader numbers; each migration requires regression tests and a verified runtime consumer. New gameplay systems must start from this pattern, not add another numeric source.
+
+## Typical change sequence
+
+- Open `src/game/balance/balance.json` and `src/game/config.ts`; identify the owner domain and reused scaling parameter.
+- Update focused tests first; edit config values; wire consumers with one shared import and no duplicated numbers.
+- Update matching bilingual descriptions, home/selection UI, and any charts or docs derived from live config.
+- Check all six hero archetypes, level 1–20 and late levels, all three rarities, caps, boss behavior, treasure distribution and 130-mob performance.
