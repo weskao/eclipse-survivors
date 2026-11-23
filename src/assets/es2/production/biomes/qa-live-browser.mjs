@@ -7,7 +7,7 @@ const root = 'artifacts/es2-biomes-gameplay'
 const url = new URL(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/')
 url.searchParams.set('showcase', '1')
 const ids = ['blood-moon-cathedral', 'cursed-forest', 'abyssal-necropolis', 'celestial-rift']
-const sizes = [1152, 1152, 1152, 768]
+const sizes = [1152, 1152, 1152, 1152]
 const devices = [
   { name: 'desktop-1440', width: 1440, height: 900, touch: false },
   { name: 'mobile-375', width: 375, height: 812, touch: true },
