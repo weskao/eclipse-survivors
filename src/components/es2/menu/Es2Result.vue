@@ -22,7 +22,7 @@ const stats = computed(() => props.result ? [
   <Es2Dialog :active="active" :title="t(ending)" :subtitle="t(summary)" wide :dismissible="false" :tone="victory ? 'victory' : 'defeat'">
     <div class="es2-result">
       <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="t('本次遠征英雄：' + (result.specializationId ?? result.hero))" /><span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span></div>
-      <p class="es2-result-status">{{ victory ? '✦ VICTORY · THE DAWN RETURNS ✦' : '✧ DEFEAT · THE NIGHT ENDURES ✧' }}</p>
+      <p class="es2-result-status">{{ t(victory ? '✦ 勝利 · 黎明重現 ✦' : '✧ 戰敗 · 長夜未盡 ✧') }}</p>
       <p v-if="result">{{ t(MODES[result.mode].label) }}</p>
       <div class="es2-stat-strip es2-result-stats"><div v-for="stat in stats" :key="stat.title"><b>{{ stat.value }}</b><small>{{ t(stat.title) }}</small></div></div>
       <div v-if="rewards" class="es2-reward-strip"><strong>✧ +{{ rewards.embers }} {{ t("暮光餘燼") }}</strong><span v-for="id in rewards.newAchievements" :key="id">{{ t("新成就：") }}{{ id }}</span><span v-for="id in rewards.newCosmetics" :key="id">{{ t("新造型：") }}{{ id }}</span></div>

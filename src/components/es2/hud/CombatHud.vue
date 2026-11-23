@@ -60,7 +60,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
 <template>
   <!-- Always mount minimap: engine.mount captures its ref before the first run. -->
   <aside ref="hudRoot" class="es2-hud" :class="{ 'es2-hud--active': active }" :aria-hidden="!active" :inert="!active" :aria-label="t('戰鬥資訊')">
-    <span data-es2-announcement class="es2-hud__sr-only" role="status" aria-live="polite" aria-atomic="true">{{ liveAnnouncement }}</span>
+    <span data-es2-announcement class="es2-hud__sr-only" role="status" aria-live="polite" aria-atomic="true">{{ t(liveAnnouncement) }}</span>
     <header class="es2-hud__top">
       <div class="es2-hud__hero es2-hud__plate">
         <div class="es2-hud__portrait">
@@ -69,7 +69,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
         <div class="es2-hud__vitals">
           <div class="es2-hud__identity">
-            <span class="es2-hud__eyebrow">ECLIPSE · HERO</span>
+            <span class="es2-hud__eyebrow">{{ t('ECLIPSE · 英雄') }}</span>
             <strong>{{ t(view.identity) }}</strong>
           </div>
           <div class="es2-hud__health-head"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-health']" alt="" />{{ t("生命值") }}</span><span>{{ t(view.health.label) }}</span></div>
@@ -86,10 +86,10 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
       </div>
       <div class="es2-hud__top-right">
         <div class="es2-hud__counters es2-hud__plate" :aria-label="t('戰鬥統計')">
-          <div class="es2-hud__counter"><span aria-hidden="true">◷</span><span>{{ view.timer }}</span><small>TIME</small></div>
-          <div class="es2-hud__counter"><span aria-hidden="true">☠</span><span>{{ view.kills }}</span><small>KILLS</small></div>
+          <div class="es2-hud__counter"><span aria-hidden="true">◷</span><span>{{ view.timer }}</span><small>{{ t('TIME') }}</small></div>
+          <div class="es2-hud__counter"><span aria-hidden="true">☠</span><span>{{ view.kills }}</span><small>{{ t('KILLS') }}</small></div>
           <div v-if="view.combo && view.combo.count > 1" class="es2-hud__counter es2-hud__counter--combo" data-es2-combo>
-            <span aria-hidden="true">✦</span><span>{{ view.combo.count }}×</span><small>COMBO</small>
+            <span aria-hidden="true">✦</span><span>{{ view.combo.count }}×</span><small>{{ t('COMBO') }}</small>
           </div>
         </div>
         <nav class="es2-hud__controls es2-hud__plate" :aria-label="t('戰鬥操作')">
@@ -116,7 +116,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         <div class="es2-hud__boss-heading">
           <span>☠ {{ t(view.boss.name) }}</span>
           <span v-if="view.boss.phase !== undefined" class="es2-hud__boss-phase">
-            PHASE {{ view.boss.phase }}<template v-if="view.boss.totalPhases !== undefined"> / {{ view.boss.totalPhases }}</template>
+            {{ t('PHASE') }} {{ view.boss.phase }}<template v-if="view.boss.totalPhases !== undefined"> / {{ view.boss.totalPhases }}</template>
           </span>
         </div>
         <div class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
@@ -125,8 +125,8 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </section>
       <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave :aria-label="t('波次')">
-        <span class="es2-hud__eyebrow">WAVE {{ view.wave.number }}</span>
-        <strong v-if="view.wave.announcement">{{ view.wave.announcement }}</strong>
+        <span class="es2-hud__eyebrow">{{ t('WAVE') }} {{ view.wave.number }}</span>
+        <strong v-if="view.wave.announcement">{{ t(view.wave.announcement) }}</strong>
         <div v-if="view.wave.progressPct !== undefined" class="es2-hud__wave-track" role="progressbar" :aria-label="t('波次進度')"
           :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100">
           <span :style="{ width: view.wave.progressPct + '%' }"></span>
@@ -147,7 +147,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
       <div v-if="$slots['mode-progress']" class="es2-hud__mode-progress"><slot name="mode-progress" /></div>
       <section v-if="view.objective || view.objectives.length" class="es2-hud__objectives es2-hud__plate" :aria-label="t('任務目標')">
         <div class="es2-hud__section-label"><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-quest']" alt="" />{{ t("目前目標") }}</div>
-        <p v-if="view.objective">{{ view.objective }}</p>
+        <p v-if="view.objective">{{ t(view.objective) }}</p>
         <ul v-if="view.objectives.length">
           <li v-for="item in view.objectives" :key="item.id" :class="{ 'es2-hud__complete': item.complete }">
             <span>{{ item.complete ? '✓' : '◇' }} {{ t(item.title) }}</span>
@@ -162,7 +162,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     </div>
     <footer class="es2-hud__bottom">
       <div v-if="view.relics.length" class="es2-hud__relics es2-hud__plate" :aria-label="t('已裝備遺物')">
-        <span class="es2-hud__eyebrow">RELICS</span>
+        <span class="es2-hud__eyebrow">{{ t('RELICS') }}</span>
         <div class="es2-hud__relic-grid">
           <span v-for="relic in view.relics" :key="relic.id" :data-es2-relic="relic.id"
             class="es2-hud__relic" :class="'es2-hud__rarity--' + relic.rarity" :title="t(relic.title)" :aria-label="t(relic.title)">
@@ -173,7 +173,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
       <div class="es2-hud__equipment es2-hud__plate">
-        <div class="es2-hud__equipment-head"><span class="es2-hud__section-label">{{ t("✧ 武器與技能") }}</span><small>{{ view.skills.length }} EQUIPPED</small></div>
+        <div class="es2-hud__equipment-head"><span class="es2-hud__section-label">{{ t("✧ 武器與技能") }}</span><small>{{ view.skills.length }} {{ t('EQUIPPED') }}</small></div>
         <div class="es2-hud__skills" role="group" :aria-label="t('已裝備技能')">
           <button v-for="skill in view.skills" :key="skill.id" type="button" :data-es2-skill="skill.id"
             class="es2-hud__skill" :class="['es2-hud__rarity--' + skill.rarity, { 'es2-hud__skill--evolved': skill.evolved }]"

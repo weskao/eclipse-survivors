@@ -1592,6 +1592,13 @@ const english = new Map<string, string>([
 , ["點擊套用","Equip"]
 , ["種技能","Skills"]
 , ["本次戰役","Current Battle"]
+, ["ECLIPSE · 英雄","ECLIPSE · HERO"]
+, ["01 / 命運繼承者","01 / THE CHOSEN"]
+, ["02 / 遠征","02 / THE EXPEDITION"]
+, ["✦ 天穹星蝕 ✦","✦ THE CELESTIAL ECLIPSE ✦"]
+, ["✦ 勝利 · 黎明重現 ✦","✦ VICTORY · THE DAWN RETURNS ✦"]
+, ["✧ 戰敗 · 長夜未盡 ✧","✧ DEFEAT · THE NIGHT ENDURES ✧"]
+, ["HERO","HERO"]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],
