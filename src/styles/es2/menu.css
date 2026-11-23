@@ -102,8 +102,6 @@
 .es2-card-requirements{color:#e2c38c}
 .es2-card-selected-text{font-size:.75rem;color:#e8d2a3;padding:10px 13px 0;margin-top:auto}
 .es2-selection-scene.es2-still *{animation:none!important;transition:none!important}
-.es2-choice-toolbar{display:flex;justify-content:flex-end;margin:-4px 0 16px}
-.es2-choice-toolbar button{min-height:44px;padding:9px 13px}
 .es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;margin-bottom:12px;padding:5px 0 12px;border-bottom:1px solid var(--es2-line);background:#142538}
 .es2-archive-tabs button{flex-shrink:0;min-height:44px;padding:9px 13px;font-size:.84rem;background:#1b2d40;border:1px solid #96a6b56e;border-radius:8px}
 .es2-archive-tabs .es2-tab-current{border-color:#e9c48d;background:#55402c}
@@ -180,8 +178,8 @@
   .es2-card-art { height: clamp(96px, 22dvh, 150px); }
 }
 
-// Viewport-first layout: show all selectable options before requesting a scroll.
-// Larger reference galleries and full accessibility settings keep an internal scroll fallback.
+/* Viewport-first layout: show all selectable options before requesting a scroll.
+   Larger reference galleries and full accessibility settings keep an internal scroll fallback. */
 @media (max-width:610px) and (orientation:portrait) {
   .es2-dialog{padding:12px}
   .es2-dialog-header{margin-bottom:9px}
