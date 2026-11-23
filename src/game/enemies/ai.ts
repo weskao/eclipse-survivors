@@ -1,10 +1,12 @@
+import { BALANCE } from '../config'
 import { damageHero } from '../combat'
 import { dist } from '../math'
 import { summonBossMinions, updateBossPhase } from '../bosses/phases'
 import type { EnemyBrain, EnemyProjectile, GameHooks, GameState, Hero, Mob } from '../types'
 
-const NEAR = { slime: 70, bat: 205, goblin: 122, golem: 150, warlock: 310, boss: 265 } as const
-const WINDUP = { pounce: 0.48, dive: 0.55, jab: 0.4, slam: 1.05, bolt: 0.72, summon: 0.8 } as const
+const AI = BALANCE.enemies.ai
+const NEAR = AI.near
+const WINDUP = AI.windup
 
 function brain(e: Mob): EnemyBrain {
   return e.ai ?? (e.ai = {
@@ -22,7 +24,7 @@ function warn(e: Mob, hero: Hero, kind: EnemyBrain['attack']): void {
   ai.aimY = hero.y
   ai.attack = kind
   ai.state = 'windup'
-  ai.timer = WINDUP[kind] + (e.type === 'boss' ? 0.25 : 0)
+  ai.timer = WINDUP[kind] + (e.type === 'boss' ? AI.bossWindupExtra : 0)
 }
 
 function recover(e: Mob, seconds: number): void {
@@ -32,12 +34,12 @@ function recover(e: Mob, seconds: number): void {
 }
 
 function projectile(s: GameState, e: Mob, direction: number, speed: number): void {
-  if (s.enemyShots.length >= 100) return
+  if (s.enemyShots.length >= AI.maxProjectiles) return
   const ai = brain(e)
   const base = Math.atan2(ai.dirY, ai.dirX) + direction
   const b: EnemyProjectile = {
     x: e.x, y: e.y - 8, vx: Math.cos(base) * speed, vy: Math.sin(base) * speed,
-    radius: e.type === 'boss' ? 12 : 8, damage: e.dmg, life: 3.2,
+    radius: e.type === 'boss' ? AI.projectileRadius.boss : AI.projectileRadius.default, damage: e.dmg, life: AI.projectileLifetime,
   }
   s.enemyShots.push(b)
 }
@@ -45,10 +47,10 @@ function projectile(s: GameState, e: Mob, direction: number, speed: number): voi
 function fire(s: GameState, e: Mob): void {
   const elite = !!e.elite
   const phase = e.bossPhase ?? 1
-  const count = e.type === 'boss' ? (phase === 3 ? 5 : 3) : (elite ? 3 : 1)
-  const spacing = e.type === 'boss' ? 0.18 : 0.14
+  const count = e.type === 'boss' ? (phase === 3 ? AI.projectileCount.bossThirdPhase : AI.projectileCount.bossOther) : (elite ? AI.projectileCount.elite : AI.projectileCount.default)
+  const spacing = e.type === 'boss' ? AI.projectileSpread.boss : AI.projectileSpread.default
   for (let i = 0; i < count; i++) {
-    projectile(s, e, (i - (count - 1) / 2) * spacing, e.type === 'boss' ? 185 : 205)
+    projectile(s, e, (i - (count - 1) / 2) * spacing, e.type === 'boss' ? AI.projectileSpeed.boss : AI.projectileSpeed.default)
   }
 }
 
@@ -58,29 +60,29 @@ function resolveStrike(s: GameState, e: Mob, hooks: GameHooks): void {
   if (ai.attack === 'bolt') fire(s, e)
   else if (ai.attack === 'summon') summonBossMinions(s, e)
   else if (ai.attack === 'slam') {
-    const radius = e.type === 'boss' ? 103 : e.elite ? 87 : 74
-    if (dist(hero.x - ai.aimX, hero.y - ai.aimY) <= radius + 14) damageHero(s, e.dmg, hooks)
+    const radius = e.type === 'boss' ? AI.slamRadius.boss : e.elite ? AI.slamRadius.elite : AI.slamRadius.default
+    if (dist(hero.x - ai.aimX, hero.y - ai.aimY) <= radius + AI.slamContactMargin) damageHero(s, e.dmg, hooks)
   } else if (ai.attack === 'pounce' || ai.attack === 'jab') {
-    const maxDistance = ai.attack === 'pounce' ? 63 : 69
+    const maxDistance = ai.attack === 'pounce' ? AI.lungeDistance.pounce : AI.lungeDistance.jab
     const length = Math.min(maxDistance, dist(ai.aimX - e.x, ai.aimY - e.y))
     e.x += ai.dirX * length
     e.y += ai.dirY * length
-    if (dist(hero.x - e.x, hero.y - e.y) < e.r + 19) damageHero(s, e.dmg, hooks)
+    if (dist(hero.x - e.x, hero.y - e.y) < e.r + AI.lungeContactMargin) damageHero(s, e.dmg, hooks)
   }
-  recover(e, e.type === 'boss' ? 1.15 : e.type === 'golem' ? 1 : 0.65)
+  recover(e, e.type === 'boss' ? AI.recoverySeconds.boss : e.type === 'golem' ? AI.recoverySeconds.golem : AI.recoverySeconds.default)
 }
 
 function moveApproach(e: Mob, hero: Hero, dt: number): void {
   const dx = hero.x - e.x, dy = hero.y - e.y, d = Math.max(1, dist(dx, dy))
-  const k = (e.stagger > 0 ? 0.23 : 1) * (e.slow > 0 ? 0.46 : 1)
+  const k = (e.stagger > 0 ? AI.staggeredSpeedMultiplier : 1) * (e.slow > 0 ? AI.slowedSpeedMultiplier : 1)
   const ai = brain(e)
   let toward = 1, side = 0
   if (e.type === 'slime') toward = 0.85 + Math.max(0, Math.sin(e.phase * 1.1)) * 0.65
   if (e.type === 'goblin') side = ai.cycle % 2 ? -0.7 : 0.7
   if (e.type === 'warlock' && d < 125) toward = -0.7
   const length = e.speed * k * dt
-  e.x += ((dx / d) * toward - (dy / d) * side) * length + e.kx * (e.stagger > 0 ? (e.type === 'boss' ? 45 : 150) * dt : 0)
-  e.y += ((dy / d) * toward + (dx / d) * side) * length + e.ky * (e.stagger > 0 ? (e.type === 'boss' ? 45 : 150) * dt : 0)
+  e.x += ((dx / d) * toward - (dy / d) * side) * length + e.kx * (e.stagger > 0 ? (e.type === 'boss' ? AI.knockbackSpeed.boss : AI.knockbackSpeed.default) * dt : 0)
+  e.y += ((dy / d) * toward + (dx / d) * side) * length + e.ky * (e.stagger > 0 ? (e.type === 'boss' ? AI.knockbackSpeed.boss : AI.knockbackSpeed.default) * dt : 0)
 }
 
 function chooseAttack(e: Mob): EnemyBrain['attack'] {
@@ -117,7 +119,7 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
       // Continue status/phase/recovery simulation, but cancel locked-on attacks during stealth.
       if (ai.state !== 'approach') {
         ai.state = 'recover'
-        ai.timer = Math.max(0.2, ai.timer)
+        ai.timer = Math.max(AI.stealthRecoverMin, ai.timer)
         ai.hitThisAttack = false
       }
       continue
@@ -126,27 +128,27 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
       ai.timer -= dt
       if (ai.timer <= 0) {
         if (ai.attack === 'dive' || ai.attack === 'pounce') {
-          ai.state = 'attack'; ai.timer = ai.attack === 'dive' ? 0.38 : 0.26
+          ai.state = 'attack'; ai.timer = ai.attack === 'dive' ? AI.attackDuration.dive : AI.attackDuration.pounce
         }
         else resolveStrike(s, e, hooks)
       }
       continue
     }
     if (ai.state === 'attack') {
-      const speed = ai.attack === 'pounce' ? 180 : 295
-      const distance = Math.min(speed * dt * (e.slow > 0 ? 0.46 : 1),
+      const speed = ai.attack === 'pounce' ? AI.attackSpeed.pounce : AI.attackSpeed.dive
+      const distance = Math.min(speed * dt * (e.slow > 0 ? AI.slowedSpeedMultiplier : 1),
         ai.attack === 'pounce' ? dist(ai.aimX - e.x, ai.aimY - e.y) : Infinity)
       const oldX = e.x, oldY = e.y
       e.x += ai.dirX * distance
       e.y += ai.dirY * distance
       const vx = e.x - oldX, vy = e.y - oldY
       const t = Math.max(0, Math.min(1, ((hero.x - oldX) * vx + (hero.y - oldY) * vy) / Math.max(0.0001, vx * vx + vy * vy)))
-      if (!ai.hitThisAttack && dist(hero.x - (oldX + vx * t), hero.y - (oldY + vy * t)) < e.r + 17) {
+      if (!ai.hitThisAttack && dist(hero.x - (oldX + vx * t), hero.y - (oldY + vy * t)) < e.r + AI.hitMargin) {
         damageHero(s, e.dmg, hooks)
         ai.hitThisAttack = true
       }
       ai.timer -= dt
-      if (ai.timer <= 0) { ai.hitThisAttack = false; recover(e, 0.7) }
+      if (ai.timer <= 0) { ai.hitThisAttack = false; recover(e, AI.recoverySeconds.afterDive) }
       continue
     }
     const dx = hero.x - e.x, dy = hero.y - e.y
@@ -170,7 +172,7 @@ export function tickEnemyProjectiles(s: GameState, dt: number, hooks: GameHooks)
     const dx = p.x - x, dy = p.y - y
     const dot = dx * dx + dy * dy
     const t = Math.max(0, Math.min(1, ((hero.x - x) * dx + (hero.y - y) * dy) / Math.max(0.0001, dot)))
-    if (p.life > 0 && hero.hp > 0 && dist(hero.x - (x + dx * t), hero.y - (y + dy * t)) < p.radius + 15) {
+    if (p.life > 0 && hero.hp > 0 && dist(hero.x - (x + dx * t), hero.y - (y + dy * t)) < p.radius + AI.projectileContactMargin) {
       damageHero(s, p.damage, hooks)
       p.life = 0
     }
