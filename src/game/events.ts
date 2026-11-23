@@ -116,7 +116,7 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
   }
 
   // Scene transitions offer a grace window; one hit cooldown covers overlapping zones.
-  if (s.time - s.sceneEnteredAt < 1.2 || s.time - s.hazardLastHitAt < 1.4) return
+  if (s.time - s.sceneEnteredAt < BALANCE.events.hazards.sceneGraceSeconds || s.time - s.hazardLastHitAt < BALANCE.events.hazards.hitCooldownSeconds) return
   const hazards = nearbyHazards(s.currentScene, hero.x, hero.y, 100)
   const contact = hazards.some(h =>
     Math.hypot(hero.x - h.x, (hero.y - h.y) / 0.58) < h.r + 4 &&
@@ -127,6 +127,6 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
     s.time % 3 > 2.15
   if (!contact && !challengeRing) return
   if (hero.inv > 0 || hero.dash > 0) return
-  damageHero(s, 7 + s.currentScene * 2, hooks)
+  damageHero(s, BALANCE.events.hazards.baseDamage + s.currentScene * BALANCE.events.hazards.damagePerScene, hooks)
   s.hazardLastHitAt = s.time
 }
