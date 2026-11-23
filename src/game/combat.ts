@@ -1,5 +1,5 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
-import { burst, impact, pushEcho, zigzag } from './fx'
+import { burst, impact, pushDamageNumber, pushEcho, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
@@ -34,8 +34,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
   impact(s, e.x, e.y, boss ? 68 : 30, boss ? '#ffab79' : '#ffe6ab', boss ? 1.5 : 0.3)
-  s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
-  if (s.numberFx.length > 80) s.numberFx.shift()
+  pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
   burst(s, e.x, e.y, '#fff3c4', 2)
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20 })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
