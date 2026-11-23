@@ -1626,6 +1626,20 @@ const english = new Map<string, string>([
 , ["COMBO","Combo"]
 , ["RELICS","Relics"]
 , ["✦ CELESTIAL ENCOUNTER ✦","✦ 天穹奇遇 ✦"]
+, ["黑暗奇幻生存冒險","A DARK FANTASY SURVIVAL ADVENTURE"]
+, ["第一章","CHAPTER I"]
+, ["隕落王國","THE FALLEN KINGDOM"]
+, ["命運繼承者","THE CHOSEN HERO"]
+, ["啟程準備","PREPARE YOUR JOURNEY"]
+, ["✧ 選擇英雄 ✧","✧ SELECT YOUR HERO ✧"]
+, ["升級 · 選擇你的祝福","LEVEL UP · CHOOSE YOUR BLESSING"]
+, ["· 進化","· EVOLUTION"]
+, ["✦ ECLIPSE SURVIVORS · 遠征報告 ✦","✦ ECLIPSE SURVIVORS · EXPEDITION REPORT ✦"]
+, ["✦ 系統 · 選項 ✦","✦ SYSTEM · OPTIONS ✦"]
+, ["02 / 選擇遠征","02 / SELECT YOUR JOURNEY"]
+, ["第二章 · 模式","CHAPTER II · MODES"]
+, ["✦ 天穹傳承 ✦","✦ CELESTIAL LEGACY ✦"]
+, ["行動操作 · 無障礙","MOBILE · ACCESSIBILITY"]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],

@@ -33,7 +33,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 <template>
   <article class="es2-progression-panel" :aria-label="t('永久成長 v3')">
     <header class="es2-progression-header">
-      <div><p class="es2-progression-overline">✦ CELESTIAL LEGACY ✦</p>
+      <div><p class="es2-progression-overline">{{ t("✦ CELESTIAL LEGACY ✦") }}</p>
         <h2>{{ t("永久成長 · 英雄傳承") }}</h2>
         <p>{{ t("研究、裝備與祝福只在下一場遠征開始時生效。") }}</p>
       </div>

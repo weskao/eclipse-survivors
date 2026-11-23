@@ -47,7 +47,7 @@ watch(() => props.active, async (active) => {
     <section class="panel settings-panel" aria-labelledby="settingsTitle">
       <header class="settings-header">
         <div>
-          <span class="settings-eyebrow">✦ SYSTEM · OPTIONS ✦</span>
+          <span class="settings-eyebrow">{{ t("✦ SYSTEM · OPTIONS ✦") }}</span>
           <h2 id="settingsTitle">{{ t("遊戲設定") }}</h2>
         </div>
         <button id="settingsClose" ref="closeButton" class="settings-close" type="button" :aria-label="t('關閉設定')" @click="emit('close')">×</button>

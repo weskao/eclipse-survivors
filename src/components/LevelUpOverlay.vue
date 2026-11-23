@@ -16,7 +16,7 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
       <header class="level-headline">
         <span class="level-seal" aria-hidden="true">✦</span>
         <div class="level-heading-copy">
-          <div class="kicker">LEVEL UP · CHOOSE YOUR BLESSING</div>
+          <div class="kicker">{{ t("LEVEL UP · CHOOSE YOUR BLESSING") }}</div>
           <h2>{{ t("獲得新的命運刻印") }}</h2>
         </div>
         <span class="level-seal" aria-hidden="true">✦</span>
@@ -24,7 +24,7 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
       <div class="cards" id="upgrades">
         <button v-for="(u, i) in upgrades" :key="u.id" class="upgrade" :class="[u.rarity, { evolution: u.isEvolution }]"
           :data-up="u.id" @click="emit('choose', u.id)">
-          <span class="upgrade-rarity">{{ t(rarityLabel[u.rarity]) }}<span v-if="u.isEvolution"> · EVOLUTION</span></span>
+          <span class="upgrade-rarity">{{ t(rarityLabel[u.rarity]) }}<span v-if="u.isEvolution"> {{ t("· EVOLUTION") }}</span></span>
           <span class="portrait skill-sigil" aria-hidden="true">
             <picture v-if="animatedEs2ImageSrc(u.id)">
               <source media="(prefers-reduced-motion: reduce)" :srcset="u.iconSrc ?? stillEs2ImageSrc(u.id)" />

@@ -9,7 +9,7 @@ const emit = defineEmits<{ select: [mode: RunModeId] }>()
 
 <template>
   <section class="mode-selector" :aria-label="t('遊戲模式')">
-    <div class="mode-heading"><span>02 / SELECT YOUR JOURNEY</span><strong>{{ t("選擇遠征模式") }}</strong></div>
+    <div class="mode-heading"><span>{{ t("02 / SELECT YOUR JOURNEY") }}</span><strong>{{ t("選擇遠征模式") }}</strong></div>
     <div class="mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
       <button
         v-for="id in modeIds" :key="id"

@@ -51,7 +51,7 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
   <section class="es2-settings" :aria-label="t('手機操控與無障礙設定')" :aria-disabled="disabled">
     <header class="es2-settings-head">
       <div>
-        <p class="es2-eyebrow">MOBILE · ACCESSIBILITY</p>
+        <p class="es2-eyebrow">{{ t("MOBILE · ACCESSIBILITY") }}</p>
         <h3>{{ t("操控與畫面輔助") }}</h3>
         <p>{{ t("立即預覽變更；儲存由遊戲設定整合層處理。") }}</p>
       </div>

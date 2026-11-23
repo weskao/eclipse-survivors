@@ -8,7 +8,7 @@ const emit = defineEmits<{ select: [mode: ObjectiveModeId] }>()
 
 <template>
   <section class="es2-objective-chooser" :aria-label="t('ES2 擴充遠征模式')">
-    <header><span>CHAPTER II · MODES</span><h2>{{ t("選擇遠征試煉") }}</h2></header>
+    <header><span>{{ t("CHAPTER II · MODES") }}</span><h2>{{ t("選擇遠征試煉") }}</h2></header>
     <div class="es2-objective-grid" role="radiogroup" :aria-label="t('ES2 遠征模式')">
       <button
         v-for="id in objectiveModeIds" :key="id"

@@ -42,22 +42,22 @@ const current = computed(() => CARDS.find(c => c.id === props.choice) ?? CARDS[0
         <MenuSceneArt />
       </div>
       <header class="menu-brand">
-        <div class="menu-eyebrow"><span class="menu-diamond">✦</span> A DARK FANTASY SURVIVAL ADVENTURE <span class="menu-diamond">✦</span></div>
+        <div class="menu-eyebrow"><span class="menu-diamond">✦</span> {{ t("A DARK FANTASY SURVIVAL ADVENTURE") }} <span class="menu-diamond">✦</span></div>
         <h1 class="game-title"><span>ECLIPSE</span><span>SURVIVORS</span></h1>
         <div class="menu-title-rule"><span>✧</span></div>
         <p class="menu-lede">{{ t("黑夜吞沒失落王國，只有最後的冒險者能迎接黎明。") }}<br>{{ t("踏入幽暮遺跡，與無盡魔物決一死戰。") }}</p>
-        <div class="menu-chapter"><span class="chapter-icon">◈</span><span>CHAPTER I <b>·</b> THE FALLEN KINGDOM</span></div>
+        <div class="menu-chapter"><span class="chapter-icon">◈</span><span>{{ t("CHAPTER I") }} <b>·</b> {{ t("THE FALLEN KINGDOM") }}</span></div>
         <!-- Unlocking happens on pointerdown; keep the slot so the column cannot shift mid-tap. -->
         <button v-if="musicOn" id="enableMenuMusic" class="menu-music-unlock" :class="{ 'is-unlocked': audioUnlocked }" :disabled="audioUnlocked" :aria-hidden="audioUnlocked ? 'true' : undefined" :tabindex="audioUnlocked ? -1 : undefined" @click="emit('enableAudio')">{{ t("♫ 點擊啟用主題音樂") }}</button>
       </header>
       <div class="menu-showcase" aria-live="polite" :data-cosmetic="profile?.equippedCosmetics[choice]">
         <div class="showcase-halo" aria-hidden="true"></div>
         <img id="heroSpotlight" :alt="t('目前選擇的英雄角色')" :src="ART_URLS[choice]" />
-        <div class="showcase-copy"><span>THE CHOSEN HERO</span><strong id="spotlightName">{{ t(current.name) }}</strong><small id="spotlightRole">{{ t(current.role) }}</small></div>
+        <div class="showcase-copy"><span>{{ t("THE CHOSEN HERO") }}</span><strong id="spotlightName">{{ t(current.name) }}</strong><small id="spotlightRole">{{ t(current.role) }}</small></div>
       </div>
       <section class="menu-selection" :aria-label="t('選擇你的起始職業')">
-        <div class="menu-step">01 <span>／</span> 01 <i></i> PREPARE YOUR JOURNEY</div>
-        <div class="menu-section-heading"><span>✧ SELECT YOUR HERO ✧</span><h2>{{ t("選擇命運的繼承者") }}</h2><p>{{ t("三種戰鬥風格，選擇屬於你的生存之道。") }}</p></div>
+        <div class="menu-step">01 <span>／</span> 01 <i></i> {{ t("PREPARE YOUR JOURNEY") }}</div>
+        <div class="menu-section-heading"><span>{{ t("✧ SELECT YOUR HERO ✧") }}</span><h2>{{ t("選擇命運的繼承者") }}</h2><p>{{ t("三種戰鬥風格，選擇屬於你的生存之道。") }}</p></div>
         <div class="cards" id="jobs">
           <button
             v-for="card in CARDS"

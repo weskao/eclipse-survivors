@@ -20,7 +20,7 @@ const duration = computed(() => {
 <template>
   <div id="result" class="overlay" :class="{ active }">
     <div class="panel result-panel" :class="runResult?.victory ? 'result-victory' : 'result-defeat'">
-      <span class="result-kicker">✦ ECLIPSE SURVIVORS · EXPEDITION REPORT ✦</span>
+      <span class="result-kicker">{{ t("✦ ECLIPSE SURVIVORS · EXPEDITION REPORT ✦") }}</span>
       <div class="result-emblem" aria-hidden="true">{{ runResult?.victory ? '♛' : '⚔' }}</div>
       <h2 id="ending">{{ t(ending) }}</h2>
       <p class="result-mode">{{ t(runResult ? MODES[runResult.mode].label : '遠征結算') }}</p>
