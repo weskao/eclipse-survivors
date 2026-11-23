@@ -23,6 +23,18 @@ describe('ES2 world art live asset mapping', () => {
     for (const url of urls) expect(url).toMatch(/\.webp(?:\?|$)/)
   })
 
+  it('loads the authored common chest for real gameplay map markers, not only the archive', () => {
+    const assigned: string[] = []
+    const makeImage = (): HTMLImageElement => ({
+      complete: false,
+      set src(url: string) { assigned.push(url) },
+    }) as unknown as HTMLImageElement
+    const runtime = loadWorldRuntimeImages(makeImage)
+    expect(runtime.chest).toBeDefined()
+    expect(assigned).toContain(WORLD_ART.ui['treasure-common'])
+    expect(assigned).toHaveLength(13)
+  })
+
   it('only loads visible game categories once at mount, not all 49 UI resources', () => {
     const assigned: string[] = []
     const makeImage = (): HTMLImageElement => ({
