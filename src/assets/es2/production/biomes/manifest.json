@@ -39,20 +39,20 @@
     {
       "id": "blood-moon-cathedral:decor",
       "path": "blood-moon-cathedral-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
+      "frameWidth": 330,
+      "frameHeight": 330,
       "status": "needs-human-approval",
-      "sha256": "02dcd88838c02fb7a4d430be4b88820f6d96cc5e1d7967515ef247fe6c865004",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha.",
-      "native3x": false,
+      "sha256": "a429fe3de35650f978bf54f2353fee196cce9fe20da3b32bc34299b7c0e4ee0c",
+      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending.",
+      "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
         "height": 110
@@ -61,7 +61,12 @@
         "width": 330,
         "height": 330
       },
-      "nativeSourceDetailStatus": "unverified-3x-source"
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "47e3277662e02d8de707db29e7d1676e1bc6c41ce0c2bf47530666d853ccc2fc",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ]
     },
     {
       "id": "cursed-forest:ground",
@@ -98,20 +103,20 @@
     {
       "id": "cursed-forest:decor",
       "path": "cursed-forest-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
+      "frameWidth": 330,
+      "frameHeight": 330,
       "status": "needs-human-approval",
-      "sha256": "b59308fe657ceb5ba7fa6b9ec3b343cbc28528ebfd80f2e3787160c610153df1",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha.",
-      "native3x": false,
+      "sha256": "a692cdcc010f81ab77c7503bc2657cd38c1a0d71ad8d02bf5e69c8906f27d3e4",
+      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending.",
+      "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
         "height": 110
@@ -120,7 +125,12 @@
         "width": 330,
         "height": 330
       },
-      "nativeSourceDetailStatus": "unverified-3x-source"
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "938d092301b78eb156b6c9c24ec60c5082ebae28b2e7bd87b73eaa7ff6825193",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ]
     },
     {
       "id": "abyssal-necropolis:ground",
