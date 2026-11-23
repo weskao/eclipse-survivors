@@ -318,9 +318,9 @@
   .es2-hud__info-toggle {
     position: absolute; top: var(--es2-compact-info-top); right: max(8px, env(safe-area-inset-right));
     z-index: 2; display: inline-flex; justify-content: center; align-items: center; gap: 6px;
-    min-height: 44px; padding: 5px 11px; border: 1px solid #dfc084; border-radius: 9px;
+    min-width: 44px; width: 44px; min-height: 44px; padding: 0; border: 1px solid #dfc084; border-radius: 9px;
     color: #fff0cc; background: #131b2de8;
-    font: 700 calc(12px * var(--es2-ui-scale, 1))/1.2 system-ui, sans-serif;
+    font: 700 0/1.2 system-ui, sans-serif; /* aria-label provides the full accessible name. */
     pointer-events: auto; cursor: pointer;
   }
   .es2-hud__info-toggle[aria-expanded="true"] { background: #453523; }
@@ -376,7 +376,7 @@
 @media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
   .es2-hud {
     --es2-encounter-top: max(8px, env(safe-area-inset-top));
-    --es2-compact-info-top: max(96px, calc(env(safe-area-inset-top) + 89px));
+    --es2-compact-info-top: max(116px, calc(env(safe-area-inset-top) + 105px));
   }
   .es2-hud__hero { width: min(29vw, 230px); }
   .es2-hud__encounter { width: min(38vw, 330px); }

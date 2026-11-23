@@ -115,6 +115,8 @@ try {
             toggle: rect(document.querySelector('[data-es2-info-toggle]')),
             joystick: rect(document.querySelector('[data-testid="es2-stick"]')),
             dash: rect(document.querySelector('[data-testid="es2-dash"]')),
+            hero: rect(document.querySelector('.es2-hud__hero')),
+            topControls: rect(document.querySelector('.es2-hud__controls')),
           }
         })
         const intersects = (a, b) => a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y
@@ -127,6 +129,11 @@ try {
         assert.ok(!intersects(drawerBounds.toggle, drawerBounds.joystick) &&
           !intersects(drawerBounds.toggle, drawerBounds.dash),
         `${viewport.name}: information toggle obscures a touch control`)
+        assert.ok(drawerBounds.toggle.right - drawerBounds.toggle.x <= 48,
+          `${viewport.name}: compact information toggle obscures too much battlefield`)
+        assert.ok(!intersects(drawerBounds.toggle, drawerBounds.hero) &&
+          !intersects(drawerBounds.toggle, drawerBounds.topControls),
+        `${viewport.name}: info toggle obscures an essential top HUD control`)
         await page.screenshot({ path: `${directory}/${viewport.name}-expanded-info.png`, animations: 'disabled' })
         await page.locator('[data-es2-info-close]').click()
         assert.equal(await panel.isVisible(), false, `${viewport.name}: close must restore battlefield`)
@@ -215,13 +222,16 @@ try {
           const b = element.getBoundingClientRect()
           return { x: b.x, y: b.y, right: b.right, bottom: b.bottom }
         }
-        return { special: rect(button), dash: rect(dash), joystick: rect(joystick) }
+        return { special: rect(button), dash: rect(dash), joystick: rect(joystick),
+          infoToggle: rect(document.querySelector('[data-es2-info-toggle]')) }
       })
       assert.ok(specialBounds, `${heroId}: special action button missing`)
       const overlaps = (a, b) => a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y
       assert.ok(!overlaps(specialBounds.special, specialBounds.dash) &&
         !overlaps(specialBounds.special, specialBounds.joystick),
       `${heroId}: special action overlaps touch controls: ${JSON.stringify(specialBounds)}`)
+      assert.ok(!overlaps(specialBounds.special, specialBounds.infoToggle),
+        `${heroId}: special action overlaps information toggle: ${JSON.stringify(specialBounds)}`)
       await page.screenshot({ path: `${directory}/portrait-375-${heroId}-game.png`, animations: 'disabled' })
       assert.deepEqual(errors, [], `${heroId}: uncaught browser errors`)
       console.log(`PASS ${heroId}: committed portrait and action preview, same hero on in-game HUD`)
