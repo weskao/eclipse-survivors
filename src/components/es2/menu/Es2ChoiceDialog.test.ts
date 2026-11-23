@@ -12,7 +12,9 @@ const choices: MenuChoice[] = [
 ]
 const dialog = () => document.querySelector<HTMLElement>('.es2-dialog')!
 const button = (id: string) => document.querySelector<HTMLButtonElement>(`[data-choice="${id}"]`)!
-const press = (key: string, extra: KeyboardEventInit = {}) => document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...extra }))
+const press = (key: string, extra: KeyboardEventInit = {}) => document.dispatchEvent(new KeyboardEvent('keydown', {
+  key, code: /^[0-9]$/.test(key) ? `Digit${key}` : '', bubbles: true, cancelable: true, ...extra,
+}))
 const wrappers: VueWrapper[] = []
 function mounted(component: Component, props: Record<string, unknown>) {
   const wrapper = mount(component, { attachTo: document.body, props })
@@ -74,6 +76,20 @@ describe('ES2 upgrade and reward picker', () => {
     }
     press('2')
     expect(wrapper.emitted('choose')).toEqual([['frost']])
+  })
+
+  it('uses physical number positions across IMEs and the separate numpad', async () => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
+    await nextTick()
+    press('2', { code: 'KeyQ' }) // A character that looks numeric is not the Digit2 position.
+    expect(wrapper.emitted('choose')).toBeUndefined()
+    press('End', { code: 'Numpad2' }) // NumLock off.
+    expect(wrapper.emitted('choose')).toEqual([['frost']])
+    await wrapper.setProps({ active: false })
+    await wrapper.setProps({ active: true })
+    await nextTick()
+    press('Process', { code: 'Digit1', isComposing: true }) // Non-English IME.
+    expect(wrapper.emitted('choose')).toEqual([['frost'], ['bolt']])
   })
 
   it('traps Tab and restores focus when the choice dialog closes', async () => {
