@@ -68,6 +68,8 @@ export interface TestApi {
   readonly scene: string
   /** Live encounter identity and phase for browser QA; not a player setting. */
   readonly bossPreview: { id: BossId | null; phase: 1 | 2 | 3 | null }
+  /** Dev capture reads which real boss attack is currently telegraphing. */
+  readonly bossAttackPreview: { id: string | null; activeImpacts: number }
   forceAttack(): void
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
@@ -685,6 +687,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     get bossPreview() {
       const boss = bosses?.snapshot(s)
       return { id: boss?.id ?? null, phase: boss?.phase ?? null }
+    },
+    get bossAttackPreview() {
+      const snapshot = bosses?.snapshot(s)
+      return {
+        id: snapshot?.telegraphs.find(warning => warning.stage === 'warning')?.attackId ?? null,
+        activeImpacts: snapshot?.impacts?.length ?? 0,
+      }
     },
     previewBiome(index: number) {
       if (window.location.search.indexOf('showcase=1') < 0 || s.mode !== 'play' ||
