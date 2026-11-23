@@ -77,11 +77,36 @@
 .es2-hud__eyebrow { color: #e0c88e; font: 750 10px/1.25 system-ui, sans-serif; letter-spacing: .13em; }
 .es2-hud__health-head { display: flex; justify-content: space-between; gap: 6px; color: #f8d2ca; font-size: 10px; margin: 2px 0 4px; }
 .es2-hud__health-head--xp { color: #c7d7ec; margin-top: 7px; }
-.es2-hud__track { overflow: hidden; height: 11px; border: 1px solid #b69a7170; border-radius: 99px; background: #040810e8; box-shadow: inset 0 2px 5px #0009; }
-.es2-hud__track > span { display: block; width: 0; height: 100%; border-radius: inherit; transition: width .12s linear; box-shadow: inset 0 1px #fff8, 0 0 9px currentColor; }
-.es2-hud__track--health > span { color: #d45b5b; background: linear-gradient(#f3937a, #b63b42 50%, #812831); }
-.es2-hud__track--xp { height: 8px; }
-.es2-hud__track--xp > span { color: #7ca6e6; background: linear-gradient(#b5daf9, #517ac6 56%, #314991); }
+/* Smooth presentation only: the simulation and accessible value stay immediate. */
+.es2-hud__track, .es2-hud__wave-track {
+  position: relative; isolation: isolate; overflow: hidden; height: 11px;
+  border: 1px solid #b69a7170; border-radius: 99px; background: #040810e8;
+  box-shadow: inset 0 2px 5px #0009;
+}
+.es2-hud__track > span, .es2-hud__wave-track > span {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+  transform: scaleX(var(--es2-progress, 0)); transform-origin: left center;
+  border-radius: inherit; pointer-events: none;
+  transition: transform .36s cubic-bezier(.22, .72, .25, 1);
+}
+.es2-hud__track > .es2-hud__track-fill { z-index: 1; box-shadow: inset 0 1px #fff8, 0 0 9px currentColor; }
+.es2-hud__track-fill::after, .es2-hud__wave-track > span::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, #fff8, #fff2 40%, transparent 58%, #0003);
+}
+.es2-hud__track > .es2-hud__track-trail {
+  z-index: 0; background: linear-gradient(90deg, #f8b76c, #ff745b);
+  opacity: .78; transition: transform .58s cubic-bezier(.22, .68, .25, 1) .08s;
+}
+.es2-hud__track--health > .es2-hud__track-fill {
+  color: #e56c62; background: linear-gradient(180deg, #ffab80, #d74d52 52%, #8d2739);
+}
+.es2-hud__track--critical { border-color: #ff9a79; box-shadow: inset 0 2px 5px #0009, 0 0 8px #da554b70; }
+.es2-hud__track--xp { height: 8px; border-color: #789dcc9e; }
+.es2-hud__track--xp > .es2-hud__track-fill {
+  color: #80cbea; background: linear-gradient(180deg, #c6efff, #65b2ed 54%, #4160b5);
+  transition-duration: .3s;
+}
 .es2-hud__top-right { display: flex; align-items: flex-start; gap: 8px; }
 .es2-hud__counters { display: flex; gap: 6px; padding: 6px 9px; min-height: 46px; }
 .es2-hud__counter { display: grid; gap: 0; grid-template-columns: 15px auto; grid-template-rows: 21px 10px; align-items: center; min-width: 57px; }
@@ -114,12 +139,22 @@
 .es2-hud__boss-heading { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; font: 750 14px/1.3 Georgia, serif; color: #ffdbc2; }
 .es2-hud__boss-phase { font: 750 10px system-ui; color: #f2c586; letter-spacing: .08em; white-space: nowrap; }
 .es2-hud__track--boss { height: 12px; border-color: #b16c73; }
-.es2-hud__track--boss > span { color: #bd447d; background: linear-gradient(#e594c3, #a53b72 53%, #67234e); }
+.es2-hud__track--boss > .es2-hud__track-fill {
+  color: #dc6dae; background: linear-gradient(180deg, #ffd0e7, #c4529a 54%, #69244e);
+  transition-duration: .42s;
+}
+.es2-hud__track--boss > .es2-hud__track-trail {
+  background: linear-gradient(90deg, #c86da9, #ffd1c9); opacity: .65;
+}
 .es2-hud__wave {
   align-self: center; width: max-content; max-width: 100%; min-width: 0;
   padding: 8px 20px; text-align: center; overflow-wrap: anywhere;
 }
 .es2-hud__wave strong { display: block; color: #f7dbab; font: 750 16px Georgia, serif; }
+.es2-hud__wave-track { height: 6px; margin-top: 6px; border-color: #bda07290; }
+.es2-hud__wave-track > span {
+  background: linear-gradient(90deg, #bd8cdd, #f7cd88); transition-duration: .4s;
+}
 .es2-hud__side {
   position: absolute; top: var(--es2-side-top); bottom: var(--es2-footer-clear);
   right: max(16px, env(safe-area-inset-right)); width: min(320px, 27vw);
@@ -286,7 +321,7 @@
   .es2-hud__bottom { bottom: max(7px, env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .es2-hud, .es2-hud__track > span, .es2-hud__skill, .es2-hud__controls .es2-hud__control-button, .es2-hud__cooldown { transition: none; }
+  .es2-hud, .es2-hud__track > span, .es2-hud__wave-track > span, .es2-hud__skill, .es2-hud__controls .es2-hud__control-button, .es2-hud__cooldown { transition: none; }
   .es2-hud__notice { animation: none; }
 }
 

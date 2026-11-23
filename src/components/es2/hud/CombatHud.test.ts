@@ -52,6 +52,38 @@ describe('ES2 combat HUD', () => {
   })
 
 
+
+  it('smoothly presents damage and healing without delaying authoritative HP, XP, boss or wave values', async () => {
+    const { wrapper } = render({
+      hud: { ...equipped, bossPct: 40 },
+      feed: { wave: { number: 2, progressPct: 22 } },
+    })
+    const meter = (label: string) => wrapper.get(`[role="progressbar"][aria-label="${label}"]`)
+    const fraction = (label: string) => (meter(label).element as HTMLElement).style.getPropertyValue('--es2-progress')
+    expect(fraction('生命值')).toBe('0.75')
+    expect(fraction('經驗值')).toBe('0.42')
+    expect(fraction('首領生命值')).toBe('0.4')
+    expect(fraction('波次進度')).toBe('0.22')
+    expect(meter('生命值').findAll('span')).toHaveLength(2)
+    expect(meter('生命值').get('.es2-hud__track-trail').attributes('aria-hidden')).toBe('true')
+    await wrapper.setProps({
+      hud: { ...equipped, hpPct: 12, xpPct: 80, bossPct: 18 },
+      feed: { wave: { number: 2, progressPct: 63 } },
+    })
+    expect(meter('生命值').attributes('aria-valuenow')).toBe('12')
+    expect(fraction('生命值')).toBe('0.12')
+    expect(meter('生命值').classes()).toContain('es2-hud__track--critical')
+    expect(fraction('經驗值')).toBe('0.8')
+    expect(fraction('首領生命值')).toBe('0.18')
+    expect(fraction('波次進度')).toBe('0.63')
+    await wrapper.setProps({ hud: { ...equipped, hpPct: 94, xpPct: 15, bossPct: 48 } })
+    expect(meter('生命值').attributes('aria-valuenow')).toBe('94')
+    expect(fraction('生命值')).toBe('0.94')
+    expect(meter('生命值').classes()).not.toContain('es2-hud__track--critical')
+    expect(fraction('經驗值')).toBe('0.15')
+    expect(fraction('首領生命值')).toBe('0.48')
+  })
+
   it('updates the top-left portrait to each live specialization\'s true Canvas artwork', () => {
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
       const { wrapper } = render({ heroId: id, choice: id === 'spirit-summoner' ? 'wizard' : 'knight' })

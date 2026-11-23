@@ -41,6 +41,20 @@ describe('responsive ES2 encounter and information rail', () => {
     expect(component).toContain('data-es2-announcement')
     expect(component).toContain(':aria-label="t(\'波次進度\')"')
   })
+
+  it('uses composited easing, a trailing damage layer, critical emphasis and reduced-motion fallback', () => {
+    expect(css).toContain('transform: scaleX(var(--es2-progress, 0))')
+    expect(css).toMatch(/transition: transform \.36s cubic-bezier/)
+    expect(css).toContain('.es2-hud__track > .es2-hud__track-trail')
+    expect(css).toContain('.es2-hud__track--critical')
+    expect(css).toContain('.es2-hud__wave-track > span')
+    expect(css).not.toContain('transition: width .12s linear')
+    const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(reduced).toContain('.es2-hud__track > span')
+    expect(reduced).toContain('.es2-hud__wave-track > span')
+    expect(component).toContain(':key="view.identity"')
+  })
+
   it('keeps ES2 styles scoped and avoids changing the legacy game', () => {
     expect(css).toContain('.es2-hud')
     expect(css).not.toMatch(/(?:^|\n)\s*(?:html|body|#hud|#menu|#game)\b/)

@@ -4,6 +4,7 @@ import { animatedEs2ImageSrc, skillImageSrc } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
 import { t } from '../../../i18n'
+import { LOW_HP_PCT } from '../../../game/constants'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
 import type { HudView } from '../../../game/store'
 import type { HeroId, JobId } from '../../../game/types'
@@ -108,14 +109,17 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             <strong>{{ t(view.identity) }}</strong>
           </div>
           <div class="es2-hud__health-head"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-health']" alt="" />{{ t("生命值") }}</span><span>{{ t(view.health.label) }}</span></div>
-          <div class="es2-hud__track es2-hud__track--health" role="progressbar" :aria-label="t('生命值')"
-            :aria-valuenow="view.health.percent" aria-valuemin="0" aria-valuemax="100">
-            <span :style="{ width: view.health.percent + '%' }"></span>
+          <div class="es2-hud__track es2-hud__track--health" :class="{ 'es2-hud__track--critical': view.health.percent <= LOW_HP_PCT }"
+            role="progressbar" :aria-label="t('生命值')" :aria-valuenow="view.health.percent"
+            aria-valuemin="0" aria-valuemax="100" :style="{ '--es2-progress': view.health.percent / 100 }">
+            <span class="es2-hud__track-trail" aria-hidden="true"></span>
+            <span class="es2-hud__track-fill" aria-hidden="true"></span>
           </div>
           <div class="es2-hud__health-head es2-hud__health-head--xp"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-xp']" alt="" />{{ t("經驗值") }}</span><span>{{ Math.round(view.experience) }}%</span></div>
-          <div class="es2-hud__track es2-hud__track--xp" role="progressbar" :aria-label="t('經驗值')"
-            :aria-valuenow="view.experience" aria-valuemin="0" aria-valuemax="100">
-            <span :style="{ width: view.experience + '%' }"></span>
+          <div :key="view.identity" class="es2-hud__track es2-hud__track--xp" role="progressbar"
+            :aria-label="t('經驗值')" :aria-valuenow="view.experience"
+            aria-valuemin="0" aria-valuemax="100" :style="{ '--es2-progress': view.experience / 100 }">
+            <span class="es2-hud__track-fill" aria-hidden="true"></span>
           </div>
         </div>
       </div>
@@ -163,16 +167,19 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
           </span>
         </div>
         <div class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
-          :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100">
-          <span :style="{ width: view.boss.percent + '%' }"></span>
+          :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100"
+          :style="{ '--es2-progress': view.boss.percent / 100 }">
+          <span class="es2-hud__track-trail" aria-hidden="true"></span>
+          <span class="es2-hud__track-fill" aria-hidden="true"></span>
         </div>
       </section>
       <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave :aria-label="t('波次')">
         <span class="es2-hud__eyebrow">{{ t('WAVE') }} {{ view.wave.number }}</span>
         <strong v-if="view.wave.announcement">{{ t(view.wave.announcement) }}</strong>
         <div v-if="view.wave.progressPct !== undefined" class="es2-hud__wave-track" role="progressbar" :aria-label="t('波次進度')"
-          :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100">
-          <span :style="{ width: view.wave.progressPct + '%' }"></span>
+          :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100"
+          :style="{ '--es2-progress': view.wave.progressPct / 100 }">
+          <span aria-hidden="true"></span>
         </div>
       </div>
     </div>
