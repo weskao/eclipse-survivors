@@ -78,6 +78,34 @@ describe('ES2 upgrade and reward picker', () => {
     expect(wrapper.emitted('choose')).toEqual([['frost']])
   })
 
+  it.each(['level', 'evolution', 'treasure'] as const)(
+    'suppresses Space and Enter on focused %s choice buttons without blocking clicks', async (kind) => {
+      const wrapper = mounted(Es2ChoiceDialog, { active: true, kind, items: choices })
+      await nextTick()
+      const card = button('bolt')
+      card.focus()
+      for (const [key, code] of [[' ', 'Space'], ['Enter', 'Enter'], ['Enter', 'NumpadEnter']]) {
+        for (const type of ['keydown', 'keyup'] as const) {
+          const event = new KeyboardEvent(type, { key, code, bubbles: true, cancelable: true })
+          card.dispatchEvent(event)
+          expect(event.defaultPrevented, `${type} ${code}`).toBe(true)
+        }
+      }
+      expect(wrapper.emitted('choose')).toBeUndefined()
+      card.click()
+      expect(wrapper.emitted('choose')).toEqual([['bolt']])
+    },
+  )
+
+  it('does not interfere with Space/Enter after the choice dialog closes', async () => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
+    await nextTick()
+    await wrapper.setProps({ active: false })
+    const event = new KeyboardEvent('keydown', { code: 'Space', key: ' ', bubbles: true, cancelable: true })
+    document.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(false)
+  })
+
   it('uses physical number positions across IMEs and the separate numpad', async () => {
     const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
     await nextTick()
