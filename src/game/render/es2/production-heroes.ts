@@ -12,6 +12,15 @@ import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin
 import shadowMotion from '../../../assets/es2/production/heroes/shadowblade-8dir-motion@3x.webp'
 import summonerMotion from '../../../assets/es2/production/heroes/spirit-summoner-8dir-motion@3x.webp'
 import paladinMotion from '../../../assets/es2/production/heroes/crimson-paladin-8dir-motion@3x.webp'
+import shadowDirection from '../../../assets/es2/production/heroes/shadowblade/idle-ready-8dir@3x.webp'
+import shadowRunAttack from '../../../assets/es2/production/heroes/shadowblade/run-attack-east@3x.webp'
+import shadowSpecial from '../../../assets/es2/production/heroes/shadowblade/special-east@3x.webp'
+import summonerDirection from '../../../assets/es2/production/heroes/spirit-summoner/idle-ready-8dir@3x.webp'
+import summonerRunAttack from '../../../assets/es2/production/heroes/spirit-summoner/run-attack-east@3x.webp'
+import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summoner/special-east@3x.webp'
+import paladinDirection from '../../../assets/es2/production/heroes/crimson-paladin/idle-ready-8dir@3x.webp'
+import paladinRunAttack from '../../../assets/es2/production/heroes/crimson-paladin/run-attack-east@3x.webp'
+import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/special-east@3x.webp'
 
 /** Full 900×900 3x character illustrations, matching the homepage and HUD. */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
@@ -33,15 +42,27 @@ export const PRODUCTION_HERO_MOTION_SOURCES: Readonly<Record<SpecializationId, s
   'crimson-paladin': paladinMotion,
 })
 
+type PoseSheet = 'direction' | 'action' | 'special'
+export const PRODUCTION_HERO_POSE_SOURCES: Readonly<Record<SpecializationId, Readonly<Record<PoseSheet, string>>>> = Object.freeze({
+  shadowblade: { direction: shadowDirection, action: shadowRunAttack, special: shadowSpecial },
+  'spirit-summoner': { direction: summonerDirection, action: summonerRunAttack, special: summonerSpecial },
+  'crimson-paladin': { direction: paladinDirection, action: paladinRunAttack, special: paladinSpecial },
+})
 type AtlasWithAction = HTMLImageElement & { actionStrip?: HTMLImageElement }
 type HeroWithMotion = AtlasWithAction & {
   motionAtlas?: HTMLImageElement
   motionAtlasUrl?: string
   motionAtlasFactory?: () => HTMLImageElement
+  poseAtlasSources?: Readonly<Record<PoseSheet, string>>
+  poseAtlases?: Partial<Record<PoseSheet, HTMLImageElement>>
 }
 
 export function productionHeroMotionReady(image: HTMLImageElement | undefined): boolean {
   const atlas = (image as HeroWithMotion | undefined)?.motionAtlas
+  const hero = image as HeroWithMotion | undefined
+  // The main character renderer must not mirror authored directional poses:
+  // the chosen frame already supplies its actual screen-space facing.
+  if (hero?.poseAtlasSources || hero?.poseAtlases?.direction) return true
   return !!atlas?.complete && atlas.naturalWidth === 3072 && atlas.naturalHeight === 1920
 }
 
@@ -61,7 +82,8 @@ export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => n
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {
     const image = makeImage() as HeroWithMotion
     image.src = PRODUCTION_HERO_SOURCES[id]
-    image.motionAtlasUrl = PRODUCTION_HERO_MOTION_SOURCES[id]
+    image.poseAtlasSources = PRODUCTION_HERO_POSE_SOURCES[id]
+    image.poseAtlases = {}
     image.motionAtlasFactory = makeImage
     result[id] = image
   }
@@ -173,6 +195,71 @@ function drawHeroMotionAtlas(
   ctx.restore()
 }
 
+/**
+ * The new split contact sheets have strict integer 448px source cells and
+ * transparent 16px gutters. Direction columns W,SW,S,SE,E,NE,N,NW are
+ * arranged 4×2 (row 0/1 idle, row 2/3 guard). Only east has authored
+ * 8-frame running/attack/special sequences. West can mirror those frames;
+ * other directions hold the correct independent guard silhouette without
+ * the old alternating idle/guard flicker or borrowed side-facing images.
+ */
+export function productionHeroPoseRect(anim: HeroAnimation): {
+  sheet: PoseSheet; x: number; y: number; width: 448; height: 448; mirror: boolean
+} {
+  const direction = Number.isFinite(anim.direction)
+    ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+  const sourceColumn = (4 - direction + 8) % 8
+  const directional = (active: boolean) => {
+    const cell = sourceColumn + (active ? 8 : 0)
+    return { sheet: 'direction' as const, x: (cell % 4) * 448,
+      y: Math.floor(cell / 4) * 448, width: 448 as const, height: 448 as const, mirror: false }
+  }
+  if (anim.reducedMotion || anim.pose === 'idle' ||
+    anim.pose === 'hurt' || anim.pose === 'death' || anim.pose === 'victory')
+    return directional(false)
+  if (direction !== 0 && direction !== 4) return directional(true)
+  const running = anim.pose === 'run' || anim.pose === 'dash'
+  const frame = running
+    ? Math.min(7, Math.floor(Math.max(0, anim.frame) * 8 / Math.max(1, anim.count)))
+    : Math.min(7, Math.floor(Math.max(0, Math.min(0.999999, anim.phase)) * 8))
+  const sheet: PoseSheet = !running && anim.special ? 'special' : 'action'
+  const cell = sheet === 'action' && !running ? frame + 8 : frame
+  return { sheet, x: (cell % 4) * 448, y: Math.floor(cell / 4) * 448,
+    width: 448, height: 448, mirror: direction === 4 }
+}
+
+function readyPoseAtlas(atlas: HTMLImageElement | undefined, sheet: PoseSheet): atlas is HTMLImageElement {
+  return !!atlas?.complete && atlas.naturalWidth === 1792 &&
+    atlas.naturalHeight === (sheet === 'special' ? 896 : 1792)
+}
+
+/** Lazy-load only the selected hero's needed sheet. No per-frame Image allocation. */
+function loadHeroPoseOnDemand(hero: HeroWithMotion, sheet: PoseSheet): HTMLImageElement | null {
+  if (!hero.poseAtlases) hero.poseAtlases = {}
+  let atlas = hero.poseAtlases[sheet]
+  if (!atlas && hero.poseAtlasSources) {
+    atlas = hero.motionAtlasFactory ? hero.motionAtlasFactory() : new Image()
+    hero.poseAtlases[sheet] = atlas
+    atlas.src = hero.poseAtlasSources[sheet]
+  }
+  return readyPoseAtlas(atlas, sheet) ? atlas : null
+}
+
+function drawHeroPoseAtlas(
+  ctx: Ctx2D, atlas: HTMLImageElement, rect: ReturnType<typeof productionHeroPoseRect>,
+  width: number, height: number,
+): void {
+  // Each crop contains exactly one frame, with transparent margins. Never draw
+  // another sheet below it: old action silhouettes cannot trail the new pose.
+  const paintedWidth = Math.min(width * 1.16, 448 / 3)
+  const paintedHeight = Math.min(height * 1.05, 448 / 3)
+  ctx.save()
+  if (rect.mirror) ctx.scale(-1, 1)
+  ctx.drawImage(atlas, rect.x, rect.y, 448, 448,
+    -paintedWidth / 2, 4 - paintedHeight, paintedWidth, paintedHeight)
+  ctx.restore()
+}
+
 export function drawProductionHeroFrame(
   ctx: Ctx2D, image: HTMLImageElement, anim: HeroAnimation, width: number, height: number,
   heroSheets?: HeroSheets,
@@ -182,7 +269,35 @@ export function drawProductionHeroFrame(
   // illustration instead of enlarging a tiny 128px figure. The generated
   // 3x Canvas cache is bounded and reused across frames.
   if (image.naturalWidth === 900 && image.naturalHeight === 900) {
-    const motion = loadHeroMotionOnDemand(image as HeroWithMotion)
+    const hero = image as HeroWithMotion
+    if (hero.poseAtlasSources || hero.poseAtlases) {
+      const rect = productionHeroPoseRect(anim)
+      const sheet = loadHeroPoseOnDemand(hero, rect.sheet)
+      if (sheet) {
+        drawHeroPoseAtlas(ctx, sheet, rect, width, height)
+        return true
+      }
+      // Keep this character's direction/guard rather than snap back to a
+      // different pose or accidentally composite an older action atlas.
+      if (rect.sheet !== 'direction') {
+        const ready = loadHeroPoseOnDemand(hero, 'direction')
+        if (ready) {
+          const direction = Number.isFinite(anim.direction)
+            ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+          const col = (4 - direction + 8) % 8
+          const cell = col + 8
+          drawHeroPoseAtlas(ctx, ready, { sheet: 'direction',
+            x: (cell % 4) * 448, y: Math.floor(cell / 4) * 448,
+            width: 448, height: 448, mirror: false }, width, height)
+          return true
+        }
+      }
+      // No valid split sheet is decoded yet: keep one clean portrait fallback.
+      if (heroSheets?.drawSpecialization(ctx, image, anim, width, height)) return true
+      drawPortraitMotion(ctx, image, anim, width, height)
+      return true
+    }
+    const motion = loadHeroMotionOnDemand(hero)
     if (motion) {
       drawHeroMotionAtlas(ctx, motion, anim, width, height)
       return true
