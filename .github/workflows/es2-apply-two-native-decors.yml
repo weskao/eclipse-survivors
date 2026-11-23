@@ -1,0 +1,105 @@
+name: ES2 install two authored native-3x biome decor sets
+on:
+  push:
+    branches: [feature/es2-art-qa-biomes]
+    paths:
+      - 'src/assets/es2/production/biomes/.art-decor-patch-parts/**'
+permissions:
+  contents: write
+concurrency:
+  group: es2-native-decor-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  install:
+    if: "github.event.head_commit.message == 'chore(es2): stage two independently authored 3x decor sheets'"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify and apply exact binary diff to owned WebPs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat src/assets/es2/production/biomes/.art-decor-patch-parts/part-*.txt > /tmp/es2-decor.patch
+          test "$(wc -c < /tmp/es2-decor.patch)" -eq 402560
+          printf '%s  %s\n' 'a6afa1cfe1aee9f66275b146eed6b4a7ef6b650aff9d3bbeef712bd1d394b586' /tmp/es2-decor.patch | sha256sum -c -
+          git apply --check --binary /tmp/es2-decor.patch
+          git apply --binary /tmp/es2-decor.patch
+      - name: Check WebP signatures, 4 cells, source hashes, approval status and update manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs'
+          import { createHash } from 'node:crypto'
+          import assert from 'node:assert/strict'
+          const root = 'src/assets/es2/production/biomes/'
+          const m = JSON.parse(readFileSync(root+'manifest.json','utf8'))
+          assert.equal(m.category,'biomes')
+          assert.equal(m.status,'visual-review-required')
+          assert.equal(m.assets.length,8)
+          const replacements = [
+            ['blood-moon-cathedral','a429fe3de35650f978bf54f2353fee196cce9fe20da3b32bc34299b7c0e4ee0c','47e3277662e02d8de707db29e7d1676e1bc6c41ce0c2bf47530666d853ccc2fc'],
+            ['cursed-forest','a692cdcc010f81ab77c7503bc2657cd38c1a0d71ad8d02bf5e69c8906f27d3e4','938d092301b78eb156b6c9c24ec60c5082ebae28b2e7bd87b73eaa7ff6825193'],
+          ]
+          for (const [id,sha,masterSha] of replacements) {
+            const a=m.assets.find(x=>x.id===id+':decor')
+            assert.ok(a,'Missing asset '+id)
+            assert.equal(a.status,'needs-human-approval')
+            assert.equal(a.native3x,false)
+            const bytes=readFileSync(root+a.path)
+            assert.ok(bytes.length <= a.maxBytes,id+': over 180KB limit')
+            assert.equal(bytes.toString('ascii',0,4),'RIFF')
+            assert.equal(bytes.toString('ascii',8,12),'WEBP')
+            assert.equal(bytes.toString('ascii',12,16),'VP8X')
+            assert.ok(bytes[20]&16,id+': source lacks transparency')
+            const width=1+bytes[24]+(bytes[25]<<8)+(bytes[26]<<16)
+            const height=1+bytes[27]+(bytes[28]<<8)+(bytes[29]<<16)
+            assert.deepEqual([width,height],[1320,330])
+            assert.equal(createHash('sha256').update(bytes).digest('hex'),sha)
+            Object.assign(a,{
+              width:1320,height:330,frameWidth:330,frameHeight:330,
+              frames:4,columns:4,rows:1,native3x:true,sha256:sha,
+              authoredMasterSha256:masterSha,authoredMasterDimensions:[2172,724],
+              nativeSourceDetailStatus:'newly-authored-2172x724-four-prop-master; human-art-review-pending',
+              qaNote:'Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending.',
+            })
+          }
+          for(const a of m.assets)assert.equal(a.status,'needs-human-approval')
+          writeFileSync(root+'manifest.json',JSON.stringify(m,null,2)+'\n')
+          NODE
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Existing world-art manifest and rendering mapping tests
+        run: pnpm exec vitest run src/assets/es2/production/world-art-candidates.test.ts src/game/render/es2/production-world.test.ts
+      - name: TypeScript
+        run: pnpm typecheck
+      - name: Production build
+        run: pnpm build
+      - name: Release invariants
+        run: pnpm check-release
+      - name: Run strict native-3x gate (remaining two pending decor sets must stay RED)
+        continue-on-error: true
+        run: pnpm exec vitest run src/assets/es2/production/biomes/native-3x-candidates.test.ts
+      - name: Run full regression suite and report unrelated art gates
+        continue-on-error: true
+        run: pnpm test
+      - name: Fast-forward commit only on the authorized art branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF}" = 'refs/heads/feature/es2-art-qa-biomes'
+          git rm -r src/assets/es2/production/biomes/.art-decor-patch-parts
+          git add src/assets/es2/production/biomes/blood-moon-cathedral-decor@3x.webp
+          git add src/assets/es2/production/biomes/cursed-forest-decor@3x.webp
+          git add src/assets/es2/production/biomes/manifest.json
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'art(es2): install two true 3x biome decoration atlases for QA'
+          git fetch origin feature/es2-art-qa-biomes
+          test "$(git rev-parse origin/feature/es2-art-qa-biomes)" = "${GITHUB_SHA}"
+          git push origin HEAD:feature/es2-art-qa-biomes
