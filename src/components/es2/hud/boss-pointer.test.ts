@@ -25,19 +25,19 @@ describe('offscreen boss tracker geometry', () => {
     expect(right.angle).toBe(0)
     expect(right.distance).toBe(800)
     expect(right.left).toBeLessThanOrEqual(299)
-    expect(right.top).toBeGreaterThanOrEqual(260)
+    expect(right.top).toBeGreaterThanOrEqual(300)
     const left = locateOffscreenBoss(s, boss(-900, 0))!
     expect(left.angle).toBe(180)
     expect(left.left).toBeGreaterThanOrEqual(75)
     const above = locateOffscreenBoss(s, boss(0, -1000))!
     expect(above.angle).toBe(-90)
-    expect(above.top).toBeGreaterThanOrEqual(260)
+    expect(above.top).toBeGreaterThanOrEqual(300)
   })
   it('keeps the pointer inside short-landscape bounds and rotates diagonally', () => {
     const s = viewport(640, 320)
     const corner = locateOffscreenBoss(s, boss(700, -700))!
     expect(corner.angle).toBe(-45)
-    expect(corner.left).toBeGreaterThanOrEqual(70)
+    expect(corner.left).toBeGreaterThanOrEqual(110)
     expect(corner.left).toBeLessThanOrEqual(564)
     expect(corner.top).toBeGreaterThanOrEqual(95)
     expect(corner.top).toBeLessThanOrEqual(235)

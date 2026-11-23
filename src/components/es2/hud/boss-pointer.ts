@@ -27,10 +27,11 @@ export function locateOffscreenBoss(
 
   const cx = W / 2, cy = H / 2
   const dx = x - cx, dy = y - cy
-  const left = Math.min(76, W * 0.23)
-  const right = W - left
+  // A slightly deeper landscape inset protects the 44px information toggle.
   const portrait = H > W
-  const top = portrait ? Math.min(H * .42, Math.max(190, H * .33))
+  const left = Math.min(!portrait && H <= 520 ? 116 : 76, W * 0.23)
+  const right = W - left
+  const top = portrait ? Math.min(H * .55, Math.max(302, H * .36))
     : Math.min(H * .42, Math.max(95, H * .32))
   const bottom = Math.max(top + 1, H - (portrait ? Math.max(130, H * .18) : Math.max(85, H * .27)))
   const scaleX = dx > 0 ? (right - cx) / dx : dx < 0 ? (left - cx) / dx : Infinity
