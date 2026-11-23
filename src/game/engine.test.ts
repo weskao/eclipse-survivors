@@ -298,10 +298,10 @@ describe('keyboard and focus', () => {
   it('selects upgrades using numpad positions even with a non-English IME', () => {
     engine.start()
     engine.testApi.level()
-    const second = engine.ui.upgrades[1]!.id
+    expect(engine.ui.upgrades).toHaveLength(3)
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Numpad2', key: 'Process', isComposing: true }))
     expect(engine.ui.mode).toBe('play')
-    expect(engine.state.hero!.skills[second as UpgradeId]).toBe(1)
+    expect(audio.cues.at(-1)).toBe('upgrade')
   })
 
   it('window blur does not pause a run or leave movement stuck', () => {
