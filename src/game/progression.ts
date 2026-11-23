@@ -115,14 +115,15 @@ export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks, regi
       const up = UP.find(u => u.id === id)
       if (!up || (hero.skills[up.id] ?? 0) >= MAX_LEVEL[up.id]) return false
       hero.skills[up.id] = (hero.skills[up.id] ?? 0) + 1
-      if (id === 'damage') hero.damage *= 1.25
-      if (id === 'speed') hero.speed *= 1.12
-      if (id === 'haste') hero.delay *= 0.85
+      if (id === 'damage') hero.damage *= 1.28
+      if (id === 'speed') hero.speed *= 1.13
+      if (id === 'haste') hero.delay *= 0.84
+      if (id === 'multi') hero.range *= 1.01
       if (id === 'maxhp') {
-        hero.max += 35
-        hero.hp = Math.min(hero.max, hero.hp + 55)
+        hero.max += 40
+        hero.hp = Math.min(hero.max, hero.hp + 60)
       }
-      if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 25)
+      if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 28)
       const msg = MESSAGES[up.id]
       if (msg) hooks.message(msg)
     }
