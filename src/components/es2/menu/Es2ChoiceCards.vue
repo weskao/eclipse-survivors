@@ -1,42 +1,24 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { nextTick, ref } from 'vue'
+import { ref } from 'vue'
 import type { MenuChoice } from './model'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
-import { nextIndex } from './model'
 const props = withDefaults(defineProps<{
   items: readonly MenuChoice[]; selectedId?: string; disabled?: boolean; label?: string
 }>(), { disabled: false, label: '可選擇項目' })
 const emit = defineEmits<{ choose: [id: string] }>()
 const focused = ref<string | null>(null)
-const container = ref<HTMLElement | null>(null)
 const rarityIcon = (rarity?: string) => rarity === 'legendary' ? WORLD_ART.ui['rarity-legendary'] : rarity === 'rare' || rarity === 'epic' ? WORLD_ART.ui['rarity-rare'] : WORLD_ART.ui['rarity-common']
 function select(item: MenuChoice): void {
   if (!props.disabled && !item.disabled) emit('choose', item.id)
 }
-async function navigate(event: KeyboardEvent, id: string): Promise<void> {
-  const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1
-    : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0
-  if (!direction) return
-  const enabled = props.items.filter(item => !item.disabled)
-  if (!enabled.length) return
-  event.preventDefault()
-  const current = enabled.findIndex(item => item.id === id)
-  const index = nextIndex(current < 0 ? 0 : current, direction, enabled.length)
-  const next = enabled[index]
-  if (!next) return
-  focused.value = next.id
-  await nextTick()
-  const buttons = container.value?.querySelectorAll<HTMLButtonElement>('button[data-choice]')
-  Array.from(buttons ?? []).find(button => button.dataset.choice === next.id)?.focus()
-}
 </script>
 <template>
-  <div ref="container" class="es2-choice-grid" role="group" :aria-label="t(label)">
+  <div class="es2-choice-grid" role="group" :aria-label="t(label)">
     <button v-for="(item, index) in items" :key="item.id" type="button" class="es2-choice"
       :class="[`es2-rarity-${item.rarity ?? 'common'}`, { 'es2-choice-selected': selectedId === item.id, 'es2-choice-focused': focused === item.id, 'es2-choice-evolution': item.evolution }]"
       :data-choice="item.id" :aria-pressed="selectedId === item.id" :disabled="disabled || item.disabled" @focus="focused = item.id"
-      @keydown="navigate($event, item.id)" @click="select(item)">
+      @click="select(item)">
       <div class="es2-card-art">
         <picture v-if="item.imageSrc">
           <source v-if="item.reducedMotionSrc" media="(prefers-reduced-motion: reduce)" :srcset="item.reducedMotionSrc" />
