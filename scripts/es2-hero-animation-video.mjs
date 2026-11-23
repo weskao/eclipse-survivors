@@ -7,9 +7,11 @@ import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { chromium } from 'playwright'
+import { heroVideoCaptureConfig } from './es2-hero-video-config.mjs'
 
-const target = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
-const output = 'artifacts/es2-hero-video'
+const candidateQA = process.env.ES2_HERO_QA === '1'
+const capture = heroVideoCaptureConfig(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/', candidateQA)
+const output = capture.output
 await mkdir(output, { recursive: true })
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 const results = []
@@ -22,12 +24,13 @@ try {
       },
     })
     const page = await context.newPage()
+    const startedAt = Date.now()
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
     let video
     let metrics
     try {
-      await page.goto(target, { waitUntil: 'domcontentloaded' })
+      await page.goto(capture.url, { waitUntil: 'domcontentloaded' })
       const card = page.locator(`button[data-hero-id="${heroId}"]`)
       await card.waitFor({ state: 'visible', timeout: 30000 })
       await card.click()
@@ -46,11 +49,20 @@ try {
       // Give the selected hero's direction sheet a chance to decode.
       await page.waitForTimeout(900)
       await page.keyboard.down('KeyD')
-      await page.waitForTimeout(1500)
+      await page.waitForTimeout(700)
+      if (candidateQA) await page.screenshot({ path: `${output}/${heroId}-east-run-gameplay.png` })
+      await page.waitForTimeout(800)
       await page.keyboard.up('KeyD')
       await page.keyboard.down('KeyW')
       await page.waitForTimeout(1100)
       await page.keyboard.up('KeyW')
+      // Include a full South-facing stride; the old diagonal-only sequence
+      // could not prove that a South-specific four-frame atlas was drawn.
+      await page.keyboard.down('KeyS')
+      await page.waitForTimeout(600)
+      if (candidateQA) await page.screenshot({ path: `${output}/${heroId}-south-run-gameplay.png` })
+      await page.waitForTimeout(500)
+      await page.keyboard.up('KeyS')
       await page.evaluate(() => window.__test?.forceAttack())
       await page.waitForTimeout(850)
       await page.keyboard.down('KeyA')
@@ -64,8 +76,9 @@ try {
       await page.evaluate(() => window.__test?.forceAttack())
       await page.waitForTimeout(650)
       const ending = await page.evaluate(() => window.__test?.frames ?? 0)
-      metrics = { heroId, canvasFramesRendered: ending - beginning,
-        elapsedRecordedSeconds: 7.6, browserErrors: errors }
+      metrics = { heroId, artStatus: capture.status, canvasFramesRendered: ending - beginning,
+        elapsedRecordedSeconds: Math.round((Date.now() - startedAt) / 100) / 10,
+        browserErrors: errors }
       assert.ok(metrics.canvasFramesRendered > 30, heroId + ': game Canvas stopped drawing')
       assert.deepEqual(errors, [], heroId + ': unexpected page script errors')
       video = page.video()
