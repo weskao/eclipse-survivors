@@ -53,13 +53,13 @@ export function pickUpgrades(hero?: Hero, rng: () => number = random, registry?:
   // Capped skills still inform the type preference, but cannot be offered again.
   const invested = new Set<string>()
   if (hero) for (const [id, level] of Object.entries(hero.skills)) {
-    if (level > 0) {
+    if ((level ?? 0) > 0) {
       const group = skillGroup(id as UpgradeId)
       if (group) invested.add(group)
     }
   }
   if (state) for (const [id, level] of Object.entries(state.content.levels)) {
-    if (level > 0) {
+    if ((level ?? 0) > 0) {
       const group = skillGroup(id as ContentId)
       if (group) invested.add(group)
     }
