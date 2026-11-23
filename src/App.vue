@@ -4,6 +4,7 @@ import { createEngine, type Engine } from './game/engine'
 import { ART_URLS } from './game/art'
 import { WORLD_ART } from './game/render/es2/production-world'
 import { BOSS_DEFINITIONS } from './game/content/bosses/definitions'
+import { getBossArrivalWarning } from './game/bosses/countdown'
 import { locateOffscreenBoss } from './components/es2/hud/boss-pointer'
 import { installGameTouchGuard } from './ios-touch-guard'
 import { applyPresentation, resolvePresentationPolicy } from './game/content/accessibility/presentation'
@@ -101,6 +102,8 @@ const combatFeed = computed<CombatHudFeed>(() => {
   const boss = state.mobs.find(mob => mob.type === 'boss' && mob.hp > 0)
   const offscreen = boss && ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
     ? locateOffscreenBoss(state, boss) : null
+  const warning = ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
+    ? getBossArrivalWarning(state, ui.objectiveProgress) : null
   return {
     boss: boss ? {
       name: boss.bossArtId ? BOSS_DEFINITIONS[boss.bossArtId].title : '首領',
@@ -110,6 +113,11 @@ const combatFeed = computed<CombatHudFeed>(() => {
         artSrc: boss.bossArtId ? WORLD_ART.bosses[boss.bossArtId] : ART_URLS.boss,
         atlas: !!boss.bossArtId,
       } } : {}),
+    } : undefined,
+    bossWarning: warning ? {
+      name: warning.bossId ? BOSS_DEFINITIONS[warning.bossId].title : '首領',
+      seconds: warning.seconds, progress: warning.progress, urgent: warning.urgent,
+      color: warning.bossId ? BOSS_DEFINITIONS[warning.bossId].color : '#f3b873',
     } : undefined,
     relics: relicCollection.value,
     notices: ui.toastVisible && ui.toastText
