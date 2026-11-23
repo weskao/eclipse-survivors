@@ -90,7 +90,7 @@ describe('three hero Q specials cinematic visuals', () => {
     expect(calls).not.toContain('#c3b5c6')
   })
 
-  it('uses four cached textured art sprites and no per-frame gradient allocations', () => {
+  it('uses five cached textured art sprites and no per-frame gradient allocations', () => {
     let constructions = 0
     class FakeImage {
       complete = true
@@ -103,7 +103,7 @@ describe('three hero Q specials cinematic visuals', () => {
     try {
       preloadHeroSpecialVfx()
       preloadHeroSpecialVfx()
-      expect(constructions).toBe(4)
+      expect(constructions).toBe(5)
       for (const [, kind] of specials) {
         const { ctx, calls } = canvas()
         drawHeroSpecialFx(ctx, kind, 0.42, 0.65, 12, false)
@@ -111,7 +111,7 @@ describe('three hero Q specials cinematic visuals', () => {
         expect(calls.some(call => call.startsWith('createRadialGradient:'))).toBe(false)
         expect(calls.some(call => call.startsWith('createLinearGradient:'))).toBe(false)
       }
-      expect(constructions).toBe(4)
+      expect(constructions).toBe(5)
     } finally {
       vi.unstubAllGlobals()
     }
