@@ -5,6 +5,7 @@ import type { GameState, Hero } from '../types'
 import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
+import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -207,7 +208,7 @@ export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 // Fast arrows leave stretched trails. Arcane bolts cast a soft violet halo.
-export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null): void {
+export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>): void {
   const { W, H } = s
   for (const b of s.shots) {
     const x = b.x + ox
@@ -237,13 +238,15 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     }
     ctx.save(); ctx.translate(x, y); ctx.rotate(a)
     if (b.kind === 'arrow') {
+      if (!drawProjectileSprite(ctx, projectiles, 'ranger-arrow', 60)) {
       ctx.shadowBlur = 13; ctx.shadowColor = '#ffc474'; ctx.strokeStyle = '#ffeac2'; ctx.lineWidth = 3
       ctx.beginPath(); ctx.moveTo(-29, 0); ctx.lineTo(10, 0); ctx.stroke()
       ctx.fillStyle = '#fff3d5'
       ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(1, -5); ctx.lineTo(3, 0); ctx.lineTo(1, 5); ctx.closePath(); ctx.fill()
       ctx.strokeStyle = '#ddac77'; ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(-15, -4); ctx.lineTo(-11, 0); ctx.lineTo(-15, 4); ctx.stroke()
-    } else {
+      }
+    } else if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
       if (magicGlow) {
         ctx.drawImage(magicGlow, -28, -28, 56, 56)
       } else {
@@ -260,7 +263,7 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
   }
 }
 
-export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number): void {
+export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, projectiles?: Partial<ProjectileSprites>): void {
   const orb = hero.skills.orb
   if (!orb) return
   const q = s.worldClock
@@ -271,8 +274,10 @@ export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: n
     const x = hero.x + ox + Math.cos(a) * 71
     const y = hero.y + oy + Math.sin(a) * 71
     ctx.save(); ctx.translate(x, y); ctx.rotate(q * 3)
-    ctx.shadowColor = evolved ? '#f3baff' : '#a6eaff'; ctx.shadowBlur = evolved ? 23 : 15; ctx.strokeStyle = evolved ? '#fff0f9' : '#e1f3ff'; ctx.lineWidth = evolved ? 3.5 : 2.5
-    ctx.strokeRect(-8, -8, 16, 16)
+    if (!drawProjectileSprite(ctx, projectiles, evolved ? 'ricochet-blade' : 'gravity-core', evolved ? 42 : 38)) {
+      ctx.shadowColor = evolved ? '#f3baff' : '#a6eaff'; ctx.shadowBlur = evolved ? 23 : 15; ctx.strokeStyle = evolved ? '#fff0f9' : '#e1f3ff'; ctx.lineWidth = evolved ? 3.5 : 2.5
+      ctx.strokeRect(-8, -8, 16, 16)
+    }
     ctx.restore()
   }
 }
