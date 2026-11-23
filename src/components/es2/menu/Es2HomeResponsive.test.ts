@@ -23,44 +23,64 @@ function menu(props: Record<string, unknown> = {}) {
 }
 
 describe('phone homepage viewport-first navigation', () => {
-  it('presents live classic-hero HP, attack, movement and attack cadence with a contextual role summary', async () => {
+  it('keeps each classic hero\'s four base stats on its card without a duplicate panel', () => {
     const wrapper = menu()
     for (const id of ['knight', 'ranger', 'wizard'] as const) {
       const preview = wrapper.get(`[data-hero="${id}"] [data-es2-classic-preview]`)
-      expect(preview.text()).toContain(String(JOB[id].hp))
-      expect(preview.text()).toContain(String(JOB[id].damage))
-      await wrapper.setProps({ heroId: id, choice: id })
-      const detail = wrapper.get('[data-es2-classic-details]')
-      expect(detail.attributes('data-es2-classic-details')).toBe(id)
-      expect(detail.get('[data-es2-classic-stat="hp"]').text()).toContain(String(JOB[id].hp))
-      expect(detail.get('[data-es2-classic-stat="attack"]').text()).toContain(String(JOB[id].damage))
-      expect(detail.get('[data-es2-classic-stat="speed"]').text()).toContain(String(JOB[id].speed))
-      expect(detail.get('[data-es2-classic-stat="interval"]').text()).toContain(String(JOB[id].delay))
-      expect(detail.get('[data-es2-classic-role]').text().length).toBeGreaterThan(10)
+      for (const value of [JOB[id].hp, JOB[id].damage, JOB[id].speed, JOB[id].delay]) {
+        expect(preview.text()).toContain(String(value))
+      }
+      expect(preview.classes()).toEqual(expect.arrayContaining(['es2-hero-stat-strip', 'es2-roster__stats']))
     }
-    await wrapper.setProps({ heroId: 'shadowblade' })
     expect(wrapper.find('[data-es2-classic-details]').exists()).toBe(false)
   })
 
-  it('provides real English labels for classic hero stats without leaking Chinese role text', async () => {
+  it('opens hero-specific details without changing selection for classic and new heroes', async () => {
+    const wrapper = menu()
+    for (const id of ['knight', 'wizard', 'shadowblade', 'spirit-summoner'] as const) {
+      await wrapper.get(`[data-es2-hero-details="${id}"]`).trigger('click')
+      const dialog = document.body.querySelector('[role="dialog"]')
+      expect(dialog?.textContent).toContain('HP')
+      expect(dialog?.textContent).toContain('ATK CD')
+      expect(dialog?.querySelectorAll('.es2-hero-stat')).toHaveLength(4)
+      if (id === 'shadowblade' || id === 'spirit-summoner') {
+        expect(dialog?.textContent).toContain('起始武器')
+        expect(dialog?.textContent).toContain('主動技能')
+        expect(dialog?.textContent).toContain('優勢')
+        expect(dialog?.textContent).toContain('弱點')
+      }
+      expect(wrapper.emitted('select')).toBeUndefined()
+      expect(wrapper.emitted('selectHero')).toBeUndefined()
+      document.body.querySelector<HTMLButtonElement>('.es2-dialog .es2-close')!.click()
+      await nextTick()
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+    }
+  })
+
+  it('translates the shared hero details action and dialog into English', async () => {
     const locale = getLocale()
     try {
       setLocale('en')
       const wrapper = menu({ choice: 'wizard' })
-      expect(wrapper.get('[data-es2-classic-details]').text()).toContain('HP')
-      expect(wrapper.get('[data-es2-classic-details]').text()).toContain('ATK')
-      expect(wrapper.get('[data-es2-classic-role]').text()).not.toMatch(/[\u3400-\u9fff]/)
+      const trigger = wrapper.get('[data-es2-hero-details="wizard"]')
+      expect(trigger.attributes('aria-label')).toContain('View hero details')
+      await trigger.trigger('click')
+      const dialog = document.body.querySelector('[role="dialog"]')
+      expect(dialog?.textContent).toContain('HP')
+      expect(dialog?.textContent).toContain('ATK')
+      expect(dialog?.textContent).not.toMatch(/[\u3400-\u9fff]/)
     } finally {
       setLocale(locale)
     }
   })
 
-  it('keeps classic hero details readable on phones and compact in short landscape', () => {
-    expect(css).toContain('.es2-classic-details')
-    expect(css).toContain('.es2-classic-stat-grid')
-    expect(css).toContain('.es2-menu[data-mobile-heroes="new"] .es2-classic-details')
+  it('only shows the accessible per-hero details action on compact devices', () => {
+    expect(css).toContain('.es2-hero-detail-trigger{display:none}')
+    expect(css).toContain('.es2-menu .es2-hero-detail-trigger')
+    expect(css).toContain('.es2-hero-detail-content .es2-hero-stat-strip')
     expect(css).toContain('minmax(0,1fr)')
   })
+
   it('switches hero categories without duplicating cards or changing the selected hero', async () => {
     const wrapper = menu()
     expect(wrapper.findAll('[data-hero]')).toHaveLength(3)
