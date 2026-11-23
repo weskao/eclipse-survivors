@@ -1,5 +1,8 @@
 # ES2 49 項世界美術 — 實際執行、整合與驗收證據（2026-11-23）
 
+> **2026-11-24 更新：UI 17/17 正式素材已由專案擁有者確認通過人工美術驗收，Manifest 已逐項改為 `approved`。** 簽核紀錄：[10-ui-17-owner-approval-2026-11-24.md](10-ui-17-owner-approval-2026-11-24.md)。下方 2026-11-23 以前的 `needs-human-approval`／`visual-review-required` 描述只代表歷史快照，**不能再用來表示目前 17 項 UI 的人工美術狀態**。此批准不等於其他 32 項素材、英雄、原生 3×來源或最新 HEAD 全專案 CI 已全部通過。
+
+
 > **驗收判定：TECHNICAL QA PASS；ART RELEASE BLOCKED。** 本報告不是人工美術核准書。沒有任何 WebP、英雄素材或原有 gameplay hitbox 因本次世界美術 QA 被替換、重繪或修改。
 
 Repository: https://github.com/weskao/eclipse-survivors  
