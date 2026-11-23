@@ -335,7 +335,7 @@ function particleSprite(cache: ParticleSpriteCache, color: string, radius: numbe
   if (!paint) { cache.sprites.set(key, null); return null }
   paint.scale(3, 3)
   paint.shadowColor = color
-  paint.shadowBlur = 7
+  paint.shadowBlur = 21 // Seven CSS px after 3x rasterization.
   paint.fillStyle = color
   paint.beginPath()
   paint.arc(20, 20, r, 0, TAU)
@@ -356,7 +356,7 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
     if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue
     // Only cosmetic circular debris is cached; meteors, vortexes and ice keep
     // their authored, time-dependent silhouettes and existing animation.
-    if (cache && !reducedMotion && (!f.type || f.type === 'spark' || f.type === 'ember' || f.type === 'footstep')) {
+    if (cache && !reducedMotion && f.r >= 1 && f.r <= 10 && (!f.type || f.type === 'spark' || f.type === 'ember' || f.type === 'footstep')) {
       const sprite = particleSprite(cache, f.color, f.r)
       if (sprite) {
         const previousAlpha = ctx.globalAlpha
