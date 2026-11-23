@@ -232,6 +232,11 @@ function readyPoseAtlas(atlas: HTMLImageElement | undefined, sheet: PoseSheet): 
     atlas.naturalHeight === (sheet === 'special' ? 896 : 1792)
 }
 
+/** The split-sheet pipeline owns its facing, including while the first image decodes. */
+export function productionHeroUsesPoseSheets(image: HTMLImageElement | undefined): boolean {
+  return !!(image as HeroWithMotion | undefined)?.poseAtlasSources
+}
+
 /** True only after a matching, correctly-sized directional pose has decoded.
  * Until then the homepage portrait remains the fallback and may need mirroring.
  */
@@ -297,7 +302,15 @@ function drawHeroPoseAtlas(
 
 function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: number): void {
   if (frame.type === 'atlas') drawHeroPoseAtlas(ctx, frame.atlas, frame.rect, width, height, frame.anchor)
-  else drawPortraitMotion(ctx, frame.atlas, frame.anim, width, height)
+  else {
+    // Canonical portraits only face right. During a pending west-facing sheet,
+    // mirror the portrait here, not in the outer scene, so the blend does not
+    // flip the same hero twice when the directional WebP finishes loading.
+    ctx.save()
+    if (frame.anim.direction > 2 && frame.anim.direction < 6) ctx.scale(-1, 1)
+    drawPortraitMotion(ctx, frame.atlas, frame.anim, width, height)
+    ctx.restore()
+  }
 }
 
 /** 45ms between adjacent frames; 120ms for a different pose/heading/source.
