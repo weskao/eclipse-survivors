@@ -30,17 +30,23 @@ The page is a **standalone effect showcase**, not an integration with normal gam
 | 16 | `enemy-death` | Authoritative kill event (already auto-wired in pack) |
 | 17 | `ultimate-attack` | Ultimate action fires successfully |
 | 18 | `victory-finish` | Authoritative winning run-complete event (already auto-wired in pack) |
-| 19 | `hero-shadowblade` | Successful Shadowblade Q cast: crossing violet ambush trails |
-| 20 | `hero-spirit-summoner` | Successful Spirit Summoner Q cast: convergence glyph / soul flames |
-| 21 | `hero-crimson-paladin` | Successful Crimson Paladin Q cast: scarlet aegis / gold pillars |
+| 19 | `hero-shadowblade` | Successful Shadowblade Q cast: textured steel cuts, shadow wake and irregular ash |
+| 20 | `hero-spirit-summoner` | Successful Spirit Summoner Q cast: three mist-armored spirit guardians and gathered soulflame |
+| 21 | `hero-crimson-paladin` | Successful Crimson Paladin Q cast: worn bronze ward and filtered gold radiance |
 
 To capture all 21: select each entry in order using **Next effect**, replay, pause near its visible impact, and save `01-critical-hit.png` through `21-hero-crimson-paladin.png`. For video, record approximately one complete effect duration per entry (duration is displayed below the canvas). Replay with Reduced motion and Reduced flashing enabled for accessibility regression captures.
+
+## Hero Q cinematic art direction (dark-fantasy material pass)
+
+Transparent authored material resources: `src/assets/es2/production/skills/` — `shadow-rift.svg` (weathered metallic cut), `spirit-flame.svg` (spectral mist), `spirit-guardian.svg` (hooded companions), `oath-ward.svg` (antique bronze shield), and `oath-rays.svg` (dust-filtered sunlight). Source assets are vector; rasterization happens once when decoded by the browser. Keep the foreground hero sprite, danger telegraphs, damage values and actual cooldown mechanics unchanged. Do not substitute old neon circles or a hexagram over the approved hero art.
+
+Visual acceptance: record opening, impact and fade in the actual game with the native hero art on desktop and mobile portrait/landscape. Confirm centered geometry does not obscure a boss telegraph; inspect normal and reduced-motion versions and avoid any fallback stroke reappearing after the texture fades. A standalone VFX-only MP4 proves the visual material pass but is **not** evidence that integrated gameplay composition or device FPS has passed.
 
 ## Hero Q cinematics
 
 The three new specialization casts are connected in `src/game/engine.ts` at the successful `activateHeroSpecial()` boundary. The existing `HeroSpecialAction.vue` owns desktop Q and touch activation. All three preserve original hitboxes, damage, healing and cooldowns. They add one world-space `combat-vfx:hero-*` overlay anchored at the actual cast alongside the original 3× special-pose art. Their 1.08–1.32 second instances are cleared by the normal effect registry, with no new perpetual ticker.
 
-Visual QA: compare anticipation / impact / fade on desktop, mobile portrait / landscape; repeat with reduced motion and reduced flashing, with 130 mobs, pause/resume and viewport resize. The animated motifs use layered Canvas paths without allocating gradients or blur per frame. Real-device FPS and memory measurements are still required before production approval.
+Visual QA: compare anticipation / impact / fade on desktop, mobile portrait / landscape; repeat with reduced motion and reduced flashing, with 130 mobs, pause/resume and viewport resize. The new Q overlays use five authored 512×512 transparent SVG textures preloaded once by createRenderAssets(), with bounded Canvas drawImage calls, batched irregular dust, and no new frame-loop gradients or blur. They avoid neon glyphs, rotating hexagrams, flat rings and engineering-grid preview scenery. Real-device FPS and memory measurements are still required before production approval.
 
 ## Integration contract (integration branch only)
 
