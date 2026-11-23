@@ -152,4 +152,18 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.find('[data-es2-home]').exists()).toBe(false)
   })
 
+
+  it('updates battle counters and live gameplay messages when the locale switches', async () => {
+    const storage = { getItem: () => null, setItem: () => {} }
+    const { setLocale } = await import('../../../i18n')
+    setLocale('zh-TW', storage)
+    const { wrapper } = render()
+    expect(wrapper.text()).toContain('時間')
+    expect(wrapper.get('[data-es2-settings]').attributes('aria-label')).toBe('開啟設定')
+    setLocale('en', storage)
+    await nextTick()
+    expect(wrapper.text()).toContain('TIME')
+    expect(wrapper.get('[data-es2-settings]').attributes('aria-label')).toBe('Open settings')
+    setLocale('zh-TW', storage)
+  })
 })
