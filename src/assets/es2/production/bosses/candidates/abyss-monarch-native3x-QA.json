@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "category": "bosses",
+  "candidateFor": "abyss-monarch",
+  "status": "QA_PENDING",
+  "path": "abyss-monarch-phases-native3x-QA-PENDING.webp",
+  "assetSha256": "f294911bcc751229f51480a11f7e613d251a386c1c6bb4a6bcbe23178aa814bd",
+  "assetBytes": 278838,
+  "maxBytes": 300000,
+  "atlas": {
+    "width": 2268,
+    "height": 756,
+    "frames": 3,
+    "columns": 3,
+    "rows": 1,
+    "cellWidth": 756,
+    "cellHeight": 756,
+    "transparentGutterPx": 16,
+    "sourceRect": {
+      "insetX": 16,
+      "insetY": 16,
+      "width": 724,
+      "height": 724
+    }
+  },
+  "source": {
+    "kind": "freshly-authored-generated-raster",
+    "originalGeneratedSheetPixels": {
+      "width": 2172,
+      "height": 724
+    },
+    "drawnFramePixels": 724,
+    "upscaledFromExisting192px": false,
+    "masterCommittedToRepo": false,
+    "masterFile": "a_high_detail_fantasy_concept_art_spritesheet_illu.png"
+  },
+  "runtimeTarget": {
+    "maxDrawPx": 236,
+    "requiredNativeSourceDetailPx": 708,
+    "consumer": "src/game/render/es2/production-world.ts",
+    "active": false
+  },
+  "technicalChecks": {
+    "riffWebp": true,
+    "alpha": true,
+    "alphaGutterClear": true,
+    "sha256Matches": true,
+    "sourceRectsWithinSingleFrames": true
+  },
+  "acceptance": {
+    "originalArtIdentityReview": "pending",
+    "phaseVisualContinuityReview": "pending",
+    "inGame1xScreenshot": "pending",
+    "desktopAndMobilePortraitLandscape": "pending",
+    "humanArtApproval": "pending",
+    "note": "DO NOT mark approved or switch consumer until human identity, phase and live Canvas checks. Full-resolution source generated locally but not preserved in Git repo."
+  }
+}
