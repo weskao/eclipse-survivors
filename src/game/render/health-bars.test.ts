@@ -22,6 +22,18 @@ describe('renderer-owned health bar interpolation', () => {
     expect(later.front).toBeLessThan(hit.front)
     expect(later.trail).toBeLessThan(hit.trail)
   })
+  it('does not snap a fully healed enemy to full before the displayed fill catches up', () => {
+    const mob = enemy(), cache = new WeakMap()
+    sampleHealthBar(mob, 0, cache)
+    mob.hp = 30
+    sampleHealthBar(mob, .1, cache)
+    mob.hp = 100
+    const healed = sampleHealthBar(mob, .15, cache)
+    expect(healed.front).toBeGreaterThan(.3)
+    expect(healed.front).toBeLessThan(1)
+    expect(healed.trail).toBe(healed.front)
+    expect(mob.hp).toBe(100)
+  })
   it('smooths healing without a phantom damage tail and honors reduced motion', () => {
     const mob = enemy(), cache = new WeakMap()
     sampleHealthBar(mob, 0, cache)

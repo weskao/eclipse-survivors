@@ -338,7 +338,7 @@ export function drawCharacter(
       }
       ctx.fillStyle = '#ce63a5'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
       ctx.fillStyle = '#f9c0d8'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
-    } else if (mob.hp < mob.max) {
+    } else if (mob.hp < mob.max || motion.front < 0.998) {
       const bar = Math.max(34, sx * 0.58), left = x - bar / 2, top = y - sy - 8
       ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
       if (motion.trail > motion.front + 0.002) {

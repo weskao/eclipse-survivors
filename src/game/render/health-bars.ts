@@ -23,6 +23,11 @@ export function sampleHealthBar(
     cache.set(mob, current)
     return current
   }
+  // Most visible mobs are full or unchanged. Skip exponential easing entirely once settled.
+  if (target === old.target && old.front === target && old.trail === target) {
+    old.at = time
+    return old
+  }
   const dt = Math.max(0, Math.min(0.1, time - old.at))
   old.at = time
   if (target > old.target) old.trail = old.front // Healing never leaves a false damage trail.

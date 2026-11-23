@@ -77,6 +77,12 @@ describe('smooth Canvas enemy and boss health bars', () => {
     expect(bossFill!.width).toBeGreaterThan(186 * 0.25)
     expect(enemy.hp).toBe(4)
     expect(boss.hp).toBe(25)
+    // A fully restored normal enemy keeps its bar until the visual fill reaches 100%.
+    enemy.hp = 10
+    s.worldClock += 0.05
+    fills.length = 0
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.some(item => item.color === '#e98275')).toBe(true)
   })
 })
 
