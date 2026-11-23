@@ -4,6 +4,7 @@ import type { Ctx2D } from '../ctx'
 import type { HeroSheets } from '../hero-sheets'
 import { drawPortraitMotion } from './portrait-motion'
 import { CHARACTER_FOOT_BOTTOMS } from './character-foot-anchors'
+import { HERO_CANDIDATE_ATLASES } from './hero-candidate-atlas'
 import shadowblade from '../../../assets/es2/production/heroes/shadowblade-portrait@3x.webp'
 import summoner from '../../../assets/es2/production/heroes/spirit-summoner-portrait@3x.webp'
 import paladin from '../../../assets/es2/production/heroes/crimson-paladin-portrait@3x.webp'
@@ -69,6 +70,8 @@ type HeroWithMotion = AtlasWithAction & {
   poseAtlases?: Partial<Record<PoseSheet, HTMLImageElement>>
   qaSouthRunUrl?: string
   qaSouthRunAtlas?: HTMLImageElement
+  qaEastSources?: Partial<Record<'run' | 'attack' | 'special', string>>
+  qaEastAtlases?: Partial<Record<'run' | 'attack' | 'special', HTMLImageElement>>
 }
 
 export function productionHeroMotionReady(image: HTMLImageElement | undefined): boolean {
@@ -90,7 +93,8 @@ export type ProductionHeroArtwork = Record<SpecializationId, HTMLImageElement>
 export function loadProductionHeroes(
   makeImage: () => HTMLImageElement = () => new Image(),
   enableSouthRunQA = import.meta.env.DEV && typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).get('es2HeroSouthQA') === '1',
+    (new URLSearchParams(window.location.search).get('es2HeroSouthQA') === '1' ||
+      new URLSearchParams(window.location.search).get('es2HeroArtQA') === '1'),
 ): ProductionHeroArtwork {
   const result = {} as ProductionHeroArtwork
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {
@@ -100,7 +104,14 @@ export function loadProductionHeroes(
     image.poseAtlasSources = PRODUCTION_HERO_POSE_SOURCES[id]
     image.poseAtlases = {}
     image.motionAtlasFactory = makeImage
-    if (enableSouthRunQA) image.qaSouthRunUrl = PRODUCTION_HERO_SOUTH_RUN_SOURCES[id]
+    if (enableSouthRunQA) {
+      image.qaSouthRunUrl = PRODUCTION_HERO_SOUTH_RUN_SOURCES[id]
+      const east: Partial<Record<'run' | 'attack' | 'special', string>> = {}
+      for (const clip of HERO_CANDIDATE_ATLASES)
+        if (clip.hero === id && clip.direction === 'E') east[clip.pose] = clip.url
+      image.qaEastSources = east
+      image.qaEastAtlases = {}
+    }
     result[id] = image
   }
   return result
@@ -123,6 +134,21 @@ export function productionHeroSouthRunRect(anim: HeroAnimation): { x: number; y:
   const count = Math.max(1, anim.count)
   const index = Math.min(3, Math.floor(Math.max(0, anim.frame) * 4 / count) % 4)
   return { x: (index % 2) * 768, y: Math.floor(index / 2) * 768, size: 768 }
+}
+
+/** Exactly nine East QA clips: 3 heroes × run/attack/special. Never mirror for West. */
+export function productionHeroQAEastRect(anim: HeroAnimation): {
+  pose: 'run' | 'attack' | 'special'; rect: { x: number; y: number; size: 704 }
+} | null {
+  const direction = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+  if (anim.reducedMotion || direction !== 0) return null
+  const running = anim.pose === 'run' || anim.pose === 'dash'
+  if (!running && anim.pose !== 'attack' && anim.pose !== 'cast') return null
+  const pose = running ? 'run' : anim.special ? 'special' : 'attack'
+  const index = running
+    ? Math.min(3, Math.floor(Math.max(0, anim.frame) * 4 / Math.max(1, anim.count)) % 4)
+    : Math.min(3, Math.floor(Math.max(0, Math.min(0.999999, anim.phase)) * 4))
+  return { pose, rect: { x: (index % 2) * 704, y: Math.floor(index / 2) * 704, size: 704 } }
 }
 
 /** Legacy 4×96-pixel strips remain supported for existing fallback tests and consumers. */
@@ -288,7 +314,7 @@ function loadHeroPoseOnDemand(hero: HeroWithMotion, sheet: PoseSheet): HTMLImage
 
 type PoseRect = ReturnType<typeof productionHeroPoseRect>
 type SmoothFrame = { type: 'atlas'; atlas: HTMLImageElement; rect: PoseRect; anchor: number }
-  | { type: 'south-run'; atlas: HTMLImageElement; rect: NonNullable<ReturnType<typeof productionHeroSouthRunRect>> }
+  | { type: 'candidate'; atlas: HTMLImageElement; rect: { x: number; y: number; size: 704 | 768 } }
   | { type: 'portrait'; atlas: HTMLImageElement; anim: HeroAnimation }
 
 interface PoseTransition {
@@ -339,14 +365,16 @@ function drawHeroPoseAtlas(
 
 function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: number): void {
   if (frame.type === 'atlas') drawHeroPoseAtlas(ctx, frame.atlas, frame.rect, width, height, frame.anchor)
-  else if (frame.type === 'south-run') {
-    // Source has 627 genuinely authored pixels padded to a 768px QA cell.
-    // Preserve the 147px opaque silhouette, separate from collision geometry.
-    const paintedWidth = Math.min(width * 1.16, 147) * 768 / 627
-    const paintedHeight = Math.min(height * 1.05, 147) * 768 / 627
+  else if (frame.type === 'candidate') {
+    // Original 627px source frame is padded (never resampled) to 704px or 768px.
+    // Maintain a 147px visible silhouette; this is dev QA, not signed-off art.
+    const cell = frame.rect.size
+    const paintedWidth = Math.min(width * 1.16, 147) * cell / 627
+    const paintedHeight = Math.min(height * 1.05, 147) * cell / 627
+    const approximateFoot = (cell - 627) / 2 + 600
     ctx.save()
-    ctx.drawImage(frame.atlas, frame.rect.x, frame.rect.y, 768, 768,
-      -paintedWidth / 2, 4 - paintedHeight * 670 / 768, paintedWidth, paintedHeight)
+    ctx.drawImage(frame.atlas, frame.rect.x, frame.rect.y, cell, cell,
+      -paintedWidth / 2, 4 - paintedHeight * approximateFoot / cell, paintedWidth, paintedHeight)
     ctx.restore()
   } else {
     // Canonical portraits only face right. During a pending west-facing sheet,
@@ -382,7 +410,7 @@ function drawSmoothedHero(
   const changed = a.type !== b.type || a.atlas !== b.atlas || (
     a.type === 'atlas' && b.type === 'atlas' &&
     (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.rect.mirror !== b.rect.mirror)) || (
-    a.type === 'south-run' && b.type === 'south-run' &&
+    a.type === 'candidate' && b.type === 'candidate' &&
     (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y))
   if (changed) {
     const poseOrDirection = previous.pose !== anim.pose || previous.direction !== anim.direction
@@ -425,6 +453,21 @@ export function drawProductionHeroFrame(
   // 3x Canvas cache is bounded and reused across frames.
   if (image.naturalWidth === 900 && image.naturalHeight === 900) {
     const hero = image as HeroWithMotion
+    const eastQA = hero.qaEastSources ? productionHeroQAEastRect(anim) : null
+    if (eastQA && hero.qaEastSources?.[eastQA.pose]) {
+      const atlases = hero.qaEastAtlases ?? (hero.qaEastAtlases = {})
+      let atlas = atlases[eastQA.pose]
+      if (!atlas) {
+        atlas = hero.motionAtlasFactory ? hero.motionAtlasFactory() : new Image()
+        atlases[eastQA.pose] = atlas
+        atlas.src = hero.qaEastSources[eastQA.pose]!
+      }
+      if (atlas.complete && atlas.naturalWidth === 1408 && atlas.naturalHeight === 1408) {
+        drawSmoothedHero(ctx, image, { type: 'candidate', atlas, rect: eastQA.rect },
+          anim, width, height, frameTimeSeconds)
+        return true
+      }
+    }
     const qaRect = hero.qaSouthRunUrl ? productionHeroSouthRunRect(anim) : null
     if (qaRect) {
       let qaAtlas = hero.qaSouthRunAtlas
@@ -434,7 +477,7 @@ export function drawProductionHeroFrame(
         qaAtlas.src = hero.qaSouthRunUrl!
       }
       if (qaAtlas.complete && qaAtlas.naturalWidth === 1536 && qaAtlas.naturalHeight === 1536) {
-        drawSmoothedHero(ctx, image, { type: 'south-run', atlas: qaAtlas, rect: qaRect },
+        drawSmoothedHero(ctx, image, { type: 'candidate', atlas: qaAtlas, rect: qaRect },
           anim, width, height, frameTimeSeconds)
         return true
       }
