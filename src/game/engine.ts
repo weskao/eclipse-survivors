@@ -715,9 +715,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       s.bossSpawned = true
       hero.inv = 120
       hero.attack = 10000
-      const boss = qaBossId && bosses
-        ? bosses.spawn(s, qaBossId, { x: hero.x + 165, y: hero.y - 8 }, hooks)
-        : (spawnMob(s, 'boss'), s.mobs.find(e => e.type === 'boss'))
+      if (qaBossId && bosses) bosses.spawn(s, qaBossId, { x: hero.x + 165, y: hero.y - 8 }, hooks)
+      else spawnMob(s, 'boss')
+      const boss = s.mobs.find(e => e.type === 'boss')
       if (!boss) return
       boss.x = hero.x + 165
       boss.y = hero.y - 8
