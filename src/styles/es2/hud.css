@@ -376,10 +376,12 @@
 @media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
   .es2-hud {
     --es2-encounter-top: max(8px, env(safe-area-inset-top));
-    --es2-compact-info-top: max(145px, calc(env(safe-area-inset-top) + 136px));
+    --es2-compact-info-top: max(96px, calc(env(safe-area-inset-top) + 89px));
   }
   .es2-hud__hero { width: min(29vw, 230px); }
   .es2-hud__encounter { width: min(38vw, 330px); }
+  /* Below the portrait, outside the top-right menu and right-hand special action. */
+  .es2-hud__info-toggle { left: max(8px, env(safe-area-inset-left)); right: auto; }
   .es2-hud__info-drawer {
     top: max(8px, env(safe-area-inset-top));
     bottom: max(108px, calc(env(safe-area-inset-bottom) + 104px));

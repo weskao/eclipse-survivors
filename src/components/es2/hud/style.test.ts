@@ -45,4 +45,11 @@ describe('responsive ES2 encounter and information rail', () => {
     expect(css).toContain('.es2-hud')
     expect(css).not.toMatch(/(?:^|\n)\s*(?:html|body|#hud|#menu|#game)\b/)
   })
+
+  it('keeps the short-landscape info toggle out of the right-side action lane', () => {
+    const landscape = css.slice(css.lastIndexOf('/* The same compact information drawer'))
+    expect(landscape).toContain('--es2-compact-info-top: max(96px')
+    expect(landscape).toMatch(/\\.es2-hud__info-toggle\\s*\\{[^}]*left:\\s*max\\(8px,[^}]*right:\\s*auto/s)
+    expect(landscape).toContain('bottom: max(108px')
+  })
 })
