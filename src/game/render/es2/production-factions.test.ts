@@ -64,6 +64,25 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(args.some(a=>a[0]===body)).toBe(false)
   })
 
+  it('draws actual Frost Wraith authored 512px master cells at live 166px size with consistent foot anchor', () => {
+    const state=createState(); resetRun(state);state.W=900;state.H=600
+    const runtime=createFactionRuntime()
+    const actor=spawnFactionEnemy(runtime,'frost-wraith',120,110)!
+    actor.state='recover'
+    const body=loaded(1368,228), master=loaded(1536,1024)
+    const images={ 'frost-wraith':{body,telegraph:loaded(150,150),highResBody:master} } as FactionArtwork
+    const calls:unknown[][]=[]
+    const {ctx}=createFakeCtx()
+    const original=ctx.drawImage.bind(ctx)
+    ctx.drawImage=((...args:unknown[])=>{ calls.push(args);Reflect.apply(original,ctx,args) }) as typeof ctx.drawImage
+    expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
+    const art=calls.find(a=>a[0]===master)
+    expect(art?.slice(1,5)).toEqual([512,512,512,512]) // frame 4, row 2 col 2
+    const size=FACTION_VISUAL_SIZE['frost-wraith']
+    expect(art?.slice(5)).toEqual([-size/2,-size+5,size,size])
+    expect(calls.some(a=>a[0]===body)).toBe(false)
+  })
+
   it('uses existing approved geometry when the high-detail source is not decoded or malformed', () => {
     const state=createState(); resetRun(state);state.W=900;state.H=600
     const runtime=createFactionRuntime()
