@@ -298,7 +298,8 @@
     "challengeSeconds": 9,
     "challengeXp": 28,
     "invasionCount": 3,
-    "invasionHp": 250
+    "invasionHp": 250,
+    "firstSpawnAt": 7
   },
   "enemies": {
     "baseHp": {
