@@ -107,6 +107,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const menu = createMenuScore()
   const battle = createBattleScore()
   const bossScore = createBossScore()
+  let fallbackBossId: BossId | null = null
   const cinematic = createCinematicMusic(opts, () => ac, () => musicBus,
     () => mode === 'play' && !interrupted && musicOn && musicVolume > 0)
   let resultScore = createEs2Score()
@@ -291,6 +292,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     setBossTheme(id: BossId | null, phase = 1) {
       // The ID comes from the actual living actor, never a predicted timer.
       bossScore.select(id, phase, ac ? ac.currentTime : 0)
+      fallbackBossId = id
       if (id) warningMix = false
       cinematic.boss(id, phase)
     },
@@ -320,7 +322,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       }
       if (mode !== 'play') return
       cinematic.sync()
-      if (intensity === 'boss' && !cinematic.playingBoss) bossScore.schedule(ctx.currentTime, tone)
+      if (intensity === 'boss' && !cinematic.playingBoss) {
+        if (fallbackBossId) bossScore.schedule(ctx.currentTime, tone)
+        else battle.schedule(ctx.currentTime, tone)
+      }
       else if (bgm.paused) battle.schedule(ctx.currentTime, tone)
       else if (intensity === 'combat') battle.schedule(ctx.currentTime, combatPercussion)
       if (!bgm.paused) {
@@ -344,6 +349,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         intensity = 'calm'
         battle.setIntensity('calm')
         bossScore.select(null, 1, ac ? ac.currentTime : 0)
+        fallbackBossId = null
         warningMix = false
         cinematic.boss(null)
         cinematic.warning(null)
