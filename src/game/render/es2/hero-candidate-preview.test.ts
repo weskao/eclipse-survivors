@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HERO_CANDIDATE_ATLASES } from './hero-candidate-atlas'
 
@@ -10,7 +11,7 @@ afterEach(() => {
 
 describe('ES2 candidate review inventory', () => {
   it('describes the real committed East/South candidate count in its accessible preview', async () => {
-    const html = readFileSync(new URL('./hero-candidate-preview.html', import.meta.url), 'utf8')
+    const html = readFileSync(resolve(process.cwd(), 'src/game/render/es2/hero-candidate-preview.html'), 'utf8')
     expect(html).toContain('id="candidate-summary"')
     expect(html).not.toMatch(/Ten candidate|Nine panels|one Shadowblade panel/)
 
