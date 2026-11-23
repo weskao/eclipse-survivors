@@ -20,7 +20,9 @@ class SpyAudio implements AudioSystem {
   setSfxVolume(value: number): void { this.sfxVolume = value }
   wake(): void { this.unlocked = true; this.wakeCalls++ }
   interrupt(): void { this.interruptions++ }
-  setCombatIntensity(): void {}
+  resultThemes: Array<'victory' | 'defeat' | null> = []
+  setResultTheme(theme: 'victory' | 'defeat' | null): void { this.resultThemes.push(theme) }
+  setCombatIntensity(): void {}  setCombatIntensity(): void {}
   playSfx(cue: SfxCue): void { this.cues.push(cue) }
   tick(): void {}
   onScreen(mode: GameMode): void { this.screens.push(mode) }
