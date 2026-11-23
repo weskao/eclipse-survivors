@@ -360,6 +360,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ui.rewards = profileStore.recordRun(stats)
     }
     refreshMeta()
+    audio.setResultTheme?.(win ? 'victory' : 'defeat')
     screen('result')
     audio.playSfx(win ? 'victory' : 'defeat')
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
