@@ -10,7 +10,7 @@ export function createState(): GameState {
     cameraKick: 0, lastCameraKickAt: -Infinity, time: 0, kill: 0, spawnT: 0, bossSpawned: false, bossDefeated: false,
     runMode: 'quick', cosmetic: 'knight-default', damageDealt: 0, damageTaken: 0, defeatedTypes: {},
     worldClock: 0, sceneFxClock: 0, cam: { x: 0, y: 0 }, levelQueue: 0, currentScene: 0,
-    events: [], eventSerial: 0, nextEventAt: BALANCE.events.spawnIntervalBase - 4, sceneEnteredAt: 0,
+    events: [], eventSerial: 0, nextEventAt: BALANCE.events.firstSpawnAt, sceneEnteredAt: 0,
     hazardLastHitAt: -Infinity, blessingUntil: 0, challengeUntil: 0, challengePoint: null,
     W: 0, H: 0,
   }
@@ -36,7 +36,7 @@ export function resetRun(s: GameState): void {
   s.damageDealt = 0; s.damageTaken = 0; s.defeatedTypes = {}
   s.numberFx = []; s.impactWaves = []; s.lightningFx = []; s.motionEchoes = []
   s.cameraKick = 0; s.lastCameraKickAt = -Infinity; s.cam.x = s.cam.y = 0; s.levelQueue = 0; s.currentScene = 0
-  s.events = []; s.eventSerial = 0; s.nextEventAt = BALANCE.events.spawnIntervalBase - 4; s.sceneEnteredAt = 0
+  s.events = []; s.eventSerial = 0; s.nextEventAt = BALANCE.events.firstSpawnAt; s.sceneEnteredAt = 0
   s.hazardLastHitAt = -Infinity; s.blessingUntil = 0; s.challengeUntil = 0; s.challengePoint = null
 }
 
