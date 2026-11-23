@@ -14,6 +14,16 @@ const result = {
   damageDealt: 2000, damageTaken: 200, remainingHp: 50,
 } as RunStats
 
+describe('result celebration rendering contract', () => {
+  it('contains short one-shot animations and a reduced-motion alternative', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/es2/result-celebration.css'), 'utf8')
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)')
+    expect(css).toContain('pointer-events: none')
+    expect(css).toContain('animation-iteration-count: 1')
+    expect(css).not.toContain('infinite')
+  })
+})
+
 describe('localized expedition results', () => {
   it('renders a natural English summary and localized reward names, not internal IDs', async () => {
     setLocale('en', storage)
