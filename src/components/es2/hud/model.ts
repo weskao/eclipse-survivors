@@ -1,4 +1,5 @@
 import type { HudSkill, HudView } from '../../../game/store'
+import type { BossPointer } from './boss-pointer'
 import type { JobId, SkillRarity } from '../../../game/types'
 
 export type CombatHudRarity = SkillRarity | 'epic'
@@ -16,7 +17,7 @@ export interface CombatHudSnapshot {
  */
 export interface CombatHudFeed {
   readonly snapshot?: CombatHudSnapshot
-  readonly boss?: { readonly name: string; readonly phase?: number; readonly totalPhases?: number }
+  readonly boss?: { readonly name: string; readonly phase?: number; readonly totalPhases?: number; readonly offscreen?: BossPointer }
   readonly wave?: { readonly number: number; readonly announcement?: string; readonly progressPct?: number }
   readonly combo?: { readonly count: number }
   readonly relics?: readonly {
@@ -55,7 +56,7 @@ export interface CombatHudView {
   readonly kills: number
   readonly timer: string
   readonly objective: string
-  readonly boss: { readonly percent: number; readonly name: string; readonly phase?: number; readonly totalPhases?: number } | null
+  readonly boss: { readonly percent: number; readonly name: string; readonly phase?: number; readonly totalPhases?: number; readonly offscreen?: BossPointer } | null
   readonly skills: readonly HudSkill[]
   readonly wave?: CombatHudFeed['wave']
   readonly combo?: CombatHudFeed['combo']
@@ -108,6 +109,7 @@ export function projectCombatHud(
       name: live.boss?.name?.trim() || '首領',
       phase,
       totalPhases,
+      ...(live.boss?.offscreen ? { offscreen: live.boss.offscreen } : {}),
     },
     skills: hud.skills.map(skill => ({
       ...skill,

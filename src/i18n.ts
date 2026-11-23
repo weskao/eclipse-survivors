@@ -1025,6 +1025,7 @@ const english = new Map<string, string>([
 , ["搖桿位置","Joystick Position"]
 , ["左側","Left"]
 , ["右側","Right"]
+, ["距離","Distance"]
 , ["離底部距離","Distance from Bottom"]
 , ["觸控尺寸","Touch Control Size"]
 , ["介面縮放","UI Scale"]

@@ -107,6 +107,37 @@
   color: #80cbea; background: linear-gradient(180deg, #c6efff, #65b2ed 54%, #4160b5);
   transition-duration: .3s;
 }
+/* Edge-clipped boss tracker uses the existing authored atlas (phase 1 is its first cell).
+   All positioning is presentation-only and bounded away from the central battlefield. */
+.es2-hud__boss-pointer {
+  position: absolute; z-index: 1; display: flex; flex-direction: row;
+  align-items: center; justify-content: center; gap: 3px; width: 116px; height: 48px;
+  padding: 3px 5px; border: 1px solid #dfb68c; border-radius: 14px;
+  background: linear-gradient(150deg, #261b2ce9, #101724e9);
+  box-shadow: inset 0 1px #fff3, 0 2px 12px #000b;
+  transform: translate(-50%, -50%); pointer-events: none;
+  transition: left .15s linear, top .15s linear;
+}
+.es2-hud__boss-pointer-arrow {
+  flex: 0 0 20px; width: 20px; height: 20px; color: #ffcf91;
+  transform: rotate(var(--es2-bearing, 0deg));
+  filter: drop-shadow(0 0 3px #000);
+  transition: transform .15s ease;
+}
+.es2-hud__boss-pointer-icon {
+  display: block; flex: 0 0 36px; width: 36px; height: 36px;
+  border: 1px solid #d5af82; border-radius: 8px;
+  background-color: #3c2a3c; background-repeat: no-repeat;
+  background-position: center; background-size: cover;
+}
+.es2-hud__boss-pointer-icon--atlas {
+  background-position: left center; background-size: 300% 100%;
+}
+.es2-hud__boss-pointer-distance {
+  flex: 1; min-width: 0; font: 750 10px/1.25 system-ui, sans-serif;
+  color: #fff0d4; text-align: center; overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
 .es2-hud__top-right { display: flex; align-items: flex-start; gap: 8px; }
 .es2-hud__counters { display: flex; gap: 6px; padding: 6px 9px; min-height: 46px; }
 .es2-hud__counter { display: grid; gap: 0; grid-template-columns: 15px auto; grid-template-rows: 21px 10px; align-items: center; min-width: 57px; }
@@ -321,7 +352,7 @@
   .es2-hud__bottom { bottom: max(7px, env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .es2-hud, .es2-hud__track > span, .es2-hud__wave-track > span, .es2-hud__skill, .es2-hud__controls .es2-hud__control-button, .es2-hud__cooldown { transition: none; }
+  .es2-hud, .es2-hud__boss-pointer, .es2-hud__boss-pointer-arrow, .es2-hud__track > span, .es2-hud__wave-track > span, .es2-hud__skill, .es2-hud__controls .es2-hud__control-button, .es2-hud__cooldown { transition: none; }
   .es2-hud__notice { animation: none; }
 }
 

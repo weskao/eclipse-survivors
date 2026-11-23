@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { createEngine, type Engine } from './game/engine'
+import { ART_URLS } from './game/art'
+import { WORLD_ART } from './game/render/es2/production-world'
+import { BOSS_DEFINITIONS } from './game/content/bosses/definitions'
+import { locateOffscreenBoss } from './components/es2/hud/boss-pointer'
 import { installGameTouchGuard } from './ios-touch-guard'
 import { applyPresentation, resolvePresentationPolicy } from './game/content/accessibility/presentation'
 import './game/content/accessibility/presentation.css'
@@ -93,9 +97,20 @@ const relicCollection = computed(() => {
 })
 const combatFeed = computed<CombatHudFeed>(() => {
   void ui.hud // Live snapshot replaces every 125 ms; game state is intentionally not deep-reactive.
-  const boss = engine.state.mobs.find(mob => mob.type === 'boss' && mob.hp > 0)
+  const state = engine.state
+  const boss = state.mobs.find(mob => mob.type === 'boss' && mob.hp > 0)
+  const offscreen = boss && ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
+    ? locateOffscreenBoss(state, boss) : null
   return {
-    boss: boss ? { name: '首領', phase: boss.bossPhase, totalPhases: 3 } : undefined,
+    boss: boss ? {
+      name: boss.bossArtId ? BOSS_DEFINITIONS[boss.bossArtId].title : '首領',
+      phase: boss.bossPhase, totalPhases: 3,
+      ...(offscreen ? { offscreen: {
+        ...offscreen,
+        artSrc: boss.bossArtId ? WORLD_ART.bosses[boss.bossArtId] : ART_URLS.boss,
+        atlas: !!boss.bossArtId,
+      } } : {}),
+    } : undefined,
     relics: relicCollection.value,
     notices: ui.toastVisible && ui.toastText
       ? [{ id: ui.toastText, kind: 'message', text: ui.toastText }]

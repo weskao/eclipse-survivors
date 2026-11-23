@@ -150,6 +150,22 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
     </header>
+    <div v-if="active && view.boss?.offscreen && !infoOpen" class="es2-hud__boss-pointer" data-es2-boss-pointer
+      role="img" :aria-label="t(view.boss.name) + ' · ' + t('距離') + ' ' + view.boss.offscreen.distance"
+      :style="{
+        left: view.boss.offscreen.left + 'px',
+        top: view.boss.offscreen.top + 'px',
+        '--es2-bearing': view.boss.offscreen.angle + 'deg',
+      }">
+      <svg class="es2-hud__boss-pointer-arrow" viewBox="0 0 24 24" aria-hidden="true" fill="none"
+        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12h17m-7-7 7 7-7 7" />
+      </svg>
+      <span class="es2-hud__boss-pointer-icon" data-es2-boss-icon aria-hidden="true"
+        :class="{ 'es2-hud__boss-pointer-icon--atlas': view.boss.offscreen.atlas }"
+        :style="{ backgroundImage: 'url(' + view.boss.offscreen.artSrc + ')' }"></span>
+      <span class="es2-hud__boss-pointer-distance" aria-hidden="true">{{ t('距離') }} {{ view.boss.offscreen.distance }}</span>
+    </div>
     <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
       data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
       :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
