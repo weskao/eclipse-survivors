@@ -50,12 +50,30 @@ try {
           `${viewport.name}: ${section}: horizontal overflow ${JSON.stringify(layout)}`)
         assert.equal(layout.menuScroll, 0, `${viewport.name}: ${section}: homepage auto-scrolled`)
       }
+      const assertHeroArtUsesSpace = async (family) => {
+        const selector = family === 'new'
+          ? '.es2-hero-section .es2-roster__portrait'
+          : '.es2-hero-section .es2-hero-card img'
+        const art = await page.locator(selector).first().evaluate(element => {
+          const rect = element.getBoundingClientRect()
+          return { height:rect.height, width:rect.width, top:rect.top, bottom:rect.bottom }
+        })
+        // Prior small, fixed 10dvh images wasted most of the portrait viewport.
+        // Landscape remains bounded by 44px navigation and compact action controls.
+        const minimum = viewport.height >= viewport.width
+          ? Math.min(120, viewport.height * 0.15)
+          : Math.min(60, viewport.height * 0.18)
+        assert.ok(art.height >= minimum,
+          `${viewport.name}: ${family} art wastes available space: ${JSON.stringify({art, minimum})}`)
+      }
       await assertHomepage('classic hero / classic mode')
+      await assertHeroArtUsesSpace('classic')
       await page.locator('[data-es2-mobile-hero-tab="new"]').click()
       assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-heroes'), 'new')
       assert.ok(await page.locator('[data-hero-id="shadowblade"]').isVisible(),
         `${viewport.name}: new heroes are hidden`)
       await assertHomepage('new heroes')
+      await assertHeroArtUsesSpace('new')
       await page.screenshot({ path: `${directory}/${viewport.name}-menu-new-heroes.png`, animations: 'disabled' })
       await page.locator('[data-es2-mobile-mode-tab="objective"]').click()
       assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-modes'), 'objective')
