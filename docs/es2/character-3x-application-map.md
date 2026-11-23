@@ -22,15 +22,15 @@ The following are original generated PNGs from this conversation. **All nine Web
 
 | Hero | Source PNG (generated in chat) | Source pixels / grid | Required project deliverable |
 | --- | --- | --- | --- |
-| `shadowblade` | `影刃行者_紫焰十六式_sprite_圖_sheet.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/shadowblade/idle-ready-8dir@3x.webp` |
-| `shadowblade` | `影刃行者_奔跑與雙刃連擊精靈圖譜.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/shadowblade/run-attack-east@3x.webp` |
-| `shadowblade` | `影刃行者_紫霧突襲連擊.png` | 1774×887 / 4×2 | `src/assets/es2/production/heroes/shadowblade/special-east@3x.webp` |
-| `spirit-summoner` | `靈契召喚師_幽狐法術姿態圖譜.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/spirit-summoner/idle-ready-8dir@3x.webp` |
-| `spirit-summoner` | `靈契召喚師_幻狐奔行與施法_sprites.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/spirit-summoner/run-attack-east@3x.webp` |
-| `spirit-summoner` | `靈契召喚師_幻狐秘術八連式.png` | 1774×887 / 4×2 | `src/assets/es2/production/heroes/spirit-summoner/special-east@3x.webp` |
-| `crimson-paladin` | `緋紅聖騎四向戰鬥精靈圖譜.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/crimson-paladin/idle-ready-8dir@3x.webp` |
-| `crimson-paladin` | `緋紅聖騎_奔跑與聖光連擊_sprite_表.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/crimson-paladin/run-attack-east@3x.webp` |
-| `crimson-paladin` | `緋紅聖騎_聖盾終結技序列.png` | 1774×887 / 4×2 | `src/assets/es2/production/heroes/crimson-paladin/special-east@3x.webp` |
+| `shadowblade` | `影刃行者_紫焰十六式_sprite_圖_sheet.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/shadowblade/idle-ready@3x.webp` |
+| `shadowblade` | `影刃行者_奔跑與雙刃連擊精靈圖譜.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/shadowblade/run-attack@3x.webp` |
+| `shadowblade` | `影刃行者_紫霧突襲連擊.png` | 1774×887 / 4×2 | `src/assets/es2/production/heroes/shadowblade/special@3x.webp` |
+| `spirit-summoner` | `靈契召喚師_幽狐法術姿態圖譜.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/spirit-summoner/idle-ready@3x.webp` |
+| `spirit-summoner` | `靈契召喚師_幻狐奔行與施法_sprites.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/spirit-summoner/run-attack@3x.webp` |
+| `spirit-summoner` | `靈契召喚師_幻狐秘術八連式.png` | 1774×887 / 4×2 | `src/assets/es2/production/heroes/spirit-summoner/special@3x.webp` |
+| `crimson-paladin` | `緋紅聖騎四向戰鬥精靈圖譜.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/crimson-paladin/idle-ready@3x.webp` |
+| `crimson-paladin` | `緋紅聖騎_奔跑與聖光連擊_sprite_表.png` | 1254×1254 / 4×4 | `src/assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp` |
+| `crimson-paladin` | `緋紅聖騎_聖盾終結技序列.png` | 1774×887 / 4×2 | `src/assets/es2/production/heroes/crimson-paladin/special@3x.webp` |
 
 **Quality warning:** a 1254×1254 source divided into 4×4 cells contains only about `313.5×313.5` source pixels per frame. The 1774×887 4×2 inputs contain about `443.5×443.5` per frame. Their non-integer grids require explicit verified integer crop boundaries; do not use `width / 4` as a floating Canvas source coordinate, assume gutters are perfectly isolated or interpolate them to a bigger number and claim true 3× detail. For world sprites drawn at 134–147px high, 4×4 sources remain below the strict 402–441px native height target. The paladin run sheet has a mostly opaque pale background that **must be accurately removed before acceptance**. These images are candidates, not artistically signed-off 3× masters.
 
@@ -43,14 +43,14 @@ The following are original generated PNGs from this conversation. **All nine Web
 | `<id>-run-attack@3x.webp` | 3584×448, eight 448px cells | Archived right-facing animation source |
 | `<id>-8dir@3x.webp` | 1024×512, 128px cells | Archived low-detail source, not normal world rendering |
 
-Current `<id>-8dir-motion@3x.webp` was composed from 198px input frames, so it is **nominal 3× geometry only**. Latest PNGs cannot be marked `APPLIED` until their actual WebP binary assets are committed and their consumers use them. Do **not** remove the current working fallback before that happens.
+Current `<id>-8dir-motion@3x.webp` was composed from 198px input frames, so it is **nominal 3× geometry only**. The nine new 448px/cell WebP candidate assets are now committed and rendered via the pose/source map. The old 384px-cell atlas is retained only for compatibility and historical comparison. Do **not** remove the current working fallback before that happens.
 
 ## 4. Motion mapping (current runtime and next full-art gate)
 
-Engine directions `[E, SE, S, SW, W, NW, N, NE]` use 0–7. Current source directional columns: `[W, SW, S, SE, E, NE, N, NW]`, therefore `sourceColumn = (4 - engineDirection + 8) % 8`.
+Engine directions `[E, SE, S, SW, W, NW, N, NE]` use 0–7. **New 4×4 split sources** use the same order across the first two rows: `sourceIndex = engineDirection`; guard uses `sourceIndex = engineDirection + 8`. The archived 384px-cell atlas uses a different old order and must not be used with the new index map.
 
 - `idle`: directional idle frame; `ready`: directional combat guard; `run`/`dash`: authored sequential frames when that *direction* exists; `attack`/`cast`: attack/cast sequence selected by phase; `special`: unique skill frames only while `anim.special` is true; `hurt`, `death`, `victory`, reduced motion: consistent same-character still/animation, never another hero.
-- Current 40-frame sheet rows: `0 = idle8, 1 = guard8, 2 = east-run8, 3 = east-attack8, 4 = east-special8`. **There are no authored southeast/south/southwest/northwest/north/northeast eight-frame run or attack clips in this atlas**. Do not imply otherwise by repeating idle/guard.
+- The new split sheets contain 16 directional frames (eight idle + eight guard), 16 east run/attack frames (eight each) and eight east special frames; all are four columns wide. The archived old 40-frame sheet uses `0=idle8, 1=guard8, 2=east-run8, 3=east-attack8, 4=east-special8`. **There are no authored southeast/south/southwest/northwest/north/northeast eight-frame run or attack clips in this atlas**. Do not imply otherwise by repeating idle/guard.
 - Where per-frame source detail is insufficient or a direction is missing, render the same-character high-resolution portrait/idle safe fallback, keep visual identity and gameplay geometry unchanged, and mark that exact `<hero, pose, facing>` `QA_PENDING`.
 - In future pose-separated sheets, keep one typed source-of-truth map in `production-heroes.ts`, do not duplicate HTML/CSS/Canvas sprite-frame selection code, and do not add hot-loop allocations.
 
