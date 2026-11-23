@@ -8,6 +8,7 @@ import { ACHIEVEMENTS as LEGACY_ACHIEVEMENTS } from '../../../meta/achievements'
 import { COSMETICS } from '../../../meta/cosmetics'
 import type { RunRewards, RunStats } from '../../../meta/types'
 import Es2Dialog from './Es2Dialog.vue'
+import '../../../styles/es2/result-celebration.css'
 import { formatDuration } from './model'
 const props = defineProps<{ active: boolean; ending: string; summary: string; result?: RunStats | null; rewards?: RunRewards | null }>()
 const emit = defineEmits<{ again: []; home: [] }>()
@@ -33,7 +34,12 @@ const stats = computed(() => props.result ? [
 </script>
 <template>
   <Es2Dialog :active="active" :title="t(ending)" :subtitle="subtitle" wide :dismissible="false" :tone="victory ? 'victory' : 'defeat'">
-    <div class="es2-result">
+    <div class="es2-result" :class="{ 'es2-result--victory': victory }">
+      <div v-if="active && victory" class="es2-victory-celebration" data-es2-victory-celebration aria-hidden="true">
+        <span class="es2-victory-halo"></span>
+        <span v-for="index in 16" :key="index" class="es2-victory-spark" data-es2-victory-spark
+          :style="{ '--spark-angle': `${(index - 1) * 22.5}deg`, '--spark-distance': `${110 + (index % 3) * 23}px`, '--spark-delay': `${(index % 4) * 0.07}s` }"></span>
+      </div>
       <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="t('本次遠征英雄：' + (result.specializationId ?? result.hero))" /><span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span></div>
       <p class="es2-result-status">{{ t(victory ? '✦ 勝利 · 黎明重現 ✦' : '✧ 戰敗 · 長夜未盡 ✧') }}</p>
       <p v-if="result">{{ t(MODES[result.mode].label) }}</p>
