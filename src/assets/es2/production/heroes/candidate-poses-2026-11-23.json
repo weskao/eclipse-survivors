@@ -1,0 +1,890 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "description": "Newly generated November 2026 pose candidates; 4 authored frames per east-facing action; not eight-way, not runtime activated. Some frames touch original source-cell edge; do not promote without manual review.",
+  "direction": "E",
+  "cellPixels": 704,
+  "originalImagePixels": [
+    1254,
+    1254
+  ],
+  "originalSourceCellPixels": [
+    627,
+    627
+  ],
+  "candidatePoseSources": {
+    "shadowblade:run": {
+      "file": "src/assets/es2/production/heroes/shadowblade/candidates/east-2026-11-23/run-east-4frames@3x.webp",
+      "hero": "shadowblade",
+      "pose": "run",
+      "direction": "E",
+      "sourceFile": "暗影刃客向右奔行四連幀.png",
+      "sourceSHA256": "bcc595e5f08771d17b163560b74d370dda04597d6473a44cec05738e86e5b743",
+      "webpSHA256": "b84cbd0d1519140fc60997eaf97538b44fc08be0b9fb570ce0a59f4bfcf5e2f5",
+      "bytes": 338738,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": true,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            30,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            1,
+            23,
+            597,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            1,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            611,
+            593
+          ]
+        }
+      ]
+    },
+    "shadowblade:attack": {
+      "file": "src/assets/es2/production/heroes/shadowblade/candidates/east-2026-11-23/attack-east-4frames@3x.webp",
+      "hero": "shadowblade",
+      "pose": "attack",
+      "direction": "E",
+      "sourceFile": "暗影刃_紫焰連擊四格動作圖.png",
+      "sourceSHA256": "5bc2d51885ed44ae9680fc4dfd42ecf9add824d4c0e6f799e5b987fe6d49e1d1",
+      "webpSHA256": "edc6bf177f82ab42d73be86c178b72b139dd2d67852f693681f39c22b3c262ea",
+      "bytes": 411564,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": true,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            15,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            9,
+            613,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            613,
+            605
+          ]
+        }
+      ]
+    },
+    "shadowblade:special": {
+      "file": "src/assets/es2/production/heroes/shadowblade/candidates/east-2026-11-23/special-east-4frames@3x.webp",
+      "hero": "shadowblade",
+      "pose": "special",
+      "direction": "E",
+      "sourceFile": "暗影雙刃紫焰連擊四格動畫.png",
+      "sourceSHA256": "dec7516cf7d3009c68de0a1b628caaffad87f2d5dabf6ede39df1d8bdd7126f8",
+      "webpSHA256": "480140b9d13c5c589eecd0a132ec6120dfcd0f43bdfc0da88ee6110b2608206d",
+      "bytes": 571900,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": true,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            9,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            15,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        }
+      ]
+    },
+    "spirit-summoner:run": {
+      "file": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/run-east-4frames@3x.webp",
+      "hero": "spirit-summoner",
+      "pose": "run",
+      "direction": "E",
+      "sourceFile": "銀髮靈術師四格奔跑序列.png",
+      "sourceSHA256": "c7cf3b522a0792993d2fd335dc521ef1930aed41953f2b268e35ee400f4ac5a8",
+      "webpSHA256": "fe245c533caa75292c2c62aaff990ad7894cb4b820850f938761e429a47c35d1",
+      "bytes": 726088,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": true,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        }
+      ]
+    },
+    "spirit-summoner:attack": {
+      "file": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/attack-east-4frames@3x.webp",
+      "hero": "spirit-summoner",
+      "pose": "attack",
+      "direction": "E",
+      "sourceFile": "靈魂召喚師的四階段咒術攻擊.png",
+      "sourceSHA256": "5e7e3a65f67751a57bf6281a34a62d50461e11eb612abf5b5698ac9ba98f8e01",
+      "webpSHA256": "8ec43baa59bb6433e8a0059f3a9da3a32c78552ca14469cf53846164cc535ca7",
+      "bytes": 777232,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": false,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": true,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            835,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": true,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            1638,
+            1121
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": true,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            1158,
+            361
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        }
+      ]
+    },
+    "spirit-summoner:special": {
+      "file": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/special-east-4frames@3x.webp",
+      "hero": "spirit-summoner",
+      "pose": "special",
+      "direction": "E",
+      "sourceFile": "銀髮靈狼召喚術四連擊.png",
+      "sourceSHA256": "48eaf1ec85cade2bfa43edc43748383c5cfb23439f8dca15b0796270b9b1ba62",
+      "webpSHA256": "3ed6c6dde7993f08b20d155b9e89e74353905310cb8420203ac62c9c8d58473b",
+      "bytes": 632416,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": true,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            15,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            8,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        }
+      ]
+    },
+    "crimson-paladin:run": {
+      "file": "src/assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/run-east-4frames@3x.webp",
+      "hero": "crimson-paladin",
+      "pose": "run",
+      "direction": "E",
+      "sourceFile": "深紅聖騎士奔跑四格動畫.png",
+      "sourceSHA256": "3e9c734d83502df2c24592a5e5b9e903c42b0db3af2fce3ffae457b3665a5f1e",
+      "webpSHA256": "9404a0380f9c2ee6729ce98c8fa8b0bb26241c809a10f8cce1d3f55a52f71c16",
+      "bytes": 417624,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": true,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            19,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            8,
+            617,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        }
+      ]
+    },
+    "crimson-paladin:attack": {
+      "file": "src/assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/attack-east-4frames@3x.webp",
+      "hero": "crimson-paladin",
+      "pose": "attack",
+      "direction": "E",
+      "sourceFile": "赤焰聖騎士四連斬擊姿態.png",
+      "sourceSHA256": "75b9279bc34446f139f4f81d2bafdd2113b2cad0aeb7c6cc41ce291e8e04e1d9",
+      "webpSHA256": "5bbe8552f953fe378a87c306dd741379456d6935380675a9283059824eb0ee8a",
+      "bytes": 369076,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": false,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            15,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            8,
+            617,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": true,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            94
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            626,
+            627
+          ]
+        }
+      ]
+    },
+    "crimson-paladin:special": {
+      "file": "src/assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/special-east-4frames@3x.webp",
+      "hero": "crimson-paladin",
+      "pose": "special",
+      "direction": "E",
+      "sourceFile": "赤焰聖騎士_聖光壁壘四連擊.png",
+      "sourceSHA256": "bfa74580565eeefab0af936235d241f7766d1a40443ebdd01dae27d483d240d9",
+      "webpSHA256": "bfa32fe957a11e3560dda601e14ae87c040ef3703a5e38aa902bfba511eff189",
+      "bytes": 712152,
+      "originalSourcePixels": [
+        1254,
+        1254
+      ],
+      "originalCellPixels": [
+        627,
+        627
+      ],
+      "outputAtlasPixels": [
+        1408,
+        1408
+      ],
+      "outputCellPixels": [
+        704,
+        704
+      ],
+      "frames": 4,
+      "native3x": "unverified",
+      "runtimeApplied": false,
+      "QA": "QA_PENDING",
+      "allSourceEdgesSafe": true,
+      "frameQA": [
+        {
+          "index": 0,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "sourceEdgeOccupied": false,
+          "sourceEdgeAlphaCounts": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "sourceAlphaBBox": [
+            0,
+            0,
+            627,
+            627
+          ]
+        }
+      ]
+    }
+  }
+}
