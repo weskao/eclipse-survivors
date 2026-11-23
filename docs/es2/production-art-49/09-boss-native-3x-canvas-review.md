@@ -29,3 +29,11 @@ PREVIEW_URL=http://127.0.0.1:4174/ node scripts/es2-boss-art-qa-browser.mjs
 ## CI
 
 獨立測試分支 `feature/es2-boss-art-real-chromium-qa` 有專用 `.github/workflows/es2-boss-art-real-qa.yml`，保存的圖片只供人工核對；不建立 PR、不合併 develop/main、不部署。
+
+## 既有候選圖的 1× 實際像素視覺比對（非遊戲截圖）
+
+![Frost / Infernal / Eclipse 三位 Boss 1×實際 WebP Canvas 尺寸合成預覽](evidence/boss-qa-1x-three-candidates.webp)
+
+此圖直接解碼當前三份候選 WebP（Frost Sovereign、Infernal Titan、Eclipse Seraph），使用每格內部 724px 原圖以 Lanczos 縮至 236×236，並以深色實心背景做正常 alpha 合成，**不是 AI 偽造的遊戲畫面**，亦未更改遊戲素材。圖片 SHA-256：`7b7b6605fcb2cacde4b9f593e9325679aa81151ed35cb81eccf05d3d34ffe9d6`。
+
+透明背景在未合成的檢視工具中可能顯示鮮豔 RGB 假色；真正評估應使用 alpha 合成結果而非只看 RGBA 原始 RGB 通道。這三份 atlas 每個來源格在 alpha > 16 門檻的四側邊線均為零個非透明像素，尚須實際 Chromium gameplay、角色身分比對、以及獲授權人工簽核。Abyss Monarch 不包含於此三人比對圖。
