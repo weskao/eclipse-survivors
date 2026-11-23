@@ -24,6 +24,13 @@ describe('bilingual composed game copy', () => {
     expect(t('Timekeeper')).toBe('Timekeeper')
   })
 
+  it('localizes the decorative main-menu scene accessible description', () => {
+    setLocale('en', storage)
+    expect(t('日蝕高懸於古老的廢墟戰場上')).toBe('A radiant eclipse hangs over an ancient ruined battlefield')
+    setLocale('zh-TW', storage)
+    expect(t('日蝕高懸於古老的廢墟戰場上')).toBe('日蝕高懸於古老的廢墟戰場上')
+  })
+
   it('uses English punctuation for a dynamic relic notification', () => {
     setLocale('en', storage)
     expect(t('✦ 已獲得聖物：迴聲寶石')).toBe('✦ Relic obtained: Echo Gem')
