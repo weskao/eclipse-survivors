@@ -1,0 +1,340 @@
+{
+  "world": {
+    "maxMobs": 130,
+    "duration": 150,
+    "bossTime": 92,
+    "sceneSeconds": 36,
+    "dashCooldown": 3,
+    "lowHpPct": 25,
+    "scene": {
+      "width": 2200,
+      "height": 1238
+    }
+  },
+  "heroes": {
+    "classic": {
+      "knight": {
+        "hp": 200,
+        "speed": 190,
+        "damage": 32,
+        "delay": 0.57,
+        "range": 112
+      },
+      "ranger": {
+        "hp": 135,
+        "speed": 218,
+        "damage": 22,
+        "delay": 0.36,
+        "range": 430
+      },
+      "wizard": {
+        "hp": 130,
+        "speed": 196,
+        "damage": 46,
+        "delay": 0.68,
+        "range": 390
+      }
+    },
+    "special": {
+      "shadowblade": {
+        "hp": 125,
+        "speed": 248,
+        "damage": 28,
+        "delay": 0.43,
+        "range": 132
+      },
+      "spirit-summoner": {
+        "hp": 140,
+        "speed": 194,
+        "damage": 24,
+        "delay": 0.66,
+        "range": 355
+      },
+      "crimson-paladin": {
+        "hp": 215,
+        "speed": 172,
+        "damage": 30,
+        "delay": 0.65,
+        "range": 116
+      }
+    }
+  },
+  "progression": {
+    "initialXp": 15,
+    "growthMultiplier": 1.26,
+    "growthFlat": 6.5,
+    "rarityWeights": {
+      "common": 14,
+      "rare": 5,
+      "legendary": 1
+    },
+    "focusPerRank": 0.3,
+    "focusMaxBonus": 1.2,
+    "sameGroupBonus": 0.12,
+    "choiceCount": 3,
+    "groups": {
+      "area": [
+        "orb",
+        "bolt",
+        "frost",
+        "meteor",
+        "blaze",
+        "vortex",
+        "chain",
+        "weapons:blood-scythe",
+        "weapons:arcane-mines",
+        "weapons:poison-cloud",
+        "weapons:solar-beam",
+        "weapons:gravity-orbs",
+        "weapons:thorn-chain"
+      ],
+      "support": [
+        "maxhp",
+        "heal",
+        "shield"
+      ],
+      "mobility": [
+        "speed",
+        "magnet"
+      ],
+      "attack": [
+        "damage",
+        "haste",
+        "multi"
+      ]
+    }
+  },
+  "skills": {
+    "maxLevels": {
+      "damage": 5,
+      "speed": 5,
+      "haste": 5,
+      "maxhp": 5,
+      "multi": 3,
+      "orb": 5,
+      "magnet": 4,
+      "heal": 5,
+      "bolt": 5,
+      "frost": 5,
+      "meteor": 5,
+      "blaze": 5,
+      "vortex": 5,
+      "shield": 4,
+      "chain": 5
+    },
+    "statUpgrades": {
+      "damageMultiplier": 1.28,
+      "speedMultiplier": 1.13,
+      "attackDelayMultiplier": 0.84,
+      "multiRangeMultiplier": 1.01,
+      "maxHpAdded": 40,
+      "maxHpHealing": 60,
+      "shieldHealing": 28
+    },
+    "passive": {
+      "xpMagnetBase": 115,
+      "xpMagnetPerRank": 62,
+      "regenPerRank": 1.05,
+      "shieldReductionPerRank": 0.13,
+      "shieldReductionCap": 0.52,
+      "chainCooldownBase": 2.8,
+      "chainCooldownPerRank": 0.25,
+      "chainDamageBase": 0.66,
+      "chainDamagePerRank": 0.18
+    },
+    "area": {
+      "orb": {
+        "maxBlades": 8,
+        "baseDamage": 12,
+        "heroDamageRatio": 0.28,
+        "hitCooldown": 0.28
+      },
+      "bolt": {
+        "cooldownFloor": 0.45,
+        "cooldownBase": 2,
+        "cooldownPerRank": 0.18,
+        "targetBase": 2,
+        "maxTargets": 7,
+        "range": 470,
+        "damageRatio": 1.4
+      },
+      "frost": {
+        "cooldownFloor": 1.2,
+        "cooldownBase": 5.4,
+        "cooldownPerRank": 0.48,
+        "rangeBase": 170,
+        "rangePerRank": 17,
+        "damageBase": 0.58,
+        "damagePerRank": 0.14,
+        "slowBase": 1,
+        "slowPerRank": 0.16
+      },
+      "meteor": {
+        "cooldownFloor": 1.8,
+        "cooldownBase": 6,
+        "cooldownPerRank": 0.46,
+        "targetBase": 1,
+        "maxTargets": 5,
+        "rangeBase": 115,
+        "rangePerRank": 9,
+        "damageBase": 1.2,
+        "damagePerRank": 0.21
+      },
+      "blaze": {
+        "cooldownFloor": 0.18,
+        "cooldownBase": 0.48,
+        "cooldownPerRank": 0.033,
+        "rangeBase": 95,
+        "rangePerRank": 16,
+        "damageBase": 0.19,
+        "damagePerRank": 0.045
+      },
+      "vortex": {
+        "cooldownFloor": 2.2,
+        "cooldownBase": 8,
+        "cooldownPerRank": 0.6,
+        "rangeBase": 220,
+        "rangePerRank": 14,
+        "damageBase": 0.44,
+        "damagePerRank": 0.09,
+        "pullRatio": 0.18
+      },
+      "shield": {
+        "pulseFloor": 0.4,
+        "pulseBase": 2.8,
+        "pulsePerRank": 0.2
+      }
+    }
+  },
+  "weapons": {
+    "intervals": {
+      "shadow-daggers": 1.25,
+      "holy-lance": 2.15,
+      "blood-scythe": 1.6,
+      "arcane-mines": 2.3,
+      "bone-spears": 2.05,
+      "poison-cloud": 2.65,
+      "ricochet-blades": 1.9,
+      "spirit-wolves": 0,
+      "solar-beam": 3.6,
+      "gravity-orbs": 0,
+      "spectral-bow": 2.6,
+      "thorn-chain": 2.5
+    },
+    "common": {
+      "cooldownFloor": 0.35,
+      "cooldownReductionPerRank": 0.085,
+      "straightDamagePerRank": 0.26
+    },
+    "scythe": {
+      "targetRangeBase": 165,
+      "targetRangePerRank": 9,
+      "sweepRangeBase": 140,
+      "sweepRangePerRank": 10,
+      "damageBase": 0.96,
+      "damagePerRank": 0.21,
+      "lifestealRatio": 0.095,
+      "lifestealLimitBase": 5,
+      "lifestealLimitPerRank": 1
+    },
+    "poisonCloud": {
+      "radiusBase": 88,
+      "radiusPerRank": 8,
+      "damageBase": 0.13,
+      "damagePerRank": 0.05
+    },
+    "arcaneMines": {
+      "radiusBase": 80,
+      "radiusPerRank": 10,
+      "damageBase": 1.35,
+      "damagePerRank": 0.3
+    },
+    "gravity": {
+      "pullReach": 116,
+      "damageBase": 0.35,
+      "damagePerRank": 0.1
+    },
+    "solarBeam": {
+      "rangeBase": 690,
+      "rangePerRank": 20,
+      "widthBase": 16,
+      "widthPerRank": 2.8,
+      "damageBase": 2.75,
+      "damagePerRank": 0.63
+    },
+    "spiritWolves": {
+      "damageBase": 0.7,
+      "damagePerRank": 0.14,
+      "attackCooldownBase": 1.1,
+      "attackCooldownPerRank": 0.095
+    },
+    "thornChain": {
+      "damageBase": 0.45,
+      "damagePerRank": 0.145
+    }
+  },
+  "events": {
+    "weights": {
+      "chest": 0.27,
+      "shrine": 0.21,
+      "invasion": 0.12,
+      "blessing": 0.19,
+      "bargain": 0.11,
+      "challenge": 0.1
+    },
+    "spawnChance": 0.75,
+    "spawnIntervalBase": 11,
+    "spawnIntervalVariation": 5,
+    "lifetime": 20,
+    "maxActive": 2,
+    "placementRetries": 12,
+    "chestXp": 12,
+    "shrineHealing": 36,
+    "blessingSeconds": 12,
+    "blessingHealPerSecond": 2.4,
+    "bargainMinHp": 24,
+    "bargainHpCost": 14,
+    "bargainXp": 24,
+    "challengeSeconds": 9,
+    "challengeXp": 28,
+    "invasionCount": 3,
+    "invasionHp": 250
+  },
+  "enemies": {
+    "baseHp": {
+      "slime": 32,
+      "bat": 27,
+      "goblin": 55,
+      "golem": 155,
+      "warlock": 72,
+      "boss": 2000
+    },
+    "hpPerLevel": 9,
+    "bossHpPerLevel": 120,
+    "levelPeriodSeconds": 22,
+    "eliteHpMultiplier": 1.7,
+    "eliteDamageMultiplier": 1.35,
+    "initialSpawnRadius": 200,
+    "spawnRadiusScale": 0.38,
+    "spawnRadiusMinOffset": 15,
+    "spawnRadiusMaxOffset": 65,
+    "warlockStartTime": 28,
+    "warlockChance": 0.12,
+    "eliteStartTime": 42,
+    "eliteChance": 0.085,
+    "intervalBase": 0.75,
+    "intervalTimeFactor": 0.003,
+    "intervalFloor": 0.18,
+    "sceneSpawnBonuses": [
+      0,
+      0.05,
+      0,
+      0.08
+    ],
+    "extraSpawnAfterSeconds": 38,
+    "extraSpawnChance": 0.32,
+    "baseDamage": 11,
+    "damagePerLevel": 2,
+    "bossDamage": 32
+  }
+}
