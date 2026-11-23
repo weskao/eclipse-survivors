@@ -41,6 +41,13 @@ jobs:
           node scripts/es2-mobile-browser-smoke.mjs
           node scripts/es2-responsive-layout-matrix.mjs
           node scripts/es2-world-art-browser-qa.mjs
+      - name: Capture all four Boss QA candidates in actual DEV Canvas (12 phases × 3 viewports)
+        if: success() || failure()
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-boss-art-qa.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/ >/dev/null
+          PREVIEW_URL=http://127.0.0.1:4174/ node scripts/es2-boss-art-qa-browser.mjs
       - name: Convert genuine Playwright recordings to MP4
         if: always()
         shell: bash
