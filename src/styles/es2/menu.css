@@ -166,3 +166,13 @@
 @keyframes es2-hero-action-frames{to{background-position:100% 0}}
 @media(max-width:610px){.es2-hero-action-preview{width:42px;height:42px;right:4px;top:5px;border-radius:6px}}
 @media(prefers-reduced-motion:reduce){.es2-hero-action-preview{animation:none}}
+
+/* Existing accessibility scale: grow essential text, not the viewport or art. */
+.es2-dialog-header h2 { font-size: clamp(calc(1.25rem * var(--es2-ui-scale, 1)), 3vw, calc(2.1rem * var(--es2-ui-scale, 1))); }
+.es2-card-name { font-size: calc(1.08rem * var(--es2-ui-scale, 1)); }
+.es2-card-description, .es2-card-requirements { font-size: calc(.8rem * var(--es2-ui-scale, 1)); }
+.es2-hint, .es2-mode-copy small { font-size: calc(.8rem * var(--es2-ui-scale, 1)); }
+@media (max-height: 570px) {
+  .es2-choice { min-height: 0; }
+  .es2-card-art { height: clamp(96px, 22dvh, 150px); }
+}

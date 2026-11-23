@@ -28,6 +28,10 @@ This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Pres
 
 Follow [`.claude/rules/no-native-ui.md`](.claude/rules/no-native-ui.md) when editing settings, menus, dropdowns, dialogs, or picker controls. Do not use native browser select popups; reuse the shared ES2 selector with responsive, keyboard-accessible listbox styling.
 
+## Mandatory responsive gameplay UI
+
+When creating or editing any HUD, game control, modal, selector, choice card, or gameplay overlay, follow [`.claude/rules/ui-responsive-layout.md`](.claude/rules/ui-responsive-layout.md). Mobile portrait must preserve the central battlefield, and essential controls / boss health must never be hidden by secondary information.
+
 ## Mandatory real-time performance rules
 
 **Always read and follow [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md)** when modifying game simulation, mob AI, combat, skills, collisions, procedural environments, rendering, effects, or performance-critical UI.
