@@ -32,7 +32,7 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
     wide variant="choice" :tone="kind === 'evolution' ? 'legendary' : 'neutral'" @cancel="emit('cancel')" @shortcut="shortcut">
     <template #header-actions><button v-if="kind === 'level'" type="button" class="es2-secondary es2-dialog-settings" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></template>
     <div class="es2-selection-scene" :class="{ 'es2-still': still }">
-      <Es2ChoiceCards :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="choose" />
+      <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="choose" />
       <p class="es2-hint">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</p>
     </div>
   </Es2Dialog>
