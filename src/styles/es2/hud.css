@@ -242,10 +242,12 @@
   .es2-hud__skill-glyph { line-height: 42px; }
 }
 @media (max-width: 400px) {
-  .es2-hud__hero { width: 62vw; }
+  .es2-hud__hero { width: min(54vw, 205px); gap: 5px; padding: 6px; }
   .es2-hud__top-right .es2-hud__counters { max-width: 120px; }
   .es2-hud__controls button { width: 44px; }
-  .es2-hud__portrait { display: none; }
+  /* Keep the selected hero recognizable on 320px–400px phone screens. */
+  .es2-hud__portrait { display: block; width: 38px; height: 48px; flex: 0 0 38px; }
+  .es2-hud__portrait-corner { font-size: 11px; }
   .es2-hud__plate { backdrop-filter: none; }
   .es2-hud__identity strong { font-size: 11px; }
 }
