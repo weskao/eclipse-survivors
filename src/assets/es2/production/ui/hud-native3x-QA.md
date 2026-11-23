@@ -1,4 +1,7 @@
-# ES2 four HUD icons — native 3× remediation, QA pending
+# ES2 four HUD icons — native 3× remediation and owner-approved visuals
+
+> **最新狀態（2026-11-24）：本類 17/17 正式 UI 美術已由專案擁有者明確確認通過人工視覺驗收。** Manifest 類別與逐檔 `status: approved`，並保留 `humanApproval` 人工簽核欄位。完整清單與簽核範圍：[10-ui-17-owner-approval-2026-11-24.md](../../../../../docs/es2/production-art-49/10-ui-17-owner-approval-2026-11-24.md)。原先「0/17」「needs-human-approval」「pending」敘述是 **2026-11-23 或更早的歷史 QA 快照**，不得再視為目前人工美術狀態；獨立 Browser／來源技術驗證與其他 32 項素材未獲本次核准。
+
 
 - Integration branch: `feature/es2-release-readiness-integration`
 - Existing canonical IDs and live mapping unchanged: `WORLD_ART.ui['hud-health']`, `['hud-xp']`, `['hud-cooldown']`, `['hud-quest']`
