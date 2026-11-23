@@ -77,7 +77,7 @@ describe('phone homepage viewport-first navigation', () => {
     expect(css).toMatch(/\.es2-menu-layout\s*\{\s*grid-template-columns:\s*repeat\(2,minmax\(0,1fr\)\)/)
     expect(css).toContain('.es2-menu[data-mobile-heroes="new"] .es2-hero-grid')
     expect(css).toContain('.es2-menu[data-mobile-modes="objective"] .es2-mode-grid')
-    expect(css).toContain('.es2-menu .es2-roster__portrait')
+    expect(css).toContain('.es2-menu .es2-hero-section .es2-roster__portrait')
     expect(css).toContain('env(safe-area-inset-bottom)')
     expect(css).toContain('100dvh')
     expect(css).not.toContain('-webkit-line-clamp')
