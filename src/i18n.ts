@@ -1668,6 +1668,7 @@ const english = new Map<string, string>([
 , ["本次遠征英雄：","Expedition Hero: "]
 , ["領取 ","Claim "]
 , ["放逐 ","Banish "]
+  , ['日蝕高懸於古老的廢墟戰場上', 'A radiant eclipse hangs over an ancient ruined battlefield']
   , ['✦ 已獲得聖物：', '✦ Relic obtained: ']
   , ['存活 {seconds} 秒 · 擊敗 {kills} 隻魔物 · 等級 {level}', 'Survived {seconds}s · Defeated {kills} enemies · Lv.{level}']
 ])
@@ -1738,11 +1739,11 @@ export function t(value: unknown, params?: Record<string, unknown>): string {
   let translated: string
   if (currentLocale.value === 'zh-TW') {
     translated = chinese.get(source) ?? chineseByEnglish.get(source) ??
-      source.replace(englishNameExpression, (match, index: number, text: string) => {
+      (/[A-Za-z]/.test(source) ? source.replace(englishNameExpression, (match, index: number, text: string) => {
         if (/[A-Za-z]/.test(text[index - 1] ?? '') ||
           /[A-Za-z]/.test(text[index + match.length] ?? '')) return match
         return chineseByEnglish.get(match) ?? match
-      })
+      }) : source)
   } else {
     translated = english.get(source) ?? (/[\u3400-\u9fff]/.test(source)
       ? source.replace(expression, match => english.get(match) ?? match) : source)
