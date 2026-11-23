@@ -46,7 +46,7 @@ describe('ES2 combat VFX contract', () => {
     expect(ids.every(id => id.startsWith('combat-vfx:'))).toBe(true)
     expect(COMBAT_FX_SPECS.every(fx => fx.duration > 0 && fx.duration <= 4)).toBe(true)
     const registry = createContentRegistry([COMBAT_VFX_PACK])
-    expect(registry.packs[0]?.effects.map(fx => fx.id)).toEqual(ids)
+    expect(registry.packs[0]?.effects?.map(fx => fx.id)).toEqual(ids)
   })
 
   it('keeps directional metadata and animation lifecycle without leaking objects', () => {
