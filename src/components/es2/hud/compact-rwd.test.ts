@@ -79,6 +79,26 @@ describe('compact portrait combat HUD regression', () => {
     expect(css).toContain('--es2-ui-scale')
   })
 
+  it('closes optional details on Escape without forwarding the key to the game, returning focus to the toggle', async () => {
+    const wrapper = render()
+    const toggle = wrapper.get('[data-es2-info-toggle]')
+    await toggle.trigger('click')
+    await wrapper.get('[data-es2-info-close]').trigger('click')
+    expect(document.activeElement).toBe(toggle.element)
+    await toggle.trigger('click')
+    const onGameKey = vi.fn()
+    window.addEventListener('keydown', onGameKey)
+    try {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await nextTick()
+      expect(toggle.attributes('aria-expanded')).toBe('false')
+      expect(document.activeElement).toBe(toggle.element)
+      expect(onGameKey).not.toHaveBeenCalled()
+    } finally {
+      window.removeEventListener('keydown', onGameKey)
+    }
+  })
+
   it('keeps pause above the HUD using the shared accessible dialog and prevents special action overlap with the configured joystick', () => {
     const pause = readFileSync(resolve(process.cwd(), 'src/components/PauseOverlay.vue'), 'utf8')
     const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')

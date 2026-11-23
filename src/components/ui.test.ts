@@ -306,6 +306,13 @@ describe('PauseOverlay / ResultOverlay', () => {
     w.unmount()
     expect(document.querySelector('#paused')).toBeNull()
   })
+  it('resumes with P when the accessible pause dialog traps gameplay keys', async () => {
+    const w = mount(PauseOverlay, { props: { active: true }, attachTo: document.body })
+    await nextTick()
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true }))
+    expect(w.emitted('resume')).toHaveLength(1)
+    w.unmount()
+  })
   it('result shows text and emits again/home', async () => {
     const w = mount(ResultOverlay, { props: { active: false, ending: 'E', summary: 'S' } })
     expect(w.find('#result').classes()).not.toContain('active')
