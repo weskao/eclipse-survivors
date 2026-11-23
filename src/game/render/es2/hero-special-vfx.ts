@@ -1,188 +1,139 @@
 import type { Ctx2D } from '../ctx'
+import shadowRiftUrl from '../../../assets/es2/production/skills/shadow-rift.svg?url'
+import spiritFlameUrl from '../../../assets/es2/production/skills/spirit-flame.svg?url'
+import oathWardUrl from '../../../assets/es2/production/skills/oath-ward.svg?url'
+import oathRaysUrl from '../../../assets/es2/production/skills/oath-rays.svg?url'
 
-/** One short-lived ornamental overlay per confirmed hero special. Combat hitboxes are never derived from these shapes. */
+/** Cosmetic world-space texture passes; gameplay hitboxes remain simulation-owned. */
 export type HeroSpecialFxKind = 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin'
-
+type Texture = 'rift' | 'flame' | 'ward' | 'rays'
+const SOURCES: Record<Texture, string> = {
+  rift: shadowRiftUrl, flame: spiritFlameUrl, ward: oathWardUrl, rays: oathRaysUrl,
+}
+const cached: Partial<Record<Texture, HTMLImageElement>> = {}
 const TAU = Math.PI * 2
-const DIRECTIONS = Object.freeze(Array.from({ length: 24 }, (_, i) => Object.freeze({
-  x: Math.cos(i * TAU / 24), y: Math.sin(i * TAU / 24),
+const clamp = (v: number) => Math.max(0, Math.min(1, v))
+const ease = (v: number) => { const t = clamp(v); return t * t * (3 - 2 * t) }
+const DUST = Object.freeze(Array.from({ length: 24 }, (_, i) => Object.freeze({
+  x: Math.cos(i * 2.39996) * (0.43 + (i % 5) * 0.12),
+  y: Math.sin(i * 2.39996) * (0.45 + (i % 4) * 0.13),
+  size: 1.1 + (i % 4) * 0.7,
 })))
 
-function halo(ctx: Ctx2D, radius: number, color: string, width: number, aspect = 1): void {
-  ctx.beginPath()
-  ctx.strokeStyle = color
-  ctx.lineWidth = width
-  ctx.ellipse(0, 0, Math.max(1, radius), Math.max(1, radius * aspect), 0, 0, TAU)
-  ctx.stroke()
+/** Decode the four authored SVG textures once, never during a rendering frame. */
+export function preloadHeroSpecialVfx(): void {
+  if (typeof Image === 'undefined') return
+  for (const key of Object.keys(SOURCES) as Texture[]) {
+    if (cached[key]) continue
+    const img = new Image()
+    img.decoding = 'async'
+    img.src = SOURCES[key]
+    cached[key] = img
+  }
 }
 
-/** Batch a whole field into one fill call, sharing an immutable direction lookup. */
-function motes(ctx: Ctx2D, count: number, radius: number, size: number, color: string, phase: number): void {
+function sprite(
+  ctx: Ctx2D, key: Texture, x: number, y: number, w: number, h: number,
+  opacity: number, rotation = 0,
+): boolean {
+  const img = cached[key]
+  if (!img?.complete || img.naturalWidth === 0 || opacity <= 0) return false
+  ctx.save()
+  ctx.translate(x, y)
+  if (rotation) ctx.rotate(rotation)
+  ctx.globalAlpha *= Math.min(1, opacity)
+  ctx.drawImage(img, -w / 2, -h / 2, w, h)
+  ctx.restore()
+  return true
+}
+
+/** Fixed-seed, irregular embers: one path and one fill, no per-frame particle objects. */
+function dust(ctx: Ctx2D, count: number, radius: number, phase: number, color: string): void {
   ctx.fillStyle = color
   ctx.beginPath()
   for (let i = 0; i < count; i++) {
-    const v = DIRECTIONS[Math.floor(i * 24 / count)]!
-    const x = v.x * radius, y = v.y * radius * 0.72
-    const len = size * (1 + (i % 3) * 0.32)
-    ctx.moveTo(x + v.x * len, y + v.y * len)
-    ctx.lineTo(x - v.y * len * 0.35, y + v.x * len * 0.35)
-    ctx.lineTo(x - v.x * (len + phase * 8), y - v.y * (len + phase * 8))
-    ctx.lineTo(x + v.y * len * 0.35, y - v.x * len * 0.35)
-    ctx.closePath()
+    const d = DUST[i]!
+    const drift = 0.32 + phase * (0.86 + (i % 3) * 0.14)
+    const x = d.x * radius * drift, y = d.y * radius * drift * 0.72
+    const rx = Math.max(0.5, d.size * (1 - phase * 0.65))
+    ctx.moveTo(x + rx, y) // Do not join successive dust ellipses into a giant star polygon.
+    ctx.ellipse(x, y, rx, Math.max(0.5, d.size * 0.5), i * 0.4, 0, TAU)
   }
   ctx.fill()
 }
 
 function shadowblade(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: boolean): void {
-  // Violet shadow seal and three independent, crossing sword paths: no character sprite is stretched.
-  halo(ctx, 30 + bloom * 94, '#57408b', 13 - bloom * 7, 0.47)
-  halo(ctx, 36 + bloom * 83, '#bea0ff', 3.5, 0.47)
-  halo(ctx, 20 + bloom * 38, '#e1d1ff', 1.5, 0.52)
-  const trails = reduced ? 2 : 3
-  for (let i = 0; i < trails; i++) {
-    const angle = i * TAU / 3 - 0.75 + (reduced ? 0 : t * 1.35)
-    const reach = 47 + bloom * 93 + i * 8
-    ctx.save()
-    ctx.rotate(angle)
-    ctx.lineCap = 'round'
-    ctx.beginPath()
-    ctx.moveTo(-reach * 0.82, -22)
-    ctx.bezierCurveTo(-reach * 0.18, -reach * 0.96, reach * 0.42, reach * 0.6, reach, -15)
-    ctx.strokeStyle = '#432a78'
-    ctx.lineWidth = 17 - bloom * 6
-    ctx.stroke()
-    ctx.strokeStyle = '#bea0ff'
-    ctx.lineWidth = 6 - bloom * 2
-    ctx.stroke()
-    ctx.strokeStyle = '#f5e9ff'
-    ctx.lineWidth = 1.7
-    ctx.beginPath()
-    ctx.moveTo(-reach * 0.63, -25)
-    ctx.bezierCurveTo(-reach * 0.12, -reach * 0.81, reach * 0.47, reach * 0.43, reach * 0.87, -16)
-    ctx.stroke()
-    ctx.restore()
+  // Two offset, textured steel cuts and a brief dust wake. No geometric seal or neon ring.
+  const p1 = reduced ? 0.56 : ease((t - 0.08) / 0.28)
+  const p2 = reduced ? 0 : ease((t - 0.3) / 0.28)
+  ctx.fillStyle = '#17131d'
+  ctx.beginPath(); ctx.ellipse(0, 46, 67 + 35 * bloom, 16, 0, 0, TAU); ctx.fill()
+  const first = sprite(ctx, 'rift', -80 + p1 * 86, -24 - p1 * 6,
+    270 + p1 * 36, 260, reduced ? 0.67 : (1 - ease((t - 0.49) / 0.28)) * 0.93, -0.26)
+  if (!first) {
+    ctx.strokeStyle = '#c3b5c6'; ctx.lineWidth = 4
+    ctx.beginPath(); ctx.moveTo(-103 + p1 * 45, 49); ctx.bezierCurveTo(-32, 7, 38, -48, 104 + p1 * 12, -94); ctx.stroke()
   }
-  motes(ctx, count, 42 + bloom * 120, 4.2, '#d5b1ff', t)
-  halo(ctx, 10 + bloom * 25, '#f1ddff', 2)
+  if (!reduced && t > 0.22) {
+    sprite(ctx, 'rift', 59 - p2 * 102, -5, 260, 250,
+      (1 - ease((t - 0.73) / 0.24)) * 0.75, 1.43)
+  }
+  ctx.globalAlpha *= 0.62
+  dust(ctx, reduced ? 4 : count, 165, bloom, '#93838a')
 }
 
 function summoner(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: boolean): void {
-  // Converging spirit orbit, rotating hexagram and icy soul-flame petals.
-  const r = 38 + bloom * 89
-  halo(ctx, r, '#4e8fbb', 9 - bloom * 4, 0.58)
-  halo(ctx, r * 0.86, '#8cecff', 2.8, 0.58)
-  halo(ctx, r * 0.6, '#b8a3ff', 1.8, 0.64)
-  ctx.save()
-  ctx.rotate(reduced ? -0.3 : t * 0.82)
-  ctx.strokeStyle = '#8cecff'
-  ctx.lineWidth = 2.1
-  ctx.beginPath()
-  for (let i = 0; i <= 6; i++) {
-    const v = DIRECTIONS[(i % 6) * 4]!
-    if (i === 0) ctx.moveTo(v.x * r * 0.76, v.y * r * 0.44)
-    else ctx.lineTo(v.x * r * 0.76, v.y * r * 0.44)
+  // Imperfect spirit flames gather inward through vapor. No hexagram / UI-like orbit paths.
+  const converge = reduced ? 0.72 : ease((t - 0.12) / 0.61)
+  ctx.fillStyle = '#233539'
+  ctx.beginPath(); ctx.ellipse(0, 45, 83 + bloom * 37, 17, 0, 0, TAU); ctx.fill()
+  const radius = 101 - converge * 68
+  const alpha = reduced ? 0.5 : Math.min(0.72, 0.26 + converge * 0.48)
+  for (let i = 0; i < (reduced ? 2 : 3); i++) {
+    const a = i * TAU / 3 - 1.6 + (reduced ? 0 : t * 0.36)
+    const x = Math.cos(a) * radius
+    const y = Math.sin(a) * radius * 0.37 - 30 - converge * 19
+    const image = sprite(ctx, 'flame', x, y, 100 + bloom * 29, 132 + bloom * 37,
+      alpha, Math.sin(a) * 0.16)
+    if (!image) {
+      ctx.fillStyle = '#a0d9d6'; ctx.beginPath(); ctx.ellipse(x, y, 8, 18, a, 0, TAU); ctx.fill()
+    }
   }
-  ctx.stroke()
-  ctx.restore()
-  const orbit = reduced ? 41 : 92 - bloom * 50
-  for (let i = 0; i < 3; i++) {
-    const a = i * TAU / 3 - Math.PI / 2 + (reduced ? 0 : t * 1.8)
-    const x = Math.cos(a) * orbit
-    const y = Math.sin(a) * orbit * 0.65
-    ctx.strokeStyle = '#6fa8eb'
-    ctx.lineWidth = 2.4
-    ctx.beginPath()
-    ctx.moveTo(0, 0)
-    ctx.bezierCurveTo(x * 0.28 - y * 0.16, y * 0.28 + x * 0.1, x * 0.8 - y * 0.15, y * 0.8 + x * 0.1, x, y)
-    ctx.stroke()
-    ctx.fillStyle = '#4267a6'
-    ctx.beginPath()
-    ctx.ellipse(x, y, 12, 16, a, 0, TAU)
-    ctx.fill()
-    ctx.fillStyle = '#8cecff'
-    ctx.beginPath()
-    ctx.ellipse(x, y - 3, 6.5, 11, a, 0, TAU)
-    ctx.fill()
-    ctx.fillStyle = '#fff4d6'
-    ctx.beginPath()
-    ctx.arc(x - 1, y - 6, 3.3, 0, TAU)
-    ctx.fill()
+  if (!reduced && t > 0.35) {
+    sprite(ctx, 'flame', 0, -17, 133 + bloom * 45, 179 + bloom * 45,
+      0.34 + 0.32 * (1 - ease((t - 0.72) / 0.26)))
   }
-  motes(ctx, count, 18 + bloom * 125, 5.2, '#c6faff', t)
-  halo(ctx, 8 + bloom * 20, '#e8fbff', 3)
-}
-
-function shieldCrest(ctx: Ctx2D, scale: number): void {
-  ctx.save()
-  ctx.scale(scale, scale)
-  ctx.fillStyle = '#58223a'
-  ctx.strokeStyle = '#ffd99b'
-  ctx.lineWidth = 4.5
-  ctx.beginPath()
-  ctx.moveTo(0, -52)
-  ctx.bezierCurveTo(16, -43.3, 30, -39, 42, -39)
-  ctx.lineTo(39, 9)
-  ctx.bezierCurveTo(34.3, 27.7, 21.3, 43.3, 0, 56)
-  ctx.bezierCurveTo(-21.3, 43.3, -34.3, 27.7, -39, 9)
-  ctx.lineTo(-42, -39)
-  ctx.bezierCurveTo(-30, -39, -16, -43.3, 0, -52)
-  ctx.closePath()
-  ctx.fill()
-  ctx.stroke()
-  ctx.strokeStyle = '#e77d82'
-  ctx.lineWidth = 2
-  ctx.beginPath()
-  ctx.moveTo(0, -38)
-  ctx.lineTo(0, 36)
-  ctx.moveTo(-23, -7)
-  ctx.lineTo(23, -7)
-  ctx.stroke()
-  ctx.fillStyle = '#ffdfaa'
-  ctx.beginPath()
-  ctx.moveTo(0, -25)
-  ctx.lineTo(7, -8)
-  ctx.lineTo(0, 9)
-  ctx.lineTo(-7, -8)
-  ctx.closePath()
-  ctx.fill()
-  ctx.restore()
+  ctx.globalAlpha *= 0.52
+  dust(ctx, reduced ? 3 : count, 111 + bloom * 53, converge, '#a0d9d6')
 }
 
 function paladin(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: boolean): void {
-  // A shield forms inside a sunburst; descending gold pillars convey the protective oath.
-  const r = 50 + bloom * 112
-  halo(ctx, r, '#a33e57', 11 - bloom * 5, 0.59)
-  halo(ctx, r * 0.9, '#ffd99b', 3.4, 0.59)
-  halo(ctx, r * 0.66, '#f58a89', 2, 0.64)
-  const pillars = reduced ? 3 : 5
-  ctx.lineCap = 'round'
-  for (let i = 0; i < pillars; i++) {
-    const x = (i - (pillars - 1) / 2) * 34
-    const rise = reduced ? 7 : (1 - bloom) * 52
-    ctx.beginPath()
-    ctx.moveTo(x, -46 - rise)
-    ctx.lineTo(x, -110 - rise - (i % 2) * 18)
-    ctx.strokeStyle = '#ae5367'
-    ctx.lineWidth = 12
-    ctx.stroke()
-    ctx.strokeStyle = '#ffd99b'
-    ctx.lineWidth = 3
-    ctx.stroke()
+  // Worn bronze ward and filtered sunlight, not a flat icon with five pink pillars.
+  const raise = reduced ? 0.76 : ease((t - 0.1) / 0.36)
+  const release = reduced ? 1 : 1 - ease((t - 0.76) / 0.22)
+  ctx.fillStyle = '#332021'
+  ctx.beginPath(); ctx.ellipse(0, 45, 80 + bloom * 45, 21, 0, 0, TAU); ctx.fill()
+  sprite(ctx, 'rays', 0, -68, 330 + bloom * 75, 345 + bloom * 70,
+    (reduced ? 0.28 : 0.4 + 0.35 * bloom) * release)
+  const hasWard = sprite(ctx, 'ward', 0, -34 + (1 - raise) * 31,
+    166 + raise * 49, 181 + raise * 57, 0.36 + raise * 0.52, -0.035)
+  if (!hasWard) {
+    ctx.strokeStyle = '#d6b580'; ctx.lineWidth = 5
+    ctx.beginPath(); ctx.moveTo(0, -122); ctx.bezierCurveTo(56, -98, 83, -89, 81, -35)
+    ctx.bezierCurveTo(77, 32, 21, 63, 0, 75); ctx.bezierCurveTo(-21, 63, -77, 32, -81, -35)
+    ctx.bezierCurveTo(-83, -89, -56, -98, 0, -122); ctx.stroke()
   }
-  ctx.save()
-  ctx.translate(0, reduced ? 0 : 9 * (1 - bloom))
-  shieldCrest(ctx, 0.84 + bloom * 0.26)
-  ctx.restore()
-  motes(ctx, count, 41 + bloom * 131, 4.5, '#ffdcab', t)
-  halo(ctx, 12 + bloom * 44, '#fff1d5', 2, 0.7)
+  ctx.globalAlpha *= 0.52 * release
+  dust(ctx, reduced ? 4 : count, 158, bloom, '#d6b580')
 }
 
-/** Called after viewport culling and outer alpha selection by the shared VFX renderer. */
+/** Local origin is the caster's feet. Registry handles fade, viewport culling and lifetime. */
 export function drawHeroSpecialFx(
   ctx: Ctx2D, kind: HeroSpecialFxKind, progress: number, bloom: number,
   particleCount: number, reducedMotion: boolean,
 ): void {
-  ctx.translate(0, -24) // Canvas hero anchors are at the feet, while the spell centers on the torso.
+  // The explicit preload runs when render assets are mounted; keep a visible fallback on decode failures.
+  ctx.translate(0, -24)
   switch (kind) {
     case 'hero-shadowblade': shadowblade(ctx, progress, bloom, particleCount, reducedMotion); break
     case 'hero-spirit-summoner': summoner(ctx, progress, bloom, particleCount, reducedMotion); break
