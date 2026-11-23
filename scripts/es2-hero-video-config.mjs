@@ -8,3 +8,22 @@ export function heroVideoCaptureConfig(baseUrl, candidateQA = false) {
     status: candidateQA ? 'QA_PENDING' : 'production',
   }
 }
+
+/** Verify actual candidate Canvas drawing, not merely a candidate image URL load. */
+export function assessHeroCandidateCoverage(hero, draws) {
+  const frames = { E: new Set(), S: new Set() }
+  for (const { src, sx, sy, sw, sh } of draws) {
+    for (const [direction, name, size] of [
+      ['E', 'east', 704], ['S', 'south', 768],
+    ]) {
+      if (!src?.includes(`/${hero}/candidates/${name}-2026-11-23/run-${name}-4frames@3x.webp`)) continue
+      if (sw !== size || sh !== size || ![0, size].includes(sx) || ![0, size].includes(sy)) continue
+      frames[direction].add(`${sx}:${sy}`)
+    }
+  }
+  return {
+    eastRunFrames: frames.E.size,
+    southRunFrames: frames.S.size,
+    hasBothDirections: frames.E.size >= 2 && frames.S.size >= 2,
+  }
+}
