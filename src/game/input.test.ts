@@ -26,11 +26,14 @@ describe('stickVector', () => {
 })
 
 describe('upgradeKeyIndex', () => {
-  it('maps Digit1..3 to choice indexes', () => {
-    expect(upgradeKeyIndex('Digit1')).toBe(0)
-    expect(upgradeKeyIndex('Digit3')).toBe(2)
-    expect(upgradeKeyIndex('Digit4')).toBe(-1)
-    expect(upgradeKeyIndex('KeyP')).toBe(-1)
+  it('maps top-row and numpad physical positions 1–9 to choice indexes', () => {
+    for (let digit = 1; digit <= 9; digit++) {
+      expect(upgradeKeyIndex(`Digit${digit}`)).toBe(digit - 1)
+      expect(upgradeKeyIndex(`Numpad${digit}`)).toBe(digit - 1)
+    }
+    for (const code of ['Digit0', 'Numpad0', 'Digit10', 'Numpad10', 'KeyP', 'ArrowLeft', '']) {
+      expect(upgradeKeyIndex(code)).toBe(-1)
+    }
   })
 })
 
