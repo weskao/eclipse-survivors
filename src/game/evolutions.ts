@@ -1,3 +1,4 @@
+import { BALANCE } from './config'
 import { hit, nearestAlive } from './combat'
 import { impact, zigzag } from './fx'
 import { dist } from './math'
@@ -23,16 +24,10 @@ export const EVOLUTIONS: readonly EvolutionDef[] = [
   evolution('guardian-sanctuary', '✥', '守護聖域', '每 5.5 秒恢復生命並獲得短暫免傷結界', ['shield', 'heal'], '聖光障壁 Lv.3 + 自然治癒 Lv.3'),
 ]
 
-export const EVOLUTION_COOLDOWN: Record<EvolutionId, number> = {
-  'frozen-thunderstorm': 4.4,
-  'infernal-singularity': 5,
-  'apocalypse-rain': 6.5,
-  'blade-tempest': 2.4,
-  'guardian-sanctuary': 5.5,
-}
+export const EVOLUTION_COOLDOWN: Record<EvolutionId, number> = BALANCE.evolutions.cooldowns
 
 export function eligibleEvolutions(hero: Hero): EvolutionDef[] {
-  return EVOLUTIONS.filter(e => !hero.evolutions[e.id] && e.requires.every(id => (hero.skills[id] ?? 0) >= 3))
+  return EVOLUTIONS.filter(e => !hero.evolutions[e.id] && e.requires.every(id => (hero.skills[id] ?? 0) >= BALANCE.evolutions.unlockSkillLevel))
 }
 
 /** Every evolved power has its own timer; none replaces its prerequisite attacks. */
