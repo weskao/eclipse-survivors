@@ -67,7 +67,11 @@ const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
 })))
 const specialCards = computed(() => {
   const offer = props.specialChoice
-  if (!offer || offer.kind !== 'treasure') return offer
+  if (!offer) return offer
+  if (offer.kind === 'evolution') return { ...offer, items: offer.items.map(item => ({
+    ...item,
+    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, props.upgradeEffect === 'still'),
+  })) }
   return { ...offer, items: offer.items.map(item => ({
     ...item,
     imageSrc: RELIC_BY_ID.get(item.id as RelicId)?.cursed ? WORLD_ART.ui['treasure-cursed']
