@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
+import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, productionHeroPoseReady, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 
@@ -87,8 +87,8 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     const draw = calls.at(-1)!
     expect(draw[0]).toBe(dir)
     expect(draw.slice(1, 5)).toEqual([0, 448, 448, 448])
-    expect(Number(draw[7])).toBeLessThanOrEqual(448 / 3)
-    expect(Number(draw[8])).toBeLessThanOrEqual(448 / 3)
+    expect(Number(draw[7])).toBeLessThanOrEqual(147)
+    expect(Number(draw[8])).toBeLessThanOrEqual(147)
   })
 
   it('draws exactly one isolated image cell per pose, never composites a stale frame', () => {
@@ -103,6 +103,18 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
       expect(Number(calls[0]![3])).toBe(448)
       expect(Number(calls[0]![4])).toBe(448)
     }
+  })
+
+  it('only suppresses the legacy horizontal mirror when the right directional source is actually decoded', () => {
+    const pending = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      poseAtlasSources: PRODUCTION_HERO_POSE_SOURCES.shadowblade,
+      poseAtlases: {} } as unknown as HTMLImageElement & { poseAtlases: Record<string, HTMLImageElement> }
+    const westRun = anim({ pose: 'run', direction: 4 })
+    expect(productionHeroPoseReady(pending, westRun)).toBe(false)
+    pending.poseAtlases.direction = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+    expect(productionHeroPoseReady(pending, westRun)).toBe(true)
+    pending.poseAtlases.action = { complete: false, naturalWidth: 0, naturalHeight: 0 } as HTMLImageElement
+    expect(productionHeroPoseReady(pending, westRun)).toBe(true)
   })
 
   it('falls back to its own portrait when split sheets are not decoded yet', () => {
