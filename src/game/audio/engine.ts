@@ -2,6 +2,7 @@ import { random } from '../math'
 import type { GameMode, SfxCue } from '../types'
 import { createBattleScore, createMenuScore } from './music'
 import { createBossScore } from './boss-score'
+import { createEs2Score } from './es2/score'
 import type { BossId } from '../content/bosses/definitions'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
 import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
@@ -99,6 +100,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const menu = createMenuScore()
   const battle = createBattleScore()
   const bossScore = createBossScore()
+  let resultScore = createEs2Score()
+  let resultScene: 'victory' | 'defeat' | null = null
   const sfxLast = new Map<SfxCue, number>()
 
   bgm.volume = 0.38
@@ -215,6 +218,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         void ac.resume().catch(() => { /* Browsers may require another gesture. */ })
       }
       playScore()
+      if (recovering && ac && resultScene) resultScore.resume(ac.currentTime)
     } catch {
       ac = null
       master = null
@@ -227,6 +231,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     interrupted = true
     bgm.pause()
     menuBgm?.pause()
+    resultScore.interrupt()
     if (ac && ac.state === 'running') {
       void ac.suspend().catch(() => { /* Visibility can change during suspension. */ })
     }
@@ -259,6 +264,12 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     wake,
     interrupt,
+    setResultTheme(next) {
+      resultScene = next
+      resultScore.dispose()
+      resultScore = createEs2Score()
+      if (next) resultScore.change(next, ac ? ac.currentTime + 0.02 : 0)
+    },
     setCombatIntensity(next) {
       if (intensity === next) return
       intensity = next
@@ -285,6 +296,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       const ctx = running()
       if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }
+      if (mode === 'result') {
+        if (resultScene) resultScore.schedule(ctx.currentTime, tone, 0.88)
+        return
+      }
       if (mode !== 'play') return
       if (intensity === 'boss') bossScore.schedule(ctx.currentTime, tone)
       else if (bgm.paused) battle.schedule(ctx.currentTime, tone)
@@ -298,6 +313,11 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     onScreen(nextMode: GameMode) {
       const previous = mode
       mode = nextMode
+      if (mode !== 'result') {
+        resultScene = null
+        resultScore.dispose()
+        resultScore = createEs2Score()
+      }
       if (mode !== 'menu') menuBgm?.pause()
       if (mode === 'menu' || mode === 'paused' || mode === 'result') bgm.pause()
       if (mode === 'menu') {
@@ -370,6 +390,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       musicBus = null
       noiseBuffer = null
       bossScore.select(null, 1, 0)
+      resultScore.dispose()
+      resultScene = null
       sfxLast.clear()
       recentSfx.length = 0
     },
