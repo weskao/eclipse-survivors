@@ -19,31 +19,34 @@ beforeEach(() => setRandom(seeded(7)))
 afterEach(() => setRandom())
 
 describe('addXp', () => {
-  it('follows the ~20% lower XP curve and queues levels', () => {
+  it('increases XP costs ~15% after the prior easing and queues levels', () => {
     const { s, hero } = setup()
     const hooks = spyHooks()
-    addXp(s, 12, hooks)
+    addXp(s, 14, hooks)
     expect(hero.level).toBe(1)
     expect(hooks.offerUpgrades).not.toHaveBeenCalled()
     addXp(s, 1, hooks)
-    expect(hero).toMatchObject({ level: 2, xp: 0, need: 22, levelAnim: 1.1 })
+    expect(hero).toMatchObject({ level: 2, xp: 0, need: 25, levelAnim: 1.1 })
     expect(s.levelQueue).toBe(1)
     expect(hooks.message).toHaveBeenCalledWith('✨ 等級提升！ Lv.2')
     expect(hooks.offerUpgrades).toHaveBeenCalledTimes(1)
-    addXp(s, 22 + 33 + 5, hooks)
-    expect(hero).toMatchObject({ level: 4, xp: 5, need: 47 })
+    addXp(s, 25 + 38 + 5, hooks)
+    expect(hero).toMatchObject({ level: 4, xp: 5, need: 54 })
     expect(s.levelQueue).toBe(3)
     expect(s.impactWaves.at(-1)).toMatchObject({ size: 88, color: '#ffe1a8' })
   })
-  it('requires about 20% less XP across early and late levels', () => {
+  it('keeps each level about 15% costlier than the previous curve (1–20)', () => {
     const { s, hero } = setup()
     const hooks = spyHooks()
     const before = [16, 27, 41, 59, 81, 109, 144, 188, 244, 314, 403, 515, 656, 834, 1058, 1340, 1695, 2143, 2707, 3418]
-    const after = [13, 22, 33, 47, 65, 88, 116, 152, 197, 254, 326, 416, 530, 673, 854, 1082, 1369, 1731, 2187, 2761]
+    const after = [15, 25, 38, 54, 75, 101, 134, 175, 227, 293, 376, 480, 611, 776, 984, 1246, 1576, 1992, 2516, 3177]
+    const eased = [13, 22, 33, 47, 65, 88, 116, 152, 197, 254, 326, 416, 530, 673, 854, 1082, 1369, 1731, 2187, 2761]
     for (let i = 0; i < after.length; i++) {
       expect(hero.need).toBe(after[i])
-      expect(hero.need / before[i]!).toBeGreaterThan(0.78)
-      expect(hero.need / before[i]!).toBeLessThan(0.82)
+      expect(hero.need / eased[i]!).toBeGreaterThan(1.13)
+      expect(hero.need / eased[i]!).toBeLessThan(1.16)
+      expect(hero.need / before[i]!).toBeGreaterThan(0.91)
+      expect(hero.need / before[i]!).toBeLessThan(0.96)
       addXp(s, hero.need, hooks)
     }
     expect(hero.level).toBe(21)
@@ -53,7 +56,7 @@ describe('addXp', () => {
     const { s } = setup()
     s.mode = 'level'
     const hooks = spyHooks()
-    addXp(s, 13, hooks)
+    addXp(s, 15, hooks)
     expect(s.levelQueue).toBe(1)
     expect(hooks.offerUpgrades).not.toHaveBeenCalled()
   })
