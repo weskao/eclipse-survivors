@@ -1,4 +1,5 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
+import { BALANCE } from './config'
 import { burst, impact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
@@ -41,7 +42,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   if (e.hp === 0) {
     s.kill++
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
-    const value = boss ? 45 : e.type === 'golem' ? 9 : e.type === 'goblin' ? 5 : 3
+    const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
     s.stars.push({ x: e.x, y: e.y, value, t: rand(0, 6) })
     burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
@@ -58,9 +59,9 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
 export function dash(s: GameState, hooks: GameHooks): void {
   const hero = s.hero
   if (s.mode !== 'play' || !hero || hero.dashCd > 0) return
-  hero.dash = 0.22
+  hero.dash = BALANCE.combat.dashDuration
   hero.dashCd = DASH_COOLDOWN
-  hero.inv = Math.max(hero.inv, 0.35)
+  hero.inv = Math.max(hero.inv, BALANCE.combat.dashInvulnerability)
   burst(s, hero.x, hero.y, '#d8f8ff', 15)
   impact(s, hero.x, hero.y, 55, '#c6f7ff', 0.4)
   pushEcho(s, hero.x, hero.y, s.choice, 0)
@@ -128,13 +129,13 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   }
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
-    hero.chainCd = Math.max(0.5, 2.8 - chain * 0.25)
-    const chainTargets = close.slice(0, Math.min(2 + chain, 7))
+    hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank)
+    const chainTargets = close.slice(0, Math.min(BALANCE.combat.chainTargetBase + chain, BALANCE.combat.chainMaxTargets))
     for (let i = 0; i < chainTargets.length; i++) {
       const from: Hero | Mob = i ? chainTargets[i - 1]! : hero
       const to = chainTargets[i]!
       zigzag(s, from.x || hero.x, (from.y || hero.y) - 25, to.x, to.y)
-      hit(s, to, hero.damage * (0.66 + 0.18 * chain), hooks)
+      hit(s, to, hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain), hooks)
     }
     hooks.sfx('chain')
   }
@@ -161,7 +162,7 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
   if (!Number.isFinite(mitigated) || mitigated <= 0) return
   const shield = hero.skills.shield ?? 0
-  const reduce = 1 - Math.min(0.52, shield * 0.13)
+  const reduce = 1 - Math.min(BALANCE.skills.passive.shieldReductionCap, shield * BALANCE.skills.passive.shieldReductionPerRank)
   const taken = mitigated * reduce
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
