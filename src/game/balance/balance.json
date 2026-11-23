@@ -316,6 +316,11 @@
     "thornChain": {
       "damageBase": 0.45,
       "damagePerRank": 0.145
+    },
+    "maxLevel": 5,
+    "limits": {
+      "maxProjectiles": 64,
+      "maxZones": 12
     }
   },
   "events": {
@@ -392,18 +397,12 @@
     },
     "dashDuration": 0.22,
     "dashInvulnerability": 0.35,
-    "starPickupBaseRadius": 115,
-    "starPickupPerMagnetRank": 62,
     "starPickupSpeed": 450,
     "starPickupDistance": 23,
     "starKeepLimit": 220,
-    "regenPerRank": 1.05,
-    "shieldReductionPerRank": 0.13,
-    "shieldReductionCap": 0.52,
-    "chainCooldownBase": 2.8,
-    "chainCooldownPerRank": 0.25,
-    "chainDamageBase": 0.66,
-    "chainDamagePerRank": 0.18
+    "chainTargetBase": 2,
+    "chainMaxTargets": 7,
+    "chainMinCooldown": 0.5
   },
   "evolutions": {
     "cooldowns": {
