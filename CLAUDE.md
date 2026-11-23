@@ -6,6 +6,15 @@ This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Pres
 
 For any skill CRUD, ability option, projectile, enemy bullet, damage feedback, or attack animation, **read [`.claude/skills/es2-combat-visual-fidelity/SKILL.md`](.claude/skills/es2-combat-visual-fidelity/SKILL.md) before implementation**. Every skill (built-in, ES2 weapon, evolution and future pack) must use the same high-quality image-first card treatment and animated/static accessibility fallback. Avoid bare circles, lines or emojis when an authored sprite exists. Keep actual collision and danger telegraphs independent of decorative art, preserve dense-combat readability and run TDD plus real-browser mobile QA. Reuse the existing Canvas 2D renderer unless measured evidence justifies a full PixiJS migration.
 
+## Mandatory data-driven numerical balancing — EVERY gameplay feature
+
+**Read and follow [`.claude/rules/game-balance-config.md`](.claude/rules/game-balance-config.md) whenever adding, changing, reviewing, or deleting numerical gameplay values.** The canonical designer-editable source is `src/game/balance/balance.json`, accessed through the typed `BALANCE` export in `src/game/config.ts`.
+
+- This applies to **all** heroes (classic and special), HP/attack/speed, XP curves, skills and level caps, AoE reach/targets, weapons, enemy health/damage/spawning, treasure and healing event weights, boss difficulty, relic modifiers and future gameplay systems. Reuse domain defaults, add only named overrides per hero/skill/item, and keep the runtime algorithms shared.
+- **No duplicated balance literals:** Never hard-code the same coefficient in components, scripts or tests. All player-facing stats and upgrade descriptions must reflect the source of truth; keep the existing `en` / `zh-TW` translations correct.
+- Keep probabilities normalized, thresholds finite, build/rarity choices fair, endgame challenge intact, mob/projectile counts bounded, and formulas deterministic. Move gameplay-tunable numeric constants out of touched legacy modules; do not mistakenly move non-gameplay coordinates, art geometry or mathematical constants.
+- Mandatory TDD and CI: cover config schema and complete enum keys, hero creation/HUD/menu, XP progression, pickups/chests, skill effects and capped levels, weapon damage and mobile performance. Refer to `src/game/balance.test.ts` and the more specific gameplay tests. Run the standard `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release` gates.
+
 ## Mandatory image-first asset workflow
 
 **For every feature that needs images, create or generate the actual image files inside this repository before writing the code that uses them.** This applies to all game/UI features, including characters, enemies, bosses, scenes, props, skill icons, VFX, animations, and previews.
