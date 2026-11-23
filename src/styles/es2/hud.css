@@ -299,7 +299,8 @@
 .es2-hud__section-label { font-size: calc(11px * var(--es2-ui-scale, 1)); }
 
 /* Mobile portrait: reserve the top for vitals/boss, bottom for touch controls. */
-@media (orientation: portrait) and (max-width: 700px) {
+@media (orientation: portrait) and (max-width: 700px),
+       (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
   .es2-hud {
     --es2-encounter-top: max(140px, calc(env(safe-area-inset-top) + 124px));
     --es2-compact-info-top: max(222px, calc(env(safe-area-inset-top) + 206px));
@@ -368,4 +369,26 @@
 }
 @media (orientation: portrait) and (max-width: 700px) and (max-height: 600px) {
   .es2-hud__info-drawer { bottom: max(116px, calc(env(safe-area-inset-bottom) + 105px)); }
+}
+
+/* The same compact information drawer protects both phone orientations.
+   Landscape overrides only the geometry; no duplicate HUD or input state. */
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
+  .es2-hud {
+    --es2-encounter-top: max(8px, env(safe-area-inset-top));
+    --es2-compact-info-top: max(145px, calc(env(safe-area-inset-top) + 136px));
+  }
+  .es2-hud__hero { width: min(29vw, 230px); }
+  .es2-hud__encounter { width: min(38vw, 330px); }
+  .es2-hud__info-drawer {
+    top: max(8px, env(safe-area-inset-top));
+    bottom: max(108px, calc(env(safe-area-inset-bottom) + 104px));
+    right: max(138px, 20vw);
+    width: min(292px, calc(100vw - 280px));
+  }
+  .es2-hud__urgent-notice {
+    top: max(105px, calc(env(safe-area-inset-top) + 98px));
+    left: 34%;
+    width: min(32vw, 190px);
+  }
 }
