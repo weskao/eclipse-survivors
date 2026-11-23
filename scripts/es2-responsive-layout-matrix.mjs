@@ -21,6 +21,26 @@ const inset = 2
 const inside = (box, width, height) => box.x >= -inset && box.y >= -inset
   && box.right <= width + inset && box.bottom <= height + inset
 const rect = el => { const b = el.getBoundingClientRect(); return { x: b.x, y: b.y, right: b.right, bottom: b.bottom } }
+// Text must fit in either language; intentionally scrollable archives are checked per item.
+const assertLocalizedTextFits = async (page, caseName, locale) => {
+  const issues = await page.evaluate(() => {
+    const selectors = [
+      '.es2-hero-copy strong', '.es2-hero-copy small',
+      '.es2-mode-copy strong', '.es2-mode-copy small',
+      '.es2-dialog-header h2', '.es2-dialog-header p',
+      '.es2-dialog-actions button', '.es2-archive-tabs button',
+      '.es2-archive-card strong', '.es2-archive-card p',
+      '.es2-card-name', '.es2-card-description', '.es2-reward-strip span',
+    ]
+    return [...document.querySelectorAll(selectors.join(','))]
+      .filter(el => el.getClientRects().length && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 2)
+      .map(el => ({ selector: el.className, text: el.textContent?.trim().slice(0, 64),
+        width: el.clientWidth, scrollWidth: el.scrollWidth }))
+  })
+  assert.deepEqual(issues, [], caseName + ': ' + locale + ' text overflow')
+  const doc = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: innerWidth }))
+  assert.ok(doc.content <= doc.viewport + inset, caseName + ': ' + locale + ' page overflow: ' + JSON.stringify(doc))
+}
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 await mkdir(destination, { recursive: true })
 try {
@@ -80,6 +100,13 @@ try {
         name + ': language listbox clips viewport')
       await option.click()
       assert.equal(await language.getAttribute('aria-expanded'), 'false')
+      await assertLocalizedTextFits(page, name, 'en')
+      // Run the same real-browser layout check in Traditional Chinese.
+      await language.click()
+      await page.locator('#es2-language-listbox [data-es2-value="zh-TW"]').click()
+      await assertLocalizedTextFits(page, name, 'zh-TW')
+      await language.click()
+      await page.locator('#es2-language-listbox [data-es2-value="en"]').click()
       await page.screenshot({ path: destination + '/' + name + '-settings.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
       await page.locator('.es2-hall-links button').first().click()
@@ -95,6 +122,7 @@ try {
           name + ': archive selection is inaccessible')
         assert.ok(inside(await dialog.evaluate(rect), width, height),
           name + ': archive modal clips viewport')
+        await assertLocalizedTextFits(page, name, 'en-archive')
       }
       await page.screenshot({ path: destination + '/' + name + '-archive.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
