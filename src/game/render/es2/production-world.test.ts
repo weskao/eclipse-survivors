@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { WORLD_ART, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame } from './production-world'
 import type { Ctx2D } from '../ctx'
 
@@ -105,19 +105,24 @@ describe('ES2 world art live asset mapping', () => {
     ])
   })
 
-  it('loads the native Abyss Monarch art only on explicit QA request and crops its gutters', () => {
-    const makeImage = (): HTMLImageElement => ({
-      complete: true, naturalWidth: 2268, naturalHeight: 756, src: '',
-    }) as HTMLImageElement
-    const normal = loadWorldRuntimeImages(makeImage)
-    const qa = loadWorldRuntimeImages(makeImage, 'abyss-monarch')
-    expect(normal.bosses['abyss-monarch'].src).not.toContain('QA-PENDING')
-    expect(qa.bosses['abyss-monarch'].src).toContain('abyss-monarch-phases-native3x-QA-PENDING')
-    expect(qa.bosses['frost-sovereign'].src).toBe(normal.bosses['frost-sovereign'].src)
-    const calls: unknown[][] = []
-    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
-    expect(drawProductionBossFrame(ctx, qa.bosses['abyss-monarch'], 2, 236, 246)).toBe(true)
-    expect(calls[0]?.slice(1, 5)).toEqual([772, 16, 724, 724])
-    expect(calls[0]?.slice(5)).toEqual([-118, -232, 236, 236])
-  })
+  it.each(['abyss-monarch', 'frost-sovereign', 'infernal-titan'] as const)(
+    'loads %s native candidate lazily only after an explicit dev QA request',
+    async id => {
+      const makeImage = (): HTMLImageElement => ({
+        complete: true, naturalWidth: 2268, naturalHeight: 756, src: '',
+      }) as HTMLImageElement
+      const normal = loadWorldRuntimeImages(makeImage)
+      const qa = loadWorldRuntimeImages(makeImage, id)
+      // Before the opt-in import resolves, always retain the production fallback.
+      expect(qa.bosses[id].src).toBe(normal.bosses[id].src)
+      await vi.waitFor(() => expect(qa.bosses[id].src).toContain(id + '-phases-native3x-QA-PENDING'))
+      const other = id === 'abyss-monarch' ? 'frost-sovereign' : 'abyss-monarch'
+      expect(qa.bosses[other].src).toBe(normal.bosses[other].src)
+      const calls: unknown[][] = []
+      const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+      expect(drawProductionBossFrame(ctx, qa.bosses[id], 2, 236, 246)).toBe(true)
+      expect(calls[0]?.slice(1, 5)).toEqual([772, 16, 724, 724])
+      expect(calls[0]?.slice(5)).toEqual([-118, -232, 236, 236])
+    },
+  )
 })

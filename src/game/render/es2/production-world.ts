@@ -9,10 +9,10 @@ const urls = import.meta.glob('../../../assets/es2/production/{enemies,bosses,bi
 }) as Record<string, string>
 
 /** Preview assets stay out of production; visual QA and explicit opt-in are required. */
-const bossQaUrls = import.meta.env.DEV
+const bossQaLoaders = import.meta.env.DEV
   ? import.meta.glob('../../../assets/es2/production/bosses/candidates/*-QA-PENDING.webp', {
-    eager: true, query: '?url', import: 'default',
-  }) as Record<string, string>
+    query: '?url', import: 'default',
+  }) as Record<string, () => Promise<string>>
   : {}
 const bossQaInsets = new WeakMap<HTMLImageElement, number>()
 
@@ -63,9 +63,17 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   const loadBoss = (id: BossId): HTMLImageElement => {
     const candidatePath = `../../../assets/es2/production/bosses/candidates/${id}-phases-native3x-QA-PENDING.webp`
-    const candidate = import.meta.env.DEV && reviewBossId === id ? bossQaUrls[candidatePath] : undefined
-    const image = load(candidate ?? WORLD_ART.bosses[id])
-    if (candidate) bossQaInsets.set(image, 16)
+    const image = load(WORLD_ART.bosses[id])
+    const loadCandidate = import.meta.env.DEV && reviewBossId === id ? bossQaLoaders[candidatePath] : undefined
+    if (loadCandidate) {
+      void loadCandidate().then(url => {
+        bossQaInsets.set(image, 16)
+        image.src = url
+      }).catch(() => {
+        // Keep the authored legacy image if an isolated dev-only candidate cannot load.
+        bossQaInsets.delete(image)
+      })
+    }
     return image
   }
   return {
