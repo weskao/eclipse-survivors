@@ -17,7 +17,7 @@ const base = {
 const wrappers: VueWrapper[] = []
 const find = (selector: string) => document.querySelector<HTMLElement>(selector)!
 const click = (selector: string) => find(selector).click()
-const press = (key: string) => document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+const press = (key: string) => document.dispatchEvent(new KeyboardEvent('keydown', { key, code: /^[1-9]$/.test(key) ? `Digit${key}` : key, bubbles: true, cancelable: true }))
 function mounted(props: Record<string, unknown> = {}) {
   const wrapper = mount(Es2MenuSystem, { attachTo: document.body, props: { ...base, ...props } })
   wrappers.push(wrapper)
