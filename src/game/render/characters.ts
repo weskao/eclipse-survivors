@@ -291,13 +291,13 @@ export function drawCharacter(
         : anim.direction > 2 && anim.direction < 6 ? -1 : 1
       if (facing < 0 && !directionalReady) ctx.scale(-1, 1)
       let productionDrawn = productionImage
-        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets) : false
+        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock) : false
       if (!productionDrawn && isSpecializationId(s.heroId)) {
         // s.choice is the legacy base class: a specialization hero must never fall back to
         // that rig. Unauthored poses (hurt/death/victory) hold the authored idle cell; while
         // the atlas is not decoded nothing is drawn rather than showing another class.
         anim.pose = 'idle' // anim is a throwaway per-call sample; no extra allocation
-        if (productionImage) drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets)
+        if (productionImage) drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock)
         productionDrawn = true
       }
       if (!productionDrawn) {
