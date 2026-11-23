@@ -45,3 +45,15 @@ export function animatedEs2ImageSrc(id: AbilityId): string | undefined {
   const key = es2ArtKey(id, true)
   return key ? es2AnimatedArt[key] : undefined
 }
+
+/** One art-resolution path for every upgrade: legacy, weapon, evolution and future packs. */
+export function resolveSkillChoiceArt(
+  id: AbilityId, suppliedSrc?: string, still = false,
+): { imageSrc?: string; reducedMotionSrc?: string } {
+  const builtIn = !id.includes(':')
+  const reducedMotionSrc = stillEs2ImageSrc(id) ?? suppliedSrc ??
+    (builtIn ? skillImageSrc(id) : undefined)
+  const animated = animatedEs2ImageSrc(id) ??
+    (builtIn ? animatedSkillImageSrc(id) : undefined)
+  return { imageSrc: still ? reducedMotionSrc : (animated ?? reducedMotionSrc), reducedMotionSrc }
+}
