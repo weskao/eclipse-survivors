@@ -5,7 +5,7 @@ export interface Presentation { icon: string; title: string; description: string
 export interface AchievementDef extends Presentation { id: string; embers: number; cosmetic?: string }
 export interface MilestoneDef extends Presentation { id: string; embers: number }
 export interface ResearchDef extends Presentation { id: string; maxRank: number; firstCost: number; costStep: number; requires?: readonly { id: string; rank: number }[]; benefitPerRank: number; benefit: 'damagePct' | 'hpFlat' | 'xpPct' | 'lootPct' | 'goldPct' }
-export interface UnlockDef extends Presentation { id: string; cost: number; hero?: string; masteryLevel?: number; research?: string; effect: string }
+export interface UnlockDef extends Presentation { id: string; cost: number; hero?: string; masteryLevel?: number; research?: string; effect: string; bonus?: number }
 
 export const ACHIEVEMENTS: readonly AchievementDef[] = [
   { id: 'first-blood', icon: '⚔', title: '初臨戰場', description: '首次擊敗敵人', rarity: 'common', embers: BALANCE.meta.achievementEmbers['first-blood'] },
@@ -32,13 +32,13 @@ export const MILESTONES: readonly MilestoneDef[] = [
   { id: 'three-evolutions', icon: '✺', title: '進化探索', description: '發現三種進化', rarity: 'epic', embers: BALANCE.meta.milestoneEmbers['three-evolutions'] },
 ]
 
-/** Small starter-only bonuses; existing legacy power/vitality caps are preserved. */
+/** Presentation metadata only: all research prices, caps and benefits come from BALANCE.meta. */
 export const RESEARCH: readonly ResearchDef[] = [
-  { id: 'power', icon: '⚔', title: '攻擊研究', description: '每級 +4% 起始攻擊', rarity: 'common', ...BALANCE.meta.research['power'], benefit: 'damagePct' },
-  { id: 'vitality', icon: '♥', title: '生存研究', description: '每級 +12 起始生命', rarity: 'common', ...BALANCE.meta.research['vitality'], benefit: 'hpFlat' },
-  { id: 'insight', icon: '✧', title: '洞察研究', description: '每級 +1% 起始經驗加成', rarity: 'rare', ...BALANCE.meta.research['insight'], requires: [{ id: 'power', rank: 1 }], benefit: 'xpPct' },
-  { id: 'scavenging', icon: '◈', title: '拾荒研究', description: '每級 +1% 拾取收益', rarity: 'rare', ...BALANCE.meta.research['scavenging'], requires: [{ id: 'vitality', rank: 1 }], benefit: 'lootPct' },
-  { id: 'ember-study', icon: '✦', title: '餘燼研究', description: '每級 +1% 未來結算餘燼', rarity: 'epic', ...BALANCE.meta.research['ember-study'], requires: [{ id: 'insight', rank: 1 }, { id: 'scavenging', rank: 1 }], benefit: 'goldPct' },
+  { id: 'power', icon: '⚔', title: '攻擊研究', description: '每級 +{value}% 起始攻擊', rarity: 'common', ...BALANCE.meta.research['power'], benefit: 'damagePct' },
+  { id: 'vitality', icon: '♥', title: '生存研究', description: '每級 +{value} 起始生命', rarity: 'common', ...BALANCE.meta.research['vitality'], benefit: 'hpFlat' },
+  { id: 'insight', icon: '✧', title: '洞察研究', description: '每級 +{value}% 起始經驗加成', rarity: 'rare', ...BALANCE.meta.research['insight'], requires: [{ id: 'power', rank: 1 }], benefit: 'xpPct' },
+  { id: 'scavenging', icon: '◈', title: '拾荒研究', description: '每級 +{value}% 拾取收益', rarity: 'rare', ...BALANCE.meta.research['scavenging'], requires: [{ id: 'vitality', rank: 1 }], benefit: 'lootPct' },
+  { id: 'ember-study', icon: '✦', title: '餘燼研究', description: '每級 +{value}% 未來結算餘燼', rarity: 'epic', ...BALANCE.meta.research['ember-study'], requires: [{ id: 'insight', rank: 1 }, { id: 'scavenging', rank: 1 }], benefit: 'goldPct' },
 ]
 
 export const STARTING_EQUIPMENT: readonly UnlockDef[] = [
@@ -48,9 +48,9 @@ export const STARTING_EQUIPMENT: readonly UnlockDef[] = [
 ]
 
 export const STARTING_BONUSES: readonly UnlockDef[] = [
-  { id: 'ember-spark', icon: '✧', title: '微光祝福', description: '出發時 +1% 經驗', rarity: 'rare', cost: BALANCE.meta.startingBonuses['ember-spark'].cost, research: 'insight', effect: 'start-xp-1pct' },
-  { id: 'wanderer-kit', icon: '◈', title: '漫遊行囊', description: '出發時 +1% 拾取', rarity: 'rare', cost: BALANCE.meta.startingBonuses['wanderer-kit'].cost, research: 'scavenging', effect: 'start-loot-1pct' },
-  { id: 'guardian-vow', icon: '♥', title: '守護誓約', description: '出發時 +1% 生命', rarity: 'epic', cost: BALANCE.meta.startingBonuses['guardian-vow'].cost, research: 'vitality', effect: 'start-hp-1pct' },
+  { id: 'ember-spark', icon: '✧', title: '微光祝福', description: '出發時 +{value}% 經驗', rarity: 'rare', ...BALANCE.meta.startingBonuses['ember-spark'], research: 'insight', effect: 'start-xp-1pct' },
+  { id: 'wanderer-kit', icon: '◈', title: '漫遊行囊', description: '出發時 +{value}% 拾取', rarity: 'rare', ...BALANCE.meta.startingBonuses['wanderer-kit'], research: 'scavenging', effect: 'start-loot-1pct' },
+  { id: 'guardian-vow', icon: '♥', title: '守護誓約', description: '出發時 +{value}% 生命', rarity: 'epic', ...BALANCE.meta.startingBonuses['guardian-vow'], research: 'vitality', effect: 'start-hp-1pct' },
 ]
 
 export const LEGACY_EVOLUTIONS: readonly string[] = [
