@@ -9,7 +9,7 @@ export function lowHealthTier(percent: number): LowHealthTier {
   // Engine HP division can produce 12.000000000000002 at an exact 12% boundary.
   const hp = Math.round(percent * 100) / 100
   if (hp <= 0) return 'dead'
-  if (hp <= BALANCE.world.lowHpEmergencyPct return 'emergency'
+  if (hp <= BALANCE.world.lowHpEmergencyPct) return 'emergency'
   if (hp <= LOW_HP_PCT) return 'critical'
   if (hp <= BALANCE.world.lowHpWarningPct) return 'warning'
   return 'normal'
