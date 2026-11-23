@@ -223,7 +223,7 @@ onBeforeUnmount(() => {
     @sfx-volume="engine.setSfxVolume"
     @accessibility="changeAccessibility"
   />
-  <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen" @resume="engine.togglePause" @leave="requestHome" @settings="engine.openSettings" />
+  <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen && !ui.settingsOpen" @resume="engine.togglePause" @leave="requestHome" @settings="engine.openSettings" />
   <Es2Dialog :active="homeConfirmOpen" :title="t('返回主選單？')"
     :subtitle="t('戰鬥已暫停。返回主選單將結束本次遠征，未結算的戰鬥進度不會保留。確定要離開嗎？')"
     @cancel="cancelHome">
