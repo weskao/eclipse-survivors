@@ -1,5 +1,8 @@
 # ES2 49 項既有美術整合、Runtime 驗證與最終 CI Gate
 
+> **2026-11-24 更新：UI 17/17 正式素材已由專案擁有者確認通過人工美術驗收，Manifest 已逐項改為 `approved`。** 簽核紀錄：[10-ui-17-owner-approval-2026-11-24.md](10-ui-17-owner-approval-2026-11-24.md)。下方 2026-11-23 以前的 `needs-human-approval`／`visual-review-required` 描述只代表歷史快照，**不能再用來表示目前 17 項 UI 的人工美術狀態**。此批准不等於其他 32 項素材、英雄、原生 3×來源或最新 HEAD 全專案 CI 已全部通過。
+
+
 > **可直接執行的 Agent Prompt｜繁體中文**  
 > GitHub: https://github.com/weskao/eclipse-survivors  
 > 程式整合目標：feature/es2-release-readiness-integration  
