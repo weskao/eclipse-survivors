@@ -133,8 +133,8 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
           <strong>{{ t(entry.title) }}</strong>
         </article>
       </div>
-      <details data-es2-c104-gallery class="es2-c104-source-gallery">
-        <summary>{{ t("查看 c104 原始美術圖集（10 張 PNG · 待逐格驗收）") }}</summary>
+      <div data-es2-c104-gallery class="es2-c104-source-gallery">
+        <h3>{{ t("c104 原始美術圖集（10 張 PNG · 待逐格驗收）") }}</h3>
         <p class="es2-hint">{{ t("原圖已存入專案並由本介面直接引用；尚未通過精靈邊界審核的接觸圖不得當成遊戲動作影格。") }}</p>
         <div class="es2-c104-source-grid">
           <figure v-for="entry in c104Gallery" :key="entry.id">
@@ -143,7 +143,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
             <figcaption>{{ t(entry.category) }} · {{ entry.id }}</figcaption>
           </figure>
         </div>
-      </details>
+      </div>
     </section>
     <section v-else-if="view === 'skills'" class="es2-archive-section" :aria-label="t('技能圖鑑')">
       <div class="es2-archive-grid"><article v-for="ability in entries.abilities" :key="ability.id" class="es2-archive-card" :class="{ 'es2-locked': !ability.discovered }">
@@ -160,7 +160,6 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
         <small>{{ t(profile.achievements.includes(achievement.id) ? '✓ 已達成' : '尚未達成') }}</small>
       </article></div>
       <h3>{{ t("寶箱、稀有度、HUD 與成就裝飾 · 美術預覽") }}</h3>
-      <p class="es2-hint">{{ t('以下 17 張 UI 美術已通過人工美術驗收，預覽不會增加成就或修改存檔。') }}</p>
       <div class="es2-world-art-grid" :aria-label="t('UI 美術素材')">
         <article v-for="entry in worldIcons" :key="entry.id" class="es2-world-art-card" :data-es2-world-ui="entry.id">
           <img class="es2-world-art-icon" :src="entry.src" :alt="t('{name} 裝飾圖案', { name: t(entry.title) })" loading="lazy" decoding="async" />
@@ -173,7 +172,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
 
 <style scoped>
 .es2-c104-source-gallery{border:1px solid #88779155;border-radius:11px;padding:12px;margin:20px 0}
-.es2-c104-source-gallery summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:#e2c895}
+.es2-c104-source-gallery h3{margin:0 0 12px;color:#e2c895}
 .es2-c104-source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
 .es2-c104-source-grid figure{margin:0;padding:8px;border:1px solid #a3889455;background:#11131e;border-radius:8px}
 .es2-c104-source-grid img{display:block;width:100%;max-height:230px;object-fit:contain;aspect-ratio:1.4}

@@ -982,7 +982,7 @@ const english = new Map<string, string>([
 , ["以下為實際入庫的 WebP 動畫及攻擊預警示意，尚待美術驗收；命中判定仍以遊戲規則為準。","These in-project WebP animations and telegraphs await final art review; hit detection always follows gameplay rules."]
 , ["四位首領 · 三階段視覺預覽","Four Bosses · Three-Phase Preview"]
 , ["暗蝕之地 · 地板與場景裝飾","Eclipsed Lands · Terrain & Decorations"]
-, ["查看 c104 原始美術圖集（10 張 PNG · 待逐格驗收）","View c104 source art atlas (10 PNGs · pending frame review)"]
+, ["c104 原始美術圖集（10 張 PNG · 待逐格驗收）","c104 source art atlas (10 PNGs · pending frame review)"]
 , ["原圖已存入專案並由本介面直接引用；尚未通過精靈邊界審核的接觸圖不得當成遊戲動作影格。","Source art is stored in this project. Unverified contact sheets cannot be used as live animation frames."]
 , ["寶箱、稀有度、HUD 與成就裝飾 · 美術預覽","Chest, Rarity, HUD & Achievement Art Preview"]
 , ["以下 17 張圖尚待美術驗收，展示不會增加成就或變更存檔。","These 17 images await art review. Viewing them does not award achievements or change save data."]
@@ -1690,7 +1690,6 @@ const english = new Map<string, string>([
   , ["收藏家徽章", "Collector Badge"]
   , ["完美挑戰徽章", "Flawless Badge"]
   , ["{name} 裝飾圖案", "{name} decorative artwork"]
-  , ["以下 17 張 UI 美術已通過人工美術驗收，預覽不會增加成就或修改存檔。", "All 17 UI artworks have passed human visual review. Previewing them does not unlock achievements or alter saved progress."]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],

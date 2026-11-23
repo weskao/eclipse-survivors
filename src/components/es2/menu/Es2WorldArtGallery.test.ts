@@ -24,10 +24,10 @@ describe('ES2 accessible in-game world-art gallery', () => {
     wrapper.unmount()
   })
 
-  it('displays all 17 review-state UI illustrations without awarding achievements', () => {
+  it('displays all 17 approved UI illustrations without obsolete QA notices', () => {
     const wrapper = render('achievements')
     expect(wrapper.findAll('[data-es2-world-ui]')).toHaveLength(17)
-    expect(wrapper.text()).toContain('已通過人工美術驗收')
+    expect(wrapper.text()).not.toContain('已通過人工美術驗收')
     wrapper.unmount()
   })
 
@@ -59,7 +59,7 @@ describe('ES2 accessible in-game world-art gallery', () => {
       expect(card.get('img').attributes('alt'), id).toBe(chinese + ' 裝飾圖案')
       expect(card.attributes('data-es2-world-ui')).toBe(id)
     }
-    expect(wrapper.text()).toContain('已通過人工美術驗收')
+    expect(wrapper.text()).not.toContain('已通過人工美術驗收')
 
     setLocale('en', storage)
     await nextTick()
@@ -68,7 +68,7 @@ describe('ES2 accessible in-game world-art gallery', () => {
       expect(card.get('strong').text(), id).toBe(english)
       expect(card.get('img').attributes('alt'), id).toBe(english + ' decorative artwork')
     }
-    expect(wrapper.text()).toContain('passed human visual review')
+    expect(wrapper.text()).not.toContain('passed human visual review')
     wrapper.unmount()
   })
 })
