@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { BALANCE } from './config'
 import { JOB, MAX_LEVEL, MAX_MOBS, BOSS_TIME, DURATION } from './constants'
@@ -16,6 +17,20 @@ import { spawnInterval, spawnMob } from './spawn'
 const hooks = { sfx: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), end: vi.fn() }
 
 describe('single-source numerical game balance', () => {
+  it('loads thirteen independent domain JSON files without changing the existing BALANCE API', () => {
+    const domains = [
+      'world', 'heroes', 'progression', 'skills', 'weapons', 'events', 'enemies',
+      'combat', 'evolutions', 'modes', 'bosses', 'relics', 'meta',
+    ] as const
+    expect(Object.keys(BALANCE).sort()).toEqual([...domains].sort())
+    for (const domain of domains) {
+      const file = new URL(`./balance/${domain}.json`, import.meta.url)
+      expect(existsSync(file), `${domain}.json must be independently editable`).toBe(true)
+      expect(BALANCE[domain]).toEqual(JSON.parse(readFileSync(file, 'utf8')))
+    }
+    expect(existsSync(new URL('./balance/balance.json', import.meta.url))).toBe(false)
+  })
+
   it('keeps all six hero starting stats in one typed configuration', () => {
     for (const id of ['knight', 'ranger', 'wizard'] as const) {
       const expected = BALANCE.heroes.classic[id]
