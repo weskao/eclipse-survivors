@@ -18,6 +18,7 @@ export interface CombatHudSnapshot {
 export interface CombatHudFeed {
   readonly snapshot?: CombatHudSnapshot
   readonly boss?: { readonly name: string; readonly phase?: number; readonly totalPhases?: number; readonly offscreen?: BossPointer }
+  readonly bossWarning?: { readonly name: string; readonly seconds: number; readonly progress: number; readonly urgent: boolean; readonly color: string }
   readonly wave?: { readonly number: number; readonly announcement?: string; readonly progressPct?: number }
   readonly combo?: { readonly count: number }
   readonly relics?: readonly {
@@ -57,6 +58,7 @@ export interface CombatHudView {
   readonly timer: string
   readonly objective: string
   readonly boss: { readonly percent: number; readonly name: string; readonly phase?: number; readonly totalPhases?: number; readonly offscreen?: BossPointer } | null
+  readonly bossWarning?: { readonly name: string; readonly seconds: number; readonly progress: number; readonly urgent: boolean; readonly color: string }
   readonly skills: readonly HudSkill[]
   readonly wave?: CombatHudFeed['wave']
   readonly combo?: CombatHudFeed['combo']
@@ -111,6 +113,10 @@ export function projectCombatHud(
       totalPhases,
       ...(live.boss?.offscreen ? { offscreen: live.boss.offscreen } : {}),
     },
+    bossWarning: hud.bossPct === null && live.bossWarning && Number.isInteger(live.bossWarning.seconds)
+      && live.bossWarning.seconds >= 0 && live.bossWarning.seconds <= 15
+      ? { ...live.bossWarning, progress: Math.max(0, Math.min(1, live.bossWarning.progress)) }
+      : undefined,
     skills: hud.skills.map(skill => ({
       ...skill,
       cooldown: Number.isFinite(skill.cooldown) ? Math.max(0, skill.cooldown) : 0,
