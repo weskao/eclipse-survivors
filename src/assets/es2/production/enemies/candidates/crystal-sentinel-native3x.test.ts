@@ -46,7 +46,9 @@ describe('Crystal Sentinel six-pose 3x QA candidate (not production release)', (
   it('exposes a side-by-side candidate in the isolated browser QA page, leaving the default gameplay art untouched', () => {
     const source = readFileSync(join(parent, 'qa-preview.ts'), 'utf8')
     expect(source).toContain('crystalSentinelCandidate')
-    expect(source).toContain('crystal-sentinel-6poses-QA-PENDING.webp')
+    expect(source).toContain("import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'")
+    expect(source).toContain("const candidateImage = await load(proposal.runtime.file, true)")
+    expect(source).toContain("const candidateUrls = import.meta.glob('./candidates/*.webp'")
     const canonical = manifest.assets.find(a => a.id === 'crystal-sentinel')
     expect(canonical).toBeDefined()
     expect(canonical?.path).toBe('crystal-sentinel-body@3x.webp')
