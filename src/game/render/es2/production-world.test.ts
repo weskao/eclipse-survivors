@@ -90,6 +90,21 @@ describe('ES2 world art live asset mapping', () => {
     expect(calls).toHaveLength(2)
   })
 
+  it('rejects fractional and non-finite boss phases rather than sampling neighboring atlas cells', () => {
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    for (const invalid of [NaN, Infinity, -Infinity, 0, 1.5, 2.5, 4]) {
+      expect(drawProductionBossFrame(ctx, loaded(2268, 756), invalid as 1 | 2 | 3, 236, 246, 16), String(invalid)).toBe(false)
+    }
+    expect(calls).toHaveLength(0)
+    for (const valid of [1, 2, 3] as const) {
+      expect(drawProductionBossFrame(ctx, loaded(2268, 756), valid, 236, 246, 16)).toBe(true)
+    }
+    expect(calls.map(call => call.slice(1, 5))).toEqual([
+      [16, 16, 724, 724], [772, 16, 724, 724], [1528, 16, 724, 724],
+    ])
+  })
+
   it('loads the native Abyss Monarch art only on explicit QA request and crops its gutters', () => {
     const makeImage = (): HTMLImageElement => ({
       complete: true, naturalWidth: 2268, naturalHeight: 756, src: '',
