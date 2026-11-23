@@ -15,8 +15,10 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: es2-hero-animation-video-${{ github.ref }}
-  cancel-in-progress: true
+  # Capture evidence belongs to its exact commit SHA; concurrent branch pushes
+  # must not cancel footage while Chromium is already recording.
+  group: es2-hero-animation-video-${{ github.sha }}
+  cancel-in-progress: false
 jobs:
   capture:
     runs-on: ubuntu-24.04
@@ -47,7 +49,8 @@ jobs:
         run: |
           pnpm dev --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-hero-qa-dev.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
-          curl -fsS http://127.0.0.1:4174/@vite/client | grep -q 'vite'
+          curl -fsS http://127.0.0.1:4174/@vite/client -o /tmp/es2-hero-qa-vite-client.js
+          grep -q 'vite' /tmp/es2-hero-qa-vite-client.js
           PREVIEW_URL=http://127.0.0.1:4174/ ES2_HERO_QA=1 node scripts/es2-hero-animation-video.mjs
       - uses: actions/upload-artifact@v4
         if: always()
