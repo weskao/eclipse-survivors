@@ -24,11 +24,13 @@ jobs:
         run: pnpm exec vitest run src/game/boss-art-qa-scenario.test.ts src/game/render/es2/production-world.test.ts src/assets/es2/production/bosses/candidates/
       - run: pnpm typecheck
       - name: Install Chromium
+        if: success() || failure()
         run: |
           node scripts/generate-menu-theme.mjs
           npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
           ../node_modules/.bin/playwright install --with-deps chromium
       - name: Capture four Bosses in three real Canvas phases across viewports
+        if: success() || failure()
         run: |
           pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-boss-dev.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
