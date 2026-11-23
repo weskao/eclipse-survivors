@@ -57,6 +57,8 @@ export interface Mob {
   ai?: EnemyBrain
   elite?: boolean
   bossPhase?: 1 | 2 | 3
+  /** One-bit controller cue; renderer animates without changing combat hitboxes. */
+  bossMoving?: boolean
   summonedByBoss?: boolean
 }
 
