@@ -137,7 +137,8 @@ describe('ES2 dedicated hero special action', () => {
       expect(button.attributes('data-ready')).toBe('false')
     }
     const css = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
-    expect(css).toContain('es2-special-orbit')
+    expect(css).toContain('es2-special-sheen')
+    expect(css).not.toContain('es2-special-orbit')
     expect(css).toContain('@media (prefers-reduced-motion: reduce)')
   })
 
