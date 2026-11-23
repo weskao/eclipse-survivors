@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { BALANCE } from '../game/config'
 import { BALANCE, researchCost } from '../game/config'
 import { createProfileStore, migrateProfile, SAVE_KEY } from './profile'
 import type { RunStats } from './types'

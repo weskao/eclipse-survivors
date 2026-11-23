@@ -22,6 +22,27 @@ describe('ES2 v3 progression UI adapter', () => {
     }
   })
 
+  it('shows all five research ranks and permits the fifth purchase before showing max rank', async () => {
+    const state = createMetaState()
+    state.embers = 50_000
+    for (const id of Object.keys(BALANCE.meta.research)) state.research[id] = 4
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    for (const id of Object.keys(BALANCE.meta.research)) {
+      const button = wrapper.get(`[data-research="${id}"]`)
+      expect(button.attributes('disabled'), id).toBeUndefined()
+      expect(button.element.closest('article')?.textContent, id).toContain('4 / 5')
+    }
+    const maxState = structuredClone(state)
+    for (const id of Object.keys(BALANCE.meta.research)) maxState.research[id] = 5
+    await wrapper.setProps({ state: maxState })
+    for (const id of Object.keys(BALANCE.meta.research)) {
+      const button = wrapper.get(`[data-research="${id}"]`)
+      expect(button.attributes('disabled'), id).toBeDefined()
+      expect(button.element.closest('article')?.textContent, id).toContain('5 / 5')
+    }
+    wrapper.unmount()
+  })
+
   it('renders immutable researched ranks, wallet, mastery, and achievement status', () => {
     const state = createMetaState()
     state.embers = 300

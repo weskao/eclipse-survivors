@@ -1,6 +1,5 @@
 import { BALANCE } from '../../config'
 import { describe, expect, it } from 'vitest'
-import { BALANCE } from '../../config'
 import { emptyProfile } from '../../../meta/profile'
 import type { RunStats } from '../../../meta/types'
 import {
@@ -62,12 +61,38 @@ describe('isolated permanent meta progression', () => {
     expect(second.state.achievements.filter(x => x === 'first-victory')).toHaveLength(1)
   })
 
+  it('offers exactly five ranks for every permanent research without rejecting old rank-four saves', () => {
+    const rankFour = createMetaState()
+    rankFour.embers = 50_000
+    for (const def of RESEARCH) rankFour.research[def.id] = 4
+    expect(validateMetaState(rankFour)).toBe(true)
+
+    for (const def of RESEARCH) {
+      expect(def.maxRank).toBe(5)
+      const before = getResearchStates(rankFour).find(item => item.id === def.id)!
+      const config = BALANCE.meta.research[def.id as keyof typeof BALANCE.meta.research]
+      const fifthCost = config.firstCost + 4 * config.costStep
+        + Math.max(0, 4 - config.lateCostStartRank) ** 2 * config.lateCostStep
+      expect(before.rank).toBe(4)
+      expect(before.nextCost).toBe(fifthCost)
+      expect(before.canBuy).toBe(true)
+      const purchase = buyResearch(rankFour, def.id)
+      expect(purchase.ok).toBe(true)
+      expect(purchase.state.research[def.id]).toBe(5)
+      expect(purchase.state.embers).toBe(rankFour.embers - fifthCost)
+      expect(validateMetaState(purchase.state)).toBe(true)
+      expect(getResearchStates(purchase.state).find(item => item.id === def.id)?.nextCost).toBeNull()
+      expect(buyResearch(purchase.state, def.id).ok).toBe(false)
+    }
+    expect(Object.values(rankFour.research).every(rank => rank === 4)).toBe(true)
+  })
+
   it('uses all five configurable research caps and escalating late-stage prices', () => {
     for (const def of RESEARCH) {
       const cfg = BALANCE.meta.research[def.id as keyof typeof BALANCE.meta.research]
       expect(def.maxRank).toBe(cfg.maxRank)
       expect(def.benefitPerRank).toBe(cfg.benefitPerRank)
-      expect(def.maxRank).toBeGreaterThanOrEqual(def.id === 'power' || def.id === 'vitality' ? 5 : 4)
+      expect(def.maxRank).toBe(5)
     }
     let state = { ...createMetaState(), embers: 50_000 }
     for (const id of ['power', 'vitality', 'insight', 'scavenging', 'ember-study'] as const) {
