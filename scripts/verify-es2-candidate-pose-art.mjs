@@ -13,7 +13,17 @@ for (const [key, entry] of entries) {
   const [hero, pose] = key.split(':')
   if (!heroes.has(hero) || !poses.has(pose) || entry.hero !== hero || entry.pose !== pose) throw new Error(`Invalid hero/pose: ${key}`)
   if (entry.direction !== 'E' || entry.frames !== 4 || entry.QA !== 'QA_PENDING' || entry.runtimeApplied !== false || entry.native3x !== 'unverified') throw new Error(`Incorrect candidate approval or direction: ${key}`)
-  if (entry.frameQA.length !== 4 || entry.allSourceEdgesSafe !== entry.frameQA.every(f => !f.sourceEdgeOccupied)) throw new Error(`Source cropping review is incomplete: ${key}`)
+  const [cellWidth, cellHeight] = entry.originalCellPixels
+  if (entry.frameQA.length !== 4 || entry.frameQA.some(f => {
+    if (!Array.isArray(f.sourceAlphaBBox) || f.sourceAlphaBBox.length !== 4) return true
+    const [left, top, right, bottom] = f.sourceAlphaBBox
+    const risk = f.sourceEdgeOccupied || left <= 0 || top <= 0 ||
+      right >= cellWidth || bottom >= cellHeight
+    return f.sourceClippingRisk !== risk
+  }) || entry.allSourceEdgesSafe !== entry.frameQA.every(f => !f.sourceClippingRisk) ||
+    entry.sourceClippingRiskFrames?.join(',') !== entry.frameQA
+      .filter(f => f.sourceClippingRisk).map(f => f.index).join(','))
+    throw new Error(`Source cropping review is inaccurate: ${key}`)
   const path = resolve(root, entry.file)
   if (!path.startsWith(resolve(root, folder) + '/')) throw new Error(`Unsafe path: ${key}`)
   const buf = readFileSync(path)
