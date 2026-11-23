@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { computed, nextTick } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import type { HeroId, JobId } from '../../../game/types'
@@ -33,6 +33,15 @@ const links: readonly { id: MenuView; name: string; icon: string }[] = [
   { id: 'monsters', name: '魔物圖鑑', icon: '♜' }, { id: 'skills', name: '技能圖鑑', icon: '✦' },
   { id: 'achievements', name: '成就殿堂', icon: '♛' },
 ]
+const mobileHeroGroup = ref<'classic' | 'new'>(heroes.some(hero => hero.id === (props.heroId ?? props.choice)) ? 'classic' : 'new')
+const mobileModeGroup = ref<'classic' | 'objective'>(objectiveSelection.value ? 'objective' : 'classic')
+const archiveOpen = ref(false)
+watch(() => props.heroId ?? props.choice, id => {
+  mobileHeroGroup.value = heroes.some(hero => hero.id === id) ? 'classic' : 'new'
+})
+watch(() => props.runMode, () => {
+  mobileModeGroup.value = objectiveSelection.value ? 'objective' : 'classic'
+})
 async function moveChoice(event: KeyboardEvent, value: string, items: readonly string[], selector: string, update: (id: string) => void): Promise<void> {
   const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0
   if (!direction) return
@@ -47,7 +56,9 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveChoice(ev
 const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoice(event, id, modeIds, '.es2-mode-card', next => emit('mode', next as RunModeId)) }
 </script>
 <template>
-  <main class="es2-menu" :aria-label="t('Eclipse Survivors 主選單')">
+  <main class="es2-menu" :class="{ 'es2-mobile-archive-open': archiveOpen }"
+    :data-mobile-heroes="mobileHeroGroup" :data-mobile-modes="mobileModeGroup"
+    :aria-label="t('Eclipse Survivors 主選單')">
     <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div class="es2-menu-shell">
       <header class="es2-menu-header">
@@ -60,9 +71,16 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
       <div class="es2-menu-layout">
         <section class="es2-hero-section" aria-labelledby="es2HeroTitle">
           <div class="es2-section-heading"><span>{{ t('01 / 命運繼承者') }}</span><h2 id="es2HeroTitle">{{ t("選擇命運的繼承者") }}</h2><p>{{ t("每位英雄都擁有專屬的戰鬥風格。") }}</p></div>
+          <div class="es2-mobile-switch" role="group" :aria-label="t('英雄類別')">
+            <button type="button" data-es2-mobile-hero-tab="classic" :aria-pressed="mobileHeroGroup === 'classic'"
+              @click="mobileHeroGroup = 'classic'">{{ t('經典英雄') }}</button>
+            <button type="button" data-es2-mobile-hero-tab="new" :aria-pressed="mobileHeroGroup === 'new'"
+              @click="mobileHeroGroup = 'new'">{{ t('新增英雄') }}</button>
+          </div>
           <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
             <button v-for="hero in heroes" :key="hero.id" type="button" :data-hero="hero.id" class="es2-hero-card"
               :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
+              :aria-label="t(hero.name) + ' · ' + t(hero.role)"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
               <span class="es2-hero-number">{{ hero.number }} / {{ t('HERO') }}</span>
               <img :src="ART_URLS[hero.id]" :alt="t(hero.name + ' 原始角色插畫')" decoding="async" draggable="false" />
@@ -74,6 +92,12 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         </section>
         <section class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
+          <div class="es2-mobile-switch" role="group" :aria-label="t('遠征類別')">
+            <button type="button" data-es2-mobile-mode-tab="classic" :aria-pressed="mobileModeGroup === 'classic'"
+              @click="mobileModeGroup = 'classic'">{{ t('一般遠征') }}</button>
+            <button type="button" data-es2-mobile-mode-tab="objective" :aria-pressed="mobileModeGroup === 'objective'"
+              @click="mobileModeGroup = 'objective'">{{ t('特殊試煉') }}</button>
+          </div>
           <div class="es2-mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
             <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" class="es2-mode-card"
               :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
@@ -84,11 +108,18 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
             </button>
           </div>
           <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
+          <p class="es2-mobile-selected-mode" aria-live="polite">{{ t(MODES[runMode].label) }} · {{ t(MODES[runMode].description) }}</p>
           <button class="es2-primary es2-start" type="button" @click="emit('start')">{{ t("踏入幽暮之門") }} <span aria-hidden="true">✦</span></button>
           <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
         </section>
       </div>
-      <footer class="es2-menu-footer"><div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div><span class="es2-embers">✧ {{ profile?.embers ?? 0 }} {{ t("暮光餘燼") }}</span></footer>
+      <footer class="es2-menu-footer">
+        <button class="es2-mobile-archive-toggle" type="button" data-es2-mobile-archive-toggle
+          :aria-expanded="archiveOpen" aria-controls="es2-menu-archives"
+          @click="archiveOpen = !archiveOpen">{{ t('冒險者殿堂') }} {{ archiveOpen ? '−' : '+' }}</button>
+        <div id="es2-menu-archives" class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" @click="emit('navigate', link.id); archiveOpen = false"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
+        <span class="es2-embers">✧ {{ profile?.embers ?? 0 }} {{ t("暮光餘燼") }}</span>
+      </footer>
     </div>
   </main>
 </template>

@@ -90,17 +90,16 @@
 .es2-hud__counter small { grid-column: 2; color: #bdbaad; letter-spacing: .1em; font-size: 8px; }
 .es2-hud__counter--combo > span:nth-child(2) { color: #ffdd9c; }
 .es2-hud__controls { display: flex; padding: 4px; gap: 4px; pointer-events: auto; }
-.es2-hud__controls button {
-  display: grid; place-items: center; padding: 0; width: 44px; min-height: 44px;
+.es2-hud__controls .es2-hud__control-button {
+  display: grid; place-items: center; flex: 0 0 44px; padding: 0; width: 44px; min-width: 44px; height: 44px; min-height: 44px;
   border: 1px solid #ac9065a9; border-radius: 8px;
   background: linear-gradient(#384253, #171d2c);
   color: #fff0cc; cursor: pointer; font: 750 20px/1 system-ui, sans-serif;
   transition: transform .15s ease, border-color .15s ease, background .15s ease;
 }
-.es2-hud__controls .audio-trigger { min-width: 44px; min-height: 44px; border-radius: 8px; }
-.es2-hud__controls button:hover { transform: translateY(-1px); border-color: #ffe5aa; background: #44536a; }
-.es2-hud__controls button:active { transform: translateY(1px); }
-.es2-hud__controls button[aria-pressed="false"] { color: #a9b2c1; background: #141a28; }
+.es2-hud__controls .es2-hud__control-button:hover { transform: translateY(-1px); border-color: #ffe5aa; background: #44536a; }
+.es2-hud__controls .es2-hud__control-button:active { transform: translateY(1px); }
+.es2-hud__controls .es2-hud__control-button[aria-pressed="false"] { color: #a9b2c1; background: #141a28; }
 .es2-hud button:focus-visible { outline: 3px solid #fff0bc; outline-offset: 3px; z-index: 2; }
 .es2-hud__map { padding: 10px; }
 .es2-hud__map canvas { display: block; width: 152px; height: 110px; border: 1px solid #93866e; border-radius: 5px; background: #121a27; }
@@ -221,7 +220,7 @@
   .es2-hud__track--xp { height: 6px; }
   .es2-hud__top-right { display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 5px; }
   .es2-hud__controls { padding: 2px; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 104px; }
-  .es2-hud__controls button { width: 44px; min-height: 44px; font-size: 17px; }
+  .es2-hud__controls .es2-hud__control-button { width: 44px; min-height: 44px; font-size: 17px; }
   .es2-hud__counters { padding: 4px; gap: 3px; }
   .es2-hud__counter { min-width: 38px; grid-template-columns: 12px auto; }
   .es2-hud__counter > span:nth-child(2) { font-size: 11px; }
@@ -244,7 +243,7 @@
 @media (max-width: 400px) {
   .es2-hud__hero { width: min(54vw, 205px); gap: 5px; padding: 6px; }
   .es2-hud__top-right .es2-hud__counters { max-width: 120px; }
-  .es2-hud__controls button { width: 44px; }
+  .es2-hud__controls .es2-hud__control-button { width: 44px; }
   /* Keep the selected hero recognizable on 320px–400px phone screens. */
   .es2-hud__portrait { display: block; width: 38px; height: 48px; flex: 0 0 38px; }
   .es2-hud__portrait-corner { font-size: 11px; }
@@ -287,7 +286,7 @@
   .es2-hud__bottom { bottom: max(7px, env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .es2-hud, .es2-hud__track > span, .es2-hud__skill, .es2-hud__controls button, .es2-hud__cooldown { transition: none; }
+  .es2-hud, .es2-hud__track > span, .es2-hud__skill, .es2-hud__controls .es2-hud__control-button, .es2-hud__cooldown { transition: none; }
   .es2-hud__notice { animation: none; }
 }
 

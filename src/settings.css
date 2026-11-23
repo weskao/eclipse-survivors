@@ -64,7 +64,7 @@
 /* Shared contextual volume control, kept in the viewport layer to avoid clipping. */
 .audio-control{display:inline-flex;align-items:center;pointer-events:auto}
 .audio-trigger{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:40px;min-height:36px;padding:7px 12px;color:#f5e2bb;border:1px solid #bda16f9c;border-radius:8px;background:linear-gradient(160deg,#344454,#192334);box-shadow:inset 0 1px 0 #ffffff25,0 3px 10px #0008;cursor:pointer;font:750 12px/1 system-ui,sans-serif;letter-spacing:.6px}
-.audio-trigger.compact{width:32px;min-width:32px;min-height:32px;padding:5px;border-radius:7px}
+.audio-trigger.compact:not(.es2-hud__control-button){width:32px;min-width:32px;min-height:32px;padding:5px;border-radius:7px}
 .audio-trigger:hover,.audio-trigger[aria-expanded="true"]{color:#fff4d6;border-color:#f1d291;box-shadow:inset 0 0 12px #f5bd6542,0 0 13px #c4984d5c}
 .audio-trigger:focus-visible,.audio-popover :is(button,input):focus-visible{outline:3px solid #ffe0a0;outline-offset:2px}
 #hud .chip .audio-trigger{border:1px solid #bda16f85;background:#222c39;min-height:30px;min-width:30px;padding:4px}

@@ -15,6 +15,7 @@ const emit = defineEmits<{ select: [mode: ObjectiveModeId] }>()
         type="button" role="radio" class="es2-objective-choice"
         :data-objective-mode="id" :disabled="disabled"
         :aria-checked="value === id"
+        :aria-label="[t(getObjectiveMode(id).title), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(t)].join(' · ')"
         :class="{ selected: value === id }"
         @click="emit('select', id)"
       >

@@ -34,6 +34,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
     <button v-for="hero in heroes" :key="hero.id" type="button" class="es2-roster__card"
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
+      :aria-label="[t(hero.label), t(hero.subtitle), t(hero.description), t(hero.strengths.join(' / ')), t(hero.weaknesses.join(' / '))].join(' · ')"
       @click="select(hero.id)" @keydown="move($event, hero.id)">
       <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${PRODUCTION_HERO_ACTION_SOURCES[hero.id]})` }" aria-hidden="true"></span>
       <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="t(hero.label + ' 角色插畫')" />

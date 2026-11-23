@@ -85,7 +85,7 @@ onBeforeUnmount(detach)
       ref="trigger"
       type="button"
       class="audio-trigger"
-      :class="{ compact }"
+      :class="{ compact, 'es2-hud__control-button': context === 'hud' }"
       :aria-expanded="opened"
       :aria-controls="id('AudioPopover')"
       :aria-label="t('音量與音效調整')"
