@@ -45,6 +45,39 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(args.some(a=>a[0]===warning && a.slice(1,5).join() === '0,0,144,144')).toBe(true)
   })
 
+  it('prefers the committed 512px authored assassin master frames, keeping size and foot anchor', () => {
+    const state=createState(); resetRun(state); state.W=900; state.H=600
+    const runtime=createFactionRuntime()
+    const enemy=spawnFactionEnemy(runtime,'shadow-assassin',120,110)!
+    enemy.state='attack'
+    const body=loaded(1296,216), master=loaded(1536,1024)
+    const images={ 'shadow-assassin':{body,telegraph:loaded(150,150),highResBody:master} } as FactionArtwork
+    const args:unknown[][]=[]
+    const {ctx}=createFakeCtx()
+    const draw=ctx.drawImage.bind(ctx)
+    ctx.drawImage=((...items:unknown[])=>{args.push(items);Reflect.apply(draw,ctx,items)}) as typeof ctx.drawImage
+    expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
+    const art=args.find(a=>a[0] === master)
+    expect(art?.slice(1,5)).toEqual([0,512,512,512]) // frame 3 is row 2 col 1
+    expect(art?.slice(5)).toEqual([-46,-87,92,92])
+    expect(args.some(a=>a[0]===body)).toBe(false)
+  })
+
+  it('uses existing approved geometry when the high-detail source is not decoded or malformed', () => {
+    const state=createState(); resetRun(state);state.W=900;state.H=600
+    const runtime=createFactionRuntime()
+    const enemy=spawnFactionEnemy(runtime,'shadow-assassin',120,110)!
+    enemy.state='attack'
+    const body=loaded(1296,216)
+    const images={ 'shadow-assassin':{body,telegraph:loaded(150,150),highResBody:loaded(1535,1024)} } as FactionArtwork
+    const args:unknown[][]=[]
+    const {ctx}=createFakeCtx()
+    const draw=ctx.drawImage.bind(ctx)
+    ctx.drawImage=((...items:unknown[])=>{args.push(items);Reflect.apply(draw,ctx,items)}) as typeof ctx.drawImage
+    expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
+    expect(args.some(a=>a[0]===body && a.slice(1,5).join() === '648,0,216,216')).toBe(true)
+  })
+
   it('never paints offscreen, dead or malformed source sheets', () => {
     const state=createState(); resetRun(state);state.W=200;state.H=200
     const runtime=createFactionRuntime()
