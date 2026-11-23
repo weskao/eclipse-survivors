@@ -34,6 +34,16 @@ describe('impact', () => {
     impact(s, 0, 0, 200, '#fff', 3)
     expect(s.cameraKick).toBeGreaterThan(0)
     expect(s.cameraKick).toBeLessThanOrEqual(1.6)
+    // A crowd of simultaneous heavy impacts should never create a continuous shake.
+    s.cameraKick = 0
+    for (let i = 0; i < 50; i++) {
+      s.worldClock += 0.01
+      impact(s, i, 0, 120, '#fff', 3)
+    }
+    expect(s.cameraKick).toBe(0)
+    s.worldClock += 0.7
+    impact(s, 0, 0, 120, '#fff', 3)
+    expect(s.cameraKick).toBeGreaterThan(0)
   })
 })
 
