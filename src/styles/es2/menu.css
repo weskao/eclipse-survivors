@@ -164,9 +164,9 @@
 @media(max-height:570px){.es2-dialog{max-height:calc(100dvh - max(6px,env(safe-area-inset-top)) - max(6px,env(safe-area-inset-bottom)));padding:15px}.es2-dialog-header{margin-bottom:12px}}
 @media(prefers-reduced-motion:reduce){.es2-system *, .es2-backdrop *, .es2-loading *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.es2-choice:hover,.es2-hero-card:hover{transform:none}}
 
-/* Eight isolated 448px frames from locally committed 3x WebP strips. */
-.es2-hero-action-preview{position:absolute;right:9px;top:9px;z-index:1;width:64px;height:64px;pointer-events:none;border-radius:10px;background-repeat:no-repeat;background-size:800% 100%;background-position:0 0;background-color:#08101ab8;border:1px solid #dac89c55;box-shadow:0 1px 12px #03050977;animation:es2-hero-action-frames 2.4s steps(8,jump-none) infinite}
-@keyframes es2-hero-action-frames{to{background-position:100% 0}}
+/* Same 448px action cells as gameplay: first 8 run poses in the 4×4 atlas. */
+.es2-hero-action-preview{position:absolute;right:9px;top:9px;z-index:1;width:64px;height:64px;pointer-events:none;border-radius:10px;background-repeat:no-repeat;background-size:400% 400%;background-position:0% 0%;background-color:#08101ab8;border:1px solid #dac89c55;box-shadow:0 1px 12px #03050977;animation:es2-hero-action-frames 2.4s steps(1,end) infinite}
+@keyframes es2-hero-action-frames{0%{background-position:0% 0%}12.5%{background-position:33.333% 0%}25%{background-position:66.667% 0%}37.5%{background-position:100% 0%}50%{background-position:0% 33.333%}62.5%{background-position:33.333% 33.333%}75%{background-position:66.667% 33.333%}87.5%{background-position:100% 33.333%}100%{background-position:0% 0%}}
 @media(max-width:610px){.es2-hero-action-preview{width:42px;height:42px;right:4px;top:5px;border-radius:6px}}
 @media(prefers-reduced-motion:reduce){.es2-hero-action-preview{animation:none}}
 
