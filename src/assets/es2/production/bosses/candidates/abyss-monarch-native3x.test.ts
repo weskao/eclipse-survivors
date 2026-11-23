@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -17,7 +17,7 @@ const qa = JSON.parse(readFileSync(join(dir, 'abyss-monarch-native3x-QA.json'), 
     cellWidth: number; cellHeight: number; transparentGutterPx: number
     sourceRect: { insetX: number; insetY: number; width: number; height: number }
   }
-  source: { drawnFramePixels: number; upscaledFromExisting192px: boolean; masterCommittedToRepo: boolean }
+  source: { drawnFramePixels: number; upscaledFromExisting192px: boolean; masterCommittedToRepo: boolean; masterFile: string; masterBytes: number; masterSha256: string; originalGeneratedSheetPixels: { width: number; height: number } }
   runtimeTarget: { maxDrawPx: number; requiredNativeSourceDetailPx: number; active: boolean }
   acceptance: { humanArtApproval: string; inGame1xScreenshot: string }
 }
@@ -30,7 +30,21 @@ describe('ES2 bosses: native-detail Abyss Monarch candidate (NOT approved)', () 
     expect(qa.acceptance.humanArtApproval).toBe('pending')
     expect(qa.acceptance.inGame1xScreenshot).toBe('pending')
     expect(qa.source.upscaledFromExisting192px).toBe(false)
-    expect(qa.source.masterCommittedToRepo).toBe(false)
+  })
+
+  it('retains the original authored PNG master instead of an upscaled 192px sprite', () => {
+    expect(qa.source.masterCommittedToRepo).toBe(true)
+    expect(qa.source.masterFile).toMatch(/^[a-z0-9-]+\.png$/)
+    const path = join(dir, qa.source.masterFile)
+    expect(existsSync(path), 'Missing full-resolution PNG source master').toBe(true)
+    const bytes = readFileSync(path)
+    expect(bytes.length).toBe(qa.source.masterBytes)
+    expect(bytes.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+    expect(bytes.readUInt32BE(16)).toBe(qa.source.originalGeneratedSheetPixels.width)
+    expect(bytes.readUInt32BE(20)).toBe(qa.source.originalGeneratedSheetPixels.height)
+    expect(createHash('sha256').update(bytes).digest('hex')).toBe(qa.source.masterSha256)
+    expect(qa.source.drawnFramePixels * 3).toBe(qa.source.originalGeneratedSheetPixels.width)
+    expect(qa.source.drawnFramePixels).toBe(qa.source.originalGeneratedSheetPixels.height)
   })
 
   it('has exact WebP bytes, alpha, dimensions, SHA-256 and budget', () => {

@@ -31,8 +31,10 @@
     },
     "drawnFramePixels": 724,
     "upscaledFromExisting192px": false,
-    "masterCommittedToRepo": false,
-    "masterFile": "a_high_detail_fantasy_concept_art_spritesheet_illu.png"
+    "masterCommittedToRepo": true,
+    "masterFile": "abyss-monarch-native3x-master.png",
+    "masterBytes": 2466254,
+    "masterSha256": "1dc293d210d16ae63b0f2e03ebd9f5db17065069f92b1ffc6c6b9453ee4968f2"
   },
   "runtimeTarget": {
     "maxDrawPx": 236,
@@ -53,6 +55,6 @@
     "inGame1xScreenshot": "pending",
     "desktopAndMobilePortraitLandscape": "pending",
     "humanArtApproval": "pending",
-    "note": "DO NOT mark approved or switch consumer until human identity, phase and live Canvas checks. Full-resolution source generated locally but not preserved in Git repo."
+    "note": "Source PNG and transparent WebP candidate are both in Git with verified SHA; do not promote until visual identity, three-phase continuity, real Canvas 1x/screenshots and human QA."
   }
 }
