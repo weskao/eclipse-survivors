@@ -13,7 +13,7 @@ export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   while (hero.xp >= hero.need) {
     hero.xp -= hero.need
     hero.level++
-    hero.need = Math.round(hero.need * 1.26 + 7)
+    hero.need = Math.round(hero.need * 1.26 + 5.6)
     s.levelQueue++
     hero.levelAnim = 1.1
     impact(s, hero.x, hero.y, 88, '#ffe1a8', 1.8)
