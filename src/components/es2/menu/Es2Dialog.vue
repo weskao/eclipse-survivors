@@ -21,8 +21,19 @@ function restoreFocus(): void {
   if (previousFocus?.isConnected) previousFocus.focus()
   previousFocus = null
 }
+// Choice cards accept pointer clicks and 1–9 shortcuts only; Space/Enter must
+// not synthesize a native click on whichever button happens to have focus.
+function suppressChoiceActivation(event: KeyboardEvent): boolean {
+  if (!props.active || props.variant !== 'choice' ||
+      !(event.code === 'Space' || event.code === 'Enter' || event.code === 'NumpadEnter' ||
+        event.key === ' ' || event.key === 'Enter')) return false
+  event.preventDefault()
+  event.stopPropagation()
+  return true
+}
+function onKeyup(event: KeyboardEvent): void { suppressChoiceActivation(event) }
 function onKeydown(event: KeyboardEvent): void {
-  if (!props.active) return
+  if (!props.active || suppressChoiceActivation(event)) return
   if (event.key === 'Escape') {
     event.preventDefault()
     event.stopImmediatePropagation()
@@ -59,8 +70,16 @@ function onKeydown(event: KeyboardEvent): void {
 }
 function onOutside(): void { if (props.dismissible) emit('cancel') }
 watch(() => props.active, active => { if (active) void focusIn(); else restoreFocus() }, { flush: 'post' })
-onMounted(() => { document.addEventListener('keydown', onKeydown); if (props.active) void focusIn() })
-onBeforeUnmount(() => { document.removeEventListener('keydown', onKeydown); restoreFocus() })
+onMounted(() => {
+  document.addEventListener('keydown', onKeydown)
+  document.addEventListener('keyup', onKeyup)
+  if (props.active) void focusIn()
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeydown)
+  document.removeEventListener('keyup', onKeyup)
+  restoreFocus()
+})
 </script>
 <template>
   <Teleport to="body">
