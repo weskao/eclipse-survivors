@@ -6,6 +6,7 @@ interface BiomeCandidate {
   id: string
   frameWidth: number
   frameHeight: number
+  native3x: boolean
 }
 
 const { assets } = JSON.parse(
@@ -18,9 +19,10 @@ const { assets } = JSON.parse(
 const DISPLAY_GROUND = 384
 const DISPLAY_DECOR = 110
 
-describe('ES2 biome candidates: native-3x dimensional admission (RED until reauthored)', () => {
+describe('ES2 biome production art: native-3x source admission', () => {
   it.each(assets)('$id must contain at least three original pixels per runtime pixel', asset => {
     const display = asset.id.endsWith(':ground') ? DISPLAY_GROUND : DISPLAY_DECOR
+    expect(asset.native3x, `${asset.id} explicit authored source flag`).toBe(true)
     expect(asset.frameWidth, `${asset.id} source frame width`).toBeGreaterThanOrEqual(display * 3)
     expect(asset.frameHeight, `${asset.id} source frame height`).toBeGreaterThanOrEqual(display * 3)
   })
