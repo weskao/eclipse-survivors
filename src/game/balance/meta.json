@@ -17,7 +17,7 @@
       "benefitPerRank": 12
     },
     "insight": {
-      "maxRank": 4,
+      "maxRank": 5,
       "firstCost": 80,
       "costStep": 60,
       "lateCostStartRank": 2,
@@ -25,7 +25,7 @@
       "benefitPerRank": 0.01
     },
     "scavenging": {
-      "maxRank": 4,
+      "maxRank": 5,
       "firstCost": 90,
       "costStep": 70,
       "lateCostStartRank": 2,
@@ -33,7 +33,7 @@
       "benefitPerRank": 0.01
     },
     "ember-study": {
-      "maxRank": 4,
+      "maxRank": 5,
       "firstCost": 120,
       "costStep": 90,
       "lateCostStartRank": 2,
