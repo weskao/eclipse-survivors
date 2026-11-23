@@ -1,0 +1,59 @@
+name: ES2 low-health real-game visual QA
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths:
+      - 'src/components/es2/hud/**'
+      - 'src/styles/es2/low-health.css'
+      - 'src/game/balance/world.json'
+      - 'src/game/engine.ts'
+      - 'src/i18n.ts'
+      - 'scripts/es2-low-health-browser-qa.mjs'
+      - '.github/workflows/es2-low-health-visual-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-low-health-visual-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  real-game-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify live-HP classification and reactive UI
+        run: |
+          pnpm exec vitest run src/components/es2/hud/low-health.test.ts
+          pnpm typecheck
+      - name: Install isolated Chromium
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Capture actual game Canvas and responsive combat HUD
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-low-health-vite.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/ >/dev/null
+          node scripts/es2-low-health-browser-qa.mjs
+      - name: Convert real Playwright recordings to MP4
+        if: success() || failure()
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          for source in artifacts/es2-low-health-visual/*-life.webm; do
+            test -f "$source" || continue
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i "$source" -an -c:v libx264 -preset veryfast -crf 23 -pix_fmt yuv420p -movflags +faststart "${source%.webm}.mp4"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-low-health-real-game-png-mp4
+          path: artifacts/es2-low-health-visual/
+          retention-days: 14
+          if-no-files-found: warn
