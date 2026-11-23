@@ -7,6 +7,10 @@ export interface LocaleStorage { getItem(key: string): string | null; setItem(ke
 export const LOCALE_STORAGE_KEY = 'eclipse-survivors-locale'
 
 const english = new Map<string, string>([
+  ["英雄初始數值", "Base hero stats"],
+  ["攻擊力", "Attack"],
+  ["移動速度", "Move speed"],
+  ["攻擊間隔", "Attack interval"],
   ["暴擊!", "CRITICAL!"],
   ["英雄類別", "Hero categories"],
   ["經典英雄", "Classic Heroes"],
