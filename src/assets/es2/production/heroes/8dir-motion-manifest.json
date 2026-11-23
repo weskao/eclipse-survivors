@@ -40,26 +40,38 @@
     "shadowblade": {
       "sha256": "322c62aa5ea29d17d9c32bd053f42f3ecf784170753f8f2bc99d2eb87dcc39f4",
       "sourceSha256": "7e72df06ef7ff47f2309baed77ac3ea4ee5caa80676e67ddfd523834514b0898",
-      "bytes": 1456322
+      "bytes": 1456322,
+      "native3x": false,
+      "status": "QA_PENDING"
     },
     "spirit-summoner": {
       "sha256": "ed75ab5e3eb5f2c9784482bbad9806e6927257997fe504a9bb66b46e6534c03c",
       "sourceSha256": "0a52ac02954ad996f62e632b6dea22cf8f9a6e1fdd221063657f1ce24bc3406c",
-      "bytes": 1762858
+      "bytes": 1762858,
+      "native3x": false,
+      "status": "QA_PENDING"
     },
     "crimson-paladin": {
       "sha256": "0b05b8eaedbd530080b3b82b2aba6965354f4c414a3a2dcc05ac2b80b3525574",
       "sourceSha256": "7f516d1080982d8c4be32aa0b646c5bb833694871800fd9b42bf45cafe800e6a",
-      "bytes": 1692160
+      "bytes": 1692160,
+      "native3x": false,
+      "status": "QA_PENDING"
     }
   },
   "review": {
-    "status": "needs-in-game-QA",
+    "status": "QA_PENDING",
     "notes": [
       "Directional image consistency and hair-color match to 900px portrait require visual approval",
       "Original 198px cells are interpolated into nominal 3x frames",
       "Action frames are east-facing only; W mirrored, six other directions use authentic directional ready poses",
       "Actual device FPS and memory not measured"
     ]
-  }
+  },
+  "nativeSourceFramePixels": [
+    198,
+    198
+  ],
+  "native3x": false,
+  "qualityGate": "QA_PENDING: current 384px output cell was derived from approximately 198px source content; native 3x fine detail has NOT been approved; 8-direction movement/combat sequences are incomplete."
 }
