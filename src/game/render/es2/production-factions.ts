@@ -4,6 +4,7 @@ import type { GameState } from '../../types'
 import { WORLD_ART } from './production-world'
 import { drawFactionTelegraphs } from '../../content/enemies/telegraphs'
 import type { Ctx2D } from '../ctx'
+import { drawProjectileSprite, type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
 
 export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement }>
 
@@ -70,10 +71,20 @@ export function drawLiveFactionArt(
 /** Renderer-only projectiles; no changes to collision, damage or simulation. */
 export function drawLiveFactionProjectiles(
   ctx: Ctx2D, state: GameState, runtime: FactionRuntime, ox: number, oy: number,
+  sprites?: Partial<ProjectileSprites>,
 ): void {
   for (const shot of runtime.projectiles) {
     const x = shot.x + ox, y = shot.y + oy
-    if (x < -32 || y < -32 || x > state.W + 32 || y > state.H + 32) continue
+    if (x < -48 || y < -48 || x > state.W + 48 || y > state.H + 48) continue
+    const art: ProjectileArtId = shot.kind === 'fire-imp' ? 'enemy-ember'
+      : shot.kind === 'dark-archer' ? 'spectral-arrow'
+        : shot.kind === 'frost-wraith' || shot.kind === 'crystal-sentinel' ? 'arcane-bolt' : 'enemy-hex'
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(Math.atan2(shot.vy, shot.vx))
+    const drawn = drawProjectileSprite(ctx, sprites, art, Math.max(34, shot.radius * 3.1))
+    ctx.restore()
+    if (drawn) continue
     ctx.save()
     ctx.fillStyle = ENEMY_DEFINITIONS[shot.kind].telegraphColor
     ctx.beginPath()
