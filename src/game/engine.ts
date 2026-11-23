@@ -17,6 +17,7 @@ import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
+import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
@@ -127,10 +128,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     tick(state: GameState, dt: number, hooks: GameHooks): void { bosses.tick(state, dt, hooks) },
   } : undefined
-  const profileStore = opts.profileStore ?? createProfileStore()
+  // The unlocked mode exists only in Vite dev, and uses disposable saves.
+  // Even a build with VITE_ES2_UNLOCKED=1 cannot enable it in production.
+  const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
+  const profileStore = opts.profileStore ?? createProfileStore(
+    unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : undefined,
+  )
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  const metaStore = opts.profileStore ? null : createMetaProgressionStore()
+  const metaStore = opts.profileStore ? null : createMetaProgressionStore(
+    unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : undefined,
+  )
   function displayProfile() {
     const legacy = profileStore.get()
     const persisted = metaStore?.get()
