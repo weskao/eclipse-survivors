@@ -5,6 +5,8 @@ import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
 import { t } from '../../../i18n'
 import { LOW_HP_PCT } from '../../../game/constants'
+import { lowHealthTier } from './low-health'
+import '../../../styles/es2/low-health.css'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
 import type { HudView } from '../../../game/store'
 import type { HeroId, JobId } from '../../../game/types'
@@ -28,6 +30,8 @@ const props = withDefaults(defineProps<{
 }>(), { audioActive: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
+const lifeTier = computed(() => props.active ? lowHealthTier(view.value.health.percent) : 'normal')
+const lifeMessage = computed(() => lifeTier.value === 'warning' ? '血量偏低' : lifeTier.value === 'critical' ? '生命危急' : '瀕死')
 const selectedId = ref<string | null>(null)
 const hudRoot = shallowRef<HTMLElement | null>(null)
 const infoOpen = ref(false)
@@ -95,13 +99,15 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
 
 <template>
   <!-- Always mount minimap: engine.mount captures its ref before the first run. -->
-  <aside ref="hudRoot" class="es2-hud" :class="{ 'es2-hud--active': active, 'es2-hud--details-open': infoOpen }" :aria-hidden="!active" :inert="!active" :aria-label="t('戰鬥資訊')">
+  <aside ref="hudRoot" class="es2-hud" :class="{ 'es2-hud--active': active, 'es2-hud--details-open': infoOpen }" :data-es2-life-tier="lifeTier" :aria-hidden="!active" :inert="!active" :aria-label="t('戰鬥資訊')">
+    <div v-if="lifeTier === 'critical' || lifeTier === 'emergency'" class="es2-hud__life-vignette" data-es2-life-vignette aria-hidden="true"></div>
     <span data-es2-announcement class="es2-hud__sr-only" role="status" aria-live="polite" aria-atomic="true">{{ t(liveAnnouncement) }}</span>
     <header class="es2-hud__top">
       <div class="es2-hud__hero es2-hud__plate">
         <div class="es2-hud__portrait">
           <HeroPortrait :hero-id="heroId ?? choice" alt="" />
           <span aria-hidden="true" class="es2-hud__portrait-corner">✧</span>
+          <span v-if="lifeTier === 'warning' || lifeTier === 'critical' || lifeTier === 'emergency'" class="es2-hud__life-alert" data-es2-life-alert role="status" :aria-label="t(lifeMessage)"><span aria-hidden="true">♥</span></span>
         </div>
         <div class="es2-hud__vitals">
           <div class="es2-hud__identity">
