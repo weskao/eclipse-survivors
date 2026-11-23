@@ -7,6 +7,7 @@ import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { HeroId, JobId } from '../../../game/types'
 import HeroRoster from '../hero-roster/HeroRoster.vue'
+import HeroStats from '../hero-roster/HeroStats.vue'
 import ModeChooser from '../modes/ModeChooser.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
@@ -95,7 +96,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               <span class="es2-hero-number">{{ hero.number }} / {{ t('HERO') }}</span>
               <img :src="ART_URLS[hero.id]" :alt="t(hero.name + ' 原始角色插畫')" decoding="async" draggable="false" />
               <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small>
-                <span class="es2-hero-preview" data-es2-classic-preview>HP {{ JOB[hero.id].hp }} · ATK {{ JOB[hero.id].damage }}</span>
+                <HeroStats class="es2-hero-preview" data-es2-classic-preview :stats="JOB[hero.id]" />
                 <span class="es2-hero-selection">{{ t((heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span></span>
             </button>
           </div>
@@ -103,9 +104,9 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
             <p class="es2-classic-role" data-es2-classic-role>{{ t(selectedClassic.role) }}</p>
             <div class="es2-classic-stat-grid" :aria-label="t('英雄初始數值')">
               <span data-es2-classic-stat="hp"><small>HP</small><strong>{{ classicStats.hp }}</strong></span>
-              <span data-es2-classic-stat="attack"><small>{{ t('攻擊力') }}</small><strong>{{ classicStats.damage }}</strong></span>
-              <span data-es2-classic-stat="speed"><small>{{ t('移動速度') }}</small><strong>{{ classicStats.speed }}</strong></span>
-              <span data-es2-classic-stat="interval"><small>{{ t('攻擊間隔') }}</small><strong>{{ classicStats.delay }}s</strong></span>
+              <span data-es2-classic-stat="attack" :title="t('攻擊力')"><small>ATK</small><strong>{{ classicStats.damage }}</strong></span>
+              <span data-es2-classic-stat="speed" :title="t('移動速度')"><small>SPD</small><strong>{{ classicStats.speed }}</strong></span>
+              <span data-es2-classic-stat="interval" :title="t('攻擊間隔')"><small>ATK CD</small><strong>{{ classicStats.delay }}s</strong></span>
             </div>
           </div>
           <h3 class="es2-section-heading">{{ t("NEW HEROES · 新增英雄") }}</h3>
