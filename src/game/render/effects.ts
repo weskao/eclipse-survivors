@@ -337,17 +337,36 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
   }
 }
 
-export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   for (const z of s.numberFx) {
     const x = z.x + ox, y = z.y + oy
-    if (x < -60 || x > s.W + 60 || y < -60 || y > s.H + 60) continue
-    const a = Math.max(0, Math.min(1, z.life / 0.4))
-    ctx.save(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.lineJoin = 'round'
-    ctx.font = `900 ${z.boss ? '21' : '16'}px system-ui`
-    ctx.lineWidth = 4; ctx.strokeStyle = '#151019e8'
-    ctx.strokeText(String(z.value), x, y)
-    ctx.fillStyle = z.boss ? '#ffca7c' : '#fff1d0'
-    ctx.fillText(String(z.value), x, y)
+    if (x < -80 || x > s.W + 80 || y < -80 || y > s.H + 80) continue
+    const critical = z.critical === true
+    const life = critical ? 0.82 : 0.62
+    const progress = Math.max(0, Math.min(1, 1 - z.life / life))
+    const opacity = Math.max(0, Math.min(1, z.life / (critical ? 0.28 : 0.4)))
+    // A local pop makes confirmed crits readable without another full-screen reaction.
+    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * 0.3
+    const px = Math.max(48, Math.min(s.W - 48, x))
+    const py = Math.max(54, Math.min(s.H - 16, y))
+    ctx.save()
+    ctx.globalAlpha = opacity
+    ctx.textAlign = 'center'
+    ctx.lineJoin = 'round'
+    ctx.translate(px, py)
+    if (pop !== 1) ctx.scale(pop, pop)
+    ctx.lineWidth = critical ? 6 : 4
+    ctx.strokeStyle = critical ? '#321525' : '#151019e8'
+    if (critical) {
+      ctx.font = '900 12px system-ui'
+      ctx.strokeText(translate('暴擊!'), 0, -29)
+      ctx.fillStyle = '#fff4bf'
+      ctx.fillText(translate('暴擊!'), 0, -29)
+    }
+    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : (z.boss ? 21 : 16)}px system-ui`
+    ctx.strokeText(String(z.value), 0, 0)
+    ctx.fillStyle = critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
+    ctx.fillText(String(z.value), 0, 0)
     ctx.restore()
   }
 }
