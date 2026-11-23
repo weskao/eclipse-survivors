@@ -79,6 +79,22 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(args.some(a=>a[0]===body && a.slice(1,5).join() === '648,0,216,216')).toBe(true)
   })
 
+  it('keeps a large enemy visible when its upper body enters from below the viewport', () => {
+    const state=createState(); resetRun(state)
+    state.W=300; state.H=200
+    const runtime=createFactionRuntime()
+    const size=FACTION_VISUAL_SIZE['shield-guardian']
+    const enemy=spawnFactionEnemy(runtime,'shield-guardian',150,state.H+size-24)!
+    enemy.state='windup'
+    const image=loaded(2016,336)
+    const images={ 'shield-guardian':{body:image,telegraph:loaded(150,150)} } as FactionArtwork
+    const {ctx,drawn}=createFakeCtx()
+    expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
+    expect(drawn).toContain(image)
+    enemy.y=state.H+size+12
+    expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(0)
+  })
+
   it('never paints offscreen, dead or malformed source sheets', () => {
     const state=createState(); resetRun(state);state.W=200;state.H=200
     const runtime=createFactionRuntime()
