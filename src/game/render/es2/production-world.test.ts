@@ -150,4 +150,22 @@ describe('ES2 world art live asset mapping', () => {
     expect(image.src).toBe(WORLD_ART.bosses['infernal-titan'])
   })
 
+  it('keeps later boss phases at least as large as phase one, with a stable foot anchor', () => {
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    for (const phase of [1, 2, 3] as const) {
+      expect(drawProductionBossFrame(ctx, loaded(2268, 756), phase, 236, 246, 16)).toBe(true)
+    }
+    const sizes = calls.map(call => Number(call[7]))
+    expect(sizes[0]).toBe(236)
+    expect(sizes[1]).toBeGreaterThan(sizes[0]!)
+    expect(sizes[2]).toBeGreaterThan(sizes[1]!)
+    for (const call of calls) {
+      const [, , , , , x, y, w, h] = call as [unknown, number, number, number, number, number, number, number, number]
+      expect(w).toBe(h)
+      expect(x).toBe(-w / 2)
+      expect(y + h).toBe(4)
+    }
+  })
+
 })
