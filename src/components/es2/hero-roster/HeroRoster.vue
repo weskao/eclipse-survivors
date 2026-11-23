@@ -4,6 +4,7 @@ import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
 import { PRODUCTION_HERO_ACTION_SOURCES } from '../../../game/render/es2/production-heroes'
 import HeroPortrait from './HeroPortrait.vue'
+import HeroStats from './HeroStats.vue'
 import type { JobId } from '../../../game/types'
 
 const props = withDefaults(defineProps<{
@@ -42,7 +43,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
         <strong>{{ t(hero.label) }}</strong>
         <span class="es2-roster__subtitle">{{ t(hero.subtitle) }}</span>
         <span class="es2-roster__description">{{ t(hero.description) }}</span>
-        <span class="es2-roster__stats">{{ t("生命") }} {{ hero.stats.hp }} {{ t("· 攻擊") }} {{ hero.stats.damage }} {{ t("· 速度") }} {{ hero.stats.speed }}</span>
+        <HeroStats class="es2-roster__stats" :stats="hero.stats" />
         <span class="es2-roster__gear">{{ t("起始武器 ·") }} {{ t(hero.startingEquipment) }}</span>
         <span class="es2-roster__skill">
           <img data-hero-skill-icon class="es2-roster__skill-icon" :src="hero.specialIconSrc"
