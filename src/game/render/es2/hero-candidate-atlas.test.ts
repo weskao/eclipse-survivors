@@ -4,12 +4,12 @@ import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atla
 describe('ES2 staged hero candidate atlas contract (QA only)', () => {
   it('has one committed local source for every new hero and East-facing action, not runtime art', () => {
     const ids = new Set(HERO_CANDIDATE_ATLASES.map(x => `${x.hero}:${x.pose}:${x.direction}`))
-    expect(ids.size).toBe(11)
+    expect(ids.size).toBe(12)
     expect([...ids].sort()).toEqual([
       'shadowblade:run:E', 'shadowblade:attack:E', 'shadowblade:special:E',
       'spirit-summoner:run:E', 'spirit-summoner:attack:E', 'spirit-summoner:special:E',
       'crimson-paladin:run:E', 'crimson-paladin:attack:E', 'crimson-paladin:special:E',
-      'shadowblade:run:S', 'spirit-summoner:run:S',
+      'shadowblade:run:S', 'spirit-summoner:run:S', 'crimson-paladin:run:S',
     ].sort())
     for (const { url, direction, cellPixels } of HERO_CANDIDATE_ATLASES) {
       expect(url).toContain(`${direction === 'E' ? 'east' : 'south'}-4frames`)
