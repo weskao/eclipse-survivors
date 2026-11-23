@@ -7,6 +7,7 @@ import { emptyProfile } from '../../../meta/profile'
 import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
 import Es2MenuSystem from './Es2MenuSystem.vue'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
 
 const base = {
   screen: 'menu' as const, choice: 'knight' as const, runMode: 'quick' as const,
@@ -83,6 +84,19 @@ describe('ES2 main menu integration adapter', () => {
     await nextTick()
     click('[data-choice="relic:moon"]')
     expect(wrapper.emitted('specialChoose')).toEqual([['relic:moon']])
+  })
+
+  it('renders every cursed relic with the cursed chest artwork, independent of its ID and rarity', async () => {
+    mounted({ screen: 'hidden', specialChoice: { kind: 'treasure', items: [
+      { id: 'relics:ashen-heart', title: 'Ashen Heart', rarity: 'epic' },
+      { id: 'relics:fragile-crown', title: 'Fragile Crown', rarity: 'legendary' },
+      { id: 'relics:frost-rune', title: 'Frost Rune', rarity: 'common' },
+    ] } })
+    await nextTick()
+    for (const id of ['relics:ashen-heart', 'relics:fragile-crown']) {
+      expect(find('[data-choice="' + id + '"] .es2-card-art img').getAttribute('src')).toBe(WORLD_ART.ui['treasure-cursed'])
+    }
+    expect(find('[data-choice="relics:frost-rune"] .es2-card-art img').getAttribute('src')).toBe(WORLD_ART.ui['treasure-common'])
   })
 
   it('keeps the settings hit target stable when the audio unlock button disappears', async () => {
