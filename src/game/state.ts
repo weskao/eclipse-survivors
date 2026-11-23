@@ -19,7 +19,7 @@ export function createState(): GameState {
 export function createHero(job: JobId): Hero {
   const j = JOB[job]
   return {
-    x: 0, y: 0, hp: j.hp, max: j.hp, level: 1, xp: 0, need: 16, damage: j.damage, delay: j.delay,
+    x: 0, y: 0, hp: j.hp, max: j.hp, level: 1, xp: 0, need: 13, damage: j.damage, delay: j.delay,
     speed: j.speed, range: j.range, attack: 0, inv: 0, dash: 0, dashCd: 0, face: 1, aimAngle: 0, skills: {}, evolutions: {}, evolutionCd: {},
     orbit: 0, bolt: 0, chainCd: 0, frostCd: 0, meteorCd: 0, blazeTick: 0, vortexCd: 0, shieldPulse: 0,
     step: 0, moveAmount: 0, strike: 0, poseSeed: 0, levelAnim: 0, vx: 0, vy: 0, footDistance: 0,
