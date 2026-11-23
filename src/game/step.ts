@@ -1,4 +1,5 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
+import { BALANCE } from './config'
 import { attack, hit, victoryConditionMet } from './combat'
 import type { ContentRegistry } from './content/registry'
 import type { FactionBridge } from './content/enemies/integration'
@@ -94,21 +95,21 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
     const dx = hero.x - star.x
     const dy = hero.y - star.y
     const squared = dx * dx + dy * dy
-    const reach = 115 + (hero.skills.magnet ?? 0) * 62
+    const reach = BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
     if (squared < reach * reach) {
       // Only crystal attraction needs a true distance for normalization.
       const d = Math.max(1, Math.sqrt(squared))
-      star.x += (dx / d) * Math.min(d, 450 * dt)
+      star.x += (dx / d) * Math.min(d, BALANCE.combat.starPickupSpeed * dt)
       star.y += (dy / d) * Math.min(d, 450 * dt)
     }
-    if (squared < 23 * 23) {
+    if (squared < BALANCE.combat.starPickupDistance * BALANCE.combat.starPickupDistance) {
       star.dead = true
       addXp(s, star.value, hooks)
       hooks.sfx('pickup')
       hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
     }
   }
-  s.stars = s.stars.filter((star) => !star.dead).slice(-220)
+  s.stars = s.stars.filter((star) => !star.dead).slice(-BALANCE.combat.starKeepLimit)
 }
 
 function ageEffects(s: GameState, hero: Hero, dt: number): void {
@@ -182,7 +183,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   collectStars(s, hero, dt, hooks)
   tickWorld(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
-  if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * 1.05 * dt)
+  if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * BALANCE.skills.passive.regenPerRank * dt)
   ageEffects(s, hero, dt)
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)
   s.cam.y += (hero.y - s.cam.y) * minmax(dt * 9, 0, 1)
