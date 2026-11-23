@@ -1,26 +1,24 @@
+import { BALANCE } from './config'
 import type { BaseUpgradeDef, JobDef, JobId, SceneDef, SkillRarity, UpgradeId } from './types'
 
 export const TAU = 2 * Math.PI
-export const MAX_MOBS = 130
-export const DURATION = 150
-export const BOSS_TIME = 92
-export const SCENE_SECONDS = 36
-export const DASH_COOLDOWN = 3
-export const LOW_HP_PCT = 25
+export const MAX_MOBS = BALANCE.world.maxMobs
+export const DURATION = BALANCE.world.duration
+export const BOSS_TIME = BALANCE.world.bossTime
+export const SCENE_SECONDS = BALANCE.world.sceneSeconds
+export const DASH_COOLDOWN = BALANCE.world.dashCooldown
+export const LOW_HP_PCT = BALANCE.world.lowHpPct
 /** Illustrated courtyard size in world units. */
-export const SCENE = { width: 2200, height: 1238 } as const
+export const SCENE = BALANCE.world.scene
 
 export const JOB: Record<JobId, JobDef> = {
-  knight: { label: '曙鋼騎士', hp: 175, speed: 190, damage: 32, delay: 0.57, range: 112 },
-  ranger: { label: '夜痕遊俠', hp: 115, speed: 218, damage: 22, delay: 0.36, range: 430 },
-  wizard: { label: '虛空術士', hp: 110, speed: 196, damage: 46, delay: 0.68, range: 390 },
+  knight: { label: '曙鋼騎士', ...BALANCE.heroes.classic.knight },
+  ranger: { label: '夜痕遊俠', ...BALANCE.heroes.classic.ranger },
+  wizard: { label: '虛空術士', ...BALANCE.heroes.classic.wizard },
 }
 export const JOB_IDS = Object.keys(JOB) as JobId[]
 
-export const MAX_LEVEL: Record<UpgradeId, number> = {
-  damage: 5, speed: 5, haste: 5, maxhp: 5, multi: 3, orb: 5, magnet: 4, heal: 5,
-  bolt: 5, frost: 5, meteor: 5, blaze: 5, vortex: 5, shield: 4, chain: 5,
-}
+export const MAX_LEVEL: Record<UpgradeId, number> = BALANCE.skills.maxLevels
 const RARE_SKILLS: readonly UpgradeId[] = ['orb', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain']
 const up = (id: UpgradeId, icon: string, title: string, desc: string): BaseUpgradeDef => ({
   id, icon, title, desc,
