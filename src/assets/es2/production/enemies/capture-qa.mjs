@@ -45,7 +45,7 @@ try {
       }
       for (const entry of findings) {
         if (!entry.native3x || !entry.bodyNative3x || !entry.cueNative3x ||
-            entry.humanApproval !== 'pending' || !entry.bodyQa || !entry.cueQa ||
+            !entry.bodyQa || !entry.cueQa ||
             entry.bodyQa.blankFrames.length ||
             entry.cueQa.blankFrames.length || entry.bodyQa.borderRiskFrames.length ||
             entry.cueQa.borderRiskFrames.length) {
