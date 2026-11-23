@@ -128,13 +128,13 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   }
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
-    hero.chainCd = Math.max(0.5, 2.8 - chain * 0.23)
+    hero.chainCd = Math.max(0.5, 2.8 - chain * 0.25)
     const chainTargets = close.slice(0, Math.min(2 + chain, 7))
     for (let i = 0; i < chainTargets.length; i++) {
       const from: Hero | Mob = i ? chainTargets[i - 1]! : hero
       const to = chainTargets[i]!
       zigzag(s, from.x || hero.x, (from.y || hero.y) - 25, to.x, to.y)
-      hit(s, to, hero.damage * (0.62 + 0.16 * chain), hooks)
+      hit(s, to, hero.damage * (0.66 + 0.18 * chain), hooks)
     }
     hooks.sfx('chain')
   }
@@ -161,7 +161,7 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
   if (!Number.isFinite(mitigated) || mitigated <= 0) return
   const shield = hero.skills.shield ?? 0
-  const reduce = 1 - Math.min(0.52, shield * 0.12)
+  const reduce = 1 - Math.min(0.52, shield * 0.13)
   const taken = mitigated * reduce
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
