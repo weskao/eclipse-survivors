@@ -95,6 +95,7 @@ export interface ContentRuntime {
 
 export type ContentEvent =
   | { type: 'hit' | 'kill'; mob: Mob; damage: number }
+  | { type: 'critical-hit'; x: number; y: number }
   | { type: 'damage'; amount: number }
   | { type: 'pickup'; kind: 'xp' | 'world'; amount?: number }
   | { type: 'start' | 'reset' }
@@ -102,7 +103,7 @@ export type ContentEvent =
   | { type: 'run-complete'; win: boolean }
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
-export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean }
+export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean }
 export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
@@ -179,6 +180,8 @@ export interface GameHooks {
   openTreasure?(state: GameState, chestId: number): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
   modifyOutgoingDamage?(amount: number): number
+  /** One-shot metadata from the authoritative outgoing-damage roll. */
+  consumeCriticalHit?(): boolean
   mitigateIncomingDamage?(amount: number): number
   afterDamage?(amount: number): void
   canTargetHero?(): boolean
