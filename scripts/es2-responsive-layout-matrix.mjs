@@ -65,6 +65,8 @@ try {
       await page.locator('.es2-hall-links button').first().click()
       const tabs = page.locator('.es2-archive-tabs button')
       await tabs.first().waitFor({ state: 'visible' })
+      // A new Es2Dialog mounts after Settings; measure its settled bounds, not the 12px enter translation.
+      await dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))
       assert.equal(await tabs.count(), 5, name + ': missing archive tabs')
       for (let index = 0; index < 5; index++) {
         await tabs.nth(index).click()
