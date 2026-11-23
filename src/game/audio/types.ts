@@ -38,6 +38,8 @@ export interface AudioSystem {
   setResultTheme?(theme: 'victory' | 'defeat' | null): void
   /** Sets the authored theme for the actual live boss; optional for test adapters. */
   setBossTheme?(id: BossId | null, phase?: number): void
+  /** Set the real upcoming-boss countdown, or null when none is scheduled. */
+  setBossWarning?(seconds: number | null): void
   playSfx(cue: SfxCue): void
   /** Original `music()`, called once per animation frame with the current mode. */
   tick(mode: GameMode): void
