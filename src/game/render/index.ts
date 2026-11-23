@@ -18,7 +18,7 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroStatus, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, createParticleSpriteCache, type ParticleSpriteCache, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroStatus, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
@@ -47,6 +47,7 @@ export interface RenderAssets {
   depthOrder: (Hero | Mob)[]
   magicGlow: HTMLCanvasElement | null
   gems: GemSprites
+  particles: ParticleSpriteCache
   mobTint: MobTintCache
   healthBars: WeakMap<Mob, HealthBarMotion>
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
@@ -66,6 +67,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     biomes: buildBiomeArt(makeCanvas),
     magicGlow: buildMagicGlow(makeCanvas),
     gems: buildGemSprites(makeCanvas),
+    particles: createParticleSpriteCache(makeCanvas),
     mobTint: { makeCanvas, variants: new WeakMap() },
     healthBars: new WeakMap(),
   }
@@ -155,7 +157,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawOrbs(ctx, s, hero, ox, oy, projectiles)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
-  drawFx(ctx, s, ox, oy, reduced)
+  drawFx(ctx, s, ox, oy, reduced, assets.particles)
   assets.content?.render(ctx, s, ox, oy)
   if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)
   drawVignette(ctx, s)
