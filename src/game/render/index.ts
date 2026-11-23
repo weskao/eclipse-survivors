@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import type { Artwork } from '../art'
 import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
@@ -106,7 +107,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
   drawWorldMarkers(ctx, s, ox, oy)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
-  ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
+  ctx.fillText(t(scene.name) + ' · ' + t(scene.label), W / 2, 34)
   ctx.restore()
   if (!hero) {
     const shadow = ctx.createRadialGradient(W / 2, H * 0.49, 55, W / 2, H * 0.49, Math.max(W, H) * 0.76)

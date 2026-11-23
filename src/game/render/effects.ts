@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { DASH_COOLDOWN, LOW_HP_PCT, TAU } from '../constants'
 import { easing } from '../math'
 import type { GameState, Hero } from '../types'
@@ -127,7 +128,7 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.restore()
     ctx.save(); ctx.globalAlpha = t; ctx.textAlign = 'center'; ctx.font = '900 28px system-ui'
     ctx.fillStyle = '#fff5d5'; ctx.strokeStyle = '#5c4722'; ctx.lineWidth = 5
-    ctx.strokeText('LEVEL UP!', hero.x + ox, hero.y - 88 + oy); ctx.fillText('LEVEL UP!', hero.x + ox, hero.y - 88 + oy)
+    ctx.strokeText(t('LEVEL UP!'), hero.x + ox, hero.y - 88 + oy); ctx.fillText(t('LEVEL UP!'), hero.x + ox, hero.y - 88 + oy)
     ctx.restore()
   }
 }

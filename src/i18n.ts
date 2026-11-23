@@ -1599,6 +1599,13 @@ const english = new Map<string, string>([
 , ["✦ 勝利 · 黎明重現 ✦","✦ VICTORY · THE DAWN RETURNS ✦"]
 , ["✧ 戰敗 · 長夜未盡 ✧","✧ DEFEAT · THE NIGHT ENDURES ✧"]
 , ["HERO","HERO"]
+, ["古代寶箱","Ancient Chest"]
+, ["魔法祭壇","Magic Shrine"]
+, ["菁英入侵","Elite Invasion"]
+, ["短暫祝福","Temporary Blessing"]
+, ["契約 -14HP","Pact -14 HP"]
+, ["危險試煉","Dangerous Trial"]
+, ["升級！","LEVEL UP!"]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],

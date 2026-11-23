@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { SCENE, TAU } from '../constants'
 import type { Artwork } from '../art'
 import { hash } from '../math'
@@ -104,7 +105,7 @@ export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: numbe
     ctx.fillText(symbols[e.kind], x, y - 14)
     ctx.fillStyle = '#101a23db'; ctx.fillRect(x - 49, y + 11, 98, 20)
     ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = glow
-    ctx.fillText(titles[e.kind], x, y + 25)
+    ctx.fillText(t(titles[e.kind]), x, y + 25)
     ctx.restore()
   }
   if (!s.challengePoint) return
