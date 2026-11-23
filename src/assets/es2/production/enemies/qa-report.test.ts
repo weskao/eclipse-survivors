@@ -15,6 +15,8 @@ describe('browser enemy QA export is truthful and never grants approval', () => 
   it('reads 1x gameplay dimensions from the same visual-size contract as the live renderer', () => {
     const source = readFileSync(resolve('src/assets/es2/production/enemies/qa-preview.ts'), 'utf8')
     expect(source).toContain('FACTION_VISUAL_SIZE[kind]')
+    expect(source).toContain('frostWraithMasterUrl')
+    expect(source).toContain('assassinMasterUrl')
     expect(source).not.toContain('ENEMY_DEFINITIONS[kind].radius * 4')
     expect(FACTION_VISUAL_SIZE['shadow-assassin']).toBe(146)
     const finding = buildEnemyQaFinding('shadow-assassin', FACTION_VISUAL_SIZE['shadow-assassin'],

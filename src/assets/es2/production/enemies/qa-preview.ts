@@ -2,6 +2,7 @@
 import { ENEMY_DEFINITIONS } from '../../../../game/content/enemies/definitions'
 import { FACTION_VISUAL_SIZE } from '../../../../game/render/es2/production-factions'
 import assassinMasterUrl from './masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
+import frostWraithMasterUrl from './masters/frost-wraith-6poses-3x2-master-1536x1024.png?url'
 import manifest from './manifest.json'
 import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'
 import { inspectAtlasPixels } from './frame-qa'
@@ -62,23 +63,26 @@ async function inspectCandidate(body: (typeof manifest.assets)[number]): Promise
       throw new Error('Actual decoded image dimensions differ from the manifest')
     }
     const display = FACTION_VISUAL_SIZE[kind]
-    // The actual Assassin combat renderer uses the already committed full 512px
-    // authoring master; the 216px strip is only its decode fallback.
+    // Two live actors sample the authentic 512px master; their strips remain decode fallbacks.
     let sourceImage = sprite
     let sourceWidth = body.frameWidth
     let sourceColumns = body.columns
     let sourcePath = body.path
-    if (kind === 'shadow-assassin') {
+    const masterUrl = kind === 'shadow-assassin' ? assassinMasterUrl :
+      kind === 'frost-wraith' ? frostWraithMasterUrl : null
+    if (masterUrl) {
       const master = new Image()
-      master.src = assassinMasterUrl
+      master.src = masterUrl
       await master.decode()
       if (master.naturalWidth !== 1536 || master.naturalHeight !== 1024) {
-        throw new Error('Assassin gameplay master geometry is not 3×2 × 512px')
+        throw new Error(kind + ' gameplay master geometry is not 3×2 × 512px')
       }
       sourceImage = master
       sourceWidth = 512
       sourceColumns = 3
-      sourcePath = 'masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp'
+      sourcePath = kind === 'shadow-assassin'
+        ? 'masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp'
+        : 'masters/frost-wraith-6poses-3x2-master-1536x1024.png'
     }
     const info = document.createElement('p')
     info.textContent = 'Actual combat size: ' + display + 'px · displayed frame source: ' + sourceWidth +
