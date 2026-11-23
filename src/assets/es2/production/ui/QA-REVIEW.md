@@ -14,10 +14,10 @@
 
 | Asset ID | Treatment | Bytes (new) | Active CSS px before integration | Human visual QA |
 |---|---|---:|---:|---|
-| treasure-common | RETAINED | existing | gallery only | needs-human-approval |
-| treasure-rare | RETAINED | existing | gallery only | needs-human-approval |
-| treasure-legendary | RETAINED | existing | gallery only | needs-human-approval |
-| treasure-cursed | RETAINED | existing | gallery only | needs-human-approval |
+| treasure-common | RETAINED | existing | 68 (chest dialog) | needs-human-approval |
+| treasure-rare | RETAINED | existing | 68 (chest dialog) | needs-human-approval |
+| treasure-legendary | RETAINED | existing | 68 (chest dialog) | needs-human-approval |
+| treasure-cursed | RETAINED | existing | 68 (chest dialog) | needs-human-approval |
 | rarity-common | RETAINED | existing | 20 | needs-human-approval |
 | rarity-rare | REDRAWN | 5484 | 20 | needs-human-approval |
 | rarity-legendary | REDRAWN | 5646 | 20 | needs-human-approval |
@@ -34,14 +34,14 @@
 
 ## Consumer trace
 - All 17 are mapped through `WORLD_ART.ui` in `src/game/render/es2/production-world.ts`.
-- `src/components/es2/menu/Es2Archive.vue`: 6 achievement icons in actual achievement cards, 17 UI icons in review gallery; 4 treasure icons have not been verified in a **live loot/chest** consumer.
+- `src/components/es2/menu/Es2Archive.vue`: 6 achievement icons in actual achievement cards, 17 UI icons in review gallery; the four treasure icons are also referenced by the active `src/components/es2/relic-rewards/RelicRewardOverlay.vue` chest dialog, chosen by cursed/rarity. Its current icon is 68 CSS px, above the 64px nominal 3× source limit; physical browser rendering is not yet checked.
 - `src/components/es2/menu/Es2ChoiceCards.vue`: 3 rarity icons in actual selectable cards.
 - `src/components/es2/hud/CombatHud.vue`: 4 HUD icon slots, including cooldown overlay.
 
 ## Still required before sign-off
 1. On **real Vue/Canvas gameplay**, capture desktop, 320px and 375px mobile portrait, short landscape, safe areas, reduced motion, active and collapsed HUD, card tap, rarity labels, and achievement lock/unlock.
 2. Confirm authentic `assets/images/imgs10.png` original crop mapping and distinguishable silhouettes; verify per-pixel transparent bounds, no bordering contamination, no clipping or 1× blur of all 17.
-3. Verify runtime treasure chest/loot consumer, or document as intentionally preview-only without falsely claiming gameplay use.
+3. Reduce chest-dialog treasure icon display from 68px to ≤64px in the integration branch; then capture real browser loot/chest dialog to verify placement and appearance.
 4. Run `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release`; attach GitHub Actions URLs. No claim these ran in this GitHub connector-only asset pass.
 5. Only after real-browser and human visual checks may authorized review change manifest `needs-human-approval` and `visual-review-required`. The status remains unchanged.
 
