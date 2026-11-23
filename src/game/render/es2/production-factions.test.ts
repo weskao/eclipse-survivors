@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
 import { createFactionRuntime, spawnFactionEnemy } from '../../content/enemies/runtime'
 import { createFakeCtx } from '../fakes'
-import { drawLiveFactionArt, type FactionArtwork } from './production-factions'
+import { drawLiveFactionArt, FACTION_VISUAL_SIZE, type FactionArtwork } from './production-factions'
 
 const loaded = (w:number,h:number):HTMLImageElement => ({complete:true,naturalWidth:w,naturalHeight:h}) as HTMLImageElement
 
@@ -59,7 +59,8 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
     const art=args.find(a=>a[0] === master)
     expect(art?.slice(1,5)).toEqual([0,512,512,512]) // frame 3 is row 2 col 1
-    expect(art?.slice(5)).toEqual([-46,-87,92,92])
+    const size = FACTION_VISUAL_SIZE['shadow-assassin']
+    expect(art?.slice(5)).toEqual([-size / 2, -size + 5, size, size])
     expect(args.some(a=>a[0]===body)).toBe(false)
   })
 

@@ -27,7 +27,7 @@
 ## 本次實作：shadow-assassin 512px 來源直接使用
 
 - 原有且已在 Git 的母圖：`src/assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp`；三欄二列，單格 **512×512**，並非放大低畫質 Runtime WebP。
-- Runtime 新增 `highResBody`：**一次**載入共享母圖，角色可見時使用 `sourceX=(frame % 3)*512`、`sourceY=Math.floor(frame/3)*512`；Canvas 目的尺寸仍為 **92×92** 並保持既有腳部錨點 `y=-92+5`。
+- Runtime 新增 `highResBody`：**一次**載入共享母圖，角色可見時使用 `sourceX=(frame % 3)*512`、`sourceY=Math.floor(frame/3)*512`；Canvas 目的尺寸從當前 `FACTION_VISUAL_SIZE['shadow-assassin']` 讀取（目前 **146×146**），腳部錨點維持 `y=-size+5`。
 - 若來源尚未載入或 1536×1024 幾何不符，自動用原有 1296×216 六格 body WebP，保持行為及視覺連續。
 - 沒有更動英雄、怪物攻擊 AI、判定、HP、敵人數量、其他 9 類素材、manifest 權威 SHA 或 QA `needs-human-approval`。
 - 新增 `production-factions.test.ts` 針對 frame 3、512px source rect、尺寸／腳部錨點及非法 master 回退兩項回歸測試。
