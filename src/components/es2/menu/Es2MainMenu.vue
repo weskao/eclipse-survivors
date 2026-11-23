@@ -8,6 +8,7 @@ import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { HeroId, JobId } from '../../../game/types'
 import HeroRoster from '../hero-roster/HeroRoster.vue'
 import HeroStats from '../hero-roster/HeroStats.vue'
+import Es2Dialog from './Es2Dialog.vue'
 import ModeChooser from '../modes/ModeChooser.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
@@ -36,8 +37,13 @@ const links: readonly { id: MenuView; name: string; icon: string }[] = [
   { id: 'monsters', name: '魔物圖鑑', icon: '♜' }, { id: 'skills', name: '技能圖鑑', icon: '✦' },
   { id: 'achievements', name: '成就殿堂', icon: '♛' },
 ]
-const selectedClassic = computed(() => heroes.find(hero => hero.id === (props.heroId ?? props.choice)) ?? null)
-const classicStats = computed(() => selectedClassic.value ? JOB[selectedClassic.value.id] : null)
+const detailHero = ref<HeroId | null>(null)
+const detailClassic = computed(() => heroes.find(hero => hero.id === detailHero.value) ?? null)
+const detailSpecialization = computed(() => detailHero.value && detailHero.value in HERO_DEFINITIONS
+  ? HERO_DEFINITIONS[detailHero.value as keyof typeof HERO_DEFINITIONS] : null)
+const detailStats = computed(() => detailClassic.value ? JOB[detailClassic.value.id] : detailSpecialization.value?.stats)
+const detailName = computed(() => detailClassic.value?.name ?? detailSpecialization.value?.label ?? '')
+const detailRole = computed(() => detailClassic.value?.role ?? detailSpecialization.value?.subtitle ?? '')
 const selectedHeroLabel = computed(() => {
   const selected = props.heroId ?? props.choice
   return heroes.find(hero => hero.id === selected)?.name
@@ -89,28 +95,24 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               @click="mobileHeroGroup = 'new'">{{ t('新增英雄') }}</button>
           </div>
           <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
-            <button v-for="hero in heroes" :key="hero.id" type="button" :data-hero="hero.id" class="es2-hero-card" data-ui-sfx="managed"
+            <div v-for="hero in heroes" :key="hero.id" class="es2-hero-card-shell">
+              <button type="button" :data-hero="hero.id" class="es2-hero-card" data-ui-sfx="managed"
               :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               :aria-label="t(hero.name) + ' · ' + t(hero.role)"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
               <span class="es2-hero-number">{{ hero.number }} / {{ t('HERO') }}</span>
               <img :src="ART_URLS[hero.id]" :alt="t(hero.name + ' 原始角色插畫')" decoding="async" draggable="false" />
               <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small>
-                <HeroStats class="es2-hero-preview" data-es2-classic-preview :stats="JOB[hero.id]" />
+                <HeroStats class="es2-roster__stats" data-es2-classic-preview :stats="JOB[hero.id]" />
                 <span class="es2-hero-selection">{{ t((heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span></span>
-            </button>
-          </div>
-          <div v-if="selectedClassic && classicStats" class="es2-classic-details" :data-es2-classic-details="selectedClassic.id" aria-live="polite">
-            <p class="es2-classic-role" data-es2-classic-role>{{ t(selectedClassic.role) }}</p>
-            <div class="es2-classic-stat-grid" :aria-label="t('英雄初始數值')">
-              <span data-es2-classic-stat="hp"><small>HP</small><strong>{{ classicStats.hp }}</strong></span>
-              <span data-es2-classic-stat="attack" :title="t('攻擊力')"><small>ATK</small><strong>{{ classicStats.damage }}</strong></span>
-              <span data-es2-classic-stat="speed" :title="t('移動速度')"><small>SPD</small><strong>{{ classicStats.speed }}</strong></span>
-              <span data-es2-classic-stat="interval" :title="t('攻擊間隔')"><small>ATK CD</small><strong>{{ classicStats.delay }}s</strong></span>
+              </button>
+              <button type="button" class="es2-hero-detail-trigger" data-ui-sfx="select"
+                :data-es2-hero-details="hero.id" :aria-label="t('查看英雄詳情') + ' · ' + t(hero.name)"
+                @click="detailHero = hero.id" aria-haspopup="dialog">ⓘ</button>
             </div>
           </div>
           <h3 class="es2-section-heading">{{ t("NEW HEROES · 新增英雄") }}</h3>
-          <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" />
+          <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" @details="detailHero = $event" />
         </section>
         <section class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
@@ -146,5 +148,22 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         <span class="es2-embers">✧ {{ profile?.embers ?? 0 }} {{ t("暮光餘燼") }}</span>
       </footer>
     </div>
+    <Es2Dialog :active="detailHero !== null" :title="t(detailName)" :subtitle="t(detailRole)"
+      @cancel="detailHero = null">
+      <div v-if="detailStats" class="es2-hero-detail-content">
+        <HeroStats class="es2-roster__stats" :stats="detailStats" />
+        <template v-if="detailSpecialization">
+          <p>{{ t(detailSpecialization.description) }}</p>
+          <p>{{ t('起始武器 ·') }} {{ t(detailSpecialization.startingEquipment) }}</p>
+          <div class="es2-hero-detail-special">
+            <img :src="detailSpecialization.specialIconSrc" :alt="t(detailSpecialization.label + ' 主動技能圖示')"
+              width="44" height="44" decoding="async" />
+            <span>{{ t('主動技能 ·') }} {{ t(detailSpecialization.special) }}{{ t('（冷卻') }} {{ detailSpecialization.specialCooldown }} {{ t('秒）') }}</span>
+          </div>
+          <p>{{ t('優勢 ·') }} {{ t(detailSpecialization.strengths.join(' / ')) }}</p>
+          <p>{{ t('弱點 ·') }} {{ t(detailSpecialization.weaknesses.join(' / ')) }}</p>
+        </template>
+      </div>
+    </Es2Dialog>
   </main>
 </template>
