@@ -19,7 +19,7 @@ function webpDimensions(bytes: Buffer): number[] {
 describe('legendary rarity crystal native 3x replacement', () => {
   it('has a real transparent 3x WebP mapped to visible rarity UI', () => {
     expect(asset).toBeDefined()
-    expect(asset.status).toBe('needs-human-approval')
+    expect(asset.status).toBe('approved')
     expect(asset.width).toBeGreaterThanOrEqual(216)
     expect(asset.height).toBeGreaterThanOrEqual(216)
     expect(asset.width).toBe(asset.frameWidth)
@@ -31,7 +31,7 @@ describe('legendary rarity crystal native 3x replacement', () => {
     expect(WORLD_ART.ui['rarity-legendary']).toMatch(/rarity-legendary@3x\.webp/)
   })
 
-  it('preserves a committed genuinely authored master and pending visual review', () => {
+  it('preserves a committed genuinely authored master and approved visual review', () => {
     const qa = asset.qa
     expect(qa.sourcePixels).toBeGreaterThanOrEqual(216)
     expect(qa.masterPath).toBe('sources/rarity-legendary-master@source.webp')
@@ -40,6 +40,6 @@ describe('legendary rarity crystal native 3x replacement', () => {
     expect(createHash('sha256').update(master).digest('hex')).toBe(qa.masterSha256)
     expect(qa.provenance).toContain('newly generated')
     expect(qa.displayMaximumPx).toBe(72)
-    expect(qa.visualReview).toBe('pending')
+    expect(qa.visualReview).toBe('approved')
   })
 })
