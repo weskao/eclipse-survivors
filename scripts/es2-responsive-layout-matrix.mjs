@@ -13,7 +13,9 @@ const cases = [
   ['desktop-1280', 1280, 720, false],
   ['desktop-1440', 1440, 900, false],
   ['desktop-1920', 1920, 1080, false],
-  ['desktop-zoom-proxy', 1280, 720, false],
+  // 1280×720 at 200% browser zoom yields an equivalent 640×360 CSS viewport.
+  // It tests reflow bounds, not the browser's native zoom implementation.
+  ['desktop-zoom-200-equivalent', 640, 360, false],
 ]
 const inset = 2
 const inside = (box, width, height) => box.x >= -inset && box.y >= -inset
@@ -33,10 +35,6 @@ try {
     try {
       await page.goto(base, { waitUntil: 'domcontentloaded' })
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
-      if (name === 'desktop-zoom-proxy') {
-        // CSS zoom stresses reflow but is not proof of native browser 200% zoom.
-        await page.evaluate(() => { document.documentElement.style.zoom = '2' })
-      }
       const bounds = await page.evaluate(() => ({
         documentWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth,
       }))
@@ -104,7 +102,7 @@ try {
           name + ': drawer obscures touch controls ' + JSON.stringify(layout))
         await page.screenshot({ path: destination + '/' + name + '-game.png', animations: 'disabled' })
         startedGame = true
-      } else if (!mobile && name !== 'desktop-zoom-proxy') {
+      } else if (!mobile && name !== 'desktop-zoom-200-equivalent') {
         await page.locator('.es2-start').click()
         await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
         assert.ok(await page.locator('.es2-hud__bottom').isVisible(),
