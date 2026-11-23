@@ -86,7 +86,7 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     expect(drawProductionHeroFrame(ctx, portrait, anim({ pose: 'idle', direction: 4 }), 117, 147)).toBe(true)
     const draw = calls.at(-1)!
     expect(draw[0]).toBe(dir)
-    expect(draw.slice(1, 5)).toEqual([0, 448, 448, 448])
+    expect(draw.slice(1, 5)).toEqual([8, 456, 432, 432])
     expect(Number(draw[7])).toBeLessThanOrEqual(147)
     expect(Number(draw[8])).toBeLessThanOrEqual(147)
   })
@@ -100,8 +100,8 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
       expect(drawProductionHeroFrame(ctx, portrait, anim({ pose: 'run', direction: 0, frame }), 117, 147)).toBe(true)
       expect(calls).toHaveLength(1)
       expect(calls[0]![0]).toBe(atlas)
-      expect(Number(calls[0]![3])).toBe(448)
-      expect(Number(calls[0]![4])).toBe(448)
+      expect(Number(calls[0]![3])).toBe(432)
+      expect(Number(calls[0]![4])).toBe(432)
     }
   })
 
@@ -130,7 +130,7 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
       const rect = productionHeroPoseRect(motion)
       expect(drawProductionHeroFrame(ctx, hero, motion, 117, 147)).toBe(true)
       const draw = calls[0]!
-      expect(Number(draw[6]) + Number(draw[8]) * productionHeroFrameAnchor(hero, rect) / 448)
+      expect(Number(draw[6]) + Number(draw[8]) * (productionHeroFrameAnchor(hero, rect) - 8) / 432)
         .toBeCloseTo(4, 5)
     }
   })
