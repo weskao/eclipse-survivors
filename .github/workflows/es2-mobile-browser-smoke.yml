@@ -32,6 +32,7 @@ jobs:
           curl -fsS http://127.0.0.1:4173/ >/dev/null
           node scripts/es2-mobile-browser-smoke.mjs
           node scripts/es2-responsive-layout-matrix.mjs
+          node scripts/es2-world-art-browser-qa.mjs
       - name: Convert genuine Playwright recordings to MP4
         if: always()
         shell: bash
