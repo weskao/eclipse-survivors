@@ -278,7 +278,7 @@
   .es2-menu-shell{min-height:100%;gap:6px}
   .es2-menu-header{flex-direction:row;align-items:center;gap:7px;padding-bottom:4px}
   .es2-menu-brand{flex:1;min-width:0}
-  .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.55rem);line-height:1.1;letter-spacing:.02em;margin:0}
+  .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.55rem);line-height:1.1;letter-spacing:.02em;margin:0;overflow-wrap:anywhere}
   .es2-menu-brand .es2-eyebrow,.es2-menu-brand p{display:none}
   .es2-top-actions{display:flex;align-items:center;flex:none;width:auto;gap:5px}
   .es2-top-actions #gameVersion{font-size:.65rem}
@@ -324,6 +324,7 @@
   .es2-menu .es2-mode-section .es2-objective-choice strong{font-size:clamp(.7rem,2.4vw,.83rem);line-height:1.2;overflow-wrap:anywhere}
   .es2-menu .es2-mode-section .es2-objective-choice>:not(strong){display:none}
   .es2-mobile-selected-mode{display:block;min-width:0;margin:5px 0 0;color:var(--es2-muted);font:400 .73rem/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
+  .es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
   .es2-start{min-height:44px;margin-top:6px;padding:7px;font-size:.95rem!important}
   .es2-start span{margin-left:5px}
   .es2-mode-section>.es2-hint{display:none}
@@ -361,5 +362,6 @@
   .es2-menu .es2-section-heading{display:none}
   .es2-mobile-switch{margin:0 0 4px}
   .es2-mobile-selected-mode{font-size:.7rem}
+  .es2-mobile-mode-desc{display:none}
   .es2-menu-footer{padding-top:2px}
 }

@@ -3,6 +3,7 @@ import { t } from '../../../i18n'
 import { computed, nextTick, ref, watch } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
+import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { HeroId, JobId } from '../../../game/types'
 import HeroRoster from '../hero-roster/HeroRoster.vue'
 import ModeChooser from '../modes/ModeChooser.vue'
@@ -33,6 +34,12 @@ const links: readonly { id: MenuView; name: string; icon: string }[] = [
   { id: 'monsters', name: '魔物圖鑑', icon: '♜' }, { id: 'skills', name: '技能圖鑑', icon: '✦' },
   { id: 'achievements', name: '成就殿堂', icon: '♛' },
 ]
+const selectedHeroLabel = computed(() => {
+  const selected = props.heroId ?? props.choice
+  return heroes.find(hero => hero.id === selected)?.name
+    ?? Object.values(HERO_DEFINITIONS).find(hero => hero.id === selected)?.label
+    ?? selected
+})
 const mobileHeroGroup = ref<'classic' | 'new'>(heroes.some(hero => hero.id === (props.heroId ?? props.choice)) ? 'classic' : 'new')
 const mobileModeGroup = ref<'classic' | 'objective'>(objectiveSelection.value ? 'objective' : 'classic')
 const archiveOpen = ref(false)
@@ -108,7 +115,10 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
             </button>
           </div>
           <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
-          <p class="es2-mobile-selected-mode" aria-live="polite">{{ t(MODES[runMode].label) }} · {{ t(MODES[runMode].description) }}</p>
+          <p class="es2-mobile-selected-mode" aria-live="polite">
+            <span :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span> · {{ t(MODES[runMode].label) }}
+            <span class="es2-mobile-mode-desc"> · {{ t(MODES[runMode].description) }}</span>
+          </p>
           <button class="es2-primary es2-start" type="button" @click="emit('start')">{{ t("踏入幽暮之門") }} <span aria-hidden="true">✦</span></button>
           <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
         </section>

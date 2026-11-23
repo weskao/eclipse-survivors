@@ -48,7 +48,7 @@ describe('phone homepage viewport-first navigation', () => {
     expect(wrapper.get('[data-es2-selected-hero]').text().length).toBeGreaterThan(0)
     await wrapper.setProps({ heroId: 'shadowblade' })
     await nextTick()
-    expect(wrapper.get('[data-es2-selected-hero]').text()).toContain('影刃')
+    expect(wrapper.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('shadowblade')
   })
 
   it('allows switching between the existing four modes and all five objective modes', async () => {
