@@ -32,13 +32,22 @@ const hudRoot = shallowRef<HTMLElement | null>(null)
 const infoOpen = ref(false)
 const infoButton = shallowRef<HTMLElement | null>(null)
 const infoPanel = shallowRef<HTMLElement | null>(null)
-function closeInfo(): void { infoOpen.value = false }
+function closeInfo(restoreFocus = false): void {
+  const wasOpen = infoOpen.value
+  infoOpen.value = false
+  if (wasOpen && restoreFocus) infoButton.value?.focus()
+}
+function onViewportChange(): void { closeInfo() }
 function onDocumentPointer(event: PointerEvent): void {
   if (!infoOpen.value || !(event.target instanceof Node)) return
   if (!infoButton.value?.contains(event.target) && !infoPanel.value?.contains(event.target)) closeInfo()
 }
 function onDocumentKey(event: KeyboardEvent): void {
-  if (infoOpen.value && event.key === 'Escape') closeInfo()
+  if (infoOpen.value && event.key === 'Escape') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    closeInfo(true)
+  }
 }
 watch(() => [props.active, props.canReturnHome], ([active, canReturnHome]) => {
   if (!active || !canReturnHome) closeInfo()
@@ -46,14 +55,14 @@ watch(() => [props.active, props.canReturnHome], ([active, canReturnHome]) => {
 onMounted(() => {
   document.addEventListener('pointerdown', onDocumentPointer)
   document.addEventListener('keydown', onDocumentKey)
-  window.addEventListener('resize', closeInfo)
-  window.addEventListener('orientationchange', closeInfo)
+  window.addEventListener('resize', onViewportChange)
+  window.addEventListener('orientationchange', onViewportChange)
 })
 onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocumentPointer)
   document.removeEventListener('keydown', onDocumentKey)
-  window.removeEventListener('resize', closeInfo)
-  window.removeEventListener('orientationchange', closeInfo)
+  window.removeEventListener('resize', onViewportChange)
+  window.removeEventListener('orientationchange', onViewportChange)
 })
 watch(() => props.active, active => {
   if (active) return
@@ -142,7 +151,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
       :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
       <span aria-hidden="true">☷</span> {{ t('戰鬥資訊') }}
     </button>
-    <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" role="status">
+    <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" aria-hidden="true">
       {{ t(view.notices.find(notice => notice.kind === 'critical')?.text ?? '') }}
     </div>
     <div v-if="view.boss || view.wave" class="es2-hud__encounter" data-es2-encounter>
@@ -171,7 +180,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
       data-es2-info-panel :aria-label="t('戰鬥資訊')">
       <div class="es2-hud__info-heading">
         <strong>{{ t('戰鬥資訊') }}</strong>
-        <button type="button" data-es2-info-close :aria-label="t('關閉對話視窗')" @click="closeInfo">×</button>
+        <button type="button" data-es2-info-close :aria-label="t('關閉對話視窗')" @click="closeInfo(true)">×</button>
       </div>
     <section v-if="view.statuses.length" class="es2-hud__statuses es2-hud__plate" :aria-label="t('暫時效果')">
       <span v-for="status in view.statuses" :key="status.id" :data-es2-status="status.id"
