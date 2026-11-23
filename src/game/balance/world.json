@@ -8,5 +8,7 @@
   "scene": {
     "width": 2200,
     "height": 1238
-  }
+  },
+  "lowHpWarningPct": 40,
+  "lowHpEmergencyPct": 12
 }
