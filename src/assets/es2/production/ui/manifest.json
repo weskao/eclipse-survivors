@@ -279,19 +279,32 @@
     {
       "id": "achievement-flawless",
       "path": "achievement-flawless@3x.webp",
-      "width": 192,
-      "height": 192,
+      "width": 240,
+      "height": 240,
       "scale": 3,
       "alpha": true,
       "maxBytes": 75000,
       "frames": 1,
       "columns": 1,
       "rows": 1,
-      "frameWidth": 192,
-      "frameHeight": 192,
+      "frameWidth": 240,
+      "frameHeight": 240,
       "status": "needs-human-approval",
-      "sha256": "0046b453fe538510d39db81d7b010b4dd1463fb8066de047db960981919f8e30",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "sha256": "d071d42a11ec82317b71c1f70f51416f592d2dd8dbfd1a03efe3ea7f9ceaf701",
+      "qaNote": "New original generated golden-star artwork. Native authored 1254x1254 master is committed under sources/; optimized 240x240 transparent 3x WebP draws at <=72px. Visual sign-off remains pending.",
+      "qa": {
+        "nativeSourcePixels": 1254,
+        "generatedMasterPath": "sources/achievement-flawless-master@source.webp",
+        "generatedMasterSha256": "454a88b645054f769d24dfe03b81f9504d4b2c18c1edb3e8bcefeeca94c0933b",
+        "generatedMasterCommitted": true,
+        "authoredSource": "original generated 1254x1254 RGBA, compressed from source without upscaling",
+        "displayMaximumPx": 72,
+        "requiredNativeSourcePixels": 216,
+        "outputPixels": 240,
+        "approval": "pending",
+        "visualReview": "pending",
+        "browserReview": "pending"
+      }
     }
   ]
 }
