@@ -167,20 +167,20 @@
     {
       "id": "abyssal-necropolis:decor",
       "path": "abyssal-necropolis-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
+      "frameWidth": 330,
+      "frameHeight": 330,
       "status": "needs-human-approval",
-      "sha256": "9de12d25e3cf61b388b33e16126847d850a022a64abc8399141e4ec79c04860b",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha.",
-      "native3x": false,
+      "sha256": "32bbacea78812a85553efcf4a8b38d6ce0241bb904c2a1cc369d82f45250f0e2",
+      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required.",
+      "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
         "height": 110
@@ -189,7 +189,12 @@
         "width": 330,
         "height": 330
       },
-      "nativeSourceDetailStatus": "unverified-3x-source"
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "fe3803801161290416b1469e5e8dfeeba0f9404cf02d81424e65a4f14e574880",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ]
     },
     {
       "id": "celestial-rift:ground",
@@ -226,20 +231,20 @@
     {
       "id": "celestial-rift:decor",
       "path": "celestial-rift-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
+      "frameWidth": 330,
+      "frameHeight": 330,
       "status": "needs-human-approval",
-      "sha256": "79bed9709eff585ca4070a46720de67407a1145527f63f9c247cd48cec7967e2",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha.",
-      "native3x": false,
+      "sha256": "8fabfee5295e8799f4dd4d1f586ed5b511532bd5ddef1a5c60cbb27934da993e",
+      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required.",
+      "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
         "height": 110
@@ -248,7 +253,12 @@
         "width": 330,
         "height": 330
       },
-      "nativeSourceDetailStatus": "unverified-3x-source"
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "fc30b9ac608a8d36648c9f274edc0b24b47e073f92936b2de420cbfe41c60103",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ]
     }
   ]
 }
