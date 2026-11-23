@@ -68,7 +68,7 @@ function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eve
       hooks.message('✦ 暫時祝福 · 持續恢復生命')
       break
     case 'bargain':
-      if (hero.hp <= 24) return false
+      if (hero.hp <= BALANCE.events.bargainMinHp) return false
       hero.hp -= BALANCE.events.bargainHpCost
       addXp(s, BALANCE.events.bargainXp, hooks)
       hooks.message('✦ 禁忌契約 · 以生命換取力量')
