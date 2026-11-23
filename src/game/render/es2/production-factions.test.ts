@@ -91,7 +91,8 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     const {ctx,drawn}=createFakeCtx()
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
     expect(drawn).toContain(image)
-    enemy.y=state.H+size+12
+    // The safety margin protects nearby warning art; only the fully offscreen actor is culled.
+    enemy.y=state.H+size+35
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(0)
   })
 
