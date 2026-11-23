@@ -311,8 +311,41 @@ export function drawLightning(ctx: Ctx2D, s: GameState, ox: number, oy: number, 
   }
 }
 
+/** Reuse detailed 3x particle glows instead of doing a blurred Canvas fill per hit. */
+export interface ParticleSpriteCache {
+  makeCanvas: MakeCanvas
+  sprites: Map<string, HTMLCanvasElement | null>
+}
+
+export function createParticleSpriteCache(makeCanvas: MakeCanvas): ParticleSpriteCache {
+  return { makeCanvas, sprites: new Map() }
+}
+
+function particleSprite(cache: ParticleSpriteCache, color: string, radius: number): HTMLCanvasElement | null {
+  // Quantize only cosmetic pixels, never gameplay hit radius. Fixed dimensions
+  // allow the same low-cost drawImage path regardless of individual spark size.
+  const r = Math.max(1, Math.min(15, Math.round(radius * 2) / 2))
+  const key = color + ':' + r
+  const cached = cache.sprites.get(key)
+  if (cached !== undefined) return cached
+  // A finite cache cannot accumulate unbounded variations in Endless mode.
+  if (cache.sprites.size >= 64) cache.sprites.clear()
+  const canvas = cache.makeCanvas(120, 120)
+  const paint = canvas.getContext('2d')
+  if (!paint) { cache.sprites.set(key, null); return null }
+  paint.scale(3, 3)
+  paint.shadowColor = color
+  paint.shadowBlur = 7
+  paint.fillStyle = color
+  paint.beginPath()
+  paint.arc(20, 20, r, 0, TAU)
+  paint.fill()
+  cache.sprites.set(key, canvas)
+  return canvas
+}
+
 // Subpixel glowing debris, capped pool and reusable shape geometry.
-export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
+export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, cache?: ParticleSpriteCache): void {
   const { W, H } = s
   let painted = 0
   for (const f of s.fx) {
@@ -321,6 +354,18 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
     const x = f.x + ox
     const y = f.y + oy
     if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue
+    // Only cosmetic circular debris is cached; meteors, vortexes and ice keep
+    // their authored, time-dependent silhouettes and existing animation.
+    if (cache && !reducedMotion && (!f.type || f.type === 'spark' || f.type === 'ember' || f.type === 'footstep')) {
+      const sprite = particleSprite(cache, f.color, f.r)
+      if (sprite) {
+        const previousAlpha = ctx.globalAlpha
+        ctx.globalAlpha = previousAlpha * Math.max(0, f.life / f.max)
+        ctx.drawImage(sprite, x - 20, y - 20, 40, 40)
+        ctx.globalAlpha = previousAlpha
+        continue
+      }
+    }
     ctx.save(); ctx.globalAlpha = Math.max(0, f.life / f.max)
     if (f.type === 'meteor') {
       const t = 1 - f.life / f.max
