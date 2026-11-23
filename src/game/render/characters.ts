@@ -8,7 +8,7 @@ import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type Rigid
 import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
-import { drawProductionBossFrame } from './es2/production-world'
+import { bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
 import { sampleHealthBar, type HealthBarMotion } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
@@ -348,7 +348,9 @@ export function drawCharacter(
       : { front: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))),
           trail: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))) }
     if (mob.type === 'boss') {
-      const bar = 190, left = x - bar / 2, top = y - sy - 25
+      const bar = 190, left = x - bar / 2
+      const growth = productionBoss ? Math.min(sx, sy) * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
+      const top = y - sy - 25 - growth
       ctx.fillStyle = '#05090dec'; ctx.fillRect(left, top, bar, 12)
       ctx.strokeStyle = '#dcc391aa'; ctx.strokeRect(left, top, bar, 12)
       if (motion.trail > motion.front + 0.002) {

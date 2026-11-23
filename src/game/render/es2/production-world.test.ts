@@ -82,7 +82,8 @@ describe('ES2 world art live asset mapping', () => {
     const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
     expect(drawProductionBossFrame(ctx, loaded(2268, 756), 3, 236, 246, 16)).toBe(true)
     expect(calls[0]?.slice(1, 5)).toEqual([1528, 16, 724, 724])
-    expect(calls[0]?.slice(5)).toEqual([-118, -232, 236, 236])
+    const thirdSide = 236 * 1.24
+    expect(calls[0]?.slice(5)).toEqual([-thirdSide / 2, -thirdSide + 4, thirdSide, thirdSide])
     expect(drawProductionBossFrame(ctx, loaded(2268, 756), 2, 236, 246, 16)).toBe(true)
     expect(calls[1]?.slice(1, 5)).toEqual([772, 16, 724, 724])
     expect(drawProductionBossFrame(ctx, loaded(2268, 756), 1, 236, 246, -1)).toBe(false)
@@ -122,7 +123,8 @@ describe('ES2 world art live asset mapping', () => {
       const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
       expect(drawProductionBossFrame(ctx, qa.bosses[id], 2, 236, 246)).toBe(true)
       expect(calls[0]?.slice(1, 5)).toEqual([772, 16, 724, 724])
-      expect(calls[0]?.slice(5)).toEqual([-118, -232, 236, 236])
+      const secondSide = 236 * 1.12
+      expect(calls[0]?.slice(5)).toEqual([-secondSide / 2, -secondSide + 4, secondSide, secondSide])
     },
   )
 

@@ -115,13 +115,18 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
 }
 
+/** Scale art only; collision geometry and source rects remain unchanged. */
+export function bossPhaseVisualScale(phase: 1 | 2 | 3): number {
+  return phase === 3 ? 1.24 : phase === 2 ? 1.12 : 1
+}
+
 export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
   sourceInset?: number,
 ): boolean {
   if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || !Number.isInteger(phase) || phase < 1 || phase > 3) return false
   const inset = sourceInset ?? (image.naturalHeight === 756 ? bossQaInsets.get(image) ?? 0 : 0)
-  const side = Math.min(width, height)
+  const side = Math.min(width, height) * bossPhaseVisualScale(phase)
   const sourceSide = image.naturalHeight - inset * 2
   if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(inset) || inset < 0 || sourceSide <= 0) return false
   ctx.drawImage(
