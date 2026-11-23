@@ -8,6 +8,33 @@ concurrency:
   group: es2-enemy-candidate-validation-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  atlas-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install isolated Chromium
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Test decoded 6-frame atlases and warning at desktop and mobile sizes
+        run: |
+          pnpm dev --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-enemy-qa-preview.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4174/src/assets/es2/production/enemies/qa-preview.html >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/src/assets/es2/production/enemies/qa-preview.html >/dev/null
+          node src/assets/es2/production/enemies/capture-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-enemy-atlas-1x-responsive-evidence
+          path: artifacts/es2-enemy-qa/
+          if-no-files-found: warn
   targeted-and-build:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
@@ -57,6 +84,7 @@ jobs:
       - name: Encode evidence to MP4
         if: always()
         run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
           for source in artifacts/es2-mobile-browser/*-live.webm; do
             test -f "$source" || continue
             ffmpeg -nostdin -hide_banner -loglevel error -y -i "$source" -an -c:v libx264 -preset veryfast -crf 24 -pix_fmt yuv420p -movflags +faststart "${source%.webm}.mp4"
