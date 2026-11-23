@@ -223,9 +223,9 @@ export function createHeroSpecializationAdapter(
       const nearest = nearby(state, 330, 1)[0]
       for (const companion of active) {
         if (companion === 'guardian') {
-          hero.hp = Math.min(hero.max, hero.hp + 2 + upgrades())
+          hero.hp = Math.min(hero.max, hero.hp + 2 + upgrades() * 1.15)
         } else if (nearest?.hp && nearest.hp > 0) {
-          hit(state, nearest, hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * 0.18), hooks)
+          hit(state, nearest, hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * 0.2), hooks)
           if (companion === 'reaver') hero.hp = Math.min(hero.max, hero.hp + 1.5)
         }
       }
@@ -237,18 +237,18 @@ export function createHeroSpecializationAdapter(
       if (id === 'shadowblade') {
         stealth = 0.95
         hero.inv = Math.max(hero.inv, 0.7)
-        for (const enemy of nearby(state, 150, 3)) hit(state, enemy, hero.damage * 1.4, hooks)
+        for (const enemy of nearby(state, 150, 3)) hit(state, enemy, hero.damage * (1.4 + upgrades() * 0.045), hooks)
         impact(state, hero.x, hero.y, 95, '#aa8eff', 0.7)
         burst(state, hero.x, hero.y, '#8666ef', 12)
       } else if (id === 'spirit-summoner') {
-        for (const enemy of nearby(state, 330, 3)) hit(state, enemy, hero.damage * (1.2 + upgrades() * 0.2), hooks)
+        for (const enemy of nearby(state, 330, 3)) hit(state, enemy, hero.damage * (1.2 + upgrades() * 0.22), hooks)
         hero.hp = Math.min(hero.max, hero.hp + 12)
         impact(state, hero.x, hero.y, 115, '#95eaff', 0.9)
       } else {
         const cost = Math.min(Math.max(0, hero.hp - 1), Math.ceil(hero.max * 0.08))
         hero.hp -= cost
         state.damageTaken += cost
-        barrier = 48 + hero.level * 2 + upgrades() * 12
+        barrier = 48 + hero.level * 2 + upgrades() * 14
         barrierLife = 3.5
         impact(state, hero.x, hero.y, 105, '#ed6178', 1)
       }
@@ -261,11 +261,11 @@ export function createHeroSpecializationAdapter(
       if (!alive()) return amount
       if (id === 'shadowblade') {
         lastCritical = random() < 0.24
-        return lastCritical ? amount * (1.7 + upgrades() * 0.15) : amount
+        return lastCritical ? amount * (1.7 + upgrades() * 0.18) : amount
       }
       if (id === 'spirit-summoner') return amount * (1 + (companions().includes('wisp') ? 0.06 : 0))
       const hpRatio = state.hero!.hp / state.hero!.max
-      return amount * (hpRatio < 0.4 ? 1.35 + upgrades() * 0.06 : 1)
+      return amount * (hpRatio < 0.4 ? 1.35 + upgrades() * 0.07 : 1)
     },
     consumeCriticalHit(): boolean {
       const critical = lastCritical
@@ -275,7 +275,7 @@ export function createHeroSpecializationAdapter(
     mitigateIncomingDamage(amount: number): number {
       if (!Number.isFinite(amount) || amount <= 0) return 0
       if (!alive() || id !== 'crimson-paladin' || state.hero!.inv > 0 || state.hero!.dash > 0) return amount
-      const reduced = amount * (0.86 - Math.min(0.06, upgrades() * 0.02))
+      const reduced = amount * (0.86 - Math.min(0.075, upgrades() * 0.025))
       const absorb = barrierLife > 0 ? Math.min(barrier, reduced) : 0
       barrier -= absorb
       return Math.max(0, reduced - absorb)
@@ -284,7 +284,7 @@ export function createHeroSpecializationAdapter(
       if (!alive() || id !== 'crimson-paladin' || !Number.isFinite(amount) || amount <= 0 || counterCooldown > 0) return
       counterCooldown = 1.8
       const hero = state.hero!
-      for (const enemy of nearby(state, 155, 2)) hit(state, enemy, hero.damage * (0.7 + upgrades() * 0.12), hooks)
+      for (const enemy of nearby(state, 155, 2)) hit(state, enemy, hero.damage * (0.7 + upgrades() * 0.135), hooks)
       impact(state, hero.x, hero.y, 72, '#fb8f96', 0.45)
     },
     canBeTargeted(): boolean {
