@@ -18,19 +18,19 @@ const NATIVE_MASTER_URLS: Partial<Record<FactionKind, string>> = {
 
 /** Visual-only dimensions in game px, independently calibrated against original mob / boss silhouettes.
  * Some native WebPs contain 25–35% transparent padding and looked too small at 88–128px.
- * The largest enemy is 208px, below the original 236px Boss artwork. Physics is untouched.
+ * The largest enemy is 198px, clearly below the enlarged 255px first-phase Boss. Physics is untouched.
  * Authored six-frame square source rectangles and world-space foot anchors remain unchanged. */
 export const FACTION_VISUAL_SIZE: Readonly<Record<FactionKind, number>> = {
   'shadow-assassin': 146,
   necromancer: 168,
   'dark-archer': 154,
-  'plague-carrier': 184,
-  'shield-guardian': 208,
+  'plague-carrier': 176,
+  'shield-guardian': 198,
   phantom: 152,
   'fire-imp': 142,
   'frost-wraith': 166,
-  berserker: 180,
-  'crystal-sentinel': 208,
+  berserker: 172,
+  'crystal-sentinel': 198,
 }
 
 /** Bounds computed once rather than scanning sizes in the hot draw loop. */
