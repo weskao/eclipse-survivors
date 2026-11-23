@@ -579,7 +579,7 @@ describe('cinematic sampled boss music', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
     const first = ctx.sources.at(-1)
     audio.onScreen('paused')
-    expect(first?.stoppedAt).not.toBeNull()
+    expect(first?.stoppedAt).toBe(ctx.currentTime)
     audio.onScreen('play')
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(ctx.sources.length).toBeGreaterThan(1)
