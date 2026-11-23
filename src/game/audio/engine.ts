@@ -127,7 +127,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const menuLevel = (): number => 0.78 * musicVolume / 100
 
   const mp3Level = (): number =>
-    (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0.09 :
+    (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0 :
       intensity === 'combat' && mode === 'play' ? 0.35 : 0.38) * musicVolume / 100
 
   bgm.volume = mp3Level()
