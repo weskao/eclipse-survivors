@@ -1,4 +1,5 @@
 import { damageHero } from '../../combat'
+import { BALANCE } from '../../config'
 import { summonBossMinions } from '../../bosses/phases'
 import { MAX_MOBS } from '../../constants'
 import { getMode } from '../../../meta/modes'
@@ -128,6 +129,26 @@ function lockLegacyBrain(boss: Mob): void {
     boss.ai.state = 'recover'
     boss.ai.timer = 1_000_000
   }
+}
+
+/** Pursue only during recovery so locked telegraphs never drift from their displayed hitboxes. */
+function pursueHero(e: Encounter, dt: number): void {
+  const hero = e.state.hero
+  if (!hero) return
+  const dx = hero.x - e.boss.x, dy = hero.y - e.boss.y
+  const distance = Math.hypot(dx, dy)
+  if (distance < 0.001) return
+  const motion = BALANCE.bosses.movement[e.id]
+  const slowed = e.boss.slow > 0 ? BALANCE.enemies.ai.slowedSpeedMultiplier : 1
+  const staggered = e.boss.stagger > 0 ? BALANCE.enemies.ai.staggeredSpeedMultiplier : 1
+  const speed = e.boss.speed * BALANCE.bosses.phaseMovementMultipliers[e.phase - 1]! * slowed * staggered
+  const toward = Math.min(Math.max(0, distance - motion.standoff), speed * dt)
+  const orbit = toward === 0 && motion.orbitSpeed > 0
+    ? motion.orbitSpeed * dt * (e.turn % 2 ? 1 : -1) * slowed * staggered : 0
+  if (toward === 0 && orbit === 0) return
+  e.boss.x += dx / distance * toward - dy / distance * orbit
+  e.boss.y += dy / distance * toward + dx / distance * orbit
+  e.boss.bossMoving = true
 }
 
 function makeTelegraphs(e: Encounter, id: BossAttackId, hero: Point, color: string): BossTelegraph[] {
@@ -307,7 +328,8 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       const hp = Math.round(definition.health * getMode(state.runMode).modifiers.enemyHp)
       const boss: Mob = {
         x: point.x, y: point.y, type: 'boss', bossArtId: id,
-        hp, max: hp, r: 48, speed: 26, dmg: 22,
+        hp, max: hp, r: 48, speed: BALANCE.bosses.movement[id].speed, dmg: 22,
+        bossMoving: false,
         phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0, bossPhase: 1,
       }
       lockLegacyBrain(boss)
@@ -332,6 +354,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       // The host must call AFTER legacy tickEnemies, which has no extensibility
       // point. The integration adapter owns only this one boss's AI.
       lockLegacyBrain(e.boss)
+      e.boss.bossMoving = false
       const phase = phaseFor(e.boss)
       if (phase > e.phase) {
         e.phase = phase; e.boss.bossPhase = phase
@@ -356,17 +379,10 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         }
         return
       }
-      e.recovery = Math.max(0, e.recovery - dt)
-      if (e.recovery > 0) return
-      // Slow pursuit only while idle: attacks lock their real warning hitboxes.
-      const hero = state.hero
-      const dx = hero.x - e.boss.x, dy = hero.y - e.boss.y
-      const d2 = dx * dx + dy * dy
-      if (d2 > 260 * 260) {
-        const distance = Math.sqrt(d2)
-        const move = Math.min(distance - 240, e.boss.speed * dt)
-        e.boss.x += dx / distance * move
-        e.boss.y += dy / distance * move
+      if (e.recovery > 0) {
+        pursueHero(e, Math.min(dt, e.recovery))
+        e.recovery = Math.max(0, e.recovery - dt)
+        if (e.recovery > 0) return
       }
       warn(e)
     },
