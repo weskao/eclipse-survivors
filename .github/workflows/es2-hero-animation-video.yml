@@ -4,6 +4,9 @@ on:
     branches: [feature/es2-release-readiness-integration]
     paths:
       - 'scripts/es2-hero-animation-video.mjs'
+      - 'scripts/es2-hero-video-config.mjs'
+      - 'scripts/es2-hero-video-config.test.mjs'
+      - 'src/assets/es2/production/heroes/**'
       - '.github/workflows/es2-hero-animation-video.yml'
       - 'src/game/render/es2/production-heroes.ts'
       - 'src/game/render/es2/character-foot-anchors.ts'
@@ -40,10 +43,16 @@ jobs:
           for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4173/ >/dev/null
           node scripts/es2-hero-animation-video.mjs
+      - name: Capture unapproved hero candidates in actual Vite dev gameplay
+        run: |
+          pnpm dev --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-hero-qa-dev.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/@vite/client | grep -q 'vite'
+          PREVIEW_URL=http://127.0.0.1:4174/ ES2_HERO_QA=1 node scripts/es2-hero-animation-video.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: es2-three-heroes-real-gameplay-mp4
+          name: es2-three-heroes-production-and-candidate-gameplay-qa
           path: artifacts/es2-hero-video/
           if-no-files-found: warn
           retention-days: 30
