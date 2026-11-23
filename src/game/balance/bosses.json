@@ -5,6 +5,13 @@
     "infernal-titan": 3300,
     "eclipse-seraph": 3000
   },
+  "movement": {
+    "abyss-monarch": { "speed": 100, "standoff": 158, "orbitSpeed": 28 },
+    "frost-sovereign": { "speed": 86, "standoff": 176, "orbitSpeed": 34 },
+    "infernal-titan": { "speed": 76, "standoff": 118, "orbitSpeed": 0 },
+    "eclipse-seraph": { "speed": 114, "standoff": 184, "orbitSpeed": 44 }
+  },
+  "phaseMovementMultipliers": [1, 1.16, 1.34],
   "attacks": {
     "shadow-fan": {
       "kind": "projectile",
