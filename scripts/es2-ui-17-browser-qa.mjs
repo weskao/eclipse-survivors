@@ -87,8 +87,12 @@ try {
       await page.evaluate(() => { if (!window.__test) throw new Error('Game test API unavailable'); window.__test.level() })
       const rarity = page.locator('img[data-es2-rarity-icon]')
       await rarity.first().waitFor({ state: 'visible', timeout: 30000 })
-      for (let i = 0; i < await rarity.count(); i++)
+      for (let i = 0; i < await rarity.count(); i++) {
+        // Every card is vertically scrollable on small phones; check its visible position after scrolling.
+        await rarity.nth(i).scrollIntoViewIfNeeded()
         record.rarity.push(await measure(rarity.nth(i), name + '/rarity/' + i, width, height))
+      }
+      await rarity.first().scrollIntoViewIfNeeded()
       await page.screenshot({ path: dir + '/' + name + '-live-rarity.png', animations: 'disabled' })
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2),
         name + ': horizontal overflow')
