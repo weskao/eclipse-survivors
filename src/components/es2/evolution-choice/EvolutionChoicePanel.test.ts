@@ -49,6 +49,19 @@ describe('EvolutionChoicePanel accessibility and claims', () => {
     expect(source).toContain('prefers-reduced-motion: reduce')
   })
 
+  it('keeps locked evolution paintings static to avoid twelve simultaneous animated WebPs', async () => {
+    const state = createState()
+    state.hero = createHero('knight')
+    const card = mount(EvolutionChoicePanel, { props: { state, active: true } })
+    expect(card.findAll('.es2-evolution-art')).toHaveLength(12)
+    expect(card.findAll('.es2-evolution-art').every(i => !i.attributes('src')!.includes('-animated.webp'))).toBe(true)
+    const recipe = EVOLUTION2_RECIPES[0]!
+    state.content.levels[recipe.weaponId] = recipe.weaponLevel
+    state.hero.skills[recipe.passiveId] = recipe.passiveLevel
+    await card.setProps({ state: { ...state, content: { ...state.content }, hero: { ...state.hero } } })
+    expect(card.find('.es2-evolution-card.is-ready .es2-evolution-art').attributes('src')).toContain('-animated.webp')
+  })
+
   it('does not expose actions when inactive', () => {
     const state = createState()
     state.hero = createHero('knight')
