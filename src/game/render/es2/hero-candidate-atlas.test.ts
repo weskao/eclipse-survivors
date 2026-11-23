@@ -3,14 +3,18 @@ import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atla
 
 describe('ES2 staged hero candidate atlas contract (QA only)', () => {
   it('has one committed local source for every new hero and East-facing action, not runtime art', () => {
-    const ids = new Set(HERO_CANDIDATE_ATLASES.map(x => `${x.hero}:${x.pose}`))
-    expect(ids.size).toBe(9)
+    const ids = new Set(HERO_CANDIDATE_ATLASES.map(x => `${x.hero}:${x.pose}:${x.direction}`))
+    expect(ids.size).toBe(10)
     expect([...ids].sort()).toEqual([
-      'shadowblade:run', 'shadowblade:attack', 'shadowblade:special',
-      'spirit-summoner:run', 'spirit-summoner:attack', 'spirit-summoner:special',
-      'crimson-paladin:run', 'crimson-paladin:attack', 'crimson-paladin:special',
+      'shadowblade:run:E', 'shadowblade:attack:E', 'shadowblade:special:E',
+      'spirit-summoner:run:E', 'spirit-summoner:attack:E', 'spirit-summoner:special:E',
+      'crimson-paladin:run:E', 'crimson-paladin:attack:E', 'crimson-paladin:special:E',
+      'shadowblade:run:S',
     ].sort())
-    for (const { url } of HERO_CANDIDATE_ATLASES) expect(url).toContain('east-4frames')
+    for (const { url, direction, cellPixels } of HERO_CANDIDATE_ATLASES) {
+      expect(url).toContain(`${direction === 'E' ? 'east' : 'south'}-4frames`)
+      expect(cellPixels).toBe(direction === 'E' ? 704 : 768)
+    }
   })
 
   it('never samples into neighboring 704px cells or invents a fifth frame', () => {
