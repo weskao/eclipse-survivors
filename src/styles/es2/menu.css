@@ -234,3 +234,34 @@
   .es2-result-stats small{font-size:.72rem}
   .es2-reward-strip{gap:5px;padding:7px}
 }
+
+/* Locale-safe wrapping: longer English and large zh-TW text must not widen cards or dialogs. */
+.es2-menu .es2-hero-copy strong,
+.es2-menu .es2-hero-copy small,
+.es2-menu .es2-hero-selection,
+.es2-menu .es2-mode-copy strong,
+.es2-menu .es2-mode-copy small,
+.es2-menu .es2-hall-links button,
+.es2-backdrop .es2-dialog-header h2,
+.es2-backdrop .es2-dialog-header p,
+.es2-backdrop .es2-dialog-actions button,
+.es2-backdrop .es2-archive-tabs button,
+.es2-backdrop .es2-archive-card strong,
+.es2-backdrop .es2-archive-card p,
+.es2-backdrop .es2-card-name,
+.es2-backdrop .es2-card-description,
+.es2-backdrop .es2-reward-strip span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.es2-menu .es2-mode-time,
+.es2-backdrop .es2-dialog-actions button {
+  white-space: normal;
+  max-width: 100%;
+}
+.es2-menu .es2-mode-time { flex-shrink: 1; text-align: right; }
+.es2-backdrop .es2-dialog-header > div:first-child,
+.es2-backdrop .es2-result,
+.es2-backdrop .es2-reward-strip { min-width: 0; }
+.es2-backdrop .es2-reward-strip span { max-width: 100%; }
