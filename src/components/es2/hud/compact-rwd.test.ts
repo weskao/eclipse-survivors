@@ -99,6 +99,13 @@ describe('compact portrait combat HUD regression', () => {
     }
   })
 
+  it('also collapses secondary HUD in short phone landscape and reserves control-safe drawer geometry', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/es2/hud.css'), 'utf8')
+    expect(css).toContain('(orientation: landscape) and (max-height: 520px) and (max-width: 900px)')
+    expect(css).toContain('.es2-hud__info-drawer')
+    expect(css).toContain('max(108px, calc(env(safe-area-inset-bottom)')
+  })
+
   it('keeps pause above the HUD using the shared accessible dialog and prevents special action overlap with the configured joystick', () => {
     const pause = readFileSync(resolve(process.cwd(), 'src/components/PauseOverlay.vue'), 'utf8')
     const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')

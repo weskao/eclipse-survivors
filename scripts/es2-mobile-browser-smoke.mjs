@@ -90,7 +90,7 @@ try {
       `${viewport.name}: joystick and dash controls overlap`)
       assert.equal(layout.dashDisabled, false, `${viewport.name}: dash must be enabled during gameplay`)
       if (viewport.name === 'portrait-320') assert.equal(layout.reducedMotion, true)
-      if (viewport.width < viewport.height) {
+      if (viewport.width < viewport.height || (viewport.height <= 520 && viewport.width <= 900)) {
         const toggle = page.locator('[data-es2-info-toggle]')
         const panel = page.locator('[data-es2-info-panel]')
         await toggle.waitFor({ state: 'visible' })
