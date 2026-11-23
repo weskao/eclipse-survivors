@@ -63,12 +63,16 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
 
 export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
+  sourceInset = 0,
 ): boolean {
   if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || phase < 1 || phase > 3) return false
   const side = Math.min(width, height)
-  if (!Number.isFinite(side) || side <= 0) return false
-  const sourceSide = image.naturalHeight
-  ctx.drawImage(image, (phase - 1) * sourceSide, 0, sourceSide, sourceSide, -side / 2, -side + 4, side, side)
+  const sourceSide = image.naturalHeight - sourceInset * 2
+  if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(sourceInset) || sourceInset < 0 || sourceSide <= 0) return false
+  ctx.drawImage(
+    image, (phase - 1) * image.naturalHeight + sourceInset, sourceInset, sourceSide, sourceSide,
+    -side / 2, -side + 4, side, side,
+  )
   return true
 }
 
