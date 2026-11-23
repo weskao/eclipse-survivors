@@ -132,7 +132,7 @@ function ageEffects(s: GameState, hero: Hero, dt: number): void {
     }
   }
   for (const z of s.numberFx) {
-    z.y -= 34 * dt
+    z.y -= (z.critical ? 42 : 34) * dt
     z.life -= dt
   }
   s.numberFx = s.numberFx.filter((z) => z.life > 0)
