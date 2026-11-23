@@ -90,6 +90,44 @@ try {
       `${viewport.name}: joystick and dash controls overlap`)
       assert.equal(layout.dashDisabled, false, `${viewport.name}: dash must be enabled during gameplay`)
       if (viewport.name === 'portrait-320') assert.equal(layout.reducedMotion, true)
+      if (viewport.width < viewport.height) {
+        const toggle = page.locator('[data-es2-info-toggle]')
+        const panel = page.locator('[data-es2-info-panel]')
+        await toggle.waitFor({ state: 'visible' })
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'false', `${viewport.name}: drawer must start collapsed`)
+        assert.equal(await panel.isVisible(), false, `${viewport.name}: optional panels occupy battlefield`)
+        assert.equal(await page.locator('.es2-hud__bottom').isVisible(), false,
+          `${viewport.name}: permanent skill bar blocks touch controls`)
+        await page.screenshot({ path: `${directory}/${viewport.name}-compact-game.png`, animations: 'disabled' })
+        await toggle.click()
+        await panel.waitFor({ state: 'visible' })
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'true')
+        const drawerBounds = await page.evaluate(() => {
+          const rect = element => {
+            const box = element.getBoundingClientRect()
+            return { x: box.x, y: box.y, right: box.right, bottom: box.bottom }
+          }
+          return {
+            drawer: rect(document.querySelector('[data-es2-info-panel]')),
+            toggle: rect(document.querySelector('[data-es2-info-toggle]')),
+            joystick: rect(document.querySelector('[data-testid="es2-stick"]')),
+            dash: rect(document.querySelector('[data-testid="es2-dash"]')),
+          }
+        })
+        const intersects = (a, b) => a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y
+        assert.ok(drawerBounds.drawer.x >= -2 && drawerBounds.drawer.y >= -2
+          && drawerBounds.drawer.right <= viewport.width + 2 && drawerBounds.drawer.bottom <= viewport.height + 2,
+        `${viewport.name}: expanded information overflows: ${JSON.stringify(drawerBounds)}`)
+        assert.ok(!intersects(drawerBounds.drawer, drawerBounds.joystick) &&
+          !intersects(drawerBounds.drawer, drawerBounds.dash),
+        `${viewport.name}: information drawer obscures a touch control`)
+        assert.ok(!intersects(drawerBounds.toggle, drawerBounds.joystick) &&
+          !intersects(drawerBounds.toggle, drawerBounds.dash),
+        `${viewport.name}: information toggle obscures a touch control`)
+        await page.screenshot({ path: `${directory}/${viewport.name}-expanded-info.png`, animations: 'disabled' })
+        await page.locator('[data-es2-info-close]').click()
+        assert.equal(await panel.isVisible(), false, `${viewport.name}: close must restore battlefield`)
+      }
       await page.screenshot({ path: `${directory}/${viewport.name}-game.png`, animations: 'disabled' })
       await page.locator('[data-testid="es2-dash"]').click()
       assert.deepEqual(errors, [], `${viewport.name}: uncaught browser runtime errors`)
@@ -164,6 +202,22 @@ try {
       assert.deepEqual([hud.width, hud.height], [900, 900], `${heroId}: HUD loads low-resolution art`)
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2),
         `${heroId}: portrait game viewport horizontally overflows`)
+      const specialBounds = await page.evaluate(() => {
+        const button = document.querySelector('[data-hero-special]')
+        const dash = document.querySelector('[data-testid="es2-dash"]')
+        const joystick = document.querySelector('[data-testid="es2-stick"]')
+        if (!button || !dash || !joystick) return null
+        const rect = element => {
+          const b = element.getBoundingClientRect()
+          return { x: b.x, y: b.y, right: b.right, bottom: b.bottom }
+        }
+        return { special: rect(button), dash: rect(dash), joystick: rect(joystick) }
+      })
+      assert.ok(specialBounds, `${heroId}: special action button missing`)
+      const overlaps = (a, b) => a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y
+      assert.ok(!overlaps(specialBounds.special, specialBounds.dash) &&
+        !overlaps(specialBounds.special, specialBounds.joystick),
+      `${heroId}: special action overlaps touch controls: ${JSON.stringify(specialBounds)}`)
       await page.screenshot({ path: `${directory}/portrait-375-${heroId}-game.png`, animations: 'disabled' })
       assert.deepEqual(errors, [], `${heroId}: uncaught browser errors`)
       console.log(`PASS ${heroId}: committed portrait and action preview, same hero on in-game HUD`)
