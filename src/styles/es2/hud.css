@@ -398,7 +398,7 @@
 
 /* Touch tablets have a third input control: hero specials. Keep the desktop
    equipment strip in the shared information drawer, not across those controls. */
-@media (pointer: coarse) and (min-width: 701px) and (max-width: 1100px) {
+@media (pointer: coarse) and (min-width: 701px) and (max-width: 1100px) and (min-height: 521px) {
   .es2-hud__hero { width: min(34vw, 285px); }
   .es2-hud__encounter { width: min(470px, calc(100vw - 24px)); }
   .es2-hud__info-drawer { width: min(330px, calc(100vw - 16px)); }
