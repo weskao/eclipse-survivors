@@ -64,4 +64,17 @@ describe('ES2 world art live asset mapping', () => {
     expect(drawProductionBossFrame(ctx, loaded(2123, 708), 1, 236, 246)).toBe(false)
     expect(drawProductionEnemyFrame(ctx, loaded(1727, 288), 1, 96, 110)).toBe(false)
   })
+
+  it('excludes transparent gutters from each native 3x boss phase without changing its foot anchor', () => {
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawProductionBossFrame(ctx, loaded(2268, 756), 3, 236, 246, 16)).toBe(true)
+    expect(calls[0]?.slice(1, 5)).toEqual([1528, 16, 724, 724])
+    expect(calls[0]?.slice(5)).toEqual([-118, -232, 236, 236])
+    expect(drawProductionBossFrame(ctx, loaded(2268, 756), 2, 236, 246, 16)).toBe(true)
+    expect(calls[1]?.slice(1, 5)).toEqual([772, 16, 724, 724])
+    expect(drawProductionBossFrame(ctx, loaded(2268, 756), 1, 236, 246, -1)).toBe(false)
+    expect(drawProductionBossFrame(ctx, loaded(2268, 756), 1, 236, 246, 378)).toBe(false)
+    expect(calls).toHaveLength(2)
+  })
 })
