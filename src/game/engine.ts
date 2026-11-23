@@ -718,6 +718,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const requested = params?.get('showcase') === '1' ? params.get('es2BossArtQa') : null
       const qaBossId = requested && Object.hasOwn(BOSS_DEFINITIONS, requested)
         ? requested as BossId : null
+      // The default camera follows the hero. Place QA actors inside the real
+      // 236px visual bounds, including short landscape viewports.
+      const bossOffsetX = qaBossId ? Math.min(165, s.W * 0.16) : 165
+      const bossOffsetY = qaBossId && s.H < 500 ? Math.round(s.H * 0.4) : -8
       if (qaBossId) bosses?.reset(s)
       s.mobs = []
       s.enemyShots = []
@@ -726,16 +730,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       s.bossSpawned = true
       hero.inv = 120
       hero.attack = 10000
-      if (qaBossId && bosses) bosses.spawn(s, qaBossId, { x: hero.x + 165, y: hero.y - 8 }, hooks)
+      if (qaBossId && bosses)
+        bosses.spawn(s, qaBossId, { x: hero.x + bossOffsetX, y: hero.y + bossOffsetY }, hooks)
       else spawnMob(s, 'boss')
       const boss = s.mobs.find(e => e.type === 'boss')
       if (!boss) return
-      boss.x = hero.x + 165
-      boss.y = hero.y - 8
+      boss.x = hero.x + bossOffsetX
+      boss.y = hero.y + bossOffsetY
       boss.hp = boss.max * (phase === 1 ? 1 : phase === 2 ? 0.56 : 0.25)
       if (qaBossId && phase > 1) bosses?.tick(s, 1 / 60, hooks)
-      // On narrow screens, frame the boss fully without hiding it past the right edge.
-      s.cam.x = hero.x + (qaBossId ? Math.max(0, 165 - s.W * 0.16) : 0)
+      s.cam.x = hero.x
       s.cam.y = hero.y
     },
   }
