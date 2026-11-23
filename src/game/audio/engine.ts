@@ -2,6 +2,7 @@ import { random } from '../math'
 import type { GameMode, SfxCue } from '../types'
 import { createBattleScore, createMenuScore } from './music'
 import { createBossScore } from './boss-score'
+import { createCinematicMusic } from './cinematic'
 import { createEs2Score } from './es2/score'
 import type { BossId } from '../content/bosses/definitions'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
@@ -22,10 +23,11 @@ export interface OscillatorLike extends AudioNodeLike {
   start(when: number): void
   stop(when: number): void
 }
-export interface BufferLike { getChannelData(channel: number): Float32Array }
+export interface BufferLike { getChannelData(channel: number): Float32Array; readonly duration?: number }
 export interface BufferSourceLike extends AudioNodeLike {
   buffer: BufferLike | null
-  start(when: number): void
+  loop?: boolean
+  start(when: number, offset?: number): void
   stop(when: number): void
 }
 export interface FilterLike extends AudioNodeLike {
@@ -44,6 +46,7 @@ export interface AudioContextLike {
   createGain(): GainLike
   createBuffer(channels: number, length: number, sampleRate: number): BufferLike
   createBufferSource(): BufferSourceLike
+  decodeAudioData?(data: ArrayBuffer): Promise<BufferLike>
   createBiquadFilter(): FilterLike
 }
 
@@ -51,6 +54,9 @@ export interface AudioSystemOptions {
   bgm: BgmElement
   /** Pre-rendered title music; when omitted, retain the legacy synth for tests/fallback. */
   menuBgm?: BgmElement
+  bossTracks?: Partial<Record<BossId, readonly [string, string, string]>>
+  warningTrack?: string
+  loadMusic?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Omit for `localStorage`; `null` disables persistence. */
   storage?: SettingsStorage | null
   /** Omit for `window.AudioContext ?? webkitAudioContext`. */
@@ -95,11 +101,14 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let interrupted = false
   let mode: GameMode = 'menu'
   let intensity: CombatIntensity = 'calm'
+  let warningMix = false
   let noiseBuffer: BufferLike | null = null
   const recentSfx: number[] = []
   const menu = createMenuScore()
   const battle = createBattleScore()
   const bossScore = createBossScore()
+  const cinematic = createCinematicMusic(opts, () => ac, () => musicBus,
+    () => mode === 'play' && !interrupted && musicOn && musicVolume > 0)
   let resultScore = createEs2Score()
   let resultScene: 'victory' | 'defeat' | null = null
   const sfxLast = new Map<SfxCue, number>()
@@ -131,6 +140,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
 
   const mp3Level = (): number =>
     (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0 :
+      warningMix && mode === 'play' ? 0.12 :
       intensity === 'combat' && mode === 'play' ? 0.35 : 0.38) * musicVolume / 100
 
   bgm.volume = mp3Level()
@@ -218,6 +228,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         void ac.resume().catch(() => { /* Browsers may require another gesture. */ })
       }
       playScore()
+      cinematic.sync()
       if (recovering && ac && resultScene) resultScore.resume(ac.currentTime)
     } catch {
       ac = null
@@ -231,6 +242,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     interrupted = true
     bgm.pause()
     menuBgm?.pause()
+    cinematic.stop(true)
     resultScore.interrupt()
     if (ac && ac.state === 'running') {
       void ac.suspend().catch(() => { /* Visibility can change during suspension. */ })
@@ -253,8 +265,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       bgm.volume = mp3Level()
       if (menuBgm) menuBgm.volume = menuLevel()
       if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
-      if (!musicVolume) { bgm.pause(); menuBgm?.pause() }
-      else if (musicOn) playScore()
+      if (!musicVolume) { bgm.pause(); menuBgm?.pause(); cinematic.stop(true) }
+      else if (musicOn) { playScore(); cinematic.sync() }
     },
     setSfxVolume(value: number) {
       sfxVolume = clampVolume(value, sfxVolume)
@@ -279,6 +291,12 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     setBossTheme(id: BossId | null, phase = 1) {
       // The ID comes from the actual living actor, never a predicted timer.
       bossScore.select(id, phase, ac ? ac.currentTime : 0)
+      if (id) warningMix = false
+      cinematic.boss(id, phase)
+    },
+    setBossWarning(seconds) {
+      warningMix = seconds !== null && seconds > 0 && seconds <= 15
+      cinematic.warning(seconds)
     },
     playSfx(cue) {
       const ctx = running()
@@ -301,7 +319,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         return
       }
       if (mode !== 'play') return
-      if (intensity === 'boss') bossScore.schedule(ctx.currentTime, tone)
+      cinematic.sync()
+      if (intensity === 'boss' && !cinematic.playingBoss) bossScore.schedule(ctx.currentTime, tone)
       else if (bgm.paused) battle.schedule(ctx.currentTime, tone)
       else if (intensity === 'combat') battle.schedule(ctx.currentTime, combatPercussion)
       if (!bgm.paused) {
@@ -319,11 +338,15 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         resultScore = createEs2Score()
       }
       if (mode !== 'menu') menuBgm?.pause()
+      if (mode !== 'play') cinematic.stop(mode === 'paused' || mode === 'level')
       if (mode === 'menu' || mode === 'paused' || mode === 'result') bgm.pause()
       if (mode === 'menu') {
         intensity = 'calm'
         battle.setIntensity('calm')
         bossScore.select(null, 1, ac ? ac.currentTime : 0)
+        warningMix = false
+        cinematic.boss(null)
+        cinematic.warning(null)
         bgm.currentTime = 0
         if (previous !== 'menu' && menuBgm) menuBgm.currentTime = 0
         menu.setClock(ac ? ac.currentTime + 0.06 : 0)
@@ -332,6 +355,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       bgm.volume = mp3Level()
       if (menuBgm) menuBgm.volume = menuLevel()
       if (mode === 'play' || mode === 'menu') playScore()
+      if (mode === 'play') cinematic.sync()
     },
     resetBattleClock(delay) {
       battle.setClock(ac ? ac.currentTime + delay : 0)
@@ -346,6 +370,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         if (musicOn) {
           if (ac && musicBus) musicBus.gain.setTargetAtTime(MUSIC_GAIN * musicVolume / 100, ac.currentTime, 0.06)
           wake()
+          cinematic.sync()
           return true
         }
       }
@@ -354,13 +379,14 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
       if (musicOn) {
         wake()
-        if (screen === 'play') playScore()
+        if (screen === 'play') { playScore(); cinematic.sync() }
         const t = ac ? ac.currentTime + 0.04 : 0
         menu.setClock(t)
         battle.setClock(t)
       } else {
         bgm.pause()
         menuBgm?.pause()
+        cinematic.stop(true)
       }
       return musicOn
     },
@@ -384,6 +410,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       interrupted = true
       bgm.pause()
       menuBgm?.pause()
+      cinematic.dispose()
       ac?.close().catch(() => {})
       ac = null
       master = null
