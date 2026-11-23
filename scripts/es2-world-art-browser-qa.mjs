@@ -132,6 +132,14 @@ try {
     actual.frames = asset.frames
     actual.sha256 = asset.sha256
     actual.qaStatus = asset.qaStatus
+    // RED: require an independently inspected visible region for every source frame.
+    assert.equal(actual.frameMetrics?.length, asset.frames,
+      asset.id + ': missing per-frame pixel review evidence')
+    for (const frame of actual.frameMetrics) {
+      assert.ok(frame.visiblePixels > 0, asset.id + ': blank atlas frame ' + frame.index)
+      assert.ok(frame.bounds?.width > 0 && frame.bounds?.height > 0,
+        asset.id + ': missing visible bounds for frame ' + frame.index)
+    }
   }
   await writeFile(output + '/browser-decode-49.json',
     JSON.stringify({ source: 'real chromium production preview',
