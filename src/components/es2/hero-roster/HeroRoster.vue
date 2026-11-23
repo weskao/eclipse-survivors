@@ -2,7 +2,7 @@
 import { t } from '../../../i18n'
 import { nextTick, ref } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId } from '../../../game/content/heroes'
-import { PRODUCTION_HERO_ACTION_SOURCES } from '../../../game/render/es2/production-heroes'
+import { PRODUCTION_HERO_POSE_SOURCES } from '../../../game/render/es2/production-heroes'
 import HeroPortrait from './HeroPortrait.vue'
 import HeroStats from './HeroStats.vue'
 import type { JobId } from '../../../game/types'
@@ -38,7 +38,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       :aria-label="[t(hero.label), t(hero.subtitle), t(hero.description), t(hero.strengths.join(' / ')), t(hero.weaknesses.join(' / '))].join(' · ')"
       @click="select(hero.id)" @keydown="move($event, hero.id)">
-      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${PRODUCTION_HERO_ACTION_SOURCES[hero.id]})` }" aria-hidden="true"></span>
+      <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${PRODUCTION_HERO_POSE_SOURCES[hero.id].action})` }" aria-hidden="true"></span>
       <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="t(hero.label + ' 角色插畫')" />
       <span class="es2-roster__copy">
         <strong>{{ t(hero.label) }}</strong>
