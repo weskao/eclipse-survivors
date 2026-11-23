@@ -9,6 +9,7 @@ import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import { type HealthBarMotion } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
 import type { WorldRuntimeImages } from './es2/production-world'
@@ -47,6 +48,7 @@ export interface RenderAssets {
   magicGlow: HTMLCanvasElement | null
   gems: GemSprites
   mobTint: MobTintCache
+  healthBars: WeakMap<Mob, HealthBarMotion>
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -65,6 +67,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     magicGlow: buildMagicGlow(makeCanvas),
     gems: buildGemSprites(makeCanvas),
     mobTint: { makeCanvas, variants: new WeakMap() },
+    healthBars: new WeakMap(),
   }
 }
 
@@ -140,7 +143,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
     const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase
       ? { image: bossImage, phase: bossSnapshot.phase } : undefined
-    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt)
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars)
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)

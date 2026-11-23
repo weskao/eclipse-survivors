@@ -50,6 +50,8 @@ export interface Hero {
 }
 
 export interface Mob {
+  /** Authored production identity for controller-owned bosses; absent on the legacy boss. */
+  bossArtId?: import('./content/bosses/definitions').BossId
   x: number; y: number; type: MobType; hp: number; max: number; r: number; speed: number; dmg: number
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
   ai?: EnemyBrain

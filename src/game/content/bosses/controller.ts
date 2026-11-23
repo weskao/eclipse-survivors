@@ -306,7 +306,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       if (!definition) return null
       const hp = Math.round(definition.health * getMode(state.runMode).modifiers.enemyHp)
       const boss: Mob = {
-        x: point.x, y: point.y, type: 'boss',
+        x: point.x, y: point.y, type: 'boss', bossArtId: id,
         hp, max: hp, r: 48, speed: 26, dmg: 22,
         phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0, bossPhase: 1,
       }

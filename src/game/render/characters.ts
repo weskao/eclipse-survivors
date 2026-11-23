@@ -9,6 +9,7 @@ import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
 import { drawProductionBossFrame } from './es2/production-world'
+import { sampleHealthBar, type HealthBarMotion } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -222,6 +223,7 @@ export function drawCharacter(
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3 },
+  healthBars?: WeakMap<Mob, HealthBarMotion>,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -321,15 +323,30 @@ export function drawCharacter(
     }
   }
   ctx.restore()
-  if (mob && mob.hp < mob.max && mob.type !== 'boss') {
-    const bar = Math.max(34, sx * 0.58)
-    ctx.fillStyle = '#020608e6'; ctx.fillRect(x - bar / 2, y - sy - 8, bar, 5)
-    ctx.fillStyle = '#d56b56'; ctx.fillRect(x - bar / 2 + 1, y - sy - 7, (bar - 2) * Math.max(0, mob.hp / mob.max), 3)
-  }
-  if (mob && mob.type === 'boss') {
-    const bar = 190
-    ctx.fillStyle = '#05090dec'; ctx.fillRect(x - bar / 2, y - sy - 25, bar, 12)
-    ctx.strokeStyle = '#dcc391aa'; ctx.strokeRect(x - bar / 2, y - sy - 25, bar, 12)
-    ctx.fillStyle = '#f09663'; ctx.fillRect(x - bar / 2 + 2, y - sy - 23, (bar - 4) * Math.max(0, mob.hp / mob.max), 8)
+  if (mob) {
+    // The cache is renderer-owned and weakly keyed. Full-health enemies only seed one entry;
+    // no gradients, timers or extra frame loops are needed in dense combat.
+    const motion = healthBars ? sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
+      : { front: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))),
+          trail: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))) }
+    if (mob.type === 'boss') {
+      const bar = 190, left = x - bar / 2, top = y - sy - 25
+      ctx.fillStyle = '#05090dec'; ctx.fillRect(left, top, bar, 12)
+      ctx.strokeStyle = '#dcc391aa'; ctx.strokeRect(left, top, bar, 12)
+      if (motion.trail > motion.front + 0.002) {
+        ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.trail, 8)
+      }
+      ctx.fillStyle = '#ce63a5'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
+      ctx.fillStyle = '#f9c0d8'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
+    } else if (mob.hp < mob.max) {
+      const bar = Math.max(34, sx * 0.58), left = x - bar / 2, top = y - sy - 8
+      ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
+      if (motion.trail > motion.front + 0.002) {
+        ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.trail, 4)
+      }
+      ctx.fillStyle = mob.elite ? '#d6a4f3' : '#e98275'
+      ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 4)
+      ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 1)
+    }
   }
 }
