@@ -33,10 +33,10 @@ function verifyWebP(path: string, width: number, height: number, hash: string): 
 }
 
 describe('four distinct treasure icons — native 3x source and active UI mapping', () => {
-  it.each(ids)('%s uses genuine transparent 3x art while remaining pending review', id => {
+  it.each(ids)('%s uses genuine transparent 3x art with owner-approved visual review', id => {
     const entry = manifest.assets.find(asset => asset.id === id)
     expect(entry).toBeDefined()
-    expect(entry!.status).toBe('needs-human-approval')
+    expect(entry!.status).toBe('approved')
     expect(entry!.width).toBe(240)
     expect(entry!.height).toBe(240)
     expect(entry!.frameWidth).toBe(entry!.width)
@@ -47,7 +47,7 @@ describe('four distinct treasure icons — native 3x source and active UI mappin
     expect(entry!.qa?.originalSheetPixels).toBe(1254)
     expect(entry!.qa?.masterPath).toBe(`sources/${id}-master@source.webp`)
     expect(entry!.qa?.provenance).toContain('newly generated')
-    expect(entry!.qa?.visualReview).toBe('pending')
+    expect(entry!.qa?.visualReview).toBe('approved')
     expect(entry!.qa?.browserReview).toBe('pending')
     expect(verifyWebP(entry!.path, 240, 240, entry!.sha256)).toBeLessThanOrEqual(entry!.maxBytes)
     verifyWebP(entry!.qa!.masterPath, 627, 627, entry!.qa!.masterSha256)
