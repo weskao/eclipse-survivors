@@ -6,7 +6,7 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
-import { drawProductionHeroFrame, productionHeroMotionReady, type ProductionHeroArtwork } from './es2/production-heroes'
+import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
 import { drawProductionBossFrame } from './es2/production-world'
 import type { Ctx2D } from './ctx'
@@ -280,7 +280,8 @@ export function drawCharacter(
       // Eight-direction atlases already contain an authored left-facing frame.
       // Mirroring them produces the wrong direction and artwork. Keep the
       // original fallback mirror for unloaded art.
-      const directionalReady = productionHeroMotionReady(productionImage)
+      const directionalReady = productionHeroPoseReady(productionImage, anim)
+        || productionHeroMotionReady(productionImage)
         || (productionImage?.complete
           && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512)
       // Follow the same octant/facing contract as the original three heroes.
