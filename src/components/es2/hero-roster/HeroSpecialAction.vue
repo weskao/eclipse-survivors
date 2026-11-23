@@ -68,18 +68,18 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special__fill { position: absolute; inset: auto auto 0 0; height: 5px; background: linear-gradient(90deg, var(--es2-special-accent), var(--es2-special-light)); transition: width .1s linear; }
 /* A bounded single-button reveal; no animated sprites or filters in the game canvas. */
 .es2-hero-special {
-  --es2-special-accent: #b997ff;
-  --es2-special-light: #f2dcff;
+  --es2-special-accent: #aaa0b4;
+  --es2-special-light: #e5dce4;
   --es2-special-panel: #241731;
 }
 .es2-hero-special[data-hero="spirit-summoner"] {
-  --es2-special-accent: #78dfee;
-  --es2-special-light: #e3ffff;
+  --es2-special-accent: #85b6b0;
+  --es2-special-light: #c3ddd4;
   --es2-special-panel: #122c3b;
 }
 .es2-hero-special[data-hero="crimson-paladin"] {
-  --es2-special-accent: #f7b47d;
-  --es2-special-light: #fff1bf;
+  --es2-special-accent: #b99a74;
+  --es2-special-light: #ebd2a7;
   --es2-special-panel: #371d2a;
 }
 .es2-hero-special__button {
@@ -94,21 +94,21 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
   position: absolute;
   inset: -54%;
   pointer-events: none;
-  background: conic-gradient(from 0deg, transparent 0 30%, var(--es2-special-accent) 48%, transparent 65% 100%);
-  opacity: .06;
+  background: linear-gradient(108deg, transparent 20%, #fff3db19 42%, var(--es2-special-light) 50%, transparent 70%);
+  opacity: .035;
 }
 .es2-hero-special__button[data-ready="true"] {
   box-shadow: inset 0 1px 0 #ffffff55, 0 0 0 1px #ffffff18, 0 0 18px color-mix(in srgb, var(--es2-special-accent) 38%, transparent);
 }
 .es2-hero-special__button[data-ready="true"]::before {
-  opacity: .26;
-  animation: es2-special-orbit 5s linear infinite;
+  opacity: .14;
+  animation: es2-special-sheen 6.5s ease-in-out infinite;
 }
 .es2-hero-special__button:active:not(:disabled) { transform: translateY(1px) scale(.98); }
 .es2-hero-special__button:disabled { opacity: .86; }
 .es2-hero-special__hint { color: var(--es2-special-light); }
 .es2-hero-special__icon { filter: drop-shadow(0 0 4px #ffffff44); }
-@keyframes es2-special-orbit { to { transform: rotate(360deg); } }
+@keyframes es2-special-sheen { 0%, 63%, 100% { transform: translateX(-90%); } 85% { transform: translateX(90%); } }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }
 @media (prefers-reduced-motion: reduce) {
   .es2-hero-special__fill { transition: none; }
