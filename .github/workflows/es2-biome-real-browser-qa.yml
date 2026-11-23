@@ -1,0 +1,45 @@
+name: ES2 biomes native-source actual Chromium gameplay QA
+on:
+  push:
+    branches: [feature/es2-art-qa-biomes]
+    paths:
+      - 'src/assets/es2/production/biomes/*.webp'
+      - 'src/assets/es2/production/biomes/manifest.json'
+      - 'src/assets/es2/production/biomes/qa-live-browser.mjs'
+      - '.github/workflows/es2-biome-real-browser-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: es2-biome-actual-browser-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  gameplay:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Chromium for actual browser rendering
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Start production preview and capture all four active gameplay biomes
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 --strictPort >/tmp/es2-biome-preview.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node src/assets/es2/production/biomes/qa-live-browser.mjs
+      - name: Preserve the genuine browser screenshots, video, and source measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: es2-biomes-native-source-real-browser-evidence
+          path: artifacts/es2-biomes-gameplay/
+          retention-days: 7
+          if-no-files-found: warn
