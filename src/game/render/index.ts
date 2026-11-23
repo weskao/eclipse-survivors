@@ -12,6 +12,7 @@ import { drawCharacter } from './characters'
 import { type HealthBarMotion } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
+import { preloadHeroSpecialVfx } from './es2/hero-special-vfx'
 import type { WorldRuntimeImages } from './es2/production-world'
 import { drawLiveFactionArt, drawLiveFactionProjectiles, type FactionArtwork } from './es2/production-factions'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
@@ -58,6 +59,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
   const query = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
     : null
+  preloadHeroSpecialVfx()
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     heroSheets: createHeroSheets(makeCanvas),
