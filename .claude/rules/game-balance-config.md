@@ -18,7 +18,7 @@ Applies to every Create / Read / Update / Delete of gameplay numbers, character 
 
 - Every newly introduced or updated ES2 boss must declare its pursuit speed, standoff distance and optional orbit speed in `src/game/balance/bosses.json` under `movement`, with shared phase escalation from `phaseMovementMultipliers`. Do not hard-code gameplay speeds in renderers or duplicate them in boss-specific classes.
 - Pursuit must use current world-space hero/boss positions and respect slow/stagger, pause, boss defeat and the existing step obstacle resolver. Keep telegraphed attack geometry fixed during windup, so visibly escaping an indicated area remains reliable; no invisible mid-windup redirects or unavoidable instant lunges.
-- Preserve per-boss visual identity and reduced-motion preference. Reuse the existing approved runtime phase atlas for lightweight movement until separately sourced, genuine native-3x locomotion frames are reviewed. New animation assets require source, per-frame QA, actual-game screenshots and human review; a QA-PENDING candidate must not silently ship in production.
+- Preserve per-boss visual identity and reduced-motion preference. Reuse the currently wired runtime phase atlas for lightweight movement, without claiming it has passed human QA, until genuine native-3x locomotion frames are separately sourced and reviewed. New animation assets require source, per-frame QA, actual-game screenshots and human review; a QA-PENDING candidate must not silently ship in production.
 
 ## Typical change sequence
 
