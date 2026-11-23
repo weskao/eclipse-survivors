@@ -77,6 +77,13 @@ try {
   assert.equal(found.length, 49, 'All 49 authored images must be wired to the real archive UI')
   assert.equal(new Set(found.map(a => a.category + '/' + a.id)).size, 49, 'Duplicate world-art ID')
   assert.equal(new Set(found.map(a => a.url)).size, 49, 'Two assets share the same URL')
+  // Manifest geometry is authoritative; do not infer source cells from preview CSS.
+  const byId = new Map(expected.map(asset => [asset.category + '/' + asset.id, asset]))
+  const requested = found.map(entry => {
+    const geometry = byId.get(entry.category + '/' + entry.id)
+    assert.ok(geometry, 'Unknown world-art entry ' + entry.category + '/' + entry.id)
+    return { ...entry, ...geometry }
+  })
   const audits = await page.evaluate(async entries => {
     const results = []
     for (const entry of entries) {
@@ -96,6 +103,39 @@ try {
         if (pixels[p] === 0) transparent++
         if (pixels[p] === 255) opaque++
       }
+      // Per-cell QA measures actual decoded source pixels (not scaled gallery screenshots).
+      // An edge contact or repeated hash is a review flag, never automatic approval.
+      const frameMetrics = []
+      for (let frame = 0; frame < entry.frames; frame++) {
+        const originX = (frame % entry.columns) * entry.frameWidth
+        const originY = Math.floor(frame / entry.columns) * entry.frameHeight
+        let left = entry.frameWidth, top = entry.frameHeight, right = -1, bottom = -1
+        let visiblePixels = 0, edgePixels = 0, fingerprint = 2166136261
+        for (let y = 0; y < entry.frameHeight; y++) for (let x = 0; x < entry.frameWidth; x++) {
+          const offset = ((originY + y) * canvas.width + originX + x) * 4
+          const alpha = pixels[offset + 3]
+          for (let channel = 0; channel < 4; channel++)
+            fingerprint = Math.imul(fingerprint ^ pixels[offset + channel], 16777619)
+          if (alpha <= 16) continue
+          visiblePixels++
+          left = Math.min(left, x); top = Math.min(top, y)
+          right = Math.max(right, x); bottom = Math.max(bottom, y)
+          if (x === 0 || y === 0 || x === entry.frameWidth - 1 || y === entry.frameHeight - 1)
+            edgePixels++
+        }
+        frameMetrics.push({
+          index: frame, visiblePixels, edgePixels,
+          bounds: visiblePixels ? { x: left, y: top, width: right - left + 1,
+            height: bottom - top + 1 } : null,
+          fingerprint: (fingerprint >>> 0).toString(16).padStart(8, '0'),
+        })
+      }
+      const possibleDuplicateFrames = []
+      for (let left = 0; left < frameMetrics.length; left++)
+        for (let right = left + 1; right < frameMetrics.length; right++)
+          if (frameMetrics[left].fingerprint === frameMetrics[right].fingerprint)
+            possibleDuplicateFrames.push([left, right])
+
       let seamHorizontal = null
       let seamVertical = null
       if (entry.category === 'biomes' && entry.id.endsWith(':ground')) {
@@ -115,10 +155,11 @@ try {
       results.push({ category: entry.category, id: entry.id, src: entry.url,
         width: image.naturalWidth, height: image.naturalHeight,
         transparentPixels: transparent, opaquePixels: opaque,
+        frameMetrics, possibleDuplicateFrames,
         seamHorizontalRgbMean: seamHorizontal, seamVerticalRgbMean: seamVertical })
     }
     return results
-  }, found)
+  }, requested)
   for (const asset of expected) {
     const actual = audits.find(a => a.category === asset.category && a.id === asset.id)
     assert.ok(actual, 'Missing real browser image: ' + asset.category + '/' + asset.id)
@@ -127,6 +168,8 @@ try {
     assert.ok(actual.opaquePixels > 0, asset.id + ': image has no visible art pixels')
     if (asset.alpha) assert.ok(actual.transparentPixels > 0, asset.id + ': expected transparent sheet')
     else assert.equal(actual.transparentPixels, 0, asset.id + ': ground cannot have missing alpha tiles')
+    assert.equal(actual.frameMetrics.length, asset.frames,
+      asset.id + ': source cell count does not match manifest')
     actual.frameWidth = asset.frameWidth
     actual.frameHeight = asset.frameHeight
     actual.frames = asset.frames
@@ -141,6 +184,11 @@ try {
         asset.id + ': missing visible bounds for frame ' + frame.index)
     }
   }
+  const edgeReview = audits.filter(asset => asset.frameMetrics.some(frame => frame.edgePixels > 0))
+  const repeatedReview = audits.filter(asset => asset.possibleDuplicateFrames.length > 0)
+  console.log('World art per-frame review flags (not automatic failures): ' +
+    edgeReview.length + ' sheets with touched cell edges; ' +
+    repeatedReview.length + ' sheets with possible repeated frames')
   await writeFile(output + '/browser-decode-49.json',
     JSON.stringify({ source: 'real chromium production preview',
       note: 'Technical inspection only. All images require separate human visual/native-3x review.',
