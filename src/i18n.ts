@@ -1661,6 +1661,8 @@ const english = new Map<string, string>([
 , ["本次遠征英雄：","Expedition Hero: "]
 , ["領取 ","Claim "]
 , ["放逐 ","Banish "]
+  , ['✦ 已獲得聖物：', '✦ Relic obtained: ']
+  , ['存活 {seconds} 秒 · 擊敗 {kills} 隻魔物 · 等級 {level}', 'Survived {seconds}s · Defeated {kills} enemies · Lv.{level}']
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],
@@ -1715,12 +1717,32 @@ export function applyDocumentLocale(): void { syncDocument() }
 // Exact data strings work for immutable game definitions; phrases handle notices with live values.
 const fragments = [...english.keys()].filter(key => key.length >= 2).sort((a, b) => b.length - a.length)
 const expression = new RegExp(fragments.map(s => s.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&')).join('|'), 'g')
+// An English item name can appear inside an otherwise Chinese UI label.
+// Match only complete words so "Time" never changes "Timekeeper".
+const englishNameFragments = [...chineseByEnglish.keys()]
+  .filter(key => key.length >= 4 && /^[A-Za-z][A-Za-z0-9' -]*$/.test(key) &&
+    /[\u3400-\u9fff]/.test(chineseByEnglish.get(key) ?? ''))
+  .sort((a, b) => b.length - a.length)
+const englishNameExpression = new RegExp(englishNameFragments
+  .map(value => value.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\$&')).join('|'), 'g')
+
 export function t(value: unknown, params?: Record<string, unknown>): string {
-  let source = value === null || value === undefined ? '' : String(value)
-  if (params) source = source.replace(/\{(\w+)\}/g, (whole, key: string) =>
-    Object.hasOwn(params, key) ? String(params[key]) : whole)
-  if (currentLocale.value === 'zh-TW') return chinese.get(source) ?? chineseByEnglish.get(source) ?? source
-  return english.get(source) ?? (/[\u3400-\u9fff]/.test(source)
-    ? source.replace(expression, match => english.get(match) ?? match) : source)
+  const source = value === null || value === undefined ? '' : String(value)
+  let translated: string
+  if (currentLocale.value === 'zh-TW') {
+    translated = chinese.get(source) ?? chineseByEnglish.get(source) ??
+      source.replace(englishNameExpression, (match, index: number, text: string) => {
+        if (/[A-Za-z]/.test(text[index - 1] ?? '') ||
+          /[A-Za-z]/.test(text[index + match.length] ?? '')) return match
+        return chineseByEnglish.get(match) ?? match
+      })
+  } else {
+    translated = english.get(source) ?? (/[\u3400-\u9fff]/.test(source)
+      ? source.replace(expression, match => english.get(match) ?? match) : source)
+  }
+  // Substitute user/game values after translating the template. The values are data,
+  // not translation keys, and must never be changed by a fragment match.
+  return params ? translated.replace(/\{(\w+)\}/g, (whole, key: string) =>
+    Object.hasOwn(params, key) ? String(params[key]) : whole) : translated
 }
 export const formatNumber = (number: number): string => new Intl.NumberFormat(currentLocale.value).format(number)
