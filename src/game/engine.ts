@@ -6,6 +6,7 @@ import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
 import type { AudioSystem } from './audio/types'
 import { dash as heroDash } from './combat'
+import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
 import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
@@ -406,15 +407,28 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.runMode = ui.runMode
     s.cosmetic = displayProfile().equippedCosmetics[s.choice]
     const saved = metaStore?.get()
+    const unlocked = saved?.status === 'ready' ? saved.state : null
     const permanent = metaStore
-      ? (saved?.status === 'ready' && saved.state
-        ? { power: saved.state.research.power ?? 0, vitality: saved.state.research.vitality ?? 0 }
-        : { power: 0, vitality: 0 })
+      ? { power: unlocked?.research.power ?? 0, vitality: unlocked?.research.vitality ?? 0 }
       : profileStore.get().upgrades
     if (s.hero) {
-      s.hero.damage *= 1 + 0.04 * permanent.power
-      s.hero.max += 12 * permanent.vitality
-      s.hero.hp += 12 * permanent.vitality
+      const bonusHp = BALANCE.meta.research.vitality.benefitPerRank * permanent.vitality
+      s.hero.damage *= 1 + BALANCE.meta.research.power.benefitPerRank * permanent.power
+      s.hero.max += bonusHp
+      s.hero.hp += bonusHp
+      if (unlocked) {
+        const bonuses = unlocked.bonuses
+        const startBonuses = BALANCE.meta.startingBonuses
+        s.xpGainMultiplier = 1 + (unlocked.research.insight ?? 0) * BALANCE.meta.research.insight.benefitPerRank
+          + (bonuses.includes('ember-spark') ? startBonuses['ember-spark'].bonus : 0)
+        s.pickupGainMultiplier = 1 + (unlocked.research.scavenging ?? 0) * BALANCE.meta.research.scavenging.benefitPerRank
+          + (bonuses.includes('wanderer-kit') ? startBonuses['wanderer-kit'].bonus : 0)
+        if (bonuses.includes('guardian-vow')) {
+          const extra = Math.round(s.hero.max * startBonuses['guardian-vow'].bonus)
+          s.hero.max += extra
+          s.hero.hp += extra
+        }
+      }
     }
     ui.runResult = null
     ui.rewards = null
