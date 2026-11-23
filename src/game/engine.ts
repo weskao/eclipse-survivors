@@ -31,6 +31,7 @@ import { createFactionBridge } from './content/enemies/integration'
 import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
 import { loadProductionFactionArt } from './render/es2/production-factions'
 import { loadProductionHeroes } from './render/es2/production-heroes'
+import { markHeroSpecialAnimation } from './render/animation'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
 import { spawnMob } from './spawn'
@@ -842,6 +843,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     activateHeroSpecial() {
       if (s.mode !== 'play' || ui.settingsOpen || !heroSpecialization) return false
       const activated = heroSpecialization.activate()
+      if (activated && s.hero) markHeroSpecialAnimation(s.hero, s.worldClock)
       if (activated) hud()
       return activated
     },
