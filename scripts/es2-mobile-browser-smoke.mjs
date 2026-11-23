@@ -30,6 +30,42 @@ try {
       await page.goto(target, { waitUntil: 'domcontentloaded' })
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
       assert.match(await page.locator('#gameVersion').innerText(), /^v[0-9]/)
+      const assertHomepage = async (section) => {
+        await page.locator('.es2-menu').evaluate(element => { element.scrollTop = 0 })
+        const layout = await page.evaluate(() => {
+          const start = document.querySelector('.es2-start')
+          const rect = start.getBoundingClientRect()
+          const root = document.querySelector('.es2-menu')
+          return {
+            startTop: rect.top, startBottom: rect.bottom,
+            viewportHeight: window.visualViewport?.height ?? window.innerHeight,
+            documentWidth: document.documentElement.scrollWidth,
+            viewportWidth: window.innerWidth,
+            menuScroll: root.scrollTop,
+          }
+        })
+        assert.ok(layout.startTop >= -2 && layout.startBottom <= layout.viewportHeight + 2,
+          `${viewport.name}: ${section}: Start must be visible before scrolling ${JSON.stringify(layout)}`)
+        assert.ok(layout.documentWidth <= layout.viewportWidth + 2,
+          `${viewport.name}: ${section}: horizontal overflow ${JSON.stringify(layout)}`)
+        assert.equal(layout.menuScroll, 0, `${viewport.name}: ${section}: homepage auto-scrolled`)
+      }
+      await assertHomepage('classic hero / classic mode')
+      await page.locator('[data-es2-mobile-hero-tab="new"]').click()
+      assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-heroes'), 'new')
+      assert.ok(await page.locator('[data-hero-id="shadowblade"]').isVisible(),
+        `${viewport.name}: new heroes are hidden`)
+      await assertHomepage('new heroes')
+      await page.screenshot({ path: `${directory}/${viewport.name}-menu-new-heroes.png`, animations: 'disabled' })
+      await page.locator('[data-es2-mobile-mode-tab="objective"]').click()
+      assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-modes'), 'objective')
+      assert.ok(await page.locator('[data-objective-mode="boss-rush"]').isVisible(),
+        `${viewport.name}: objective modes are hidden`)
+      await assertHomepage('new heroes / objective modes')
+      await page.screenshot({ path: `${directory}/${viewport.name}-menu-objectives.png`, animations: 'disabled' })
+      await page.locator('[data-es2-mobile-mode-tab="classic"]').click()
+      await page.locator('[data-es2-mobile-hero-tab="classic"]').click()
+      await assertHomepage('return to classic')
       await page.screenshot({ path: `${directory}/${viewport.name}-menu.png`, animations: 'disabled' })
 
       // Exercise the actual in-game Settings listbox across both phone orientations.
@@ -63,6 +99,16 @@ try {
       await page.locator('.es2-close').click()
       await page.locator('.es2-start').click()
       await page.locator('.es2-mobile-controls[data-active="true"]').waitFor({ state: 'visible', timeout: 30000 })
+      const hudControls = await page.locator('.es2-hud__controls .es2-hud__control-button').evaluateAll(buttons =>
+        buttons.map(button => {
+          const box = button.getBoundingClientRect()
+          return { width: box.width, height: box.height, label: button.getAttribute('aria-label') }
+        }))
+      assert.equal(hudControls.length, 4, `${viewport.name}: audio/home/settings/pause must share a class`)
+      for (const control of hudControls) {
+        assert.ok(Math.abs(control.width - 44) <= 1 && Math.abs(control.height - 44) <= 1,
+          `${viewport.name}: HUD action differs from 44px: ${JSON.stringify(control)}`)
+      }
       const layout = await page.evaluate(() => {
         const joystick = document.querySelector('[data-testid="es2-stick"]')
         const dash = document.querySelector('[data-testid="es2-dash"]')

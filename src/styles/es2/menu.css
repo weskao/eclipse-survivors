@@ -301,25 +301,25 @@
   .es2-hero-copy strong{font-size:clamp(.67rem,2.6vw,.82rem);line-height:1.18}
   .es2-hero-copy small{display:none}
   .es2-hero-selection{font-size:.63rem;padding-top:2px;margin-top:auto}
-  .es2-menu .es2-roster{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-  .es2-menu .es2-roster__card{min-width:0;border-radius:10px}
-  .es2-menu .es2-roster__portrait{height:clamp(62px,10dvh,88px);background:transparent}
-  .es2-menu .es2-roster__copy{gap:2px;padding:4px 3px;text-align:center}
-  .es2-menu .es2-roster__copy strong{font-size:clamp(.66rem,2.5vw,.82rem);line-height:1.18}
-  .es2-menu .es2-roster__copy :is(.es2-roster__subtitle,.es2-roster__description,.es2-roster__stats,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits){display:none}
-  .es2-menu .es2-roster__selection{font-size:.62rem;padding:0}
-  .es2-menu .es2-hero-action-preview{width:27px;height:27px;top:3px;right:3px}
+  .es2-menu .es2-hero-section .es2-roster{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .es2-menu .es2-hero-section .es2-roster__card{min-width:0;border-radius:10px}
+  .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(62px,10dvh,88px);background:transparent}
+  .es2-menu .es2-hero-section .es2-roster__copy{gap:2px;padding:4px 3px;text-align:center}
+  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.66rem,2.5vw,.82rem);line-height:1.18}
+  .es2-menu .es2-hero-section .es2-roster__copy :is(.es2-roster__subtitle,.es2-roster__description,.es2-roster__stats,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits){display:none}
+  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.62rem;padding:0}
+  .es2-menu .es2-hero-section .es2-hero-action-preview{width:27px;height:27px;top:3px;right:3px}
   .es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   .es2-mode-card{min-height:44px;padding:5px;gap:5px}
   .es2-mode-mark{width:17px;font-size:1rem}
   .es2-mode-copy strong{font-size:clamp(.72rem,2.6vw,.85rem);line-height:1.2;overflow-wrap:anywhere}
   .es2-mode-copy small{display:none}
   .es2-mode-time{font-size:.58rem}
-  .es2-objective-chooser header{display:none}
-  .es2-objective-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-  .es2-objective-choice{display:grid;align-content:center;gap:0;min-height:44px;padding:6px 8px}
-  .es2-objective-choice strong{font-size:clamp(.7rem,2.4vw,.83rem);line-height:1.2;overflow-wrap:anywhere}
-  .es2-objective-choice>:not(strong){display:none}
+  .es2-menu .es2-mode-section .es2-objective-chooser header{display:none}
+  .es2-menu .es2-mode-section .es2-objective-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .es2-menu .es2-mode-section .es2-objective-choice{display:grid;align-content:center;gap:0;min-height:44px;padding:6px 8px}
+  .es2-menu .es2-mode-section .es2-objective-choice strong{font-size:clamp(.7rem,2.4vw,.83rem);line-height:1.2;overflow-wrap:anywhere}
+  .es2-menu .es2-mode-section .es2-objective-choice>:not(strong){display:none}
   .es2-mobile-selected-mode{display:block;min-width:0;margin:5px 0 0;color:var(--es2-muted);font:400 .73rem/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
   .es2-start{min-height:44px;margin-top:6px;padding:7px;font-size:.95rem!important}
   .es2-start span{margin-left:5px}
@@ -340,11 +340,11 @@
   .es2-menu .es2-section-heading{display:none}
   .es2-mobile-switch{margin:0 0 4px}
   .es2-hero-card img{height:clamp(40px,13dvh,66px)}
-  .es2-menu .es2-roster__portrait{height:clamp(40px,13dvh,66px)}
+  .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(40px,13dvh,66px)}
   .es2-hero-copy{padding:3px 1px}
-  .es2-hero-copy strong,.es2-menu .es2-roster__copy strong{font-size:clamp(.63rem,1.7vw,.75rem)}
-  .es2-hero-selection,.es2-menu .es2-roster__selection{font-size:.59rem}
-  .es2-menu .es2-hero-action-preview{width:22px;height:22px}
+  .es2-hero-copy strong,.es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.63rem,1.7vw,.75rem)}
+  .es2-hero-selection,.es2-menu .es2-hero-section .es2-roster__selection{font-size:.59rem}
+  .es2-menu .es2-hero-section .es2-hero-action-preview{width:22px;height:22px}
   .es2-mobile-selected-mode{display:none}
   .es2-mode-card{padding:4px}
   .es2-mode-mark{font-size:.85rem;width:14px}
