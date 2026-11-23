@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import type { ContentAbility, ContentContext } from '../contracts'
 import type { Mob, SfxCue, SkillRarity } from '../../types'
 import { hit } from '../../combat'
@@ -12,6 +13,8 @@ const productionArt = import.meta.glob('../../../assets/es2/production/weapons/*
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
 
+const W = BALANCE.weapons
+
 interface WeaponSpec {
   key: WeaponKey
   icon: string
@@ -22,24 +25,24 @@ interface WeaponSpec {
   sound: SfxCue
 }
 export const WEAPON_SPECS: readonly WeaponSpec[] = [
-  { key: 'shadow-daggers', icon: '🗡', title: 'Shadow Daggers', desc: 'Homing knives seek fresh victims after every strike.', rarity: 'common', interval: 1.25, sound: 'ranger' },
-  { key: 'holy-lance', icon: '✧', title: 'Holy Lance', desc: 'A long-range blessed spear pierces entire lines.', rarity: 'rare', interval: 2.15, sound: 'bolt' },
-  { key: 'blood-scythe', icon: '☽', title: 'Blood Scythe', desc: 'A wide close-range sweep steals a limited amount of life.', rarity: 'rare', interval: 1.6, sound: 'knight' },
-  { key: 'arcane-mines', icon: '◈', title: 'Arcane Mines', desc: 'Magical traps detonate after a warning delay.', rarity: 'common', interval: 2.3, sound: 'meteor' },
-  { key: 'bone-spears', icon: '⌁', title: 'Bone Spears', desc: 'A timed volley of narrow, penetrating bone darts.', rarity: 'common', interval: 2.05, sound: 'ranger' },
-  { key: 'poison-cloud', icon: '☣', title: 'Poison Cloud', desc: 'Lingering toxin zones inflict repeated area damage.', rarity: 'common', interval: 2.65, sound: 'vortex' },
-  { key: 'ricochet-blades', icon: '✥', title: 'Ricochet Blades', desc: 'Thrown discs chase different enemies after each bounce.', rarity: 'rare', interval: 1.9, sound: 'chain' },
-  { key: 'spirit-wolves', icon: '🐺', title: 'Spirit Wolves', desc: 'Loyal ethereal hunters pursue and bite nearby threats.', rarity: 'rare', interval: 0, sound: 'knight' },
-  { key: 'solar-beam', icon: '☀', title: 'Solar Beam', desc: 'Charge up a piercing ray with high single-line damage.', rarity: 'legendary', interval: 3.6, sound: 'bolt' },
-  { key: 'gravity-orbs', icon: '◉', title: 'Gravity Orbs', desc: 'Orbiting cores drag enemies in and pulse on contact.', rarity: 'rare', interval: 0, sound: 'vortex' },
-  { key: 'spectral-bow', icon: '➶', title: 'Spectral Bow', desc: 'Heavy ghost arrows pierce enemies in a straight line.', rarity: 'rare', interval: 2.6, sound: 'ranger' },
-  { key: 'thorn-chain', icon: '❈', title: 'Thorn Chain', desc: 'Bind a cluster of foes with spreading, periodic wounds.', rarity: 'rare', interval: 2.5, sound: 'chain' },
+  { key: 'shadow-daggers', icon: '🗡', title: 'Shadow Daggers', desc: 'Homing knives seek fresh victims after every strike.', rarity: 'common', interval: W.intervals['shadow-daggers'], sound: 'ranger' },
+  { key: 'holy-lance', icon: '✧', title: 'Holy Lance', desc: 'A long-range blessed spear pierces entire lines.', rarity: 'rare', interval: W.intervals['holy-lance'], sound: 'bolt' },
+  { key: 'blood-scythe', icon: '☽', title: 'Blood Scythe', desc: 'A wide close-range sweep steals a limited amount of life.', rarity: 'rare', interval: W.intervals['blood-scythe'], sound: 'knight' },
+  { key: 'arcane-mines', icon: '◈', title: 'Arcane Mines', desc: 'Magical traps detonate after a warning delay.', rarity: 'common', interval: W.intervals['arcane-mines'], sound: 'meteor' },
+  { key: 'bone-spears', icon: '⌁', title: 'Bone Spears', desc: 'A timed volley of narrow, penetrating bone darts.', rarity: 'common', interval: W.intervals['bone-spears'], sound: 'ranger' },
+  { key: 'poison-cloud', icon: '☣', title: 'Poison Cloud', desc: 'Lingering toxin zones inflict repeated area damage.', rarity: 'common', interval: W.intervals['poison-cloud'], sound: 'vortex' },
+  { key: 'ricochet-blades', icon: '✥', title: 'Ricochet Blades', desc: 'Thrown discs chase different enemies after each bounce.', rarity: 'rare', interval: W.intervals['ricochet-blades'], sound: 'chain' },
+  { key: 'spirit-wolves', icon: '🐺', title: 'Spirit Wolves', desc: 'Loyal ethereal hunters pursue and bite nearby threats.', rarity: 'rare', interval: W.intervals['spirit-wolves'], sound: 'knight' },
+  { key: 'solar-beam', icon: '☀', title: 'Solar Beam', desc: 'Charge up a piercing ray with high single-line damage.', rarity: 'legendary', interval: W.intervals['solar-beam'], sound: 'bolt' },
+  { key: 'gravity-orbs', icon: '◉', title: 'Gravity Orbs', desc: 'Orbiting cores drag enemies in and pulse on contact.', rarity: 'rare', interval: W.intervals['gravity-orbs'], sound: 'vortex' },
+  { key: 'spectral-bow', icon: '➶', title: 'Spectral Bow', desc: 'Heavy ghost arrows pierce enemies in a straight line.', rarity: 'rare', interval: W.intervals['spectral-bow'], sound: 'ranger' },
+  { key: 'thorn-chain', icon: '❈', title: 'Thorn Chain', desc: 'Bind a cluster of foes with spreading, periodic wounds.', rarity: 'rare', interval: W.intervals['thorn-chain'], sound: 'chain' },
 ] as const
 
 function ready(r: ArsenalRuntime, key: WeaponKey, dt: number, interval: number, level: number): boolean {
   const left = Math.max(0, (r.timers[key] ?? 0) - dt)
   if (left > 0) { r.timers[key] = left; return false }
-  r.timers[key] = Math.max(0.35, interval * (1 - 0.085 * (level - 1)))
+  r.timers[key] = Math.max(W.common.cooldownFloor, interval * (1 - W.common.cooldownReductionPerRank * (level - 1)))
   return true
 }
 
@@ -70,14 +73,14 @@ function fireStraight(
   const e = target(context, range)
   if (!e) return false
   fireMissile(r, kind, h.x, h.y, e, speed,
-    h.damage * (multiplier + 0.26 * (level - 1)), pierce, 0,
+    h.damage * (multiplier + W.common.straightDamagePerRank * (level - 1)), pierce, 0,
     kind === 'lance' ? 14 : kind === 'bone' ? 7 : 9)
   return true
 }
 
 function slash(context: ContentContext, level: number): boolean {
   const h = context.state.hero!
-  const e = target(context, 165 + 9 * level)
+  const e = target(context, W.scythe.targetRangeBase + W.scythe.targetRangePerRank * level)
   if (!e) return false
   const a = Math.atan2(e.y - h.y, e.x - h.x)
   const ux = Math.cos(a), uy = Math.sin(a)
@@ -85,18 +88,18 @@ function slash(context: ContentContext, level: number): boolean {
   for (const mob of context.state.mobs) {
     if (mob.hp <= 0) continue
     const dx = mob.x - h.x, dy = mob.y - h.y
-    const reach = 140 + 10 * level + mob.r
+    const reach = W.scythe.sweepRangeBase + W.scythe.sweepRangePerRank * level + mob.r
     if (dx * dx + dy * dy > reach * reach) continue
     const forward = dx * ux + dy * uy
     if (forward < 0 || forward * forward < (dx * dx + dy * dy) * 0.12) continue
-    const damage = h.damage * (0.96 + 0.21 * level)
-    stolen += Math.min(mob.hp, damage) * 0.095
+    const damage = h.damage * (W.scythe.damageBase + W.scythe.damagePerRank * level)
+    stolen += Math.min(mob.hp, damage) * W.scythe.lifestealRatio
     hit(context.state, mob, damage, context.hooks)
   }
   const r = runtimeOf(context.state)
   r.slashLife = 0.3
   r.slashAngle = a
-  h.hp = Math.min(h.max, h.hp + Math.min(5 + 1 * level, stolen))
+  h.hp = Math.min(h.max, h.hp + Math.min(W.scythe.lifestealLimitBase + W.scythe.lifestealLimitPerRank * level, stolen))
   return true
 }
 
@@ -113,8 +116,8 @@ function tickWolves(context: ContentContext, dt: number, level: number): void {
     const attackRange = (enemy?.r ?? 0) + 23
     if (enemy && d2 < attackRange * attackRange) {
       if (wolf.attackIn <= 0) {
-        hit(context.state, enemy, h.damage * (0.7 + level * 0.14), context.hooks)
-        wolf.attackIn = Math.max(0.52, 1.1 - 0.095 * level)
+        hit(context.state, enemy, h.damage * (W.spiritWolves.damageBase + level * W.spiritWolves.damagePerRank), context.hooks)
+        wolf.attackIn = Math.max(0.52, W.spiritWolves.attackCooldownBase - W.spiritWolves.attackCooldownPerRank * level)
         context.hooks.sfx('knight')
       }
     } else if (d2 > 4) {
@@ -135,7 +138,7 @@ function tickGravity(context: ContentContext, dt: number, level: number): void {
     for (const e of context.state.mobs) {
       if (e.hp <= 0) continue
       const dx = ox - e.x, dy = oy - e.y
-      const reach = 116 + e.r
+      const reach = W.gravity.pullReach + e.r
       const d2 = dx * dx + dy * dy
       if (d2 > reach * reach) continue
       // Smooth attraction without a sqrt; disabled on bosses to preserve boss telegraphs.
@@ -149,7 +152,7 @@ function tickGravity(context: ContentContext, dt: number, level: number): void {
         const last = r.orbitHits.get(e) ?? -Infinity
         if (context.state.worldClock - last >= 0.32) {
           r.orbitHits.set(e, context.state.worldClock)
-          hit(context.state, e, h.damage * (0.35 + 0.1 * level), context.hooks)
+          hit(context.state, e, h.damage * (W.gravity.damageBase + W.gravity.damagePerRank * level), context.hooks)
         }
       }
     }
@@ -167,8 +170,8 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
     if (r.charge > 0) return
     // Freeze direction at windup: a moving target cannot silently redirect a telegraphed attack.
     const ux = Math.cos(r.beamAngle), uy = Math.sin(r.beamAngle)
-    const range = 690 + 20 * level
-    const width = 16 + level * 2.8
+    const range = W.solarBeam.rangeBase + W.solarBeam.rangePerRank * level
+    const width = W.solarBeam.widthBase + level * W.solarBeam.widthPerRank
     r.beam = { x: h.x, y: h.y, ux, uy, range, width, life: 0.4 }
     for (const mob of context.state.mobs) {
       if (mob.hp <= 0) continue
@@ -178,13 +181,13 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
       const side = dx * uy - dy * ux
       const reach = width + mob.r
       if (side * side <= reach * reach)
-        hit(context.state, mob, h.damage * (2.75 + 0.63 * level), context.hooks)
+        hit(context.state, mob, h.damage * (W.solarBeam.damageBase + W.solarBeam.damagePerRank * level), context.hooks)
     }
     context.hooks.sfx('bolt')
     return
   }
   const next = target(context, 730)
-  if (next && ready(r, 'solar-beam', dt, 3.6, level)) {
+  if (next && ready(r, 'solar-beam', dt, W.intervals['solar-beam'], level)) {
     r.beamAngle = Math.atan2(next.y - h.y, next.x - h.x)
     r.charge = Math.max(0.42, 0.75 - level * 0.04)
   }
@@ -213,10 +216,10 @@ function tickChain(context: ContentContext, dt: number, level: number): void {
       }
     }
   }
-  if (!ready(r, 'thorn-chain', dt, 2.5, level)) return
+  if (!ready(r, 'thorn-chain', dt, W.intervals['thorn-chain'], level)) return
   const nearby = nearest(context.state, h.x, h.y, 420, Math.min(6, 2 + level))
   if (!nearby.length) return
-  const firstDamage = h.damage * (0.45 + 0.145 * level)
+  const firstDamage = h.damage * (W.thornChain.damageBase + W.thornChain.damagePerRank * level)
   for (const enemy of nearby) hit(context.state, enemy, firstDamage, context.hooks)
   r.links.length = 0
   for (let i = 1; i < nearby.length; i++) {
@@ -247,7 +250,7 @@ function tickBoneVolley(context: ContentContext, dt: number, level: number): voi
       r.volleyInterval = 0.16
     }
   }
-  if (r.volley > 0 || !ready(r, 'bone-spears', dt, 2.05, level)) return
+  if (r.volley > 0 || !ready(r, 'bone-spears', dt, W.intervals['bone-spears'], level)) return
   const enemy = target(context, 620)
   if (!enemy) return
   r.volley = Math.min(6, 2 + level)
@@ -264,7 +267,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
   switch (key) {
     case 'shadow-daggers':
       moveMissiles(context, 'dagger', dt)
-      if (ready(r, key, dt, 1.25, level)) {
+      if (ready(r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 510)
         if (enemy) {
           for (let i = 0; i < Math.min(6, 1 + level); i++)
@@ -276,21 +279,21 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'holy-lance':
       moveMissiles(context, 'lance', dt)
-      if (ready(r, key, dt, 2.15, level) && fireStraight(context, r, 'lance', level, 880, 1.12, 2 + level, 850))
+      if (ready(r, key, dt, W.intervals[key], level) && fireStraight(context, r, 'lance', level, 880, 1.12, 2 + level, 850))
         context.hooks.sfx('bolt')
       break
     case 'blood-scythe':
       r.slashLife = Math.max(0, r.slashLife - dt)
-      if (ready(r, key, dt, 1.6, level) && slash(context, level)) context.hooks.sfx('knight')
+      if (ready(r, key, dt, W.intervals[key], level) && slash(context, level)) context.hooks.sfx('knight')
       break
     case 'arcane-mines':
       tickZones(context, 'mine', dt)
-      if (ready(r, key, dt, 2.3, level)) {
+      if (ready(r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 520)
         if (enemy) {
           const jitter = (context.random() - 0.5) * 24
           addZone(r, { kind: 'mine', x: enemy.x + jitter, y: enemy.y - jitter,
-            radius: 80 + 10 * level, damage: h.damage * (1.35 + 0.3 * level),
+            radius: W.arcaneMines.radiusBase + W.arcaneMines.radiusPerRank * level, damage: h.damage * (W.arcaneMines.damageBase + W.arcaneMines.damagePerRank * level),
             life: 1.2, fuse: 0.85, pulse: 0 })
           context.hooks.sfx('meteor')
         }
@@ -302,11 +305,11 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'poison-cloud':
       tickZones(context, 'poison', dt)
-      if (ready(r, key, dt, 2.65, level)) {
+      if (ready(r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 500)
         if (enemy) {
           addZone(r, { kind: 'poison', x: enemy.x, y: enemy.y,
-            radius: 88 + 8 * level, damage: h.damage * (0.13 + level * 0.05),
+            radius: W.poisonCloud.radiusBase + W.poisonCloud.radiusPerRank * level, damage: h.damage * (W.poisonCloud.damageBase + level * W.poisonCloud.damagePerRank),
             life: 3.15, fuse: 0, pulse: 0.17 })
           context.hooks.sfx('vortex')
         }
@@ -314,7 +317,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'ricochet-blades':
       moveMissiles(context, 'blade', dt)
-      if (ready(r, key, dt, 1.9, level)) {
+      if (ready(r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 520)
         if (enemy) {
           fireMissile(r, 'blade', h.x, h.y, enemy, 560,
@@ -334,7 +337,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'spectral-bow':
       moveMissiles(context, 'arrow', dt)
-      if (ready(r, key, dt, 2.6, level) && fireStraight(context, r, 'arrow', level, 640, 1.9, 1 + Math.ceil(level / 2), 720))
+      if (ready(r, key, dt, W.intervals[key], level) && fireStraight(context, r, 'arrow', level, 640, 1.9, 1 + Math.ceil(level / 2), 720))
         context.hooks.sfx('ranger')
       break
     case 'thorn-chain':
