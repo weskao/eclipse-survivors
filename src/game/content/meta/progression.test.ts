@@ -134,7 +134,8 @@ describe('isolated permanent meta progression', () => {
     const old = structuredClone(current)
     expect(buyResearch(current, 'power').state.research.power).toBe(4)
     expect(current).toEqual(old)
-    expect(validateMetaState({ ...current, research: { ...current.research, power: 6 } })).toBe(true)
+    expect(validateMetaState({ ...current, research: { ...current.research, power: BALANCE.meta.research.power.maxRank } })).toBe(true)
+    expect(validateMetaState({ ...current, research: { ...current.research, power: BALANCE.meta.research.power.maxRank + 1 } })).toBe(false)
   })
 
   it('increases ember gains moderately, keeps duplicate-run protection and grants scaling bonuses once', () => {
@@ -142,9 +143,10 @@ describe('isolated permanent meta progression', () => {
       stats: run('plain', { kills: 120, seconds: 200, victory: true }),
     })
     expect(plain.accepted).toBe(true)
-    const expected = Math.floor(120 / BALANCE.meta.currency.killsPerEmber)
-      + Math.floor(200 / BALANCE.meta.currency.secondsPerEmber)
-      + BALANCE.meta.currency.victoryEmbers
+    const rawBase = Math.floor(120 / BALANCE.meta.runRewards.killDivisor)
+      + Math.floor(200 / BALANCE.meta.runRewards.secondsDivisor)
+      + BALANCE.meta.runRewards.victoryEmbers
+    const expected = Math.floor(rawBase * BALANCE.meta.runRewards.baseMultiplier)
     expect(expected).toBeGreaterThan(48)
     expect(expected).toBeLessThan(65)
     expect(plain.rewards[0]?.embers).toBe(expected)
