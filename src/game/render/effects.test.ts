@@ -67,6 +67,28 @@ describe('restrained combat feedback', () => {
     expect(factory.made).toHaveLength(1)
   })
 
+  it('keeps the original large-particle radius rather than shrinking it to fit a cache', () => {
+    const s = scene()
+    s.fx = [{ x: 100, y: 100, life: 0.4, max: 0.5,
+      color: '#ffcc88', r: 24, type: 'spark' }]
+    const factory = fakeCanvasFactory()
+    const frame = createFakeCtx()
+    const radii: number[] = []
+    frame.ctx.arc = (_x, _y, radius) => { radii.push(radius) }
+    drawFx(frame.ctx, s, 0, 0, false, createParticleSpriteCache(factory.make))
+    expect(factory.made).toHaveLength(0)
+    expect(radii).toContain(24)
+  })
+
+  it('paints a 3x cached spark with equivalent seven-pixel presentation glow', () => {
+    const s = scene()
+    s.fx = [{ x: 50, y: 50, life: 0.4, max: 0.5,
+      color: '#ffcc88', r: 5, type: 'spark' }]
+    const factory = fakeCanvasFactory()
+    drawFx(createFakeCtx().ctx, s, 0, 0, false, createParticleSpriteCache(factory.make))
+    expect(factory.made[0]?.fake.ctx.shadowBlur).toBe(21)
+  })
+
   it('culls invisible sparks before allocating sprite cache entries or issuing draw calls', () => {
     const s = scene()
     s.fx = [{ x: 4000, y: 5000, life: 0.4, max: 0.4,
