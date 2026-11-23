@@ -66,8 +66,17 @@ describe('single-source numerical game balance', () => {
   })
 
   it('keeps all mode difficulty multipliers, encounter timing and rewards in JSON', () => {
-    for (const id of ['quick', 'standard', 'endless', 'challenge'] as const)
-      expect(MODES[id]).toMatchObject(BALANCE.modes.classic[id])
+    for (const id of ['quick', 'standard', 'endless', 'challenge'] as const) {
+      expect(MODES[id].duration).toBe(BALANCE.modes.classic[id].duration)
+      expect(MODES[id].bossAt).toBe(BALANCE.modes.classic[id].bossAt)
+    }
+    expect(MODES.quick.modifiers).toEqual(BALANCE.modes.normalModifiers)
+    expect(MODES.challenge.modifiers).toEqual({
+      enemyHp: BALANCE.modes.classic.challenge.enemyHp,
+      enemyDamage: BALANCE.modes.classic.challenge.enemyDamage,
+      spawnFrequency: BALANCE.modes.classic.challenge.spawnFrequency,
+    })
+    expect(MODES.endless.modifiers.spawnFrequency).toBe(BALANCE.modes.classic.endless.spawnFrequency)
     for (const id of Object.keys(OBJECTIVE_MODES) as Array<keyof typeof OBJECTIVE_MODES>)
       expect(OBJECTIVE_MODES[id]).toMatchObject(BALANCE.modes.objectives[id])
   })
