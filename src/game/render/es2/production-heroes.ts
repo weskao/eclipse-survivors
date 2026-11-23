@@ -22,6 +22,9 @@ import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summon
 import paladinDirection from '../../../assets/es2/production/heroes/crimson-paladin/idle-ready@3x.webp'
 import paladinRunAttack from '../../../assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp'
 import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/special@3x.webp'
+import shadowSouthRun from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-23/run-south-4frames@3x.webp'
+import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-23/run-south-4frames@3x.webp'
+import paladinSouthRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-23/run-south-4frames@3x.webp'
 
 /** Full 900×900 3x character illustrations, matching the homepage and HUD. */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
@@ -49,6 +52,13 @@ export const PRODUCTION_HERO_POSE_SOURCES: Readonly<Record<SpecializationId, Rea
   'spirit-summoner': { direction: summonerDirection, action: summonerRunAttack, special: summonerSpecial },
   'crimson-paladin': { direction: paladinDirection, action: paladinRunAttack, special: paladinSpecial },
 })
+/** Existing committed four-pose sources; dev-only gameplay QA, never release art. */
+export const PRODUCTION_HERO_SOUTH_RUN_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
+  shadowblade: shadowSouthRun,
+  'spirit-summoner': summonerSouthRun,
+  'crimson-paladin': paladinSouthRun,
+})
+
 type AtlasWithAction = HTMLImageElement & { actionStrip?: HTMLImageElement }
 type HeroWithMotion = AtlasWithAction & {
   heroId?: SpecializationId
@@ -57,6 +67,8 @@ type HeroWithMotion = AtlasWithAction & {
   motionAtlasFactory?: () => HTMLImageElement
   poseAtlasSources?: Readonly<Record<PoseSheet, string>>
   poseAtlases?: Partial<Record<PoseSheet, HTMLImageElement>>
+  qaSouthRunUrl?: string
+  qaSouthRunAtlas?: HTMLImageElement
 }
 
 export function productionHeroMotionReady(image: HTMLImageElement | undefined): boolean {
@@ -75,7 +87,11 @@ function loadHeroMotionOnDemand(image: HeroWithMotion): HTMLImageElement | null 
 }
 export type ProductionHeroArtwork = Record<SpecializationId, HTMLImageElement>
 
-export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => new Image()): ProductionHeroArtwork {
+export function loadProductionHeroes(
+  makeImage: () => HTMLImageElement = () => new Image(),
+  enableSouthRunQA = import.meta.env.DEV && typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('es2HeroSouthQA') === '1',
+): ProductionHeroArtwork {
   const result = {} as ProductionHeroArtwork
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {
     const image = makeImage() as HeroWithMotion
@@ -84,6 +100,7 @@ export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => n
     image.poseAtlasSources = PRODUCTION_HERO_POSE_SOURCES[id]
     image.poseAtlases = {}
     image.motionAtlasFactory = makeImage
+    if (enableSouthRunQA) image.qaSouthRunUrl = PRODUCTION_HERO_SOUTH_RUN_SOURCES[id]
     result[id] = image
   }
   return result
@@ -97,6 +114,15 @@ export function productionHeroActionFrame(anim: HeroAnimation): number {
   if (anim.pose === 'attack' || anim.pose === 'cast')
     return 3 + Math.min(4, Math.floor(Math.max(0, Math.min(0.9999, anim.phase)) * 5))
   return 0
+}
+
+/** South-only four-frame QA footage. Indexing is bounded; other facings keep production art. */
+export function productionHeroSouthRunRect(anim: HeroAnimation): { x: number; y: number; size: 768 } | null {
+  const direction = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+  if (anim.reducedMotion || direction !== 2 || (anim.pose !== 'run' && anim.pose !== 'dash')) return null
+  const count = Math.max(1, anim.count)
+  const index = Math.min(3, Math.floor(Math.max(0, anim.frame) * 4 / count) % 4)
+  return { x: (index % 2) * 768, y: Math.floor(index / 2) * 768, size: 768 }
 }
 
 /** Legacy 4×96-pixel strips remain supported for existing fallback tests and consumers. */
@@ -262,6 +288,7 @@ function loadHeroPoseOnDemand(hero: HeroWithMotion, sheet: PoseSheet): HTMLImage
 
 type PoseRect = ReturnType<typeof productionHeroPoseRect>
 type SmoothFrame = { type: 'atlas'; atlas: HTMLImageElement; rect: PoseRect; anchor: number }
+  | { type: 'south-run'; atlas: HTMLImageElement; rect: NonNullable<ReturnType<typeof productionHeroSouthRunRect>> }
   | { type: 'portrait'; atlas: HTMLImageElement; anim: HeroAnimation }
 
 interface PoseTransition {
@@ -312,7 +339,16 @@ function drawHeroPoseAtlas(
 
 function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: number): void {
   if (frame.type === 'atlas') drawHeroPoseAtlas(ctx, frame.atlas, frame.rect, width, height, frame.anchor)
-  else {
+  else if (frame.type === 'south-run') {
+    // Source has 627 genuinely authored pixels padded to a 768px QA cell.
+    // Preserve the 147px opaque silhouette, separate from collision geometry.
+    const paintedWidth = Math.min(width * 1.16, 147) * 768 / 627
+    const paintedHeight = Math.min(height * 1.05, 147) * 768 / 627
+    ctx.save()
+    ctx.drawImage(frame.atlas, frame.rect.x, frame.rect.y, 768, 768,
+      -paintedWidth / 2, 4 - paintedHeight * 670 / 768, paintedWidth, paintedHeight)
+    ctx.restore()
+  } else {
     // Canonical portraits only face right. During a pending west-facing sheet,
     // mirror the portrait here, not in the outer scene, so the blend does not
     // flip the same hero twice when the directional WebP finishes loading.
@@ -345,7 +381,9 @@ function drawSmoothedHero(
   const a = previous.current, b = frame
   const changed = a.type !== b.type || a.atlas !== b.atlas || (
     a.type === 'atlas' && b.type === 'atlas' &&
-    (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.rect.mirror !== b.rect.mirror))
+    (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.rect.mirror !== b.rect.mirror)) || (
+    a.type === 'south-run' && b.type === 'south-run' &&
+    (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y))
   if (changed) {
     const poseOrDirection = previous.pose !== anim.pose || previous.direction !== anim.direction
       || a.type !== b.type || (a.type === 'atlas' && b.type === 'atlas' && a.rect.sheet !== b.rect.sheet)
@@ -387,6 +425,20 @@ export function drawProductionHeroFrame(
   // 3x Canvas cache is bounded and reused across frames.
   if (image.naturalWidth === 900 && image.naturalHeight === 900) {
     const hero = image as HeroWithMotion
+    const qaRect = hero.qaSouthRunUrl ? productionHeroSouthRunRect(anim) : null
+    if (qaRect) {
+      let qaAtlas = hero.qaSouthRunAtlas
+      if (!qaAtlas) {
+        qaAtlas = hero.motionAtlasFactory ? hero.motionAtlasFactory() : new Image()
+        hero.qaSouthRunAtlas = qaAtlas
+        qaAtlas.src = hero.qaSouthRunUrl!
+      }
+      if (qaAtlas.complete && qaAtlas.naturalWidth === 1536 && qaAtlas.naturalHeight === 1536) {
+        drawSmoothedHero(ctx, image, { type: 'south-run', atlas: qaAtlas, rect: qaRect },
+          anim, width, height, frameTimeSeconds)
+        return true
+      }
+    }
     if (hero.poseAtlasSources || hero.poseAtlases) {
       const rect = productionHeroPoseRect(anim)
       const sheet = loadHeroPoseOnDemand(hero, rect.sheet)
