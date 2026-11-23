@@ -127,6 +127,27 @@ describe('isolated hero specializations', () => {
     expect(adapter.modifyOutgoingDamage(20)).toBeGreaterThan(20)
   })
 
+  it('strengthens all three specialization rank benefits without lifting their max rank', () => {
+    const shadow = setup('shadowblade', () => 0.1)
+    for (let i = 0; i < 3; i++) expect(shadow.registry.acquire(shadow.state, 'heroes:shadow-precision', hooks)).toBe(true)
+    expect(shadow.adapter.modifyOutgoingDamage(20)).toBeCloseTo(44.8)
+    expect(shadow.registry.acquire(shadow.state, 'heroes:shadow-precision', hooks)).toBe(false)
+
+    const spirit = setup('spirit-summoner')
+    spirit.state.hero!.level = 3
+    spirit.state.hero!.hp = 50
+    for (let i = 0; i < 3; i++) expect(spirit.registry.acquire(spirit.state, 'heroes:spirit-bond', hooks)).toBe(true)
+    spirit.adapter.tick(1.8)
+    expect(spirit.state.hero!.hp).toBeGreaterThan(55)
+
+    const paladin = setup('crimson-paladin')
+    for (let i = 0; i < 3; i++) expect(paladin.registry.acquire(paladin.state, 'heroes:crimson-vow', hooks)).toBe(true)
+    expect(paladin.adapter.mitigateIncomingDamage(100)).toBeCloseTo(78.5)
+    paladin.state.hero!.hp = 20
+    expect(paladin.adapter.modifyOutgoingDamage(20)).toBeCloseTo(31.2)
+    paladin.adapter.activate()
+    expect(paladin.adapter.snapshot().barrier).toBeGreaterThanOrEqual(90)
+  })
   it('does not consume a barrier for damage ignored by legacy invulnerability', () => {
     const { state, adapter } = setup('crimson-paladin')
     adapter.activate()
