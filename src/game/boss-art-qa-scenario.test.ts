@@ -35,6 +35,25 @@ describe('development-only 4-boss visual QA scene', () => {
     }
   }
 
+  for (const [width, height] of [[390, 844], [844, 390], [1440, 900]] as const) {
+    it(`frames the complete boss within the ${width}x${height} DEV review viewport`, () => {
+      window.history.replaceState({}, '', '/?showcase=1&es2BossArtQa=eclipse-seraph')
+      const engine = createEngine({ audio: silentAudio() })
+      engine.state.W = width
+      engine.state.H = height
+      engine.start()
+      engine.testApi.showcaseBoss(3)
+      const boss = engine.state.mobs.find(mob => mob.type === 'boss')!
+      const hero = engine.state.hero!
+      const screenX = width / 2 + boss.x - hero.x
+      const screenY = height / 2 + boss.y - hero.y
+      expect(screenX - 118).toBeGreaterThanOrEqual(4)
+      expect(screenX + 118).toBeLessThanOrEqual(width - 4)
+      expect(screenY - 236).toBeGreaterThanOrEqual(height < 500 ? 88 : 4)
+      expect(screenY).toBeLessThanOrEqual(height - 20)
+    })
+  }
+
   it('does not enable the review boss outside explicit DEV showcase mode', () => {
     window.history.replaceState({}, '', '/?es2BossArtQa=eclipse-seraph')
     const engine = createEngine({ audio: silentAudio() })
