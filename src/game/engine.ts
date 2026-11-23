@@ -730,7 +730,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
     assets.productionHeroes = loadProductionHeroes()
-    assets.productionWorld = loadWorldRuntimeImages()
+    const bossArtQaId = import.meta.env.DEV && typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('es2BossArtQa') : null
+    assets.productionWorld = loadWorldRuntimeImages(
+      undefined, bossArtQaId && Object.hasOwn(BOSS_DEFINITIONS, bossArtQaId) ? bossArtQaId as BossId : undefined,
+    )
     if (factions) {
       assets.factions = factions
       assets.factionArtwork = loadProductionFactionArt()
