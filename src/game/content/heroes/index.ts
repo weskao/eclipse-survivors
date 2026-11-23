@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import { damageHero, hit } from '../../combat'
 import { impact, burst } from '../../fx'
 import { random as simulationRandom } from '../../math'
@@ -52,11 +53,11 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     strengths: ['高速突進', '暴擊', '短暫潛行'],
     weaknesses: ['低生命', '短射程', '須掌握突襲時機'],
     legacyArtJob: 'knight', portraitSrc: shadowPortrait, specialIconSrc: shadowSpecialIcon,
-    stats: { hp: 105, speed: 248, damage: 28, delay: 0.43, range: 132 },
+    stats: BALANCE.heroes.special.shadowblade,
     startingAbility: 'heroes:shadow-daggers', startingEquipment: '影鋒雙匕', progressionAbility: 'heroes:shadow-precision',
     passive: '暗影精準：24% 暴擊機率，造成 170% 傷害；升級增強暴擊倍率。',
     special: '影襲：突襲周圍最多三名敵人，短暫潛行並取得閃避保護。',
-    specialCooldown: 9.5,
+    specialCooldown: BALANCE.heroes.specialCooldowns.shadowblade,
     animation: { idle: 'shadow-breath', attack: 'dual-blade-slash', special: 'shadow-afterimages' },
     audio: { attack: 'knight', special: 'dash' },
   },
@@ -66,11 +67,11 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     strengths: ['持續召喚傷害', '小額治癒', '穩定遠程作戰'],
     weaknesses: ['脆弱', '前期召喚數量少', '召喚攻擊需要時間'],
     legacyArtJob: 'wizard', portraitSrc: summonerPortrait, specialIconSrc: summonerSpecialIcon,
-    stats: { hp: 118, speed: 194, damage: 24, delay: 0.66, range: 355 },
+    stats: BALANCE.heroes.special['spirit-summoner'],
     startingAbility: 'heroes:spirit-orb', startingEquipment: '靈火寶珠', progressionAbility: 'heroes:spirit-bond',
     passive: '靈契：靈火攻擊、守護靈治療、奪魂靈吸血，最多三個常駐夥伴。',
     special: '靈潮集結：靈體集中攻擊周圍目標並恢復少量生命。',
-    specialCooldown: 12,
+    specialCooldown: BALANCE.heroes.specialCooldowns['spirit-summoner'],
     animation: { idle: 'floating-grimoire', attack: 'spirit-cast', special: 'spectral-convergence' },
     audio: { attack: 'wizard', special: 'vortex' },
   },
@@ -80,11 +81,11 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     strengths: ['承傷減免', '近身反擊', '臨時屏障'],
     weaknesses: ['移動慢', '射程短', '主動技能消耗生命'],
     legacyArtJob: 'knight', portraitSrc: paladinPortrait, specialIconSrc: paladinSpecialIcon,
-    stats: { hp: 190, speed: 172, damage: 30, delay: 0.65, range: 116 },
+    stats: BALANCE.heroes.special['crimson-paladin'],
     startingAbility: 'heroes:crimson-guard', startingEquipment: '緋紅聖盾', progressionAbility: 'heroes:crimson-vow',
     passive: '緋紅韌性：受到傷害減少 14%，受傷時有冷卻的近距離反擊。',
     special: '血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；生命低時反擊更強。',
-    specialCooldown: 14,
+    specialCooldown: BALANCE.heroes.specialCooldowns['crimson-paladin'],
     animation: { idle: 'shield-vigil', attack: 'shield-counter', special: 'crimson-aegis' },
     audio: { attack: 'knight', special: 'knight' },
   },
@@ -143,6 +144,10 @@ export interface HeroSpecializationAdapter {
   receiveDamage(amount: number): number
   snapshot(): SpecializationSnapshot
 }
+
+const SHADOW = BALANCE.heroes.specialEffects.shadowblade
+const SPIRIT = BALANCE.heroes.specialEffects['spirit-summoner']
+const PALADIN = BALANCE.heroes.specialEffects['crimson-paladin']
 
 const COMPANION_ORDER = ['wisp', 'guardian', 'reaver'] as const
 
@@ -217,15 +222,15 @@ export function createHeroSpecializationAdapter(
       if (id !== 'spirit-summoner') return
       companionTimer -= dt
       if (companionTimer > 0) return
-      companionTimer = 1.8
+      companionTimer = SPIRIT.companionTickSeconds
       const hero = state.hero!
       const active = companions()
-      const nearest = nearby(state, 330, 1)[0]
+      const nearest = nearby(state, SPIRIT.companionRange, 1)[0]
       for (const companion of active) {
         if (companion === 'guardian') {
-          hero.hp = Math.min(hero.max, hero.hp + 2 + upgrades() * 1.15)
+          hero.hp = Math.min(hero.max, hero.hp + SPIRIT.guardianHealBase + upgrades() * SPIRIT.guardianHealPerRank)
         } else if (nearest?.hp && nearest.hp > 0) {
-          hit(state, nearest, hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * 0.2), hooks)
+          hit(state, nearest, hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * SPIRIT.companionDamagePerRank), hooks)
           if (companion === 'reaver') hero.hp = Math.min(hero.max, hero.hp + 1.5)
         }
       }
@@ -235,21 +240,21 @@ export function createHeroSpecializationAdapter(
       const hero = state.hero!
       cooldown = def.specialCooldown
       if (id === 'shadowblade') {
-        stealth = 0.95
+        stealth = SHADOW.stealthSeconds
         hero.inv = Math.max(hero.inv, 0.7)
-        for (const enemy of nearby(state, 150, 3)) hit(state, enemy, hero.damage * (1.4 + upgrades() * 0.045), hooks)
+        for (const enemy of nearby(state, SHADOW.specialReach, SHADOW.specialHits)) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), hooks)
         impact(state, hero.x, hero.y, 95, '#aa8eff', 0.7)
         burst(state, hero.x, hero.y, '#8666ef', 12)
       } else if (id === 'spirit-summoner') {
-        for (const enemy of nearby(state, 330, 3)) hit(state, enemy, hero.damage * (1.2 + upgrades() * 0.22), hooks)
-        hero.hp = Math.min(hero.max, hero.hp + 12)
+        for (const enemy of nearby(state, SPIRIT.companionRange, 3)) hit(state, enemy, hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank), hooks)
+        hero.hp = Math.min(hero.max, hero.hp + SPIRIT.specialHeal)
         impact(state, hero.x, hero.y, 115, '#95eaff', 0.9)
       } else {
-        const cost = Math.min(Math.max(0, hero.hp - 1), Math.ceil(hero.max * 0.08))
+        const cost = Math.min(Math.max(0, hero.hp - 1), Math.ceil(hero.max * PALADIN.healthCostRatio))
         hero.hp -= cost
         state.damageTaken += cost
-        barrier = 48 + hero.level * 2 + upgrades() * 14
-        barrierLife = 3.5
+        barrier = PALADIN.barrierBase + hero.level * PALADIN.barrierPerHeroLevel + upgrades() * PALADIN.barrierPerRank
+        barrierLife = PALADIN.barrierSeconds
         impact(state, hero.x, hero.y, 105, '#ed6178', 1)
       }
       hooks.sfx(def.audio.special)
@@ -260,12 +265,12 @@ export function createHeroSpecializationAdapter(
       if (!Number.isFinite(amount) || amount <= 0) return 0
       if (!alive()) return amount
       if (id === 'shadowblade') {
-        lastCritical = random() < 0.24
-        return lastCritical ? amount * (1.7 + upgrades() * 0.18) : amount
+        lastCritical = random() < SHADOW.critChance
+        return lastCritical ? amount * (SHADOW.critMultiplier + upgrades() * SHADOW.critBonusPerRank) : amount
       }
       if (id === 'spirit-summoner') return amount * (1 + (companions().includes('wisp') ? 0.06 : 0))
       const hpRatio = state.hero!.hp / state.hero!.max
-      return amount * (hpRatio < 0.4 ? 1.35 + upgrades() * 0.07 : 1)
+      return amount * (hpRatio < PALADIN.lowHpThreshold ? PALADIN.lowHpDamageBase + upgrades() * PALADIN.lowHpDamagePerRank : 1)
     },
     consumeCriticalHit(): boolean {
       const critical = lastCritical
@@ -275,16 +280,16 @@ export function createHeroSpecializationAdapter(
     mitigateIncomingDamage(amount: number): number {
       if (!Number.isFinite(amount) || amount <= 0) return 0
       if (!alive() || id !== 'crimson-paladin' || state.hero!.inv > 0 || state.hero!.dash > 0) return amount
-      const reduced = amount * (0.86 - Math.min(0.075, upgrades() * 0.025))
+      const reduced = amount * (1 - PALADIN.baseReduction - Math.min(PALADIN.extraReductionCap, upgrades() * PALADIN.reductionPerRank))
       const absorb = barrierLife > 0 ? Math.min(barrier, reduced) : 0
       barrier -= absorb
       return Math.max(0, reduced - absorb)
     },
     afterDamage(amount: number): void {
       if (!alive() || id !== 'crimson-paladin' || !Number.isFinite(amount) || amount <= 0 || counterCooldown > 0) return
-      counterCooldown = 1.8
+      counterCooldown = PALADIN.counterCooldown
       const hero = state.hero!
-      for (const enemy of nearby(state, 155, 2)) hit(state, enemy, hero.damage * (0.7 + upgrades() * 0.135), hooks)
+      for (const enemy of nearby(state, PALADIN.counterRange, PALADIN.counterTargets)) hit(state, enemy, hero.damage * (PALADIN.counterDamageBase + upgrades() * PALADIN.counterDamagePerRank), hooks)
       impact(state, hero.x, hero.y, 72, '#fb8f96', 0.45)
     },
     canBeTargeted(): boolean {
