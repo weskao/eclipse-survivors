@@ -14,6 +14,12 @@ Applies to every Create / Read / Update / Delete of gameplay numbers, character 
 7. **TDD and verification:** Add a RED failing test for every new numeric domain or balance rule before changing the JSON and consumers. Verify `src/game/balance.test.ts`, hero HP/runtime/menu, progression curves, event weights, skill radius/damage, weapons, and seeded simulations. Run `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release`; capture real desktop and mobile portrait/landscape screenshots for UI changes. Document the changed values and the baseline vs updated difficulty. Never claim CI green while it fails for unrelated reasons.
 8. **Incremental migration:** When touching legacy gameplay values, move tunable literals into the appropriate existing `<domain>.json`; create a new JSON only after applying rule 2. Avoid unrelated rewriting or extracting coordinate/shader constants. Maintain the public `BALANCE` field structure across file moves. Test that each domain JSON exactly matches `BALANCE[domain]`, and do not ship a second monolithic balance file.
 
+## Boss locomotion and attack fairness
+
+- Every newly introduced or updated ES2 boss must declare its pursuit speed, standoff distance and optional orbit speed in `src/game/balance/bosses.json` under `movement`, with shared phase escalation from `phaseMovementMultipliers`. Do not hard-code gameplay speeds in renderers or duplicate them in boss-specific classes.
+- Pursuit must use current world-space hero/boss positions and respect slow/stagger, pause, boss defeat and the existing step obstacle resolver. Keep telegraphed attack geometry fixed during windup, so visibly escaping an indicated area remains reliable; no invisible mid-windup redirects or unavoidable instant lunges.
+- Preserve per-boss visual identity and reduced-motion preference. Reuse the existing approved runtime phase atlas for lightweight movement until separately sourced, genuine native-3x locomotion frames are reviewed. New animation assets require source, per-frame QA, actual-game screenshots and human review; a QA-PENDING candidate must not silently ship in production.
+
 ## Typical change sequence
 
 - Open `src/game/balance/index.ts`, the relevant `src/game/balance/<domain>.json` and `src/game/config.ts`; identify its owner and reused scaling parameter before choosing a new domain.
