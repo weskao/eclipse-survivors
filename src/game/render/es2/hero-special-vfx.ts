@@ -1,14 +1,15 @@
 import type { Ctx2D } from '../ctx'
 import shadowRiftUrl from '../../../assets/es2/production/skills/shadow-rift.svg?url'
 import spiritFlameUrl from '../../../assets/es2/production/skills/spirit-flame.svg?url'
+import spiritGuardianUrl from '../../../assets/es2/production/skills/spirit-guardian.svg?url'
 import oathWardUrl from '../../../assets/es2/production/skills/oath-ward.svg?url'
 import oathRaysUrl from '../../../assets/es2/production/skills/oath-rays.svg?url'
 
 /** Cosmetic world-space texture passes; gameplay hitboxes remain simulation-owned. */
 export type HeroSpecialFxKind = 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin'
-type Texture = 'rift' | 'flame' | 'ward' | 'rays'
+type Texture = 'rift' | 'flame' | 'guardian' | 'ward' | 'rays'
 const SOURCES: Record<Texture, string> = {
-  rift: shadowRiftUrl, flame: spiritFlameUrl, ward: oathWardUrl, rays: oathRaysUrl,
+  rift: shadowRiftUrl, flame: spiritFlameUrl, guardian: spiritGuardianUrl, ward: oathWardUrl, rays: oathRaysUrl,
 }
 const cached: Partial<Record<Texture, HTMLImageElement>> = {}
 const TAU = Math.PI * 2
@@ -20,7 +21,7 @@ const DUST = Object.freeze(Array.from({ length: 24 }, (_, i) => Object.freeze({
   size: 1.1 + (i % 4) * 0.7,
 })))
 
-/** Decode the four authored SVG textures once, never during a rendering frame. */
+/** Decode the five authored SVG textures once, never during a rendering frame. */
 export function preloadHeroSpecialVfx(): void {
   if (typeof Image === 'undefined') return
   for (const key of Object.keys(SOURCES) as Texture[]) {
@@ -88,21 +89,22 @@ function summoner(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: 
   const converge = reduced ? 0.72 : ease((t - 0.12) / 0.61)
   ctx.fillStyle = '#233539'
   ctx.beginPath(); ctx.ellipse(0, 45, 83 + bloom * 37, 17, 0, 0, TAU); ctx.fill()
-  const radius = 101 - converge * 68
-  const alpha = reduced ? 0.5 : Math.min(0.72, 0.26 + converge * 0.48)
+  const radius = 112 - converge * 35
+  const alpha = reduced ? 0.58 : Math.min(0.92, 0.42 + converge * 0.51)
   for (let i = 0; i < (reduced ? 2 : 3); i++) {
     const a = i * TAU / 3 - 1.6 + (reduced ? 0 : t * 0.36)
     const x = Math.cos(a) * radius
-    const y = Math.sin(a) * radius * 0.37 - 30 - converge * 19
-    const image = sprite(ctx, 'flame', x, y, 100 + bloom * 29, 132 + bloom * 37,
-      alpha, Math.sin(a) * 0.16)
+    const y = Math.sin(a) * radius * 0.37 - 36 - converge * 17
+    const image = sprite(ctx, 'flame', x, y, 112 + bloom * 34, 144 + bloom * 46,
+      alpha * 0.82, Math.sin(a) * 0.16)
+    sprite(ctx, 'guardian', x, y - 9, 106 + bloom * 22, 152 + bloom * 34, alpha * 0.88, Math.sin(a) * 0.06)
     if (!image) {
       ctx.fillStyle = '#a0d9d6'; ctx.beginPath(); ctx.ellipse(x, y, 8, 18, a, 0, TAU); ctx.fill()
     }
   }
   if (!reduced && t > 0.35) {
-    sprite(ctx, 'flame', 0, -17, 133 + bloom * 45, 179 + bloom * 45,
-      0.34 + 0.32 * (1 - ease((t - 0.72) / 0.26)))
+    sprite(ctx, 'flame', 0, -17, 164 + bloom * 48, 201 + bloom * 52,
+      0.53 + 0.27 * (1 - ease((t - 0.72) / 0.26)))
   }
   ctx.globalAlpha *= 0.52
   dust(ctx, reduced ? 3 : count, 111 + bloom * 53, converge, '#a0d9d6')
