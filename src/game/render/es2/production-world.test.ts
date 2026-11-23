@@ -125,4 +125,29 @@ describe('ES2 world art live asset mapping', () => {
       expect(calls[0]?.slice(5)).toEqual([-118, -232, 236, 236])
     },
   )
+
+  it('uses legacy source rects while an opted-in boss candidate is still decoding', async () => {
+    const makeImage = (): HTMLImageElement => ({
+      complete: true, naturalWidth: 576, naturalHeight: 192, src: '',
+    }) as HTMLImageElement
+    const qa = loadWorldRuntimeImages(makeImage, 'abyss-monarch')
+    await vi.waitFor(() => expect(qa.bosses['abyss-monarch'].src).toContain('QA-PENDING'))
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawProductionBossFrame(ctx, qa.bosses['abyss-monarch'], 2, 236, 246)).toBe(true)
+    expect(calls[0]?.slice(1, 5)).toEqual([192, 0, 192, 192])
+  })
+
+  it('restores the authored boss atlas if a dev-only candidate image fails to load', async () => {
+    const makeImage = (): HTMLImageElement => ({
+      complete: true, naturalWidth: 576, naturalHeight: 192, src: '', onerror: null,
+    }) as HTMLImageElement
+    const qa = loadWorldRuntimeImages(makeImage, 'infernal-titan')
+    await vi.waitFor(() => expect(qa.bosses['infernal-titan'].src).toContain('QA-PENDING'))
+    const image = qa.bosses['infernal-titan']
+    expect(image.onerror).toBeTypeOf('function')
+    image.onerror?.call(image, {} as Event)
+    expect(image.src).toBe(WORLD_ART.bosses['infernal-titan'])
+  })
+
 })
