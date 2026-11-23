@@ -33,7 +33,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 <template>
   <section ref="root" class="es2-roster" role="group" :aria-label="t('ES2 新英雄選擇')">
     <div v-for="hero in heroes" :key="hero.id" class="es2-roster__card-shell">
-      <button type="button" class="es2-roster__card" data-ui-sfx="managed"
+      <button type="button" class="es2-roster__card es2-hero-select-card" data-ui-sfx="managed"
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       :aria-label="[t(hero.label), t(hero.subtitle), t(hero.description), t(hero.strengths.join(' / ')), t(hero.weaknesses.join(' / '))].join(' · ')"
@@ -66,8 +66,6 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 
 <style scoped>
 .es2-roster { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; width: 100%; }
-.es2-roster__card { position: relative; width: 100%; height: 100%; min-width: 0; border: 1px solid #8e6d54; border-radius: 14px; background: #1d1827; color: #f6e7cf; cursor: pointer; padding: 0; text-align: left; overflow: hidden; touch-action: manipulation; }
-.es2-roster__card:hover, .es2-roster__card:focus-visible, .es2-roster__card--selected { outline: 2px solid #e6bd7b; outline-offset: 2px; border-color: #e6bd7b; }
 .es2-roster__card:disabled { cursor: not-allowed; opacity: .55; }
 .es2-roster__portrait { display: block; width: 100%; height: clamp(165px,27vw,360px); object-fit: contain; }
 .es2-roster__copy { display: grid; gap: .3rem; padding: .75rem; }

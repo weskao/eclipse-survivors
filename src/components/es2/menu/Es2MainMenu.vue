@@ -96,7 +96,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           </div>
           <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
             <div v-for="hero in heroes" :key="hero.id" class="es2-hero-card-shell">
-              <button type="button" :data-hero="hero.id" class="es2-hero-card" data-ui-sfx="managed"
+              <button type="button" :data-hero="hero.id" class="es2-hero-card es2-hero-select-card" data-ui-sfx="managed"
               :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               :aria-label="t(hero.name) + ' · ' + t(hero.role)"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
