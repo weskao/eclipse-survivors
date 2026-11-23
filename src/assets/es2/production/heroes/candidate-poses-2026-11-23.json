@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "QA_PENDING",
-  "description": "Newly generated November 2026 pose candidates; 4 authored frames per east-facing action; not eight-way, not runtime activated. Some frames touch original source-cell edge; do not promote without manual review.",
+  "description": "Newly generated Nov 2026 East-only 4-frame candidate atlases; source bounding boxes touch the original 627px cell boundary in multiple frames, making clipping plausible despite transparent final gutters. QA_PENDING, not native3x verified, not runtime applied.",
   "direction": "E",
   "cellPixels": 704,
   "originalImagePixels": [
@@ -42,7 +42,7 @@
       "native3x": "unverified",
       "runtimeApplied": false,
       "QA": "QA_PENDING",
-      "allSourceEdgesSafe": true,
+      "allSourceEdgesSafe": false,
       "frameQA": [
         {
           "index": 0,
@@ -58,7 +58,8 @@
             30,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -74,7 +75,8 @@
             23,
             597,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -90,7 +92,8 @@
             1,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -106,8 +109,15 @@
             0,
             611,
             593
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "shadowblade:attack": {
@@ -139,7 +149,7 @@
       "native3x": "unverified",
       "runtimeApplied": false,
       "QA": "QA_PENDING",
-      "allSourceEdgesSafe": true,
+      "allSourceEdgesSafe": false,
       "frameQA": [
         {
           "index": 0,
@@ -155,7 +165,8 @@
             15,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -171,7 +182,8 @@
             9,
             613,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -187,7 +199,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -203,8 +216,15 @@
             0,
             613,
             605
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "shadowblade:special": {
@@ -236,7 +256,7 @@
       "native3x": "unverified",
       "runtimeApplied": false,
       "QA": "QA_PENDING",
-      "allSourceEdgesSafe": true,
+      "allSourceEdgesSafe": false,
       "frameQA": [
         {
           "index": 0,
@@ -252,7 +272,8 @@
             9,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -268,7 +289,8 @@
             15,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -284,7 +306,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -300,8 +323,15 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "spirit-summoner:run": {
@@ -333,7 +363,7 @@
       "native3x": "unverified",
       "runtimeApplied": false,
       "QA": "QA_PENDING",
-      "allSourceEdgesSafe": true,
+      "allSourceEdgesSafe": false,
       "frameQA": [
         {
           "index": 0,
@@ -349,7 +379,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -365,7 +396,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -381,7 +413,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -397,8 +430,15 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "spirit-summoner:attack": {
@@ -446,7 +486,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -462,7 +503,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -478,7 +520,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -494,8 +537,15 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "spirit-summoner:special": {
@@ -527,7 +577,7 @@
       "native3x": "unverified",
       "runtimeApplied": false,
       "QA": "QA_PENDING",
-      "allSourceEdgesSafe": true,
+      "allSourceEdgesSafe": false,
       "frameQA": [
         {
           "index": 0,
@@ -543,7 +593,8 @@
             15,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -559,7 +610,8 @@
             8,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -575,7 +627,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -591,8 +644,15 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "crimson-paladin:run": {
@@ -624,7 +684,7 @@
       "native3x": "unverified",
       "runtimeApplied": false,
       "QA": "QA_PENDING",
-      "allSourceEdgesSafe": true,
+      "allSourceEdgesSafe": false,
       "frameQA": [
         {
           "index": 0,
@@ -640,7 +700,8 @@
             19,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -656,7 +717,8 @@
             8,
             617,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -672,7 +734,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -688,8 +751,15 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "crimson-paladin:attack": {
@@ -737,7 +807,8 @@
             15,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -753,7 +824,8 @@
             8,
             617,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -769,7 +841,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -785,8 +858,15 @@
             0,
             626,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     },
     "crimson-paladin:special": {
@@ -818,7 +898,7 @@
       "native3x": "unverified",
       "runtimeApplied": false,
       "QA": "QA_PENDING",
-      "allSourceEdgesSafe": true,
+      "allSourceEdgesSafe": false,
       "frameQA": [
         {
           "index": 0,
@@ -834,7 +914,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 1,
@@ -850,7 +931,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 2,
@@ -866,7 +948,8 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         },
         {
           "index": 3,
@@ -882,9 +965,17 @@
             0,
             627,
             627
-          ]
+          ],
+          "sourceClippingRisk": true
         }
+      ],
+      "sourceClippingRiskFrames": [
+        0,
+        1,
+        2,
+        3
       ]
     }
-  }
+  },
+  "sourceClippingRiskDefinition": "True if source alpha bounds reach any edge of its original cell OR edge alpha pixels are present. Candidate requires redrawing isolated frames before approval."
 }
