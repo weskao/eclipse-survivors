@@ -86,6 +86,18 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('specialChoose')).toEqual([['relic:moon']])
   })
 
+  it('illustrates every special evolution choice with its own animated/still 3x artwork', async () => {
+    const item = { id: 'evolution2:solar-tempest', title: 'Solar Tempest', rarity: 'legendary' as const }
+    const wrapper = mounted({ screen: 'hidden', upgradeEffect: 'soft',
+      specialChoice: { kind: 'evolution', items: [item] } })
+    await nextTick()
+    const image = find('[data-choice="evolution2:solar-tempest"] .es2-card-art img') as HTMLImageElement
+    expect(image.getAttribute('src')).toContain('solar-tempest@3x-animated.webp')
+    expect(image.closest('picture')?.querySelector('source')?.getAttribute('srcset')).toContain('solar-tempest@3x.webp')
+    await wrapper.setProps({ upgradeEffect: 'still' })
+    expect(image.getAttribute('src')).toContain('solar-tempest@3x.webp')
+  })
+
   it('renders every cursed relic with the cursed chest artwork, independent of its ID and rarity', async () => {
     mounted({ screen: 'hidden', specialChoice: { kind: 'treasure', items: [
       { id: 'relics:ashen-heart', title: 'Ashen Heart', rarity: 'epic' },
