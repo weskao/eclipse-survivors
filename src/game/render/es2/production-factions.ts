@@ -1,5 +1,6 @@
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import assassinMasterUrl from '../../../assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
+import frostWraithMasterUrl from '../../../assets/es2/production/enemies/masters/frost-wraith-6poses-3x2-master-1536x1024.png?url'
 import type { FactionRuntime } from '../../content/enemies/runtime'
 import type { GameState } from '../../types'
 import { WORLD_ART } from './production-world'
@@ -8,6 +9,12 @@ import type { Ctx2D } from '../ctx'
 import { drawProjectileSprite, type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
 
 export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement; highResBody?: HTMLImageElement }>
+
+/** Only existing authentic 512px 3×2 source grids: never upscale undersized strips. */
+const NATIVE_MASTER_URLS: Partial<Record<FactionKind, string>> = {
+  'shadow-assassin': assassinMasterUrl,
+  'frost-wraith': frostWraithMasterUrl,
+}
 
 /** Visual-only dimensions in game px, independently calibrated against original mob / boss silhouettes.
  * Some native WebPs contain 25–35% transparent padding and looked too small at 88–128px.
@@ -35,10 +42,11 @@ export function loadProductionFactionArt(makeImage: () => HTMLImageElement = () 
     const telegraph = makeImage()
     body.src = WORLD_ART.enemies[kind].body
     telegraph.src = WORLD_ART.enemies[kind].telegraph
-    if (kind === 'shadow-assassin') {
-      // Existing, genuinely authored 512px-per-pose 3×2 master; one decode per mount.
+    const authoredMasterUrl = NATIVE_MASTER_URLS[kind]
+    if (authoredMasterUrl) {
+      // Existing 512px authored source, decoded once per renderer. No per-actor allocations.
       const highResBody = makeImage()
-      highResBody.src = assassinMasterUrl
+      highResBody.src = authoredMasterUrl
       out[kind] = { body, telegraph, highResBody }
     } else out[kind] = { body, telegraph }
   }
