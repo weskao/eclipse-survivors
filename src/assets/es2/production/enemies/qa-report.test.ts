@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { FACTION_VISUAL_SIZE } from '../../../../game/render/es2/production-factions'
 import { buildEnemyQaFinding } from './qa-report'
 import type { AtlasFindings } from './frame-qa'
 
@@ -9,6 +12,18 @@ const cue = { path: 'frost-wraith-telegraph@3x.webp', frameWidth: 150, frameHeig
   native3x: true, status: 'needs-human-approval' }
 
 describe('browser enemy QA export is truthful and never grants approval', () => {
+  it('reads 1x gameplay dimensions from the same visual-size contract as the live renderer', () => {
+    const source = readFileSync(fileURLToPath(new URL('./qa-preview.ts', import.meta.url)), 'utf8')
+    expect(source).toContain('FACTION_VISUAL_SIZE[kind]')
+    expect(source).not.toContain('ENEMY_DEFINITIONS[kind].radius * 4')
+    expect(FACTION_VISUAL_SIZE['shadow-assassin']).toBe(146)
+    const finding = buildEnemyQaFinding('shadow-assassin', FACTION_VISUAL_SIZE['shadow-assassin'],
+      { ...base, frameWidth: 216, frameHeight: 216 }, cue, pixels, pixels)
+    expect(finding.minimumNative3xPx).toBe(438)
+    expect(finding.bodyNative3x).toBe(false)
+  })
+
+
   it('exports the actual native 3x provenance for the body and its cue', () => {
     const report = buildEnemyQaFinding('frost-wraith', 76, base, cue, pixels, pixels)
     expect(report).toMatchObject({
