@@ -94,7 +94,7 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
     const dx = hero.x - star.x
     const dy = hero.y - star.y
     const squared = dx * dx + dy * dy
-    const reach = 115 + (hero.skills.magnet ?? 0) * 55
+    const reach = 115 + (hero.skills.magnet ?? 0) * 62
     if (squared < reach * reach) {
       // Only crystal attraction needs a true distance for normalization.
       const d = Math.max(1, Math.sqrt(squared))
@@ -182,7 +182,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   collectStars(s, hero, dt, hooks)
   tickWorld(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
-  if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * 0.9 * dt)
+  if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * 1.05 * dt)
   ageEffects(s, hero, dt)
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)
   s.cam.y += (hero.y - s.cam.y) * minmax(dt * 9, 0, 1)
