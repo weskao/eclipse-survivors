@@ -1,0 +1,41 @@
+name: ES2 UI 17 real Chromium visual QA
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-ui-17-integration
+  cancel-in-progress: false
+jobs:
+  verify-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run src/assets/es2/production/ui/ui-browser-qa-contract.test.ts src/assets/es2/production/ui/ui-runtime-sizing.test.ts src/assets/es2/production/ui/treasure-icons-native3x.test.ts src/components/es2/menu/Es2MenuSystem.test.ts
+      - run: pnpm build
+      - name: Install Chromium for real QA
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Run production preview and capture actual UI layouts
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 --strictPort >/tmp/es2-ui-preview.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node scripts/es2-ui-17-browser-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-ui-17-real-browser-qa
+          path: artifacts/es2-ui-17-browser/
+          retention-days: 7
+          if-no-files-found: warn
