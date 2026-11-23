@@ -18,7 +18,7 @@ Branch: `feature/es2-release-readiness-integration`. Rules: [CLAUDE.md](../../CL
 
 ## 2. New image input → staged asset map
 
-The following are original generated PNGs from this conversation. **They are NOT yet all in GitHub**; keep `QA_PENDING` until the actual binary files appear in the repository and pass visual/pixel checks. A manifest or a source name alone is not a committed image.
+The following are original generated PNGs from this conversation. **All nine WebP candidates have been committed to this branch and the runtime maps them directly**; keep `QA_PENDING` until the actual binary files appear in the repository and pass visual/pixel checks. A manifest or a source name alone is not a committed image.
 
 | Hero | Source PNG (generated in chat) | Source pixels / grid | Required project deliverable |
 | --- | --- | --- | --- |
@@ -56,12 +56,12 @@ Engine directions `[E, SE, S, SW, W, NW, N, NE]` use 0–7. Current source direc
 
 ## 5. Validation / release checklist
 
-- [ ] Nine staged inputs are **physically** committed as corrected native 3× transparent WebPs; non-integer source grids, cut edges, source bleed and paladin pale matte are fixed
+- [x] Nine WebP **candidates** committed, with exact integer crop grid and candidate paladin matte cleanup; **native 3× detail, image identity and matte QA remain pending**
 - [ ] Per-file/frame SHA-256, source pixels, authored pixels, layout, timing, anchor, alpha, budget, `native3x`, and `QA_PENDING|APPROVED` recorded
 - [ ] All eight directions each have genuine idle, run, attack/cast, special poses and real ordered consecutive frames; no false eight-way claim
-- [ ] Actual game Canvas uses the right asset for every hero/pose/facing; 1× visual size and foot anchor agree with the first three heroes
+- [x] Canvas now selects the nine committed sheets per hero, pose and facing and caps actor size at 147px; actual-device visual alignment still needs review
 - [ ] HUD/selection/scene identity matches exactly for all six heroes and reduced-motion / fallback
 - [ ] No neighboring sprite bleed, background matte, frame jump, memory leak, unbounded decode or blurry upscaling at 320px/375px/mobile landscape/desktop
 - [ ] `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release` and real browser screenshots independently verified
 
-**Status:** Candidate source references documented; current committed 3×-nominal runtime assets remain in use. Never mark these boxes checked without binary/CI/visual evidence.
+**Status:** Nine new split WebP assets are committed and selected by the current world renderer. The 198px legacy sheet remains archived; newly generated 313px and 443px sources remain **QA_PENDING**, and only E/W have full consecutive action strips. Do not claim fully authored 3× eight-direction motion or final artistic signoff.
