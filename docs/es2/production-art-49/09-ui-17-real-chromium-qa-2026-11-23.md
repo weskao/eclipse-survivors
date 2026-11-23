@@ -1,6 +1,9 @@
 # ES2 17 UI 素材 — 真實 Chromium 技術驗收證據（2026-11-23）
 
-> **結果：4/4 裝置實際 Chromium 技術驗收成功；0/17 正式人工美術核准。** 本檔不是美術簽核書。不得因此把 `needs-human-approval` 改成 `approved`，也不可將此結果當成全部 52 項世界／英雄美術驗收完成。
+> **最新狀態（2026-11-24）：UI 17/17 已通過專案擁有者人工美術驗收。** `src/assets/es2/production/ui/manifest.json` 已改為逐檔 `approved` 並記錄人工確認。詳見 [10-ui-17-owner-approval-2026-11-24.md](10-ui-17-owner-approval-2026-11-24.md)。本文件舊的 `pending`／`needs-human-approval` 語句及歷史測試結果均保留作為當時快照，**不代表現在仍待人工美術核准**；實機技術驗證仍獨立，其他 32 項素材不受影響。
+
+
+> **2026-11-23 歷史結果：4/4 裝置實際 Chromium 技術驗收成功；當時 0/17 正式人工美術核准。** 本檔不是美術簽核書。不得因此把 `needs-human-approval` 改成 `approved`，也不可將此結果當成全部 52 項世界／英雄美術驗收完成。
 
 ## 版本與權威原始資料
 
