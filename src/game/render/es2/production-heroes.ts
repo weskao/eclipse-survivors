@@ -3,6 +3,7 @@ import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 import type { HeroSheets } from '../hero-sheets'
 import { drawPortraitMotion } from './portrait-motion'
+import { CHARACTER_FOOT_BOTTOMS } from './character-foot-anchors'
 import shadowblade from '../../../assets/es2/production/heroes/shadowblade-portrait@3x.webp'
 import summoner from '../../../assets/es2/production/heroes/spirit-summoner-portrait@3x.webp'
 import paladin from '../../../assets/es2/production/heroes/crimson-paladin-portrait@3x.webp'
@@ -50,6 +51,7 @@ export const PRODUCTION_HERO_POSE_SOURCES: Readonly<Record<SpecializationId, Rea
 })
 type AtlasWithAction = HTMLImageElement & { actionStrip?: HTMLImageElement }
 type HeroWithMotion = AtlasWithAction & {
+  heroId?: SpecializationId
   motionAtlas?: HTMLImageElement
   motionAtlasUrl?: string
   motionAtlasFactory?: () => HTMLImageElement
@@ -78,6 +80,7 @@ export function loadProductionHeroes(makeImage: () => HTMLImageElement = () => n
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {
     const image = makeImage() as HeroWithMotion
     image.src = PRODUCTION_HERO_SOURCES[id]
+    image.heroId = id
     image.poseAtlasSources = PRODUCTION_HERO_POSE_SOURCES[id]
     image.poseAtlases = {}
     image.motionAtlasFactory = makeImage
@@ -252,24 +255,108 @@ function loadHeroPoseOnDemand(hero: HeroWithMotion, sheet: PoseSheet): HTMLImage
   return readyPoseAtlas(atlas, sheet) ? atlas : null
 }
 
+type PoseRect = ReturnType<typeof productionHeroPoseRect>
+type SmoothFrame = { type: 'atlas'; atlas: HTMLImageElement; rect: PoseRect; anchor: number }
+  | { type: 'portrait'; atlas: HTMLImageElement; anim: HeroAnimation }
+
+interface PoseTransition {
+  current: SmoothFrame
+  prior?: SmoothFrame
+  pose: HeroAnimation['pose']
+  direction: number
+  startedAt: number
+  duration: number
+  lastAt: number
+}
+
+/** Weak keys are the selected hero's decoded portrait; no unbounded run history. */
+const poseTransitions = new WeakMap<HTMLImageElement, PoseTransition>()
+
+/** Measured opaque-bottom pixel for this exact frame. No per-frame image scanning. */
+export function productionHeroFrameAnchor(image: HTMLImageElement, rect: PoseRect): number {
+  const id = (image as HeroWithMotion).heroId
+  const offsets = id ? CHARACTER_FOOT_BOTTOMS[id]?.[rect.sheet] : undefined
+  const index = (rect.y / 448) * 4 + rect.x / 448
+  return offsets?.[index] ?? 448
+}
+
 function drawHeroPoseAtlas(
-  ctx: Ctx2D, atlas: HTMLImageElement, rect: ReturnType<typeof productionHeroPoseRect>,
-  width: number, height: number,
+  ctx: Ctx2D, atlas: HTMLImageElement, rect: PoseRect,
+  width: number, height: number, footBottom = 448,
 ): void {
-  // Each crop contains exactly one frame, with transparent margins. Never draw
-  // another sheet below it: old action silhouettes cannot trail the new pose.
   const paintedWidth = Math.min(width * 1.16, 147)
   const paintedHeight = Math.min(height * 1.05, 147)
   ctx.save()
   if (rect.mirror) ctx.scale(-1, 1)
+  // Every sheet has different transparent padding. Use the real body foot
+  // instead of the full 448px cell bottom, or each pose snaps vertically.
   ctx.drawImage(atlas, rect.x, rect.y, 448, 448,
-    -paintedWidth / 2, 4 - paintedHeight, paintedWidth, paintedHeight)
+    -paintedWidth / 2, 4 - paintedHeight * footBottom / 448, paintedWidth, paintedHeight)
   ctx.restore()
+}
+
+function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: number): void {
+  if (frame.type === 'atlas') drawHeroPoseAtlas(ctx, frame.atlas, frame.rect, width, height, frame.anchor)
+  else drawPortraitMotion(ctx, frame.atlas, frame.anim, width, height)
+}
+
+/** 45ms between adjacent frames; 120ms for a different pose/heading/source.
+ * Alpha is restored even with test contexts without a real Canvas state stack.
+ */
+function drawSmoothedHero(
+  ctx: Ctx2D, portrait: HTMLImageElement, frame: SmoothFrame, anim: HeroAnimation,
+  width: number, height: number, timeSeconds: number | undefined,
+): void {
+  if (anim.reducedMotion || timeSeconds === undefined || !Number.isFinite(timeSeconds)) {
+    poseTransitions.delete(portrait)
+    drawSmoothFrame(ctx, frame, width, height)
+    return
+  }
+  const previous = poseTransitions.get(portrait)
+  if (!previous || timeSeconds < previous.lastAt || timeSeconds - previous.lastAt > 0.5) {
+    poseTransitions.set(portrait, { current: frame, pose: anim.pose, direction: anim.direction,
+      lastAt: timeSeconds, startedAt: timeSeconds, duration: 0 })
+    drawSmoothFrame(ctx, frame, width, height)
+    return
+  }
+  const a = previous.current, b = frame
+  const changed = a.type !== b.type || a.atlas !== b.atlas || (
+    a.type === 'atlas' && b.type === 'atlas' &&
+    (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.rect.mirror !== b.rect.mirror))
+  if (changed) {
+    const poseOrDirection = previous.pose !== anim.pose || previous.direction !== anim.direction
+      || a.type !== b.type || (a.type === 'atlas' && b.type === 'atlas' && a.rect.sheet !== b.rect.sheet)
+    // For frame-by-frame movement use a short overlap. New directional silhouettes
+    // receive more easing but never change the hero's world position/hitbox.
+    previous.prior = a
+    previous.current = b
+    previous.startedAt = timeSeconds - Math.min(Math.max(0, timeSeconds - previous.lastAt), 0.012)
+    previous.duration = poseOrDirection ? 0.12 : 0.045
+  } else previous.current = b
+  previous.pose = anim.pose
+  previous.direction = anim.direction
+  previous.lastAt = timeSeconds
+  if (!previous.prior || previous.duration === 0) {
+    drawSmoothFrame(ctx, b, width, height)
+    return
+  }
+  const mix = Math.max(0, Math.min(1, (timeSeconds - previous.startedAt) / previous.duration))
+  if (mix >= 1) {
+    previous.prior = undefined
+    drawSmoothFrame(ctx, b, width, height)
+    return
+  }
+  const originalAlpha = ctx.globalAlpha
+  ctx.globalAlpha = originalAlpha * (1 - mix)
+  drawSmoothFrame(ctx, previous.prior, width, height)
+  ctx.globalAlpha = originalAlpha * mix
+  drawSmoothFrame(ctx, b, width, height)
+  ctx.globalAlpha = originalAlpha
 }
 
 export function drawProductionHeroFrame(
   ctx: Ctx2D, image: HTMLImageElement, anim: HeroAnimation, width: number, height: number,
-  heroSheets?: HeroSheets,
+  heroSheets?: HeroSheets, frameTimeSeconds?: number,
 ): boolean {
   if (!image.complete) return false
   // Like the original three heroes, compose animation from a single sharp
@@ -281,27 +368,33 @@ export function drawProductionHeroFrame(
       const rect = productionHeroPoseRect(anim)
       const sheet = loadHeroPoseOnDemand(hero, rect.sheet)
       if (sheet) {
-        drawHeroPoseAtlas(ctx, sheet, rect, width, height)
+        drawSmoothedHero(ctx, image, { type: 'atlas', atlas: sheet, rect,
+          anchor: productionHeroFrameAnchor(image, rect) }, anim, width, height, frameTimeSeconds)
         return true
       }
-      // Keep this character's direction/guard rather than snap back to a
-      // different pose or accidentally composite an older action atlas.
+      // If an action sheet is still decoding, hold the same character's
+      // directional guard instead of snapping to a generic unrelated pose.
       if (rect.sheet !== 'direction') {
         const ready = loadHeroPoseOnDemand(hero, 'direction')
         if (ready) {
           const direction = Number.isFinite(anim.direction)
             ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
-          const col = direction
-          const cell = col + 8
-          drawHeroPoseAtlas(ctx, ready, { sheet: 'direction',
-            x: (cell % 4) * 448, y: Math.floor(cell / 4) * 448,
-            width: 448, height: 448, mirror: false }, width, height)
+          const cell = direction + 8
+          const held: PoseRect = { sheet: 'direction', x: (cell % 4) * 448,
+            y: Math.floor(cell / 4) * 448,
+            width: 448, height: 448, mirror: false }
+          drawSmoothedHero(ctx, image, { type: 'atlas', atlas: ready, rect: held,
+            anchor: productionHeroFrameAnchor(image, held) }, anim, width, height, frameTimeSeconds)
           return true
         }
       }
-      // No valid split sheet is decoded yet: keep one clean portrait fallback.
-      if (heroSheets?.drawSpecialization(ctx, image, anim, width, height)) return true
-      drawPortraitMotion(ctx, image, anim, width, height)
+      // Decode fallback can blend into the first real frame. Keep its identity.
+      if (frameTimeSeconds !== undefined) {
+        drawSmoothedHero(ctx, image, { type: 'portrait', atlas: image, anim },
+          anim, width, height, frameTimeSeconds)
+      } else if (!heroSheets?.drawSpecialization(ctx, image, anim, width, height)) {
+        drawPortraitMotion(ctx, image, anim, width, height)
+      }
       return true
     }
     const motion = loadHeroMotionOnDemand(hero)
