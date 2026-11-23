@@ -463,3 +463,21 @@ describe('interruption edge cases', () => {
     expect(ctx.suspendCalls).toBe(1)
   })
 })
+
+describe('original boss score replaces battle music', () => {
+  it('fades down the exploration track, plays the named theme, and restores normal music', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    const baseline = ctx.oscillators.length
+    audio.setBossTheme?.('frost-sovereign', 1)
+    audio.setCombatIntensity('boss')
+    for (let i = 0; i < 40; i++) audio.tick('play')
+    expect(bgm.volume).toBe(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(baseline)
+    audio.setBossTheme?.(null)
+    audio.setCombatIntensity('combat')
+    for (let i = 0; i < 40; i++) audio.tick('play')
+    expect(bgm.volume).toBeCloseTo(0.35)
+  })
+})
