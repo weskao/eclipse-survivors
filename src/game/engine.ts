@@ -64,6 +64,8 @@ export interface TestApi {
   readonly vfxCount: number
   readonly frames: number
   readonly scene: string
+  /** Live encounter identity and phase for browser QA; not a player setting. */
+  readonly bossPreview: { id: BossId | null; phase: 1 | 2 | 3 | null }
   forceAttack(): void
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
@@ -668,6 +670,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     get vfxCount() { return s.impactWaves.length + s.lightningFx.length + s.swipes.length + s.fx.length },
     get frames() { return frameDrawn },
     get scene() { return currentSceneInfo(s).name },
+    get bossPreview() {
+      const boss = bosses?.snapshot(s)
+      return { id: boss?.id ?? null, phase: boss?.phase ?? null }
+    },
     previewBiome(index: number) {
       if (window.location.search.indexOf('showcase=1') < 0 || s.mode !== 'play' ||
           !s.hero || !Number.isInteger(index) || index < 0 || index > 3) return
@@ -693,7 +699,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     showcaseBoss(phase: 1 | 2 | 3 = 1) {
       const hero = s.hero
-      if (!hero || s.mode !== 'play') return
+      if (!hero || s.mode !== 'play' || ![1, 2, 3].includes(phase)) return
+      // Only explicit Vite DEV art QA may select a specific real encounter.
+      // Production gameplay and the original generic showcase remain unchanged.
+      const params = import.meta.env.DEV && typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search) : null
+      const requested = params?.get('showcase') === '1' ? params.get('es2BossArtQa') : null
+      const qaBossId = requested && Object.hasOwn(BOSS_DEFINITIONS, requested)
+        ? requested as BossId : null
+      if (qaBossId) bosses?.reset(s)
       s.mobs = []
       s.enemyShots = []
       s.time = 96
@@ -701,13 +715,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       s.bossSpawned = true
       hero.inv = 120
       hero.attack = 10000
-      spawnMob(s, 'boss')
-      const boss = s.mobs.find(e => e.type === 'boss')
+      const boss = qaBossId && bosses
+        ? bosses.spawn(s, qaBossId, { x: hero.x + 165, y: hero.y - 8 }, hooks)
+        : (spawnMob(s, 'boss'), s.mobs.find(e => e.type === 'boss'))
       if (!boss) return
       boss.x = hero.x + 165
       boss.y = hero.y - 8
       boss.hp = boss.max * (phase === 1 ? 1 : phase === 2 ? 0.56 : 0.25)
-      s.cam.x = hero.x
+      if (qaBossId && phase > 1) bosses?.tick(s, 1 / 60, hooks)
+      // On narrow screens, frame the boss fully without hiding it past the right edge.
+      s.cam.x = hero.x + (qaBossId ? Math.max(0, 165 - s.W * 0.16) : 0)
       s.cam.y = hero.y
     },
   }
