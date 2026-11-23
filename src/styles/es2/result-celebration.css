@@ -1,0 +1,56 @@
+/* One-shot victory celebration: no canvas loop, no timers, no infinite particles.
+   Only a result with authoritative RunStats.victory renders these nodes. */
+.es2-result--victory{position:relative;isolation:isolate}
+.es2-result--victory>:not(.es2-victory-celebration){position:relative;z-index:1}
+.es2-victory-celebration{
+  position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events: none;
+  contain:paint;user-select:none;
+}
+.es2-victory-halo{
+  position:absolute;left:50%;top:-65px;width:min(300px,72%);aspect-ratio:1;
+  border-radius:50%;transform:translateX(-50%);
+  background:radial-gradient(circle,#ffe59a7b 0%,#efb75c48 29%,#ecaa5920 47%,transparent 70%);
+  animation:es2-victory-halo-reveal 1.8s ease-out 0s 1 both;
+}
+.es2-victory-spark{
+  position:absolute;left:50%;top:67px;width:7px;height:12px;
+  border-radius:2px 2px 5px 5px;background:#ffe4a4;
+  box-shadow:0 0 5px #e9bd7c88;
+  transform-origin:center;
+  animation:es2-victory-spark-flight 1.8s cubic-bezier(.19,.75,.35,1) var(--spark-delay) 1 both;
+  animation-iteration-count: 1;
+}
+.es2-victory-spark:nth-child(3n){width:5px;height:9px;background:#d5ecf4}
+.es2-victory-spark:nth-child(4n){width:6px;height:10px;background:#f5be85}
+.es2-result--victory .es2-result-crown{
+  color:#ffedae;text-shadow:0 0 15px #ffc96f7a,0 2px 3px #21190f;
+  animation:es2-victory-crown-arrive .85s cubic-bezier(.2,.8,.25,1) 0s 1 both;
+}
+.es2-result--victory .es2-result-status{
+  color:#ffe4a0;text-shadow:0 1px 3px #201608,0 0 12px #eeb96777;
+}
+@keyframes es2-victory-halo-reveal{
+  0%{opacity:0;transform:translateX(-50%) scale(.72)}
+  40%{opacity:.85}
+  100%{opacity:.48;transform:translateX(-50%) scale(1)}
+}
+@keyframes es2-victory-spark-flight{
+  0%{opacity:0;transform:rotate(var(--spark-angle)) translateY(-10px) scale(.3)}
+  13%{opacity:1}
+  60%{opacity:.9}
+  100%{opacity:0;transform:rotate(var(--spark-angle)) translateY(calc(-1 * var(--spark-distance))) scale(.8)}
+}
+@keyframes es2-victory-crown-arrive{
+  0%{opacity:0;transform:translateY(13px) scale(.78)}
+  65%{opacity:1;transform:translateY(-3px) scale(1.08)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(max-width:610px),(max-height:570px){
+  .es2-victory-spark{top:47px}
+  .es2-victory-halo{top:-47px;width:min(180px,70%)}
+}
+@media (prefers-reduced-motion: reduce){
+  .es2-victory-spark{display:none;animation:none!important}
+  .es2-victory-halo{animation:none!important;opacity:.35;transform:translateX(-50%)}
+  .es2-result--victory .es2-result-crown{animation:none!important}
+}
