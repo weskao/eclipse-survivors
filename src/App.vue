@@ -162,7 +162,7 @@ onBeforeUnmount(() => {
   />
   <div v-if="ui.mode === 'play' && !ui.settingsOpen" class="es2-world-markers" :aria-label="t('世界事件標記')">
     <button v-for="marker in worldMarkerButtons" :key="marker.event.id" type="button"
-      class="es2-world-marker" :style="{ left: marker.left, top: marker.top }"
+      class="es2-world-marker" data-ui-sfx="managed" :style="{ left: marker.left, top: marker.top }"
       :aria-label="t('互動世界事件 ' + marker.event.kind.slice(7))"
       @click="engine.openWorldEvent(marker.event.id)">✧</button>
   </div>
@@ -233,8 +233,8 @@ onBeforeUnmount(() => {
     @cancel="cancelHome">
     <p data-es2-home-confirm class="es2-warning">{{ t('離開後將無法繼續本次遠征。') }}</p>
     <template #actions>
-      <button type="button" data-es2-home-cancel class="es2-primary" @click="cancelHome">{{ t('繼續戰鬥') }}</button>
-      <button type="button" data-es2-home-accept class="es2-secondary es2-home-exit" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
+      <button type="button" data-es2-home-cancel data-ui-sfx="managed" class="es2-primary" @click="cancelHome">{{ t('繼續戰鬥') }}</button>
+      <button type="button" data-es2-home-accept data-ui-sfx="managed" class="es2-secondary es2-home-exit" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
     </template>
   </Es2Dialog>
   <ContentShowcase v-if="devShowcase" :engine="engine" />

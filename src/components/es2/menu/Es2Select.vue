@@ -134,7 +134,7 @@ onBeforeUnmount(() => {
       <ul v-if="opened" :id="listId" ref="list" class="es2-select-listbox" role="listbox"
         :aria-label="label" :style="popupStyle" @mousedown.prevent>
         <li v-for="(option, index) in options" :id="`${id}-option-${index}`" :key="option.value"
-          role="option" :data-es2-value="option.value" :lang="option.lang"
+          role="option" data-ui-sfx="select" :data-es2-value="option.value" :lang="option.lang"
           :aria-selected="modelValue === option.value" :class="{ 'is-active': activeIndex === index }"
           @pointermove="activeIndex = index" @click.stop="selectOption(option.value)">
           <span>{{ option.label }}</span><span v-if="modelValue === option.value" aria-hidden="true">✓</span>

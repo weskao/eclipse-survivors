@@ -72,3 +72,16 @@ pnpm check-release
 Use `src/game/crowd-benchmark.test.ts` as a **diagnostic** 130-mob benchmark (simulation and mocked Canvas); do not turn single-run timings into flaky pass/fail thresholds. Compare baselines and candidates under identical workloads with multiple runs, and separately profile real browser rendering and iOS/Android devices (median and p95/p99 frame time, allocations, memory, CPU, dropped frames, thermals, visual correctness). Never label simulated Canvas timings as actual FPS or claim a speedup without measurement.
 
 Write concise notes about why any necessary real-time computation cannot be precomputed and what invalidates each new cache. Favor the simplest correct optimization over speculative abstractions.
+
+## Mandatory UI sound and music review
+
+**When creating, modifying or removing ANY player-facing UI, interaction, dialog, button, menu, selector, HUD control, reward, onboarding step or gameplay flow, explicitly consider audio feedback as part of the UI/UX acceptance criteria.**
+
+- Review whether the action warrants sound, silence or a music transition. Reuse existing cues/tracks first (`src/game/audio/sfx.ts`, `src/game/audio/engine.ts`); add a distinct cue or locally owned audio asset only when a new event genuinely needs a recognizably different sound. Do not generate a new sound for every button.
+- Standard buttons receive one restrained `ui` cue and desktop mouse-entry hover may play `hover`. Use `data-ui-sfx="select"` for a meaningful local selection, `data-ui-sfx="scene"` for a major navigation, and `data-ui-sfx="managed"` for a button whose validated action already plays its own semantic sound. Use `data-ui-sfx="silent"` when feedback would be intrusive. The central delegated click handler also covers keyboard and touch; **never manually add the generic cue at an individual component**.
+- Gameplay transactions play their unique sound **only after success**: `start`, `pause`/`resume`, `level`, `upgrade`, `victory`/`defeat`, etc. An invalid/denied action may use the quiet `deny` cue. Do not layer a generic click over those cues or replay effects when the action is rejected.
+- Do not beep continuously while dragging sliders, scrolling, moving a joystick, hovering descendants, holding a key, or for each enemy in a crowd. Respect cooldown and polyphony caps; prioritize gameplay readability over constant interface noise.
+- Reuse **one shared audio owner** with the existing 0–100 independent music/SFX volumes, mute preferences, mobile trusted-gesture unlock, visibility interruption and teardown. Never create a separate AudioContext per component or layer both legacy and ES2 scores on one scene. Music switches only at deliberate screen/game phase transitions, with no automatic autoplay before user gesture.
+- Test mouse, touch, Enter/Space keyboard activation, role=listbox options, enabled/disabled states, settings, menu, modal, overlay, home/return, purchases, success/failure and mute, on desktop and mobile. Every meaningful UI change should document its chosen cue (or reason to stay silent), and TDD should assert that one action produces **at most one intended UI sound**.
+
+See [`docs/es2/ui-audio-cue-matrix.md`](docs/es2/ui-audio-cue-matrix.md) for the shared cue taxonomy and coverage checklist.

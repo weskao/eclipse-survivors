@@ -15,7 +15,7 @@ function select(item: MenuChoice): void {
 </script>
 <template>
   <div class="es2-choice-grid" role="group" :aria-label="t(label)">
-    <button v-for="(item, index) in items" :key="item.id" type="button" class="es2-choice"
+    <button v-for="(item, index) in items" :key="item.id" type="button" class="es2-choice" data-ui-sfx="managed"
       :class="[`es2-rarity-${item.rarity ?? 'common'}`, { 'es2-choice-selected': selectedId === item.id, 'es2-choice-focused': focused === item.id, 'es2-choice-evolution': item.evolution }]"
       :data-choice="item.id" :aria-pressed="selectedId === item.id" :disabled="disabled || item.disabled" @focus="focused = item.id"
       @click="select(item)">

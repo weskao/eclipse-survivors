@@ -32,7 +32,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 
 <template>
   <div class="es2-hero-special" :data-side="joystickSide" :aria-label="t(hero.label + ' 主動技能')">
-    <button type="button" class="es2-hero-special__button" data-hero-special
+    <button type="button" class="es2-hero-special__button" data-hero-special data-ui-sfx="managed"
       aria-keyshortcuts="Q" :aria-label="t(hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒'))"
       :disabled="!ready" @click="trigger">
       <img data-hero-special-icon class="es2-hero-special__icon" :src="hero.specialIconSrc" alt=""

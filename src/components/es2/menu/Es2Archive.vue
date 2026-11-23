@@ -68,7 +68,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
 <template>
   <Es2Dialog :active="active" :title="t(title[view])" :subtitle="t('冒險者殿堂 · 記錄每一場遠征留下的印記')" wide @cancel="emit('close')">
     <nav class="es2-archive-tabs" :aria-label="t('殿堂分類')">
-      <button v-for="tab in tabs" :key="tab.id" type="button" :aria-current="view === tab.id ? 'page' : undefined"
+      <button v-for="tab in tabs" :key="tab.id" type="button" data-ui-sfx="select" :aria-current="view === tab.id ? 'page' : undefined"
         :class="{ 'es2-tab-current': view === tab.id }" @click="emit('navigate', tab.id)">{{ t(tab.title) }}</button>
     </nav>
     <section v-if="view === 'progression'" class="es2-archive-section" :aria-label="t('永久強化')">
@@ -80,13 +80,13 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
       <p class="es2-hint">{{ t("目前職業：") }}{{ t(hero) }} {{ t("· 永久能力於下一次遠征生效。") }}</p>
       <div class="es2-archive-grid"><article v-for="entry in upgrades" :key="entry.id" class="es2-archive-card">
         <div class="es2-archive-glyph" aria-hidden="true">{{ entry.icon }}</div><strong>{{ t(entry.title) }}</strong><p>{{ t(entry.bonus) }}</p><small>{{ t("第") }} {{ profile.upgrades[entry.id] }} {{ t("/ 3 階") }}</small>
-        <button class="es2-secondary" type="button" :disabled="profile.upgrades[entry.id] >= 3 || profile.embers < upgradeCost(profile.upgrades[entry.id])"
+        <button class="es2-secondary" type="button" data-ui-sfx="managed" :disabled="profile.upgrades[entry.id] >= 3 || profile.embers < upgradeCost(profile.upgrades[entry.id])"
           @click="emit('purchase', entry.id)">{{ t(profile.upgrades[entry.id] >= 3 ? '已滿階' : `升級 · ${upgradeCost(profile.upgrades[entry.id])} ✧`) }}</button>
       </article></div>
       </div>
       <h3>{{ t("英雄造型") }} <small>{{ t("只影響外觀 · 不影響戰鬥數值") }}</small></h3>
       <div class="es2-skins" role="group" :aria-label="t('英雄造型')">
-        <button v-for="skin in skins.filter(item => item.hero === hero)" :key="skin.id" type="button"
+        <button v-for="skin in skins.filter(item => item.hero === hero)" :key="skin.id" type="button" data-ui-sfx="managed"
           :disabled="!profile.unlockedCosmetics.includes(skin.id)"
           :aria-pressed="profile.equippedCosmetics[hero] === skin.id" @click="emit('cosmetic', hero, skin.id)">
           <strong>{{ t(skin.name) }}</strong><small>{{ t(profile.equippedCosmetics[hero] === skin.id ? '✓ 使用中' : profile.unlockedCosmetics.includes(skin.id) ? '套用造型' : '🔒 未解鎖') }}</small>

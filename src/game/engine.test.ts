@@ -317,13 +317,56 @@ describe('keyboard and focus', () => {
     expect(engine.state.hero!.vx).toBeLessThan(movingSpeed)
   })
 
-  it('pointerdown on a button wakes audio and plays the ui cue', () => {
+  it('wakes on pointerdown but plays a single generic cue on completed click', () => {
     const b = document.createElement('button')
     document.body.append(b)
     b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
     expect(audio.unlocked).toBe(true)
-    expect(audio.cues).toContain('ui')
+    expect(audio.cues).not.toContain('ui')
+    b.click()
+    expect(audio.cues).toEqual(['ui'])
     b.remove()
+  })
+
+  it('shares select feedback across mouse, keyboard activation and listbox options', () => {
+    const b = document.createElement('button')
+    b.dataset.uiSfx = 'select'
+    document.body.append(b)
+    audio.unlocked = false
+    b.click() // Keyboard activation dispatches click without an earlier pointerdown.
+    expect(audio.unlocked).toBe(true)
+    expect(audio.cues).toEqual(['select'])
+    const li = document.createElement('li')
+    li.setAttribute('role', 'option')
+    li.dataset.uiSfx = 'select'
+    document.body.append(li)
+    li.click()
+    expect(audio.cues).toEqual(['select', 'select'])
+    b.remove()
+    li.remove()
+  })
+
+  it('skips disabled or handled clicks and never doubles an engine-owned action', () => {
+    const b = document.createElement('button')
+    document.body.append(b)
+    b.disabled = true
+    b.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(audio.cues).toEqual([])
+    b.disabled = false
+    b.dataset.uiSfx = 'managed'
+    b.addEventListener('click', () => engine.selectJob('ranger'))
+    b.click()
+    expect(audio.cues).toEqual(['select'])
+    b.remove()
+  })
+
+  it('only sounds an actual mode change and distinguishes an invalid purchase', () => {
+    engine.selectRunMode('challenge')
+    expect(audio.cues).toEqual(['select'])
+    engine.selectRunMode('challenge')
+    expect(audio.cues).toEqual(['select'])
+    engine.buyPermanentUpgrade('power')
+    expect(audio.cues.at(-1)).toBe('deny')
   })
 })
 

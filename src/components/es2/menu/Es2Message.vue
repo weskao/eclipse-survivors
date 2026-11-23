@@ -12,7 +12,7 @@ const emit = defineEmits<{ confirm: []; cancel: [] }>()
     <p v-if="destructive" class="es2-warning">{{ t("注意：此操作無法復原。") }}</p>
     <template #actions>
       <button v-if="kind === 'confirmation'" class="es2-secondary" type="button" @click="emit('cancel')">{{ t("取消") }}</button>
-      <button type="button" :class="destructive ? 'es2-danger-filled' : 'es2-primary'" @click="emit('confirm')">{{ t(kind === 'notification' ? '知道了' : confirmLabel) }}</button>
+      <button type="button" :class="destructive ? 'es2-danger-filled' : 'es2-primary'" :data-ui-sfx="destructive ? 'managed' : undefined" @click="emit('confirm')">{{ t(kind === 'notification' ? '知道了' : confirmLabel) }}</button>
     </template>
   </Es2Dialog>
 </template>

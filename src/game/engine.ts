@@ -501,6 +501,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     try { settingsStorage?.setItem(key, value) } catch { /* unavailable */ }
   }
 
+  // Sound only after the transaction is accepted, never on a disabled/failed purchase.
+  function finishPurchase(ok: boolean, reason: string): void {
+    if (ok) {
+      refreshMeta()
+      audio.playSfx('upgrade')
+    } else {
+      message(reason)
+      audio.playSfx('deny')
+    }
+  }
+
   function advance(dt: number): void {
     // Event choices are deliberate atomic transactions; gameplay cannot run
     // underneath the modal, even when the underlying screen is still 'play'.
@@ -563,8 +574,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (!marker) return false
     const dx = marker.x - s.hero.x
     const dy = marker.y - s.hero.y
-    if (dx * dx + dy * dy > 64 * 64) return false
+    if (dx * dx + dy * dy > 64 * 64) {
+      audio.playSfx('deny')
+      return false
+    }
     ui.worldEventChoice = { event: marker, options: worldEvents.options(id), feedback: null }
+    audio.playSfx('scene')
     keys = {}
     stick = { x: 0, y: 0 }
     return true
@@ -578,7 +593,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (outcome === 'applied') {
       objectiveRuntime?.resolveEvent(selected, true)
       ui.worldEventChoice = null
+      audio.playSfx('upgrade')
     } else {
+      audio.playSfx('deny')
       const feedback = outcome === 'retry' ? '獎勵無法領取，請重新選擇'
         : outcome === 'out-of-range' ? '請靠近事件' : '目前無法選擇此項目'
       ui.worldEventChoice = { event: selected, options: worldEvents.options(eventId), feedback }
@@ -707,12 +724,25 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       onBlur()
       audio.interrupt()
     }
-    const onPointerDown = (e: PointerEvent): void => {
-      wakeAudio()
-      if (e.target instanceof Element && e.target.closest('button')) audio.playSfx('ui')
+    const onPointerDown = (): void => { wakeAudio() }
+    // Click covers touch, mouse and keyboard activation, including teleported dialogs.
+    // Explicitly managed controls already play their semantic cue in the engine.
+    const onUiClick = (e: MouseEvent): void => {
+      if (!(e.target instanceof Element)) return
+      const control = e.target.closest<HTMLElement>('button, [role="option"]')
+      if (!control || (control instanceof HTMLButtonElement && control.disabled) ||
+          control.getAttribute('aria-disabled') === 'true') return
+      const cue = control.dataset.uiSfx
+      if (cue === 'managed' || cue === 'silent') return
+      if (e.detail === 0 || !audio.unlocked) wakeAudio()
+      audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
     }
     const onPointerOver = (e: PointerEvent): void => {
-      if (e.pointerType === 'mouse' && e.target instanceof Element && e.target.closest('button')) audio.playSfx('hover')
+      if (e.pointerType !== 'mouse' || !(e.target instanceof Element)) return
+      const button = e.target.closest<HTMLButtonElement>('button:not(:disabled)')
+      if (!button || button.dataset.uiSfx === 'silent' ||
+          (e.relatedTarget instanceof Node && button.contains(e.relatedTarget))) return
+      audio.playSfx('hover')
     }
     win.addEventListener('keydown', onKeyDown)
     win.addEventListener('keyup', onKeyUp)
@@ -720,6 +750,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
     doc.addEventListener('pointerdown', onPointerDown)
+    doc.addEventListener('click', onUiClick, true)
     doc.addEventListener('pointerover', onPointerOver)
     return () => {
       win.removeEventListener('keydown', onKeyDown)
@@ -728,6 +759,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
       doc.removeEventListener('pointerdown', onPointerDown)
+      doc.removeEventListener('click', onUiClick, true)
       doc.removeEventListener('pointerover', onPointerOver)
     }
   }
@@ -811,36 +843,43 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     listen,
     mount,
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
-    selectRunMode(mode: RunModeId) { if (getMode(mode)) ui.runMode = mode },
+    selectRunMode(mode: RunModeId) {
+      if (!getMode(mode) || ui.runMode === mode) return
+      ui.runMode = mode
+      wakeAudio()
+      audio.playSfx('select')
+    },
     buyPermanentUpgrade(id: PermanentUpgrade) {
       if (s.mode !== 'menu') return
       if (metaStore) {
-        const result = metaStore.purchaseResearch(id)
-        if (!result.ok) message('永久研究未完成：儲存失敗或條件不足')
-        else refreshMeta()
-      } else if (profileStore.buyUpgrade(id)) refreshMeta()
+        finishPurchase(metaStore.purchaseResearch(id).ok, '永久研究未完成：儲存失敗或條件不足')
+      } else {
+        finishPurchase(profileStore.buyUpgrade(id), '餘燼不足或已達最高階')
+      }
     },
     purchaseResearch(id: string) {
       if (s.mode !== 'menu' || !metaStore) return
-      if (metaStore.purchaseResearch(id).ok) refreshMeta()
-      else message('研究未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseResearch(id).ok, '研究未解鎖或儲存失敗')
     },
     purchaseEquipment(id: string) {
       if (s.mode !== 'menu' || !metaStore) return
-      if (metaStore.purchaseEquipment(id).ok) refreshMeta()
-      else message('裝備未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗')
     },
     purchaseBonus(id: string) {
       if (s.mode !== 'menu' || !metaStore) return
-      if (metaStore.purchaseBonus(id).ok) refreshMeta()
-      else message('祝福未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗')
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
       if (s.mode !== 'menu') return
       if (metaStore) {
-        if (metaStore.selectCosmetic(hero, skin).ok) refreshMeta()
-        else message('造型尚未解鎖或儲存失敗')
-      } else if (profileStore.selectCosmetic(hero, skin)) refreshMeta()
+        const ok = metaStore.selectCosmetic(hero, skin).ok
+        if (ok) { refreshMeta(); audio.playSfx('select') }
+        else { message('造型尚未解鎖或儲存失敗'); audio.playSfx('deny') }
+      } else {
+        const ok = profileStore.selectCosmetic(hero, skin)
+        if (ok) { refreshMeta(); audio.playSfx('select') }
+        else audio.playSfx('deny')
+      }
     },
     resetProgress() {
       if (s.mode !== 'menu') return
@@ -850,6 +889,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }
       profileStore.reset()
       refreshMeta()
+      audio.playSfx('scene')
     },
     selectJob(job: JobId) { selectHero(job) },
     selectHero,
@@ -894,6 +934,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     openSettings,
     closeSettings,
     goMenu: () => {
+      if (s.mode !== 'menu') audio.playSfx('scene')
       ui.worldEventChoice = null
       ui.worldEventMarkers = []
       worldEvents?.reset()

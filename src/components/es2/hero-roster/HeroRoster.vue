@@ -31,7 +31,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 
 <template>
   <section ref="root" class="es2-roster" role="group" :aria-label="t('ES2 新英雄選擇')">
-    <button v-for="hero in heroes" :key="hero.id" type="button" class="es2-roster__card"
+    <button v-for="hero in heroes" :key="hero.id" type="button" class="es2-roster__card" data-ui-sfx="managed"
       :data-hero-id="hero.id" :aria-pressed="selectedId === hero.id" :disabled="disabled"
       :class="{ 'es2-roster__card--selected': selectedId === hero.id }"
       :aria-label="[t(hero.label), t(hero.subtitle), t(hero.description), t(hero.strengths.join(' / ')), t(hero.weaknesses.join(' / '))].join(' · ')"

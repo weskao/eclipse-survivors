@@ -12,7 +12,7 @@ const emit = defineEmits<{ select: [mode: ObjectiveModeId] }>()
     <div class="es2-objective-grid" role="radiogroup" :aria-label="t('ES2 遠征模式')">
       <button
         v-for="id in objectiveModeIds" :key="id"
-        type="button" role="radio" class="es2-objective-choice"
+        type="button" role="radio" class="es2-objective-choice" data-ui-sfx="managed"
         :data-objective-mode="id" :disabled="disabled"
         :aria-checked="value === id"
         :aria-label="[t(getObjectiveMode(id).title), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"

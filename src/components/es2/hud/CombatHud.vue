@@ -134,11 +134,11 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             :music-volume="musicVolume!" :sfx-volume="sfxVolume!"
             @toggle-music="actions.toggleMusic?.()" @toggle-sfx="actions.toggleSfx?.()"
             @music-volume="actions.setMusicVolume?.($event)" @sfx-volume="actions.setSfxVolume?.($event)" />
-          <button v-if="canReturnHome && actions.home" type="button" class="es2-hud__control-button" data-es2-home :aria-label="t('返回主選單')" :title="t('返回主選單')" @click="actions.home()">
+          <button v-if="canReturnHome && actions.home" type="button" class="es2-hud__control-button" data-es2-home data-ui-sfx="managed" :aria-label="t('返回主選單')" :title="t('返回主選單')" @click="actions.home()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5M5.5 9.5V21h13V9.5M9.5 21v-7h5v7"/></svg>
           </button>
-          <button type="button" class="es2-hud__control-button" data-es2-settings :aria-label="t('開啟設定')" :title="t('設定')" @click="actions.settings()">⚙</button>
-          <button type="button" class="es2-hud__control-button" data-es2-pause :aria-label="t('暫停遊戲')" aria-keyshortcuts="P" :title="t('暫停（P）')" @click="actions.pause()">Ⅱ</button>
+          <button type="button" class="es2-hud__control-button" data-es2-settings data-ui-sfx="managed" :aria-label="t('開啟設定')" :title="t('設定')" @click="actions.settings()">⚙</button>
+          <button type="button" class="es2-hud__control-button" data-es2-pause data-ui-sfx="managed" :aria-label="t('暫停遊戲')" aria-keyshortcuts="P" :title="t('暫停（P）')" @click="actions.pause()">Ⅱ</button>
         </nav>
         <div class="es2-hud__map es2-hud__plate">
           <span class="es2-hud__eyebrow">{{ t("✦ 戰場地圖") }}</span>

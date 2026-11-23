@@ -50,7 +50,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
           <span class="es2-progression-icon" aria-hidden="true">{{ node.icon }}</span>
           <strong>{{ t(node.title) }}</strong><p>{{ t(node.description) }}</p>
           <small>{{ t("等級") }} {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> {{ t("· 前置研究未解鎖") }}</span></small>
-          <button type="button" :data-research="node.id" :disabled="!writable || !node.canBuy"
+          <button type="button" data-ui-sfx="managed" :data-research="node.id" :disabled="!writable || !node.canBuy"
             @click="emit('research', node.id)">
             {{ t(node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · ' + node.nextCost + ' ✧') }}
           </button>
@@ -72,7 +72,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
         <article v-for="item in equipment" :key="item.id" class="es2-progression-item">
           <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
           <strong>{{ t(item.title) }}</strong><p>{{ t(item.description) }}</p>
-          <button type="button" :data-equipment="item.id"
+          <button type="button" data-ui-sfx="managed" :data-equipment="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('equipment', item.id)">
             {{ t(item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · ' + item.cost + ' ✧') }}
@@ -81,7 +81,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
         <article v-for="item in bonuses" :key="item.id" class="es2-progression-item">
           <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
           <strong>{{ t(item.title) }}</strong><p>{{ t(item.description) }}</p>
-          <button type="button" :data-bonus="item.id"
+          <button type="button" data-ui-sfx="managed" :data-bonus="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('bonus', item.id)">
             {{ t(item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · ' + item.cost + ' ✧') }}

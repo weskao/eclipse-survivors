@@ -21,7 +21,7 @@ function shortcut(event: KeyboardEvent): void {
       <p>{{ t('遊戲暫停') }}</p>
     </div>
     <template #actions>
-      <button id="resume" type="button" class="es2-primary" @click="emit('resume')">{{ t('繼續遊戲') }}</button>
+      <button id="resume" type="button" data-ui-sfx="managed" class="es2-primary" @click="emit('resume')">{{ t('繼續遊戲') }}</button>
       <SettingsButton @open="emit('settings')" />
       <button id="leave" type="button" class="es2-secondary" @click="emit('leave')">{{ t('返回選角') }}</button>
     </template>

@@ -48,7 +48,7 @@ function shortcut(event: KeyboardEvent): void {
       <p class="world-event-eyebrow">{{ t('✧ 天穹奇遇 ✧') }}</p>
       <div class="world-event-options" role="group" :aria-label="t('世界事件選項')">
         <button v-for="(option, index) in options" :key="option.id" type="button"
-          class="world-event-choice" :class="{ 'world-event-choice-disabled': !option.available }"
+          class="world-event-choice" data-ui-sfx="managed" :class="{ 'world-event-choice-disabled': !option.available }"
           :data-world-choice="option.id" :disabled="!option.available || submitting"
            :aria-label="[t(option.title), t('風險') + ': ' + t(option.risk), t('獎勵') + ': ' + t(option.reward),
             option.reason ? t('不可選擇') + ': ' + t(option.reason) : ''].filter(Boolean).join(' · ')"
