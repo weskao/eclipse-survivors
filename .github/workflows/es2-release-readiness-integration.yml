@@ -20,6 +20,8 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Verify archived ES2 character asset importer (no runtime substitution)
+        run: python3 scripts/test_import_es2_hero_candidate.py
       - run: pnpm test
       - run: pnpm typecheck
         if: success() || failure()
