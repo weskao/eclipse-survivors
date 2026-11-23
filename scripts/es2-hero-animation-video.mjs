@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { chromium } from 'playwright'
-import { heroVideoCaptureConfig } from './es2-hero-video-config.mjs'
+import { heroVideoCaptureConfig, assessHeroCandidateCoverage } from './es2-hero-video-config.mjs'
 
 const candidateQA = process.env.ES2_HERO_QA === '1'
 const capture = heroVideoCaptureConfig(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/', candidateQA)
@@ -24,6 +24,26 @@ try {
       },
     })
     const page = await context.newPage()
+    if (candidateQA) {
+      // Evidence is the actual engine Canvas draw calls, not only a downloaded WebP.
+      await page.addInitScript(() => {
+        const prior = CanvasRenderingContext2D.prototype.drawImage
+        const seen = new Set()
+        window.__es2CandidateDraws = []
+        CanvasRenderingContext2D.prototype.drawImage = function (source, ...args) {
+          const src = source?.src
+          if (typeof src === 'string' && src.includes('/candidates/') && args.length >= 4) {
+            const draw = { src, sx: args[0], sy: args[1], sw: args[2], sh: args[3] }
+            const key = JSON.stringify(draw)
+            if (!seen.has(key) && seen.size < 128) {
+              seen.add(key)
+              window.__es2CandidateDraws.push(draw)
+            }
+          }
+          return prior.call(this, source, ...args)
+        }
+      })
+    }
     const startedAt = Date.now()
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
@@ -76,9 +96,15 @@ try {
       await page.evaluate(() => window.__test?.forceAttack())
       await page.waitForTimeout(650)
       const ending = await page.evaluate(() => window.__test?.frames ?? 0)
+      const candidateCoverage = candidateQA
+        ? assessHeroCandidateCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
+        : null
       metrics = { heroId, artStatus: capture.status, canvasFramesRendered: ending - beginning,
         elapsedRecordedSeconds: Math.round((Date.now() - startedAt) / 100) / 10,
-        browserErrors: errors }
+        candidateCoverage, browserErrors: errors }
+      if (candidateQA) assert.ok(candidateCoverage.hasBothDirections,
+        heroId + ': candidate East/South running atlases were not both really drawn: ' +
+        JSON.stringify(candidateCoverage))
       assert.ok(metrics.canvasFramesRendered > 30, heroId + ': game Canvas stopped drawing')
       assert.deepEqual(errors, [], heroId + ': unexpected page script errors')
       video = page.video()
