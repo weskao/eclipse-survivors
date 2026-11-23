@@ -166,6 +166,10 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
   hero.hp = Math.max(0, hero.hp - taken)
+  if (actuallyTaken > 0) {
+    pushDamageNumber(s, { x: hero.x, y: hero.y - 56, life: 0.7,
+      value: Math.round(actuallyTaken), boss: false, received: true })
+  }
   hero.inv = 1
   // Routine chip damage uses local hit feedback; only major HP loss nudges the camera.
   if (actuallyTaken >= hero.max * 0.22) requestCameraKick(s, 1.6)
