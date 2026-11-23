@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
 import { createFactionRuntime, spawnFactionEnemy } from '../../content/enemies/runtime'
 import { createFakeCtx } from '../fakes'
-import { drawLiveFactionArt, FACTION_VISUAL_SIZE, type FactionArtwork } from './production-factions'
+import { drawLiveFactionArt, loadProductionFactionArt, FACTION_VISUAL_SIZE, type FactionArtwork } from './production-factions'
 
 const loaded = (w:number,h:number):HTMLImageElement => ({complete:true,naturalWidth:w,naturalHeight:h}) as HTMLImageElement
 
@@ -62,6 +62,18 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     const size = FACTION_VISUAL_SIZE['shadow-assassin']
     expect(art?.slice(5)).toEqual([-size / 2, -size + 5, size, size])
     expect(args.some(a=>a[0]===body)).toBe(false)
+  })
+
+  it('preloads one full-detail Frost Wraith source per renderer, not per actor or frame', () => {
+    const assigned: string[] = []
+    const made = (): HTMLImageElement => ({
+      complete: false,
+      set src(url: string) { assigned.push(url) },
+    }) as unknown as HTMLImageElement
+    const sources = loadProductionFactionArt(made)
+    expect(sources['frost-wraith'].highResBody).toBeDefined()
+    expect(assigned.some(url => url.includes('frost-wraith-6poses-3x2-master'))).toBe(true)
+    expect(assigned).toHaveLength(22) // 10 body + 10 cues + 2 genuine masters
   })
 
   it('draws actual Frost Wraith authored 512px master cells at live 166px size with consistent foot anchor', () => {
