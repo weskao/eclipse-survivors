@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "category": "bosses",
+  "candidateFor": "infernal-titan",
+  "status": "QA_PENDING",
+  "path": "infernal-titan-phases-native3x-QA-PENDING.webp",
+  "assetSha256": "c9e5ef84d85ec8b9105cc0bb8cb193424808e8b45c0599e9c7578023ffaf904d",
+  "assetBytes": 298844,
+  "maxBytes": 300000,
+  "atlas": {
+    "width": 2268,
+    "height": 756,
+    "frames": 3,
+    "columns": 3,
+    "rows": 1,
+    "cellWidth": 756,
+    "cellHeight": 756,
+    "transparentGutterPx": 16,
+    "sourceRect": {
+      "insetX": 16,
+      "insetY": 16,
+      "width": 724,
+      "height": 724
+    }
+  },
+  "source": {
+    "kind": "newly-generated-2172x724-RGB-with-alpha-keyed",
+    "originalGeneratedFramePixels": 724,
+    "upscaledFromExisting192px": false,
+    "masterCommittedToRepo": false,
+    "originalSourceStillNeedsImport": true,
+    "sourceExport": "sources/infernal-titan-master@source.webp"
+  },
+  "runtimeTarget": {
+    "maxDrawPx": 236,
+    "requiredNativeSourceDetailPx": 708,
+    "consumer": "src/game/render/es2/production-world.ts",
+    "active": false
+  },
+  "technicalChecks": {
+    "riffWebp": true,
+    "dimensions": true,
+    "sha256Matches": true,
+    "sourceRectsWithinSingleFrames": true,
+    "alphaGutterClear": true
+  },
+  "acceptance": {
+    "originalArtIdentityReview": "pending",
+    "phaseVisualContinuityReview": "pending",
+    "inGame1xScreenshot": "pending",
+    "desktopAndMobilePortraitLandscape": "pending",
+    "humanArtApproval": "pending",
+    "notes": "Newly generated stone-and-lava horned titan. Original RGB checkerboard background was chroma-key removed; review any remaining white edging and effects before runtime activation."
+  }
+}
