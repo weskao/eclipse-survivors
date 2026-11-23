@@ -184,7 +184,9 @@ try {
         asset.id + ': missing visible bounds for frame ' + frame.index)
     }
   }
-  const edgeReview = audits.filter(asset => asset.frameMetrics.some(frame => frame.edgePixels > 0))
+  // Opaque seamless ground fills every edge by design; it is not atlas bleed.
+  const edgeReview = audits.filter(asset => !(asset.category === 'biomes' && asset.id.endsWith(':ground')) &&
+    asset.frameMetrics.some(frame => frame.edgePixels > 0))
   const repeatedReview = audits.filter(asset => asset.possibleDuplicateFrames.length > 0)
   console.log('World art per-frame review flags (not automatic failures): ' +
     edgeReview.length + ' sheets with touched cell edges; ' +
