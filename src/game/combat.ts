@@ -1,5 +1,5 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
-import { burst, impact, pushDamageNumber, pushEcho, zigzag } from './fx'
+import { burst, impact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
@@ -168,7 +168,7 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   hero.hp = Math.max(0, hero.hp - taken)
   hero.inv = 1
   // Routine chip damage uses local hit feedback; only major HP loss nudges the camera.
-  if (actuallyTaken >= hero.max * 0.22) s.cameraKick = Math.max(s.cameraKick, 1.6)
+  if (actuallyTaken >= hero.max * 0.22) requestCameraKick(s, 1.6)
   impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
   if (shield) {
     impact(s, hero.x, hero.y, 58, '#9ad3ff', 0.4)
