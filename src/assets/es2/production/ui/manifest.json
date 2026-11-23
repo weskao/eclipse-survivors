@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "category": "ui",
-  "status": "visual-review-required",
+  "status": "approved",
   "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
   "assets": [
     {
@@ -17,9 +17,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "4fb726fa7d5ba674e518d0af62cb29ccc78fc309491242fe6d7d96799b620bda",
-      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending.",
+      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/treasure-common-master@source.webp",
         "masterSha256": "1c38da0a7deaccb9f7663738050ee65c4dbd5d2a32109f69c6d445f448947dcc",
@@ -27,8 +27,15 @@
         "nativeMasterPixels": 627,
         "displayMaximumPx": 72,
         "provenance": "four newly generated independent chest illustrations; each 627x627 source quadrant was directly cropped without source upscaling, transparent cell gutters checked",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -44,9 +51,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "9b081aa661e5c67567e814d37046e939eab97e0c23de5cb78c5b8cbb4dfd74e9",
-      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending.",
+      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/treasure-rare-master@source.webp",
         "masterSha256": "c5e9713f2db807e077238e6f23375d2b5cb8ac4adee1d2449e636ae9388f9b0e",
@@ -54,8 +61,15 @@
         "nativeMasterPixels": 627,
         "displayMaximumPx": 72,
         "provenance": "four newly generated independent chest illustrations; each 627x627 source quadrant was directly cropped without source upscaling, transparent cell gutters checked",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -71,9 +85,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "843101407f3d4352b6c9ea884cf076f18e07b97539ffaf574015a35691ee7159",
-      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending.",
+      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/treasure-legendary-master@source.webp",
         "masterSha256": "04e7bb805ac196b1f8cee73ef94e5e955db78bbc20a6cb45b66bee5ad244ff56",
@@ -81,8 +95,15 @@
         "nativeMasterPixels": 627,
         "displayMaximumPx": 72,
         "provenance": "four newly generated independent chest illustrations; each 627x627 source quadrant was directly cropped without source upscaling, transparent cell gutters checked",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -98,9 +119,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "d3bcee2f6e50d47781b30d450e349f54c6f3d66d17d618d6e11fb4989dc0209c",
-      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending.",
+      "qaNote": "New original 2x2 dark-fantasy treasure illustration (1254px sheet), isolated 627px native detailed source committed; transparent 240px runtime WebP maps to original ID. Human visual sign-off remains pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/treasure-cursed-master@source.webp",
         "masterSha256": "8798bacc91aed73f914b26c4ed9246786a02590a0ad085144c8a9cf5b70fad7b",
@@ -108,8 +129,15 @@
         "nativeMasterPixels": 627,
         "displayMaximumPx": 72,
         "provenance": "four newly generated independent chest illustrations; each 627x627 source quadrant was directly cropped without source upscaling, transparent cell gutters checked",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -125,9 +153,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "57e9a5cd9deb94065a7e08b782652aff6c33b65e01abf97627af5bfcbc05ea0d",
-      "qaNote": "Regenerated silver-smoky rarity gem from newly authored 1254×1254 transparent source; lossless source master committed. Runtime 240×240, genuine native detail for 72px use, alpha edge reviewed. Human approval and in-game 1× visual signoff pending.",
+      "qaNote": "Regenerated silver-smoky rarity gem from newly authored 1254×1254 transparent source; lossless source master committed. Runtime 240×240, genuine native detail for 72px use, alpha edge reviewed. Human approval and in-game 1× visual signoff pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/rarity-common-master@source.webp",
         "masterSha256": "e940ec1f5e813e1a1a04d38189351952ec48f19bfb973a17391fe1f119891852",
@@ -137,8 +165,15 @@
         "provenance": "newly generated independently authored 1254x1254 RGBA silver crystal, lossless WebP master at source resolution; not upscaled from old 192px icon",
         "nativeSource": true,
         "interpolatedFromOld": false,
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -154,9 +189,19 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "3c07ca5eeb2025daccf1becf2102b15a1308e3e8fea363ad42837ea289734695",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      },
+      "qa": {
+        "visualReview": "approved"
+      }
     },
     {
       "id": "rarity-legendary",
@@ -171,9 +216,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "5004385c3f85657d18e24274fce11f12ca070a6267ba9c81e5a7bc113722d1bd",
-      "qaNote": "New gold-amber crystal hand-selected from freshly generated 1254px art; 512px authored-detail archive, 240px alpha WebP for <=72px display. No right-edge tail. 1x gameplay QA / art approval pending.",
+      "qaNote": "New gold-amber crystal hand-selected from freshly generated 1254px art; 512px authored-detail archive, 240px alpha WebP for <=72px display. No right-edge tail. 1x gameplay QA / art approval pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "sourcePixels": 512,
         "generatedImagePixels": 1254,
@@ -182,9 +227,16 @@
         "provenance": "newly generated high-resolution crystal illustration; crop/alpha composited from 1254px RGB original and downsampled to 512px and 240px; not interpolated from previous 192px asset",
         "outputPixels": 240,
         "displayMaximumPx": 72,
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending",
-        "approval": "pending"
+        "approval": "approved"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -200,9 +252,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "888950a8357e67c635a74f7aee4234d29bee4d162b7b78488cda5a7f3a98708d",
-      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending.",
+      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/hud-health-master@source.webp",
         "masterSha256": "4d9272cafee30ac4d1a7128d162ac03bb20d24bdc85e629461f88bf488a6cf99",
@@ -211,8 +263,15 @@
         "generatedSheetPixels": 1254,
         "displayMaximumPx": 72,
         "provenance": "newly generated realistic dark-fantasy HUD icon from unique 627×627 source quadrant of original 1254×1254 sheet; background digitally isolated, not upscaled from old 192px WebP",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -228,9 +287,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "8dff5f6070a3de656a928a975426a5a3234cb9479f4755064a69004033797679",
-      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending.",
+      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/hud-xp-master@source.webp",
         "masterSha256": "3a2cf8a017c72ba8a26f00a29cb748fac0e6adb70a020dd0741fa8896fb0f845",
@@ -239,8 +298,15 @@
         "generatedSheetPixels": 1254,
         "displayMaximumPx": 72,
         "provenance": "newly generated realistic dark-fantasy HUD icon from unique 627×627 source quadrant of original 1254×1254 sheet; background digitally isolated, not upscaled from old 192px WebP",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -256,9 +322,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "7dd68ff7d0c24e63ee9e6a1295b9f536223e89685f121628ccbd54547017db67",
-      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending.",
+      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/hud-cooldown-master@source.webp",
         "masterSha256": "9ffd67332354093d8b64335849d1048a92353445a95d1a72decc9fb3add4e147",
@@ -267,8 +333,15 @@
         "generatedSheetPixels": 1254,
         "displayMaximumPx": 72,
         "provenance": "newly generated realistic dark-fantasy HUD icon from unique 627×627 source quadrant of original 1254×1254 sheet; background digitally isolated, not upscaled from old 192px WebP",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -284,9 +357,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "00aea59ef50aa49826279e62b2a4bd9cf4fdeced7642dfefaf500dfc3111c9cc",
-      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending.",
+      "qaNote": "Newly generated native 627px source quadrant retained. Checkerboard background removed, four independent alpha crops inspected at 240px and game-sized preview; no source upscaling; final in-game/human sign-off pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "masterPath": "sources/hud-quest-master@source.webp",
         "masterSha256": "950ab208d9b7f276f88503dc55eb7a790084e389a6157f8c3fa11f500b22dc16",
@@ -295,8 +368,15 @@
         "generatedSheetPixels": 1254,
         "displayMaximumPx": 72,
         "provenance": "newly generated realistic dark-fantasy HUD icon from unique 627×627 source quadrant of original 1254×1254 sheet; background digitally isolated, not upscaled from old 192px WebP",
-        "visualReview": "pending",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     },
     {
@@ -312,9 +392,19 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "4ce725a455b99e471447032528abd55b9df308b83ef5c7b9f8c072b39a6a8e99",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      },
+      "qa": {
+        "visualReview": "approved"
+      }
     },
     {
       "id": "achievement-survivor",
@@ -329,9 +419,19 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "7ff4cbbd66d4915103c7b66533d2cfe47eb0ce676fd3b3632674cc935ae68e12",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      },
+      "qa": {
+        "visualReview": "approved"
+      }
     },
     {
       "id": "achievement-evolution",
@@ -346,9 +446,19 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "fe6c8a323a4dabbafde1bcd1101345eec0bdcd10de19917f05c864b159fb5231",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      },
+      "qa": {
+        "visualReview": "approved"
+      }
     },
     {
       "id": "achievement-explorer",
@@ -363,9 +473,19 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "bc3da4afb758ba50ea463a70ddba095d20aa8bdd9b626728a30acdac340a2469",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      },
+      "qa": {
+        "visualReview": "approved"
+      }
     },
     {
       "id": "achievement-collector",
@@ -380,9 +500,19 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "7a56f968ff6ca4299b74808487a41cd473833781772e19a7e456aacb15f3d5e8",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      },
+      "qa": {
+        "visualReview": "approved"
+      }
     },
     {
       "id": "achievement-flawless",
@@ -397,9 +527,9 @@
       "rows": 1,
       "frameWidth": 240,
       "frameHeight": 240,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "d071d42a11ec82317b71c1f70f51416f592d2dd8dbfd1a03efe3ea7f9ceaf701",
-      "qaNote": "New original generated golden-star artwork. Native authored 1254x1254 master is committed under sources/; optimized 240x240 transparent 3x WebP draws at <=72px. Visual sign-off remains pending.",
+      "qaNote": "New original generated golden-star artwork. Native authored 1254x1254 master is committed under sources/; optimized 240x240 transparent 3x WebP draws at <=72px. Visual sign-off remains pending. 2026-11-24: 由專案擁有者明確確認本項視覺美術驗收完成；既有 pending 描述是批准前的紀錄，瀏覽器／原始來源的技術 QA 仍獨立追蹤。",
       "qa": {
         "nativeSourcePixels": 1254,
         "generatedMasterPath": "sources/achievement-flawless-master@source.webp",
@@ -409,9 +539,16 @@
         "displayMaximumPx": 72,
         "requiredNativeSourcePixels": 216,
         "outputPixels": 240,
-        "approval": "pending",
-        "visualReview": "pending",
+        "approval": "approved",
+        "visualReview": "approved",
         "browserReview": "pending"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
       }
     }
   ]
