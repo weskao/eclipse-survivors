@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, productionHeroPoseReady, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
+import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, productionHeroPoseReady, productionHeroFrameAnchor, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 
@@ -115,6 +115,65 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     expect(productionHeroPoseReady(pending, westRun)).toBe(true)
     pending.poseAtlases.action = { complete: false, naturalWidth: 0, naturalHeight: 0 } as HTMLImageElement
     expect(productionHeroPoseReady(pending, westRun)).toBe(true)
+  })
+
+  it('locks the visible feet to the same pixel when consecutive frames have different alpha bottoms', () => {
+    const atlas = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+    const hero = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      poseAtlases: { direction: atlas, action: atlas },
+      heroId: 'spirit-summoner' } as unknown as HTMLImageElement
+    for (let frame = 0; frame < 8; frame++) {
+      const calls: unknown[][] = []
+      const ctx = { save: () => {}, restore: () => {}, scale: () => {},
+        drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+      const motion = anim({ pose: 'run', direction: 0, frame, count: 8 })
+      const rect = productionHeroPoseRect(motion)
+      expect(drawProductionHeroFrame(ctx, hero, motion, 117, 147)).toBe(true)
+      const draw = calls[0]!
+      expect(Number(draw[6]) + Number(draw[8]) * productionHeroFrameAnchor(hero, rect) / 448)
+        .toBeCloseTo(4, 5)
+    }
+  })
+
+  it('blends discrete walk frames and heading changes instead of abruptly replacing them', () => {
+    const atlas = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+    const hero = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      poseAtlases: { direction: atlas, action: atlas }, heroId: 'shadowblade' } as unknown as HTMLImageElement
+    const images: { crop: number; alpha: number }[] = []
+    const ctx = {
+      globalAlpha: 1, save: () => {}, restore: () => {},
+      scale: () => {},
+      drawImage: (...args: unknown[]) => { images.push({ crop: Number(args[1]), alpha: ctx.globalAlpha }) },
+    } as unknown as Ctx2D
+    expect(drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', frame: 0, count: 8 }), 108, 134, undefined, 0)).toBe(true)
+    images.length = 0
+    expect(drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', frame: 1, count: 8 }), 108, 134, undefined, 0.016)).toBe(true)
+    expect(images.length).toBe(2)
+    expect(images.map(x => x.alpha)).toEqual(expect.arrayContaining([expect.any(Number), expect.any(Number)]))
+    expect(images.reduce((sum, x) => sum + x.alpha, 0)).toBeCloseTo(1)
+    images.length = 0
+    drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 6, frame: 2, count: 8 }), 108, 134, undefined, 0.080)
+    images.length = 0
+    drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 6, frame: 2, count: 8 }), 108, 134, undefined, 0.140)
+    expect(images).toHaveLength(2)
+    expect(images.reduce((sum, x) => sum + x.alpha, 0)).toBeCloseTo(1)
+    images.length = 0
+    drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 6, frame: 2, count: 8 }), 108, 134, undefined, 0.300)
+    expect(images).toHaveLength(1)
+    expect(ctx.globalAlpha).toBe(1)
+  })
+
+  it('does not crossfade in reduced-motion mode', () => {
+    const atlas = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+    const hero = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      poseAtlases: { direction: atlas, action: atlas }, heroId: 'crimson-paladin' } as unknown as HTMLImageElement
+    const calls: unknown[][] = []
+    const ctx = { globalAlpha: 1, save: () => {}, restore: () => {},
+      drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 0 }), 117, 147, undefined, 0)
+    calls.length = 0
+    drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 4, reducedMotion: true }), 117, 147, undefined, 0.02)
+    expect(calls).toHaveLength(1)
   })
 
   it('falls back to its own portrait when split sheets are not decoded yet', () => {
