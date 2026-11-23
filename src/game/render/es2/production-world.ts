@@ -67,6 +67,12 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
     const loadCandidate = import.meta.env.DEV && reviewBossId === id ? bossQaLoaders[candidatePath] : undefined
     if (loadCandidate) {
       void loadCandidate().then(url => {
+        image.onerror = () => {
+          // A failed candidate must restore the actual authored boss atlas, not a blank bitmap.
+          image.onerror = null
+          bossQaInsets.delete(image)
+          image.src = WORLD_ART.bosses[id]
+        }
         bossQaInsets.set(image, 16)
         image.src = url
       }).catch(() => {
@@ -92,7 +98,7 @@ export function drawProductionBossFrame(
   sourceInset?: number,
 ): boolean {
   if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || !Number.isInteger(phase) || phase < 1 || phase > 3) return false
-  const inset = sourceInset ?? bossQaInsets.get(image) ?? 0
+  const inset = sourceInset ?? (image.naturalHeight === 756 ? bossQaInsets.get(image) ?? 0 : 0)
   const side = Math.min(width, height)
   const sourceSide = image.naturalHeight - inset * 2
   if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(inset) || inset < 0 || sourceSide <= 0) return false
