@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eclipse Survivors · QA Pending Character Art</title>
+  <style>
+    :root { color-scheme: dark; font: 15px system-ui, sans-serif; background: #10131d; color: #e8e8f0; }
+    body { max-width: 1160px; margin: 24px auto; padding: 0 16px 32px; }
+    h1 { font-size: 1.45rem; margin-bottom: .4rem; }
+    p { line-height: 1.55; color: #adb7cc; max-width: 84ch; }
+    button { background: #3d315f; color: white; border: 1px solid #8a7bba; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #f0cb86; outline-offset: 3px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+    article { min-width: 0; background: #1c2130; border: 1px solid #434b61; border-radius: 10px; padding: 10px; }
+    article h2 { font-size: .93rem; font-weight: 600; margin: 4px 0 10px; overflow-wrap: anywhere; }
+    canvas { display: block; width: 100%; aspect-ratio: 1; border-radius: 7px; background: repeating-conic-gradient(#303541 0 25%, #383e4b 0 50%) 50% / 24px 24px; }
+    article small { display: block; margin-top: 6px; color: #c1b6d5; }
+    @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 460px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>ES2 Character Action Art — Candidate Review</h1>
+  <p>These are <strong>real committed local WebP assets</strong>, not gameplay screenshots. Each panel has four East-facing source frames. QA_PENDING: missing other directions, missing unique frames, incomplete native-3× approval and some original-edge clipping. The production game is unchanged.</p>
+  <button id="pause" type="button" aria-pressed="false">Pause frames</button>
+  <main id="grid" class="grid" aria-label="Nine candidate animation strips"></main>
+  <script type="module" src="./hero-candidate-preview.ts"></script>
+</body>
+</html>
