@@ -73,7 +73,7 @@
 .es2-dialog-header h2{font-size:clamp(1.45rem,3vw,2.1rem);line-height:1.25;margin:8px 0 9px}
 .es2-dialog-header p{font-size:.88rem;line-height:1.5;color:var(--es2-muted);margin:0}
 .es2-close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--es2-line);border-radius:8px;background:#162437;font-size:1.8rem!important}
-.es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-padding-block:8px}
+.es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-padding-block:8px;touch-action:pan-y}
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}
@@ -102,7 +102,7 @@
 .es2-card-requirements{color:#e2c38c}
 .es2-card-selected-text{font-size:.75rem;color:#e8d2a3;padding:10px 13px 0;margin-top:auto}
 .es2-selection-scene.es2-still *{animation:none!important;transition:none!important}
-.es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;margin-bottom:12px;padding:5px 0 12px;border-bottom:1px solid var(--es2-line);background:#142538}
+.es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;margin-bottom:12px;padding:5px 0 12px;touch-action:pan-x;border-bottom:1px solid var(--es2-line);background:#142538}
 .es2-archive-tabs button{flex-shrink:0;min-height:44px;padding:9px 13px;font-size:.84rem;background:#1b2d40;border:1px solid #96a6b56e;border-radius:8px}
 .es2-archive-tabs .es2-tab-current{border-color:#e9c48d;background:#55402c}
 .es2-archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(195px,100%),1fr));gap:13px}
@@ -192,7 +192,7 @@
   .es2-choice .es2-card-meta{padding:3px 8px 0}
   .es2-choice .es2-card-name{padding:4px 8px 0;font-size:calc(.87rem * var(--es2-ui-scale,1));line-height:1.2}
   .es2-choice .es2-card-level{padding:3px 8px 0}
-  .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 8px 0;font-size:calc(.7rem * var(--es2-ui-scale,1));line-height:1.3}
+  .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 8px 0;font-size:calc(.75rem * var(--es2-ui-scale,1));line-height:1.3}
   .es2-choice .es2-card-selected-text{padding:3px 8px 0}
   .es2-dialog-choice .es2-hint{margin:7px 0 0;line-height:1.3;font-size:.7rem}
   .es2-result-hero{width:clamp(75px,22vw,110px);height:clamp(85px,24vw,118px)}
@@ -216,7 +216,7 @@
   .es2-choice .es2-card-meta{padding:4px 7px 0;gap:4px}
   .es2-choice .es2-card-name{padding:4px 7px 0;font-size:calc(.78rem * var(--es2-ui-scale,1));line-height:1.2}
   .es2-choice .es2-card-level{padding:3px 7px 0;font-size:.7rem}
-  .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 7px 0;font-size:calc(.66rem * var(--es2-ui-scale,1));line-height:1.25}
+  .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 7px 0;font-size:calc(.75rem * var(--es2-ui-scale,1));line-height:1.25}
   .es2-choice .es2-rarity-icon{width:15px;height:15px}
   .es2-choice .es2-key-hint{width:21px;height:21px}
   .es2-dialog-choice .es2-hint{margin:4px 0 0;font-size:.66rem;line-height:1.2}
@@ -231,6 +231,6 @@
   .es2-result-stats{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:6px 0}
   .es2-result-stats>div{padding:5px 3px;gap:2px}
   .es2-result-stats b{font-size:.88rem}
-  .es2-result-stats small{font-size:.65rem}
+  .es2-result-stats small{font-size:.72rem}
   .es2-reward-strip{gap:5px;padding:7px}
 }
