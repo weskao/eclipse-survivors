@@ -1,4 +1,5 @@
 import type { AbilityId, SkillRarity } from '../../../game/types'
+import { upgradeKeyIndex } from '../../../game/input'
 
 export type MenuView = 'main' | 'relics' | 'progression' | 'monsters' | 'skills' | 'achievements'
 export type ChoiceKind = 'level' | 'evolution' | 'treasure'
