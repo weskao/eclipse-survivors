@@ -68,9 +68,10 @@ function shadowblade(ctx: Ctx2D, t: number, bloom: number, count: number, reduce
   const p2 = reduced ? 0 : ease((t - 0.3) / 0.28)
   ctx.fillStyle = '#17131d'
   ctx.beginPath(); ctx.ellipse(0, 46, 67 + 35 * bloom, 16, 0, 0, TAU); ctx.fill()
+  const slashOpacity = reduced ? 0.67 : (1 - ease((t - 0.49) / 0.28)) * 0.93
   const first = sprite(ctx, 'rift', -80 + p1 * 86, -24 - p1 * 6,
-    270 + p1 * 36, 260, reduced ? 0.67 : (1 - ease((t - 0.49) / 0.28)) * 0.93, -0.26)
-  if (!first) {
+    270 + p1 * 36, 260, slashOpacity, -0.26)
+  if (!first && slashOpacity > 0.05) {
     ctx.strokeStyle = '#c3b5c6'; ctx.lineWidth = 4
     ctx.beginPath(); ctx.moveTo(-103 + p1 * 45, 49); ctx.bezierCurveTo(-32, 7, 38, -48, 104 + p1 * 12, -94); ctx.stroke()
   }
