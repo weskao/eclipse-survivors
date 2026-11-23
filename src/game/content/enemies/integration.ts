@@ -1,4 +1,5 @@
 import { damageHero, hit } from '../../combat'
+import { pushDamageNumber } from '../../fx'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ELITE_AFFIXES, ENEMY_DEFINITIONS, type FactionAffix, type FactionKind } from './definitions'
@@ -113,9 +114,8 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     })
     if (applied > 0) {
       state.damageDealt += applied
-      state.numberFx.push({ x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
+      pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
         value: Math.round(applied), boss: false, critical })
-      if (state.numberFx.length > 80) state.numberFx.shift()
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20 })
       options.onHit?.(enemy, applied)
     }
