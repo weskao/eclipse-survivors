@@ -61,8 +61,9 @@ export function createCinematicMusic(
     if (!remember) paused = null
     if (!last || !context()) return
     const now = context()!.currentTime
-    last.gain.gain.setTargetAtTime(0.0001, now, 0.14)
-    try { last.source.stop(now + 0.85) } catch { /* already stopped */ }
+    if (remember) last.gain.gain.setValueAtTime(0, now)
+    else last.gain.gain.setTargetAtTime(0.0001, now, 0.14)
+    try { last.source.stop(remember ? now : now + 0.85) } catch { /* already stopped */ }
   }
   const decode = (url: string, ctx: AudioContextLike): Promise<BufferLike | null> => {
     const existing = cached.get(url)
