@@ -2,6 +2,10 @@
 
 This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Preserve this stack, existing game art, combat mechanics, accessibility, and mobile support. Follow the existing architecture and work on a dedicated branch; do not create a PR, merge, or modify `main` unless asked.
 
+## Mandatory skill and combat visual fidelity
+
+For any skill CRUD, ability option, projectile, enemy bullet, damage feedback, or attack animation, **read [`.claude/skills/es2-combat-visual-fidelity/SKILL.md`](.claude/skills/es2-combat-visual-fidelity/SKILL.md) before implementation**. Every skill (built-in, ES2 weapon, evolution and future pack) must use the same high-quality image-first card treatment and animated/static accessibility fallback. Avoid bare circles, lines or emojis when an authored sprite exists. Keep actual collision and danger telegraphs independent of decorative art, preserve dense-combat readability and run TDD plus real-browser mobile QA. Reuse the existing Canvas 2D renderer unless measured evidence justifies a full PixiJS migration.
+
 ## Mandatory image-first asset workflow
 
 **For every feature that needs images, create or generate the actual image files inside this repository before writing the code that uses them.** This applies to all game/UI features, including characters, enemies, bosses, scenes, props, skill icons, VFX, animations, and previews.
