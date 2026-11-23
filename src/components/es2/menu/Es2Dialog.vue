@@ -44,6 +44,15 @@ function onKeydown(event: KeyboardEvent): void {
     event.stopPropagation()
     return
   }
+  // Horizontal arrows never navigate dialog choices; editable controls keep native behavior.
+  if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') &&
+    !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement ||
+      event.target instanceof HTMLSelectElement ||
+      (event.target instanceof HTMLElement && event.target.isContentEditable))) {
+    event.preventDefault()
+    event.stopPropagation()
+    return
+  }
   // The engine listens on window; stop modal keystrokes at document.
   event.stopPropagation()
   emit('shortcut', event)
