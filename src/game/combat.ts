@@ -23,6 +23,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
   const applied = hooks.modifyOutgoingDamage?.(d) ?? d
   if (!Number.isFinite(applied) || applied <= 0) return
+  const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
   const dealt = Math.min(e.hp, applied)
   s.damageDealt += dealt
@@ -33,9 +34,10 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
   impact(s, e.x, e.y, boss ? 68 : 30, boss ? '#ffab79' : '#ffe6ab', boss ? 1.5 : 0.3)
-  s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: 0.62, value: Math.round(applied), boss })
+  s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
   if (s.numberFx.length > 80) s.numberFx.shift()
   burst(s, e.x, e.y, '#fff3c4', 2)
+  if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20 })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     s.kill++
@@ -101,8 +103,7 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
         const r = dist(e.x - hero.x, e.y - hero.y)
         const d = Math.atan2(e.y - hero.y, e.x - hero.x)
         if (r < hero.range + e.radius && Math.cos(d - a) > 0.71) {
-          const damage = hooks.modifyOutgoingDamage?.(hero.damage) ?? hero.damage
-          factions!.hitFaction(s, e, damage, hero.x, hero.y, hooks)
+          factions!.hitFaction(s, e, hero.damage, hero.x, hero.y, hooks)
         }
       }
     }
@@ -167,7 +168,8 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   s.damageTaken += actuallyTaken
   hero.hp = Math.max(0, hero.hp - taken)
   hero.inv = 1
-  s.cameraKick = Math.min(12, s.cameraKick + 4)
+  // Routine chip damage uses local hit feedback; only major HP loss nudges the camera.
+  if (actuallyTaken >= hero.max * 0.22) s.cameraKick = Math.max(s.cameraKick, 1.6)
   impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
   if (shield) {
     impact(s, hero.x, hero.y, 58, '#9ad3ff', 0.4)
