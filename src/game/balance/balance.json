@@ -386,7 +386,109 @@
     "extraSpawnChance": 0.32,
     "baseDamage": 11,
     "damagePerLevel": 2,
-    "bossDamage": 32
+    "bossDamage": 32,
+    "factions": {
+      "shadow-assassin": {
+        "hp": 68,
+        "radius": 18,
+        "speed": 122,
+        "range": 180,
+        "windup": 0.55,
+        "recover": 0.85,
+        "damage": 15,
+        "xp": 5
+      },
+      "necromancer": {
+        "hp": 105,
+        "radius": 23,
+        "speed": 52,
+        "range": 280,
+        "windup": 0.95,
+        "recover": 2.9,
+        "damage": 7,
+        "xp": 9
+      },
+      "dark-archer": {
+        "hp": 59,
+        "radius": 19,
+        "speed": 87,
+        "range": 315,
+        "windup": 0.65,
+        "recover": 1.25,
+        "damage": 12,
+        "xp": 5
+      },
+      "plague-carrier": {
+        "hp": 88,
+        "radius": 24,
+        "speed": 64,
+        "range": 130,
+        "windup": 0.72,
+        "recover": 2.1,
+        "damage": 7,
+        "xp": 6
+      },
+      "shield-guardian": {
+        "hp": 175,
+        "radius": 28,
+        "speed": 58,
+        "range": 81,
+        "windup": 0.8,
+        "recover": 1.05,
+        "damage": 20,
+        "xp": 10
+      },
+      "phantom": {
+        "hp": 49,
+        "radius": 17,
+        "speed": 116,
+        "range": 110,
+        "windup": 0.5,
+        "recover": 1.15,
+        "damage": 13,
+        "xp": 6
+      },
+      "fire-imp": {
+        "hp": 44,
+        "radius": 16,
+        "speed": 101,
+        "range": 160,
+        "windup": 0.7,
+        "recover": 1.6,
+        "damage": 14,
+        "xp": 4
+      },
+      "frost-wraith": {
+        "hp": 66,
+        "radius": 19,
+        "speed": 76,
+        "range": 260,
+        "windup": 0.75,
+        "recover": 1.6,
+        "damage": 11,
+        "xp": 7
+      },
+      "berserker": {
+        "hp": 125,
+        "radius": 22,
+        "speed": 105,
+        "range": 68,
+        "windup": 0.55,
+        "recover": 0.95,
+        "damage": 18,
+        "xp": 8
+      },
+      "crystal-sentinel": {
+        "hp": 160,
+        "radius": 27,
+        "speed": 42,
+        "range": 340,
+        "windup": 1.2,
+        "recover": 2,
+        "damage": 23,
+        "xp": 11
+      }
+    }
   },
   "combat": {
     "killXp": {
