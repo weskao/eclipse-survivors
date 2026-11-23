@@ -1,0 +1,93 @@
+{
+  "classic": {
+    "knight": {
+      "hp": 200,
+      "speed": 190,
+      "damage": 32,
+      "delay": 0.57,
+      "range": 112
+    },
+    "ranger": {
+      "hp": 135,
+      "speed": 218,
+      "damage": 22,
+      "delay": 0.36,
+      "range": 430
+    },
+    "wizard": {
+      "hp": 130,
+      "speed": 196,
+      "damage": 46,
+      "delay": 0.68,
+      "range": 390
+    }
+  },
+  "special": {
+    "shadowblade": {
+      "hp": 125,
+      "speed": 248,
+      "damage": 28,
+      "delay": 0.43,
+      "range": 132
+    },
+    "spirit-summoner": {
+      "hp": 140,
+      "speed": 194,
+      "damage": 24,
+      "delay": 0.66,
+      "range": 355
+    },
+    "crimson-paladin": {
+      "hp": 215,
+      "speed": 172,
+      "damage": 30,
+      "delay": 0.65,
+      "range": 116
+    }
+  },
+  "specialCooldowns": {
+    "shadowblade": 9.5,
+    "spirit-summoner": 12,
+    "crimson-paladin": 14
+  },
+  "specialEffects": {
+    "shadowblade": {
+      "critChance": 0.24,
+      "critMultiplier": 1.7,
+      "critBonusPerRank": 0.18,
+      "specialHits": 3,
+      "specialReach": 150,
+      "specialDamageBase": 1.4,
+      "specialDamagePerRank": 0.045,
+      "stealthSeconds": 0.95
+    },
+    "spirit-summoner": {
+      "companionTickSeconds": 1.8,
+      "companionRange": 330,
+      "companionDamagePerRank": 0.2,
+      "guardianHealBase": 2,
+      "guardianHealPerRank": 1.15,
+      "specialDamageBase": 1.2,
+      "specialDamagePerRank": 0.22,
+      "specialHeal": 12
+    },
+    "crimson-paladin": {
+      "baseReduction": 0.14,
+      "extraReductionCap": 0.075,
+      "reductionPerRank": 0.025,
+      "barrierBase": 48,
+      "barrierPerHeroLevel": 2,
+      "barrierPerRank": 14,
+      "barrierSeconds": 3.5,
+      "healthCostRatio": 0.08,
+      "counterCooldown": 1.8,
+      "counterRange": 155,
+      "counterTargets": 2,
+      "counterDamageBase": 0.7,
+      "counterDamagePerRank": 0.135,
+      "lowHpThreshold": 0.4,
+      "lowHpDamageBase": 1.35,
+      "lowHpDamagePerRank": 0.07
+    }
+  }
+}

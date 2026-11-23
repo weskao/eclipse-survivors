@@ -1,0 +1,12 @@
+{
+  "maxMobs": 130,
+  "duration": 150,
+  "bossTime": 92,
+  "sceneSeconds": 36,
+  "dashCooldown": 3,
+  "lowHpPct": 25,
+  "scene": {
+    "width": 2200,
+    "height": 1238
+  }
+}

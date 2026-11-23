@@ -1,0 +1,34 @@
+{
+  "weights": {
+    "chest": 0.27,
+    "shrine": 0.21,
+    "invasion": 0.12,
+    "blessing": 0.19,
+    "bargain": 0.11,
+    "challenge": 0.1
+  },
+  "spawnChance": 0.75,
+  "spawnIntervalBase": 11,
+  "spawnIntervalVariation": 5,
+  "lifetime": 20,
+  "maxActive": 2,
+  "placementRetries": 12,
+  "chestXp": 12,
+  "shrineHealing": 36,
+  "blessingSeconds": 12,
+  "blessingHealPerSecond": 2.4,
+  "bargainMinHp": 24,
+  "bargainHpCost": 14,
+  "bargainXp": 24,
+  "challengeSeconds": 9,
+  "challengeXp": 28,
+  "invasionCount": 3,
+  "invasionHp": 250,
+  "firstSpawnAt": 7,
+  "hazards": {
+    "sceneGraceSeconds": 1.2,
+    "hitCooldownSeconds": 1.4,
+    "baseDamage": 7,
+    "damagePerScene": 2
+  }
+}

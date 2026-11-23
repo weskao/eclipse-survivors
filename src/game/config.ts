@@ -1,4 +1,4 @@
-import tuning from './balance/balance.json'
+import { tuning } from './balance'
 import type { JobDef, JobId, MobType, SkillRarity, UpgradeId, WorldEventKind } from './types'
 import type { SpecializationId } from './content/heroes'
 import type { WeaponKey } from './content/weapons/runtime'
@@ -9,7 +9,8 @@ type CombatStats = Pick<JobDef, 'hp' | 'speed' | 'damage' | 'delay' | 'range'>
 
 /**
  * Single source of truth for player-facing and gameplay balance.
- * Edit balance/balance.json, not literals in combat and UI consumers.
+ * Edit the appropriate balance/<domain>.json and register new domains in balance/index.ts.
+ * Existing callers continue to access one typed BALANCE object.
  * Type-checking catches missing hero, skill, rarity, enemy and weapon keys.
  * Treat imported balance values as immutable during a run.
  */

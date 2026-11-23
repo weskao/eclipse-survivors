@@ -1,0 +1,10 @@
+{
+  "cooldowns": {
+    "frozen-thunderstorm": 4.4,
+    "infernal-singularity": 5,
+    "apocalypse-rain": 6.5,
+    "blade-tempest": 2.4,
+    "guardian-sanctuary": 5.5
+  },
+  "unlockSkillLevel": 3
+}

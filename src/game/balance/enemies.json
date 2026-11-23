@@ -1,0 +1,212 @@
+{
+  "baseHp": {
+    "slime": 32,
+    "bat": 27,
+    "goblin": 55,
+    "golem": 155,
+    "warlock": 72,
+    "boss": 2000
+  },
+  "hpPerLevel": 9,
+  "bossHpPerLevel": 120,
+  "levelPeriodSeconds": 22,
+  "eliteHpMultiplier": 1.7,
+  "eliteDamageMultiplier": 1.35,
+  "initialSpawnRadius": 200,
+  "spawnRadiusScale": 0.38,
+  "spawnRadiusMinOffset": 15,
+  "spawnRadiusMaxOffset": 65,
+  "warlockStartTime": 28,
+  "warlockChance": 0.12,
+  "eliteStartTime": 42,
+  "eliteChance": 0.085,
+  "intervalBase": 0.75,
+  "intervalTimeFactor": 0.003,
+  "intervalFloor": 0.18,
+  "sceneSpawnBonuses": [
+    0,
+    0.05,
+    0,
+    0.08
+  ],
+  "extraSpawnAfterSeconds": 38,
+  "extraSpawnChance": 0.32,
+  "baseDamage": 11,
+  "damagePerLevel": 2,
+  "bossDamage": 32,
+  "factions": {
+    "shadow-assassin": {
+      "hp": 68,
+      "radius": 18,
+      "speed": 122,
+      "range": 180,
+      "windup": 0.55,
+      "recover": 0.85,
+      "damage": 15,
+      "xp": 5
+    },
+    "necromancer": {
+      "hp": 105,
+      "radius": 23,
+      "speed": 52,
+      "range": 280,
+      "windup": 0.95,
+      "recover": 2.9,
+      "damage": 7,
+      "xp": 9
+    },
+    "dark-archer": {
+      "hp": 59,
+      "radius": 19,
+      "speed": 87,
+      "range": 315,
+      "windup": 0.65,
+      "recover": 1.25,
+      "damage": 12,
+      "xp": 5
+    },
+    "plague-carrier": {
+      "hp": 88,
+      "radius": 24,
+      "speed": 64,
+      "range": 130,
+      "windup": 0.72,
+      "recover": 2.1,
+      "damage": 7,
+      "xp": 6
+    },
+    "shield-guardian": {
+      "hp": 175,
+      "radius": 28,
+      "speed": 58,
+      "range": 81,
+      "windup": 0.8,
+      "recover": 1.05,
+      "damage": 20,
+      "xp": 10
+    },
+    "phantom": {
+      "hp": 49,
+      "radius": 17,
+      "speed": 116,
+      "range": 110,
+      "windup": 0.5,
+      "recover": 1.15,
+      "damage": 13,
+      "xp": 6
+    },
+    "fire-imp": {
+      "hp": 44,
+      "radius": 16,
+      "speed": 101,
+      "range": 160,
+      "windup": 0.7,
+      "recover": 1.6,
+      "damage": 14,
+      "xp": 4
+    },
+    "frost-wraith": {
+      "hp": 66,
+      "radius": 19,
+      "speed": 76,
+      "range": 260,
+      "windup": 0.75,
+      "recover": 1.6,
+      "damage": 11,
+      "xp": 7
+    },
+    "berserker": {
+      "hp": 125,
+      "radius": 22,
+      "speed": 105,
+      "range": 68,
+      "windup": 0.55,
+      "recover": 0.95,
+      "damage": 18,
+      "xp": 8
+    },
+    "crystal-sentinel": {
+      "hp": 160,
+      "radius": 27,
+      "speed": 42,
+      "range": 340,
+      "windup": 1.2,
+      "recover": 2,
+      "damage": 23,
+      "xp": 11
+    }
+  },
+  "ai": {
+    "near": {
+      "slime": 70,
+      "bat": 205,
+      "goblin": 122,
+      "golem": 150,
+      "warlock": 310,
+      "boss": 265
+    },
+    "windup": {
+      "pounce": 0.48,
+      "dive": 0.55,
+      "jab": 0.4,
+      "slam": 1.05,
+      "bolt": 0.72,
+      "summon": 0.8
+    },
+    "bossWindupExtra": 0.25,
+    "maxProjectiles": 100,
+    "projectileLifetime": 3.2,
+    "projectileRadius": {
+      "boss": 12,
+      "default": 8
+    },
+    "projectileSpeed": {
+      "boss": 185,
+      "default": 205
+    },
+    "projectileCount": {
+      "bossThirdPhase": 5,
+      "bossOther": 3,
+      "elite": 3,
+      "default": 1
+    },
+    "projectileSpread": {
+      "boss": 0.18,
+      "default": 0.14
+    },
+    "slamRadius": {
+      "boss": 103,
+      "elite": 87,
+      "default": 74
+    },
+    "slamContactMargin": 14,
+    "lungeDistance": {
+      "pounce": 63,
+      "jab": 69
+    },
+    "lungeContactMargin": 19,
+    "recoverySeconds": {
+      "boss": 1.15,
+      "golem": 1,
+      "default": 0.65,
+      "afterDive": 0.7
+    },
+    "slowedSpeedMultiplier": 0.46,
+    "staggeredSpeedMultiplier": 0.23,
+    "knockbackSpeed": {
+      "boss": 45,
+      "default": 150
+    },
+    "stealthRecoverMin": 0.2,
+    "attackDuration": {
+      "dive": 0.38,
+      "pounce": 0.26
+    },
+    "attackSpeed": {
+      "pounce": 180,
+      "dive": 295
+    },
+    "hitMargin": 17,
+    "projectileContactMargin": 15
+  }
+}
