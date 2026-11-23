@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { nextTick } from 'vue'
 import Es2MainMenu from './Es2MainMenu.vue'
+import { JOB } from '../../../game/constants'
+import { setLocale, getLocale } from '../../../i18n'
 import AudioControl from '../../AudioControl.vue'
 
 const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
@@ -21,6 +23,44 @@ function menu(props: Record<string, unknown> = {}) {
 }
 
 describe('phone homepage viewport-first navigation', () => {
+  it('presents live classic-hero HP, attack, movement and attack cadence with a contextual role summary', async () => {
+    const wrapper = menu()
+    for (const id of ['knight', 'ranger', 'wizard'] as const) {
+      const preview = wrapper.get(`[data-hero="${id}"] [data-es2-classic-preview]`)
+      expect(preview.text()).toContain(String(JOB[id].hp))
+      expect(preview.text()).toContain(String(JOB[id].damage))
+      await wrapper.setProps({ heroId: id, choice: id })
+      const detail = wrapper.get('[data-es2-classic-details]')
+      expect(detail.attributes('data-es2-classic-details')).toBe(id)
+      expect(detail.get('[data-es2-classic-stat="hp"]').text()).toContain(String(JOB[id].hp))
+      expect(detail.get('[data-es2-classic-stat="attack"]').text()).toContain(String(JOB[id].damage))
+      expect(detail.get('[data-es2-classic-stat="speed"]').text()).toContain(String(JOB[id].speed))
+      expect(detail.get('[data-es2-classic-stat="interval"]').text()).toContain(String(JOB[id].delay))
+      expect(detail.get('[data-es2-classic-role]').text().length).toBeGreaterThan(10)
+    }
+    await wrapper.setProps({ heroId: 'shadowblade' })
+    expect(wrapper.find('[data-es2-classic-details]').exists()).toBe(false)
+  })
+
+  it('provides real English labels for classic hero stats without leaking Chinese role text', async () => {
+    const locale = getLocale()
+    try {
+      setLocale('en')
+      const wrapper = menu({ choice: 'wizard' })
+      expect(wrapper.get('[data-es2-classic-details]').text()).toContain('HP')
+      expect(wrapper.get('[data-es2-classic-details]').text()).toContain('Attack')
+      expect(wrapper.get('[data-es2-classic-role]').text()).not.toMatch(/[\u3400-\u9fff]/)
+    } finally {
+      setLocale(locale)
+    }
+  })
+
+  it('keeps classic hero details readable on phones and compact in short landscape', () => {
+    expect(css).toContain('.es2-classic-details')
+    expect(css).toContain('.es2-classic-stat-grid')
+    expect(css).toContain('.es2-menu[data-mobile-heroes="new"] .es2-classic-details')
+    expect(css).toContain('minmax(0,1fr)')
+  })
   it('switches hero categories without duplicating cards or changing the selected hero', async () => {
     const wrapper = menu()
     expect(wrapper.findAll('[data-hero]')).toHaveLength(3)
