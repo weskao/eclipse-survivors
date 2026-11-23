@@ -66,6 +66,26 @@ function triggerDash(): void {
   if (usable.value) emit('dash')
 }
 
+// A second thumb held on the joystick is not guaranteed a synthesized click on iOS.
+let skipTouchClick = false
+function pressDash(event: PointerEvent): void {
+  if (event.pointerType !== 'touch') {
+    skipTouchClick = false
+    return
+  }
+  skipTouchClick = true
+  triggerDash()
+}
+
+function clickDash(event: MouseEvent): void {
+  if (skipTouchClick && event.detail > 0) {
+    skipTouchClick = false
+    return // Suppress the click synthesized after the touch pointerdown.
+  }
+  skipTouchClick = false
+  triggerDash() // Native mouse, keyboard (detail=0), and assistive technology.
+}
+
 /** Resizing and navigating away always neutralize the previous input. */
 watch(() => [
   props.active, props.blocked, props.preferences.touchScale,
@@ -129,7 +149,8 @@ onBeforeUnmount(() => {
       :disabled="!usable"
       @keydown.space.stop
       @keyup.space.stop
-      @click.stop="triggerDash"
+      @pointerdown="pressDash"
+      @click.stop="clickDash"
     ><span aria-hidden="true">✧</span> {{ t("衝刺") }}</button>
   </div>
 </template>
