@@ -47,6 +47,26 @@ try {
       const initialDialog = await dialog.evaluate(rect)
       assert.ok(inside(initialDialog, width, height),
         name + ': settings modal clips viewport: ' + JSON.stringify(initialDialog))
+      const verifyDialogChrome = async (kind) => {
+        const layout = await dialog.evaluate(element => {
+          const bounds = child => { const b = child.getBoundingClientRect(); return { top:b.top, bottom:b.bottom, height:b.height } }
+          return {
+            panel: bounds(element),
+            heading: bounds(element.querySelector('.es2-dialog-header')),
+            body: bounds(element.querySelector('.es2-dialog-body')),
+            actions: element.querySelector('.es2-dialog-actions') ? bounds(element.querySelector('.es2-dialog-actions')) : null,
+          }
+        })
+        assert.ok(layout.heading.top >= layout.panel.top - inset && layout.heading.bottom <= layout.body.top + inset,
+          name + ': ' + kind + ' heading is not pinned above the scrollable body: ' + JSON.stringify(layout))
+        assert.ok(layout.body.bottom <= (layout.actions?.top ?? layout.panel.bottom) + inset,
+          name + ': ' + kind + ' body obscures its actions: ' + JSON.stringify(layout))
+        if (layout.actions) assert.ok(layout.actions.bottom <= layout.panel.bottom + inset,
+          name + ': ' + kind + ' footer is outside the dialog: ' + JSON.stringify(layout))
+      }
+      await verifyDialogChrome('settings')
+      await dialog.locator('.es2-dialog-body').evaluate(element => { element.scrollTop = element.scrollHeight })
+      await verifyDialogChrome('settings after scrolling')
       const scale = page.locator('#es2-interface-scale')
       await scale.evaluate(el => { el.value = '1.25'; el.dispatchEvent(new Event('input', { bubbles: true })) })
       const actual = await dialog.evaluate(el => getComputedStyle(el).getPropertyValue('--es2-ui-scale').trim())
@@ -68,6 +88,7 @@ try {
       // A new Es2Dialog mounts after Settings; measure its settled bounds, not the 12px enter translation.
       await dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))
       assert.equal(await tabs.count(), 5, name + ': missing archive tabs')
+      await verifyDialogChrome('archive')
       for (let index = 0; index < 5; index++) {
         await tabs.nth(index).click()
         assert.equal(await tabs.nth(index).getAttribute('aria-current'), 'page',

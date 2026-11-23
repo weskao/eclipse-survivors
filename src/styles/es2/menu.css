@@ -62,16 +62,19 @@
 .es2-hall-links button:hover{border-color:#e7c58a}
 .es2-hall-links button span{margin-right:7px;color:var(--es2-gold)}
 .es2-embers{color:var(--es2-gold);font-size:.84rem;white-space:nowrap}
-.es2-backdrop{position:fixed;inset:0;z-index:320;display:grid;place-items:center;overflow-y:auto;overscroll-behavior:contain;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#02060be3;backdrop-filter:blur(8px)}
-.es2-dialog{position:relative;overflow-y:auto;overscroll-behavior:contain;width:min(100%,610px);max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:clamp(18px,2.6vw,34px);background:radial-gradient(ellipse at top,#34435666,transparent 56%),linear-gradient(145deg,#15283a,#0a121c);border:1px solid #c3a97d85;border-radius:16px;box-shadow:0 30px 90px #000b,inset 0 1px #d9bb8759;animation:es2-enter .23s ease-out}
+.es2-backdrop{position:fixed;inset:0;z-index:320;display:grid;place-items:center;overflow:hidden;overscroll-behavior:contain;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#02060be3;backdrop-filter:blur(8px)}
+.es2-dialog{position:relative;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;width:min(100%,610px);max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:clamp(18px,2.6vw,34px);background:radial-gradient(ellipse at top,#34435666,transparent 56%),linear-gradient(145deg,#15283a,#0a121c);border:1px solid #c3a97d85;border-radius:16px;box-shadow:0 30px 90px #000b,inset 0 1px #d9bb8759;animation:es2-enter .23s ease-out}
 .es2-dialog-wide{width:min(100%,1050px)}
 .es2-dialog:before{content:'';position:absolute;top:8px;left:26px;right:26px;height:1px;background:linear-gradient(90deg,transparent,#daba81,transparent)}
-.es2-dialog-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:22px}
+.es2-dialog-header{display:flex;flex-shrink:0;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:clamp(8px,2dvh,22px)}
+.es2-dialog-header>div:first-child{min-width:0}
+.es2-dialog-header-actions{display:flex;flex:none;align-items:center;gap:8px}
+.es2-dialog-settings{min-height:44px;padding:8px 12px;font-size:.83rem}
 .es2-dialog-header h2{font-size:clamp(1.45rem,3vw,2.1rem);line-height:1.25;margin:8px 0 9px}
 .es2-dialog-header p{font-size:.88rem;line-height:1.5;color:var(--es2-muted);margin:0}
 .es2-close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--es2-line);border-radius:8px;background:#162437;font-size:1.8rem!important}
-.es2-dialog-body{min-width:0}
-.es2-dialog-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
+.es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-padding-block:8px}
+.es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}
 .es2-tone-victory{border-color:#edca80}
@@ -101,8 +104,8 @@
 .es2-selection-scene.es2-still *{animation:none!important;transition:none!important}
 .es2-choice-toolbar{display:flex;justify-content:flex-end;margin:-4px 0 16px}
 .es2-choice-toolbar button{min-height:44px;padding:9px 13px}
-.es2-archive-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--es2-line)}
-.es2-archive-tabs button{min-height:44px;padding:9px 13px;font-size:.84rem;background:#1b2d40;border:1px solid #96a6b56e;border-radius:8px}
+.es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;margin-bottom:12px;padding:5px 0 12px;border-bottom:1px solid var(--es2-line);background:#142538}
+.es2-archive-tabs button{flex-shrink:0;min-height:44px;padding:9px 13px;font-size:.84rem;background:#1b2d40;border:1px solid #96a6b56e;border-radius:8px}
 .es2-archive-tabs .es2-tab-current{border-color:#e9c48d;background:#55402c}
 .es2-archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(195px,100%),1fr));gap:13px}
 .es2-archive-card{display:flex;flex-direction:column;gap:9px;min-width:0;padding:16px;border:1px solid #8a9ba766;border-radius:10px;background:#132334c9;overflow-wrap:anywhere}
@@ -175,4 +178,61 @@
 @media (max-height: 570px) {
   .es2-choice { min-height: 0; }
   .es2-card-art { height: clamp(96px, 22dvh, 150px); }
+}
+
+// Viewport-first layout: show all selectable options before requesting a scroll.
+// Larger reference galleries and full accessibility settings keep an internal scroll fallback.
+@media (max-width:610px) and (orientation:portrait) {
+  .es2-dialog{padding:12px}
+  .es2-dialog-header{margin-bottom:9px}
+  .es2-dialog-choice .es2-dialog-header h2{margin:5px 0;font-size:clamp(1.1rem,5vw,1.45rem)}
+  .es2-dialog-choice .es2-dialog-header p{font-size:.75rem;line-height:1.25}
+  .es2-choice-grid{grid-template-columns:1fr;gap:8px}
+  .es2-choice{display:grid;grid-template-columns:clamp(74px,24vw,104px) minmax(0,1fr);grid-auto-rows:min-content;align-content:center;min-height:0;padding:5px 5px 5px 0}
+  .es2-choice>.es2-card-art{grid-column:1;grid-row:1/span 7;width:100%;height:100%;min-height:94px;align-self:stretch;border-bottom:0;border-right:1px solid #bbc4ce4a}
+  .es2-choice>:not(.es2-card-art){grid-column:2;min-width:0}
+  .es2-choice .es2-card-meta{padding:3px 8px 0}
+  .es2-choice .es2-card-name{padding:4px 8px 0;font-size:calc(.87rem * var(--es2-ui-scale,1));line-height:1.2}
+  .es2-choice .es2-card-level{padding:3px 8px 0}
+  .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 8px 0;font-size:calc(.7rem * var(--es2-ui-scale,1));line-height:1.3}
+  .es2-choice .es2-card-selected-text{padding:3px 8px 0}
+  .es2-dialog-choice .es2-hint{margin:7px 0 0;line-height:1.3;font-size:.7rem}
+  .es2-result-hero{width:clamp(75px,22vw,110px);height:clamp(85px,24vw,118px)}
+  .es2-result-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0}
+  .es2-result-stats>div{padding:8px 5px;gap:3px}
+  .es2-result-stats b{font-size:1rem}
+  .es2-reward-strip{gap:7px;padding:9px}
+}
+@media (orientation:landscape) and (max-height:520px) {
+  .es2-backdrop{padding:max(5px,env(safe-area-inset-top)) max(5px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left))}
+  .es2-dialog{max-height:calc(100dvh - max(5px,env(safe-area-inset-top)) - max(5px,env(safe-area-inset-bottom)));padding:9px 12px;border-radius:11px}
+  .es2-dialog-header{margin-bottom:6px;gap:7px;align-items:center}
+  .es2-dialog-header .es2-eyebrow{display:none}
+  .es2-dialog-header h2{margin:0 0 3px;font-size:clamp(calc(1rem * var(--es2-ui-scale,1)),2.5vw,calc(1.25rem * var(--es2-ui-scale,1)));line-height:1.2}
+  .es2-dialog-header p{font-size:.72rem;line-height:1.25}
+  .es2-dialog-actions{margin-top:6px;padding-top:6px;gap:7px}
+  .es2-dialog-settings{min-height:44px;padding:7px 9px;font-size:.76rem}
+  .es2-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .es2-choice{min-height:0;padding:0 0 5px}
+  .es2-choice .es2-card-art{height:clamp(50px,16dvh,76px)}
+  .es2-choice .es2-card-meta{padding:4px 7px 0;gap:4px}
+  .es2-choice .es2-card-name{padding:4px 7px 0;font-size:calc(.78rem * var(--es2-ui-scale,1));line-height:1.2}
+  .es2-choice .es2-card-level{padding:3px 7px 0;font-size:.7rem}
+  .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 7px 0;font-size:calc(.66rem * var(--es2-ui-scale,1));line-height:1.25}
+  .es2-choice .es2-rarity-icon{width:15px;height:15px}
+  .es2-choice .es2-key-hint{width:21px;height:21px}
+  .es2-dialog-choice .es2-hint{margin:4px 0 0;font-size:.66rem;line-height:1.2}
+  .es2-archive-tabs{margin-bottom:7px;padding:0 0 6px}
+  .es2-archive-grid{gap:7px}
+  .es2-archive-card{padding:9px;gap:5px}
+  .es2-settings section+section{margin-top:10px;padding-top:8px}
+  .es2-settings h3{margin:0 0 6px}
+  .es2-slider-row{padding:4px 0}
+  .es2-result-hero{width:70px;height:75px}
+  .es2-result-status,.es2-result>p{margin:4px 0}
+  .es2-result-stats{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:6px 0}
+  .es2-result-stats>div{padding:5px 3px;gap:2px}
+  .es2-result-stats b{font-size:.88rem}
+  .es2-result-stats small{font-size:.65rem}
+  .es2-reward-strip{gap:5px;padding:7px}
 }

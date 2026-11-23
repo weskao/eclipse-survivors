@@ -3,8 +3,8 @@ import { t } from '../../../i18n'
 import { nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 const props = withDefaults(defineProps<{
   active: boolean; title: string; subtitle?: string; dismissible?: boolean
-  wide?: boolean; tone?: 'neutral' | 'legendary' | 'victory' | 'defeat'
-}>(), { dismissible: true, wide: false, tone: 'neutral' })
+  wide?: boolean; variant?: 'default' | 'choice'; tone?: 'neutral' | 'legendary' | 'victory' | 'defeat'
+}>(), { dismissible: true, wide: false, variant: 'default', tone: 'neutral' })
 const emit = defineEmits<{ cancel: []; shortcut: [event: KeyboardEvent] }>()
 const headingId = useId()
 const dialog = ref<HTMLElement | null>(null)
@@ -56,11 +56,11 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKeydown); rest
 <template>
   <Teleport to="body">
     <div v-if="active" class="es2-backdrop" @pointerdown.self="onOutside" @click.stop>
-      <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide }]"
+      <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice' }]"
         role="dialog" aria-modal="true" :aria-labelledby="headingId" tabindex="-1" @pointerdown.stop>
         <header class="es2-dialog-header">
           <div><span class="es2-eyebrow">✦ ECLIPSE SURVIVORS ✦</span><h2 :id="headingId">{{ title }}</h2><p v-if="subtitle">{{ subtitle }}</p></div>
-          <button v-if="dismissible" type="button" class="es2-close" :aria-label="t('關閉對話視窗')" @click="emit('cancel')">×</button>
+          <div class="es2-dialog-header-actions"><slot name="header-actions" /><button v-if="dismissible" type="button" class="es2-close" :aria-label="t('關閉對話視窗')" @click="emit('cancel')">×</button></div>
         </header>
         <div class="es2-dialog-body"><slot /></div>
         <footer v-if="$slots.actions" class="es2-dialog-actions"><slot name="actions" /></footer>

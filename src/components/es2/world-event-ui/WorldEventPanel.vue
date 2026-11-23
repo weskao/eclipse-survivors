@@ -150,4 +150,14 @@ function shortcut(event: KeyboardEvent): void {
   .world-event-number { width: 1.7rem; height: 1.7rem; }
   .world-event-choice-body span { font-size: .8rem; }
 }
+@media (orientation: landscape) and (max-height: 520px) {
+  .world-event-eyebrow { margin-bottom:.25rem; }
+  .world-event-options { gap:.4rem; }
+  .world-event-choice { min-height:44px;padding:.5rem .7rem;gap:.6rem; }
+  .world-event-choice-body { gap:.12rem; }
+  .world-event-choice-body strong { font-size:.85rem; }
+  .world-event-choice-body span { font-size:.72rem;line-height:1.25; }
+  .world-event-number { width:1.6rem;height:1.6rem; }
+  .world-event-hint { margin:.4rem 0 0; }
+}
 </style>
