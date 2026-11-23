@@ -35,7 +35,7 @@ describe('ES2 HUD image-first native-3x production assets', () => {
   it.each(ids)('%s has a unique authored source and visible canonical UI wiring', id => {
     const entry = manifest.assets.find(asset => asset.id === id)
     expect(entry).toBeDefined()
-    expect(entry!.status).toBe('needs-human-approval')
+    expect(entry!.status).toBe('approved')
     expect([entry!.width, entry!.height, entry!.frameWidth, entry!.frameHeight])
       .toEqual([240, 240, 240, 240])
     expect(entry!.width).toBeGreaterThanOrEqual(3 * entry!.qa!.displayMaximumPx)
@@ -44,7 +44,7 @@ describe('ES2 HUD image-first native-3x production assets', () => {
     expect(entry!.qa!.sourceHeight).toBe(627)
     expect(entry!.qa!.masterPath).toBe(`sources/${id}-master@source.webp`)
     expect(entry!.qa!.provenance).toContain('newly generated')
-    expect(entry!.qa!.visualReview).toBe('pending')
+    expect(entry!.qa!.visualReview).toBe('approved')
     expect(entry!.qa!.browserReview).toBe('pending')
     expect(assertWebP(entry!.path, 240, 240, entry!.sha256)).toBeLessThan(entry!.maxBytes)
     assertWebP(entry!.qa!.masterPath, 627, 627, entry!.qa!.masterSha256)
