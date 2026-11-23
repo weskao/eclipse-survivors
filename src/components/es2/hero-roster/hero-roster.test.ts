@@ -89,6 +89,7 @@ describe('ES2 shared homepage hero selection interaction', () => {
     expect(css).toContain('.es2-hero-select-card[aria-pressed="true"]{border-color:#e7c896;box-shadow:')
     expect(css).toContain('.es2-hero-select-card > img{transition:transform')
     expect(css).toContain('.es2-hero-select-card[aria-pressed="true"] > img{transform:translateY(-6px)}')
+    expect(css).toContain('.es2-menu .es2-hero-select-card:is(:hover,:active):not(:disabled){transform:none}')
     expect(css).toContain('.es2-hero-select-card[aria-pressed="true"] > img{transform:none}')
   })
 })

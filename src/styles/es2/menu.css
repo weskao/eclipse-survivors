@@ -472,6 +472,6 @@
 .es2-menu .es2-hero-select-card[aria-pressed="true"] > img{transform:translateY(-6px)}
 @media(prefers-reduced-motion:reduce){
   .es2-menu .es2-hero-select-card,.es2-menu .es2-hero-select-card > img{transition:none}
-  .es2-menu .es2-hero-select-card:is(:hover,:active){transform:none}
+  .es2-menu .es2-hero-select-card:is(:hover,:active):not(:disabled){transform:none}
   .es2-menu .es2-hero-select-card[aria-pressed="true"] > img{transform:none}
 }
