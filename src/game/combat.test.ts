@@ -78,9 +78,9 @@ describe('attack', () => {
     s.mobs.push(...mobs)
     const hooks = spyHooks()
     attack(s, hooks)
-    expect(hero.chainCd).toBeCloseTo(2.57)
+    expect(hero.chainCd).toBeCloseTo(2.55)
     expect(s.lightningFx).toHaveLength(3)
-    expect(mobs[2]!.hp).toBeCloseTo(100 - 22 * 0.78)
+    expect(mobs[2]!.hp).toBeCloseTo(100 - 22 * 0.84)
     expect(mobs[3]!.hp).toBe(100)
     expect(hooks.sfx).toHaveBeenCalledWith('chain')
   })
@@ -130,6 +130,12 @@ describe('damageHero', () => {
     damageHero(s, 10, hooks)
     expect(hero.hp).toBeCloseTo(175 - 4.8)
     expect(hooks.sfx).toHaveBeenCalledTimes(1)
+  })
+  it('each shield rank mitigates 13% up to the existing 52% cap', () => {
+    const { s, hero } = setup()
+    hero.skills.shield = 1
+    damageHero(s, 100, spyHooks())
+    expect(hero.hp).toBeCloseTo(88)
   })
   it('death clamps hp to 0 and ends the run', () => {
     const { s, hero } = setup()
