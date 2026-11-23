@@ -121,7 +121,7 @@ function shortcut(event: KeyboardEvent): void {
 .relic-rewards__claim { width: 100%; display: flex; flex: 1; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0.9rem; text-align: center; background: transparent; }
 .relic-rewards__claim:focus-visible, .relic-rewards__banish:focus-visible, .relic-rewards__actions button:focus-visible { outline: 3px solid #fff1a5; outline-offset: 3px; }
 .relic-rewards__icon { font-size: 2.5rem; }
-.relic-rewards__icon img{display:block;width:68px;height:68px;object-fit:contain}
+.relic-rewards__icon img{display:block;width:64px;height:64px;object-fit:contain}
 .relic-rewards__rarity { color: #dbcfaa; font-size: 0.85rem; }
 .relic-rewards__description { font-size: 0.9rem; line-height: 1.45; }
 .relic-rewards__curse { color: #ffb5b5; font-size: 0.8rem; }

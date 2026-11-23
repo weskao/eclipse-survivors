@@ -193,10 +193,10 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
 .es2-world-art-telegraph{width:70px;height:70px;object-fit:contain}
 .es2-world-art-ground{width:100%;max-width:140px;aspect-ratio:1;object-fit:cover;border-radius:8px}
 .es2-world-art-scene{width:100%;max-width:180px;aspect-ratio:16/9;object-fit:contain;border-radius:8px}
-.es2-achievement-icon{display:block;width:72px!important;height:72px;object-fit:contain}
+.es2-achievement-icon{display:block;width:64px!important;height:64px;object-fit:contain}
 
 .es2-world-art-decor{width:96px;height:96px;background-size:400% 100%;animation:es2-world-decor-preview 2s steps(4,end) infinite}
-.es2-world-art-icon{width:72px;height:72px;object-fit:contain}
+.es2-world-art-icon{width:64px;height:64px;object-fit:contain}
 @keyframes es2-world-enemy-preview{to{background-position:-576px 0}}
 @keyframes es2-world-boss-preview{to{background-position:-360px 0}}
 @keyframes es2-world-decor-preview{to{background-position:-384px 0}}
