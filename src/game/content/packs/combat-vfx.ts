@@ -53,6 +53,10 @@ export function createCombatVfxPack(settings: CombatVfxPreferences = {}): Conten
         seen.delete(state)
         return
       }
+      if (event.type === 'critical-hit') {
+        emitCombatVfx(addEffect, 'critical-hit', event.x, event.y)
+        return
+      }
       if (event.type !== 'kill' && event.type !== 'run-complete') return
       let run = seen.get(state)
       if (!run) {
