@@ -66,6 +66,49 @@ try {
               seamLr: +(leftRight/(h*3)).toFixed(2), seamTb: +(topBottom/(w*3)).toFixed(2) }
           }))
         })
+        // Also inspect the four *current* legacy atlas sources without pretending
+        // their 96px native cells meet the 330px premium 3x art requirement.
+        const decors = await page.evaluate(async () => {
+          const urls = performance.getEntriesByType('resource').map(r => r.name)
+            .filter(s => /-decor@3x-.*\.webp/.test(s))
+          return Promise.all(urls.map(async url => {
+            const image = new Image()
+            image.src = url
+            await image.decode()
+            const frameSide = image.naturalHeight
+            if (image.naturalWidth !== frameSide * 4)
+              throw Error('Invalid four-cell decor atlas geometry: ' + url)
+            const canvas = document.createElement('canvas')
+            canvas.width = image.naturalWidth
+            canvas.height = image.naturalHeight
+            const ctx = canvas.getContext('2d', { willReadFrequently: true })
+            ctx.drawImage(image, 0, 0)
+            const { data, width: w } = ctx.getImageData(0, 0, canvas.width, canvas.height)
+            const frames = []
+            for (let frame = 0; frame < 4; frame++) {
+              let opaque = 0, edgeTouches = 0
+              for (let y = 0; y < frameSide; y++)
+                for (let x = 0; x < frameSide; x++) {
+                  const alpha = data[(y*w + frame * frameSide + x)*4 + 3]
+                  if (alpha <= 16) continue
+                  opaque++
+                  if (x === 0 || y === 0 || x === frameSide-1 || y === frameSide-1)
+                    edgeTouches++
+                }
+              frames.push({ frame, visiblePixels: opaque, edgeTouches })
+            }
+            return { url, width: image.naturalWidth, height: image.naturalHeight,
+              frameSide, frames }
+          }))
+        })
+        for (const id of ids) {
+          const decor = decors.find(d => d.url.includes(id + '-decor@3x-'))
+          assert.ok(decor, 'Runtime does not load decor atlas: ' + id)
+          assert.equal(decor.width, decor.frameSide * 4, id + ' frame cropping')
+          assert.equal(decor.frames.length, 4, id + ' frame count')
+          for (const frame of decor.frames)
+            assert.ok(frame.visiblePixels > 0, id + ' has empty source prop ' + frame.frame)
+        }
         for (let k = 0; k < ids.length; k++) {
           const ground = grounds.find(g => g.url.includes(ids[k]+'-ground@3x-'))
           assert.ok(ground, 'Missing actual runtime ground: '+ids[k])
@@ -76,7 +119,7 @@ try {
         }
         const screenshot = root+'/'+ids[index]+'-'+device.name+'.png'
         await page.screenshot({ path: screenshot, animations: 'disabled' })
-        evidence.push({ viewport: device.name, biome: ids[index], scene, screenshot, grounds })
+        evidence.push({ viewport: device.name, biome: ids[index], scene, screenshot, grounds, decors })
         await page.waitForTimeout(450)
       }
       assert.equal(scenes.size, ids.length)
