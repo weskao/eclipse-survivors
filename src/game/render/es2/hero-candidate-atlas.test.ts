@@ -26,4 +26,22 @@ describe('ES2 staged hero candidate atlas contract (QA only)', () => {
       expect(heroCandidateRect(invalid)).toBeNull()
     }
   })
+  it('keeps every South-facing 768px candidate frame inside its own cell', () => {
+    expect(Array.from({ length: 4 }, (_, index) => heroCandidateRect(index, 768))).toEqual([
+      { x: 0, y: 0, size: 768 }, { x: 768, y: 0, size: 768 },
+      { x: 0, y: 768, size: 768 }, { x: 768, y: 768, size: 768 },
+    ])
+    const south = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'S')
+    expect(south.length).toBeGreaterThan(0)
+    for (const candidate of south) {
+      expect(candidate.cellPixels).toBe(768)
+      for (let index = 0; index < 4; index++) {
+        const rect = heroCandidateRect(index, candidate.cellPixels)!
+        expect(rect.x + rect.size).toBeLessThanOrEqual(1536)
+        expect(rect.y + rect.size).toBeLessThanOrEqual(1536)
+      }
+    }
+    expect(heroCandidateRect(4, 768)).toBeNull()
+  })
+
 })
