@@ -106,4 +106,20 @@ describe('App', () => {
     expect(document.querySelector('#paused.active')).not.toBeNull()
     wrapper.unmount()
   })
+
+  it('makes continue battle the primary action and leave a secondary warning action', async () => {
+    const runtime = createEngine()
+    const engine = { ...runtime, mount: vi.fn(() => vi.fn()) }
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    engine.start()
+    await nextTick()
+    await wrapper.get('[data-es2-home]').trigger('click')
+    await nextTick()
+    const resume = document.querySelector<HTMLButtonElement>('[data-es2-home-cancel]')!
+    const exit = document.querySelector<HTMLButtonElement>('[data-es2-home-accept]')!
+    expect(resume.classList.contains('es2-primary')).toBe(true)
+    expect(exit.classList.contains('es2-secondary')).toBe(true)
+    expect(exit.classList.contains('es2-danger-filled')).toBe(false)
+    wrapper.unmount()
+  })
 })
