@@ -54,4 +54,11 @@ describe('responsive ES2 encounter and information rail', () => {
     expect(css).toContain('font: 700 0/1.2 system-ui')
     expect(landscape).toContain('bottom: max(108px')
   })
+
+  it('keeps tablet width overrides out of the short-landscape phone layout', () => {
+    const tablet = css.slice(css.lastIndexOf('/* Touch tablets'))
+    expect(tablet).toContain(
+      '@media (pointer: coarse) and (min-width: 701px) and (max-width: 1100px) and (min-height: 521px)',
+    )
+  })
 })
