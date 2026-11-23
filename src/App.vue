@@ -228,8 +228,8 @@ onBeforeUnmount(() => {
     @cancel="cancelHome">
     <p data-es2-home-confirm class="es2-warning">{{ t('離開後將無法繼續本次遠征。') }}</p>
     <template #actions>
-      <button type="button" data-es2-home-cancel class="es2-secondary" @click="cancelHome">{{ t('繼續戰鬥') }}</button>
-      <button type="button" data-es2-home-accept class="es2-danger-filled" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
+      <button type="button" data-es2-home-cancel class="es2-primary" @click="cancelHome">{{ t('繼續戰鬥') }}</button>
+      <button type="button" data-es2-home-accept class="es2-secondary es2-home-exit" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
     </template>
   </Es2Dialog>
   <ContentShowcase v-if="devShowcase" :engine="engine" />
@@ -243,4 +243,8 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 14px #b6787a88; }
 .es2-world-marker:focus-visible { outline: 3px solid white; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .es2-world-marker { transition: none; } }
+
+/* Keep exit legible but less prominent than the safe continuation. */
+:deep(.es2-home-exit) { border-color: #ba8b80; color: #f0c1b7; }
+:deep(.es2-home-exit:hover:not(:disabled)) { border-color: #d6a49a; }
 </style>
