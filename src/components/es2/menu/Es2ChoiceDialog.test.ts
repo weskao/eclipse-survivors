@@ -62,15 +62,25 @@ describe('ES2 upgrade and reward picker', () => {
     expect(wrapper.emitted('choose')).toEqual([['bolt']])
   })
 
-  it('allows arrow navigation, traps Tab and restores focus when closed', async () => {
+  it.each(['level', 'evolution', 'treasure'] as const)('does not navigate %s choices with arrow keys', async (kind) => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind, items: choices })
+    await nextTick(); await nextTick()
+    button('bolt').focus()
+    for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) {
+      button('bolt').dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+      await nextTick()
+      expect(document.activeElement).toBe(button('bolt'))
+      expect(wrapper.emitted('choose')).toBeUndefined()
+    }
+    press('2')
+    expect(wrapper.emitted('choose')).toEqual([['frost']])
+  })
+
+  it('traps Tab and restores focus when the choice dialog closes', async () => {
     const launch = document.createElement('button'); launch.textContent = 'launch'; document.body.append(launch); launch.focus()
     const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'treasure', items: choices })
     await nextTick(); await nextTick()
     expect(dialog().contains(document.activeElement)).toBe(true)
-    button('bolt').focus()
-    button('bolt').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }))
-    await nextTick()
-    expect(document.activeElement).toBe(button('frost'))
     button('frost').focus()
     press('Tab')
     expect(dialog().contains(document.activeElement)).toBe(true)
@@ -90,6 +100,24 @@ describe('ES2 upgrade and reward picker', () => {
 })
 
 describe('ES2 dialog accessibility', () => {
+  it('ignores horizontal arrows for dialog shortcuts without blocking editable controls', async () => {
+    const wrapper = mounted(Es2Dialog, { active: true, title: 'Confirm', dismissible: true })
+    await nextTick()
+    for (const key of ['ArrowLeft', 'ArrowRight']) {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
+      document.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(true)
+    }
+    expect(wrapper.emitted('shortcut')).toBeUndefined()
+    const slider = document.createElement('input')
+    slider.type = 'range'
+    dialog().append(slider)
+    slider.focus()
+    const adjustable = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true })
+    slider.dispatchEvent(adjustable)
+    expect(adjustable.defaultPrevented).toBe(false)
+  })
+
   it('closes optional dialogs on backdrop but not inner content', async () => {
     const wrapper = mounted(Es2Dialog, { active: true, title: 'Confirm', dismissible: true })
     await nextTick()
