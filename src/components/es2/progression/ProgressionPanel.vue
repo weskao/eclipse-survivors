@@ -48,7 +48,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
       <div class="es2-progression-grid">
         <article v-for="node in research" :key="node.id" class="es2-progression-item" :class="{ locked: node.locked }">
           <span class="es2-progression-icon" aria-hidden="true">{{ node.icon }}</span>
-          <strong>{{ t(node.title) }}</strong><p>{{ t(node.description) }}</p>
+          <strong>{{ t(node.title) }}</strong><p>{{ t(node.description, { value: node.benefit === 'hpFlat' ? node.benefitPerRank : Number((node.benefitPerRank * 100).toFixed(2)) }) }}</p>
           <small>{{ t("等級") }} {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> {{ t("· 前置研究未解鎖") }}</span></small>
           <button type="button" data-ui-sfx="managed" :data-research="node.id" :disabled="!writable || !node.canBuy"
             @click="emit('research', node.id)">
@@ -80,7 +80,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
         </article>
         <article v-for="item in bonuses" :key="item.id" class="es2-progression-item">
           <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
-          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description) }}</p>
+          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description, { value: Number(((item.bonus ?? 0) * 100).toFixed(2)) }) }}</p>
           <button type="button" data-ui-sfx="managed" :data-bonus="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('bonus', item.id)">
