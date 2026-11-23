@@ -93,7 +93,7 @@ function summoner(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: 
     ctx.lineWidth = 2.4
     ctx.beginPath()
     ctx.moveTo(0, 0)
-    ctx.quadraticCurveTo(x * 0.7 - y * 0.24, y * 0.7 + x * 0.16, x, y)
+    ctx.bezierCurveTo(x * 0.28 - y * 0.16, y * 0.28 + x * 0.1, x * 0.8 - y * 0.15, y * 0.8 + x * 0.1, x, y)
     ctx.stroke()
     ctx.fillStyle = '#4267a6'
     ctx.beginPath()
@@ -120,12 +120,12 @@ function shieldCrest(ctx: Ctx2D, scale: number): void {
   ctx.lineWidth = 4.5
   ctx.beginPath()
   ctx.moveTo(0, -52)
-  ctx.quadraticCurveTo(24, -39, 42, -39)
+  ctx.bezierCurveTo(16, -43.3, 30, -39, 42, -39)
   ctx.lineTo(39, 9)
-  ctx.quadraticCurveTo(32, 37, 0, 56)
-  ctx.quadraticCurveTo(-32, 37, -39, 9)
+  ctx.bezierCurveTo(34.3, 27.7, 21.3, 43.3, 0, 56)
+  ctx.bezierCurveTo(-21.3, 43.3, -34.3, 27.7, -39, 9)
   ctx.lineTo(-42, -39)
-  ctx.quadraticCurveTo(-24, -39, 0, -52)
+  ctx.bezierCurveTo(-30, -39, -16, -43.3, 0, -52)
   ctx.closePath()
   ctx.fill()
   ctx.stroke()
