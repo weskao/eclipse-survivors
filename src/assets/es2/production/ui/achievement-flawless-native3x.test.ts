@@ -20,7 +20,7 @@ describe('ES2 flawless achievement icon — honest 3x pending gate', () => {
     expect(icon!.frameHeight).toBe(icon!.height)
     // The signed-off product still requires authentic master files: dimensions alone are insufficient.
     if (icon!.qa?.generatedMasterCommitted) {
-      const qa = icon!.qa as typeof icon.qa & { generatedMasterPath: string }
+      const qa = icon!.qa as { generatedMasterPath: string; generatedMasterSha256: string }
       const master = readFileSync(join(dir, qa.generatedMasterPath))
       expect(createHash('sha256').update(master).digest('hex')).toBe(qa.generatedMasterSha256)
     }
