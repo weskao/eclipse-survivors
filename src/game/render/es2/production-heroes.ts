@@ -130,7 +130,8 @@ export function productionHeroActionFrame(anim: HeroAnimation): number {
 /** South-only four-frame QA footage. Indexing is bounded; other facings keep production art. */
 export function productionHeroSouthRunRect(anim: HeroAnimation): { x: number; y: number; size: 768 } | null {
   const direction = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
-  if (anim.reducedMotion || direction !== 2 || (anim.pose !== 'run' && anim.pose !== 'dash')) return null
+  if (anim.reducedMotion || direction !== 2 || (anim.pose !== 'run' && anim.pose !== 'dash') ||
+    !Number.isFinite(anim.frame) || !Number.isFinite(anim.count)) return null
   const count = Math.max(1, anim.count)
   const index = Math.min(3, Math.floor(Math.max(0, anim.frame) * 4 / count) % 4)
   return { x: (index % 2) * 768, y: Math.floor(index / 2) * 768, size: 768 }
@@ -144,6 +145,8 @@ export function productionHeroQAEastRect(anim: HeroAnimation): {
   if (anim.reducedMotion || direction !== 0) return null
   const running = anim.pose === 'run' || anim.pose === 'dash'
   if (!running && anim.pose !== 'attack' && anim.pose !== 'cast') return null
+  if (running && (!Number.isFinite(anim.frame) || !Number.isFinite(anim.count))) return null
+  if (!running && !Number.isFinite(anim.phase)) return null
   const pose = running ? 'run' : anim.special ? 'special' : 'attack'
   const index = running
     ? Math.min(3, Math.floor(Math.max(0, anim.frame) * 4 / Math.max(1, anim.count)) % 4)
