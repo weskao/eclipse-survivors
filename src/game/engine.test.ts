@@ -211,7 +211,7 @@ describe('engine commands fire the original cues', () => {
     engine.advance(0.033)
     expect(engine.ui.mode).toBe('result')
     expect(audio.cues).toContain('victory')
-    expect(audio.resultThemes).toContain('victory')    expect(audio.cues).toContain('victory')
+    expect(audio.resultThemes).toContain('victory')
     expect(engine.ui.ending).toBe('🏆 遠征勝利！')
   })
 
