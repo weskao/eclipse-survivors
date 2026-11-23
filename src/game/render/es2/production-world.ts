@@ -33,6 +33,28 @@ export const WORLD_UI_IDS = [
 ] as const
 export type WorldUiId = typeof WORLD_UI_IDS[number]
 
+/** Player-facing labels for the review gallery; asset IDs remain unchanged for gameplay and QA. */
+export const WORLD_UI_LABELS: Record<WorldUiId, string> = {
+  'treasure-common': '普通寶箱',
+  'treasure-rare': '稀有寶箱',
+  'treasure-legendary': '傳說寶箱',
+  'treasure-cursed': '詛咒寶箱',
+  'rarity-common': '普通品質徽記',
+  'rarity-rare': '稀有品質徽記',
+  'rarity-legendary': '傳說品質徽記',
+  'hud-health': '生命值圖示',
+  'hud-xp': '經驗值圖示',
+  'hud-cooldown': '冷卻時間圖示',
+  'hud-quest': '任務目標圖示',
+  'achievement-boss': '首領討伐徽章',
+  'achievement-survivor': '生存達人徽章',
+  'achievement-evolution': '能力進化徽章',
+  'achievement-explorer': '冒險探索徽章',
+  'achievement-collector': '收藏家徽章',
+  'achievement-flawless': '完美挑戰徽章',
+}
+
+
 export const WORLD_ART = Object.freeze({
   enemies: Object.fromEntries((Object.keys(ENEMY_DEFINITIONS) as FactionKind[]).map(id => [
     id, { body: src('enemies', id + '-body'), telegraph: src('enemies', id + '-telegraph') },
