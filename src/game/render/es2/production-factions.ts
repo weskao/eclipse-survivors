@@ -9,22 +9,25 @@ import { drawProjectileSprite, type ProjectileSprites, type ProjectileArtId } fr
 
 export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement; highResBody?: HTMLImageElement }>
 
-/** Visual-only sizes, calibrated against legacy develop mobs (87–139px wide).
- * Do not reuse gameplay collision radii: new art must be tuned independently.
- * Atlases remain square and their source rectangles are unchanged. */
+/** Visual-only dimensions in game px, independently calibrated against original mob / boss silhouettes.
+ * Some native WebPs contain 25–35% transparent padding and looked too small at 88–128px.
+ * The largest enemy is 208px, below the original 236px Boss artwork. Physics is untouched.
+ * Authored six-frame square source rectangles and world-space foot anchors remain unchanged. */
 export const FACTION_VISUAL_SIZE: Readonly<Record<FactionKind, number>> = {
-  'shadow-assassin': 92,
-  necromancer: 108,
-  'dark-archer': 96,
-  'plague-carrier': 104,
-  'shield-guardian': 128,
-  phantom: 90,
-  'fire-imp': 88,
-  'frost-wraith': 102,
-  berserker: 110,
-  'crystal-sentinel': 128,
+  'shadow-assassin': 146,
+  necromancer: 168,
+  'dark-archer': 154,
+  'plague-carrier': 184,
+  'shield-guardian': 208,
+  phantom: 152,
+  'fire-imp': 142,
+  'frost-wraith': 166,
+  berserker: 180,
+  'crystal-sentinel': 208,
 }
 
+/** Bounds computed once rather than scanning sizes in the hot draw loop. */
+const MAX_FACTION_VISUAL_SIZE = Math.max(...Object.values(FACTION_VISUAL_SIZE))
 
 /** One decode per art asset on game mount, no new Image allocations in the rAF loop. */
 export function loadProductionFactionArt(makeImage: () => HTMLImageElement = () => new Image()): FactionArtwork {
@@ -63,7 +66,7 @@ export function drawLiveFactionArt(
   for (const enemy of runtime.enemies) {
     if (enemy.hp <= 0) continue
     const x = enemy.x + ox, y = enemy.y + oy
-    if (x < -110 || y < -170 || x > width + 110 || y > height + 90) continue
+    if (x < -110 || y < -170 || x > width + 110 || y > height + MAX_FACTION_VISUAL_SIZE) continue
     const pair = images[enemy.kind]
     const body = pair?.body
     const master = pair?.highResBody
