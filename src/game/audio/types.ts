@@ -34,6 +34,8 @@ export interface AudioSystem {
   interrupt(): void
   /** Adapt the score without modifying gameplay rules. */
   setCombatIntensity(intensity: CombatIntensity): void
+  /** An actual completed run selects a finite, authored results score; no additional media load. */
+  setResultTheme?(theme: 'victory' | 'defeat' | null): void
   /** Sets the authored theme for the actual live boss; optional for test adapters. */
   setBossTheme?(id: BossId | null, phase?: number): void
   playSfx(cue: SfxCue): void
