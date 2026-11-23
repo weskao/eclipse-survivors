@@ -347,7 +347,8 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     const x = z.x + ox, y = z.y + oy
     if (x < -80 || x > s.W + 80 || y < -80 || y > s.H + 80) continue
     const critical = z.critical === true
-    const life = critical ? 0.82 : 0.62
+    const received = z.received === true
+    const life = critical ? 0.82 : received ? 0.7 : 0.62
     const progress = Math.max(0, Math.min(1, 1 - z.life / life))
     const opacity = Math.max(0, Math.min(1, z.life / (critical ? 0.28 : 0.4)))
     // A local pop makes confirmed crits readable without another full-screen reaction.
@@ -360,18 +361,19 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     ctx.lineJoin = 'round'
     ctx.translate(px, py)
     if (pop !== 1) ctx.scale(pop, pop)
-    ctx.lineWidth = critical ? 6 : 4
-    ctx.strokeStyle = critical ? '#321525' : '#151019e8'
+    ctx.lineWidth = critical ? 6 : received ? 5 : 4
+    ctx.strokeStyle = critical ? '#321525' : received ? '#44121c' : '#151019e8'
     if (critical) {
       ctx.font = '900 12px system-ui'
       ctx.strokeText(translate('暴擊!'), 0, -29)
       ctx.fillStyle = '#fff4bf'
       ctx.fillText(translate('暴擊!'), 0, -29)
     }
-    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : (z.boss ? 21 : 16)}px system-ui`
-    ctx.strokeText(String(z.value), 0, 0)
-    ctx.fillStyle = critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
-    ctx.fillText(String(z.value), 0, 0)
+    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss ? 21 : 16)}px system-ui`
+    const label = received ? `−${z.value}` : String(z.value)
+    ctx.strokeText(label, 0, 0)
+    ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
+    ctx.fillText(label, 0, 0)
     ctx.restore()
   }
 }
