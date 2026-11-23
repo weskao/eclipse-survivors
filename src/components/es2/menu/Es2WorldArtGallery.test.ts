@@ -27,7 +27,7 @@ describe('ES2 accessible in-game world-art gallery', () => {
   it('displays all 17 review-state UI illustrations without awarding achievements', () => {
     const wrapper = render('achievements')
     expect(wrapper.findAll('[data-es2-world-ui]')).toHaveLength(17)
-    expect(wrapper.text()).toContain('尚待美術驗收')
+    expect(wrapper.text()).toContain('已通過人工美術驗收')
     wrapper.unmount()
   })
 
