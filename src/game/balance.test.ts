@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { BALANCE } from './config'
 import { JOB, MAX_LEVEL, MAX_MOBS, BOSS_TIME, DURATION } from './constants'
@@ -24,11 +25,11 @@ describe('single-source numerical game balance', () => {
     ] as const
     expect(Object.keys(BALANCE).sort()).toEqual([...domains].sort())
     for (const domain of domains) {
-      const file = new URL(`./balance/${domain}.json`, import.meta.url)
+      const file = resolve(process.cwd(), 'src/game/balance', `${domain}.json`)
       expect(existsSync(file), `${domain}.json must be independently editable`).toBe(true)
       expect(BALANCE[domain]).toEqual(JSON.parse(readFileSync(file, 'utf8')))
     }
-    expect(existsSync(new URL('./balance/balance.json', import.meta.url))).toBe(false)
+    expect(existsSync(resolve(process.cwd(), 'src/game/balance/balance.json'))).toBe(false)
   })
 
   it('keeps all six hero starting stats in one typed configuration', () => {
