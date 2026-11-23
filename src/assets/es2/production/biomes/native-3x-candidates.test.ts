@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 interface BiomeCandidate {
@@ -8,7 +9,7 @@ interface BiomeCandidate {
 }
 
 const { assets } = JSON.parse(
-  readFileSync(new URL('./manifest.json', import.meta.url), 'utf8'),
+  readFileSync(resolve(process.cwd(), 'src/assets/es2/production/biomes/manifest.json'), 'utf8'),
 ) as { assets: BiomeCandidate[] }
 
 // Reviewed against paintEnvironment() in src/game/render/environment.ts.
