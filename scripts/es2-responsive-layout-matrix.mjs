@@ -77,7 +77,32 @@ try {
       }
       await page.screenshot({ path: destination + '/' + name + '-archive.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
-      if (!mobile && name !== 'desktop-zoom-proxy') {
+      if (mobile && name.startsWith('tablet-')) {
+        // Touch tablets must not render a permanent desktop equipment bar over
+        // the real joystick/dash; all secondary HUD content belongs in the drawer.
+        await page.locator('.es2-start').click()
+        await page.locator('.es2-mobile-controls[data-active="true"]').waitFor({ state: 'visible', timeout: 30000 })
+        const toggle = page.locator('[data-es2-info-toggle]')
+        await toggle.waitFor({ state: 'visible' })
+        assert.equal(await toggle.getAttribute('aria-expanded'), 'false',
+          name + ': touch tablet should start with optional information collapsed')
+        assert.equal(await page.locator('.es2-hud__bottom').isVisible(), false,
+          name + ': permanent skill/relic bar overlaps touch controls')
+        await toggle.click()
+        const layout = await page.evaluate(() => {
+          const box = el => { const b = el.getBoundingClientRect()
+            return { x: b.x, y: b.y, right: b.right, bottom: b.bottom } }
+          return {
+            drawer: box(document.querySelector('[data-es2-info-panel]')),
+            joystick: box(document.querySelector('[data-testid="es2-stick"]')),
+            dash: box(document.querySelector('[data-testid="es2-dash"]')),
+          }
+        })
+        const intersects = (a, b) => a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y
+        assert.ok(!intersects(layout.drawer, layout.joystick) && !intersects(layout.drawer, layout.dash),
+          name + ': drawer obscures touch controls ' + JSON.stringify(layout))
+        await page.screenshot({ path: destination + '/' + name + '-game.png', animations: 'disabled' })
+      } else if (!mobile && name !== 'desktop-zoom-proxy') {
         await page.locator('.es2-start').click()
         await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
         assert.ok(await page.locator('.es2-hud__bottom').isVisible(),
