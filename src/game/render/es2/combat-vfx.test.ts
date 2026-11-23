@@ -39,8 +39,8 @@ const queue = (kind: Parameters<typeof emitCombatVfx>[1], angle = 0) => {
 }
 
 describe('ES2 combat VFX contract', () => {
-  it('registers 18 distinct namespaced effects with bounded durations', () => {
-    expect(COMBAT_FX_SPECS).toHaveLength(18)
+  it('registers 21 distinct namespaced effects with bounded durations', () => {
+    expect(COMBAT_FX_SPECS).toHaveLength(21)
     const ids = COMBAT_FX_SPECS.map(fx => fx.id)
     expect(new Set(ids).size).toBe(18)
     expect(ids.every(id => id.startsWith('combat-vfx:'))).toBe(true)
