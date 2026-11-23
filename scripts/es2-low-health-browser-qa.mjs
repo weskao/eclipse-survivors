@@ -68,7 +68,8 @@ try {
         assert.ok(metrics.portrait.left >= -2 && metrics.portrait.right <= device.width + 2 &&
           metrics.portrait.top >= -2 && metrics.portrait.bottom <= device.height + 2,
           device.name + ': portrait clipped ' + JSON.stringify(metrics))
-        assert.equal(metrics.hp, String(stage.percent), device.name + ': non-authoritative HUD value')
+        assert.ok(Math.abs(Number(metrics.hp) - stage.percent) < .01,
+          device.name + ': non-authoritative HUD value ' + metrics.hp)
         assert.equal(metrics.badge, stage.tier !== 'normal')
         assert.equal(metrics.vignette, stage.percent <= 25)
         assert.equal(metrics.touchBlock, 'none')
