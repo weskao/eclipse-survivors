@@ -12,15 +12,15 @@ import paladinAction from '../../../assets/es2/production/heroes/crimson-paladin
 import shadowMotion from '../../../assets/es2/production/heroes/shadowblade-8dir-motion@3x.webp'
 import summonerMotion from '../../../assets/es2/production/heroes/spirit-summoner-8dir-motion@3x.webp'
 import paladinMotion from '../../../assets/es2/production/heroes/crimson-paladin-8dir-motion@3x.webp'
-import shadowDirection from '../../../assets/es2/production/heroes/shadowblade/idle-ready-8dir@3x.webp'
-import shadowRunAttack from '../../../assets/es2/production/heroes/shadowblade/run-attack-east@3x.webp'
-import shadowSpecial from '../../../assets/es2/production/heroes/shadowblade/special-east@3x.webp'
-import summonerDirection from '../../../assets/es2/production/heroes/spirit-summoner/idle-ready-8dir@3x.webp'
-import summonerRunAttack from '../../../assets/es2/production/heroes/spirit-summoner/run-attack-east@3x.webp'
-import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summoner/special-east@3x.webp'
-import paladinDirection from '../../../assets/es2/production/heroes/crimson-paladin/idle-ready-8dir@3x.webp'
-import paladinRunAttack from '../../../assets/es2/production/heroes/crimson-paladin/run-attack-east@3x.webp'
-import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/special-east@3x.webp'
+import shadowDirection from '../../../assets/es2/production/heroes/shadowblade/idle-ready@3x.webp'
+import shadowRunAttack from '../../../assets/es2/production/heroes/shadowblade/run-attack@3x.webp'
+import shadowSpecial from '../../../assets/es2/production/heroes/shadowblade/special@3x.webp'
+import summonerDirection from '../../../assets/es2/production/heroes/spirit-summoner/idle-ready@3x.webp'
+import summonerRunAttack from '../../../assets/es2/production/heroes/spirit-summoner/run-attack@3x.webp'
+import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summoner/special@3x.webp'
+import paladinDirection from '../../../assets/es2/production/heroes/crimson-paladin/idle-ready@3x.webp'
+import paladinRunAttack from '../../../assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp'
+import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/special@3x.webp'
 
 /** Full 900×900 3x character illustrations, matching the homepage and HUD. */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
@@ -59,10 +59,6 @@ type HeroWithMotion = AtlasWithAction & {
 
 export function productionHeroMotionReady(image: HTMLImageElement | undefined): boolean {
   const atlas = (image as HeroWithMotion | undefined)?.motionAtlas
-  const hero = image as HeroWithMotion | undefined
-  // The main character renderer must not mirror authored directional poses:
-  // the chosen frame already supplies its actual screen-space facing.
-  if (hero?.poseAtlasSources || hero?.poseAtlases?.direction) return true
   return !!atlas?.complete && atlas.naturalWidth === 3072 && atlas.naturalHeight === 1920
 }
 
@@ -197,7 +193,7 @@ function drawHeroMotionAtlas(
 
 /**
  * The new split contact sheets have strict integer 448px source cells and
- * transparent 16px gutters. Direction columns W,SW,S,SE,E,NE,N,NW are
+ * transparent 8px gutters per side. Direction order E,SE,S,SW,W,NW,N,NE is
  * arranged 4×2 (row 0/1 idle, row 2/3 guard). Only east has authored
  * 8-frame running/attack/special sequences. West can mirror those frames;
  * other directions hold the correct independent guard silhouette without
@@ -208,7 +204,7 @@ export function productionHeroPoseRect(anim: HeroAnimation): {
 } {
   const direction = Number.isFinite(anim.direction)
     ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
-  const sourceColumn = (4 - direction + 8) % 8
+  const sourceColumn = direction
   const directional = (active: boolean) => {
     const cell = sourceColumn + (active ? 8 : 0)
     return { sheet: 'direction' as const, x: (cell % 4) * 448,
@@ -231,6 +227,17 @@ export function productionHeroPoseRect(anim: HeroAnimation): {
 function readyPoseAtlas(atlas: HTMLImageElement | undefined, sheet: PoseSheet): atlas is HTMLImageElement {
   return !!atlas?.complete && atlas.naturalWidth === 1792 &&
     atlas.naturalHeight === (sheet === 'special' ? 896 : 1792)
+}
+
+/** True only after a matching, correctly-sized directional pose has decoded.
+ * Until then the homepage portrait remains the fallback and may need mirroring.
+ */
+export function productionHeroPoseReady(image: HTMLImageElement | undefined, anim: HeroAnimation): boolean {
+  const hero = image as HeroWithMotion | undefined
+  if (!hero?.poseAtlases) return false
+  const rect = productionHeroPoseRect(anim)
+  return readyPoseAtlas(hero.poseAtlases[rect.sheet], rect.sheet) ||
+    (rect.sheet !== 'direction' && readyPoseAtlas(hero.poseAtlases.direction, 'direction'))
 }
 
 /** Lazy-load only the selected hero's needed sheet. No per-frame Image allocation. */
@@ -284,7 +291,7 @@ export function drawProductionHeroFrame(
         if (ready) {
           const direction = Number.isFinite(anim.direction)
             ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
-          const col = (4 - direction + 8) % 8
+          const col = direction
           const cell = col + 8
           drawHeroPoseAtlas(ctx, ready, { sheet: 'direction',
             x: (cell % 4) * 448, y: Math.floor(cell / 4) * 448,
