@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "category": "bosses",
+  "candidateFor": "frost-sovereign",
+  "status": "QA_PENDING",
+  "path": "frost-sovereign-phases-native3x-QA-PENDING.webp",
+  "assetSha256": "88e5d4766f111f30f002af121e90200fbb9cb82dc16f2da937674cd1ff0eb89b",
+  "assetBytes": 294834,
+  "maxBytes": 300000,
+  "atlas": {
+    "width": 2268,
+    "height": 756,
+    "frames": 3,
+    "columns": 3,
+    "rows": 1,
+    "cellWidth": 756,
+    "cellHeight": 756,
+    "transparentGutterPx": 16,
+    "sourceRect": {
+      "insetX": 16,
+      "insetY": 16,
+      "width": 724,
+      "height": 724
+    }
+  },
+  "source": {
+    "kind": "newly-generated-2172x724-RGBA-png",
+    "originalGeneratedFramePixels": 724,
+    "upscaledFromExisting192px": false,
+    "masterCommittedToRepo": false,
+    "originalSourceStillNeedsImport": true,
+    "sourceExport": "sources/frost-sovereign-master@source.webp"
+  },
+  "runtimeTarget": {
+    "maxDrawPx": 236,
+    "requiredNativeSourceDetailPx": 708,
+    "consumer": "src/game/render/es2/production-world.ts",
+    "active": false
+  },
+  "technicalChecks": {
+    "riffWebp": true,
+    "dimensions": true,
+    "sha256Matches": true,
+    "sourceRectsWithinSingleFrames": true,
+    "alphaGutterClear": true
+  },
+  "acceptance": {
+    "originalArtIdentityReview": "pending",
+    "phaseVisualContinuityReview": "pending",
+    "inGame1xScreenshot": "pending",
+    "desktopAndMobilePortraitLandscape": "pending",
+    "humanArtApproval": "pending",
+    "notes": "Image depicts a white-haired ice queen; existing 192px Frost Sovereign wears a darker armored hood. Canonical identity and armor continuity need human comparison before any runtime activation."
+  }
+}
