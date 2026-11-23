@@ -89,4 +89,20 @@ describe('ES2 world art live asset mapping', () => {
     expect(drawProductionBossFrame(ctx, loaded(2268, 756), 1, 236, 246, 378)).toBe(false)
     expect(calls).toHaveLength(2)
   })
+
+  it('loads the native Abyss Monarch art only on explicit QA request and crops its gutters', () => {
+    const makeImage = (): HTMLImageElement => ({
+      complete: true, naturalWidth: 2268, naturalHeight: 756, src: '',
+    }) as HTMLImageElement
+    const normal = loadWorldRuntimeImages(makeImage)
+    const qa = loadWorldRuntimeImages(makeImage, 'abyss-monarch')
+    expect(normal.bosses['abyss-monarch'].src).not.toContain('QA-PENDING')
+    expect(qa.bosses['abyss-monarch'].src).toContain('abyss-monarch-phases-native3x-QA-PENDING')
+    expect(qa.bosses['frost-sovereign'].src).toBe(normal.bosses['frost-sovereign'].src)
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawProductionBossFrame(ctx, qa.bosses['abyss-monarch'], 2, 236, 246)).toBe(true)
+    expect(calls[0]?.slice(1, 5)).toEqual([772, 16, 724, 724])
+    expect(calls[0]?.slice(5)).toEqual([-118, -232, 236, 236])
+  })
 })
