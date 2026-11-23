@@ -57,6 +57,51 @@
         "delay": 0.65,
         "range": 116
       }
+    },
+    "specialCooldowns": {
+      "shadowblade": 9.5,
+      "spirit-summoner": 12,
+      "crimson-paladin": 14
+    },
+    "specialEffects": {
+      "shadowblade": {
+        "critChance": 0.24,
+        "critMultiplier": 1.7,
+        "critBonusPerRank": 0.18,
+        "specialHits": 3,
+        "specialReach": 150,
+        "specialDamageBase": 1.4,
+        "specialDamagePerRank": 0.045,
+        "stealthSeconds": 0.95
+      },
+      "spirit-summoner": {
+        "companionTickSeconds": 1.8,
+        "companionRange": 330,
+        "companionDamagePerRank": 0.2,
+        "guardianHealBase": 2,
+        "guardianHealPerRank": 1.15,
+        "specialDamageBase": 1.2,
+        "specialDamagePerRank": 0.22,
+        "specialHeal": 12
+      },
+      "crimson-paladin": {
+        "baseReduction": 0.14,
+        "extraReductionCap": 0.075,
+        "reductionPerRank": 0.025,
+        "barrierBase": 48,
+        "barrierPerHeroLevel": 2,
+        "barrierPerRank": 14,
+        "barrierSeconds": 3.5,
+        "healthCostRatio": 0.08,
+        "counterCooldown": 1.8,
+        "counterRange": 155,
+        "counterTargets": 2,
+        "counterDamageBase": 0.7,
+        "counterDamagePerRank": 0.135,
+        "lowHpThreshold": 0.4,
+        "lowHpDamageBase": 1.35,
+        "lowHpDamagePerRank": 0.07
+      }
     }
   },
   "progression": {
@@ -337,5 +382,37 @@
     "baseDamage": 11,
     "damagePerLevel": 2,
     "bossDamage": 32
+  },
+  "combat": {
+    "killXp": {
+      "boss": 45,
+      "golem": 9,
+      "goblin": 5,
+      "default": 3
+    },
+    "dashDuration": 0.22,
+    "dashInvulnerability": 0.35,
+    "starPickupBaseRadius": 115,
+    "starPickupPerMagnetRank": 62,
+    "starPickupSpeed": 450,
+    "starPickupDistance": 23,
+    "starKeepLimit": 220,
+    "regenPerRank": 1.05,
+    "shieldReductionPerRank": 0.13,
+    "shieldReductionCap": 0.52,
+    "chainCooldownBase": 2.8,
+    "chainCooldownPerRank": 0.25,
+    "chainDamageBase": 0.66,
+    "chainDamagePerRank": 0.18
+  },
+  "evolutions": {
+    "cooldowns": {
+      "frozen-thunderstorm": 4.4,
+      "infernal-singularity": 5,
+      "apocalypse-rain": 6.5,
+      "blade-tempest": 2.4,
+      "guardian-sanctuary": 5.5
+    },
+    "unlockSkillLevel": 3
   }
 }
