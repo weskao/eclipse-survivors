@@ -360,12 +360,15 @@ describe('keyboard and focus', () => {
     b.remove()
   })
 
-  it('only sounds an actual mode change and distinguishes an invalid purchase', () => {
+  it('only sounds an actual mode change and gives accepted/denied purchase feedback', () => {
     engine.selectRunMode('challenge')
     expect(audio.cues).toEqual(['select'])
     engine.selectRunMode('challenge')
     expect(audio.cues).toEqual(['select'])
     engine.buyPermanentUpgrade('power')
+    expect(audio.cues.at(-1)).toBe('upgrade')
+    // Permanent research has a bounded rank; further transactions must be denied.
+    for (let attempt = 0; attempt < 100; attempt++) engine.buyPermanentUpgrade('power')
     expect(audio.cues.at(-1)).toBe('deny')
   })
 })
