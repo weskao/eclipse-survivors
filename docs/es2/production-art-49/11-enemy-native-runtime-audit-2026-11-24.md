@@ -20,24 +20,27 @@
 | `shield-guardian` | 208 | 336 | 1.62× | 362 | 1.74× | 目前仍繪製既有橫列 WebP |
 | `phantom` | 152 | 210 | 1.38× | 362 | 2.38× | 目前仍繪製既有橫列 WebP |
 | `fire-imp` | 142 | 210 | 1.48× | 362 | 2.55× | 目前仍繪製既有橫列 WebP |
-| `frost-wraith` | 166 | 228 | 1.37× | 512 | 3.08× | 目前仍繪製既有橫列 WebP |
+| `frost-wraith` | 166 | 228 | 1.37× | 512 | 3.08× | **已使用完整 512px 3×2 master**（保留回退） |
 | `berserker` | 180 | 264 | 1.47× | 512 | 2.84× | 目前仍繪製既有橫列 WebP |
 | `crystal-sentinel` | 208 | 324 | 1.56× | 512 | 2.46× | 目前仍繪製既有橫列 WebP |
 
-## 本次實作：shadow-assassin 512px 來源直接使用
+## 本次實作：Shadow Assassin／Frost Wraith 兩套現有 512px 來源直接使用
 
-- 原有且已在 Git 的母圖：`src/assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp`；三欄二列，單格 **512×512**，並非放大低畫質 Runtime WebP。
-- Runtime 新增 `highResBody`：**一次**載入共享母圖，角色可見時使用 `sourceX=(frame % 3)*512`、`sourceY=Math.floor(frame/3)*512`；Canvas 目的尺寸從當前 `FACTION_VISUAL_SIZE['shadow-assassin']` 讀取（目前 **146×146**），腳部錨點維持 `y=-size+5`。
-- 若來源尚未載入或 1536×1024 幾何不符，自動用原有 1296×216 六格 body WebP，保持行為及視覺連續。
-- 沒有更動英雄、怪物攻擊 AI、判定、HP、敵人數量、其他 9 類素材、manifest 權威 SHA 或 QA `needs-human-approval`。
-- 新增 `production-factions.test.ts` 針對 frame 3、512px source rect、尺寸／腳部錨點及非法 master 回退兩項回歸測試。
+- 原有且已在 Git 的母圖：`src/assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp` 及 `masters/frost-wraith-6poses-3x2-master-1536x1024.png`；均為三欄二列，每格 **512×512**，非既有 Runtime WebP 插值。
+- Runtime 的 `highResBody` 透過 `NATIVE_MASTER_URLS` 提供上述兩個已存在來源；**一次**載入後，角色可見時用 `sourceX=(frame % 3)*512`、`sourceY=Math.floor(frame/3)*512`；Canvas 目的尺寸由 `FACTION_VISUAL_SIZE[kind]` 決定（Assassin **146px**、Frost Wraith **166px**），維持 `y=-size+5` 腳部錨點。
+- 若高解析母圖未解碼或 1536×1024 格式不符，各自退回同一角色的既有六格 body WebP，維持原玩法和身分；不得拿其他角色的圖充當 fallback。
+- 沒有更動英雄、怪物攻擊 AI、判定、HP、敵人數量、其餘 8 類素材、manifest 權威 SHA 或 QA `needs-human-approval`。
+- 新增 `production-factions.test.ts` 覆蓋 Assassin frame 3、Frost Wraith frame 4、512px source rect、當前顯示尺寸／腳部錨點、母圖一次性載入與無效 master fallback；怪物可見範圍亦依各角色實際大小與 24px 預警安全邊界計算。
 - CI: `.github/workflows/es2-enemy-art-browser-qa.yml` 獨立執行上述 renderer regression、十種敵人圖集/預警像素驗證及三組 Chromium 視窗 QA。確切通過結果請參照該 workflow 在目前 HEAD 的 run，不可把 pending 視為成功。
-- 記憶體：只額外常駐一張 1536×1024 的原生母圖（未壓縮 RGBA 約 **6 MiB**），不在 rAF 中分配新 Image；需繼續做 130 怪物與實際手機記憶體壓力驗收，不能虛報已測 FPS。
+- 記憶體：增加兩張 1536×1024 的母圖，未壓縮 RGBA 合計約 **12 MiB**（未計 GPU/解碼暫存）；不在 rAF 中分配新 Image，仍須實測 130 怪物與手機記憶體，不宣稱已量測 FPS。
+
+
+- QA 預覽目前已直接引用正式 `FACTION_VISUAL_SIZE`；Assassin／Frost Wraith 使用 512px 已提交 master 進行逐格預覽，其他八類顯示真實 1×尺寸與不足 3×的證據。專屬 source QA 可以因真正不合格的原生來源而失敗，但不得自動通過或自動更改核准。
 
 ## 未完成與下一步
 
-- 其餘九類 body 的 Runtime 格寬仍應與現行顯示尺寸核對、視覺抽查、依母圖真正重新裁切（不可升頻假冒 3×）。
+- 其餘八類 body 的 Runtime 格寬低於當前 3×尺寸要求。必須逐種確認足夠細節的原生母圖、動畫腳步錨點，再做真正新來源裁切或重繪（不能升頻冒充）。
 - 6×1 母圖格尺寸有 **362×724** 等非方形來源，不能直接當作 6×方形圖集繪製；必須確認真實人物完整範圍與 anchor 後才能轉換。
-- 其餘 3×2 母圖雖是 512×512 原生格，檔案很大；任何加入常駐解碼都應先量測實體手機記憶體、同屏多敵人與快取上限。
-- 英雄 3 張獨立工作；四位 Boss 和八項場景保留各自的品質/人工審核，17 UI 已有專案擁有者單獨的批准紀錄。
+- 其餘 3×2 母圖雖是 512×512 原生格，但 Berserker 180px 和 Crystal Sentinel 208px 需要至少 540px／624px 單格；目前 512px 並不達標。新增常駐解碼需先量測手機記憶體與快取上限。
+- 英雄 3 項另有獨立工作；4 位 Boss 仍待正式核准，**8 項場景與 17 項 UI 已獲專案擁有者明確視覺批准**，但其技術實測與 release CI 仍個別追蹤。
 - **未完成人工審核者維持 `needs-human-approval`，不可為 CI 全綠修改標記。**
