@@ -21,6 +21,35 @@ function start(id: 'shadowblade' | 'spirit-summoner' | 'crimson-paladin', rng = 
 }
 
 describe('ES2 hero-roster runtime integration (RED/Green)', () => {
+  it('raises initial HP moderately for every role without changing its attack identity', () => {
+    const classic = [
+      { id: 'knight', oldHp: 175, hp: 200, damage: 32 },
+      { id: 'ranger', oldHp: 115, hp: 135, damage: 22 },
+      { id: 'wizard', oldHp: 110, hp: 130, damage: 46 },
+    ] as const
+    const special = [
+      { id: 'shadowblade', oldHp: 105, hp: 125, damage: 28 },
+      { id: 'spirit-summoner', oldHp: 118, hp: 140, damage: 24 },
+      { id: 'crimson-paladin', oldHp: 190, hp: 215, damage: 30 },
+    ] as const
+    for (const { id, oldHp, hp, damage } of classic) {
+      const hero = createHero(id)
+      expect(hero.hp, id).toBe(hp)
+      expect(hero.max, id).toBe(hp)
+      expect(hero.damage, id).toBe(damage)
+      expect(hp / oldHp, id).toBeGreaterThan(1.12)
+      expect(hp / oldHp, id).toBeLessThan(1.2)
+    }
+    for (const { id, oldHp, hp, damage } of special) {
+      const { state } = start(id)
+      expect(HERO_DEFINITIONS[id].stats.hp, id).toBe(hp)
+      expect(state.hero!.hp, id).toBe(hp)
+      expect(state.hero!.max, id).toBe(hp)
+      expect(state.hero!.damage, id).toBe(damage)
+      expect(hp / oldHp, id).toBeGreaterThan(1.12)
+      expect(hp / oldHp, id).toBeLessThan(1.2)
+    }
+  })
   it('retains unique playable IDs, statistics, starting equipment and three legacy heroes', () => {
     const legacy = (['knight', 'ranger', 'wizard'] as const).map(createHero)
     const equipments = new Set<string>()
