@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { ref } from 'vue'
-import type { MenuChoice } from './model'
+import type { ChoiceKind, MenuChoice } from './model'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 const props = withDefaults(defineProps<{
-  items: readonly MenuChoice[]; selectedId?: string; disabled?: boolean; label?: string
+  items: readonly MenuChoice[]; selectedId?: string; disabled?: boolean; label?: string; kind?: ChoiceKind
 }>(), { disabled: false, label: '可選擇項目' })
 const emit = defineEmits<{ choose: [id: string] }>()
 const focused = ref<string | null>(null)
@@ -16,7 +16,7 @@ function select(item: MenuChoice): void {
 <template>
   <div class="es2-choice-grid" role="group" :aria-label="t(label)">
     <button v-for="(item, index) in items" :key="item.id" type="button" class="es2-choice" data-ui-sfx="managed"
-      :class="[`es2-rarity-${item.rarity ?? 'common'}`, { 'es2-choice-selected': selectedId === item.id, 'es2-choice-focused': focused === item.id, 'es2-choice-evolution': item.evolution }]"
+      :class="[`es2-rarity-${item.rarity ?? 'common'}`, { 'es2-choice-selected': selectedId === item.id, 'es2-choice-focused': focused === item.id, 'es2-choice-evolution': item.evolution, 'es2-skill-card': kind === 'level' || kind === 'evolution' }]"
       :data-choice="item.id" :aria-pressed="selectedId === item.id" :disabled="disabled || item.disabled" @focus="focused = item.id"
       @click="select(item)">
       <div class="es2-card-art">
