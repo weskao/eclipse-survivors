@@ -12,7 +12,14 @@ export function impact(s: GameState, x: number, y: number, size = 36, color = '#
   if (s.impactWaves.length > 36) s.impactWaves.shift()
   s.impactWaves.push({ x, y, size, color, life: 0.38, max: 0.38 })
   // Routine hits and crowd AoE must never keep the whole battlefield oscillating.
-  if (strength >= 2.5) s.cameraKick = Math.max(s.cameraKick, Math.min(1.6, strength * 0.6))
+  if (strength >= 2.5) requestCameraKick(s, strength * 0.6)
+}
+
+/** At most one brief camera nudge per 0.6 game-seconds, regardless of hit count. */
+export function requestCameraKick(s: GameState, strength: number): void {
+  if (s.worldClock - s.lastCameraKickAt < 0.6) return
+  s.lastCameraKickAt = s.worldClock
+  s.cameraKick = Math.max(s.cameraKick, Math.min(1.6, strength))
 }
 
 export function zigzag(s: GameState, x1: number, y1: number, x2: number, y2: number): void {
