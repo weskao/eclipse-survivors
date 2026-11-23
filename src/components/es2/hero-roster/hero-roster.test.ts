@@ -124,6 +124,23 @@ describe('ES2 dedicated hero special action', () => {
     }
   })
 
+  it('themes the Q cast button per hero and exposes a non-animated cooldown state', async () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+      const wrapper = render(HeroSpecialAction, {
+        heroId: id, active: true,
+        snapshot: { cooldown: 0, stealth: 0, barrier: 0, companions: [] },
+      })
+      expect(wrapper.get('.es2-hero-special').attributes('data-hero')).toBe(id)
+      const button = wrapper.get('[data-hero-special]')
+      expect(button.attributes('data-ready')).toBe('true')
+      await wrapper.setProps({ snapshot: { cooldown: 4, stealth: 0, barrier: 0, companions: [] } })
+      expect(button.attributes('data-ready')).toBe('false')
+    }
+    const css = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    expect(css).toContain('es2-special-orbit')
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)')
+  })
+
   it('supports Q, skips typing/repeats and removes the global listener on unmount', async () => {
     const wrapper = render(HeroSpecialAction, {
       heroId: 'spirit-summoner', active: true,
