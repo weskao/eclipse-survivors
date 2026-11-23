@@ -1,6 +1,8 @@
 import { random } from '../math'
 import type { GameMode, SfxCue } from '../types'
 import { createBattleScore, createMenuScore } from './music'
+import { createBossScore } from './boss-score'
+import type { BossId } from '../content/bosses/definitions'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
 import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
 
@@ -96,6 +98,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const recentSfx: number[] = []
   const menu = createMenuScore()
   const battle = createBattleScore()
+  const bossScore = createBossScore()
   const sfxLast = new Map<SfxCue, number>()
 
   bgm.volume = 0.38
@@ -124,7 +127,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const menuLevel = (): number => 0.78 * musicVolume / 100
 
   const mp3Level = (): number =>
-    (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0.27 :
+    (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0.09 :
       intensity === 'combat' && mode === 'play' ? 0.35 : 0.38) * musicVolume / 100
 
   bgm.volume = mp3Level()
@@ -262,6 +265,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       battle.setIntensity(next)
       if (next === 'boss') battle.setClock(ac ? ac.currentTime + 0.04 : 0)
     },
+    setBossTheme(id: BossId | null, phase = 1) {
+      // The ID comes from the actual living actor, never a predicted timer.
+      bossScore.select(id, phase, ac ? ac.currentTime : 0)
+    },
     playSfx(cue) {
       const ctx = running()
       if (!sfxOn || !sfxVolume || !ctx) return
@@ -279,7 +286,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }
       if (mode !== 'play') return
-      if (bgm.paused || intensity === 'boss') battle.schedule(ctx.currentTime, tone)
+      if (intensity === 'boss') bossScore.schedule(ctx.currentTime, tone)
+      else if (bgm.paused) battle.schedule(ctx.currentTime, tone)
       else if (intensity === 'combat') battle.schedule(ctx.currentTime, combatPercussion)
       if (!bgm.paused) {
         const target = mp3Level()
@@ -295,6 +303,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (mode === 'menu') {
         intensity = 'calm'
         battle.setIntensity('calm')
+        bossScore.select(null, 1, ac ? ac.currentTime : 0)
         bgm.currentTime = 0
         if (previous !== 'menu' && menuBgm) menuBgm.currentTime = 0
         menu.setClock(ac ? ac.currentTime + 0.06 : 0)
@@ -360,6 +369,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       master = null
       musicBus = null
       noiseBuffer = null
+      bossScore.select(null, 1, 0)
       sfxLast.clear()
       recentSfx.length = 0
     },
