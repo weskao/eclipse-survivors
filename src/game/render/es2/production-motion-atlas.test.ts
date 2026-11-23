@@ -5,7 +5,7 @@ import type { Ctx2D } from '../ctx'
 
 const image = { complete: true, naturalWidth: 3072, naturalHeight: 1920 } as HTMLImageElement
 function heroWithAtlas() {
-  return { complete: true, naturalWidth: 900, naturalHeight: 900, motionAtlas: image } as HTMLImageElement
+  return { complete: true, naturalWidth: 900, naturalHeight: 900, motionAtlas: image } as unknown as HTMLImageElement
 }
 function anim(pose: HeroAnimation['pose'], direction = 0, frame = 0, phase = 0): HeroAnimation {
   return { pose, direction, frame, phase, count: pose === 'run' ? 10 : 12, reducedMotion: false }
@@ -14,8 +14,8 @@ function capture() {
   const calls: unknown[][] = []
   const ctx = {
     save: () => {}, restore: () => {}, scale: () => {}, translate: () => {},
-    drawImage: (...args: unknown[]) => calls.push(args),
-  } as Ctx2D
+    drawImage: (...args: unknown[]) => { calls.push(args) },
+  } as unknown as Ctx2D
   return { ctx, calls }
 }
 
