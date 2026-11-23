@@ -25,6 +25,7 @@ import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { claimTreasure, declineTreasure, inventorySnapshot, openTreasure, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
 import { impact } from './fx'
+import { emitCombatVfx } from './content/packs/combat-vfx'
 import { EVOLUTIONS } from './evolutions'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
 import { minmax, random } from './math'
@@ -964,7 +965,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     activateHeroSpecial() {
       if (s.mode !== 'play' || ui.settingsOpen || !heroSpecialization) return false
       const activated = heroSpecialization.activate()
-      if (activated && s.hero) markHeroSpecialAnimation(s.hero, s.worldClock)
+      if (activated && s.hero) {
+        markHeroSpecialAnimation(s.hero, s.worldClock)
+        // Snapshot the authoritative cast position; a dash/movement cannot drag the effect.
+        emitCombatVfx(effect => contentRegistry.addEffect(s, effect),
+          `hero-${heroSpecialization.id}`, s.hero.x, s.hero.y)
+      }
       if (activated) hud()
       return activated
     },
