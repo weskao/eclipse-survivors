@@ -4,6 +4,7 @@ import { createState, resetRun } from '../state'
 import type { GameMode, Hero } from '../types'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
 import { createParticleSpriteCache, drawFx, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
+import { loadProjectileSprites } from './projectile-art'
 
 function scene() {
   const s = createState()
@@ -98,6 +99,20 @@ describe('restrained combat feedback', () => {
     drawFx(frame.ctx, s, 0, 0, false, createParticleSpriteCache(factory.make))
     expect(factory.made).toHaveLength(0)
     expect(frame.calls).not.toContain('drawImage')
+  })
+
+  it('reuses existing sprite art for meteor impacts and gravity vortex sparks', () => {
+    const s = scene()
+    s.fx = [
+      { x: 95, y: 100, life: 0.4, max: 0.8, color: '#ffba7c', r: 18, type: 'meteor' },
+      { x: 130, y: 100, life: 0.4, max: 0.8, color: '#baa1ff', r: 5, type: 'vortex' },
+    ]
+    const sprites = loadProjectileSprites(() =>
+      ({ src: '', complete: true, naturalWidth: 192 }) as HTMLImageElement)
+    const frame = createFakeCtx()
+    drawFx(frame.ctx, s, 0, 0, false, undefined, sprites)
+    expect(frame.drawn).toContain(sprites['enemy-ember'])
+    expect(frame.drawn).toContain(sprites['gravity-core'])
   })
 
   it('stops star bob/rotation under reduced motion without hiding the pickup', () => {
