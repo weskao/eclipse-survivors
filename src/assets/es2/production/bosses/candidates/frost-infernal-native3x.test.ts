@@ -19,7 +19,7 @@ interface CandidateQA {
     cellWidth: number; cellHeight: number; transparentGutterPx: number
     sourceRect: { insetX: number; insetY: number; width: number; height: number }
   }
-  source: { originalGeneratedFramePixels: number; upscaledFromExisting192px: boolean; masterCommittedToRepo: boolean }
+  source: { originalGeneratedFramePixels: number; upscaledFromExisting192px: boolean; masterCommittedToRepo: boolean; masterFile: string; masterBytes: number; masterSha256: string }
   runtimeTarget: { maxDrawPx: number; requiredNativeSourceDetailPx: number; active: boolean }
   acceptance: { humanArtApproval: string; inGame1xScreenshot: string }
 }
@@ -51,6 +51,10 @@ describe('Frost Sovereign / Infernal Titan unapproved 3x candidate integrity', (
       expect(a.height).toBe(a.rows * a.cellHeight)
       expect(r.requiredNativeSourceDetailPx).toBe(3 * r.maxDrawPx)
       expect(qa.source.originalGeneratedFramePixels).toBeGreaterThanOrEqual(r.requiredNativeSourceDetailPx)
+      expect(qa.source.masterCommittedToRepo).toBe(true)
+      const master = readFileSync(join(dir, qa.source.masterFile))
+      expect(master.length).toBe(qa.source.masterBytes)
+      expect(createHash('sha256').update(master).digest('hex')).toBe(qa.source.masterSha256)
       expect(inset.width).toBe(qa.source.originalGeneratedFramePixels)
       expect(inset.height).toBe(qa.source.originalGeneratedFramePixels)
       expect(inset.insetX).toBeGreaterThanOrEqual(a.transparentGutterPx)
