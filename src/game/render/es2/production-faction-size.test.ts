@@ -7,18 +7,19 @@ import { drawLiveFactionArt, type FactionArtwork } from './production-factions'
 
 // The older develop-branch mobs draw at: slime 87x75, bat 114x92,
 // goblin 92x108, golem 139x134, warlock 105x127.
-// Keep new faction silhouettes in a comparable, role-sensitive range.
+// Previous 88-128px boxes looked tiny because transparent gutters contain only 64-92% of a pose.
+// Bolder silhouette-specific sizes remain strictly smaller than the 236x246px original BOSS.
 const expectedSize: Record<FactionKind, number> = {
-  'shadow-assassin': 92,
-  necromancer: 108,
-  'dark-archer': 96,
-  'plague-carrier': 104,
-  'shield-guardian': 128,
-  phantom: 90,
-  'fire-imp': 88,
-  'frost-wraith': 102,
-  berserker: 110,
-  'crystal-sentinel': 128,
+   'shadow-assassin': 146,
+  necromancer: 168,
+  'dark-archer': 154,
+  'plague-carrier': 184,
+  'shield-guardian': 208,
+  phantom: 152,
+  'fire-imp': 142,
+  'frost-wraith': 166,
+  berserker: 180,
+  'crystal-sentinel': 208,
 }
 
 const loaded = (side: number, columns = 1): HTMLImageElement => ({
@@ -29,9 +30,35 @@ describe('ES2 faction visual parity with develop monsters', () => {
   it('has a visual size for each faction and retains the ordinary monster size range', () => {
     expect(Object.keys(expectedSize).sort()).toEqual(Object.keys(ENEMY_DEFINITIONS).sort())
     for (const size of Object.values(expectedSize)) {
-      expect(size).toBeGreaterThanOrEqual(87)
-      expect(size).toBeLessThanOrEqual(139)
+      expect(size).toBeGreaterThanOrEqual(140)
+      expect(size).toBeLessThan(236)
     }
+  })
+
+  it('keeps the heavy guardian and crystal elite distinctly large but below a 236px boss', () => {
+    expect(expectedSize['shield-guardian']).toBe(208)
+    expect(expectedSize['crystal-sentinel']).toBe(208)
+    expect(expectedSize['fire-imp']).toBeLessThan(expectedSize['shield-guardian'])
+  })
+
+  it('draws an enlarged enemy partly visible from below the viewport, without altering its collision', () => {
+    const state = createState()
+    resetRun(state)
+    state.W = 300
+    state.H = 300
+    const runtime = createFactionRuntime()
+    const enemy = spawnFactionEnemy(runtime, 'shield-guardian', 150, 420)!
+    const oldRadius = enemy.radius
+    const images = { 'shield-guardian': { body: loaded(324, 6), telegraph: loaded(150) } } as Partial<FactionArtwork>
+    const { ctx } = createFakeCtx()
+    const draws: unknown[][] = []
+    const drawImage = ctx.drawImage.bind(ctx)
+    ctx.drawImage = ((...args: unknown[]) => { draws.push(args); Reflect.apply(drawImage, ctx, args) }) as typeof ctx.drawImage
+    expect(drawLiveFactionArt(ctx, state, runtime, images, 0, 0)).toBe(1)
+    expect(draws.some(call => call[0] === images['shield-guardian']!.body)).toBe(true)
+    expect(enemy.radius).toBe(oldRadius)
+    enemy.y = 900
+    expect(drawLiveFactionArt(ctx, state, runtime, images, 0, 0)).toBe(0)
   })
 
   it.each(Object.entries(expectedSize) as [FactionKind, number][])(
