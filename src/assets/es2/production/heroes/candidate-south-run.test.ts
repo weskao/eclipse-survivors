@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from '../../../game/render/es2/hero-candidate-atlas'
+import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from '../../../../game/render/es2/hero-candidate-atlas'
 
 const dir = 'src/assets/es2/production/heroes/shadowblade/candidates/south-2026-11-23'
 
