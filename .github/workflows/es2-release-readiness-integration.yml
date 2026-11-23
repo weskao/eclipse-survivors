@@ -24,6 +24,8 @@ jobs:
         run: python3 scripts/test_import_es2_hero_candidate.py
       - name: Verify two-hero candidate bundle import and integrity
         run: python3 scripts/test_import_es2_hero_bundle.py
+      - name: Verify real staged candidate WebP and PNG bytes
+        run: python3 scripts/test_es2_candidate_assets.py
       - run: pnpm test
       - run: pnpm typecheck
         if: success() || failure()

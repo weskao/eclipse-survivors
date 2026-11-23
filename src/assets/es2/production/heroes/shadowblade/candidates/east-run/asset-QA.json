@@ -1,0 +1,119 @@
+{
+  "source": "a_clean_high_detail_game_art_sprite_sheet_on_a_tr.png",
+  "sourceSHA256": "eafc04091c37d1a1f2d3f6d84a56aa49f55d1e3a5d4d78f023b0fee3d26f717d",
+  "atlas": "shadowblade-run-east-4frame-QA-PENDING.webp",
+  "atlasSHA256": "5ba2b443132cb0660c2759aa86b695402522dfb7e6c9701d1533d87d3fac9d0a",
+  "atlasPixels": [
+    1920,
+    480
+  ],
+  "frameSize": [
+    480,
+    480
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceCell": [
+        887,
+        443
+      ],
+      "sourceFigureBoundingBox": [
+        185,
+        26,
+        710,
+        417
+      ],
+      "exportCell": [
+        480,
+        480
+      ],
+      "contentPixels": [
+        432,
+        322
+      ],
+      "alphaGutterMin": 22,
+      "native3x": false,
+      "status": "QA_PENDING"
+    },
+    {
+      "index": 1,
+      "sourceCell": [
+        887,
+        443
+      ],
+      "sourceFigureBoundingBox": [
+        176,
+        24,
+        691,
+        407
+      ],
+      "exportCell": [
+        480,
+        480
+      ],
+      "contentPixels": [
+        432,
+        321
+      ],
+      "alphaGutterMin": 22,
+      "native3x": false,
+      "status": "QA_PENDING"
+    },
+    {
+      "index": 2,
+      "sourceCell": [
+        887,
+        444
+      ],
+      "sourceFigureBoundingBox": [
+        179,
+        25,
+        709,
+        418
+      ],
+      "exportCell": [
+        480,
+        480
+      ],
+      "contentPixels": [
+        432,
+        320
+      ],
+      "alphaGutterMin": 22,
+      "native3x": false,
+      "status": "QA_PENDING"
+    },
+    {
+      "index": 3,
+      "sourceCell": [
+        887,
+        444
+      ],
+      "sourceFigureBoundingBox": [
+        184,
+        23,
+        692,
+        425
+      ],
+      "exportCell": [
+        480,
+        480
+      ],
+      "contentPixels": [
+        432,
+        342
+      ],
+      "alphaGutterMin": 22,
+      "native3x": false,
+      "status": "QA_PENDING"
+    }
+  ],
+  "transparent": true,
+  "noCrossCellVisiblePixels": true,
+  "identityReview": "QA_PENDING",
+  "native3x": false,
+  "completeEightDirections": false,
+  "runtimeApplied": false,
+  "description": "Art candidate for directional East run only; not wired to the renderer until 8-direction complete art QA"
+}

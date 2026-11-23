@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "native3x": false,
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "candidateHeroIds": [
+    "shadowblade",
+    "spirit-summoner"
+  ],
+  "heroDirection": "E",
+  "pose": "run",
+  "framesPerHero": 4,
+  "assets": [
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/asset-QA.json",
+      "sha256": "e00c28e8a3d545f1af797f33ed779e04de5940d3fbfeeda33074c40f5a4f6eb8",
+      "bytes": 2213
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/manifest.json",
+      "sha256": "c1c1b84ab733b5bcf15ed006f0398f5678ceea04259a083bb23cae57d5d65000",
+      "bytes": 1593
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/repair_draft.py",
+      "sha256": "32c1e7d66c9a8b4a0624ee198b6137e387d39f9c3afcbfd79a50c5c639641012",
+      "bytes": 4272
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/shadowblade-crop-safe-preview.png",
+      "sha256": "4bb8e906a1591a9e1cd8e14c02b919ea3690bac78a54d2b4c04fee500733db97",
+      "bytes": 596447
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/shadowblade-run-east-4frame-QA-PENDING.webp",
+      "sha256": "5ba2b443132cb0660c2759aa86b695402522dfb7e6c9701d1533d87d3fac9d0a",
+      "bytes": 499988
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/shadowblade-run-east-frame-01-QA-PENDING.png",
+      "sha256": "a104f5c4a90127f64fd63b68dec506e190aa6ef6935d98aa0b8cf79dbd20bd85",
+      "bytes": 183713
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/shadowblade-run-east-frame-02-QA-PENDING.png",
+      "sha256": "58ea4f6b3539b63e557d429ec4aa14b1e937dab087bce10df340b0126912d045",
+      "bytes": 187315
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/shadowblade-run-east-frame-03-QA-PENDING.png",
+      "sha256": "b466223ac0b25ef3968362970ff01d29ed49c037cd4253eac55f190a5923025a",
+      "bytes": 183802
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/shadowblade-run-east-frame-04-QA-PENDING.png",
+      "sha256": "b730174cb0cb54fa2ee5046f12ae532355626cecc9499d081b1f16020267be75",
+      "bytes": 182135
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/east-run/test_asset_quality.py",
+      "sha256": "2395d52395425d2c08205e55f43094c3759f58ee5f41bfc001b828785c8ed8c5",
+      "bytes": 796
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-run/asset-QA.json",
+      "sha256": "4eb40a66c3aebbc0c05657b43547712f4d1864a25575c6de8302be1af9b25bd6",
+      "bytes": 2231
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-run/spirit-summoner-run-east-4frame-QA-PENDING.webp",
+      "sha256": "2aeb6ffba3143056700746d8223f699742baa9ee0e59c902c92651f573cad4b1",
+      "bytes": 758258
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-run/spirit-summoner-run-east-frame-01-QA-PENDING.png",
+      "sha256": "39a2d0b167c74f38a0f1e8db655b6480d10ae3e3df56d4c6d6ef718bb13fd1e0",
+      "bytes": 269898
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-run/spirit-summoner-run-east-frame-02-QA-PENDING.png",
+      "sha256": "ae673bd9a7a5984c5b1a523ca0a91ed7fe1f827c102be9ea30503b4387d4d800",
+      "bytes": 246962
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-run/spirit-summoner-run-east-frame-03-QA-PENDING.png",
+      "sha256": "e99c1849cf80471ee2ac8ee72df17160672a384e350d4e43265ea4eefbbefe96",
+      "bytes": 239969
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/east-run/spirit-summoner-run-east-frame-04-QA-PENDING.png",
+      "sha256": "2620f2b2131ae163a531794c025d2a1724848059f69164b4e54131604eecd5be",
+      "bytes": 268056
+    }
+  ],
+  "missing": [
+    "crimson-paladin E run",
+    "6 non-lateral directional run sets",
+    "8-direction attack/cast/special, hurt/death/victory",
+    "genuine native 3x source detail"
+  ],
+  "sourceArchive": "es2_hero_candidate_assets_READY_FOR_GIT_IMPORT.zip",
+  "validation": "SHA256 and container geometry only; manual artwork review and actual mobile playback pending"
+}

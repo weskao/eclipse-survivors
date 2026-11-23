@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "heroId": "shadowblade",
+  "pose": "run",
+  "direction": "E",
+  "frameCount": 4,
+  "atlasPixels": [
+    1920,
+    480
+  ],
+  "framePixels": [
+    480,
+    480
+  ],
+  "qa": "QA_PENDING",
+  "native3x": false,
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourceArchiveSHA256": "d8c803c54814f33ca34a7a719b7e02d2c50a6962b88ae0d8a24d0dee44ce3a23",
+  "sha256": {
+    "asset-QA.json": "e00c28e8a3d545f1af797f33ed779e04de5940d3fbfeeda33074c40f5a4f6eb8",
+    "repair_draft.py": "32c1e7d66c9a8b4a0624ee198b6137e387d39f9c3afcbfd79a50c5c639641012",
+    "shadowblade-crop-safe-preview.png": "4bb8e906a1591a9e1cd8e14c02b919ea3690bac78a54d2b4c04fee500733db97",
+    "shadowblade-run-east-4frame-QA-PENDING.webp": "5ba2b443132cb0660c2759aa86b695402522dfb7e6c9701d1533d87d3fac9d0a",
+    "shadowblade-run-east-frame-01-QA-PENDING.png": "a104f5c4a90127f64fd63b68dec506e190aa6ef6935d98aa0b8cf79dbd20bd85",
+    "shadowblade-run-east-frame-02-QA-PENDING.png": "58ea4f6b3539b63e557d429ec4aa14b1e937dab087bce10df340b0126912d045",
+    "shadowblade-run-east-frame-03-QA-PENDING.png": "b466223ac0b25ef3968362970ff01d29ed49c037cd4253eac55f190a5923025a",
+    "shadowblade-run-east-frame-04-QA-PENDING.png": "b730174cb0cb54fa2ee5046f12ae532355626cecc9499d081b1f16020267be75",
+    "test_asset_quality.py": "2395d52395425d2c08205e55f43094c3759f58ee5f41bfc001b828785c8ed8c5"
+  },
+  "sourceStatus": "candidate-only; preserve original bytes; never import as live pose atlas",
+  "note": "Actual alpha/gutter continuity still requires visual QA; no production runtime substitution."
+}
