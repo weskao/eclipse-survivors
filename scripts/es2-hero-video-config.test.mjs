@@ -44,3 +44,15 @@ test('cannot claim coverage from another hero, duplicate frames or a malformed c
     { src: other, sx: 768, sy: 0, sw: 768, sh: 768 },
   ]), { eastRunFrames: 0, southRunFrames: 1, hasBothDirections: false })
 })
+
+test('candidate evidence rejects unrelated paths and query-string URL spoofing', () => {
+  const hero = 'shadowblade'
+  const path = `/src/assets/es2/production/heroes/${hero}/candidates/east-2026-11-23/run-east-4frames@3x.webp`
+  const fake = [
+    { src: `http://localhost:4174/unrelated.png?image=${encodeURIComponent(path)}`, sx: 0, sy: 0, sw: 704, sh: 704 },
+    { src: `http://localhost:4174/other${path}`, sx: 704, sy: 0, sw: 704, sh: 704 },
+  ]
+  assert.deepEqual(assessHeroCandidateCoverage(hero, fake), {
+    eastRunFrames: 0, southRunFrames: 0, hasBothDirections: false,
+  })
+})
