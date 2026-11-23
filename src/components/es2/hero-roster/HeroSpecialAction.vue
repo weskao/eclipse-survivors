@@ -31,8 +31,8 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 </script>
 
 <template>
-  <div class="es2-hero-special" :data-side="joystickSide" :aria-label="t(hero.label + ' 主動技能')">
-    <button type="button" class="es2-hero-special__button" data-hero-special data-ui-sfx="managed"
+  <div class="es2-hero-special" :data-hero="heroId" :data-side="joystickSide" :aria-label="t(hero.label + ' 主動技能')">
+    <button type="button" class="es2-hero-special__button" :data-ready="ready ? 'true' : 'false'" data-hero-special data-ui-sfx="managed"
       aria-keyshortcuts="Q" :aria-label="t(hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒'))"
       :disabled="!ready" @click="trigger">
       <img data-hero-special-icon class="es2-hero-special__icon" :src="hero.specialIconSrc" alt=""
@@ -65,9 +65,56 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
   .es2-hero-special__hint { grid-column: 1; grid-row: 2; font-size: .64rem; line-height: 1; }
 }
 .es2-hero-special__hint { font-size: .77rem; font-weight: 500; }
-.es2-hero-special__fill { position: absolute; inset: auto auto 0 0; height: 5px; background: #df5979; transition: width .1s linear; }
+.es2-hero-special__fill { position: absolute; inset: auto auto 0 0; height: 5px; background: linear-gradient(90deg, var(--es2-special-accent), var(--es2-special-light)); transition: width .1s linear; }
+/* A bounded single-button reveal; no animated sprites or filters in the game canvas. */
+.es2-hero-special {
+  --es2-special-accent: #b997ff;
+  --es2-special-light: #f2dcff;
+  --es2-special-panel: #241731;
+}
+.es2-hero-special[data-hero="spirit-summoner"] {
+  --es2-special-accent: #78dfee;
+  --es2-special-light: #e3ffff;
+  --es2-special-panel: #122c3b;
+}
+.es2-hero-special[data-hero="crimson-paladin"] {
+  --es2-special-accent: #f7b47d;
+  --es2-special-light: #fff1bf;
+  --es2-special-panel: #371d2a;
+}
+.es2-hero-special__button {
+  isolation: isolate;
+  border-color: var(--es2-special-accent);
+  background: radial-gradient(ellipse at 18% 10%, #ffffff16, transparent 65%), var(--es2-special-panel);
+  box-shadow: inset 0 1px 0 #ffffff36, 0 3px 12px #05091055;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .15s ease;
+}
+.es2-hero-special__button::before {
+  content: '';
+  position: absolute;
+  inset: -54%;
+  pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0 30%, var(--es2-special-accent) 48%, transparent 65% 100%);
+  opacity: .06;
+}
+.es2-hero-special__button[data-ready="true"] {
+  box-shadow: inset 0 1px 0 #ffffff55, 0 0 0 1px #ffffff18, 0 0 18px color-mix(in srgb, var(--es2-special-accent) 38%, transparent);
+}
+.es2-hero-special__button[data-ready="true"]::before {
+  opacity: .26;
+  animation: es2-special-orbit 5s linear infinite;
+}
+.es2-hero-special__button:active:not(:disabled) { transform: translateY(1px) scale(.98); }
+.es2-hero-special__button:disabled { opacity: .86; }
+.es2-hero-special__hint { color: var(--es2-special-light); }
+.es2-hero-special__icon { filter: drop-shadow(0 0 4px #ffffff44); }
+@keyframes es2-special-orbit { to { transform: rotate(360deg); } }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }
-@media (prefers-reduced-motion: reduce) { .es2-hero-special__fill { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .es2-hero-special__fill { transition: none; }
+  .es2-hero-special__button[data-ready="true"]::before { animation: none; opacity: .18; }
+  .es2-hero-special__button { transition: none; }
+}
 @media (orientation: portrait) and (max-width: 760px) {
   .es2-hero-special { right: max(12px, env(safe-area-inset-right)); bottom: calc(151px + env(safe-area-inset-bottom)); max-width: 112px; flex-direction: column; align-items: flex-end; }
   .es2-hero-special[data-side="right"] { right: auto; left: max(12px, env(safe-area-inset-left)); align-items: flex-start; }
