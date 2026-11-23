@@ -139,6 +139,17 @@ try {
         assert.equal(await panel.isVisible(), false, `${viewport.name}: close must restore battlefield`)
       }
       await page.screenshot({ path: `${directory}/${viewport.name}-game.png`, animations: 'disabled' })
+      if (viewport.name === 'portrait-375' || viewport.name === 'landscape-640') {
+        await page.locator('[data-es2-pause]').click()
+        await page.locator('#paused').waitFor({ state: 'visible' })
+        await page.screenshot({ path: directory + '/' + viewport.name + '-pause.png', animations: 'disabled' })
+        await page.locator('#resume').click()
+        await page.locator('[data-es2-home]').click()
+        await page.locator('[data-es2-home-confirm]').waitFor({ state: 'visible' })
+        await page.screenshot({ path: directory + '/' + viewport.name + '-home-confirm.png', animations: 'disabled' })
+        await page.locator('[data-es2-home-cancel]').click()
+        await page.locator('.es2-hud--active').waitFor({ state: 'visible' })
+      }
       await page.locator('[data-testid="es2-dash"]').click()
       assert.deepEqual(errors, [], `${viewport.name}: uncaught browser runtime errors`)
       console.log(`PASS ${viewport.name}: game, controls, safe viewport, reduced-motion policy`)

@@ -77,6 +77,7 @@ try {
       }
       await page.screenshot({ path: destination + '/' + name + '-archive.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
+      let startedGame = false
       if (mobile && name.startsWith('tablet-')) {
         // Touch tablets must not render a permanent desktop equipment bar over
         // the real joystick/dash; all secondary HUD content belongs in the drawer.
@@ -102,14 +103,35 @@ try {
         assert.ok(!intersects(layout.drawer, layout.joystick) && !intersects(layout.drawer, layout.dash),
           name + ': drawer obscures touch controls ' + JSON.stringify(layout))
         await page.screenshot({ path: destination + '/' + name + '-game.png', animations: 'disabled' })
+        startedGame = true
       } else if (!mobile && name !== 'desktop-zoom-proxy') {
         await page.locator('.es2-start').click()
         await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
         assert.ok(await page.locator('.es2-hud__bottom').isVisible(),
           name + ': desktop equipment HUD unexpectedly collapsed')
         await page.screenshot({ path: destination + '/' + name + '-game.png', animations: 'disabled' })
+        startedGame = true
       } else {
         await page.screenshot({ path: destination + '/' + name + '-menu.png', animations: 'disabled' })
+      }
+      if (startedGame) {
+        await page.locator('[data-es2-pause]').click()
+        await page.locator('#paused').waitFor({ state: 'visible' })
+        const layers = await page.evaluate(() => ({
+          backdrop: Number(getComputedStyle(document.querySelector('.es2-backdrop')).zIndex),
+          hud: Number(getComputedStyle(document.querySelector('.es2-hud')).zIndex),
+        }))
+        assert.ok(layers.backdrop > layers.hud,
+          name + ': pause dialog must appear above the combat HUD')
+        await page.screenshot({ path: destination + '/' + name + '-pause.png', animations: 'disabled' })
+        await page.locator('#resume').click()
+        await page.locator('[data-es2-home]').click()
+        await page.locator('[data-es2-home-confirm]').waitFor({ state: 'visible' })
+        assert.ok(await page.locator('[data-es2-home-cancel]').evaluate(el => el.classList.contains('es2-primary')),
+          name + ': Continue Battle must remain the primary non-destructive action')
+        await page.screenshot({ path: destination + '/' + name + '-home-confirm.png', animations: 'disabled' })
+        await page.locator('[data-es2-home-cancel]').click()
+        await page.locator('.es2-hud--active').waitFor({ state: 'visible' })
       }
       assert.deepEqual(errors, [], name + ': uncaught browser exceptions')
       console.log('PASS ' + name + ': settings, scale, language, archive tabs and viewport bounds')
