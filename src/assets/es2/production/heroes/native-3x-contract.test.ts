@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { PRODUCTION_HERO_MOTION_SOURCES, PRODUCTION_HERO_SOURCES } from '../../../game/render/es2/production-heroes'
+import { PRODUCTION_HERO_MOTION_SOURCES, PRODUCTION_HERO_SOURCES } from '../../../../game/render/es2/production-heroes'
 
 interface MotionManifest {
   frameSize: number
