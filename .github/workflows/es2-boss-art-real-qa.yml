@@ -1,0 +1,44 @@
+name: ES2 Boss candidate real Canvas QA evidence
+on:
+  push:
+    branches: [feature/es2-boss-art-real-chromium-qa]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-boss-art-real-qa-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  screenshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify controller, candidate identity, phase, safe source rect
+        run: pnpm exec vitest run src/game/boss-art-qa-scenario.test.ts src/game/render/es2/production-world.test.ts src/assets/es2/production/bosses/candidates/
+      - run: pnpm typecheck
+      - name: Install Chromium
+        run: |
+          node scripts/generate-menu-theme.mjs
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Capture four Bosses in three real Canvas phases across viewports
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-boss-dev.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/ >/dev/null
+          PREVIEW_URL=http://127.0.0.1:4174/ node scripts/es2-boss-art-qa-browser.mjs
+      - name: Preserve real Chromium review screenshots (not human approval)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: es2-four-boss-dev-canvas-qa
+          path: artifacts/es2-mobile-browser/boss-art-qa/
+          retention-days: 7
+          if-no-files-found: warn
