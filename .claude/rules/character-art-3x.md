@@ -32,7 +32,17 @@
 - Keep each atlas within practical device maximum texture dimensions (prefer `≤4096×4096`, subject to real device testing). Optimize compressed bytes **and decoded memory**. Lazy-load the current character's required atlas at event/pose boundaries, never in the Canvas frame loop. Cache decoded images and pre-rendered frames with a strict bound; evict on character/art changes.
 - Respect `prefers-reduced-motion`: use the same character's still, fully rendered frame, never blank screen or a different job's rig.
 
-## 5. Required implementation order and evidence
+## 5. Mandatory character Create / Read / Update / Delete (CRUD)
+
+All operations involving a playable hero, enemy, boss, summon, companion or NPC, including their assets and render consumers, MUST consult this rule first. CRUD applies to the character's canonical source art, animation atlases, portraits, HUD, data registry, runtime bindings, saved-game references and QA evidence.
+
+- **CREATE:** Establish one approved canonical portrait/identity before generating animation. Create genuine native 3× frames and all required facings/poses in local production asset directories, then record source provenance, hashes, budgets, anchors, fallbacks and explicit QA status. A character without complete required art must remain `QA_PENDING` and cannot be presented as production-finished.
+- **READ / REVIEW:** Trace the selected hero/character's complete runtime asset mapping before making changes. Inspect authentic source resolution rather than file names or resampled dimensions; inspect frame crops, transparency, directions, real 1× rendering, and all portrait/HUD/combat consumers. Read-only inspection alone never triggers regeneration or deletion.
+- **UPDATE / REPLACE:** Preserve the approved identity, equipment handedness, role and gameplay hitboxes; use genuinely newly authored detailed poses rather than interpolation. Update dependent pose maps, foot anchors, frame rects, accessibility fallbacks, local imports, tests and manifests together. Do not activate partly redrawn atlases over valid art merely to silence QA.
+- **DELETE / RETIRE:** Locate every code/manifest/saved-state reference, remove or migrate consumers safely, and invalidate decoded caches. Preserve save migration or a documented same-character fallback when applicable; no broken Vite imports, stale IDs or substitution with another hero's art. Keep legacy assets only while referenced and explicitly record archival status.
+- **Any CRUD merge gate:** Treat art, code integration, and real in-game visual evidence as one transaction. Re-run affected TDD regressions plus `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm check-release`. A passing CI run is not a substitute for visual/manual QA. Never switch `QA_PENDING` to `APPROVED` without authentic native-source evidence and all required direction/action clips.
+
+## 6. Required implementation order and evidence
 
 1. Inspect and approve the actual portrait and every source sprite at real pixel resolution; **generate/correct and commit assets into the project path first**.
 2. Add a manifest with a clear `native3x` and `QA_PENDING|APPROVED` field for each character, pose and direction. Do not invent completed frames or promote source interpolation.
