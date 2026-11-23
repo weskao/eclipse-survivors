@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { emptyHud } from '../../../game/store'
 import CombatHud from './CombatHud.vue'
+import { t } from '../../../i18n'
 
 const mountHud = (seconds: number) => mount(CombatHud, {
   props: {
@@ -19,7 +20,7 @@ describe('responsive boss arrival warning', () => {
     const wrapper = mountHud(12)
     try {
       const warning = wrapper.get('[data-es2-boss-warning]')
-      expect(warning.text()).toContain('Frost Sovereign')
+      expect(warning.text()).toContain(t('Frost Sovereign'))
       expect(warning.text()).toContain('12')
       expect(warning.find('button').exists()).toBe(false)
       expect(warning.attributes('aria-label')).toContain('12')
