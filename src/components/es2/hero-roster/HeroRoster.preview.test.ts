@@ -22,8 +22,8 @@ describe('hero roster action preview artwork', () => {
 
   it('displays exact isolated eight frames and freezes a valid frame under reduced motion', () => {
     const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
-    expect(css).toMatch(/\\.es2-hero-action-preview\\s*\\{[^}]*background-size:800% 100%/)
-    expect(css).toMatch(/animation:es2-hero-action-frames[^;]*steps\\(8,jump-none\\)/)
-    expect(css).toMatch(/@media\\(prefers-reduced-motion:reduce\\)\\{\\.es2-hero-action-preview\\{animation:none/)
+    expect(css).toMatch(/\.es2-hero-action-preview\s*\{[^}]*background-size:800% 100%/)
+    expect(css).toMatch(/animation:es2-hero-action-frames[^;]*steps\(8,jump-none\)/)
+    expect(css).toMatch(/@media\(prefers-reduced-motion:reduce\)\{\.es2-hero-action-preview\{animation:none/)
   })
 })

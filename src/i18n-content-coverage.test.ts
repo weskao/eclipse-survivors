@@ -20,6 +20,6 @@ describe('localized game content without changing stable gameplay identifiers', 
   })
   it('preserves canonical English values in English UI', () => {
     setLocale('en', memoryStorage)
-    expect(catalog.map(t)).toEqual(catalog)
+    expect(catalog.map(value => t(value))).toEqual(catalog)
   })
 })
