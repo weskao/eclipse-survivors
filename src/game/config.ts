@@ -28,4 +28,28 @@ export const BALANCE = Object.freeze(tuning satisfies {
     rewardEmbers: number; enemyHp: number; enemyDamage: number; spawnFrequency: number
   }> }
   relics: { items: Record<string, { maxStacks: number; bonuses: Record<string, number> }> }
+  meta: {
+    research: Record<'power' | 'vitality' | 'insight' | 'scavenging' | 'ember-study', {
+      maxRank: number; firstCost: number; costStep: number; lateCostStartRank: number
+      lateCostStep: number; benefitPerRank: number
+    }>
+    runRewards: {
+      killDivisor: number; secondsDivisor: number; victoryEmbers: number; baseMultiplier: number
+      masteryBaseXp: number; masteryKillsDivisor: number; masteryVictoryXp: number
+      masteryXpMax: number; masteryMaxLevel: number; masteryLevelDivisor: number
+    }
+    achievementEmbers: Record<string, number>
+    milestoneEmbers: Record<string, number>
+    startingEquipment: Record<string, { cost: number; masteryLevel: number }>
+    startingBonuses: Record<string, { cost: number; bonus: number }>
+  }
 })
+
+export type ResearchId = keyof typeof BALANCE.meta.research
+
+/** Pricing at the current owned rank. Existing first three prices are preserved for legacy saves. */
+export function researchCost(id: ResearchId, ownedRank: number): number {
+  const def = BALANCE.meta.research[id]
+  const lateRanks = Math.max(0, ownedRank - def.lateCostStartRank)
+  return def.firstCost + ownedRank * def.costStep + lateRanks * lateRanks * def.lateCostStep
+}
