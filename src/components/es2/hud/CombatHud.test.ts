@@ -84,6 +84,25 @@ describe('ES2 combat HUD', () => {
     expect(fraction('首領生命值')).toBe('0.48')
   })
 
+  it('tracks an offscreen boss with actual distance, direction and artwork, then hides when visible', async () => {
+    const offscreen = { left: 184, top: 278, angle: 47, distance: 524, artSrc: '/boss-phases@3x.webp', atlas: true }
+    const { wrapper } = render({
+      hud: { ...equipped, bossPct: 65 },
+      feed: { boss: { name: 'Abyss Monarch', phase: 2, offscreen } },
+    })
+    const pointer = wrapper.get('[data-es2-boss-pointer]')
+    expect(pointer.attributes('role')).toBe('img')
+    expect(pointer.attributes('aria-label')).toContain('524')
+    expect((pointer.element as HTMLElement).style.left).toBe('184px')
+    expect((pointer.element as HTMLElement).style.top).toBe('278px')
+    expect((pointer.element as HTMLElement).style.getPropertyValue('--es2-bearing')).toBe('47deg')
+    expect(pointer.get('[data-es2-boss-icon]').attributes('style')).toContain('/boss-phases@3x.webp')
+    await wrapper.setProps({ feed: { boss: { name: 'Abyss Monarch', phase: 2 } } })
+    expect(wrapper.find('[data-es2-boss-pointer]').exists()).toBe(false)
+    await wrapper.setProps({ hud: { ...equipped, bossPct: null }, feed: { boss: { name: 'Abyss Monarch', offscreen } } })
+    expect(wrapper.find('[data-es2-boss-pointer]').exists()).toBe(false)
+  })
+
   it('updates the top-left portrait to each live specialization\'s true Canvas artwork', () => {
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
       const { wrapper } = render({ heroId: id, choice: id === 'spirit-summoner' ? 'wizard' : 'knight' })
