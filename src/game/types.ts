@@ -132,6 +132,8 @@ export interface GameState {
   lightningFx: LightningFx[]
   motionEchoes: MotionEcho[]
   cameraKick: number
+  /** Game-clock time of the last accepted screen recoil; prevents crowd-hit shake loops. */
+  lastCameraKickAt: number
   time: number
   kill: number
   spawnT: number
