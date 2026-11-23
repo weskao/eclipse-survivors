@@ -652,8 +652,8 @@ const english = new Map<string, string>([
     "Select a reward to claim"
   ],
   [
-    "點選卡牌或按 1–9 選擇 · 方向鍵切換焦點 · Enter 確認",
-    "Select a card or press 1–9 · arrow keys to change focus · Enter to confirm"
+    "點選卡牌或按 1–9 選擇",
+    "Click a card or press 1–9 to select"
   ],
   [
     "目前沒有可用的選項",
