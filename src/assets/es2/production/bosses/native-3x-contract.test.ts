@@ -19,7 +19,8 @@ const manifest = JSON.parse(readFileSync(join(directory, 'manifest.json'), 'utf8
       requiredNativeFramePx: number
       verifiedOriginalMasterFramePx: number | null
       native3x: boolean
-      contactSheetReview: string
+      existingAtlasPreviewReview: string
+      originalContactSheetReview: string
       realGameplayReview: string
       issues: string[]
     }
@@ -51,7 +52,8 @@ describe('ES2 boss production art: honest native-3x QA contract', () => {
         qa.verifiedOriginalMasterFramePx !== null &&
         qa.verifiedOriginalMasterFramePx >= qa.requiredNativeFramePx,
       )
-      expect(qa.contactSheetReview, asset.id).toBe('inspected')
+      expect(qa.existingAtlasPreviewReview, asset.id).toBe('inspected')
+      expect(['pending', 'inspected'].includes(qa.originalContactSheetReview), asset.id).toBe(true)
       expect(['pending', 'passed'].includes(qa.realGameplayReview), asset.id).toBe(true)
       expect(qa.issues.length, asset.id).toBeGreaterThan(0)
     }
