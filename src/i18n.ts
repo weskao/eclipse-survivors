@@ -1640,6 +1640,18 @@ const english = new Map<string, string>([
 , ["第二章 · 模式","CHAPTER II · MODES"]
 , ["✦ 天穹傳承 ✦","✦ CELESTIAL LEGACY ✦"]
 , ["行動操作 · 無障礙","MOBILE · ACCESSIBILITY"]
+, ["遊戲已暫停","Game is paused"]
+, ["玩家狀態異常","Invalid player state"]
+, ["事件已過期","Event expired"]
+, ["請進入互動範圍","Move into interaction range"]
+, ["生命值不足","Insufficient HP"]
+, ["經驗值不足","Insufficient XP"]
+, ["請先完成目前目標","Finish the current objective"]
+, ["遺物背包已滿或獎勵不可領取","Relic inventory full or unavailable"]
+, ["敵人數量已達上限","Enemy capacity reached"]
+, ["獎勵已領取","Reward Claimed"]
+, [" 降臨！"," Arrives!"]
+, ["LEVEL UP!","LEVEL UP!"]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],
