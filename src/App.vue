@@ -245,6 +245,6 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) { .es2-world-marker { transition: none; } }
 
 /* Keep exit legible but less prominent than the safe continuation. */
-:deep(.es2-home-exit) { border-color: #ba8b80; color: #f0c1b7; }
-:deep(.es2-home-exit:hover:not(:disabled)) { border-color: #d6a49a; }
+:global(.es2-backdrop .es2-home-exit) { border-color: #ba8b80; color: #f0c1b7; }
+:global(.es2-backdrop .es2-home-exit:hover:not(:disabled)) { border-color: #d6a49a; }
 </style>
