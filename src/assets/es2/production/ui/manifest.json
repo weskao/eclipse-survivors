@@ -115,19 +115,31 @@
     {
       "id": "rarity-common",
       "path": "rarity-common@3x.webp",
-      "width": 192,
-      "height": 192,
+      "width": 240,
+      "height": 240,
       "scale": 3,
       "alpha": true,
       "maxBytes": 75000,
       "frames": 1,
       "columns": 1,
       "rows": 1,
-      "frameWidth": 192,
-      "frameHeight": 192,
+      "frameWidth": 240,
+      "frameHeight": 240,
       "status": "needs-human-approval",
-      "sha256": "8e616f8d705b465324b27da89bfd376ad776954c289d771244f17a1c3b6c62bc",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "sha256": "57e9a5cd9deb94065a7e08b782652aff6c33b65e01abf97627af5bfcbc05ea0d",
+      "qaNote": "Regenerated silver-smoky rarity gem from newly authored 1254×1254 transparent source; lossless source master committed. Runtime 240×240, genuine native detail for 72px use, alpha edge reviewed. Human approval and in-game 1× visual signoff pending.",
+      "qa": {
+        "masterPath": "sources/rarity-common-master@source.webp",
+        "masterSha256": "e940ec1f5e813e1a1a04d38189351952ec48f19bfb973a17391fe1f119891852",
+        "sourceWidth": 1254,
+        "sourceHeight": 1254,
+        "displayMaximumPx": 72,
+        "provenance": "newly generated independently authored 1254x1254 RGBA silver crystal, lossless WebP master at source resolution; not upscaled from old 192px icon",
+        "nativeSource": true,
+        "interpolatedFromOld": false,
+        "visualReview": "pending",
+        "browserReview": "pending"
+      }
     },
     {
       "id": "rarity-rare",
