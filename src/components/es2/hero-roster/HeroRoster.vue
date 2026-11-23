@@ -59,7 +59,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       </button>
       <button type="button" class="es2-hero-detail-trigger" data-ui-sfx="select"
         :data-es2-hero-details="hero.id" :aria-label="t('查看英雄詳情') + ' · ' + t(hero.label)"
-        aria-haspopup="dialog" @click="emit('details', hero.id)">ⓘ</button>
+        aria-haspopup="dialog" @click="emit('details', hero.id)"><span aria-hidden="true">i</span></button>
     </div>
   </section>
 </template>

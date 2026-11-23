@@ -311,7 +311,6 @@
   .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.66rem,2.5vw,.82rem);line-height:1.18}
   .es2-menu .es2-hero-section .es2-roster__copy :is(.es2-roster__subtitle,.es2-roster__description,.es2-roster__stats,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits){display:none}
   .es2-menu .es2-hero-section .es2-roster__selection{font-size:.62rem;padding:0}
-  .es2-menu .es2-hero-section .es2-hero-action-preview{width:27px;height:27px;top:3px;right:3px}
   .es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   .es2-mode-card{min-height:44px;padding:5px;gap:5px}
   .es2-mode-mark{width:17px;font-size:1rem}
@@ -348,7 +347,6 @@
   .es2-hero-copy{padding:3px 1px}
   .es2-hero-copy strong,.es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.63rem,1.7vw,.75rem)}
   .es2-hero-selection,.es2-menu .es2-hero-section .es2-roster__selection{font-size:.59rem}
-  .es2-menu .es2-hero-section .es2-hero-action-preview{width:22px;height:22px}
   .es2-mobile-selected-mode{display:none}
   .es2-mode-card{padding:4px}
   .es2-mode-mark{font-size:.85rem;width:14px}
@@ -450,12 +448,18 @@
 @media (orientation:portrait) and (max-width:700px),
        (orientation:landscape) and (max-height:520px) and (max-width:900px){
   .es2-menu .es2-hero-detail-trigger{
-    display:grid;place-items:center;position:absolute;top:4px;right:4px;z-index:2;
-    width:44px;height:44px;padding:0;border:1px solid #e3c58d;
-    border-radius:10px;background:linear-gradient(145deg,#293b4ee8,#111b2aee);
-    color:#ffe2a6;font:700 1.3rem/1 system-ui,sans-serif;
-    box-shadow:0 2px 10px #0008;touch-action:manipulation;
+    position:absolute;top:0;right:0;z-index:2;display:grid;place-items:start end;
+    width:44px;height:44px;padding:5px;border:0;background:transparent;
+    cursor:pointer;touch-action:manipulation;
   }
-  .es2-menu .es2-hero-section .es2-hero-action-preview{left:4px;right:auto}
+  .es2-hero-detail-trigger span{
+    display:grid;place-items:center;box-sizing:border-box;width:22px;height:22px;
+    border:1px solid #bda473;border-radius:50%;background:#111d29;color:#ffe5b2;
+    font:italic bold 15px/1 Georgia,serif;
+  }
+  .es2-hero-detail-trigger:focus-visible span{outline:2px solid #ffe5b2;outline-offset:2px}
+  .es2-menu .es2-hero-section .es2-hero-action-preview{
+    top:3px;left:3px;right:auto;width:min(45%,48px);height:auto;aspect-ratio:1;
+  }
   .es2-hero-detail-content .es2-hero-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

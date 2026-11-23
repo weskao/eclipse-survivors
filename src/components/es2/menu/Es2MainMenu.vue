@@ -108,7 +108,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               </button>
               <button type="button" class="es2-hero-detail-trigger" data-ui-sfx="select"
                 :data-es2-hero-details="hero.id" :aria-label="t('查看英雄詳情') + ' · ' + t(hero.name)"
-                @click="detailHero = hero.id" aria-haspopup="dialog">ⓘ</button>
+                @click="detailHero = hero.id" aria-haspopup="dialog"><span aria-hidden="true">i</span></button>
             </div>
           </div>
           <h3 class="es2-section-heading">{{ t("NEW HEROES · 新增英雄") }}</h3>
