@@ -10,12 +10,12 @@
 | Hero | Portrait | Existing static facings | Existing moving actions | New candidates | Production status |
 | --- | --- | --- | --- | --- | --- |
 | `shadowblade` | 900×900 canonical WebP | 8 idle + 8 guard, 448px nominal cells from ~313px source | 8 run + 8 attack + 8 special independently authored **East** frames; West mirrors East, other six directions hold guard | Nine-batch East: run/attack/special × 4; new South run × 4 | `QA_PENDING`; new candidates **not** used in combat |
-| `spirit-summoner` | 900×900 canonical WebP | Same limits | Same limits | East run/attack/special × 4 | `QA_PENDING`; original source edge risks |
+| `spirit-summoner` | 900×900 canonical WebP | Same limits | Same limits | East run/attack/special × 4; South run × 4 | `QA_PENDING`; original source edge risks |
 | `crimson-paladin` | 900×900 canonical WebP | Same limits | Same limits | East run/attack/special × 4 | `QA_PENDING`; original source edge risks |
 
 The current production split atlases use a 448px cell with 8px gutters and 432px safe cropping; keep that code until the replacement atlas contract has complete real art and tests. Nominal atlas size is not evidence of genuine native 3× details. Some existing 448px outputs came from roughly 313px sources; 384px legacy sheets came from roughly 198px source frames.
 
-**Candidate assets:** `src/assets/es2/production/heroes/candidate-poses-2026-11-23.json` inventories the nine East-only 4-frame image candidates. `shadowblade/candidates/south-2026-11-23/manifest.json` inventories a further South-running 4-frame source; it has original crop-edge risk. All are **QA_PENDING** and the production renderer intentionally does not import them. Preview at `src/game/render/es2/hero-candidate-preview.html` (run `pnpm dev` first).
+**Candidate assets:** `src/assets/es2/production/heroes/candidate-poses-2026-11-23.json` inventories the nine East-only 4-frame image candidates. `shadowblade/candidates/south-2026-11-23/manifest.json` and `spirit-summoner/candidates/south-2026-11-23/manifest.json` inventory two additional South-running 4-frame sources. The Summoner candidate preserves its original 1254×1254 PNG master and its 1536×1536 transparent WebP. Both have original crop-edge risk. All are **QA_PENDING** and the production renderer intentionally does not import them. Preview at `src/game/render/es2/hero-candidate-preview.html` (run `pnpm dev` first).
 
 **Source-edge QA defect corrected:** 36/36 original cells across nine East candidate atlases reach a 627px source-cell boundary. The corrected test and manifest now mark these as `sourceClippingRisk`, instead of mistaking added output padding for proof that original arms/weapons/hair/capes were not clipped. The South 4-frame source is likewise provisional. A risk means **potential** source truncation, not proof that every visible limb is lost.
 
