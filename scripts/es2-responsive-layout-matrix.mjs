@@ -45,7 +45,10 @@ try {
       await page.locator('.es2-top-actions [data-es2-settings]').click()
       const dialog = page.locator('.es2-dialog[role="dialog"]')
       await dialog.waitFor({ state: 'visible' })
-      assert.ok(inside(await dialog.evaluate(rect), width, height), name + ': settings modal clips viewport')
+      await dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))
+      const initialDialog = await dialog.evaluate(rect)
+      assert.ok(inside(initialDialog, width, height),
+        name + ': settings modal clips viewport: ' + JSON.stringify(initialDialog))
       const scale = page.locator('#es2-interface-scale')
       await scale.evaluate(el => { el.value = '1.25'; el.dispatchEvent(new Event('input', { bubbles: true })) })
       const actual = await dialog.evaluate(el => getComputedStyle(el).getPropertyValue('--es2-ui-scale').trim())
