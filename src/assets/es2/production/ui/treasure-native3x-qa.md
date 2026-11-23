@@ -1,6 +1,9 @@
 # 4 native-3× treasure chest icons — technical production integration
 
-**Status: UI CONSUMER CONNECTED / VISUAL QA PENDING.** These are four of the existing 17 world-art UI items, not four new inventory IDs or approval claims.
+> **最新狀態（2026-11-24）：本類 17/17 正式 UI 美術已由專案擁有者明確確認通過人工視覺驗收。** Manifest 類別與逐檔 `status: approved`，並保留 `humanApproval` 人工簽核欄位。完整清單與簽核範圍：[10-ui-17-owner-approval-2026-11-24.md](../../../../../docs/es2/production-art-49/10-ui-17-owner-approval-2026-11-24.md)。原先「0/17」「needs-human-approval」「pending」敘述是 **2026-11-23 或更早的歷史 QA 快照**，不得再視為目前人工美術狀態；獨立 Browser／來源技術驗證與其他 32 項素材未獲本次核准。
+
+
+**最新 Status: UI CONSUMER CONNECTED / 4/4 HUMAN VISUAL APPROVED (2026-11-24).** 舊版技術檢查紀錄如下。 These are four of the existing 17 world-art UI items, not four new inventory IDs or approval claims.
 
 - Source: new original transparent 1254×1254 illustration, 2×2 grid; quadrants independently extracted at 627×627 authentic source pixels. Four 627px `sources/*-master@source.webp` files retained in Git. The full 2×2 PNG is not committed; the four full-resolution independent authored masters are.
 - Runtime: four 240×240 transparent WebP assets, using the **existing canonical filenames** so `WORLD_ART.ui`, `RelicRewardOverlay.vue`, game-world chest marker and the in-game archive display them without duplicate resolver code.
