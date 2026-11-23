@@ -26,13 +26,13 @@ describe('hero roster gameplay action preview', () => {
 
   it('isolates the eight authored run poses from the first two rows of the gameplay 4×4 atlas', () => {
     const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
-    expect(css).toMatch(/\\.es2-hero-action-preview\\s*\\{[^}]*background-size:400% 400%/)
-    expect(css).toMatch(/animation:es2-hero-action-frames[^;]*steps\\(1,end\\)/)
+    expect(css).toMatch(/\.es2-hero-action-preview\s*\{[^}]*background-size:400% 400%/)
+    expect(css).toMatch(/animation:es2-hero-action-frames[^;]*steps\(1,end\)/)
     const positions = ['0% 0%', '33.333% 0%', '66.667% 0%', '100% 0%',
       '0% 33.333%', '33.333% 33.333%', '66.667% 33.333%', '100% 33.333%']
     for (const [frame, position] of positions.entries()) {
       expect(css).toContain(`${frame * 12.5}%{background-position:${position}}`)
     }
-    expect(css).toMatch(/@media\\(prefers-reduced-motion:reduce\\)\\{\\.es2-hero-action-preview\\{animation:none/)
+    expect(css).toMatch(/@media\(prefers-reduced-motion:reduce\)\{\.es2-hero-action-preview\{animation:none/)
   })
 })
