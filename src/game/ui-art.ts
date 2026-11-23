@@ -1,4 +1,18 @@
 import type { AbilityId } from './types'
+import shadowSpecialIcon from '../assets/es2/production/heroes/shadowblade-special@3x.webp'
+import summonerSpecialIcon from '../assets/es2/production/heroes/spirit-summoner-special@3x.webp'
+import paladinSpecialIcon from '../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
+
+/** Hero starting skills and passive rank-ups share their authored identity. */
+const heroChoiceArt: Readonly<Record<string, string>> = {
+  'heroes:shadow-daggers': shadowSpecialIcon,
+  'heroes:shadow-precision': shadowSpecialIcon,
+  'heroes:spirit-orb': summonerSpecialIcon,
+  'heroes:spirit-bond': summonerSpecialIcon,
+  'heroes:crimson-guard': paladinSpecialIcon,
+  'heroes:crimson-vow': paladinSpecialIcon,
+}
+
 
 /** Generated 3x artwork for frequently used skills; keep original SVGs for everything else. */
 const generatedIcons = new Set<AbilityId>([
@@ -51,7 +65,7 @@ export function resolveSkillChoiceArt(
   id: AbilityId, suppliedSrc?: string, still = false,
 ): { imageSrc?: string; reducedMotionSrc?: string } {
   const builtIn = !id.includes(':')
-  const reducedMotionSrc = stillEs2ImageSrc(id) ?? suppliedSrc ??
+  const reducedMotionSrc = stillEs2ImageSrc(id) ?? heroChoiceArt[id] ?? suppliedSrc ??
     (builtIn ? skillImageSrc(id) : undefined)
   const animated = animatedEs2ImageSrc(id) ??
     (builtIn ? animatedSkillImageSrc(id) : undefined)
