@@ -8,6 +8,7 @@ interface ArtEntry {
   id: string; path: string; width: number; height: number; frames: number
   columns: number; rows: number; frameWidth: number; frameHeight: number
   alpha: boolean; sha256: string; maxBytes: number; status: string
+  humanApproval?: { status: string; confirmedBy: string; confirmedOn: string; scope: string; evidence: string }
 }
 interface ArtManifest { status: string; category: string; assets: ArtEntry[] }
 const root = dirname(fileURLToPath(import.meta.url))
@@ -37,10 +38,17 @@ describe('ES2 world art - blocking candidate asset integrity', () => {
       expect(existsSync(manifestPath), `Missing manifest ${category}`).toBe(true)
       const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as ArtManifest
       expect(manifest.category).toBe(category)
-      expect(manifest.status).toBe('visual-review-required')
+      // Owner signed off only the 17 UI icons; every other art group still has its original blocking gate.
+      expect(manifest.status).toBe(category === 'ui' ? 'approved' : 'visual-review-required')
       expect(manifest.assets).toHaveLength(count)
       for (const asset of manifest.assets) {
-        expect(asset.status).toBe('needs-human-approval')
+        expect(asset.status).toBe(category === 'ui' ? 'approved' : 'needs-human-approval')
+        if (category === 'ui') {
+          expect(asset.humanApproval, asset.id).toEqual({
+            status: 'approved', confirmedBy: 'project-owner',
+            confirmedOn: '2026-11-24', scope: 'visual-art', evidence: 'explicit-user-confirmation',
+          })
+        }
         expect(seen.has(`${category}:${asset.id}`)).toBe(false)
         seen.add(`${category}:${asset.id}`)
         expect(asset.path).toMatch(/^[a-z0-9-]+(?:-(?:body|telegraph|phases|ground|decor))?@3x\.webp$/)
