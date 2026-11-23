@@ -34,11 +34,11 @@ export const MILESTONES: readonly MilestoneDef[] = [
 
 /** Small starter-only bonuses; existing legacy power/vitality caps are preserved. */
 export const RESEARCH: readonly ResearchDef[] = [
-  { id: 'power', icon: '⚔', title: '攻擊研究', description: '每級 +4% 起始攻擊', rarity: 'common', ...BALANCE.meta.research['power'], , benefit: 'damagePct' },
-  { id: 'vitality', icon: '♥', title: '生存研究', description: '每級 +12 起始生命', rarity: 'common', ...BALANCE.meta.research['vitality'], , benefit: 'hpFlat' },
-  { id: 'insight', icon: '✧', title: '洞察研究', description: '每級 +1% 起始經驗加成', rarity: 'rare', ...BALANCE.meta.research['insight'], requires: [{ id: 'power', rank: 1 }], , benefit: 'xpPct' },
-  { id: 'scavenging', icon: '◈', title: '拾荒研究', description: '每級 +1% 拾取收益', rarity: 'rare', ...BALANCE.meta.research['scavenging'], requires: [{ id: 'vitality', rank: 1 }], , benefit: 'lootPct' },
-  { id: 'ember-study', icon: '✦', title: '餘燼研究', description: '每級 +1% 未來結算餘燼', rarity: 'epic', ...BALANCE.meta.research['ember-study'], requires: [{ id: 'insight', rank: 1 }, { id: 'scavenging', rank: 1 }], , benefit: 'goldPct' },
+  { id: 'power', icon: '⚔', title: '攻擊研究', description: '每級 +4% 起始攻擊', rarity: 'common', ...BALANCE.meta.research['power'], benefit: 'damagePct' },
+  { id: 'vitality', icon: '♥', title: '生存研究', description: '每級 +12 起始生命', rarity: 'common', ...BALANCE.meta.research['vitality'], benefit: 'hpFlat' },
+  { id: 'insight', icon: '✧', title: '洞察研究', description: '每級 +1% 起始經驗加成', rarity: 'rare', ...BALANCE.meta.research['insight'], requires: [{ id: 'power', rank: 1 }], benefit: 'xpPct' },
+  { id: 'scavenging', icon: '◈', title: '拾荒研究', description: '每級 +1% 拾取收益', rarity: 'rare', ...BALANCE.meta.research['scavenging'], requires: [{ id: 'vitality', rank: 1 }], benefit: 'lootPct' },
+  { id: 'ember-study', icon: '✦', title: '餘燼研究', description: '每級 +1% 未來結算餘燼', rarity: 'epic', ...BALANCE.meta.research['ember-study'], requires: [{ id: 'insight', rank: 1 }, { id: 'scavenging', rank: 1 }], benefit: 'goldPct' },
 ]
 
 export const STARTING_EQUIPMENT: readonly UnlockDef[] = [
