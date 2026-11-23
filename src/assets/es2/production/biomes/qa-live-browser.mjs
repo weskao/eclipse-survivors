@@ -105,9 +105,12 @@ try {
           const decor = decors.find(d => d.url.includes(id + '-decor@3x-'))
           assert.ok(decor, 'Runtime does not load decor atlas: ' + id)
           assert.equal(decor.width, decor.frameSide * 4, id + ' frame cropping')
+          assert.equal(decor.frameSide, 330, id + ' must use native-3x source cells')
           assert.equal(decor.frames.length, 4, id + ' frame count')
-          for (const frame of decor.frames)
+          for (const frame of decor.frames) {
             assert.ok(frame.visiblePixels > 0, id + ' has empty source prop ' + frame.frame)
+            assert.equal(frame.edgeTouches, 0, id + ' decor cell boundary bleed at frame ' + frame.frame)
+          }
         }
         for (let k = 0; k < ids.length; k++) {
           const ground = grounds.find(g => g.url.includes(ids[k]+'-ground@3x-'))
