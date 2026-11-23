@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { drawProductionHeroFrame, loadProductionHeroes, productionHeroSouthRunRect, PRODUCTION_HERO_SOUTH_RUN_SOURCES } from './production-heroes'
+import { drawProductionHeroFrame, loadProductionHeroes, productionHeroSouthRunRect, productionHeroQAEastRect, PRODUCTION_HERO_SOUTH_RUN_SOURCES } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 
@@ -50,6 +50,46 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
     expect(Number(calls[0]?.[8])).toBeGreaterThan(147)
     calls.length = 0
     drawProductionHeroFrame(ctx, hero, makeAnim({ frame: 6 }), 117, 147)
+    expect(images).toHaveLength(4)
+    expect(calls).toHaveLength(1)
+  })
+
+
+  it('maps 9 East run / attack / special candidate clips without changing 8-way fallback', () => {
+    expect(productionHeroQAEastRect(makeAnim({ direction: 0, pose: 'run', frame: 2, count: 4 })))
+      .toEqual({ pose: 'run', rect: { x: 0, y: 704, size: 704 } })
+    expect(productionHeroQAEastRect(makeAnim({ direction: 0, pose: 'cast', phase: 0.75, special: true })))
+      .toEqual({ pose: 'special', rect: { x: 704, y: 704, size: 704 } })
+    expect(productionHeroQAEastRect(makeAnim({ direction: 0, pose: 'attack', phase: 0.25 })))
+      .toEqual({ pose: 'attack', rect: { x: 704, y: 0, size: 704 } })
+    expect(productionHeroQAEastRect(makeAnim({ direction: 4 }))).toBeNull()
+    expect(productionHeroQAEastRect(makeAnim({ direction: 6 }))).toBeNull()
+    expect(productionHeroQAEastRect(makeAnim({ direction: 0, reducedMotion: true }))).toBeNull()
+  })
+
+  it('decodes East candidate atlas only for selected pose in real Canvas QA, not eagerly', () => {
+    const images: HTMLImageElement[] = []
+    const makeImage = () => {
+      const next = {
+        src: '', complete: true,
+        get naturalWidth() { return this.src.includes('/east-2026-11-23/') ? 1408 : 900 },
+        get naturalHeight() { return this.src.includes('/east-2026-11-23/') ? 1408 : 900 },
+      } as HTMLImageElement
+      images.push(next)
+      return next
+    }
+    const heroes = loadProductionHeroes(makeImage, true)
+    expect(images).toHaveLength(3)
+    const calls: unknown[][] = []
+    const ctx = { save: () => {}, restore: () => {},
+      drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    const anim = makeAnim({ direction: 0, pose: 'attack', phase: .75 })
+    expect(drawProductionHeroFrame(ctx, heroes['crimson-paladin'], anim, 117, 147)).toBe(true)
+    expect(images).toHaveLength(4)
+    expect(images[3]?.src).toContain('/east-2026-11-23/attack-east-4frames')
+    expect(calls[0]?.slice(1, 5)).toEqual([704, 704, 704, 704])
+    calls.length = 0
+    drawProductionHeroFrame(ctx, heroes['crimson-paladin'], anim, 117, 147)
     expect(images).toHaveLength(4)
     expect(calls).toHaveLength(1)
   })
