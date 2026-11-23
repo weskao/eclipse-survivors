@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "note": "448px candidates are NOT proof of native 3x detail; see nativeSourceFramePixels.",
+  "displayCSSMaxHeight": 147,
+  "assets": {
+    "shadowblade": [
+      {
+        "kind": "idle-ready-8dir",
+        "path": "shadowblade/idle-ready-8dir@3x.webp",
+        "source": "影刃行者_紫焰十六式_sprite_圖_sheet.png",
+        "sourcePixels": [
+          1254,
+          1254
+        ],
+        "nativeSourceFramePixels": [
+          313,
+          313
+        ],
+        "outputPixels": [
+          1792,
+          1792
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          4
+        ],
+        "frameCount": 16,
+        "native3x": false,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": false,
+        "bytes": 862346,
+        "sha256": "23ae9b107497c34f40457ffe98a793601254984035a01ef4c7cad86d4b723424"
+      },
+      {
+        "kind": "run-attack-east",
+        "path": "shadowblade/run-attack-east@3x.webp",
+        "source": "影刃行者_奔跑與雙刃連擊精靈圖譜.png",
+        "sourcePixels": [
+          1254,
+          1254
+        ],
+        "nativeSourceFramePixels": [
+          313,
+          313
+        ],
+        "outputPixels": [
+          1792,
+          1792
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          4
+        ],
+        "frameCount": 16,
+        "native3x": false,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": false,
+        "bytes": 959248,
+        "sha256": "28406e21ffc7ef8a86ee9f024bec396a5ff5e045162c11cbe1afdfb52afb8034"
+      },
+      {
+        "kind": "special-east",
+        "path": "shadowblade/special-east@3x.webp",
+        "source": "影刃行者_紫霧突襲連擊.png",
+        "sourcePixels": [
+          1774,
+          887
+        ],
+        "nativeSourceFramePixels": [
+          443,
+          443
+        ],
+        "outputPixels": [
+          1792,
+          896
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          2
+        ],
+        "frameCount": 8,
+        "native3x": true,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": false,
+        "bytes": 531462,
+        "sha256": "da74cb24e155fe819cb316d44b9b0afc6bc95394cf225d052b2f0f068252fbac"
+      }
+    ],
+    "spirit-summoner": [
+      {
+        "kind": "idle-ready-8dir",
+        "path": "spirit-summoner/idle-ready-8dir@3x.webp",
+        "source": "靈契召喚師_幽狐法術姿態圖譜.png",
+        "sourcePixels": [
+          1254,
+          1254
+        ],
+        "nativeSourceFramePixels": [
+          313,
+          313
+        ],
+        "outputPixels": [
+          1792,
+          1792
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          4
+        ],
+        "frameCount": 16,
+        "native3x": false,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": false,
+        "bytes": 1490654,
+        "sha256": "15089e4a8f2494000d3cce6d75f1ae38f1a1db1a05cbded720f8d41aae3c80ff"
+      },
+      {
+        "kind": "run-attack-east",
+        "path": "spirit-summoner/run-attack-east@3x.webp",
+        "source": "靈契召喚師_幻狐奔行與施法_sprites.png",
+        "sourcePixels": [
+          1254,
+          1254
+        ],
+        "nativeSourceFramePixels": [
+          313,
+          313
+        ],
+        "outputPixels": [
+          1792,
+          1792
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          4
+        ],
+        "frameCount": 16,
+        "native3x": false,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": false,
+        "bytes": 1671144,
+        "sha256": "8ef1c795d1832d8cf4a381864c16425f79fb38edf55139eae5a49f3e2c0d37c0"
+      },
+      {
+        "kind": "special-east",
+        "path": "spirit-summoner/special-east@3x.webp",
+        "source": "靈契召喚師_幻狐秘術八連式.png",
+        "sourcePixels": [
+          1774,
+          887
+        ],
+        "nativeSourceFramePixels": [
+          443,
+          443
+        ],
+        "outputPixels": [
+          1792,
+          896
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          2
+        ],
+        "frameCount": 8,
+        "native3x": true,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": false,
+        "bytes": 815952,
+        "sha256": "550f67060cf72ca2ba73473618162a809ad7e6915a92cf0eba91ac4f6e857a0e"
+      }
+    ],
+    "crimson-paladin": [
+      {
+        "kind": "idle-ready-8dir",
+        "path": "crimson-paladin/idle-ready-8dir@3x.webp",
+        "source": "緋紅聖騎四向戰鬥精靈圖譜.png",
+        "sourcePixels": [
+          1254,
+          1254
+        ],
+        "nativeSourceFramePixels": [
+          313,
+          313
+        ],
+        "outputPixels": [
+          1792,
+          1792
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          4
+        ],
+        "frameCount": 16,
+        "native3x": false,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": true,
+        "bytes": 718010,
+        "sha256": "703b69c1afdb6c3ddff50d6880fc3f9037a1bebf89bdb8334114aea1684b6a4f"
+      },
+      {
+        "kind": "run-attack-east",
+        "path": "crimson-paladin/run-attack-east@3x.webp",
+        "source": "緋紅聖騎_奔跑與聖光連擊_sprite_表.png",
+        "sourcePixels": [
+          1254,
+          1254
+        ],
+        "nativeSourceFramePixels": [
+          313,
+          313
+        ],
+        "outputPixels": [
+          1792,
+          1792
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          4
+        ],
+        "frameCount": 16,
+        "native3x": false,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": true,
+        "bytes": 710214,
+        "sha256": "d94327c169b44d9c24e1f982d24feab5e1cc1e3990e3cddcf3a314f1c1afe56d"
+      },
+      {
+        "kind": "special-east",
+        "path": "crimson-paladin/special-east@3x.webp",
+        "source": "緋紅聖騎_聖盾終結技序列.png",
+        "sourcePixels": [
+          1774,
+          887
+        ],
+        "nativeSourceFramePixels": [
+          443,
+          443
+        ],
+        "outputPixels": [
+          1792,
+          896
+        ],
+        "framePixels": [
+          448,
+          448
+        ],
+        "grid": [
+          4,
+          2
+        ],
+        "frameCount": 8,
+        "native3x": true,
+        "interpolated": true,
+        "qa": "QA_PENDING",
+        "matteCleanup": false,
+        "bytes": 855824,
+        "sha256": "d9224592c15076d283033ec9d5bc7b326b476a1c79536c98f17c99c3d9c31e59"
+      }
+    ]
+  }
+}
