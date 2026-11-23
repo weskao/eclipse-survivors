@@ -214,7 +214,7 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
 
 const DIMS: Record<string, [number, number]> = {
   knight: [108, 134], ranger: [111, 144], wizard: [117, 147], slime: [87, 75],
-  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [236, 246],
+  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [255, 266],
 }
 
 export function drawCharacter(
