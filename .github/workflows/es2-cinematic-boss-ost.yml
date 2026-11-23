@@ -1,0 +1,59 @@
+name: Render cinematic ES2 boss OST
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths:
+      - scripts/compose-boss-ost.mjs
+      - scripts/compose-boss-ost.test.mjs
+      - scripts/render-boss-ost.sh
+      - .github/workflows/es2-cinematic-boss-ost.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: es2-cinematic-boss-ost-render
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/es2-release-readiness-integration
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify compositional identity and all aligned phases
+        run: node --test scripts/compose-boss-ost.test.mjs
+      - name: Install sample renderer and credited orchestral soundbank
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y fluidsynth fluid-soundfont-gm ffmpeg
+      - name: Render original MP3 tracks (all offline)
+        run: bash scripts/render-boss-ost.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: es2-cinematic-boss-ost-review
+          path: |
+            public/audio/boss/*.mp3
+            public/audio/boss/SOUNDFONT-LICENSE.txt
+          retention-days: 14
+      - name: Commit verified tracks into this branch only
+        run: |
+          set -euo pipefail
+          branch=feature/es2-release-readiness-integration
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/audio/boss/*.mp3 public/audio/boss/SOUNDFONT-LICENSE.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'assets(audio): render four cinematic ES2 boss scores and countdown warning'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$branch"
+            git rebase "origin/$branch"
+            if git push origin "HEAD:refs/heads/$branch"; then exit 0; fi
+            sleep 3
+          done
+          echo 'Branch moved during publication; no force push attempted' >&2
+          exit 1
