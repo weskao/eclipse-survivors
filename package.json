@@ -8,7 +8,7 @@
     "build": "node scripts/generate-menu-theme.mjs && node scripts/generate-victory-theme.mjs && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && vue-tsc --noEmit -p tsconfig.node.json",
-    "test": "node --test scripts/generate-menu-theme.test.mjs scripts/generate-victory-theme.test.mjs scripts/compose-boss-ost.test.mjs && vitest run",
+    "test": "node --test scripts/generate-menu-theme.test.mjs scripts/generate-victory-theme.test.mjs scripts/compose-boss-ost.test.mjs scripts/es2-hero-video-config.test.mjs && vitest run",
     "check-release": "node scripts/check-release.mjs"
   },
   "dependencies": {
