@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
-import { animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../../../game/ui-art'
+import { resolveSkillChoiceArt } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
+import { RELIC_BY_ID, type RelicId } from '../../../game/content/relics/catalog'
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
 import type { MetaState } from '../../../game/content/meta/state'
 import type { Profile, PermanentUpgrade, CosmeticId, RunModeId, RunRewards, RunStats } from '../../../meta/types'
 import '../../../styles/es2/menu.css'
+import '../../../styles/es2/skill-polish.css'
 import Es2MainMenu from './Es2MainMenu.vue'
 import Es2Archive from './Es2Archive.vue'
 import Es2ChoiceDialog from './Es2ChoiceDialog.vue'
@@ -34,7 +37,7 @@ const props = withDefaults(defineProps<{
   loading?: { message?: string; hero?: JobId; progress?: number } | null
 }>(), {
   upgrades: () => [], ending: '', summary: '', settingsOpen: false,
-  upgradeEffect: 'soft', cameraShake: true, audioUnlocked: true,
+  upgradeEffect: 'soft', cameraShake: false, audioUnlocked: true,
   musicOn: true, sfxOn: true, musicVolume: 100, sfxVolume: 100,
 })
 const emit = defineEmits<{
@@ -56,23 +59,22 @@ watch(() => props.screen, screen => { if (screen !== 'menu') { archive.value = '
 const archiveActive = computed(() => props.screen === 'menu' && archive.value !== 'main' && !resetOpen.value && !props.settingsOpen && !props.notification && !props.loading)
 const levelActive = computed(() => props.screen === 'level' && !props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const specialActive = computed(() => !!props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
-const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => {
-  const native = !upgrade.id.includes(':')
-  const stillSrc = native ? skillImageSrc(upgrade.id) : upgrade.iconSrc
-  const movingSrc = native && hasGeneratedSkillArt(upgrade.id) ? animatedSkillImageSrc(upgrade.id) : stillSrc
-  return {
-    id: upgrade.id, title: upgrade.title, description: upgrade.desc, icon: upgrade.icon,
-    imageSrc: props.upgradeEffect === 'still' ? stillSrc : movingSrc,
-    reducedMotionSrc: stillSrc, rarity: upgrade.rarity, level: upgrade.level,
-    maxLevel: upgrade.maxLevel, requirements: upgrade.requirements, evolution: upgrade.isEvolution,
-  }
-}))
+const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
+  id: upgrade.id, title: upgrade.title, description: upgrade.desc, icon: upgrade.icon,
+  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, props.upgradeEffect === 'still'),
+  rarity: upgrade.rarity, level: upgrade.level, maxLevel: upgrade.maxLevel,
+  requirements: upgrade.requirements, evolution: upgrade.isEvolution,
+})))
 const specialCards = computed(() => {
   const offer = props.specialChoice
-  if (!offer || offer.kind !== 'treasure') return offer
+  if (!offer) return offer
+  if (offer.kind === 'evolution') return { ...offer, items: offer.items.map(item => ({
+    ...item,
+    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, props.upgradeEffect === 'still'),
+  })) }
   return { ...offer, items: offer.items.map(item => ({
     ...item,
-    imageSrc: /cursed|curse/i.test(item.id) ? WORLD_ART.ui['treasure-cursed']
+    imageSrc: RELIC_BY_ID.get(item.id as RelicId)?.cursed ? WORLD_ART.ui['treasure-cursed']
       : item.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary']
         : item.rarity === 'rare' || item.rarity === 'epic' ? WORLD_ART.ui['treasure-rare']
           : WORLD_ART.ui['treasure-common'],
@@ -103,11 +105,11 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       :still="upgradeEffect === 'still'" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')" />
-    <Es2Message :active="resetOpen && !settingsOpen" kind="confirmation" title="重置所有遠征紀錄？"
-      message="成就、餘燼、戰績、造型及永久升級將全部刪除。" confirm-label="永久刪除" destructive
+    <Es2Message :active="resetOpen && !settingsOpen" kind="confirmation" :title="t('重置所有遠征紀錄？')"
+      :message="t('成就、餘燼、戰績、造型及永久升級將全部刪除。')" :confirm-label="t('永久刪除')" destructive
       @confirm="confirmReset" @cancel="resetOpen = false" />
     <Es2Message :active="!!notification && !settingsOpen" kind="notification"
-      :title="notification?.title ?? ''" :message="notification?.message ?? ''"
+      :title="t(notification?.title ?? '')" :message="t(notification?.message ?? '')"
       @confirm="emit('dismissNotification')" @cancel="emit('dismissNotification')" />
     <Es2Settings :active="settingsOpen && !loading" :upgrade-effect="upgradeEffect" :camera-shake="cameraShake"
       :music-on="musicOn" :sfx-on="sfxOn" :music-volume="musicVolume" :sfx-volume="sfxVolume"
@@ -116,6 +118,6 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       @camera-shake="emit('cameraShake', $event)" @toggle-music="emit('toggleMusic')" @toggle-sfx="emit('toggleSfx')"
       @music-volume="emit('musicVolume', $event)" @sfx-volume="emit('sfxVolume', $event)"
       @accessibility="emit('accessibility', $event)" />
-    <Es2Loading :active="!!loading" :message="loading?.message" :hero="loading?.hero" :progress="loading?.progress" />
+    <Es2Loading :active="!!loading" :message="t(loading?.message)" :hero="loading?.hero" :progress="loading?.progress" />
   </div>
 </template>

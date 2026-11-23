@@ -1,0 +1,102 @@
+{
+  "maxLevels": {
+    "damage": 5,
+    "speed": 5,
+    "haste": 5,
+    "maxhp": 5,
+    "multi": 3,
+    "orb": 5,
+    "magnet": 4,
+    "heal": 5,
+    "bolt": 5,
+    "frost": 5,
+    "meteor": 5,
+    "blaze": 5,
+    "vortex": 5,
+    "shield": 4,
+    "chain": 5
+  },
+  "statUpgrades": {
+    "damageMultiplier": 1.28,
+    "speedMultiplier": 1.13,
+    "attackDelayMultiplier": 0.84,
+    "multiRangeMultiplier": 1.01,
+    "maxHpAdded": 40,
+    "maxHpHealing": 60,
+    "shieldHealing": 28
+  },
+  "passive": {
+    "xpMagnetBase": 115,
+    "xpMagnetPerRank": 62,
+    "regenPerRank": 1.05,
+    "shieldReductionPerRank": 0.13,
+    "shieldReductionCap": 0.52,
+    "chainCooldownBase": 2.8,
+    "chainCooldownPerRank": 0.25,
+    "chainDamageBase": 0.66,
+    "chainDamagePerRank": 0.18
+  },
+  "area": {
+    "orb": {
+      "maxBlades": 8,
+      "baseDamage": 12,
+      "heroDamageRatio": 0.28,
+      "hitCooldown": 0.28
+    },
+    "bolt": {
+      "cooldownFloor": 0.45,
+      "cooldownBase": 2,
+      "cooldownPerRank": 0.18,
+      "targetBase": 2,
+      "maxTargets": 7,
+      "range": 470,
+      "damageRatio": 1.4
+    },
+    "frost": {
+      "cooldownFloor": 1.2,
+      "cooldownBase": 5.4,
+      "cooldownPerRank": 0.48,
+      "rangeBase": 170,
+      "rangePerRank": 17,
+      "damageBase": 0.58,
+      "damagePerRank": 0.14,
+      "slowBase": 1,
+      "slowPerRank": 0.16
+    },
+    "meteor": {
+      "cooldownFloor": 1.8,
+      "cooldownBase": 6,
+      "cooldownPerRank": 0.46,
+      "targetBase": 1,
+      "maxTargets": 5,
+      "rangeBase": 115,
+      "rangePerRank": 9,
+      "damageBase": 1.2,
+      "damagePerRank": 0.21
+    },
+    "blaze": {
+      "cooldownFloor": 0.18,
+      "cooldownBase": 0.48,
+      "cooldownPerRank": 0.033,
+      "rangeBase": 95,
+      "rangePerRank": 16,
+      "damageBase": 0.19,
+      "damagePerRank": 0.045
+    },
+    "vortex": {
+      "cooldownFloor": 2.2,
+      "cooldownBase": 8,
+      "cooldownPerRank": 0.6,
+      "rangeBase": 220,
+      "rangePerRank": 14,
+      "damageBase": 0.44,
+      "damagePerRank": 0.09,
+      "pullRatio": 0.18
+    },
+    "shield": {
+      "pulseFloor": 0.4,
+      "pulseBase": 2.8,
+      "pulsePerRank": 0.2
+    }
+  }
+}

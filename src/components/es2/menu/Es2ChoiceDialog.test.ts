@@ -12,7 +12,9 @@ const choices: MenuChoice[] = [
 ]
 const dialog = () => document.querySelector<HTMLElement>('.es2-dialog')!
 const button = (id: string) => document.querySelector<HTMLButtonElement>(`[data-choice="${id}"]`)!
-const press = (key: string, extra: KeyboardEventInit = {}) => document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...extra }))
+const press = (key: string, extra: KeyboardEventInit = {}) => document.dispatchEvent(new KeyboardEvent('keydown', {
+  key, code: /^[0-9]$/.test(key) ? `Digit${key}` : '', bubbles: true, cancelable: true, ...extra,
+}))
 const wrappers: VueWrapper[] = []
 function mounted(component: Component, props: Record<string, unknown>) {
   const wrapper = mount(component, { attachTo: document.body, props })
@@ -62,15 +64,67 @@ describe('ES2 upgrade and reward picker', () => {
     expect(wrapper.emitted('choose')).toEqual([['bolt']])
   })
 
-  it('allows arrow navigation, traps Tab and restores focus when closed', async () => {
+  it.each(['level', 'evolution', 'treasure'] as const)('does not navigate %s choices with arrow keys', async (kind) => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind, items: choices })
+    await nextTick(); await nextTick()
+    button('bolt').focus()
+    for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) {
+      button('bolt').dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+      await nextTick()
+      expect(document.activeElement).toBe(button('bolt'))
+      expect(wrapper.emitted('choose')).toBeUndefined()
+    }
+    press('2')
+    expect(wrapper.emitted('choose')).toEqual([['frost']])
+  })
+
+  it.each(['level', 'evolution', 'treasure'] as const)(
+    'suppresses Space and Enter on focused %s choice buttons without blocking clicks', async (kind) => {
+      const wrapper = mounted(Es2ChoiceDialog, { active: true, kind, items: choices })
+      await nextTick()
+      const card = button('bolt')
+      card.focus()
+      for (const [key, code] of [[' ', 'Space'], ['Enter', 'Enter'], ['Enter', 'NumpadEnter']]) {
+        for (const type of ['keydown', 'keyup'] as const) {
+          const event = new KeyboardEvent(type, { key, code, bubbles: true, cancelable: true })
+          card.dispatchEvent(event)
+          expect(event.defaultPrevented, `${type} ${code}`).toBe(true)
+        }
+      }
+      expect(wrapper.emitted('choose')).toBeUndefined()
+      card.click()
+      expect(wrapper.emitted('choose')).toEqual([['bolt']])
+    },
+  )
+
+  it('does not interfere with Space/Enter after the choice dialog closes', async () => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
+    await nextTick()
+    await wrapper.setProps({ active: false })
+    const event = new KeyboardEvent('keydown', { code: 'Space', key: ' ', bubbles: true, cancelable: true })
+    document.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('uses physical number positions across IMEs and the separate numpad', async () => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
+    await nextTick()
+    press('2', { code: 'KeyQ' }) // A character that looks numeric is not the Digit2 position.
+    expect(wrapper.emitted('choose')).toBeUndefined()
+    press('End', { code: 'Numpad2' }) // NumLock off.
+    expect(wrapper.emitted('choose')).toEqual([['frost']])
+    await wrapper.setProps({ active: false })
+    await wrapper.setProps({ active: true })
+    await nextTick()
+    press('Process', { code: 'Digit1', isComposing: true }) // Non-English IME.
+    expect(wrapper.emitted('choose')).toEqual([['frost'], ['bolt']])
+  })
+
+  it('traps Tab and restores focus when the choice dialog closes', async () => {
     const launch = document.createElement('button'); launch.textContent = 'launch'; document.body.append(launch); launch.focus()
     const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'treasure', items: choices })
     await nextTick(); await nextTick()
     expect(dialog().contains(document.activeElement)).toBe(true)
-    button('bolt').focus()
-    button('bolt').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }))
-    await nextTick()
-    expect(document.activeElement).toBe(button('frost'))
     button('frost').focus()
     press('Tab')
     expect(dialog().contains(document.activeElement)).toBe(true)
@@ -90,6 +144,24 @@ describe('ES2 upgrade and reward picker', () => {
 })
 
 describe('ES2 dialog accessibility', () => {
+  it('ignores horizontal arrows for dialog shortcuts without blocking editable controls', async () => {
+    const wrapper = mounted(Es2Dialog, { active: true, title: 'Confirm', dismissible: true })
+    await nextTick()
+    for (const key of ['ArrowLeft', 'ArrowRight']) {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
+      document.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(true)
+    }
+    expect(wrapper.emitted('shortcut')).toBeUndefined()
+    const slider = document.createElement('input')
+    slider.type = 'range'
+    dialog().append(slider)
+    slider.focus()
+    const adjustable = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true })
+    slider.dispatchEvent(adjustable)
+    expect(adjustable.defaultPrevented).toBe(false)
+  })
+
   it('closes optional dialogs on backdrop but not inner content', async () => {
     const wrapper = mounted(Es2Dialog, { active: true, title: 'Confirm', dismissible: true })
     await nextTick()

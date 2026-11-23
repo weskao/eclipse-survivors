@@ -1,4 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { BALANCE } from '../game/config'
+import { createMetaState } from '../game/content/meta/state'
+import { META_V3_HEAD_KEY, META_V3_SLOT_KEYS } from '../game/content/meta/store'
 import { createEngine } from '../game/engine'
 import { createProfileStore } from './profile'
 import type { AudioSystem } from '../game/audio/types'
@@ -41,6 +44,30 @@ describe('progression engine integration', () => {
     engine.state.mobs = []
     engine.advance(0.016)
     expect(engine.ui.mode).toBe('play')
+  })
+  it('applies purchased insight, scavenging and starting blessings only once on run start', () => {
+    const state = createMetaState()
+    state.research = { ...state.research, power: 1, vitality: 1, insight: 3, scavenging: 2 }
+    state.bonuses = ['ember-spark', 'wanderer-kit', 'guardian-vow']
+    localStorage.setItem(META_V3_SLOT_KEYS.a, JSON.stringify({
+      schema: 'eclipse-survivors.meta.v3', revision: 1, state, legacyProfile: null,
+    }))
+    localStorage.setItem(META_V3_HEAD_KEY, JSON.stringify({ version: 3, slot: 'a', revision: 1 }))
+    const engine = createEngine({ audio })
+    engine.start()
+    const hero = engine.state.hero!
+    const research = BALANCE.meta.research
+    expect(hero.damage).toBeCloseTo(32 * (1 + research.power.benefitPerRank))
+    expect(hero.max).toBe(Math.round((BALANCE.heroes.classic.knight.hp + research.vitality.benefitPerRank)
+      * (1 + BALANCE.meta.startingBonuses['guardian-vow'].bonus)))
+    expect(engine.state.xpGainMultiplier).toBeCloseTo(1 + research.insight.benefitPerRank * 3
+      + BALANCE.meta.startingBonuses['ember-spark'].bonus)
+    expect(engine.state.pickupGainMultiplier).toBeCloseTo(1 + research.scavenging.benefitPerRank * 2
+      + BALANCE.meta.startingBonuses['wanderer-kit'].bonus)
+    engine.goMenu()
+    engine.start()
+    expect(engine.state.hero!.max).toBe(hero.max)
+    expect(engine.state.xpGainMultiplier).toBeCloseTo(1.04)
   })
   it('saves a completed run once, including stats, and restores after restart', () => {
     const store = createProfileStore(localStorage)

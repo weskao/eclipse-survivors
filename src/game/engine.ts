@@ -7,17 +7,20 @@ import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
 import { dash as heroDash, hit } from './combat'
+import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
 import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
+import { getBossArrivalWarning } from './bosses/countdown'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
+import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
@@ -32,6 +35,7 @@ import { createFactionBridge } from './content/enemies/integration'
 import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
 import { loadProductionFactionArt } from './render/es2/production-factions'
 import { loadProductionHeroes } from './render/es2/production-heroes'
+import { markHeroSpecialAnimation } from './render/animation'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
 import { spawnMob } from './spawn'
@@ -51,6 +55,8 @@ export interface TestApi {
   /** Stage an evolution for browser capture without changing normal play. */
   prepareEvolution(id: EvolutionId): void
   readonly hp: number | undefined
+  /** Vite DEV + explicit showcase flags only; capture true Canvas/HUD states without cheats in production. */
+  previewLowHealth(percent: number): void
   readonly active: boolean
   readonly sceneArtLoaded: boolean
   readonly animated: boolean
@@ -61,6 +67,10 @@ export interface TestApi {
   readonly vfxCount: number
   readonly frames: number
   readonly scene: string
+  /** Live encounter identity and phase for browser QA; not a player setting. */
+  readonly bossPreview: { id: BossId | null; phase: 1 | 2 | 3 | null }
+  /** Dev capture reads which real boss attack is currently telegraphing. */
+  readonly bossAttackPreview: { id: string | null; activeImpacts: number }
   forceAttack(): void
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
@@ -127,10 +137,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     tick(state: GameState, dt: number, hooks: GameHooks): void { bosses.tick(state, dt, hooks) },
   } : undefined
-  const profileStore = opts.profileStore ?? createProfileStore()
+  // The unlocked mode exists only in Vite dev, and uses disposable saves.
+  // Even a build with VITE_ES2_UNLOCKED=1 cannot enable it in production.
+  const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
+  const profileStore = opts.profileStore ?? createProfileStore(
+    unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : undefined,
+  )
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  const metaStore = opts.profileStore ? null : createMetaProgressionStore()
+  const metaStore = opts.profileStore ? null : createMetaProgressionStore(
+    unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : undefined,
+  )
   function displayProfile() {
     const legacy = profileStore.get()
     const persisted = metaStore?.get()
@@ -155,12 +172,26 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     return legacy
   }
+  const bossTrackUrls = Object.fromEntries(bossIds.map(id => [
+    id, [1, 2, 3].map(phase => import.meta.env.BASE_URL + 'audio/boss/' + id + '-p' + phase + '.mp3') as [string, string, string],
+  ]))
   const audio = opts.audio ?? createAudioSystem({
     bgm: createBgm(BGM_URL),
     menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
+    bossTracks: bossTrackUrls,
+    warningTrack: import.meta.env.BASE_URL + 'audio/boss/arrival-warning.mp3',
+    victoryTrack: import.meta.env.BASE_URL + 'audio/eclipse-victory.wav',
   })
   // The original audio owner provides the context and buses. Never start a second BGM.
   // Older injected AudioSystem fakes retain their original behaviour unchanged.
+  let adaptiveScoreActive = false
+  let adaptiveScoreFailed = false
+  function setAdaptiveScore(active: boolean): void {
+    const next = !!es2Audio && !adaptiveScoreFailed && active
+    if (adaptiveScoreActive === next) return
+    adaptiveScoreActive = next
+    audio.setExternalScoreActive?.(next)
+  }
   const es2Port = audio.createEs2Port?.()
   const es2Audio = es2Port && audio.setExternalScoreActive
     ? createEs2AudioAdapter({
@@ -169,17 +200,18 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         try { es2Port.tone(...args) }
         catch (error) {
           // The adapter falls back to legacy scheduling after any synthesis failure.
-          audio.setExternalScoreActive?.(false)
+          adaptiveScoreFailed = true
+          setAdaptiveScore(false)
           throw error
         }
       },
     }) : null
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
-  let initialShake = true
+  let initialShake = false
   try {
     if (settingsStorage?.getItem('eclipseUpgradeEffect') === 'still') initialEffect = 'still'
-    if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
+    if (settingsStorage?.getItem('eclipseCameraShake') === 'on') initialShake = true
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
     mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
@@ -233,6 +265,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }, random)
       return result.execute && target ? Math.max(result.damage, target.hp) : result.damage
     },
+    consumeCriticalHit: () => heroSpecialization?.consumeCriticalHit() ?? false,
     mitigateIncomingDamage: amount => {
       const modified = heroSpecialization?.mitigateIncomingDamage(amount) ?? amount
       if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
@@ -246,7 +279,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (reflect > 0) {
         // Only the original colliding Mob receives reflected damage.
         // Do not roll relic critical hits a second time for the reflected strike.
-        hit(s, source, amount * reflect, { ...hooks, modifyOutgoingDamage: undefined })
+        hit(s, source, amount * reflect, { ...hooks, modifyOutgoingDamage: undefined, consumeCriticalHit: undefined })
       }
     },
     canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
@@ -283,7 +316,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // Special attacks and companion hits already own their damage; do not apply the normal
   // attack critical/modifier hook a second time when they call legacy hit().
   const heroHooks: GameHooks = {
-    ...hooks, modifyOutgoingDamage: undefined, mitigateIncomingDamage: undefined, afterDamage: undefined,
+    ...hooks, modifyOutgoingDamage: undefined, consumeCriticalHit: undefined, mitigateIncomingDamage: undefined, afterDamage: undefined,
   }
 
   function screen(name: GameMode): void {
@@ -292,12 +325,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.mode = name
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
-    // Title screen keeps the previous pre-rendered overture; ES2 scores runs only.
-    // Order matters: hand off before onScreen when leaving the title, after it when entering,
-    // so the shared owner never briefly starts the wrong track.
-    if (es2Audio && name !== 'menu') audio.setExternalScoreActive?.(true)
+    // Switch back to the host after entering the title screen so the battle track stays paused.
     audio.onScreen(name)
-    if (es2Audio && name === 'menu') audio.setExternalScoreActive?.(false)
+    if (name === 'menu' || (name === 'result' && audio.setResultTheme)) setAdaptiveScore(false)
+    else if (name === 'result') setAdaptiveScore(true)
     if (name === 'menu') es2Audio?.setScene('menu')
     else if (name === 'play') es2Audio?.setScene('exploration')
     if (name !== 'play') {
@@ -397,6 +428,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ui.rewards = profileStore.recordRun(stats)
     }
     refreshMeta()
+    audio.setResultTheme?.(win ? 'victory' : 'defeat')
     screen('result')
     es2Audio?.setScene(win ? 'victory' : 'defeat')
     audio.playSfx(win ? 'victory' : 'defeat')
@@ -445,15 +477,28 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.runMode = ui.runMode
     s.cosmetic = displayProfile().equippedCosmetics[s.choice]
     const saved = metaStore?.get()
+    const unlocked = saved?.status === 'ready' ? saved.state : null
     const permanent = metaStore
-      ? (saved?.status === 'ready' && saved.state
-        ? { power: saved.state.research.power ?? 0, vitality: saved.state.research.vitality ?? 0 }
-        : { power: 0, vitality: 0 })
+      ? { power: unlocked?.research.power ?? 0, vitality: unlocked?.research.vitality ?? 0 }
       : profileStore.get().upgrades
     if (s.hero) {
-      s.hero.damage *= 1 + 0.04 * permanent.power
-      s.hero.max += 12 * permanent.vitality
-      s.hero.hp += 12 * permanent.vitality
+      const bonusHp = BALANCE.meta.research.vitality.benefitPerRank * permanent.vitality
+      s.hero.damage *= 1 + BALANCE.meta.research.power.benefitPerRank * permanent.power
+      s.hero.max += bonusHp
+      s.hero.hp += bonusHp
+      if (unlocked) {
+        const bonuses = unlocked.bonuses
+        const startBonuses = BALANCE.meta.startingBonuses
+        s.xpGainMultiplier = 1 + (unlocked.research.insight ?? 0) * BALANCE.meta.research.insight.benefitPerRank
+          + (bonuses.includes('ember-spark') ? startBonuses['ember-spark'].bonus : 0)
+        s.pickupGainMultiplier = 1 + (unlocked.research.scavenging ?? 0) * BALANCE.meta.research.scavenging.benefitPerRank
+          + (bonuses.includes('wanderer-kit') ? startBonuses['wanderer-kit'].bonus : 0)
+        if (bonuses.includes('guardian-vow')) {
+          const extra = Math.round(s.hero.max * startBonuses['guardian-vow'].bonus)
+          s.hero.max += extra
+          s.hero.hp += extra
+        }
+      }
     }
     ui.runResult = null
     ui.rewards = null
@@ -461,7 +506,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     keys = {}
     stick = { x: 0, y: 0 }
     audio.setCombatIntensity('calm')
-    if (es2Audio) audio.setExternalScoreActive?.(true) // before wake: never restart the overture
+    audio.setBossTheme?.(null)
+    audio.setBossWarning?.(null)
+    setAdaptiveScore(true) // before wake: never restart the overture
     wakeAudio()
     screen('play')
     hooks.content?.(s, { type: 'start' })
@@ -541,6 +588,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     try { settingsStorage?.setItem(key, value) } catch { /* unavailable */ }
   }
 
+  // Sound only after the transaction is accepted, never on a disabled/failed purchase.
+  function finishPurchase(ok: boolean, reason: string): void {
+    if (ok) {
+      refreshMeta()
+      audio.playSfx('upgrade')
+    } else {
+      message(reason)
+      audio.playSfx('deny')
+    }
+  }
+
   function advance(dt: number): void {
     // Event choices are deliberate atomic transactions; gameplay cannot run
     // underneath the modal, even when the underlying screen is still 'play'.
@@ -587,9 +645,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
-      const bossAlive = s.mobs.some(m => m.type === 'boss' && m.hp > 0)
-      const phase = bossAlive ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
+      const liveBoss = s.mobs.find(m => m.type === 'boss' && m.hp > 0)
+      const upcoming = getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null)
+      audio.setBossWarning?.(upcoming?.seconds ?? null)
+      audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
+      const phase = liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
       audio.setCombatIntensity(phase)
+      setAdaptiveScore(
+        !(liveBoss && audio.setBossTheme) && !(upcoming && audio.setBossWarning),
+      )
       es2Audio?.setScene(phase === 'boss' ? 'boss' : phase === 'combat' ? 'combat' : 'exploration')
     }
     if (toastTimer > 0) {
@@ -605,8 +669,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (!marker) return false
     const dx = marker.x - s.hero.x
     const dy = marker.y - s.hero.y
-    if (dx * dx + dy * dy > 64 * 64) return false
+    if (dx * dx + dy * dy > 64 * 64) {
+      audio.playSfx('deny')
+      return false
+    }
     ui.worldEventChoice = { event: marker, options: worldEvents.options(id), feedback: null }
+    audio.playSfx('scene')
     keys = {}
     stick = { x: 0, y: 0 }
     return true
@@ -620,7 +688,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (outcome === 'applied') {
       objectiveRuntime?.resolveEvent(selected, true)
       ui.worldEventChoice = null
+      audio.playSfx('upgrade')
     } else {
+      audio.playSfx('deny')
       const feedback = outcome === 'retry' ? '獎勵無法領取，請重新選擇'
         : outcome === 'out-of-range' ? '請靠近事件' : '目前無法選擇此項目'
       ui.worldEventChoice = { event: selected, options: worldEvents.options(eventId), feedback }
@@ -657,6 +727,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       hud()
     },
     get hp() { return s.hero?.hp },
+    previewLowHealth(percent: number) {
+      const params = import.meta.env.DEV && typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search) : null
+      if (params?.get('showcase') !== '1' || params.get('lowHpQa') !== '1' ||
+          s.mode !== 'play' || !s.hero || !Number.isFinite(percent) || percent <= 0 || percent > 100) return
+      s.hero.hp = s.hero.max * percent / 100
+      s.hero.inv = Math.max(s.hero.inv, 20) // Keep automated real-canvas comparison stable.
+      hud()
+    },
     get active() { return s.hero != null },
     get sceneArtLoaded() { return !!art?.courtyard.complete && art.courtyard.naturalWidth > 0 },
     get animated() { return !!s.hero },
@@ -667,6 +746,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     get vfxCount() { return s.impactWaves.length + s.lightningFx.length + s.swipes.length + s.fx.length },
     get frames() { return frameDrawn },
     get scene() { return currentSceneInfo(s).name },
+    get bossPreview() {
+      const boss = bosses?.snapshot(s)
+      return { id: boss?.id ?? null, phase: boss?.phase ?? null }
+    },
+    get bossAttackPreview() {
+      const snapshot = bosses?.snapshot(s)
+      return {
+        id: snapshot?.telegraphs.find(warning => warning.stage === 'warning')?.attackId ?? null,
+        activeImpacts: snapshot?.impacts?.length ?? 0,
+      }
+    },
     previewBiome(index: number) {
       if (window.location.search.indexOf('showcase=1') < 0 || s.mode !== 'play' ||
           !s.hero || !Number.isInteger(index) || index < 0 || index > 3) return
@@ -692,7 +782,19 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     showcaseBoss(phase: 1 | 2 | 3 = 1) {
       const hero = s.hero
-      if (!hero || s.mode !== 'play') return
+      if (!hero || s.mode !== 'play' || ![1, 2, 3].includes(phase)) return
+      // Only explicit Vite DEV art QA may select a specific real encounter.
+      // Production gameplay and the original generic showcase remain unchanged.
+      const params = import.meta.env.DEV && typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search) : null
+      const requested = params?.get('showcase') === '1' ? params.get('es2BossArtQa') : null
+      const qaBossId = requested && Object.hasOwn(BOSS_DEFINITIONS, requested)
+        ? requested as BossId : null
+      // The default camera follows the hero. Place QA actors inside the real
+      // 236px visual bounds, including short landscape viewports.
+      const bossOffsetX = qaBossId ? Math.min(165, s.W * 0.16) : 165
+      const bossOffsetY = qaBossId && s.H < 500 ? Math.round(s.H * 0.4) : -8
+      if (qaBossId) bosses?.reset(s)
       s.mobs = []
       s.enemyShots = []
       s.time = 96
@@ -700,12 +802,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       s.bossSpawned = true
       hero.inv = 120
       hero.attack = 10000
-      spawnMob(s, 'boss')
+      if (qaBossId && bosses)
+        bosses.spawn(s, qaBossId, { x: hero.x + bossOffsetX, y: hero.y + bossOffsetY }, hooks)
+      else spawnMob(s, 'boss')
       const boss = s.mobs.find(e => e.type === 'boss')
       if (!boss) return
-      boss.x = hero.x + 165
-      boss.y = hero.y - 8
+      boss.x = hero.x + bossOffsetX
+      boss.y = hero.y + bossOffsetY
       boss.hp = boss.max * (phase === 1 ? 1 : phase === 2 ? 0.56 : 0.25)
+      if (qaBossId && phase > 1) bosses?.tick(s, 1 / 60, hooks)
       s.cam.x = hero.x
       s.cam.y = hero.y
     },
@@ -751,12 +856,25 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (es2Audio) es2Audio.interrupt()
       else audio.interrupt()
     }
-    const onPointerDown = (e: PointerEvent): void => {
-      wakeAudio()
-      if (e.target instanceof Element && e.target.closest('button')) audio.playSfx('ui')
+    const onPointerDown = (): void => { wakeAudio() }
+    // Click covers touch, mouse and keyboard activation, including teleported dialogs.
+    // Explicitly managed controls already play their semantic cue in the engine.
+    const onUiClick = (e: MouseEvent): void => {
+      if (!(e.target instanceof Element)) return
+      const control = e.target.closest<HTMLElement>('button, [role="option"]')
+      if (!control || (control instanceof HTMLButtonElement && control.disabled) ||
+          control.getAttribute('aria-disabled') === 'true') return
+      const cue = control.dataset.uiSfx
+      if (cue === 'managed' || cue === 'silent') return
+      if (e.detail === 0 || !audio.unlocked) wakeAudio()
+      audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
     }
     const onPointerOver = (e: PointerEvent): void => {
-      if (e.pointerType === 'mouse' && e.target instanceof Element && e.target.closest('button')) audio.playSfx('hover')
+      if (e.pointerType !== 'mouse' || !(e.target instanceof Element)) return
+      const button = e.target.closest<HTMLButtonElement>('button:not(:disabled)')
+      if (!button || button.dataset.uiSfx === 'silent' ||
+          (e.relatedTarget instanceof Node && button.contains(e.relatedTarget))) return
+      audio.playSfx('hover')
     }
     win.addEventListener('keydown', onKeyDown)
     win.addEventListener('keyup', onKeyUp)
@@ -764,6 +882,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
     doc.addEventListener('pointerdown', onPointerDown)
+    doc.addEventListener('click', onUiClick, true)
     doc.addEventListener('pointerover', onPointerOver)
     return () => {
       win.removeEventListener('keydown', onKeyDown)
@@ -772,6 +891,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
       doc.removeEventListener('pointerdown', onPointerDown)
+      doc.removeEventListener('click', onUiClick, true)
       doc.removeEventListener('pointerover', onPointerOver)
     }
   }
@@ -783,7 +903,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
     assets.productionHeroes = loadProductionHeroes()
-    assets.productionWorld = loadWorldRuntimeImages()
+    const bossArtQaId = import.meta.env.DEV && typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('es2BossArtQa') : null
+    assets.productionWorld = loadWorldRuntimeImages(
+      undefined, bossArtQaId && Object.hasOwn(BOSS_DEFINITIONS, bossArtQaId) ? bossArtQaId as BossId : undefined,
+    )
     if (factions) {
       assets.factions = factions
       assets.factionArtwork = loadProductionFactionArt()
@@ -812,7 +936,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       frameDrawn++
       drawFrame(ctx, s, dpr, assets)
       if (s.hero && mini && frameDrawn % 7 === 0) drawMiniMap(mini, s, assets)
-      if (es2Audio && s.mode !== 'menu') es2Audio.tick(s.mode)
+      if (es2Audio && adaptiveScoreActive) es2Audio.tick(s.mode)
       else audio.tick(s.mode)
       raf = requestAnimationFrame(frame)
     }
@@ -853,36 +977,43 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     listen,
     mount,
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
-    selectRunMode(mode: RunModeId) { if (getMode(mode)) ui.runMode = mode },
+    selectRunMode(mode: RunModeId) {
+      if (!getMode(mode) || ui.runMode === mode) return
+      ui.runMode = mode
+      wakeAudio()
+      audio.playSfx('select')
+    },
     buyPermanentUpgrade(id: PermanentUpgrade) {
       if (s.mode !== 'menu') return
       if (metaStore) {
-        const result = metaStore.purchaseResearch(id)
-        if (!result.ok) message('永久研究未完成：儲存失敗或條件不足')
-        else refreshMeta()
-      } else if (profileStore.buyUpgrade(id)) refreshMeta()
+        finishPurchase(metaStore.purchaseResearch(id).ok, '永久研究未完成：儲存失敗或條件不足')
+      } else {
+        finishPurchase(profileStore.buyUpgrade(id), '餘燼不足或已達最高階')
+      }
     },
     purchaseResearch(id: string) {
       if (s.mode !== 'menu' || !metaStore) return
-      if (metaStore.purchaseResearch(id).ok) refreshMeta()
-      else message('研究未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseResearch(id).ok, '研究未解鎖或儲存失敗')
     },
     purchaseEquipment(id: string) {
       if (s.mode !== 'menu' || !metaStore) return
-      if (metaStore.purchaseEquipment(id).ok) refreshMeta()
-      else message('裝備未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗')
     },
     purchaseBonus(id: string) {
       if (s.mode !== 'menu' || !metaStore) return
-      if (metaStore.purchaseBonus(id).ok) refreshMeta()
-      else message('祝福未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗')
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
       if (s.mode !== 'menu') return
       if (metaStore) {
-        if (metaStore.selectCosmetic(hero, skin).ok) refreshMeta()
-        else message('造型尚未解鎖或儲存失敗')
-      } else if (profileStore.selectCosmetic(hero, skin)) refreshMeta()
+        const ok = metaStore.selectCosmetic(hero, skin).ok
+        if (ok) { refreshMeta(); audio.playSfx('select') }
+        else { message('造型尚未解鎖或儲存失敗'); audio.playSfx('deny') }
+      } else {
+        const ok = profileStore.selectCosmetic(hero, skin)
+        if (ok) { refreshMeta(); audio.playSfx('select') }
+        else audio.playSfx('deny')
+      }
     },
     resetProgress() {
       if (s.mode !== 'menu') return
@@ -892,12 +1023,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }
       profileStore.reset()
       refreshMeta()
+      audio.playSfx('scene')
     },
     selectJob(job: JobId) { selectHero(job) },
     selectHero,
     activateHeroSpecial() {
       if (s.mode !== 'play' || ui.settingsOpen || !heroSpecialization) return false
       const activated = heroSpecialization.activate()
+      if (activated && s.hero) markHeroSpecialAnimation(s.hero, s.worldClock)
       if (activated) hud()
       return activated
     },
@@ -935,6 +1068,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     openSettings,
     closeSettings,
     goMenu: () => {
+      if (s.mode !== 'menu') audio.playSfx('scene')
       ui.worldEventChoice = null
       ui.worldEventMarkers = []
       worldEvents?.reset()

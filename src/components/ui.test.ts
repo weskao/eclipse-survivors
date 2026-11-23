@@ -280,7 +280,7 @@ describe('LevelUpOverlay', () => {
     const items = w.findAll('#upgrades .upgrade')
     expect(items).toHaveLength(3)
     expect(items[1]!.attributes('data-up')).toBe(upgrades[1]!.id)
-    expect(items[1]!.find('.portrait').text()).toBe(upgrades[1]!.icon)
+    expect(items[1]!.get('.portrait img').attributes('src')).toBeTruthy()
     expect(items[1]!.find('strong').text()).toBe(upgrades[1]!.title)
     expect(items[1]!.text()).toContain('按 2 選擇')
     await items[1]!.trigger('click')
@@ -293,15 +293,25 @@ describe('LevelUpOverlay', () => {
 })
 
 describe('PauseOverlay / ResultOverlay', () => {
-  it('pause emits resume and leave', async () => {
-    const w = mount(PauseOverlay, { props: { active: true } })
-    expect(w.find('#paused').classes()).toContain('active')
-    await w.find('#resume').trigger('click')
-    await w.find('#leave').trigger('click')
+  it('pause emits resume, leave and settings through the shared focused modal', async () => {
+    const w = mount(PauseOverlay, { props: { active: true }, attachTo: document.body })
+    expect(document.querySelector('#paused.active')).not.toBeNull()
+    expect(document.querySelector('.es2-backdrop [role="dialog"][aria-modal="true"]')).not.toBeNull()
+    document.querySelector<HTMLButtonElement>('#resume')!.click()
+    document.querySelector<HTMLButtonElement>('#leave')!.click()
     expect(w.emitted('resume')).toHaveLength(1)
     expect(w.emitted('leave')).toHaveLength(1)
-    await w.find('.settings-trigger').trigger('click')
+    document.querySelector<HTMLButtonElement>('.es2-backdrop .settings-trigger')!.click()
     expect(w.emitted('settings')).toHaveLength(1)
+    w.unmount()
+    expect(document.querySelector('#paused')).toBeNull()
+  })
+  it('resumes with P when the accessible pause dialog traps gameplay keys', async () => {
+    const w = mount(PauseOverlay, { props: { active: true }, attachTo: document.body })
+    await nextTick()
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP', bubbles: true }))
+    expect(w.emitted('resume')).toHaveLength(1)
+    w.unmount()
   })
   it('result shows text and emits again/home', async () => {
     const w = mount(ResultOverlay, { props: { active: false, ending: 'E', summary: 'S' } })

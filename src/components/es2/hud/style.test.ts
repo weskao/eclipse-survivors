@@ -9,7 +9,7 @@ const app = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf8')
 describe('responsive ES2 encounter and information rail', () => {
   it('stacks the boss and wave without separate fixed positions', () => {
     expect(component).toContain('data-es2-encounter')
-    expect(component).toContain('v-if="view.boss || view.wave"')
+    expect(component).toContain('v-if="view.boss || view.wave || view.bossWarning"')
     expect(css).toMatch(/\.es2-hud__encounter\s*\{[^}]*flex-direction: column/s)
     expect(css).not.toMatch(/\.es2-hud__boss\s*\{[^}]*position:\s*absolute/s)
     expect(css).not.toMatch(/\.es2-hud__wave\s*\{[^}]*top:\s*\d+px/s)
@@ -39,10 +39,40 @@ describe('responsive ES2 encounter and information rail', () => {
   it('keeps one polite announcement and real wave progress accessible', () => {
     expect(component.match(/aria-live="polite"/g)).toHaveLength(1)
     expect(component).toContain('data-es2-announcement')
-    expect(component).toContain('aria-label="波次進度"')
+    expect(component).toContain(':aria-label="t(\'波次進度\')"')
   })
+
+  it('uses composited easing, a trailing damage layer, critical emphasis and reduced-motion fallback', () => {
+    expect(css).toContain('transform: scaleX(var(--es2-progress, 0))')
+    expect(css).toMatch(/transition: transform \.36s cubic-bezier/)
+    expect(css).toContain('.es2-hud__track > .es2-hud__track-trail')
+    expect(css).toContain('.es2-hud__track--critical')
+    expect(css).toContain('.es2-hud__wave-track > span')
+    expect(css).not.toContain('transition: width .12s linear')
+    const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(reduced).toContain('.es2-hud__track > span')
+    expect(reduced).toContain('.es2-hud__wave-track > span')
+    expect(component).toContain(':key="view.identity"')
+  })
+
   it('keeps ES2 styles scoped and avoids changing the legacy game', () => {
     expect(css).toContain('.es2-hud')
     expect(css).not.toMatch(/(?:^|\n)\s*(?:html|body|#hud|#menu|#game)\b/)
+  })
+
+  it('keeps the short-landscape info toggle out of the right-side action lane', () => {
+    const landscape = css.slice(css.lastIndexOf('/* The same compact information drawer'))
+    expect(landscape).toContain('--es2-compact-info-top: max(116px')
+    expect(landscape).toContain('.es2-hud__info-toggle { left: max(8px, env(safe-area-inset-left)); right: auto; }')
+    expect(css).toContain('min-width: 44px; width: 44px; min-height: 44px; padding: 0')
+    expect(css).toContain('font: 700 0/1.2 system-ui')
+    expect(landscape).toContain('bottom: max(108px')
+  })
+
+  it('keeps tablet width overrides out of the short-landscape phone layout', () => {
+    const tablet = css.slice(css.lastIndexOf('/* Touch tablets'))
+    expect(tablet).toContain(
+      '@media (pointer: coarse) and (min-width: 701px) and (max-width: 1100px) and (min-height: 521px)',
+    )
   })
 })

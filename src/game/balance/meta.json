@@ -1,0 +1,107 @@
+{
+  "research": {
+    "power": {
+      "maxRank": 5,
+      "firstCost": 25,
+      "costStep": 25,
+      "lateCostStartRank": 2,
+      "lateCostStep": 15,
+      "benefitPerRank": 0.04
+    },
+    "vitality": {
+      "maxRank": 5,
+      "firstCost": 25,
+      "costStep": 25,
+      "lateCostStartRank": 2,
+      "lateCostStep": 15,
+      "benefitPerRank": 12
+    },
+    "insight": {
+      "maxRank": 5,
+      "firstCost": 80,
+      "costStep": 60,
+      "lateCostStartRank": 2,
+      "lateCostStep": 20,
+      "benefitPerRank": 0.01
+    },
+    "scavenging": {
+      "maxRank": 5,
+      "firstCost": 90,
+      "costStep": 70,
+      "lateCostStartRank": 2,
+      "lateCostStep": 20,
+      "benefitPerRank": 0.01
+    },
+    "ember-study": {
+      "maxRank": 5,
+      "firstCost": 120,
+      "costStep": 90,
+      "lateCostStartRank": 2,
+      "lateCostStep": 25,
+      "benefitPerRank": 0.01
+    }
+  },
+  "runRewards": {
+    "killDivisor": 10,
+    "secondsDivisor": 30,
+    "victoryEmbers": 30,
+    "baseMultiplier": 1.15,
+    "masteryBaseXp": 10,
+    "masteryKillsDivisor": 10,
+    "masteryVictoryXp": 20,
+    "masteryXpMax": 10000000,
+    "masteryMaxLevel": 20,
+    "masteryLevelDivisor": 150
+  },
+  "achievementEmbers": {
+    "first-blood": 10,
+    "first-victory": 10,
+    "monster-hunter": 10,
+    "boss-slayer": 10,
+    "survivor": 10,
+    "three-heroes": 10,
+    "veteran-explorer": 20,
+    "victorious-five": 25,
+    "abyss-conqueror": 25,
+    "endless-walker": 20,
+    "relic-collector": 30,
+    "evolution-scholar": 25,
+    "cosmetic-curator": 20,
+    "challenge-champion": 35
+  },
+  "milestoneEmbers": {
+    "first-boss": 15,
+    "three-wins": 25,
+    "ten-runs": 30,
+    "five-relics": 25,
+    "three-evolutions": 25
+  },
+  "startingEquipment": {
+    "knight-aegis": {
+      "cost": 75,
+      "masteryLevel": 3
+    },
+    "ranger-quiver": {
+      "cost": 75,
+      "masteryLevel": 3
+    },
+    "wizard-focus": {
+      "cost": 75,
+      "masteryLevel": 3
+    }
+  },
+  "startingBonuses": {
+    "ember-spark": {
+      "cost": 50,
+      "bonus": 0.01
+    },
+    "wanderer-kit": {
+      "cost": 60,
+      "bonus": 0.01
+    },
+    "guardian-vow": {
+      "cost": 80,
+      "bonus": 0.01
+    }
+  }
+}

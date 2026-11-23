@@ -39,14 +39,16 @@ describe('ES2 live objective HUD adapter', () => {
     expect(wrapper.attributes('aria-live')).toBe('polite')
     expect(wrapper.text()).toContain('連續首領擊敗')
     expect(wrapper.text()).toContain('0 / 5')
-    expect(wrapper.find('progress').attributes('max')).toBe('5')
+    expect(wrapper.find('[role="progressbar"]').attributes('aria-valuemax')).toBe('5')
+    expect(wrapper.find('[role="progressbar"]').attributes('aria-valuenow')).toBe('0')
+    expect((wrapper.find('[role="progressbar"]').element as HTMLElement).style.getPropertyValue('--es2-progress')).toBe('0')
   })
 
   it('shows endless progress without finite progress bars or automatic completion', () => {
     const state = advanceObjective(createObjectiveState('endless-eclipse'), { type: 'tick', seconds: 100000 })
     const wrapper = mount(ModeProgress, { props: { state } })
     wrappers.push(wrapper)
-    expect(wrapper.find('progress').exists()).toBe(false)
+    expect(wrapper.find('[role="progressbar"]').exists()).toBe(false)
     expect(wrapper.text()).toContain('持續求生')
     expect(wrapper.text()).not.toContain('勝利')
   })

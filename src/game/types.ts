@@ -21,7 +21,7 @@ export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup'
-  | 'scene' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
+  | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
 
 export interface JobDef { label: string; hp: number; speed: number; damage: number; delay: number; range: number }
 /** Original tuple `[id, icon, title, desc]` as a named record. */
@@ -50,11 +50,15 @@ export interface Hero {
 }
 
 export interface Mob {
+  /** Authored production identity for controller-owned bosses; absent on the legacy boss. */
+  bossArtId?: import('./content/bosses/definitions').BossId
   x: number; y: number; type: MobType; hp: number; max: number; r: number; speed: number; dmg: number
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
   ai?: EnemyBrain
   elite?: boolean
   bossPhase?: 1 | 2 | 3
+  /** One-bit controller cue; renderer animates without changing combat hitboxes. */
+  bossMoving?: boolean
   summonedByBoss?: boolean
 }
 
@@ -95,6 +99,7 @@ export interface ContentRuntime {
 
 export type ContentEvent =
   | { type: 'hit' | 'kill'; mob: Mob; damage: number }
+  | { type: 'critical-hit'; x: number; y: number }
   | { type: 'damage'; amount: number }
   | { type: 'pickup'; kind: 'xp' | 'world'; amount?: number }
   | { type: 'start' | 'reset' }
@@ -102,7 +107,7 @@ export type ContentEvent =
   | { type: 'run-complete'; win: boolean }
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
-export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean }
+export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean }
 export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
@@ -131,6 +136,8 @@ export interface GameState {
   lightningFx: LightningFx[]
   motionEchoes: MotionEcho[]
   cameraKick: number
+  /** Game-clock time of the last accepted screen recoil; prevents crowd-hit shake loops. */
+  lastCameraKickAt: number
   time: number
   kill: number
   spawnT: number
@@ -140,6 +147,9 @@ export interface GameState {
   cosmetic: CosmeticId
   damageDealt: number
   damageTaken: number
+  /** Applied once when starting a run; no in-combat config reads. */
+  xpGainMultiplier: number
+  pickupGainMultiplier: number
   defeatedTypes: Partial<Record<MobType, number>>
   worldClock: number
   sceneFxClock: number
@@ -179,6 +189,8 @@ export interface GameHooks {
   openTreasure?(state: GameState, chestId: number): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
   modifyOutgoingDamage?(amount: number, target?: Mob): number
+  /** One-shot metadata from the authoritative outgoing-damage roll. */
+  consumeCriticalHit?(): boolean
   mitigateIncomingDamage?(amount: number): number
   afterDamage?(amount: number, source?: Mob): void
   canTargetHero?(): boolean

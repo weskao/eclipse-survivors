@@ -1,13 +1,15 @@
+import { t } from '../../i18n'
 import type { Artwork } from '../art'
 import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
 import type { FactionBridge } from '../content/enemies/integration'
-import { drawBossTelegraphs } from '../content/bosses/render'
+import { drawBossImpacts, drawBossTelegraphs } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import { type HealthBarMotion } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
 import type { WorldRuntimeImages } from './es2/production-world'
@@ -16,10 +18,11 @@ import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } fro
 import type { Ctx2D } from './ctx'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
-  buildGemSprites, buildMagicGlow, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroStatus, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
+  buildGemSprites, buildMagicGlow, createParticleSpriteCache, type ParticleSpriteCache, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroStatus, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
+import { sharedProjectileSprites } from './projectile-art'
 import { buildProps } from './props'
 import { buildSprites, domCanvas, type MakeCanvas } from './sprites'
 import type { MobTintCache } from './tint-cache'
@@ -44,7 +47,9 @@ export interface RenderAssets {
   depthOrder: (Hero | Mob)[]
   magicGlow: HTMLCanvasElement | null
   gems: GemSprites
+  particles: ParticleSpriteCache
   mobTint: MobTintCache
+  healthBars: WeakMap<Mob, HealthBarMotion>
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -62,7 +67,9 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     biomes: buildBiomeArt(makeCanvas),
     magicGlow: buildMagicGlow(makeCanvas),
     gems: buildGemSprites(makeCanvas),
+    particles: createParticleSpriteCache(makeCanvas),
     mobTint: { makeCanvas, variants: new WeakMap() },
+    healthBars: new WeakMap(),
   }
 }
 
@@ -92,8 +99,10 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   let ox = W * 0.5 - (hero ? s.cam.x : 0)
   let oy = H * 0.53 - (hero ? s.cam.y : 0)
   if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced && assets.cameraShakeEnabled()) {
-    ox += Math.sin(s.worldClock * 89) * s.cameraKick
-    oy += Math.cos(s.worldClock * 73) * s.cameraKick * 0.7
+    // Cap even externally-triggered recoil; avoid high-frequency screen oscillation.
+    const nudge = Math.min(s.cameraKick, 1.6)
+    ox += Math.sin(s.worldClock * 19) * nudge
+    oy += Math.cos(s.worldClock * 17) * nudge * 0.55
   }
   paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy, assets.productionWorld)
   const scene = currentSceneInfo(s)
@@ -104,9 +113,9 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
   if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
-  drawWorldMarkers(ctx, s, ox, oy)
+  drawWorldMarkers(ctx, s, ox, oy, assets.productionWorld)
   ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
-  ctx.fillText(scene.name + ' · ' + scene.label, W / 2, 34)
+  ctx.fillText(t(scene.name) + ' · ' + t(scene.label), W / 2, 34)
   ctx.restore()
   if (!hero) {
     const shadow = ctx.createRadialGradient(W / 2, H * 0.49, 55, W / 2, H * 0.49, Math.max(W, H) * 0.76)
@@ -118,7 +127,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawStars(ctx, s, ox, oy, reduced, assets.gems)
   drawEnemyTelegraphs(ctx, s, ox, oy)
   const bossSnapshot = assets.bosses?.snapshot(s)
-  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy)
+  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)
     drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy)
@@ -136,20 +145,22 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
     const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase
       ? { image: bossImage, phase: bossSnapshot.phase } : undefined
-    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt)
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars)
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
-  drawShots(ctx, s, ox, oy, assets.magicGlow)
-  drawEnemyProjectiles(ctx, s, ox, oy)
-  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy)
-  drawOrbs(ctx, s, hero, ox, oy)
+  const projectiles = sharedProjectileSprites()
+  drawShots(ctx, s, ox, oy, assets.magicGlow, projectiles)
+  drawEnemyProjectiles(ctx, s, ox, oy, projectiles)
+  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy, projectiles)
+  drawOrbs(ctx, s, hero, ox, oy, projectiles)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
-  drawFx(ctx, s, ox, oy, reduced)
+  drawFx(ctx, s, ox, oy, reduced, assets.particles, projectiles)
+  if (bossSnapshot) drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H)
   assets.content?.render(ctx, s, ox, oy)
-  if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy)
+  if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)
   drawVignette(ctx, s)
   drawBossPhaseIndicator(ctx, s)
 }

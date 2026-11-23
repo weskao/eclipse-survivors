@@ -63,6 +63,16 @@ describe('weapon arsenal pack registration and compatibility', () => {
     expect(s.hero?.skills).toEqual({})
   })
 
+  it('high-level poison clouds extend their AoE moderately without reaching distant enemies', () => {
+    const { s, registry } = fixture('poison-cloud')
+    for (let i = 1; i < 5; i++) registry.acquire(s, 'weapons:poison-cloud', hooks)
+    const edge = mob(239, 0, 500)
+    const outside = mob(300, 0, 500)
+    s.mobs.push(edge, outside)
+    advance(s, registry, 0.25)
+    expect(edge.hp).toBeLessThan(edge.max)
+    expect(outside.hp).toBe(outside.max)
+  })
   it('caps each upgrade and scales damage', () => {
     expect(damageFor('holy-lance', 4)).toBeGreaterThan(damageFor('holy-lance', 1))
     const { s, registry } = fixture('holy-lance')

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "pose": "run",
+  "direction": "S",
+  "frameCount": 4,
+  "sourceOriginalPixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "sourceSHA256": "798eb1c6ea05a54438eb8c474be12b59cc97734f094b7fc2de70ae47d6276f1f",
+  "webpSHA256": "060ae67913ba67ae77febedaa9c3ed1f7196f4dc79029e5dde01565342bf4aa9",
+  "bytes": 489266,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "allSourceEdgesSafe": false,
+  "frameQA": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        0,
+        17,
+        627,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        0,
+        19,
+        613,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        0,
+        0,
+        611,
+        627
+      ],
+      "sourceClippingRisk": true,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "finalCellPixels": [
+        768,
+        768
+      ]
+    }
+  ],
+  "note": "Original source reaches crop boundaries in some frames. Do not substitute for full eight-way production art; do not invent missing frames."
+}

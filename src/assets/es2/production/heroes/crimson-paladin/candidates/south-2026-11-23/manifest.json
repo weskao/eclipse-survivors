@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "pose": "run",
+  "direction": "S",
+  "frameCount": 4,
+  "sourceOriginalPixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "originalSourcePath": "source-south-4frames.png",
+  "sourceSHA256": "4fc6195ba141aee3cf13c136a0b64ac8359933ebf8a672e8730c4ff2c20d049b",
+  "webpSHA256": "8e395a3e5be2c7504497338ccbc4b677e88888fc7600cfab037f6ad5b1a07308",
+  "bytes": 387156,
+  "sourceResampling": "none: each 627x627 original pixel frame was pasted 1:1 at centered transparent 70px inset",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "allVisibleSourceEdgesSafeAtAlphaGt8": true,
+  "qaMethod": "pixel alpha >8 threshold suppresses near-transparent noise; this does NOT prove anatomy was never truncated at source generation or artistic acceptance",
+  "frameQA": [
+    {
+      "index": 0,
+      "originalAlphaBoundsAnyNonzero": [
+        0,
+        11,
+        627,
+        627
+      ],
+      "visibleAlphaBoundsThresholdGt8": [
+        96,
+        14,
+        535,
+        585
+      ],
+      "outputVisibleAlphaBoundsThresholdGt8": [
+        166,
+        84,
+        605,
+        655
+      ],
+      "sourceVisualMarginMinPx": 14,
+      "outputVisualMarginMinPx": 84,
+      "sourceVisibleBorderTouch": false,
+      "traceAlphaNoiseTouchesSourceEdge": true
+    },
+    {
+      "index": 1,
+      "originalAlphaBoundsAnyNonzero": [
+        1,
+        14,
+        613,
+        627
+      ],
+      "visibleAlphaBoundsThresholdGt8": [
+        94,
+        16,
+        538,
+        536
+      ],
+      "outputVisibleAlphaBoundsThresholdGt8": [
+        164,
+        86,
+        608,
+        606
+      ],
+      "sourceVisualMarginMinPx": 16,
+      "outputVisualMarginMinPx": 86,
+      "sourceVisibleBorderTouch": false,
+      "traceAlphaNoiseTouchesSourceEdge": true
+    },
+    {
+      "index": 2,
+      "originalAlphaBoundsAnyNonzero": [
+        25,
+        0,
+        627,
+        627
+      ],
+      "visibleAlphaBoundsThresholdGt8": [
+        78,
+        16,
+        559,
+        575
+      ],
+      "outputVisibleAlphaBoundsThresholdGt8": [
+        148,
+        86,
+        629,
+        645
+      ],
+      "sourceVisualMarginMinPx": 16,
+      "outputVisualMarginMinPx": 86,
+      "sourceVisibleBorderTouch": false,
+      "traceAlphaNoiseTouchesSourceEdge": true
+    },
+    {
+      "index": 3,
+      "originalAlphaBoundsAnyNonzero": [
+        1,
+        0,
+        613,
+        627
+      ],
+      "visibleAlphaBoundsThresholdGt8": [
+        73,
+        16,
+        572,
+        544
+      ],
+      "outputVisibleAlphaBoundsThresholdGt8": [
+        143,
+        86,
+        642,
+        614
+      ],
+      "sourceVisualMarginMinPx": 16,
+      "outputVisualMarginMinPx": 86,
+      "sourceVisibleBorderTouch": false,
+      "traceAlphaNoiseTouchesSourceEdge": true
+    }
+  ],
+  "note": "Candidate only. Visual alpha margins measured and unique frame bytes verified; original alpha<=8 fringe reaches edges. Unreviewed identity/proportions/pose flow; no complete eight-direction animation. Do not import into production renderers."
+}

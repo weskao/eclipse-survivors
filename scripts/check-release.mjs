@@ -14,6 +14,8 @@ assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\
   'site must work at /eclipse-survivors/, not depend on root-absolute asset paths')
 
 const files = readdirSync(new URL('assets/', dist))
+assert.ok(files.every(file => !file.includes('-QA-PENDING')),
+  'Unapproved boss QA candidate images must not ship in the production bundle')
 const js = files.filter(f => f.endsWith('.js')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
 const css = files.filter(f => f.endsWith('.css')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
 const mp3 = files.find(f => /^bgm-.*\.mp3$/.test(f))

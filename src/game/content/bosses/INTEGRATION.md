@@ -77,6 +77,8 @@ files; the existing `boss`/`bossDefeat` SFX still play through combat hooks.
 `controller.test.ts` exercises registration, three-phase thresholds, geometry
 boundaries, dodgeable telegraphs, projectile caps, minion caps, death/reward
 idempotence, boss-gated victory, scene/reset cleanup and replay identity.
+The four boss pursuit profiles are independently configurable in `src/game/balance/bosses.json` via `movement` and `phaseMovementMultipliers`. Each boss now pursues the live hero through its post-attack recovery (the original windup hitboxes stay locked); close-range Abyss, Frost and Seraph orbit, while the heavier Titan advances to a melee standoff. Status slow/stagger effects also reduce chase speed. Pausing stops movement. `Mob.bossMoving` drives lightweight, reduced-motion-aware movement poses using the existing formal phase art; this is **not** a newly drawn multi-direction sprite atlas and does **not** approve any separate QA-PENDING native-3x candidate. No new gameplay textures, per-frame bitmap allocations or collision shapes are introduced.
+
 No realtime random calls or unbounded per-tick caches are added. Minion
 placement reuses the existing `summonBossMinions` helper; pursuit math runs
 only while idle, projectiles use squared-distance swept collision.

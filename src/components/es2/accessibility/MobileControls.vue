@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { joystickVector } from '../../../game/content/accessibility/joystick'
@@ -65,6 +66,26 @@ function triggerDash(): void {
   if (usable.value) emit('dash')
 }
 
+// A second thumb held on the joystick is not guaranteed a synthesized click on iOS.
+let skipTouchClick = false
+function pressDash(event: PointerEvent): void {
+  if (event.pointerType !== 'touch') {
+    skipTouchClick = false
+    return
+  }
+  skipTouchClick = true
+  triggerDash()
+}
+
+function clickDash(event: MouseEvent): void {
+  if (skipTouchClick && event.detail > 0) {
+    skipTouchClick = false
+    return // Suppress the click synthesized after the touch pointerdown.
+  }
+  skipTouchClick = false
+  triggerDash() // Native mouse, keyboard (detail=0), and assistive technology.
+}
+
 /** Resizing and navigating away always neutralize the previous input. */
 watch(() => [
   props.active, props.blocked, props.preferences.touchScale,
@@ -109,7 +130,7 @@ onBeforeUnmount(() => {
       class="es2-stick"
       :class="{ pressed }"
       role="group"
-      aria-label="虛擬方向搖桿，鍵盤仍可使用方向鍵或 WASD"
+      :aria-label="t('虛擬方向搖桿，鍵盤仍可使用方向鍵或 WASD')"
       @pointerdown="downStick"
       @pointermove="moveStick"
       @pointerup="endStick"
@@ -124,12 +145,13 @@ onBeforeUnmount(() => {
       data-testid="es2-dash"
       class="es2-dash"
       type="button"
-      aria-label="衝刺，鍵盤可用空白鍵"
+      :aria-label="t('衝刺，鍵盤可用空白鍵')"
       :disabled="!usable"
       @keydown.space.stop
       @keyup.space.stop
-      @click.stop="triggerDash"
-    ><span aria-hidden="true">✧</span> 衝刺</button>
+      @pointerdown="pressDash"
+      @click.stop="clickDash"
+    ><span aria-hidden="true">✧</span> {{ t("衝刺") }}</button>
   </div>
 </template>
 

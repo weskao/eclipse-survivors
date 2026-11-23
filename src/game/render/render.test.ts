@@ -48,6 +48,44 @@ function busyState(): GameState {
   return s
 }
 
+describe('smooth Canvas enemy and boss health bars', () => {
+  it('retains a short damage trail and eases the front fill without changing actual HP', () => {
+    const s = busyState()
+    const enemy = mob('goblin', 0, 50, { hp: 10, max: 10 })
+    const boss = mob('boss', 100, 50, { hp: 100, max: 100 })
+    s.mobs = [enemy, boss]
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number }[] = []
+    const originalFill = ctx.fillRect
+    ctx.fillRect = (x, y, w, h) => {
+      fills.push({ color: String(ctx.fillStyle), width: w })
+      originalFill(x, y, w, h)
+    }
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    drawFrame(ctx, s, 1, assets)
+    fills.length = 0
+    enemy.hp = 4
+    boss.hp = 25
+    s.worldClock += 0.05
+    drawFrame(ctx, s, 1, assets)
+    const enemyFill = fills.find(item => item.color === '#e98275')
+    const bossFill = fills.find(item => item.color === '#ce63a5')
+    expect(enemyFill).toBeDefined()
+    expect(bossFill).toBeDefined()
+    expect(fills.some(item => item.color === '#f2c37e')).toBe(true)
+    expect(enemyFill!.width).toBeGreaterThan(30 * 0.4)
+    expect(bossFill!.width).toBeGreaterThan(186 * 0.25)
+    expect(enemy.hp).toBe(4)
+    expect(boss.hp).toBe(25)
+    // A fully restored normal enemy keeps its bar until the visual fill reaches 100%.
+    enemy.hp = 10
+    s.worldClock += 0.05
+    fills.length = 0
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.some(item => item.color === '#e98275')).toBe(true)
+  })
+})
+
 describe('createRenderAssets', () => {
   it('paints fallback sprites and the three props via the injected canvas factory', () => {
     const { make, made } = fakeCanvasFactory()

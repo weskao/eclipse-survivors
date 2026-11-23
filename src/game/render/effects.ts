@@ -1,9 +1,11 @@
+import { t as translate } from '../../i18n'
 import { DASH_COOLDOWN, LOW_HP_PCT, TAU } from '../constants'
 import { easing } from '../math'
 import type { GameState, Hero } from '../types'
 import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
+import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -127,7 +129,7 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.restore()
     ctx.save(); ctx.globalAlpha = t; ctx.textAlign = 'center'; ctx.font = '900 28px system-ui'
     ctx.fillStyle = '#fff5d5'; ctx.strokeStyle = '#5c4722'; ctx.lineWidth = 5
-    ctx.strokeText('LEVEL UP!', hero.x + ox, hero.y - 88 + oy); ctx.fillText('LEVEL UP!', hero.x + ox, hero.y - 88 + oy)
+    ctx.strokeText(translate('LEVEL UP!'), hero.x + ox, hero.y - 88 + oy); ctx.fillText(translate('LEVEL UP!'), hero.x + ox, hero.y - 88 + oy)
     ctx.restore()
   }
 }
@@ -206,7 +208,7 @@ export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 // Fast arrows leave stretched trails. Arcane bolts cast a soft violet halo.
-export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null): void {
+export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>): void {
   const { W, H } = s
   for (const b of s.shots) {
     const x = b.x + ox
@@ -236,13 +238,15 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     }
     ctx.save(); ctx.translate(x, y); ctx.rotate(a)
     if (b.kind === 'arrow') {
+      if (!drawProjectileSprite(ctx, projectiles, 'ranger-arrow', 60)) {
       ctx.shadowBlur = 13; ctx.shadowColor = '#ffc474'; ctx.strokeStyle = '#ffeac2'; ctx.lineWidth = 3
       ctx.beginPath(); ctx.moveTo(-29, 0); ctx.lineTo(10, 0); ctx.stroke()
       ctx.fillStyle = '#fff3d5'
       ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(1, -5); ctx.lineTo(3, 0); ctx.lineTo(1, 5); ctx.closePath(); ctx.fill()
       ctx.strokeStyle = '#ddac77'; ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(-15, -4); ctx.lineTo(-11, 0); ctx.lineTo(-15, 4); ctx.stroke()
-    } else {
+      }
+    } else if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
       if (magicGlow) {
         ctx.drawImage(magicGlow, -28, -28, 56, 56)
       } else {
@@ -259,7 +263,7 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
   }
 }
 
-export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number): void {
+export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, projectiles?: Partial<ProjectileSprites>): void {
   const orb = hero.skills.orb
   if (!orb) return
   const q = s.worldClock
@@ -270,8 +274,10 @@ export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: n
     const x = hero.x + ox + Math.cos(a) * 71
     const y = hero.y + oy + Math.sin(a) * 71
     ctx.save(); ctx.translate(x, y); ctx.rotate(q * 3)
-    ctx.shadowColor = evolved ? '#f3baff' : '#a6eaff'; ctx.shadowBlur = evolved ? 23 : 15; ctx.strokeStyle = evolved ? '#fff0f9' : '#e1f3ff'; ctx.lineWidth = evolved ? 3.5 : 2.5
-    ctx.strokeRect(-8, -8, 16, 16)
+    if (!drawProjectileSprite(ctx, projectiles, evolved ? 'ricochet-blade' : 'gravity-core', evolved ? 42 : 38)) {
+      ctx.shadowColor = evolved ? '#f3baff' : '#a6eaff'; ctx.shadowBlur = evolved ? 23 : 15; ctx.strokeStyle = evolved ? '#fff0f9' : '#e1f3ff'; ctx.lineWidth = evolved ? 3.5 : 2.5
+      ctx.strokeRect(-8, -8, 16, 16)
+    }
     ctx.restore()
   }
 }
@@ -305,8 +311,41 @@ export function drawLightning(ctx: Ctx2D, s: GameState, ox: number, oy: number, 
   }
 }
 
+/** Reuse detailed 3x particle glows instead of doing a blurred Canvas fill per hit. */
+export interface ParticleSpriteCache {
+  makeCanvas: MakeCanvas
+  sprites: Map<string, HTMLCanvasElement | null>
+}
+
+export function createParticleSpriteCache(makeCanvas: MakeCanvas): ParticleSpriteCache {
+  return { makeCanvas, sprites: new Map() }
+}
+
+function particleSprite(cache: ParticleSpriteCache, color: string, radius: number): HTMLCanvasElement | null {
+  // Quantize only cosmetic pixels, never gameplay hit radius. Fixed dimensions
+  // allow the same low-cost drawImage path regardless of individual spark size.
+  const r = Math.max(1, Math.min(15, Math.round(radius * 2) / 2))
+  const key = color + ':' + r
+  const cached = cache.sprites.get(key)
+  if (cached !== undefined) return cached
+  // A finite cache cannot accumulate unbounded variations in Endless mode.
+  if (cache.sprites.size >= 64) cache.sprites.clear()
+  const canvas = cache.makeCanvas(120, 120)
+  const paint = canvas.getContext('2d')
+  if (!paint) { cache.sprites.set(key, null); return null }
+  paint.scale(3, 3)
+  paint.shadowColor = color
+  paint.shadowBlur = 21 // Seven CSS px after 3x rasterization.
+  paint.fillStyle = color
+  paint.beginPath()
+  paint.arc(20, 20, r, 0, TAU)
+  paint.fill()
+  cache.sprites.set(key, canvas)
+  return canvas
+}
+
 // Subpixel glowing debris, capped pool and reusable shape geometry.
-export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
+export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, cache?: ParticleSpriteCache, projectiles?: Partial<ProjectileSprites>): void {
   const { W, H } = s
   let painted = 0
   for (const f of s.fx) {
@@ -315,16 +354,36 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
     const x = f.x + ox
     const y = f.y + oy
     if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue
+    // Only cosmetic circular debris is cached; meteors, vortexes and ice keep
+    // their authored, time-dependent silhouettes and existing animation.
+    if (cache && !reducedMotion && f.r >= 1 && f.r <= 10 && (!f.type || f.type === 'spark' || f.type === 'ember' || f.type === 'footstep')) {
+      const sprite = particleSprite(cache, f.color, f.r)
+      if (sprite) {
+        const previousAlpha = ctx.globalAlpha
+        ctx.globalAlpha = previousAlpha * Math.max(0, f.life / f.max)
+        ctx.drawImage(sprite, x - 20, y - 20, 40, 40)
+        ctx.globalAlpha = previousAlpha
+        continue
+      }
+    }
     ctx.save(); ctx.globalAlpha = Math.max(0, f.life / f.max)
     if (f.type === 'meteor') {
       const t = 1 - f.life / f.max
       ctx.strokeStyle = '#ffd6a7'; ctx.lineWidth = 4
       ctx.beginPath(); ctx.moveTo(x - 18 - t * 22, y - 42 - t * 90); ctx.lineTo(x, y); ctx.stroke()
-      ctx.fillStyle = '#ffb065'; ctx.shadowColor = '#ffb065'; ctx.shadowBlur = 16
-      ctx.beginPath(); ctx.arc(x, y, 12 + 12 * (1 - t), 0, TAU); ctx.fill()
+      const radius = 12 + 12 * (1 - t)
+      ctx.translate(x, y)
+      if (!drawProjectileSprite(ctx, projectiles, 'enemy-ember', radius * 2)) {
+        ctx.fillStyle = '#ffb065'; ctx.shadowColor = '#ffb065'; ctx.shadowBlur = 16
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, TAU); ctx.fill()
+      }
     } else if (f.type === 'vortex') {
-      ctx.strokeStyle = f.color; ctx.lineWidth = 2.2; ctx.shadowColor = f.color; ctx.shadowBlur = 8
-      ctx.beginPath(); ctx.arc(x, y, 8 + Math.sin(f.life * 9) * 6, 0, TAU); ctx.stroke()
+      const radius = 8 + Math.sin(f.life * 9) * 6
+      ctx.translate(x, y)
+      if (!drawProjectileSprite(ctx, projectiles, 'gravity-core', radius * 2)) {
+        ctx.strokeStyle = f.color; ctx.lineWidth = 2.2; ctx.shadowColor = f.color; ctx.shadowBlur = 8
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, TAU); ctx.stroke()
+      }
     } else if (f.type === 'ice') {
       ctx.fillStyle = f.color; ctx.shadowColor = f.color; ctx.shadowBlur = reducedMotion ? 0 : 10
       ctx.beginPath(); ctx.moveTo(x, y - f.r); ctx.lineTo(x + f.r * 0.55, y + f.r); ctx.lineTo(x - f.r * 0.55, y + f.r); ctx.closePath(); ctx.fill()
@@ -336,17 +395,38 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
   }
 }
 
-export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   for (const z of s.numberFx) {
     const x = z.x + ox, y = z.y + oy
-    if (x < -60 || x > s.W + 60 || y < -60 || y > s.H + 60) continue
-    const a = Math.max(0, Math.min(1, z.life / 0.4))
-    ctx.save(); ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.lineJoin = 'round'
-    ctx.font = `900 ${z.boss ? '21' : '16'}px system-ui`
-    ctx.lineWidth = 4; ctx.strokeStyle = '#151019e8'
-    ctx.strokeText(String(z.value), x, y)
-    ctx.fillStyle = z.boss ? '#ffca7c' : '#fff1d0'
-    ctx.fillText(String(z.value), x, y)
+    if (x < -80 || x > s.W + 80 || y < -80 || y > s.H + 80) continue
+    const critical = z.critical === true
+    const received = z.received === true
+    const life = critical ? 0.82 : received ? 0.7 : 0.62
+    const progress = Math.max(0, Math.min(1, 1 - z.life / life))
+    const opacity = Math.max(0, Math.min(1, z.life / (critical ? 0.28 : 0.4)))
+    // A local pop makes confirmed crits readable without another full-screen reaction.
+    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * 0.3
+    const px = Math.max(48, Math.min(s.W - 48, x))
+    const py = Math.max(54, Math.min(s.H - 16, y))
+    ctx.save()
+    ctx.globalAlpha = opacity
+    ctx.textAlign = 'center'
+    ctx.lineJoin = 'round'
+    ctx.translate(px, py)
+    if (pop !== 1) ctx.scale(pop, pop)
+    ctx.lineWidth = critical ? 6 : received ? 5 : 4
+    ctx.strokeStyle = critical ? '#321525' : received ? '#44121c' : '#151019e8'
+    if (critical) {
+      ctx.font = '900 12px system-ui'
+      ctx.strokeText(translate('暴擊!'), 0, -29)
+      ctx.fillStyle = '#fff4bf'
+      ctx.fillText(translate('暴擊!'), 0, -29)
+    }
+    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss ? 21 : 16)}px system-ui`
+    const label = received ? `−${z.value}` : String(z.value)
+    ctx.strokeText(label, 0, 0)
+    ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
+    ctx.fillText(label, 0, 0)
     ctx.restore()
   }
 }

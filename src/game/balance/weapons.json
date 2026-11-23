@@ -1,0 +1,72 @@
+{
+  "intervals": {
+    "shadow-daggers": 1.25,
+    "holy-lance": 2.15,
+    "blood-scythe": 1.6,
+    "arcane-mines": 2.3,
+    "bone-spears": 2.05,
+    "poison-cloud": 2.65,
+    "ricochet-blades": 1.9,
+    "spirit-wolves": 0,
+    "solar-beam": 3.6,
+    "gravity-orbs": 0,
+    "spectral-bow": 2.6,
+    "thorn-chain": 2.5
+  },
+  "common": {
+    "cooldownFloor": 0.35,
+    "cooldownReductionPerRank": 0.085,
+    "straightDamagePerRank": 0.26
+  },
+  "scythe": {
+    "targetRangeBase": 165,
+    "targetRangePerRank": 9,
+    "sweepRangeBase": 140,
+    "sweepRangePerRank": 10,
+    "damageBase": 0.96,
+    "damagePerRank": 0.21,
+    "lifestealRatio": 0.095,
+    "lifestealLimitBase": 5,
+    "lifestealLimitPerRank": 1
+  },
+  "poisonCloud": {
+    "radiusBase": 88,
+    "radiusPerRank": 8,
+    "damageBase": 0.13,
+    "damagePerRank": 0.05
+  },
+  "arcaneMines": {
+    "radiusBase": 80,
+    "radiusPerRank": 10,
+    "damageBase": 1.35,
+    "damagePerRank": 0.3
+  },
+  "gravity": {
+    "pullReach": 116,
+    "damageBase": 0.35,
+    "damagePerRank": 0.1
+  },
+  "solarBeam": {
+    "rangeBase": 690,
+    "rangePerRank": 20,
+    "widthBase": 16,
+    "widthPerRank": 2.8,
+    "damageBase": 2.75,
+    "damagePerRank": 0.63
+  },
+  "spiritWolves": {
+    "damageBase": 0.7,
+    "damagePerRank": 0.14,
+    "attackCooldownBase": 1.1,
+    "attackCooldownPerRank": 0.095
+  },
+  "thornChain": {
+    "damageBase": 0.45,
+    "damagePerRank": 0.145
+  },
+  "maxLevel": 5,
+  "limits": {
+    "maxProjectiles": 64,
+    "maxZones": 12
+  }
+}

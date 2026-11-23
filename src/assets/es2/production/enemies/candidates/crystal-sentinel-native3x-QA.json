@@ -1,0 +1,51 @@
+{
+  "id": "crystal-sentinel",
+  "status": "QA_PENDING",
+  "productionActive": false,
+  "source": {
+    "file": "crystal-sentinel-6poses-master@source.webp",
+    "width": 3072,
+    "height": 512,
+    "frameWidth": 512,
+    "frameHeight": 512,
+    "frames": 6,
+    "sha256": "e284ff6e0e776a611b8cee0b469d4cbde4cc788faf0e14c7e9a1ce935ff097f6"
+  },
+  "runtime": {
+    "file": "crystal-sentinel-6poses-QA-PENDING.webp",
+    "width": 1944,
+    "height": 324,
+    "frameWidth": 324,
+    "frameHeight": 324,
+    "frames": 6,
+    "sha256": "aa298e71eea92290fe4da2423ab539862e53bd631077100d15d10009cab24ea8",
+    "bytes": 109496,
+    "maxBytes": 110000,
+    "displayMaxPx": 108
+  },
+  "poseNames": [
+    "Ready A",
+    "Ready B",
+    "Windup",
+    "Attack",
+    "Recover",
+    "Phase"
+  ],
+  "humanApproval": "pending",
+  "identityReview": "pending",
+  "gameplayReview": "pending",
+  "sourceMethod": "Original AI-authored 1536×1024 3×2 contact sheet (six 512×512 poses) with a pale baked backdrop; each cell was isolated using the image's alpha confidence, preserved as 512px source, arranged into 3072×512 transparent 6×1 source WebP, then downsampled to 324px WebP frames. No enlargement of the legacy 96px atlas.",
+  "checks": {
+    "distinctDecodedFrames": 6,
+    "visibleFrames": 6,
+    "frameEdgeAlphaMax": 0,
+    "alphaCorner": "transparent",
+    "runtimeBelowBytes": 110000
+  },
+  "limitations": [
+    "New armored silhouette is bulkier than the currently used Crystal Sentinel; character identity is not approved.",
+    "Source was computer-matted from an image with pale background; inspect halos and residual background in the target scene.",
+    "Requires real gameplay animation, six-pose timing/direction and human visual sign-off before release.",
+    "Not an automatically activated production asset."
+  ]
+}

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, onMounted, onUnmounted } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId, type SpecializationSnapshot } from '../../../game/content/heroes'
 
@@ -6,7 +7,8 @@ const props = withDefaults(defineProps<{
   heroId: SpecializationId
   snapshot: SpecializationSnapshot
   active?: boolean
-}>(), { active: false })
+  joystickSide?: 'left' | 'right'
+}>(), { active: false, joystickSide: 'left' })
 const emit = defineEmits<{ activate: [] }>()
 const hero = computed(() => HERO_DEFINITIONS[props.heroId])
 const remaining = computed(() => Number.isFinite(props.snapshot.cooldown) ? Math.max(0, props.snapshot.cooldown) : Infinity)
@@ -29,19 +31,19 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 </script>
 
 <template>
-  <div class="es2-hero-special" :aria-label="hero.label + ' 主動技能'">
-    <button type="button" class="es2-hero-special__button" data-hero-special
-      aria-keyshortcuts="Q" :aria-label="hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒')"
+  <div class="es2-hero-special" :data-side="joystickSide" :aria-label="t(hero.label + ' 主動技能')">
+    <button type="button" class="es2-hero-special__button" data-hero-special data-ui-sfx="managed"
+      aria-keyshortcuts="Q" :aria-label="t(hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒'))"
       :disabled="!ready" @click="trigger">
       <img data-hero-special-icon class="es2-hero-special__icon" :src="hero.specialIconSrc" alt=""
         width="44" height="44" decoding="async" draggable="false" />
-      <span class="es2-hero-special__name">{{ hero.special.split('：')[0] }}</span>
-      <span class="es2-hero-special__hint">{{ ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放' }}</span>
+      <span class="es2-hero-special__name">{{ t(hero.special.split('：')[0]) }}</span>
+      <span class="es2-hero-special__hint">{{ t(ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放') }}</span>
       <span class="es2-hero-special__fill" aria-hidden="true" :style="{ width: progress + '%' }"></span>
     </button>
-    <span v-if="snapshot.stealth > 0" class="es2-hero-special__status" role="status">潛行 {{ snapshot.stealth.toFixed(1) }} 秒</span>
-    <span v-if="snapshot.barrier > 0" class="es2-hero-special__status" role="status">屏障 {{ Math.ceil(snapshot.barrier) }}</span>
-    <span v-if="snapshot.companions.length" class="es2-hero-special__status" role="status">靈體 {{ snapshot.companions.length }} / 3</span>
+    <span v-if="snapshot.stealth > 0" class="es2-hero-special__status" role="status">{{ t("潛行") }} {{ snapshot.stealth.toFixed(1) }} {{ t("秒") }}</span>
+    <span v-if="snapshot.barrier > 0" class="es2-hero-special__status" role="status">{{ t("屏障") }} {{ Math.ceil(snapshot.barrier) }}</span>
+    <span v-if="snapshot.companions.length" class="es2-hero-special__status" role="status">{{ t("靈體") }} {{ snapshot.companions.length }} / 3</span>
   </div>
 </template>
 
@@ -66,4 +68,14 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special__fill { position: absolute; inset: auto auto 0 0; height: 5px; background: #df5979; transition: width .1s linear; }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }
 @media (prefers-reduced-motion: reduce) { .es2-hero-special__fill { transition: none; } }
+@media (orientation: portrait) and (max-width: 760px) {
+  .es2-hero-special { right: max(12px, env(safe-area-inset-right)); bottom: calc(151px + env(safe-area-inset-bottom)); max-width: 112px; flex-direction: column; align-items: flex-end; }
+  .es2-hero-special[data-side="right"] { right: auto; left: max(12px, env(safe-area-inset-left)); align-items: flex-start; }
+  .es2-hero-special__status { font-size: 10px; padding: 2px 5px; }
+}
+@media (orientation: landscape) and (max-height: 440px) {
+  .es2-hero-special { right: max(8px, env(safe-area-inset-right)); bottom: calc(94px + env(safe-area-inset-bottom)); max-width: 100px; }
+  .es2-hero-special[data-side="right"] { right: auto; left: max(8px, env(safe-area-inset-left)); }
+  .es2-hero-special__status { font-size: 10px; padding: 2px 5px; }
+}
 </style>

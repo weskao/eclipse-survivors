@@ -37,6 +37,15 @@ describe('raster spell artwork animation', () => {
     expect(screen.find('picture img.skill-art').attributes('src')).not.toContain('-animated.webp')
   })
 
+  it('does not layer the fallback emoji on top of a real illustrated skill', () => {
+    const illustrated: UpgradeDef = { id: 'blaze', title: 'Blaze', desc: 'Fire', icon: '🔥', rarity: 'rare', maxLevel: 5 }
+    const card = mount(LevelUpOverlay, { props: { active: true, upgrades: [illustrated] } })
+    expect(card.get('.skill-sigil').text()).not.toContain('🔥')
+    const unknown: UpgradeDef = { ...illustrated, id: 'other:unknown' }
+    const fallback = mount(LevelUpOverlay, { props: { active: true, upgrades: [unknown] } })
+    expect(fallback.get('.skill-sigil').text()).toContain('🔥')
+  })
+
   it('uses a single animated atlas for the HUD and a static atlas in reduced motion', () => {
     const animation = readFileSync(resolve(process.cwd(), 'src/assets/ui/skill-art-atlas@3x-animated.webp'))
     expect(animation.toString('ascii', 8, 12)).toBe('WEBP')

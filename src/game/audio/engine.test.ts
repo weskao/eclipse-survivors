@@ -324,6 +324,128 @@ describe('tick', () => {
   })
 })
 
+describe('result scene music', () => {
+  it('switches from battle music to the authored joyful victory theme, and plays only on the music bus', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    expect(bgm.paused).toBe(false)
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    expect(bgm.paused).toBe(true)
+    audio.tick('result')
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+    const pitches = ctx.oscillators.map(note => Math.round(69 + 12 * Math.log2(note.frequency.value / 440)))
+    expect(pitches).toContain(72)
+    expect(ctx.oscillators.some(note => note.targets[0] === ctx.gains[2])).toBe(true)
+  })
+
+  it('silences the result score when music is muted without muting independent victory SFX', () => {
+    const audio = make()
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    audio.toggleMusic('result')
+    audio.tick('result')
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.playSfx('victory')
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('does not loop the victory theme forever and stops after leaving results', () => {
+    const audio = make()
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    for (let i = 0; i < 100; i++) { ctx.currentTime = i * 0.3; audio.tick('result') }
+    const end = ctx.oscillators.length
+    ctx.currentTime = 50
+    audio.tick('result')
+    expect(ctx.oscillators.length).toBe(end)
+    audio.onScreen('menu')
+    audio.tick('result')
+    expect(ctx.oscillators.length).toBe(end)
+  })
+})
+
+describe('sampled orchestral expedition victory', () => {
+  it('plays a finite pre-rendered theme through the existing music bus', async () => {
+    const requested: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: '/audio/eclipse-victory.wav',
+      loadMusic: async url => {
+        requested.push(url)
+        return ctx.createBuffer(2, 672000, 24000)
+      },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(requested).toEqual(['/audio/eclipse-victory.wav'])
+    const source = ctx.sources.at(-1)!
+    expect(source.loop).toBe(false)
+    expect(source.targets[0]).toBe(ctx.gains.at(-1))
+    expect(ctx.gains.at(-1)?.targets[0]).toBe(ctx.gains[1])
+    audio.tick('result')
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.onScreen('menu')
+    expect(source.stoppedAt).not.toBeNull()
+  })
+
+  it('honors music mute and resumes without starting a loop', async () => {
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: 'victory.wav',
+      loadMusic: async () => ctx.createBuffer(2, 672000, 24000),
+    })
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    audio.toggleMusic('result')
+    expect(first.stoppedAt).not.toBeNull()
+    audio.toggleMusic('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources).toHaveLength(2)
+    expect(ctx.sources.at(-1)?.loop).toBe(false)
+    audio.interrupt()
+    expect(ctx.sources.at(-1)?.stoppedAt).not.toBeNull()
+  })
+
+  it('falls back to finite synth if the file is unavailable', async () => {
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: 'missing.wav', loadMusic: async () => null,
+    })
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    audio.tick('result')
+    expect(ctx.sources).toHaveLength(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('does not request the victory file on defeat', () => {
+    const loaded: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx,
+      victoryTrack: 'victory.wav',
+      loadMusic: async url => { loaded.push(url); return null },
+    })
+    audio.wake()
+    audio.setResultTheme?.('defeat')
+    audio.onScreen('result')
+    audio.tick('result')
+    expect(loaded).toHaveLength(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+})
+
 describe('toggles', () => {
   it('reads initial values and persists on|off', () => {
     const storage = new MemStorage()
@@ -461,5 +583,85 @@ describe('interruption edge cases', () => {
     audio.interrupt()
     audio.interrupt()
     expect(ctx.suspendCalls).toBe(1)
+  })
+})
+
+describe('original boss score replaces battle music', () => {
+  it('fades down the exploration track, plays the named theme, and restores normal music', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    const baseline = ctx.oscillators.length
+    audio.setBossTheme?.('frost-sovereign', 1)
+    audio.setCombatIntensity('boss')
+    for (let i = 0; i < 40; i++) audio.tick('play')
+    expect(bgm.volume).toBe(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(baseline)
+    audio.setBossTheme?.(null)
+    audio.setCombatIntensity('combat')
+    for (let i = 0; i < 40; i++) audio.tick('play')
+    expect(bgm.volume).toBeCloseTo(0.35)
+  })
+})
+
+describe('cinematic sampled boss music', () => {
+  const tracks = {
+    'abyss-monarch': ['abyss-p1.mp3','abyss-p2.mp3','abyss-p3.mp3'],
+    'frost-sovereign': ['frost-p1.mp3','frost-p2.mp3','frost-p3.mp3'],
+    'infernal-titan': ['infernal-p1.mp3','infernal-p2.mp3','infernal-p3.mp3'],
+    'eclipse-seraph': ['seraph-p1.mp3','seraph-p2.mp3','seraph-p3.mp3'],
+  } as const
+
+  it('uses a sampled 15-second suspense cue then replaces it with the actual boss theme', async () => {
+    const loaded: string[] = []
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, warningTrack: 'warning.mp3',
+      loadMusic: async url => { loaded.push(url); return ctx.createBuffer(2, 480000, 24000) },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossWarning?.(15)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(loaded).toContain('warning.mp3')
+    const warning = ctx.sources.at(-1)
+    expect(warning?.startedAt).not.toBeNull()
+    audio.setBossTheme?.('frost-sovereign', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(loaded).toContain('frost-p1.mp3')
+    expect(warning?.stoppedAt).not.toBeNull()
+  })
+
+  it('keeps phase changes on the same audio timeline without restarting from zero', async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('infernal-titan', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources.at(-1)?.loop).toBe(true)
+    ctx.currentTime = 7
+    audio.setBossTheme?.('infernal-titan', 3)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources.at(-1)?.offset).toBeGreaterThan(6)
+    expect(ctx.sources.at(-1)?.loop).toBe(true)
+  })
+
+  it('silences pre-rendered music on pause/mute and resumes without a duplicate loop', async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)
+    audio.onScreen('paused')
+    expect(first?.stoppedAt).toBe(ctx.currentTime)
+    audio.onScreen('play')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources.length).toBeGreaterThan(1)
+    audio.toggleMusic('play')
+    expect(ctx.sources.at(-1)?.stoppedAt).not.toBeNull()
   })
 })

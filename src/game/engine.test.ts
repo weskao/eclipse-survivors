@@ -20,6 +20,8 @@ class SpyAudio implements AudioSystem {
   setSfxVolume(value: number): void { this.sfxVolume = value }
   wake(): void { this.unlocked = true; this.wakeCalls++ }
   interrupt(): void { this.interruptions++ }
+  resultThemes: Array<'victory' | 'defeat' | null> = []
+  setResultTheme(theme: 'victory' | 'defeat' | null): void { this.resultThemes.push(theme) }
   setCombatIntensity(): void {}
   playSfx(cue: SfxCue): void { this.cues.push(cue) }
   tick(): void {}
@@ -64,6 +66,18 @@ describe('engine commands fire the original cues', () => {
     expect(engine.ui.toastText).toBe('幽暮之門已開啟')
   })
 
+  it('starts every new specialization at level one without a fabricated initial upgrade queue', () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+      engine.selectHero(id)
+      engine.start()
+      expect(engine.ui.mode, id).toBe('play')
+      expect(engine.state.hero?.level, id).toBe(1)
+      expect(engine.state.levelQueue, id).toBe(0)
+      expect(engine.ui.heroId, id).toBe(id)
+      engine.goMenu()
+    }
+  })
+
   it('opens settings from gameplay safely and restores play after closing', () => {
     engine.start()
     engine.openSettings()
@@ -92,7 +106,7 @@ describe('engine commands fire the original cues', () => {
 
   it('persists still/soft upgrade effects and combat camera motion preferences', () => {
     expect(engine.ui.upgradeEffect).toBe('soft')
-    expect(engine.ui.cameraShake).toBe(true)
+    expect(engine.ui.cameraShake).toBe(false)
     engine.setUpgradeEffect('still')
     engine.setCameraShake(false)
     expect(engine.ui.upgradeEffect).toBe('still')
@@ -102,6 +116,16 @@ describe('engine commands fire the original cues', () => {
     const reloaded = createEngine({ audio })
     expect(reloaded.ui.upgradeEffect).toBe('still')
     expect(reloaded.ui.cameraShake).toBe(false)
+  })
+
+  it('starts stable for new players and restores explicitly enabled camera shake', () => {
+    expect(localStorage.getItem('eclipseCameraShake')).toBeNull()
+    expect(engine.ui.cameraShake).toBe(false)
+    engine.setCameraShake(true)
+    expect(localStorage.getItem('eclipseCameraShake')).toBe('on')
+    expect(createEngine({ audio }).ui.cameraShake).toBe(true)
+    engine.setCameraShake(false)
+    expect(createEngine({ audio }).ui.cameraShake).toBe(false)
   })
 
   it('freezes upgrade-scene ambient motion only in still mode', () => {
@@ -187,6 +211,7 @@ describe('engine commands fire the original cues', () => {
     engine.advance(0.033)
     expect(engine.ui.mode).toBe('result')
     expect(audio.cues).toContain('victory')
+    expect(audio.resultThemes).toContain('victory')
     expect(engine.ui.ending).toBe('🏆 遠征勝利！')
   })
 
@@ -283,6 +308,15 @@ describe('keyboard and focus', () => {
     expect(engine.state.hero!.skills[first as UpgradeId]).toBe(1)
   })
 
+  it('selects upgrades using numpad positions even with a non-English IME', () => {
+    engine.start()
+    engine.testApi.level()
+    expect(engine.ui.upgrades).toHaveLength(3)
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Numpad2', key: 'Process', isComposing: true }))
+    expect(engine.ui.mode).toBe('play')
+    expect(audio.cues.at(-1)).toBe('upgrade')
+  })
+
   it('window blur does not pause a run or leave movement stuck', () => {
     engine.start()
     key('KeyD')
@@ -296,13 +330,59 @@ describe('keyboard and focus', () => {
     expect(engine.state.hero!.vx).toBeLessThan(movingSpeed)
   })
 
-  it('pointerdown on a button wakes audio and plays the ui cue', () => {
+  it('wakes on pointerdown but plays a single generic cue on completed click', () => {
     const b = document.createElement('button')
     document.body.append(b)
     b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
     expect(audio.unlocked).toBe(true)
-    expect(audio.cues).toContain('ui')
+    expect(audio.cues).not.toContain('ui')
+    b.click()
+    expect(audio.cues).toEqual(['ui'])
     b.remove()
+  })
+
+  it('shares select feedback across mouse, keyboard activation and listbox options', () => {
+    const b = document.createElement('button')
+    b.dataset.uiSfx = 'select'
+    document.body.append(b)
+    audio.unlocked = false
+    b.click() // Keyboard activation dispatches click without an earlier pointerdown.
+    expect(audio.unlocked).toBe(true)
+    expect(audio.cues).toEqual(['select'])
+    const li = document.createElement('li')
+    li.setAttribute('role', 'option')
+    li.dataset.uiSfx = 'select'
+    document.body.append(li)
+    li.click()
+    expect(audio.cues).toEqual(['select', 'select'])
+    b.remove()
+    li.remove()
+  })
+
+  it('skips disabled or handled clicks and never doubles an engine-owned action', () => {
+    const b = document.createElement('button')
+    document.body.append(b)
+    b.disabled = true
+    b.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(audio.cues).toEqual([])
+    b.disabled = false
+    b.dataset.uiSfx = 'managed'
+    b.addEventListener('click', () => engine.selectJob('ranger'))
+    b.click()
+    expect(audio.cues).toEqual(['select'])
+    b.remove()
+  })
+
+  it('only sounds an actual mode change and gives accepted/denied purchase feedback', () => {
+    engine.selectRunMode('challenge')
+    expect(audio.cues).toEqual(['select'])
+    engine.selectRunMode('challenge')
+    expect(audio.cues).toEqual(['select'])
+    engine.buyPermanentUpgrade('power')
+    expect(audio.cues.at(-1)).toBe('upgrade')
+    // Permanent research has a bounded rank; further transactions must be denied.
+    for (let attempt = 0; attempt < 100; attempt++) engine.buyPermanentUpgrade('power')
+    expect(audio.cues.at(-1)).toBe('deny')
   })
 })
 

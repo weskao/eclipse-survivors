@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { createHero, createState } from '../../../game/state'
 import { EVOLUTION2_RECIPES } from '../../../game/content/evolution2/recipes'
 import EvolutionChoicePanel from './EvolutionChoicePanel.vue'
@@ -34,6 +36,30 @@ describe('EvolutionChoicePanel accessibility and claims', () => {
     expect(wrapper.findAll('button')[0]!.attributes('disabled')).toBeDefined()
     await wrapper.findAll('button')[0]!.trigger('click')
     expect(wrapper.emitted('choose')).toHaveLength(1)
+  })
+
+  it('uses authored artwork on every evolution and readable ready/locked styling', () => {
+    const state = createState()
+    state.hero = createHero('knight')
+    const wrapper = mount(EvolutionChoicePanel, { props: { state, active: true } })
+    expect(wrapper.findAll('.es2-evolution-art')).toHaveLength(EVOLUTION2_RECIPES.length)
+    const source = readFileSync(resolve(process.cwd(), 'src/components/es2/evolution-choice/EvolutionChoicePanel.vue'), 'utf8')
+    expect(source).toContain('es2-evolution-card::before')
+    expect(source).toContain('.es2-evolution-card.is-ready')
+    expect(source).toContain('prefers-reduced-motion: reduce')
+  })
+
+  it('keeps locked evolution paintings static to avoid twelve simultaneous animated WebPs', async () => {
+    const state = createState()
+    state.hero = createHero('knight')
+    const card = mount(EvolutionChoicePanel, { props: { state, active: true } })
+    expect(card.findAll('.es2-evolution-art')).toHaveLength(12)
+    expect(card.findAll('.es2-evolution-art').every(i => !i.attributes('src')!.includes('-animated.webp'))).toBe(true)
+    const recipe = EVOLUTION2_RECIPES[0]!
+    state.content.levels[recipe.weaponId] = recipe.weaponLevel
+    state.hero.skills[recipe.passiveId] = recipe.passiveLevel
+    await card.setProps({ state: { ...state, content: { ...state.content }, hero: { ...state.hero } } })
+    expect(card.find('.es2-evolution-card.is-ready .es2-evolution-art').attributes('src')).toContain('-animated.webp')
   })
 
   it('does not expose actions when inactive', () => {

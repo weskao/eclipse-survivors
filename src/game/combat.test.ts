@@ -78,9 +78,9 @@ describe('attack', () => {
     s.mobs.push(...mobs)
     const hooks = spyHooks()
     attack(s, hooks)
-    expect(hero.chainCd).toBeCloseTo(2.57)
+    expect(hero.chainCd).toBeCloseTo(2.55)
     expect(s.lightningFx).toHaveLength(3)
-    expect(mobs[2]!.hp).toBeCloseTo(100 - 22 * 0.78)
+    expect(mobs[2]!.hp).toBeCloseTo(100 - 22 * 0.84)
     expect(mobs[3]!.hp).toBe(100)
     expect(hooks.sfx).toHaveBeenCalledWith('chain')
   })
@@ -124,12 +124,19 @@ describe('damageHero', () => {
     hero.skills.shield = 5
     const hooks = spyHooks()
     damageHero(s, 10, hooks)
-    expect(hero.hp).toBeCloseTo(175 - 4.8)
+    expect(hero.hp).toBeCloseTo(200 - 4.8)
     expect(hero.inv).toBe(1)
     expect(hooks.sfx).toHaveBeenCalledWith('hurt')
     damageHero(s, 10, hooks)
-    expect(hero.hp).toBeCloseTo(175 - 4.8)
+    expect(hero.hp).toBeCloseTo(200 - 4.8)
     expect(hooks.sfx).toHaveBeenCalledTimes(1)
+  })
+  it('each shield rank mitigates 13% up to the existing 52% cap', () => {
+    const { s, hero } = setup()
+    hero.skills.shield = 1
+    const initialHp = hero.hp
+    damageHero(s, 100, spyHooks())
+    expect(initialHp - hero.hp).toBeCloseTo(87)
   })
   it('death clamps hp to 0 and ends the run', () => {
     const { s, hero } = setup()
@@ -248,7 +255,7 @@ describe('combat fairness regressions', () => {
     const hooks = spyHooks()
     damageHero(s, 11, hooks)
     damageHero(s, 11, hooks)
-    expect(hero.hp).toBe(164)
+    expect(hero.hp).toBe(189)
     expect(hero.inv).toBe(1)
     expect(hooks.sfx).toHaveBeenCalledTimes(1)
     for (const enemy of s.mobs) expect(Math.hypot(enemy.x, enemy.y)).toBeGreaterThan(32)

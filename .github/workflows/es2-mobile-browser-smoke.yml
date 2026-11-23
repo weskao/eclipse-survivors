@@ -7,7 +7,8 @@ permissions:
   contents: read
 concurrency:
   group: es2-mobile-browser-${{ github.ref }}
-  cancel-in-progress: true
+  # Preserve full browser and art evidence during concurrent integration commits.
+  cancel-in-progress: false
 jobs:
   browser-smoke:
     runs-on: ubuntu-24.04
@@ -21,19 +22,70 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Preserve local production build for independent visual QA (not deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: es2-built-preview-for-qa
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
       - name: Install isolated Chromium for real layout QA
         run: |
           npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
           ../node_modules/.bin/playwright install --with-deps chromium
-      - name: Launch production preview and test four mobile viewports
+      - name: Launch production preview and verify responsive game across desktop, tablet and phone
         run: |
           pnpm preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/es2-preview.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4173/ >/dev/null
           node scripts/es2-mobile-browser-smoke.mjs
+          node scripts/es2-responsive-layout-matrix.mjs
+          node scripts/es2-world-art-browser-qa.mjs
+      - name: Capture all four Boss QA candidates in actual DEV Canvas (12 phases × 3 viewports)
+        if: success() || failure()
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-boss-art-qa.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/ >/dev/null
+          PREVIEW_URL=http://127.0.0.1:4174/ node scripts/es2-boss-art-qa-browser.mjs
+      - name: Convert genuine Playwright recordings to MP4
+        if: always()
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update && sudo apt-get install -y ffmpeg; fi
+          for source in artifacts/es2-mobile-browser/*-live.webm; do
+            test -f "$source" || continue
+            ffmpeg -nostdin -hide_banner -loglevel error -y -i "$source" -an -c:v libx264 -preset veryfast -crf 24 -pix_fmt yuv420p -movflags +faststart "${source%.webm}.mp4"
+          done
+          test -s artifacts/es2-mobile-browser/portrait-375-live.mp4
+          test -s artifacts/es2-mobile-browser/landscape-640-live.mp4
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: es2-mobile-browser-screenshots
           path: artifacts/es2-mobile-browser/
           if-no-files-found: warn
+      # Actual repository originals + 49 WebPs are needed for pixel-level QA.
+      # This is a read-only evidence archive, not an art-approval or release step.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-world-art-source-review
+          path: |
+            src/assets/es2/production/enemies/*.webp
+            src/assets/es2/production/enemies/manifest.json
+            src/assets/es2/production/bosses/*.webp
+            src/assets/es2/production/bosses/manifest.json
+            src/assets/es2/production/biomes/*.webp
+            src/assets/es2/production/biomes/manifest.json
+            src/assets/es2/production/ui/*.webp
+            src/assets/es2/production/ui/manifest.json
+            assets/images/imgs1.png
+            assets/images/imgs5.png
+            assets/images/imgs6.png
+            assets/images/imgs7.png
+            assets/images/imgs8.png
+            assets/images/imgs9.png
+            assets/images/imgs10.png
+          retention-days: 7
+          if-no-files-found: error

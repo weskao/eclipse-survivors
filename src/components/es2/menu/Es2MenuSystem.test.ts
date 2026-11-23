@@ -7,6 +7,7 @@ import { emptyProfile } from '../../../meta/profile'
 import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
 import Es2MenuSystem from './Es2MenuSystem.vue'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
 
 const base = {
   screen: 'menu' as const, choice: 'knight' as const, runMode: 'quick' as const,
@@ -16,7 +17,7 @@ const base = {
 const wrappers: VueWrapper[] = []
 const find = (selector: string) => document.querySelector<HTMLElement>(selector)!
 const click = (selector: string) => find(selector).click()
-const press = (key: string) => document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+const press = (key: string) => document.dispatchEvent(new KeyboardEvent('keydown', { key, code: /^[1-9]$/.test(key) ? `Digit${key}` : key, bubbles: true, cancelable: true }))
 function mounted(props: Record<string, unknown> = {}) {
   const wrapper = mount(Es2MenuSystem, { attachTo: document.body, props: { ...base, ...props } })
   wrappers.push(wrapper)
@@ -83,6 +84,50 @@ describe('ES2 main menu integration adapter', () => {
     await nextTick()
     click('[data-choice="relic:moon"]')
     expect(wrapper.emitted('specialChoose')).toEqual([['relic:moon']])
+  })
+
+  it('illustrates every special evolution choice with its own animated/still 3x artwork', async () => {
+    const item = { id: 'evolution2:solar-tempest', title: 'Solar Tempest', rarity: 'legendary' as const }
+    const wrapper = mounted({ screen: 'hidden', upgradeEffect: 'soft',
+      specialChoice: { kind: 'evolution', items: [item] } })
+    await nextTick()
+    const image = find('[data-choice="evolution2:solar-tempest"] .es2-card-art img') as HTMLImageElement
+    expect(image.getAttribute('src')).toContain('solar-tempest@3x-animated.webp')
+    expect(image.closest('picture')?.querySelector('source')?.getAttribute('srcset')).toContain('solar-tempest@3x.webp')
+    await wrapper.setProps({ upgradeEffect: 'still' })
+    expect(image.getAttribute('src')).toContain('solar-tempest@3x.webp')
+  })
+
+  it('renders every cursed relic with the cursed chest artwork, independent of its ID and rarity', async () => {
+    mounted({ screen: 'hidden', specialChoice: { kind: 'treasure', items: [
+      { id: 'relics:ashen-heart', title: 'Ashen Heart', rarity: 'epic' },
+      { id: 'relics:fragile-crown', title: 'Fragile Crown', rarity: 'legendary' },
+      { id: 'relics:frost-rune', title: 'Frost Rune', rarity: 'common' },
+    ] } })
+    await nextTick()
+    for (const id of ['relics:ashen-heart', 'relics:fragile-crown']) {
+      expect(find('[data-choice="' + id + '"] .es2-card-art img').getAttribute('src')).toBe(WORLD_ART.ui['treasure-cursed'])
+    }
+    expect(find('[data-choice="relics:frost-rune"] .es2-card-art img').getAttribute('src')).toBe(WORLD_ART.ui['treasure-common'])
+  })
+
+  it('keeps the settings hit target stable when the audio unlock button disappears', async () => {
+    const wrapper = mounted({ audioUnlocked: false, musicOn: true })
+    const settings = find('[data-es2-settings]')
+    expect(find('[data-es2-audio-unlock]')).not.toBeNull()
+    await wrapper.setProps({ audioUnlocked: true })
+    await nextTick()
+    expect(document.querySelector('[data-es2-audio-unlock]')).toBeNull()
+    expect(find('[data-es2-settings]')).toBe(settings)
+    settings.click()
+    expect(wrapper.emitted('settings')).toHaveLength(1)
+  })
+
+  it('forwards menu settings action to the host', async () => {
+    const wrapper = mounted()
+    click('[data-es2-settings]')
+    await nextTick()
+    expect(wrapper.emitted('settings')).toHaveLength(1)
   })
 
   it('keeps settings controlled and emits immediate volume, animation and shake changes', async () => {

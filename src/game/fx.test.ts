@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { burst, impact, pushEcho, zigzag } from './fx'
+import { burst, impact, pushDamageNumber, pushEcho, zigzag } from './fx'
 import { seeded, setRandom } from './math'
 import { createState } from './state'
 
@@ -22,15 +22,28 @@ describe('burst', () => {
 })
 
 describe('impact', () => {
-  it('adds a wave with defaults, keeps at most 37 waves and caps cameraKick at 9', () => {
+  it('keeps rapid regular and elite impacts local, while allowing only rare gentle camera nudges', () => {
     const s = createState()
     impact(s, 1, 2)
     expect(s.impactWaves[0]).toEqual({ x: 1, y: 2, size: 36, color: '#ffd59a', life: 0.38, max: 0.38 })
-    expect(s.cameraKick).toBeCloseTo(1.9)
+    expect(s.cameraKick).toBe(0)
     for (let i = 0; i < 50; i++) impact(s, i, 0, 10, '#abc', 2)
     expect(s.impactWaves).toHaveLength(37)
     expect(s.impactWaves.at(-1)?.x).toBe(49)
-    expect(s.cameraKick).toBe(9)
+    expect(s.cameraKick).toBe(0)
+    impact(s, 0, 0, 200, '#fff', 3)
+    expect(s.cameraKick).toBeGreaterThan(0)
+    expect(s.cameraKick).toBeLessThanOrEqual(1.6)
+    // A crowd of simultaneous heavy impacts should never create a continuous shake.
+    s.cameraKick = 0
+    for (let i = 0; i < 50; i++) {
+      s.worldClock += 0.01
+      impact(s, i, 0, 120, '#fff', 3)
+    }
+    expect(s.cameraKick).toBe(0)
+    s.worldClock += 0.7
+    impact(s, 0, 0, 120, '#fff', 3)
+    expect(s.cameraKick).toBeGreaterThan(0)
   })
 })
 
@@ -54,5 +67,19 @@ describe('pushEcho', () => {
     expect(s.motionEchoes[0]).toEqual({ x: 1, y: 2, kind: 'wizard', frame: 3, angle: 0, life: 0.23, max: 0.23 })
     for (let i = 0; i < 30; i++) pushEcho(s, i, 0, 'knight', 0, 1)
     expect(s.motionEchoes).toHaveLength(17)
+  })
+})
+
+describe('damage number priority', () => {
+  it('preserves critical popups when ordinary hit numbers fill the bounded queue', () => {
+    const s = createState()
+    for (let i = 0; i < 80; i++) pushDamageNumber(s, { x: i, y: 0, life: 0.62, value: i, boss: false, critical: false })
+    pushDamageNumber(s, { x: 999, y: 0, life: 0.82, value: 9000, boss: false, critical: true })
+    expect(s.numberFx).toHaveLength(80)
+    expect(s.numberFx.some(n => n.value === 9000 && n.critical)).toBe(true)
+
+    for (let i = 0; i < 80; i++) pushDamageNumber(s, { x: i, y: 0, life: 0.62, value: i, boss: false, critical: false })
+    expect(s.numberFx.some(n => n.value === 9000 && n.critical)).toBe(true)
+    expect(s.numberFx.length).toBeLessThanOrEqual(80)
   })
 })

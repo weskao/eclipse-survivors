@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "category": "bosses",
+  "candidateFor": "infernal-titan",
+  "status": "QA_PENDING",
+  "path": "infernal-titan-phases-native3x-QA-PENDING.webp",
+  "assetSha256": "c9e5ef84d85ec8b9105cc0bb8cb193424808e8b45c0599e9c7578023ffaf904d",
+  "assetBytes": 298844,
+  "maxBytes": 300000,
+  "atlas": {
+    "width": 2268,
+    "height": 756,
+    "frames": 3,
+    "columns": 3,
+    "rows": 1,
+    "cellWidth": 756,
+    "cellHeight": 756,
+    "transparentGutterPx": 16,
+    "sourceRect": {
+      "insetX": 16,
+      "insetY": 16,
+      "width": 724,
+      "height": 724
+    }
+  },
+  "source": {
+    "kind": "newly-generated-2172x724-RGB-with-alpha-keyed",
+    "originalGeneratedFramePixels": 724,
+    "upscaledFromExisting192px": false,
+    "masterCommittedToRepo": true,
+    "originalSourceStillNeedsImport": false,
+    "sourceExport": "sources/infernal-titan-master@source.webp",
+    "masterFile": "sources/infernal-titan-master@source.webp",
+    "masterBytes": 1812232,
+    "masterSha256": "5f183e3661f14d39ee8337d595ce4ad6815ff07578e1c35396e87e6ed980c951",
+    "notes": "Lossless WebP encoding of the 2172x724 generated source; nontransparent visible RGBA pixels and alpha verified identical to source PNG. Visual identity and fringe review remain pending."
+  },
+  "runtimeTarget": {
+    "maxDrawPx": 236,
+    "requiredNativeSourceDetailPx": 708,
+    "consumer": "src/game/render/es2/production-world.ts",
+    "active": false
+  },
+  "technicalChecks": {
+    "riffWebp": true,
+    "dimensions": true,
+    "sha256Matches": true,
+    "sourceRectsWithinSingleFrames": true,
+    "alphaGutterClear": true
+  },
+  "acceptance": {
+    "originalArtIdentityReview": "pending",
+    "phaseVisualContinuityReview": "pending",
+    "inGame1xScreenshot": "pending",
+    "desktopAndMobilePortraitLandscape": "pending",
+    "humanArtApproval": "pending",
+    "notes": "Newly generated stone-and-lava horned titan. Original RGB checkerboard background was chroma-key removed; review any remaining white edging and effects before runtime activation."
+  }
+}

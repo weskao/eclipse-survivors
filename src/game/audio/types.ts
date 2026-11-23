@@ -1,5 +1,6 @@
 import type { GameMode, SfxCue } from '../types'
 import type { ToneFn } from './music'
+import type { BossId } from '../content/bosses/definitions'
 
 /** Minimal `<audio>` surface the engine uses for the MP3 score (testable with a fake). */
 export interface BgmElement {
@@ -38,6 +39,12 @@ export interface AudioSystem {
   interrupt(): void
   /** Adapt the score without modifying gameplay rules. */
   setCombatIntensity(intensity: CombatIntensity): void
+  /** An actual completed run selects a finite, authored results score; no additional media load. */
+  setResultTheme?(theme: 'victory' | 'defeat' | null): void
+  /** Sets the authored theme for the actual live boss; optional for test adapters. */
+  setBossTheme?(id: BossId | null, phase?: number): void
+  /** Set the real upcoming-boss countdown, or null when none is scheduled. */
+  setBossWarning?(seconds: number | null): void
   playSfx(cue: SfxCue): void
   /** Original `music()`, called once per animation frame with the current mode. */
   tick(mode: GameMode): void

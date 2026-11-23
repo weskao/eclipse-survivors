@@ -19,7 +19,7 @@ afterEach(() => setRandom())
 
 describe('controlled random events', () => {
   it('uses stable weighted event buckets', () => {
-    expect([0, .25, .43, .60, .80, .98].map(n => rollEventKind(() => n))).toEqual([
+    expect([.26, .47, .55, .70, .85, .98].map(n => rollEventKind(() => n))).toEqual([
       'chest', 'shrine', 'invasion', 'blessing', 'bargain', 'challenge',
     ])
   })
@@ -42,6 +42,24 @@ describe('controlled random events', () => {
       return s.events.map(({ x, y, kind }) => ({ x, y, kind }))
     }
     expect(sequence()).toEqual(sequence())
+  })
+  it('leaves chests and healing shrines reachable for 20 seconds', () => {
+    const s = make()
+    const spawned = trySpawnEvent(s, 'shrine', seeded(91))
+    expect(spawned).toBe(true)
+    expect(s.events[0]?.expiresAt).toBe(20)
+  })
+  it('permits a 70% event-roll opportunity while keeping placement rules', () => {
+    const s = make()
+    s.nextEventAt = 0
+    const position = seeded(91)
+    let draws = 0
+    setRandom(() => {
+      draws++
+      return draws === 1 ? 0 : draws === 2 ? 0.70 : draws === 3 ? 0.1 : position()
+    })
+    tickWorld(s, .016, hooks())
+    expect(s.events).toHaveLength(1)
   })
   it('awards a chest exactly once and expires unused events', () => {
     const s = make()

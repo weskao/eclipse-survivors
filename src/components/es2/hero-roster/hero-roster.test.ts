@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick, type Component } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
 import Es2MainMenu from '../menu/Es2MainMenu.vue'
@@ -24,7 +26,9 @@ describe('ES2 three-hero selection UI', () => {
     expect(wrapper.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('false')
     expect(wrapper.findAll('img[data-hero-skill-icon]')).toHaveLength(3)
     expect(wrapper.text()).toContain('影刃')
-    expect(wrapper.text()).toContain('生命')
+    expect(wrapper.text()).toContain('HP')
+    expect(wrapper.text()).toContain('ATK')
+    expect(wrapper.text()).toContain('SPD')
     expect(wrapper.text()).toContain('起始武器')
     expect(wrapper.text()).toContain('冷卻')
   })
@@ -60,6 +64,33 @@ describe('ES2 three-hero selection UI', () => {
     await wrapper.setProps({ disabled: true })
     await wrapper.get('[data-hero-id="crimson-paladin"]').trigger('click')
     expect(wrapper.emitted('select')).toHaveLength(2)
+  })
+})
+
+describe('ES2 shared homepage hero selection interaction', () => {
+  it('uses the same animated selection surface for the classic and specialization heroes', async () => {
+    const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
+    const cards = [...wrapper.findAll('.es2-hero-card'), ...wrapper.findAll('.es2-roster__card')]
+    expect(cards).toHaveLength(6)
+    for (const card of cards) {
+      expect(card.classes()).toContain('es2-hero-select-card')
+      expect(card.find('img').exists()).toBe(true)
+    }
+    await wrapper.setProps({ heroId: 'crimson-paladin' })
+    expect(wrapper.get('[data-hero-id="crimson-paladin"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-hero="knight"]').attributes('aria-pressed')).toBe('false')
+  })
+
+  it('shares hover, press, selection glow and portrait lift with a reduced-motion fallback', () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    expect(css).toContain('.es2-menu .es2-hero-select-card{')
+    expect(css).toContain('.es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px)')
+    expect(css).toContain('.es2-hero-select-card:active:not(:disabled){transform:translateY(-1px) scale(.99)}')
+    expect(css).toContain('.es2-hero-select-card[aria-pressed="true"]{border-color:#e7c896;box-shadow:')
+    expect(css).toContain('.es2-hero-select-card > img{transition:transform')
+    expect(css).toContain('.es2-hero-select-card[aria-pressed="true"] > img{transform:translateY(-6px)}')
+    expect(css).toContain('.es2-menu .es2-hero-select-card:is(:hover,:active):not(:disabled){transform:none}')
+    expect(css).toContain('.es2-hero-select-card[aria-pressed="true"] > img{transform:none}')
   })
 })
 

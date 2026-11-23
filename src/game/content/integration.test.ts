@@ -89,8 +89,9 @@ describe('combat and lifecycle event bridge', () => {
     s.hero = createHero('knight')
     s.hero.attack = 999
     const observed: GameHooks = { ...hooks, content: (state, event) => registry.emit(state, event, hooks) }
+    const initialHp = s.hero.hp
     damageHero(s, 10, observed)
-    expect(s.hero.hp).toBe(165)
+    expect(s.hero.hp).toBe(initialHp - 10)
     s.stars.push({ x: 0, y: 0, value: 2, t: 0 })
     step(s, 0.016, { x: 0, y: 0 }, observed, registry)
     expect(s.hero.xp).toBe(2)

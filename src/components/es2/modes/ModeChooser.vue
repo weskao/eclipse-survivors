@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { objectiveModeIds, getObjectiveMode, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 
 withDefaults(defineProps<{ value: ObjectiveModeId | null; disabled?: boolean }>(), { disabled: false })
@@ -6,24 +7,25 @@ const emit = defineEmits<{ select: [mode: ObjectiveModeId] }>()
 </script>
 
 <template>
-  <section class="es2-objective-chooser" aria-label="ES2 擴充遠征模式">
-    <header><span>CHAPTER II · MODES</span><h2>選擇遠征試煉</h2></header>
-    <div class="es2-objective-grid" role="radiogroup" aria-label="ES2 遠征模式">
+  <section class="es2-objective-chooser" :aria-label="t('ES2 擴充遠征模式')">
+    <header><span>{{ t("CHAPTER II · MODES") }}</span><h2>{{ t("選擇遠征試煉") }}</h2></header>
+    <div class="es2-objective-grid" role="radiogroup" :aria-label="t('ES2 遠征模式')">
       <button
         v-for="id in objectiveModeIds" :key="id"
-        type="button" role="radio" class="es2-objective-choice"
+        type="button" role="radio" class="es2-objective-choice" data-ui-sfx="managed"
         :data-objective-mode="id" :disabled="disabled"
         :aria-checked="value === id"
+        :aria-label="[t(getObjectiveMode(id).title), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"
         :class="{ selected: value === id }"
         @click="emit('select', id)"
       >
-        <strong>{{ getObjectiveMode(id).title }}</strong>
-        <span>{{ getObjectiveMode(id).description }}</span>
-        <small>{{ getObjectiveMode(id).victoryDescription }}</small>
-        <small v-for="modifier in getObjectiveMode(id).preRunModifiers" :key="modifier" class="modifier">◈ {{ modifier }}</small>
-        <small class="reward">✦ {{ id === 'endless-eclipse'
+        <strong>{{ t(getObjectiveMode(id).title) }}</strong>
+        <span>{{ t(getObjectiveMode(id).description) }}</span>
+        <small>{{ t(getObjectiveMode(id).victoryDescription) }}</small>
+        <small v-for="modifier in getObjectiveMode(id).preRunModifiers" :key="modifier" class="modifier">◈ {{ t(modifier) }}</small>
+        <small class="reward">✦ {{ t(id === 'endless-eclipse'
           ? '每 3 分鐘 +' + getObjectiveMode(id).rewardEmbers + ' 餘燼（最高 1500）'
-          : '勝利獎勵 ' + getObjectiveMode(id).rewardEmbers + ' 餘燼' }}</small>
+          : '勝利獎勵 ' + getObjectiveMode(id).rewardEmbers + ' 餘燼') }}</small>
       </button>
     </div>
   </section>

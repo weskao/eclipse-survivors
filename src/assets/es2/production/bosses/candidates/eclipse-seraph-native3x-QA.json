@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "category": "bosses",
+  "candidateFor": "eclipse-seraph",
+  "status": "QA_PENDING",
+  "path": "eclipse-seraph-phases-native3x-QA-PENDING.webp",
+  "assetSha256": "7d0ab6fa5b8ec4055a678735378f81ab9ec51f16cd4261d0c59e00c9638303eb",
+  "assetBytes": 221100,
+  "maxBytes": 300000,
+  "atlas": {
+    "width": 2268,
+    "height": 756,
+    "frames": 3,
+    "columns": 3,
+    "rows": 1,
+    "cellWidth": 756,
+    "cellHeight": 756,
+    "transparentGutterPx": 16,
+    "sourceRect": {
+      "insetX": 16,
+      "insetY": 16,
+      "width": 724,
+      "height": 724
+    }
+  },
+  "source": {
+    "kind": "originally-generated-2172x724-RGBA-lossless-WebP-master",
+    "originalGeneratedFramePixels": 724,
+    "upscaledFromExisting192px": false,
+    "masterCommittedToRepo": true,
+    "masterFile": "eclipse-seraph-native3x-master.webp",
+    "masterBytes": 1851518,
+    "masterSha256": "ac3a32afb66b5c20f28509ced2c27b9b41ab92bb21791a4f88b30686162f94c9"
+  },
+  "runtimeTarget": {
+    "maxDrawPx": 236,
+    "requiredNativeSourceDetailPx": 708,
+    "consumer": "src/game/render/es2/production-world.ts",
+    "active": false
+  },
+  "technicalChecks": {
+    "riffWebp": true,
+    "dimensions": true,
+    "alphaGutterClear": true,
+    "sha256Matches": true,
+    "sourceRectsWithinSingleFrames": true
+  },
+  "acceptance": {
+    "originalArtIdentityReview": "pending",
+    "phaseVisualContinuityReview": "pending",
+    "inGame1xScreenshot": "pending",
+    "desktopAndMobilePortraitLandscape": "pending",
+    "humanArtApproval": "pending",
+    "notes": "Newly generated white/gold/ivory angel with purple eclipse aura. Some wing detail approaches source-panel boundaries and may show fringe/clip artifacts; cross-phase identity and real game 1x appearance require inspection before activation."
+  }
+}

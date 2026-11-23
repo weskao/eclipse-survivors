@@ -6,9 +6,10 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
-import { drawProductionHeroFrame, type ProductionHeroArtwork } from './es2/production-heroes'
+import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
-import { drawProductionBossFrame } from './es2/production-world'
+import { bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
+import { sampleHealthBar, type HealthBarMotion } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -222,6 +223,7 @@ export function drawCharacter(
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3 },
+  healthBars?: WeakMap<Mob, HealthBarMotion>,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -280,17 +282,25 @@ export function drawCharacter(
       // Eight-direction atlases already contain an authored left-facing frame.
       // Mirroring them produces the wrong direction and artwork. Keep the
       // original fallback mirror for unloaded art.
-      const directionalReady = productionImage?.complete
-        && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512
-      if (hero.face < 0 && !directionalReady) ctx.scale(-1, 1)
+      const directionalReady = productionHeroUsesPoseSheets(productionImage)
+        || productionHeroPoseReady(productionImage, anim)
+        || productionHeroMotionReady(productionImage)
+        || (productionImage?.complete
+          && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512)
+      // Follow the same octant/facing contract as the original three heroes.
+      // A 900px portrait has only one authored view, so mirror it for westward
+      // aim without pretending to have eight different camera perspectives.
+      const facing = anim.direction === 2 || anim.direction === 6 ? hero.face
+        : anim.direction > 2 && anim.direction < 6 ? -1 : 1
+      if (facing < 0 && !directionalReady) ctx.scale(-1, 1)
       let productionDrawn = productionImage
-        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
+        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock) : false
       if (!productionDrawn && isSpecializationId(s.heroId)) {
         // s.choice is the legacy base class: a specialization hero must never fall back to
         // that rig. Unauthored poses (hurt/death/victory) hold the authored idle cell; while
         // the atlas is not decoded nothing is drawn rather than showing another class.
         anim.pose = 'idle' // anim is a throwaway per-call sample; no extra allocation
-        if (productionImage) drawProductionHeroFrame(ctx, productionImage, anim, sx, sy)
+        if (productionImage) drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock)
         productionDrawn = true
       }
       if (!productionDrawn) {
@@ -306,6 +316,24 @@ export function drawCharacter(
       }
       ctx.restore()
     } else if (mob) {
+      // Reuse each authored phase illustration, with one cheap motion transform
+      // per visible boss and no added textures or per-frame bitmap allocations.
+      if (mob.type === 'boss' && mob.bossMoving && !reducedMotion) {
+        const rhythm = Math.sin(mob.phase * 1.8)
+        if (mob.bossArtId === 'infernal-titan') {
+          ctx.translate(0, -Math.abs(rhythm) * 3) // Heavy footsteps.
+          ctx.rotate(rhythm * 0.009)
+        } else if (mob.bossArtId === 'frost-sovereign') {
+          ctx.translate(rhythm * 2, -5 - rhythm * 3) // Ice levitation.
+          ctx.rotate(rhythm * 0.013)
+        } else if (mob.bossArtId === 'eclipse-seraph') {
+          ctx.translate(rhythm * 2.5, -7 - rhythm * 4) // Celestial glide.
+          ctx.rotate(rhythm * 0.023)
+        } else {
+          ctx.translate(rhythm * 2, -3 - rhythm * 2) // Shadow glide.
+          ctx.rotate(rhythm * 0.018)
+        }
+      }
       // Use the controller's real phase; the original boss sprite remains the decode fallback.
       const painted = mob.type === 'boss' && productionBoss
         ? drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
@@ -313,15 +341,32 @@ export function drawCharacter(
     }
   }
   ctx.restore()
-  if (mob && mob.hp < mob.max && mob.type !== 'boss') {
-    const bar = Math.max(34, sx * 0.58)
-    ctx.fillStyle = '#020608e6'; ctx.fillRect(x - bar / 2, y - sy - 8, bar, 5)
-    ctx.fillStyle = '#d56b56'; ctx.fillRect(x - bar / 2 + 1, y - sy - 7, (bar - 2) * Math.max(0, mob.hp / mob.max), 3)
-  }
-  if (mob && mob.type === 'boss') {
-    const bar = 190
-    ctx.fillStyle = '#05090dec'; ctx.fillRect(x - bar / 2, y - sy - 25, bar, 12)
-    ctx.strokeStyle = '#dcc391aa'; ctx.strokeRect(x - bar / 2, y - sy - 25, bar, 12)
-    ctx.fillStyle = '#f09663'; ctx.fillRect(x - bar / 2 + 2, y - sy - 23, (bar - 4) * Math.max(0, mob.hp / mob.max), 8)
+  if (mob) {
+    // The cache is renderer-owned and weakly keyed. Full-health enemies only seed one entry;
+    // no gradients, timers or extra frame loops are needed in dense combat.
+    const motion = healthBars ? sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
+      : { front: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))),
+          trail: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))) }
+    if (mob.type === 'boss') {
+      const bar = 190, left = x - bar / 2
+      const growth = productionBoss ? Math.min(sx, sy) * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
+      const top = y - sy - 25 - growth
+      ctx.fillStyle = '#05090dec'; ctx.fillRect(left, top, bar, 12)
+      ctx.strokeStyle = '#dcc391aa'; ctx.strokeRect(left, top, bar, 12)
+      if (motion.trail > motion.front + 0.002) {
+        ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.trail, 8)
+      }
+      ctx.fillStyle = '#ce63a5'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
+      ctx.fillStyle = '#f9c0d8'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
+    } else if (mob.hp < mob.max || motion.front < 0.998) {
+      const bar = Math.max(34, sx * 0.58), left = x - bar / 2, top = y - sy - 8
+      ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
+      if (motion.trail > motion.front + 0.002) {
+        ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.trail, 4)
+      }
+      ctx.fillStyle = mob.elite ? '#d6a4f3' : '#e98275'
+      ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 4)
+      ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 1)
+    }
   }
 }

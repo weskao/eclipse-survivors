@@ -18,8 +18,9 @@ describe('ES2 choice card responsive illustrations', () => {
     expect(css).toContain('height:clamp(142px,44vw,190px)')
     expect(css).toContain('grid-template-columns:1fr')
   })
-  it('keeps long choices scrollable within notch and home-indicator safe areas', () => {
-    expect(css).toContain('.es2-dialog{position:relative;overflow-y:auto')
+  it('keeps long choices scrollable within the dialog body and notch-safe viewport', () => {
+    expect(css).toMatch(/\.es2-dialog\{[^}]*display:flex;flex-direction:column;overflow:hidden/)
+    expect(css).toMatch(/\.es2-dialog-body\{[^}]*min-height:0;overflow-y:auto/)
     expect(css).toContain('safe-area-inset-top')
     expect(css).toContain('safe-area-inset-bottom')
     expect(css).not.toMatch(/\.es2-card-art img\{[^}]*object-fit:cover/)

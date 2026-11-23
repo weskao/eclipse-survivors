@@ -72,6 +72,13 @@ describe('step', () => {
     step(s, 0.1, still, spyHooks())
     expect(s.stars[0]!.x).toBeCloseTo(55)
   })
+  it('high-rank magnet attracts XP at a modestly extended radius', () => {
+    const { s, hero } = setup()
+    hero.skills.magnet = 4
+    s.stars.push({ x: 350, y: 0, value: 3, t: 0 })
+    step(s, 0.1, still, spyHooks())
+    expect(s.stars[0]!.x).toBeCloseTo(305)
+  })
   it('mobs approach and warn before a contact strike', () => {
     const { s, hero } = setup()
     const far = mob(100, 0, { speed: 77 })
@@ -117,7 +124,7 @@ describe('step', () => {
     s.numberFx.push({ x: 0, y: 0, life: 0.05, value: 1, boss: false })
     s.swipes.push({ x: 0, y: 0, a: 0, life: 0.2, max: 0.29, r: 70 })
     step(s, 0.1, still, spyHooks())
-    expect(hero.hp).toBeCloseTo(100.18)
+    expect(hero.hp).toBeCloseTo(100.21)
     expect(s.numberFx).toHaveLength(0)
     expect(s.swipes).toHaveLength(1)
     expect(s.cam.x).toBeCloseTo(90)

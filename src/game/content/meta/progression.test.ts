@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import { describe, expect, it } from 'vitest'
 import { emptyProfile } from '../../../meta/profile'
 import type { RunStats } from '../../../meta/types'
@@ -60,6 +61,72 @@ describe('isolated permanent meta progression', () => {
     expect(second.state.achievements.filter(x => x === 'first-victory')).toHaveLength(1)
   })
 
+  it('offers exactly five ranks for every permanent research without rejecting old rank-four saves', () => {
+    const rankFour = createMetaState()
+    rankFour.embers = 50_000
+    for (const def of RESEARCH) rankFour.research[def.id] = 4
+    expect(validateMetaState(rankFour)).toBe(true)
+
+    for (const def of RESEARCH) {
+      expect(def.maxRank).toBe(5)
+      const before = getResearchStates(rankFour).find(item => item.id === def.id)!
+      const config = BALANCE.meta.research[def.id as keyof typeof BALANCE.meta.research]
+      const fifthCost = config.firstCost + 4 * config.costStep
+        + Math.max(0, 4 - config.lateCostStartRank) ** 2 * config.lateCostStep
+      expect(before.rank).toBe(4)
+      expect(before.nextCost).toBe(fifthCost)
+      expect(before.canBuy).toBe(true)
+      const purchase = buyResearch(rankFour, def.id)
+      expect(purchase.ok).toBe(true)
+      expect(purchase.state.research[def.id]).toBe(5)
+      expect(purchase.state.embers).toBe(rankFour.embers - fifthCost)
+      expect(validateMetaState(purchase.state)).toBe(true)
+      expect(getResearchStates(purchase.state).find(item => item.id === def.id)?.nextCost).toBeNull()
+      expect(buyResearch(purchase.state, def.id).ok).toBe(false)
+    }
+    expect(Object.values(rankFour.research).every(rank => rank === 4)).toBe(true)
+  })
+
+  it('uses all five configurable research caps and escalating late-stage prices', () => {
+    for (const def of RESEARCH) {
+      const cfg = BALANCE.meta.research[def.id as keyof typeof BALANCE.meta.research]
+      expect(def.maxRank).toBe(cfg.maxRank)
+      expect(def.benefitPerRank).toBe(cfg.benefitPerRank)
+      expect(def.maxRank).toBe(5)
+    }
+    let state = { ...createMetaState(), embers: 50_000 }
+    for (const id of ['power', 'vitality', 'insight', 'scavenging', 'ember-study'] as const) {
+      const cfg = BALANCE.meta.research[id]
+      for (let rank = 0; rank < cfg.maxRank; rank++) {
+        const displayed = getResearchStates(state).find(entry => entry.id === id)!
+        const nextCost = cfg.firstCost + rank * cfg.costStep +
+          Math.max(0, rank - cfg.lateCostStartRank) ** 2 * cfg.lateCostStep
+        expect(displayed.nextCost).toBe(nextCost)
+        expect(buyResearch(state, id).ok).toBe(true)
+        const purchased = buyResearch(state, id)
+        expect(purchased.state.research[id]).toBe(rank + 1)
+        expect(purchased.state.embers).toBe(state.embers - nextCost)
+        state = purchased.state
+      }
+      expect(getResearchStates(state).find(entry => entry.id === id)?.nextCost).toBeNull()
+      expect(buyResearch(state, id).ok).toBe(false)
+    }
+    expect(validateMetaState(state)).toBe(true)
+  })
+
+  it('pays moderately more embers per finished run using configurable reward math', () => {
+    const receipt = { stats: run('tuning-earn', { kills: 115, seconds: 180, victory: true }) }
+    const first = applyCompletedRun(createMetaState(), receipt)
+    expect(first.accepted).toBe(true)
+    const earn = BALANCE.meta.runRewards
+    const oldBase = Math.floor(115 / 10) + Math.floor(180 / 30) + 30
+    const expected = Math.floor(oldBase * earn.baseMultiplier)
+    expect(first.rewards.find(reward => reward.type === 'run')?.embers).toBe(expected)
+    expect(expected).toBeGreaterThan(oldBase)
+    expect(expected / oldBase).toBeLessThan(1.2)
+    expect(applyCompletedRun(first.state, receipt)).toMatchObject({ accepted: false, reason: 'duplicate' })
+  })
+
   it('uses permanent research ranks, prices and prerequisites with no negative wallet', () => {
     const initial = { ...createMetaState(), embers: 1500 }
     const first = buyResearch(initial, 'power')
@@ -68,10 +135,55 @@ describe('isolated permanent meta progression', () => {
     expect(first.state.embers).toBeLessThan(1500)
     expect(initial.research.power).toBe(0)
     let full = first.state
-    for (let n = 1; n < 3; n++) full = buyResearch(full, 'power').state
+    for (let n = 1; n < BALANCE.meta.research.power.maxRank; n++) full = buyResearch(full, 'power').state
     expect(buyResearch(full, 'power').ok).toBe(false)
     expect(buyResearch(createMetaState(), 'power').ok).toBe(false)
     expect(buyResearch(initial, 'not-real').ok).toBe(false)
+  })
+
+  it('extends every research cap and preserves the original first three upgrade prices', () => {
+    const state = { ...createMetaState(), embers: 20_000 }
+    for (const id of ['power', 'vitality', 'insight', 'scavenging', 'ember-study'] as const) {
+      const def = RESEARCH.find(x => x.id === id)!
+      expect(def.maxRank).toBe(BALANCE.meta.research[id].maxRank)
+      expect(def.maxRank).toBeGreaterThan(id === 'power' || id === 'vitality' ? 3 : 2)
+    }
+    let current = state
+    expect(getResearchStates(current).find(x => x.id === 'power')?.nextCost).toBe(25)
+    current = buyResearch(current, 'power').state
+    expect(getResearchStates(current).find(x => x.id === 'power')?.nextCost).toBe(50)
+    current = buyResearch(current, 'power').state
+    expect(getResearchStates(current).find(x => x.id === 'power')?.nextCost).toBe(75)
+    current = buyResearch(current, 'power').state
+    expect(getResearchStates(current).find(x => x.id === 'power')?.nextCost).toBeGreaterThan(75)
+    const old = structuredClone(current)
+    expect(buyResearch(current, 'power').state.research.power).toBe(4)
+    expect(current).toEqual(old)
+    expect(validateMetaState({ ...current, research: { ...current.research, power: BALANCE.meta.research.power.maxRank } })).toBe(true)
+    expect(validateMetaState({ ...current, research: { ...current.research, power: BALANCE.meta.research.power.maxRank + 1 } })).toBe(false)
+  })
+
+  it('increases ember gains moderately, keeps duplicate-run protection and grants scaling bonuses once', () => {
+    const plain = applyCompletedRun(createMetaState(), {
+      stats: run('plain', { kills: 120, seconds: 200, victory: true }),
+    })
+    expect(plain.accepted).toBe(true)
+    const rawBase = Math.floor(120 / BALANCE.meta.runRewards.killDivisor)
+      + Math.floor(200 / BALANCE.meta.runRewards.secondsDivisor)
+      + BALANCE.meta.runRewards.victoryEmbers
+    const expected = Math.floor(rawBase * BALANCE.meta.runRewards.baseMultiplier)
+    expect(expected).toBeGreaterThan(48)
+    expect(expected).toBeLessThan(65)
+    expect(plain.rewards[0]?.embers).toBe(expected)
+    const funded = createMetaState()
+    funded.research['ember-study'] = 4
+    funded.research.power = 1
+    funded.research.insight = 1
+    funded.research.vitality = 1
+    funded.research.scavenging = 1
+    const rich = applyCompletedRun(funded, { stats: run('rich', { kills: 120, seconds: 200, victory: true }) })
+    expect(rich.rewards[0]?.embers).toBe(expected + Math.floor(expected * 4 * BALANCE.meta.research['ember-study'].benefitPerRank))
+    expect(applyCompletedRun(rich.state, { stats: run('rich', { kills: 120, seconds: 200 }) }).accepted).toBe(false)
   })
 
   it('requires parent research nodes and exposes remaining upgrade costs', () => {

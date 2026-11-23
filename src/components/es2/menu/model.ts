@@ -1,4 +1,5 @@
 import type { AbilityId, SkillRarity } from '../../../game/types'
+import { upgradeKeyIndex } from '../../../game/input'
 
 export type MenuView = 'main' | 'relics' | 'progression' | 'monsters' | 'skills' | 'achievements'
 export type ChoiceKind = 'level' | 'evolution' | 'treasure'
@@ -19,12 +20,12 @@ export interface MenuChoice {
 }
 export interface RelicEntry extends MenuChoice { owned?: boolean; effect?: string }
 export interface KeyInput {
-  key: string; repeat: boolean; ctrlKey: boolean; altKey: boolean; metaKey: boolean; isComposing: boolean
+  code: string; repeat: boolean; ctrlKey: boolean; altKey: boolean; metaKey: boolean
 }
 export function shortcutIndex(event: KeyInput, length: number): number {
-  if (event.repeat || event.isComposing || event.ctrlKey || event.altKey || event.metaKey) return -1
-  const index = /^[1-9]$/.test(event.key) ? Number(event.key) - 1 : -1
-  return index < length ? index : -1
+  if (event.repeat || event.ctrlKey || event.altKey || event.metaKey) return -1
+  const index = upgradeKeyIndex(event.code)
+  return index >= 0 && index < length ? index : -1
 }
 export function nextIndex(current: number, direction: -1 | 1, count: number): number {
   return count <= 0 ? -1 : (current + direction + count) % count

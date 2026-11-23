@@ -1,6 +1,12 @@
 import type { Ctx2D } from '../../render/ctx'
 import type { GameState } from '../../types'
 import { runtimeOf } from './runtime'
+import { drawProjectileSprite, type ProjectileSprites } from '../../render/projectile-art'
+
+const MISSILE_ART = {
+  dagger: 'shadow-dagger', lance: 'holy-lance', bone: 'bone-spear',
+  blade: 'ricochet-blade', arrow: 'spectral-arrow',
+} as const
 
 const MISSILE_COLOR = {
   dagger: '#be9dff', lance: '#ffe2a0', bone: '#e2e7e3',
@@ -8,7 +14,7 @@ const MISSILE_COLOR = {
 } as const
 
 /** Renders one bounded FX dispatcher per active run; no draw-time enemy scans. */
-export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number): void {
+export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number, sprites?: Partial<ProjectileSprites>): void {
   const hero = state.hero
   if (!hero) return
   const r = runtimeOf(state)
@@ -28,6 +34,11 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
     if (z.kind === 'mine') {
       const fuse = Math.max(0.12, z.fuse / 0.85)
       ctx.beginPath(); ctx.arc(x, y, 9 + 16 * (1 - fuse), 0, Math.PI * 2); ctx.stroke()
+      ctx.save()
+      ctx.translate(x, y)
+      if (fuse > 0.25) ctx.rotate(state.worldClock * 0.7)
+      drawProjectileSprite(ctx, sprites, 'arcane-mine', 58)
+      ctx.restore()
     } else {
       ctx.beginPath(); ctx.arc(x, y, Math.max(10, z.radius * 0.55), 0, Math.PI * 2); ctx.stroke()
     }
@@ -53,23 +64,27 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
 
   for (const p of r.projectiles) {
     const x = p.x + ox, y = p.y + oy
-    if (!inside(x, y, 50)) continue
+    if (!inside(x, y, 55)) continue
     ctx.save()
     ctx.translate(x, y)
-    ctx.rotate(Math.atan2(p.vy, p.vx))
+    ctx.rotate(Math.atan2(p.vy, p.vx) + (p.kind === 'blade' ? state.worldClock * 5 : 0))
+    const painted = drawProjectileSprite(ctx, sprites, MISSILE_ART[p.kind],
+      p.kind === 'lance' ? 76 : p.kind === 'arrow' ? 62 : p.kind === 'bone' ? 54 : 48)
     ctx.strokeStyle = MISSILE_COLOR[p.kind]
-    ctx.fillStyle = MISSILE_COLOR[p.kind]
-    ctx.shadowColor = MISSILE_COLOR[p.kind]
-    ctx.shadowBlur = 10
-    ctx.lineWidth = p.kind === 'lance' || p.kind === 'arrow' ? 4 : 2.5
-    ctx.beginPath()
-    if (p.kind === 'dagger' || p.kind === 'blade') {
-      ctx.moveTo(15, 0); ctx.lineTo(0, -7); ctx.lineTo(-12, 0); ctx.lineTo(0, 7); ctx.closePath()
-      ctx.fill()
-    } else {
-      const length = p.kind === 'lance' ? 41 : p.kind === 'arrow' ? 37 : 25
-      ctx.moveTo(-length, 0); ctx.lineTo(13, 0); ctx.stroke()
-      ctx.beginPath(); ctx.moveTo(20, 0); ctx.lineTo(6, -6); ctx.lineTo(6, 6); ctx.closePath(); ctx.fill()
+    ctx.shadowColor = painted ? 'transparent' : MISSILE_COLOR[p.kind]
+    ctx.shadowBlur = painted ? 0 : 10
+    if (!painted) {
+      ctx.fillStyle = MISSILE_COLOR[p.kind]
+      ctx.lineWidth = p.kind === 'lance' || p.kind === 'arrow' ? 4 : 2.5
+      ctx.beginPath()
+      if (p.kind === 'dagger' || p.kind === 'blade') {
+        ctx.moveTo(15, 0); ctx.lineTo(0, -7); ctx.lineTo(-12, 0); ctx.lineTo(0, 7); ctx.closePath()
+        ctx.fill()
+      } else {
+        const length = p.kind === 'lance' ? 41 : p.kind === 'arrow' ? 37 : 25
+        ctx.moveTo(-length, 0); ctx.lineTo(13, 0); ctx.stroke()
+        ctx.beginPath(); ctx.moveTo(20, 0); ctx.lineTo(6, -6); ctx.lineTo(6, 6); ctx.closePath(); ctx.fill()
+      }
     }
     ctx.globalAlpha = 0.32
     ctx.beginPath(); ctx.moveTo(-15, 0); ctx.lineTo(-30, 0); ctx.stroke()
@@ -99,9 +114,14 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
       const x = hero.x + ox + Math.cos(angle) * 72
       const y = hero.y + oy + Math.sin(angle) * 72
       if (!inside(x, y, 35)) continue
-      ctx.save(); ctx.fillStyle = '#7357c9'; ctx.strokeStyle = '#d5c2ff'
-      ctx.lineWidth = 3; ctx.shadowColor = '#ab8cff'; ctx.shadowBlur = 15
-      ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(state.worldClock * 2.2)
+      if (!drawProjectileSprite(ctx, sprites, 'gravity-core', 43)) {
+        ctx.fillStyle = '#7357c9'; ctx.strokeStyle = '#d5c2ff'
+        ctx.lineWidth = 3; ctx.shadowColor = '#ab8cff'; ctx.shadowBlur = 15
+        ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
+      }
       ctx.restore()
     }
   }

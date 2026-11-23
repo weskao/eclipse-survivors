@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { createEngine, type Engine } from './game/engine'
+import { ART_URLS } from './game/art'
+import { WORLD_ART } from './game/render/es2/production-world'
+import { BOSS_DEFINITIONS } from './game/content/bosses/definitions'
+import { getBossArrivalWarning } from './game/bosses/countdown'
+import { locateOffscreenBoss } from './components/es2/hud/boss-pointer'
+import { installGameTouchGuard } from './ios-touch-guard'
 import { applyPresentation, resolvePresentationPolicy } from './game/content/accessibility/presentation'
 import './game/content/accessibility/presentation.css'
 import { inventorySnapshot } from './game/content/relics/runtime'
 import { RELIC_BY_ID } from './game/content/relics/catalog'
 import CombatHud from './components/es2/hud/CombatHud.vue'
+import Es2Dialog from './components/es2/menu/Es2Dialog.vue'
+import { t, applyDocumentLocale } from './i18n'
 import HeroSpecialAction from './components/es2/hero-roster/HeroSpecialAction.vue'
 import ModeProgress from './components/es2/modes/ModeProgress.vue'
 import WorldEventPanel from './components/es2/world-event-ui/WorldEventPanel.vue'
@@ -52,7 +60,27 @@ const accessibilityPreferences = shallowRef<AccessibilityPreferences>(accessibil
 const changeAccessibility = (next: AccessibilityPreferences): void => {
   accessibilityPreferences.value = accessibility.update(next)
 }
+const homeConfirmOpen = ref(false)
+let resumeAfterHomeCancel = false
+function requestHome(): void {
+  if (homeConfirmOpen.value || (ui.mode !== 'play' && ui.mode !== 'paused') || ui.settingsOpen || !!ui.worldEventChoice) return
+  resumeAfterHomeCancel = ui.mode === 'play'
+  if (resumeAfterHomeCancel) engine.togglePause()
+  homeConfirmOpen.value = ui.mode === 'paused'
+}
+function cancelHome(): void {
+  homeConfirmOpen.value = false
+  if (resumeAfterHomeCancel && ui.mode === 'paused') engine.togglePause()
+  resumeAfterHomeCancel = false
+}
+function confirmHome(): void {
+  homeConfirmOpen.value = false
+  resumeAfterHomeCancel = false
+  engine.goMenu()
+}
+watch(() => ui.mode, mode => { if (mode !== 'paused') homeConfirmOpen.value = false })
 const combatActions: CombatHudActions = {
+  home: requestHome,
   pause: engine.togglePause,
   settings: engine.openSettings,
   toggleMusic: engine.toggleMusic,
@@ -70,9 +98,27 @@ const relicCollection = computed(() => {
 })
 const combatFeed = computed<CombatHudFeed>(() => {
   void ui.hud // Live snapshot replaces every 125 ms; game state is intentionally not deep-reactive.
-  const boss = engine.state.mobs.find(mob => mob.type === 'boss' && mob.hp > 0)
+  const state = engine.state
+  const boss = state.mobs.find(mob => mob.type === 'boss' && mob.hp > 0)
+  const offscreen = boss && ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
+    ? locateOffscreenBoss(state, boss) : null
+  const warning = ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
+    ? getBossArrivalWarning(state, ui.objectiveProgress) : null
   return {
-    boss: boss ? { name: '首領', phase: boss.bossPhase, totalPhases: 3 } : undefined,
+    boss: boss ? {
+      name: boss.bossArtId ? BOSS_DEFINITIONS[boss.bossArtId].title : '首領',
+      phase: boss.bossPhase, totalPhases: 3,
+      ...(offscreen ? { offscreen: {
+        ...offscreen,
+        artSrc: boss.bossArtId ? WORLD_ART.bosses[boss.bossArtId] : ART_URLS.boss,
+        atlas: !!boss.bossArtId,
+      } } : {}),
+    } : undefined,
+    bossWarning: warning ? {
+      name: warning.bossId ? BOSS_DEFINITIONS[warning.bossId].title : '首領',
+      seconds: warning.seconds, progress: warning.progress, urgent: warning.urgent,
+      color: warning.bossId ? BOSS_DEFINITIONS[warning.bossId].color : '#f3b873',
+    } : undefined,
     relics: relicCollection.value,
     notices: ui.toastVisible && ui.toastText
       ? [{ id: ui.toastText, kind: 'message', text: ui.toastText }]
@@ -81,6 +127,7 @@ const combatFeed = computed<CombatHudFeed>(() => {
 })
 
 let unmount: (() => void) | undefined
+let removeTouchGuard: () => void = () => {}
 let clearPresentation: () => void = () => {}
 function syncPresentation(): void {
   clearPresentation()
@@ -95,20 +142,24 @@ function syncPresentation(): void {
 }
 watch(accessibilityPreferences, syncPresentation)
 onMounted(() => {
+  removeTouchGuard = installGameTouchGuard(document)
   syncPresentation()
+  applyDocumentLocale()
   if (canvas.value) unmount = engine.mount(canvas.value, hudRef.value?.minimap ?? null)
 })
 onBeforeUnmount(() => {
+  removeTouchGuard()
   clearPresentation()
   unmount?.()
 })
 </script>
 
 <template>
-  <canvas id="game" ref="canvas" aria-label="奇幻生存戰遊戲畫面"></canvas>
+  <canvas id="game" ref="canvas" :aria-label="t('奇幻生存戰遊戲畫面')"></canvas>
   <CombatHud
     ref="hud"
     :active="ui.mode !== 'menu'"
+    :can-return-home="ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice"
     :hud="ui.hud"
     :choice="ui.choice"
     :hero-id="ui.heroId"
@@ -128,13 +179,14 @@ onBeforeUnmount(() => {
     v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
     :hero-id="ui.heroId"
     :snapshot="ui.heroSpecial"
+    :joystick-side="accessibilityPreferences.joystickSide"
     :active="ui.mode === 'play' && !ui.settingsOpen"
     @activate="engine.activateHeroSpecial"
   />
-  <div v-if="ui.mode === 'play' && !ui.settingsOpen" class="es2-world-markers" aria-label="世界事件標記">
+  <div v-if="ui.mode === 'play' && !ui.settingsOpen" class="es2-world-markers" :aria-label="t('世界事件標記')">
     <button v-for="marker in worldMarkerButtons" :key="marker.event.id" type="button"
-      class="es2-world-marker" :style="{ left: marker.left, top: marker.top }"
-      :aria-label="'互動世界事件 ' + marker.event.kind.slice(7)"
+      class="es2-world-marker" data-ui-sfx="managed" :style="{ left: marker.left, top: marker.top }"
+      :aria-label="t('互動世界事件 ' + marker.event.kind.slice(7))"
       @click="engine.openWorldEvent(marker.event.id)">✧</button>
   </div>
   <WorldEventPanel :event="ui.worldEventChoice?.event ?? null"
@@ -198,7 +250,16 @@ onBeforeUnmount(() => {
     @sfx-volume="engine.setSfxVolume"
     @accessibility="changeAccessibility"
   />
-  <PauseOverlay :active="ui.mode === 'paused'" @resume="engine.togglePause" @leave="engine.goMenu" @settings="engine.openSettings" />
+  <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen && !ui.settingsOpen" @resume="engine.togglePause" @leave="requestHome" @settings="engine.openSettings" />
+  <Es2Dialog :active="homeConfirmOpen" :title="t('返回主選單？')"
+    :subtitle="t('戰鬥已暫停。返回主選單將結束本次遠征，未結算的戰鬥進度不會保留。確定要離開嗎？')"
+    @cancel="cancelHome">
+    <p data-es2-home-confirm class="es2-warning">{{ t('離開後將無法繼續本次遠征。') }}</p>
+    <template #actions>
+      <button type="button" data-es2-home-cancel data-ui-sfx="managed" class="es2-primary" @click="cancelHome">{{ t('繼續戰鬥') }}</button>
+      <button type="button" data-es2-home-accept data-ui-sfx="managed" class="es2-secondary es2-home-exit" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
+    </template>
+  </Es2Dialog>
   <ContentShowcase v-if="devShowcase" :engine="engine" />
 </template>
 
@@ -210,4 +271,8 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 14px #b6787a88; }
 .es2-world-marker:focus-visible { outline: 3px solid white; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .es2-world-marker { transition: none; } }
+
+/* Keep exit legible but less prominent than the safe continuation. */
+:global(.es2-backdrop .es2-home-exit) { border-color: #ba8b80; color: #f0c1b7; }
+:global(.es2-backdrop .es2-home-exit:hover:not(:disabled)) { border-color: #d6a49a; }
 </style>

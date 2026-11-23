@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { onBeforeUnmount, shallowRef, watch } from 'vue'
 import { stickVector } from '../game/input'
 
@@ -45,10 +46,10 @@ onBeforeUnmount(resetStick)
 </script>
 
 <template>
-  <div id="touch" :class="{ active }" aria-label="行動裝置遊戲控制">
-    <div id="stick" ref="pad" aria-label="方向搖桿" @pointerdown.prevent="downPad" @pointermove="movePad" @pointerup="upPad" @pointercancel="upPad" @lostpointercapture="upPad">
+  <div id="touch" :class="{ active }" :aria-label="t('行動裝置遊戲控制')">
+    <div id="stick" ref="pad" :aria-label="t('方向搖桿')" @pointerdown.prevent="downPad" @pointermove="movePad" @pointerup="upPad" @pointercancel="upPad" @lostpointercapture="upPad">
       <div id="knob" :style="{ transform: knobStyle }"></div>
     </div>
-    <button id="dash" type="button" :disabled="!active" aria-label="衝刺" @click="dash">衝刺</button>
+    <button id="dash" type="button" :disabled="!active" :aria-label="t('衝刺')" @click="dash">{{ t("衝刺") }}</button>
   </div>
 </template>

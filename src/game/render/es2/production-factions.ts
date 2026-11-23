@@ -4,8 +4,26 @@ import type { GameState } from '../../types'
 import { WORLD_ART } from './production-world'
 import { drawFactionTelegraphs } from '../../content/enemies/telegraphs'
 import type { Ctx2D } from '../ctx'
+import { drawProjectileSprite, type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
 
 export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement }>
+
+/** Visual-only sizes, calibrated against legacy develop mobs (87–139px wide).
+ * Do not reuse gameplay collision radii: new art must be tuned independently.
+ * Atlases remain square and their source rectangles are unchanged. */
+export const FACTION_VISUAL_SIZE: Readonly<Record<FactionKind, number>> = {
+  'shadow-assassin': 92,
+  necromancer: 108,
+  'dark-archer': 96,
+  'plague-carrier': 104,
+  'shield-guardian': 128,
+  phantom: 90,
+  'fire-imp': 88,
+  'frost-wraith': 102,
+  berserker: 110,
+  'crystal-sentinel': 128,
+}
+
 
 /** One decode per art asset on game mount, no new Image allocations in the rAF loop. */
 export function loadProductionFactionArt(makeImage: () => HTMLImageElement = () => new Image()): FactionArtwork {
@@ -48,8 +66,8 @@ export function drawLiveFactionArt(
         : enemy.state === 'attack' ? 3
           : enemy.state === 'recover' ? 4
             : (Math.floor(state.worldClock * 6 + enemy.id) & 1)
-    const size = Math.max(70, enemy.radius * 4)
-    const h = size // The authored 96×96 source cells must retain their natural aspect ratio.
+    const size = FACTION_VISUAL_SIZE[enemy.kind]
+    const h = size // Preserve square source-cell proportions and the existing feet anchor.
     ctx.save()
     ctx.translate(x, y)
     // These 6-frame strips share one artist-authored facing. This mirroring is
@@ -70,10 +88,20 @@ export function drawLiveFactionArt(
 /** Renderer-only projectiles; no changes to collision, damage or simulation. */
 export function drawLiveFactionProjectiles(
   ctx: Ctx2D, state: GameState, runtime: FactionRuntime, ox: number, oy: number,
+  sprites?: Partial<ProjectileSprites>,
 ): void {
   for (const shot of runtime.projectiles) {
     const x = shot.x + ox, y = shot.y + oy
-    if (x < -32 || y < -32 || x > state.W + 32 || y > state.H + 32) continue
+    if (x < -48 || y < -48 || x > state.W + 48 || y > state.H + 48) continue
+    const art: ProjectileArtId = shot.kind === 'fire-imp' ? 'enemy-ember'
+      : shot.kind === 'dark-archer' ? 'spectral-arrow'
+        : shot.kind === 'frost-wraith' || shot.kind === 'crystal-sentinel' ? 'arcane-bolt' : 'enemy-hex'
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(Math.atan2(shot.vy, shot.vx))
+    const drawn = drawProjectileSprite(ctx, sprites, art, Math.max(34, shot.radius * 3.1))
+    ctx.restore()
+    if (drawn) continue
     ctx.save()
     ctx.fillStyle = ENEMY_DEFINITIONS[shot.kind].telegraphColor
     ctx.beginPath()

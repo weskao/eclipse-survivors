@@ -74,11 +74,12 @@ describe('isolated mobile controls', () => {
 })
 
 describe('accessibility settings', () => {
-  it('previews options immediately using accessible native inputs', async () => {
+  it('previews options immediately using accessible game controls', async () => {
     const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
     expect(w.get('[data-testid="es2-preview"]').attributes('aria-live')).toBe('polite')
     const q = w.get('[data-testid="es2-quality"]')
-    await q.setValue('low')
+    await q.trigger('click')
+    document.querySelector<HTMLElement>('[data-es2-value="low"]')!.click()
     expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ quality: 'low' })
     const scale = w.get('[data-testid="es2-ui-scale"]')
     await scale.setValue('1.2')

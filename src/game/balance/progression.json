@@ -1,0 +1,45 @@
+{
+  "initialXp": 15,
+  "growthMultiplier": 1.26,
+  "growthFlat": 6.5,
+  "rarityWeights": {
+    "common": 14,
+    "rare": 5,
+    "legendary": 1
+  },
+  "focusPerRank": 0.3,
+  "focusMaxBonus": 1.2,
+  "sameGroupBonus": 0.12,
+  "choiceCount": 3,
+  "groups": {
+    "area": [
+      "orb",
+      "bolt",
+      "frost",
+      "meteor",
+      "blaze",
+      "vortex",
+      "chain",
+      "weapons:blood-scythe",
+      "weapons:arcane-mines",
+      "weapons:poison-cloud",
+      "weapons:solar-beam",
+      "weapons:gravity-orbs",
+      "weapons:thorn-chain"
+    ],
+    "support": [
+      "maxhp",
+      "heal",
+      "shield"
+    ],
+    "mobility": [
+      "speed",
+      "magnet"
+    ],
+    "attack": [
+      "damage",
+      "haste",
+      "multi"
+    ]
+  }
+}

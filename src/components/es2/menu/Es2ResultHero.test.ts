@@ -12,6 +12,22 @@ const base = {
 
 afterEach(() => { document.body.innerHTML = '' })
 
+describe('victory-only result celebration', () => {
+  it('renders a bounded noninteractive celebratory overlay for victory, never defeat or inactive results', async () => {
+    const wrapper = mount(Es2Result, {
+      props: { active: true, ending: '勝利', summary: '', result: base },
+      attachTo: document.body,
+    })
+    expect(document.body.querySelectorAll('[data-es2-victory-spark]')).toHaveLength(16)
+    expect(document.body.querySelector('[data-es2-victory-celebration]')?.getAttribute('aria-hidden')).toBe('true')
+    await wrapper.setProps({ result: { ...base, victory: false } })
+    expect(document.body.querySelector('[data-es2-victory-celebration]')).toBeNull()
+    await wrapper.setProps({ result: base, active: false })
+    expect(document.body.querySelector('[data-es2-victory-celebration]')).toBeNull()
+    wrapper.unmount()
+  })
+})
+
 describe('result screen hero portrait', () => {
   it('shows the specialization hero, not its legacy base class art', () => {
     const wrapper = mount(Es2Result, {

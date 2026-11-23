@@ -1,0 +1,49 @@
+name: ES2 actual gameplay hero MP4 capture
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths:
+      - 'scripts/es2-hero-animation-video.mjs'
+      - '.github/workflows/es2-hero-animation-video.yml'
+      - 'src/game/render/es2/production-heroes.ts'
+      - 'src/game/render/es2/character-foot-anchors.ts'
+      - 'src/game/render/characters.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-hero-animation-video-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Chromium and recording dependencies
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
+      - name: Capture actual in-game hero animations and transcode to MP4
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/es2-hero-preview.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node scripts/es2-hero-animation-video.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-three-heroes-real-gameplay-mp4
+          path: artifacts/es2-hero-video/
+          if-no-files-found: warn
+          retention-days: 30

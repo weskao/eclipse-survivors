@@ -5,6 +5,7 @@ import type { ToneFn } from '../music'
 import type { AudioSystem, BgmElement } from '../types'
 import { createEs2AudioAdapter } from './adapter'
 import { createEngine } from '../../engine'
+import { DURATION } from '../../constants'
 
 class Media implements BgmElement {
   paused = true
@@ -92,6 +93,30 @@ describe('ES2 final host audio wiring', () => {
     expect(bgm.played).toBe(0)
     engine.start()
     expect(menu.paused).toBe(true)
+  })
+
+  it('hands cinematic boss and results scoring to the host and restores ES2 combat', () => {
+    const { audio, bgm } = setup()
+    const engine = createEngine({ audio, contentPacks: [] })
+    engine.start()
+    expect(bgm.paused).toBe(true)
+    engine.state.bossSpawned = true
+    engine.state.mobs = [{ x: 500, y: 0, type: 'boss', hp: 100, max: 100, r: 48,
+      speed: 0, dmg: 32, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }]
+    engine.state.time = 0.24
+    engine.advance(0.033)
+    expect(bgm.paused).toBe(false)
+
+    engine.state.mobs = []
+    engine.state.bossDefeated = true
+    engine.state.time = 0.49
+    engine.advance(0.033)
+    expect(bgm.paused).toBe(true)
+
+    engine.state.time = DURATION - 0.01
+    engine.advance(0.033)
+    expect(engine.ui.mode).toBe('result')
+    expect(bgm.paused).toBe(true)
   })
 
   it('legacy audio remains independently usable and is not globally silenced', () => {

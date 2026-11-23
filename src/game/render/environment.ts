@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { SCENE, TAU } from '../constants'
 import type { Artwork } from '../art'
 import { hash } from '../math'
@@ -85,7 +86,7 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
   }
 }
 
-export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number, world?: WorldRuntimeImages): void {
   const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎' }
   const titles = { chest: '古代寶箱', shrine: '魔法祭壇', invasion: '菁英入侵',
     blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉' }
@@ -101,10 +102,13 @@ export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: numbe
     ctx.strokeStyle = glow; ctx.lineWidth = 3
     ctx.beginPath(); ctx.ellipse(x, y, 27 + Math.sin(s.worldClock * 3) * 3, 10, 0, 0, TAU); ctx.stroke()
     ctx.textAlign = 'center'; ctx.font = 'bold 25px Georgia'; ctx.fillStyle = '#fff6e2'
-    ctx.fillText(symbols[e.kind], x, y - 14)
+    if (e.kind === 'chest' && world?.chest && ready(world.chest)) {
+      // 192px authored WebP at 48px: 4x source detail, no new bitmap.
+      ctx.drawImage(world.chest, x - 24, y - 40, 48, 48)
+    } else ctx.fillText(symbols[e.kind], x, y - 14)
     ctx.fillStyle = '#101a23db'; ctx.fillRect(x - 49, y + 11, 98, 20)
     ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = glow
-    ctx.fillText(titles[e.kind], x, y + 25)
+    ctx.fillText(t(titles[e.kind]), x, y + 25)
     ctx.restore()
   }
   if (!s.challengePoint) return

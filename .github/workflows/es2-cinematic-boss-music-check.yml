@@ -1,0 +1,42 @@
+name: ES2 cinematic boss music integration check
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths:
+      - .github/workflows/es2-cinematic-boss-music-check.yml
+      - src/game/audio/cinematic.ts
+      - src/game/audio/engine.ts
+      - src/game/audio/engine.test.ts
+      - src/game/audio/boss-coverage.test.ts
+      - src/game/bosses/countdown.ts
+      - src/game/engine.ts
+      - scripts/compose-boss-ost.mjs
+      - scripts/compose-boss-ost.test.mjs
+      - package.json
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-cinematic-boss-music-check
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Focus on original boss audio regressions
+        run: pnpm exec vitest run src/game/audio/engine.test.ts src/game/audio/boss-score.test.ts src/game/audio/boss-coverage.test.ts src/game/bosses/countdown.test.ts src/components/es2/hud/boss-warning-ui.test.ts
+      - run: pnpm test
+      - run: pnpm typecheck
+        if: success() || failure()
+      - run: pnpm build
+        if: success() || failure()
+      - run: pnpm check-release
+        if: success() || failure()

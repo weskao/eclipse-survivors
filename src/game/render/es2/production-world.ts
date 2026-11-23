@@ -8,6 +8,14 @@ const urls = import.meta.glob('../../../assets/es2/production/{enemies,bosses,bi
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
 
+/** Preview assets stay out of production; visual QA and explicit opt-in are required. */
+const bossQaLoaders = import.meta.env.DEV
+  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/*-QA-PENDING.webp', {
+    query: '?url', import: 'default',
+  }) as Record<string, () => Promise<string>>
+  : {}
+const bossQaInsets = new WeakMap<HTMLImageElement, number>()
+
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
   const path = `../../../assets/es2/production/${category}/${name}@3x.webp`
   const url = urls[path]
@@ -25,6 +33,28 @@ export const WORLD_UI_IDS = [
 ] as const
 export type WorldUiId = typeof WORLD_UI_IDS[number]
 
+/** Player-facing labels for the review gallery; asset IDs remain unchanged for gameplay and QA. */
+export const WORLD_UI_LABELS: Record<WorldUiId, string> = {
+  'treasure-common': '普通寶箱',
+  'treasure-rare': '稀有寶箱',
+  'treasure-legendary': '傳說寶箱',
+  'treasure-cursed': '詛咒寶箱',
+  'rarity-common': '普通品質徽記',
+  'rarity-rare': '稀有品質徽記',
+  'rarity-legendary': '傳說品質徽記',
+  'hud-health': '生命值圖示',
+  'hud-xp': '經驗值圖示',
+  'hud-cooldown': '冷卻時間圖示',
+  'hud-quest': '任務目標圖示',
+  'achievement-boss': '首領討伐徽章',
+  'achievement-survivor': '生存達人徽章',
+  'achievement-evolution': '能力進化徽章',
+  'achievement-explorer': '冒險探索徽章',
+  'achievement-collector': '收藏家徽章',
+  'achievement-flawless': '完美挑戰徽章',
+}
+
+
 export const WORLD_ART = Object.freeze({
   enemies: Object.fromEntries((Object.keys(ENEMY_DEFINITIONS) as FactionKind[]).map(id => [
     id, { body: src('enemies', id + '-body'), telegraph: src('enemies', id + '-telegraph') },
@@ -39,21 +69,45 @@ export const WORLD_ART = Object.freeze({
 })
 
 export interface WorldRuntimeImages {
+  /** Reuse authored treasure art in live world events. */
+  chest: HTMLImageElement
   bosses: Record<BossId, HTMLImageElement>
   ground: Record<BiomeId, HTMLImageElement>
   decor: Record<BiomeId, HTMLImageElement>
 }
 
-/** Allocate the twelve scene and boss images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image()): WorldRuntimeImages {
+/** Allocate world and common treasure images once on engine mount, never during rAF. */
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
     return image
   }
+  const loadBoss = (id: BossId): HTMLImageElement => {
+    const candidatePath = `../../../assets/es2/production/bosses/candidates/${id}-phases-native3x-QA-PENDING.webp`
+    const image = load(WORLD_ART.bosses[id])
+    const loadCandidate = import.meta.env.DEV && reviewBossId === id ? bossQaLoaders[candidatePath] : undefined
+    if (loadCandidate) {
+      void loadCandidate().then(url => {
+        image.onerror = () => {
+          // A failed candidate must restore the actual authored boss atlas, not a blank bitmap.
+          image.onerror = null
+          bossQaInsets.delete(image)
+          image.src = WORLD_ART.bosses[id]
+        }
+        bossQaInsets.set(image, 16)
+        image.src = url
+      }).catch(() => {
+        // Keep the authored legacy image if an isolated dev-only candidate cannot load.
+        bossQaInsets.delete(image)
+      })
+    }
+    return image
+  }
   return {
+    chest: load(WORLD_ART.ui['treasure-common']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
-      [id, load(WORLD_ART.bosses[id])])) as Record<BossId, HTMLImageElement>,
+      [id, loadBoss(id)])) as Record<BossId, HTMLImageElement>,
     ground: Object.fromEntries(BIOME_IDS.map(id =>
       [id, load(WORLD_ART.biomes[id].ground)])) as Record<BiomeId, HTMLImageElement>,
     decor: Object.fromEntries(BIOME_IDS.map(id =>
@@ -61,14 +115,24 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
 }
 
+/** Scale art only; collision geometry and source rects remain unchanged. */
+export function bossPhaseVisualScale(phase: 1 | 2 | 3): number {
+  return phase === 3 ? 1.24 : phase === 2 ? 1.12 : 1
+}
+
 export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
+  sourceInset?: number,
 ): boolean {
-  if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || phase < 1 || phase > 3) return false
-  const side = Math.min(width, height)
-  if (!Number.isFinite(side) || side <= 0) return false
-  const sourceSide = image.naturalHeight
-  ctx.drawImage(image, (phase - 1) * sourceSide, 0, sourceSide, sourceSide, -side / 2, -side + 4, side, side)
+  if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || !Number.isInteger(phase) || phase < 1 || phase > 3) return false
+  const inset = sourceInset ?? (image.naturalHeight === 756 ? bossQaInsets.get(image) ?? 0 : 0)
+  const side = Math.min(width, height) * bossPhaseVisualScale(phase)
+  const sourceSide = image.naturalHeight - inset * 2
+  if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(inset) || inset < 0 || sourceSide <= 0) return false
+  ctx.drawImage(
+    image, (phase - 1) * image.naturalHeight + inset, inset, sourceSide, sourceSide,
+    -side / 2, -side + 4, side, side,
+  )
   return true
 }
 
