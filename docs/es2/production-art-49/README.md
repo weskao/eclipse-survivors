@@ -19,6 +19,7 @@
 - [03-biomes-8.md](03-biomes-8.md)：4 場景地板／裝飾；平行工作 C。
 - [04-ui-17.md](04-ui-17.md)：寶箱、稀有度、HUD、成就；平行工作 D。
 - [05-integration.md](05-integration.md)：單線整合、code consumer、CI 與真正 1×畫面驗收。
+- [11-enemy-native-runtime-audit-2026-11-24.md](11-enemy-native-runtime-audit-2026-11-24.md)：依現行實際怪物尺寸重算 3×來源比例，記錄 Shadow Assassin 512px 母圖的正式戰鬥接線與 fallback。
 - [07-execution-evidence-2026-11-23.md](07-execution-evidence-2026-11-23.md)：已執行的四來源整合、49/49 真實 Chromium QA、CI 結論及未核准項目。
 
 ## 依賴圖
