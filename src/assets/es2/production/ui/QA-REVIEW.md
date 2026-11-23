@@ -1,6 +1,9 @@
 # ES2 17 UI icons — original pixels verified, no speculative replacement
 
-Date: 2026-11-23. Workstream: `feature/es2-art-qa-ui`. **0/17 human-approved; 17/17 remain `needs-human-approval`**.
+> **最新狀態（2026-11-24）：本類 17/17 正式 UI 美術已由專案擁有者明確確認通過人工視覺驗收。** Manifest 類別與逐檔 `status: approved`，並保留 `humanApproval` 人工簽核欄位。完整清單與簽核範圍：[10-ui-17-owner-approval-2026-11-24.md](../../../../../docs/es2/production-art-49/10-ui-17-owner-approval-2026-11-24.md)。原先「0/17」「needs-human-approval」「pending」敘述是 **2026-11-23 或更早的歷史 QA 快照**，不得再視為目前人工美術狀態；獨立 Browser／來源技術驗證與其他 32 項素材未獲本次核准。
+
+
+Date: 2026-11-23. Workstream: `feature/es2-art-qa-ui`. **當時 0/17 經人工核准；截至 2026-11-24 現為 17/17 approved**.
 
 ## Correction / evidence
 - Downloaded the `es2-world-art-source-review` ZIP artifact (ID 14816995401) from the successful browser workflow [45170008905](https://github.com/weskao/eclipse-survivors/actions/runs/45170008905), which holds the original 17 WebP files and original `assets/images/imgs10.png` (1672×941 RGBA).
