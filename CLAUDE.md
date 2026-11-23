@@ -24,6 +24,14 @@ This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Pres
 
 **Mandatory character CRUD gate:** Before any Create, Read/review, Update/replace, or Delete/retire operation on heroes, enemies, bosses, NPCs, summons, companions, portraits, animations or their code consumers, consult [`.claude/rules/character-art-3x.md`](.claude/rules/character-art-3x.md) §5. For changes, follow its asset-first ordering, complete visual-identity/directional coverage and TDD/QA sign-off; never turn an unverified enlarged frame into an approved native 3× asset.
 
+## Mandatory bilingual player-facing copy
+
+- All visible game text, ARIA labels, tooltips, dialogs, notices, achievement/reward names, and content descriptions must support `en` and `zh-TW` through the existing `src/i18n.ts` catalog. Do not create another translation system or display internal IDs as reward names.
+- Use `t()` at the display boundary so the player can switch languages without reloading. For messages with dynamic numbers/names, prefer a named-parameter template (`t('…{value}…', { value })`) over concatenating already-localized fragments. Never translate user-provided parameter values implicitly.
+- Preserve intentional game jargon, keyboard hints, technical abbreviations and branding (e.g. HP, XP, Lv., WASD, ECLIPSE SURVIVORS) when a translation would reduce clarity.
+- Verify both locales on mobile portrait, mobile landscape, tablet and desktop. Text must wrap inside its own card/dialog/HUD region without forcing page-wide horizontal scrolling or clipping essential art and actions; keep the existing internal dialog scrolling for genuinely long content.
+- Add bilingual regression tests for new copy, including runtime strings and reward names, and extend browser viewport checks when UI geometry changes.
+
 ## In-game selectors and dialogs
 
 Follow [`.claude/rules/no-native-ui.md`](.claude/rules/no-native-ui.md) when editing settings, menus, dropdowns, dialogs, or picker controls. Do not use native browser select popups; reuse the shared ES2 selector with responsive, keyboard-accessible listbox styling.
