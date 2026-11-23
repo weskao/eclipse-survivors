@@ -8,6 +8,14 @@ const urls = import.meta.glob('../../../assets/es2/production/{enemies,bosses,bi
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
 
+/** Preview assets stay out of production; visual QA and explicit opt-in are required. */
+const bossQaUrls = import.meta.env.DEV
+  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/*-QA-PENDING.webp', {
+    eager: true, query: '?url', import: 'default',
+  }) as Record<string, string>
+  : {}
+const bossQaInsets = new WeakMap<HTMLImageElement, number>()
+
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
   const path = `../../../assets/es2/production/${category}/${name}@3x.webp`
   const url = urls[path]
@@ -47,16 +55,23 @@ export interface WorldRuntimeImages {
 }
 
 /** Allocate world and common treasure images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image()): WorldRuntimeImages {
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
     return image
   }
+  const loadBoss = (id: BossId): HTMLImageElement => {
+    const candidatePath = `../../../assets/es2/production/bosses/candidates/${id}-phases-native3x-QA-PENDING.webp`
+    const candidate = import.meta.env.DEV && reviewBossId === id ? bossQaUrls[candidatePath] : undefined
+    const image = load(candidate ?? WORLD_ART.bosses[id])
+    if (candidate) bossQaInsets.set(image, 16)
+    return image
+  }
   return {
     chest: load(WORLD_ART.ui['treasure-common']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
-      [id, load(WORLD_ART.bosses[id])])) as Record<BossId, HTMLImageElement>,
+      [id, loadBoss(id)])) as Record<BossId, HTMLImageElement>,
     ground: Object.fromEntries(BIOME_IDS.map(id =>
       [id, load(WORLD_ART.biomes[id].ground)])) as Record<BiomeId, HTMLImageElement>,
     decor: Object.fromEntries(BIOME_IDS.map(id =>
@@ -66,14 +81,15 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
 
 export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
-  sourceInset = 0,
+  sourceInset?: number,
 ): boolean {
   if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || phase < 1 || phase > 3) return false
+  const inset = sourceInset ?? bossQaInsets.get(image) ?? 0
   const side = Math.min(width, height)
-  const sourceSide = image.naturalHeight - sourceInset * 2
-  if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(sourceInset) || sourceInset < 0 || sourceSide <= 0) return false
+  const sourceSide = image.naturalHeight - inset * 2
+  if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(inset) || inset < 0 || sourceSide <= 0) return false
   ctx.drawImage(
-    image, (phase - 1) * image.naturalHeight + sourceInset, sourceInset, sourceSide, sourceSide,
+    image, (phase - 1) * image.naturalHeight + inset, inset, sourceSide, sourceSide,
     -side / 2, -side + 4, side, side,
   )
   return true
