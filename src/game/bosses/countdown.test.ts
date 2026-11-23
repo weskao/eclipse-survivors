@@ -12,7 +12,7 @@ describe('boss arrival warning uses gameplay clocks and actual spawn rules', () 
     state.time = 76
     expect(getBossArrivalWarning(state, null)).toBeNull()
     state.time = 77
-    expect(getBossArrivalWarning(state, null)).toMatchObject({ seconds: 15, bossId: 'abyss-monarch' })
+    expect(getBossArrivalWarning(state, null)).toMatchObject({ seconds: 15, bossId: null })
     state.time = 88.3
     expect(getBossArrivalWarning(state, null)).toMatchObject({ seconds: 4, urgent: true })
     state.mode = 'paused'
