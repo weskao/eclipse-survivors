@@ -19,7 +19,18 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
-      "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha.",
+      "qa": {
+        "maxCanvasDrawPx": 236,
+        "requiredNativeFramePx": 708,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "contactSheetReview": "inspected",
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified."
+        ]
+      }
     },
     {
       "id": "frost-sovereign",
@@ -36,7 +47,19 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
-      "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha.",
+      "qa": {
+        "maxCanvasDrawPx": 236,
+        "requiredNativeFramePx": 708,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "contactSheetReview": "inspected",
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
+          "Potential detached upper-edge fragments in phases 1-2: compare to imgs7.png original."
+        ]
+      }
     },
     {
       "id": "infernal-titan",
@@ -53,7 +76,19 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
-      "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha.",
+      "qa": {
+        "maxCanvasDrawPx": 236,
+        "requiredNativeFramePx": 708,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "contactSheetReview": "inspected",
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
+          "Potential disconnected pixels at left edge of phase 3: compare to imgs8.png original."
+        ]
+      }
     },
     {
       "id": "eclipse-seraph",
@@ -70,7 +105,19 @@
       "frameHeight": 192,
       "status": "needs-human-approval",
       "sha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
-      "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha.",
+      "qa": {
+        "maxCanvasDrawPx": 236,
+        "requiredNativeFramePx": 708,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "contactSheetReview": "inspected",
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
+          "Potential horizontal detached strips above phase 3 and at atlas edges: compare to imgs8.png original."
+        ]
+      }
     }
   ]
 }
