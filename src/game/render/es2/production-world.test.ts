@@ -105,7 +105,7 @@ describe('ES2 world art live asset mapping', () => {
     ])
   })
 
-  it.each(['abyss-monarch', 'frost-sovereign', 'infernal-titan'] as const)(
+  it.each(['abyss-monarch', 'frost-sovereign', 'infernal-titan', 'eclipse-seraph'] as const)(
     'loads %s native candidate lazily only after an explicit dev QA request',
     async id => {
       const makeImage = (): HTMLImageElement => ({
