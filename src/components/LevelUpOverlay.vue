@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n'
 import { animatedEs2ImageSrc, stillEs2ImageSrc, animatedSkillImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../game/ui-art'
 import type { AbilityId, UpgradeDef } from '../game/types'
 import SettingsButton from './SettingsButton.vue'
@@ -16,14 +17,14 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
         <span class="level-seal" aria-hidden="true">✦</span>
         <div class="level-heading-copy">
           <div class="kicker">LEVEL UP · CHOOSE YOUR BLESSING</div>
-          <h2>獲得新的命運刻印</h2>
+          <h2>{{ t("獲得新的命運刻印") }}</h2>
         </div>
         <span class="level-seal" aria-hidden="true">✦</span>
       </header>
       <div class="cards" id="upgrades">
         <button v-for="(u, i) in upgrades" :key="u.id" class="upgrade" :class="[u.rarity, { evolution: u.isEvolution }]"
           :data-up="u.id" @click="emit('choose', u.id)">
-          <span class="upgrade-rarity">{{ rarityLabel[u.rarity] }}<span v-if="u.isEvolution"> · EVOLUTION</span></span>
+          <span class="upgrade-rarity">{{ t(rarityLabel[u.rarity]) }}<span v-if="u.isEvolution"> · EVOLUTION</span></span>
           <span class="portrait skill-sigil" aria-hidden="true">
             <picture v-if="animatedEs2ImageSrc(u.id)">
               <source media="(prefers-reduced-motion: reduce)" :srcset="u.iconSrc ?? stillEs2ImageSrc(u.id)" />
@@ -37,16 +38,16 @@ const rarityLabel = { common: '普通', rare: '稀有', legendary: '傳說' } as
             <img v-else-if="u.iconSrc || !u.id.includes(':')" class="skill-art" draggable="false" decoding="async" :src="u.iconSrc ?? skillImageSrc(u.id)" alt="" />
             {{ u.icon }}
           </span>
-          <strong>{{ u.title }}</strong>
+          <strong>{{ t(u.title) }}</strong>
           <span v-if="u.level !== undefined" class="upgrade-level">
-            {{ u.isEvolution ? '究極進化' : `Lv.${u.level} → ${u.level + 1} / ${u.maxLevel}` }}
+            {{ t(u.isEvolution ? '究極進化' : `Lv.${u.level} → ${u.level + 1} / ${u.maxLevel}`) }}
           </span>
-          <small class="upgrade-desc">{{ u.desc }}</small>
-          <small v-if="u.requirements" class="upgrade-requirements">{{ u.requirements }}</small>
-          <span class="upgrade-action"><small class="upgrade-key">按 {{ i + 1 }} 選擇</small><span class="upgrade-select-mark" aria-hidden="true">◆</span></span>
+          <small class="upgrade-desc">{{ t(u.desc) }}</small>
+          <small v-if="u.requirements" class="upgrade-requirements">{{ t(u.requirements) }}</small>
+          <span class="upgrade-action"><small class="upgrade-key">{{ t("按") }} {{ i + 1 }} {{ t("選擇") }}</small><span class="upgrade-select-mark" aria-hidden="true">◆</span></span>
         </button>
       </div>
-      <p>選擇其中一項能力後繼續冒險</p>
+      <p>{{ t("選擇其中一項能力後繼續冒險") }}</p>
     </div>
   </div>
 </template>
