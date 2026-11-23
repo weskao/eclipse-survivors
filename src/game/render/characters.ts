@@ -316,6 +316,24 @@ export function drawCharacter(
       }
       ctx.restore()
     } else if (mob) {
+      // Reuse each authored phase illustration, with one cheap motion transform
+      // per visible boss and no added textures or per-frame bitmap allocations.
+      if (mob.type === 'boss' && mob.bossMoving && !reducedMotion) {
+        const rhythm = Math.sin(mob.phase * 1.8)
+        if (mob.bossArtId === 'infernal-titan') {
+          ctx.translate(0, -Math.abs(rhythm) * 3) // Heavy footsteps.
+          ctx.rotate(rhythm * 0.009)
+        } else if (mob.bossArtId === 'frost-sovereign') {
+          ctx.translate(rhythm * 2, -5 - rhythm * 3) // Ice levitation.
+          ctx.rotate(rhythm * 0.013)
+        } else if (mob.bossArtId === 'eclipse-seraph') {
+          ctx.translate(rhythm * 2.5, -7 - rhythm * 4) // Celestial glide.
+          ctx.rotate(rhythm * 0.023)
+        } else {
+          ctx.translate(rhythm * 2, -3 - rhythm * 2) // Shadow glide.
+          ctx.rotate(rhythm * 0.018)
+        }
+      }
       // Use the controller's real phase; the original boss sprite remains the decode fallback.
       const painted = mob.type === 'boss' && productionBoss
         ? drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
