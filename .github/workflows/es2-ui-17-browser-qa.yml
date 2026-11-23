@@ -2,6 +2,16 @@ name: ES2 UI 17 real Chromium visual QA
 on:
   push:
     branches: [feature/es2-release-readiness-integration]
+    paths:
+      - 'src/assets/es2/production/ui/**'
+      - 'src/components/es2/menu/Es2Archive.vue'
+      - 'src/components/es2/menu/Es2ChoiceCards.vue'
+      - 'src/components/es2/menu/Es2MenuSystem.vue'
+      - 'src/components/es2/hud/CombatHud.vue'
+      - 'src/components/es2/relic-rewards/RelicRewardOverlay.vue'
+      - 'src/game/render/es2/production-world.ts'
+      - 'scripts/es2-ui-17-browser-qa.mjs'
+      - '.github/workflows/es2-ui-17-browser-qa.yml'
   workflow_dispatch:
 permissions:
   contents: read
