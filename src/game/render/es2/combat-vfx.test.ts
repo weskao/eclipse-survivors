@@ -42,11 +42,11 @@ describe('ES2 combat VFX contract', () => {
   it('registers 21 distinct namespaced effects with bounded durations', () => {
     expect(COMBAT_FX_SPECS).toHaveLength(21)
     const ids = COMBAT_FX_SPECS.map(fx => fx.id)
-    expect(new Set(ids).size).toBe(18)
+    expect(new Set(ids).size).toBe(COMBAT_FX_SPECS.length)
     expect(ids.every(id => id.startsWith('combat-vfx:'))).toBe(true)
     expect(COMBAT_FX_SPECS.every(fx => fx.duration > 0 && fx.duration <= 4)).toBe(true)
     const registry = createContentRegistry([COMBAT_VFX_PACK])
-    expect(registry.packs[0]?.effects).toHaveLength(18)
+    expect(registry.packs[0]?.effects.map(fx => fx.id)).toEqual(ids)
   })
 
   it('keeps directional metadata and animation lifecycle without leaking objects', () => {
