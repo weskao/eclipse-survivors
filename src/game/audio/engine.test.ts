@@ -525,3 +525,65 @@ describe('original boss score replaces battle music', () => {
     expect(bgm.volume).toBeCloseTo(0.35)
   })
 })
+
+describe('cinematic sampled boss music', () => {
+  const tracks = {
+    'abyss-monarch': ['abyss-p1.mp3','abyss-p2.mp3','abyss-p3.mp3'],
+    'frost-sovereign': ['frost-p1.mp3','frost-p2.mp3','frost-p3.mp3'],
+    'infernal-titan': ['infernal-p1.mp3','infernal-p2.mp3','infernal-p3.mp3'],
+    'eclipse-seraph': ['seraph-p1.mp3','seraph-p2.mp3','seraph-p3.mp3'],
+  } as const
+
+  it('uses a sampled 15-second suspense cue then replaces it with the actual boss theme', async () => {
+    const loaded: string[] = []
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, warningTrack: 'warning.mp3',
+      loadMusic: async url => { loaded.push(url); return ctx.createBuffer(2, 480000, 24000) },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossWarning?.(15)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(loaded).toContain('warning.mp3')
+    const warning = ctx.sources.at(-1)
+    expect(warning?.startedAt).not.toBeNull()
+    audio.setBossTheme?.('frost-sovereign', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(loaded).toContain('frost-p1.mp3')
+    expect(warning?.stoppedAt).not.toBeNull()
+  })
+
+  it('keeps phase changes on the same audio timeline without restarting from zero', async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('infernal-titan', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources.at(-1)?.loop).toBe(true)
+    ctx.currentTime = 7
+    audio.setBossTheme?.('infernal-titan', 3)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources.at(-1)?.offset).toBeGreaterThan(6)
+    expect(ctx.sources.at(-1)?.loop).toBe(true)
+  })
+
+  it('silences pre-rendered music on pause/mute and resumes without a duplicate loop', async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)
+    audio.onScreen('paused')
+    expect(first?.stoppedAt).not.toBeNull()
+    audio.onScreen('play')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources.length).toBeGreaterThan(1)
+    audio.toggleMusic('play')
+    expect(ctx.sources.at(-1)?.stoppedAt).not.toBeNull()
+  })
+})
