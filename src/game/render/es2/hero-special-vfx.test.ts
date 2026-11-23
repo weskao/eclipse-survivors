@@ -84,6 +84,12 @@ describe('three hero Q specials cinematic visuals', () => {
     expect(s.content.effects).toHaveLength(0)
   })
 
+  it('does not reintroduce a placeholder blade after the authored slash has faded', () => {
+    const { ctx, calls } = canvas()
+    drawHeroSpecialFx(ctx, 'hero-shadowblade', 0.98, 1, 12, false)
+    expect(calls).not.toContain('#c3b5c6')
+  })
+
   it('uses four cached textured art sprites and no per-frame gradient allocations', () => {
     let constructions = 0
     class FakeImage {
