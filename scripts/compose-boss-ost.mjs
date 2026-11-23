@@ -50,8 +50,10 @@ function renderMidi(bpm,parts,bars){
     const bytes=[]
     let previous=0
     for(const item of events.sort((a,b)=>a.t-b.t||a.order-b.order)){
-      bytes.push(...vlq(item.t-previous),...item.data)
-      previous=item.t
+      // Sustain tails cannot extend a phase beyond its common loop point.
+      const at = Math.min(item.t, bars * BAR)
+      bytes.push(...vlq(at - previous), ...item.data)
+      previous = at
     }
     bytes.push(...vlq(bars*BAR-previous),255,47,0)
     const header=Buffer.alloc(8)
