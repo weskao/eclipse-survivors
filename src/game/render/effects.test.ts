@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { DASH_COOLDOWN, TAU } from '../constants'
 import { createState, resetRun } from '../state'
 import type { GameMode, Hero } from '../types'
-import { createFakeCtx } from './fakes'
-import { drawFx, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
+import { createFakeCtx, fakeCanvasFactory } from './fakes'
+import { createParticleSpriteCache, drawFx, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
 
 function scene() {
   const s = createState()
@@ -48,6 +48,34 @@ describe('restrained combat feedback', () => {
     drawFx(reduced.ctx, s, 0, 0, true)
     expect(normal.calls.filter((x) => x === 'fill').length).toBeGreaterThan(100)
     expect(reduced.calls.filter((x) => x === 'fill')).toHaveLength(1)
+  })
+
+  it('rasterizes repeated spark glows once per color and size while drawing every visible spark', () => {
+    const s = scene()
+    s.fx = Array.from({ length: 90 }, (_, i) => ({
+      x: 130 + i % 15 * 6, y: 140 + (i % 6) * 6,
+      life: 0.5, max: 0.8, color: '#ff9966', r: 4.5, type: 'spark' as const,
+    }))
+    const factory = fakeCanvasFactory()
+    const cache = createParticleSpriteCache(factory.make)
+    const frame = createFakeCtx()
+    drawFx(frame.ctx, s, 0, 0, false, cache)
+    expect(factory.made).toHaveLength(1)
+    expect(frame.calls.filter(name => name === 'drawImage')).toHaveLength(90)
+    expect(frame.calls).not.toContain('arc')
+    drawFx(frame.ctx, s, 0, 0, false, cache)
+    expect(factory.made).toHaveLength(1)
+  })
+
+  it('culls invisible sparks before allocating sprite cache entries or issuing draw calls', () => {
+    const s = scene()
+    s.fx = [{ x: 4000, y: 5000, life: 0.4, max: 0.4,
+      color: '#00ff00', r: 5, type: 'spark' }]
+    const factory = fakeCanvasFactory()
+    const frame = createFakeCtx()
+    drawFx(frame.ctx, s, 0, 0, false, createParticleSpriteCache(factory.make))
+    expect(factory.made).toHaveLength(0)
+    expect(frame.calls).not.toContain('drawImage')
   })
 
   it('stops star bob/rotation under reduced motion without hiding the pickup', () => {
