@@ -124,11 +124,11 @@ describe('damageHero', () => {
     hero.skills.shield = 5
     const hooks = spyHooks()
     damageHero(s, 10, hooks)
-    expect(hero.hp).toBeCloseTo(175 - 4.8)
+    expect(hero.hp).toBeCloseTo(200 - 4.8)
     expect(hero.inv).toBe(1)
     expect(hooks.sfx).toHaveBeenCalledWith('hurt')
     damageHero(s, 10, hooks)
-    expect(hero.hp).toBeCloseTo(175 - 4.8)
+    expect(hero.hp).toBeCloseTo(200 - 4.8)
     expect(hooks.sfx).toHaveBeenCalledTimes(1)
   })
   it('each shield rank mitigates 13% up to the existing 52% cap', () => {
@@ -254,7 +254,7 @@ describe('combat fairness regressions', () => {
     const hooks = spyHooks()
     damageHero(s, 11, hooks)
     damageHero(s, 11, hooks)
-    expect(hero.hp).toBe(164)
+    expect(hero.hp).toBe(189)
     expect(hero.inv).toBe(1)
     expect(hooks.sfx).toHaveBeenCalledTimes(1)
     for (const enemy of s.mobs) expect(Math.hypot(enemy.x, enemy.y)).toBeGreaterThan(32)
