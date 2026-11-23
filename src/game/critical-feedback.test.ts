@@ -61,10 +61,22 @@ describe('authoritative critical feedback', () => {
     const hero = s.hero!
     damageHero(s, hero.max * 0.08, baseHooks())
     expect(s.cameraKick).toBe(0)
+    expect(s.numberFx.at(-1)).toMatchObject({ received: true, value: Math.round(hero.max * 0.08) })
     hero.inv = 0
     damageHero(s, hero.max * 0.3, baseHooks())
     expect(s.cameraKick).toBeGreaterThan(0)
     expect(s.cameraKick).toBeLessThanOrEqual(2)
+  })
+
+  it('separates player health loss from enemy damage with a clear red minus-number', () => {
+    const s = createState()
+    s.W = 320; s.H = 568
+    s.numberFx = [{ x: 120, y: 150, life: 0.7, value: 34, boss: false, received: true }]
+    const { ctx } = createFakeCtx()
+    const seen: { text: string; color: string }[] = []
+    ctx.fillText = value => seen.push({ text: String(value), color: String(ctx.fillStyle) })
+    drawNumbers(ctx, s, 0, 0, true)
+    expect(seen.some(x => x.text === '−34' && x.color === '#ff737b')).toBe(true)
   })
 
   it('draws critical numbers with a legible label even when motion is reduced', () => {
