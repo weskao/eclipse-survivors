@@ -174,7 +174,25 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" aria-hidden="true">
       {{ t(view.notices.find(notice => notice.kind === 'critical')?.text ?? '') }}
     </div>
-    <div v-if="view.boss || view.wave" class="es2-hud__encounter" data-es2-encounter>
+    <div v-if="view.boss || view.wave || view.bossWarning" class="es2-hud__encounter" data-es2-encounter>
+      <section v-if="!view.boss && view.bossWarning" class="es2-hud__boss-warning es2-hud__plate"
+        data-es2-boss-warning :class="{ 'es2-hud__boss-warning--urgent': view.bossWarning.urgent }"
+        :style="{ '--es2-warning-accent': view.bossWarning.color }"
+        :aria-label="t('首領即將降臨') + ' · ' + t(view.bossWarning.name) + ' · ' + view.bossWarning.seconds + ' ' + t('秒')">
+        <div class="es2-hud__boss-warning-row">
+          <span class="es2-hud__boss-warning-sigil" aria-hidden="true">⚠</span>
+          <div class="es2-hud__boss-warning-text">
+            <span>{{ t('首領即將降臨') }}</span>
+            <strong>{{ t(view.bossWarning.name) }}</strong>
+          </div>
+          <div class="es2-hud__boss-warning-count" aria-hidden="true">
+            <b>{{ String(view.bossWarning.seconds).padStart(2, '0') }}</b><small>SEC</small>
+          </div>
+        </div>
+        <div class="es2-hud__boss-warning-track" aria-hidden="true">
+          <span :style="{ transform: 'scaleX(' + view.bossWarning.progress + ')' }"></span>
+        </div>
+      </section>
       <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss :aria-label="t('首領生命')">
         <div class="es2-hud__boss-heading">
           <span>☠ {{ t(view.boss.name) }}</span>
