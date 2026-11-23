@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { computed, nextTick, ref, watch } from 'vue'
+import { JOB } from '../../../game/constants'
 import { ART_URLS } from '../../../game/art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { HERO_DEFINITIONS } from '../../../game/content/heroes'
@@ -34,6 +35,8 @@ const links: readonly { id: MenuView; name: string; icon: string }[] = [
   { id: 'monsters', name: '魔物圖鑑', icon: '♜' }, { id: 'skills', name: '技能圖鑑', icon: '✦' },
   { id: 'achievements', name: '成就殿堂', icon: '♛' },
 ]
+const selectedClassic = computed(() => heroes.find(hero => hero.id === (props.heroId ?? props.choice)) ?? null)
+const classicStats = computed(() => selectedClassic.value ? JOB[selectedClassic.value.id] : null)
 const selectedHeroLabel = computed(() => {
   const selected = props.heroId ?? props.choice
   return heroes.find(hero => hero.id === selected)?.name
@@ -91,8 +94,19 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
               <span class="es2-hero-number">{{ hero.number }} / {{ t('HERO') }}</span>
               <img :src="ART_URLS[hero.id]" :alt="t(hero.name + ' 原始角色插畫')" decoding="async" draggable="false" />
-              <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small><span class="es2-hero-selection">{{ t((heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span></span>
+              <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small>
+                <span class="es2-hero-preview" data-es2-classic-preview>HP {{ JOB[hero.id].hp }} · ATK {{ JOB[hero.id].damage }}</span>
+                <span class="es2-hero-selection">{{ t((heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span></span>
             </button>
+          </div>
+          <div v-if="selectedClassic && classicStats" class="es2-classic-details" :data-es2-classic-details="selectedClassic.id" aria-live="polite">
+            <p class="es2-classic-role" data-es2-classic-role>{{ t(selectedClassic.role) }}</p>
+            <div class="es2-classic-stat-grid" :aria-label="t('英雄初始數值')">
+              <span data-es2-classic-stat="hp"><small>HP</small><strong>{{ classicStats.hp }}</strong></span>
+              <span data-es2-classic-stat="attack"><small>{{ t('攻擊力') }}</small><strong>{{ classicStats.damage }}</strong></span>
+              <span data-es2-classic-stat="speed"><small>{{ t('移動速度') }}</small><strong>{{ classicStats.speed }}</strong></span>
+              <span data-es2-classic-stat="interval"><small>{{ t('攻擊間隔') }}</small><strong>{{ classicStats.delay }}s</strong></span>
+            </div>
           </div>
           <h3 class="es2-section-heading">{{ t("NEW HEROES · 新增英雄") }}</h3>
           <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" />
