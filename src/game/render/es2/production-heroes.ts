@@ -295,8 +295,18 @@ function drawHeroPoseAtlas(
   if (rect.mirror) ctx.scale(-1, 1)
   // Every sheet has different transparent padding. Use the real body foot
   // instead of the full 448px cell bottom, or each pose snaps vertically.
-  ctx.drawImage(atlas, rect.x, rect.y, 448, 448,
-    -paintedWidth / 2, 4 - paintedHeight * footBottom / 448, paintedWidth, paintedHeight)
+  // The authored 448px cells have 8px transparent gutters. Exclude them
+  // from Canvas source sampling so bilinear filtering cannot borrow pixels
+  // from the adjacent direction/pose; preserve the exact original footprint
+  // and world-space opaque-foot anchor.
+  const gutter = 8
+  const content = 448 - 2 * gutter
+  const scaleX = paintedWidth / 448
+  const scaleY = paintedHeight / 448
+  ctx.drawImage(atlas, rect.x + gutter, rect.y + gutter, content, content,
+    -paintedWidth / 2 + gutter * scaleX,
+    4 - footBottom * scaleY + gutter * scaleY,
+    content * scaleX, content * scaleY)
   ctx.restore()
 }
 
