@@ -365,3 +365,36 @@
   .es2-mobile-mode-desc{display:none}
   .es2-menu-footer{padding-top:2px}
 }
+
+/* Expand mobile hero artwork into available space, without changing existing
+   card content/selection or sacrificing the main action on short devices. */
+@media (orientation: portrait) and (max-width: 700px) {
+  .es2-menu-shell{height:100%;min-height:0}
+  .es2-menu-layout{flex:1 1 auto;min-height:0;grid-template-rows:minmax(0,1fr) auto;align-items:stretch}
+  .es2-hero-section{display:flex;flex-direction:column;min-height:0}
+  .es2-hero-grid{flex:1 1 auto;min-height:clamp(105px,22dvh,180px);grid-template-rows:minmax(0,1fr);align-items:stretch}
+  .es2-hero-card{min-height:0}
+  .es2-hero-card img{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
+  .es2-hero-copy{flex:0 0 auto}
+  .es2-hero-copy strong{font-size:clamp(.76rem,2.9vw,.95rem)}
+  .es2-hero-selection{font-size:.74rem}
+  .es2-menu .es2-hero-section .es2-roster{flex:1 1 auto;min-height:clamp(105px,22dvh,180px);grid-template-rows:minmax(0,1fr);align-items:stretch}
+  .es2-menu .es2-hero-section .es2-roster__card{display:flex;flex-direction:column;min-height:0}
+  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
+  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto}
+  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.76rem,2.9vw,.95rem)}
+  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.74rem}
+}
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
+  .es2-menu-shell{height:100%;min-height:0}
+  .es2-menu-layout{flex:1 1 auto;min-height:0;align-items:stretch}
+  .es2-hero-section{display:flex;flex-direction:column;min-height:0}
+  .es2-hero-grid{flex:1 1 auto;min-height:90px;grid-template-rows:minmax(0,1fr);align-items:stretch}
+  .es2-hero-card{min-height:0}
+  .es2-hero-card img{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
+  .es2-hero-copy{flex:0 0 auto}
+  .es2-menu .es2-hero-section .es2-roster{flex:1 1 auto;min-height:90px;grid-template-rows:minmax(0,1fr);align-items:stretch}
+  .es2-menu .es2-hero-section .es2-roster__card{display:flex;flex-direction:column;min-height:0}
+  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
+  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto}
+}
