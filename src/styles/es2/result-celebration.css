@@ -49,6 +49,8 @@
   .es2-victory-spark{top:47px}
   .es2-victory-halo{top:-47px;width:min(180px,70%)}
 }
+[data-es2-reduce-flashing="true"] .es2-victory-spark{display:none;animation:none!important}
+[data-es2-reduce-flashing="true"] .es2-victory-halo{animation:none!important;opacity:.35;transform:translateX(-50%)}
 @media (prefers-reduced-motion: reduce){
   .es2-victory-spark{display:none;animation:none!important}
   .es2-victory-halo{animation:none!important;opacity:.35;transform:translateX(-50%)}
