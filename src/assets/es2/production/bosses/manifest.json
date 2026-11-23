@@ -25,11 +25,12 @@
         "requiredNativeFramePx": 708,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
-        "contactSheetReview": "inspected",
         "realGameplayReview": "pending",
         "issues": [
           "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified."
-        ]
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "pending"
       }
     },
     {
@@ -53,12 +54,13 @@
         "requiredNativeFramePx": 708,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
-        "contactSheetReview": "inspected",
         "realGameplayReview": "pending",
         "issues": [
           "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
           "Potential detached upper-edge fragments in phases 1-2: compare to imgs7.png original."
-        ]
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "pending"
       }
     },
     {
@@ -82,12 +84,13 @@
         "requiredNativeFramePx": 708,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
-        "contactSheetReview": "inspected",
         "realGameplayReview": "pending",
         "issues": [
           "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
           "Potential disconnected pixels at left edge of phase 3: compare to imgs8.png original."
-        ]
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "pending"
       }
     },
     {
@@ -111,12 +114,13 @@
         "requiredNativeFramePx": 708,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
-        "contactSheetReview": "inspected",
         "realGameplayReview": "pending",
         "issues": [
           "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
           "Potential horizontal detached strips above phase 3 and at atlas edges: compare to imgs8.png original."
-        ]
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "pending"
       }
     }
   ]
