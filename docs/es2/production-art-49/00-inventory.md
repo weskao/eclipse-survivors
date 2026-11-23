@@ -1,5 +1,7 @@
 # 49 項既有 Production Art 清點（無須整批重新產生）
 
+> **2026-11-24 場景更新：Biomes 8／8 已由專案擁有者正式核准並套用原生 3×圖檔。** [12-biomes-8-owner-approval-2026-11-24.md](12-biomes-8-owner-approval-2026-11-24.md) 已列出八張正式 WebP SHA、原生尺寸與來源工作分支；目前 49 項世界美術中，**25 項已核准（UI17、Biomes8）／24 項待批准（敵人預警20、魔王4）**。下文記錄的 768px 場景和 49 項 pending 屬歷史快照。
+
 > **2026-11-24 更新：UI 17/17 正式素材已由專案擁有者確認通過人工美術驗收，Manifest 已逐項改為 `approved`。** 簽核紀錄：[10-ui-17-owner-approval-2026-11-24.md](10-ui-17-owner-approval-2026-11-24.md)。下方 2026-11-23 以前的 `needs-human-approval`／`visual-review-required` 描述只代表歷史快照，**不能再用來表示目前 17 項 UI 的人工美術狀態**。此批准不等於其他 32 項素材、英雄、原生 3×來源或最新 HEAD 全專案 CI 已全部通過。
 
 
