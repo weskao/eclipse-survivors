@@ -258,8 +258,8 @@ function drawHeroPoseAtlas(
 ): void {
   // Each crop contains exactly one frame, with transparent margins. Never draw
   // another sheet below it: old action silhouettes cannot trail the new pose.
-  const paintedWidth = Math.min(width * 1.16, 448 / 3)
-  const paintedHeight = Math.min(height * 1.05, 448 / 3)
+  const paintedWidth = Math.min(width * 1.16, 147)
+  const paintedHeight = Math.min(height * 1.05, 147)
   ctx.save()
   if (rect.mirror) ctx.scale(-1, 1)
   ctx.drawImage(atlas, rect.x, rect.y, 448, 448,
