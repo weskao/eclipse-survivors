@@ -19,7 +19,17 @@
       "frameHeight": 768,
       "status": "needs-human-approval",
       "sha256": "59c995409daa2ef6abde00d260ace6ee5d6e333f0cc47ada470dbe04192d8e67",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.33, V=3.14; not yet browser-reviewed at game zoom levels."
+      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.33, V=3.14; not yet browser-reviewed at game zoom levels.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     },
     {
       "id": "blood-moon-cathedral:decor",
@@ -36,7 +46,17 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "02dcd88838c02fb7a4d430be4b88820f6d96cc5e1d7967515ef247fe6c865004",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     },
     {
       "id": "cursed-forest:ground",
@@ -53,7 +73,17 @@
       "frameHeight": 768,
       "status": "needs-human-approval",
       "sha256": "2d9d5d31e09466abc5b5e30794691059d93482dc7c830c21320c09033a859df2",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.08, V=3.21; not yet browser-reviewed at game zoom levels."
+      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.08, V=3.21; not yet browser-reviewed at game zoom levels.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     },
     {
       "id": "cursed-forest:decor",
@@ -70,7 +100,17 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "b59308fe657ceb5ba7fa6b9ec3b343cbc28528ebfd80f2e3787160c610153df1",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     },
     {
       "id": "abyssal-necropolis:ground",
@@ -87,7 +127,17 @@
       "frameHeight": 768,
       "status": "needs-human-approval",
       "sha256": "6a749d94b1f4f39f571cff3b2d210ece345239e570a9990c68d3704e627fa981",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=2.69, V=2.66; not yet browser-reviewed at game zoom levels."
+      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=2.69, V=2.66; not yet browser-reviewed at game zoom levels.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     },
     {
       "id": "abyssal-necropolis:decor",
@@ -104,7 +154,17 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "9de12d25e3cf61b388b33e16126847d850a022a64abc8399141e4ec79c04860b",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     },
     {
       "id": "celestial-rift:ground",
@@ -121,7 +181,17 @@
       "frameHeight": 768,
       "status": "needs-human-approval",
       "sha256": "8c9f673a02d75e35c10b3f98ef0f5f35e22e1329f9b8338b349feaa71cdfcb92",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.19, V=3.02; not yet browser-reviewed at game zoom levels."
+      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.19, V=3.02; not yet browser-reviewed at game zoom levels.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     },
     {
       "id": "celestial-rift:decor",
@@ -138,7 +208,17 @@
       "frameHeight": 96,
       "status": "needs-human-approval",
       "sha256": "79bed9709eff585ca4070a46720de67407a1145527f63f9c247cd48cec7967e2",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha.",
+      "native3x": false,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "unverified-3x-source"
     }
   ]
 }
