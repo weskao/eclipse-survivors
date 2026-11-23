@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ES2 Biomes: source-art visual QA</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.55 system-ui, sans-serif; background: #10141b; color: #f5f5f5; }
+    main { max-width: 1120px; padding: 24px 16px 48px; margin: auto; }
+    h1 { font-size: 1.6rem; margin: 0; }
+    p { color: #bcc7d5; margin: 10px 0 18px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+    button { border: 1px solid #67788a; color: #fff; background: #1b2733; border-radius: 9px; padding: 11px 14px; cursor: pointer; min-height: 44px; font: inherit; }
+    button[aria-pressed=true] { background: #345872; border-color: #84c4ff; }
+    button:focus-visible { outline: 3px solid #c2e0ff; outline-offset: 2px; }
+    .canvas-frame { overflow: auto; border: 1px solid #344458; border-radius: 12px; background: #0a0c12; }
+    canvas { display: block; width: 100%; height: auto; }
+    .hints { font-size: .9rem; }
+    .hints strong { color: #fff; }
+    .info { font-variant-numeric: tabular-nums; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>ES2 Biomes — source-art visual review</h1>
+  <p><strong>This is a standalone developer QA canvas, not an in-game screenshot or human art approval.</strong>
+    Inspect 2×2 ground joins, four independent decor cells, transparent edges and floor contact
+    at the exact paintEnvironment() source rectangles and nominal draw sizes.</p>
+  <div id="scenes" class="controls" aria-label="Scene"></div>
+  <div id="zooms" class="controls" aria-label="QA zoom"></div>
+  <div class="controls">
+    <button id="seams" type="button" aria-pressed="false">Show 384px tile seams</button>
+    <button id="props" type="button" aria-pressed="true">Show four prop crops</button>
+  </div>
+  <div class="canvas-frame"><canvas id="scene" width="1000" height="640" aria-label="Repeated biome texture with four source rectangle prop crops"></canvas></div>
+  <p id="state" class="info" role="status"></p>
+  <p class="hints">Requirements: review on desktop and mobile portrait/landscape at DPR 1/2/3;
+    compare against the real game separately; screenshot zoom = 0.75/1/1.5.
+    <strong>Do not approve assets solely using this page.</strong>
+    WebP sources in this branch are still visual-review-required.</p>
+</main>
+<script>
+(() => {
+  'use strict'
+  const ids = ['blood-moon-cathedral', 'cursed-forest', 'abyssal-necropolis', 'celestial-rift']
+  const canvas = document.getElementById('scene')
+  const ctx = canvas.getContext('2d')
+  const status = document.getElementById('state')
+  const images = new Map()
+  let biome = ids[0]
+  let zoom = 1
+  let seams = false
+  let props = true
+  function buttons(root, values, label, onSelect, selected) {
+    for (const value of values) {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.textContent = label(value)
+      button.setAttribute('aria-pressed', String(value === selected))
+      button.addEventListener('click', () => {
+        for (const el of root.querySelectorAll('button')) el.setAttribute('aria-pressed', String(el === button))
+        onSelect(value)
+        draw()
+      })
+      root.append(button)
+    }
+  }
+  buttons(document.getElementById('scenes'), ids, value => value.replaceAll('-', ' '), value => { biome = value }, biome)
+  buttons(document.getElementById('zooms'), [0.75, 1, 1.5], value => value + '×', value => { zoom = value }, zoom)
+  function toggle(id, apply) {
+    const button = document.getElementById(id)
+    button.addEventListener('click', () => {
+      const enabled = button.getAttribute('aria-pressed') !== 'true'
+      button.setAttribute('aria-pressed', String(enabled))
+      apply(enabled)
+      draw()
+    })
+  }
+  toggle('seams', enabled => { seams = enabled })
+  toggle('props', enabled => { props = enabled })
+  const load = (id, kind) => new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error(id + '-' + kind + ' WebP failed to load'))
+    image.src = id + '-' + kind + '@3x.webp'
+  })
+  async function preload() {
+    for (const id of ids) {
+      const [ground, decor] = await Promise.all([load(id, 'ground'), load(id, 'decor')])
+      images.set(id, { ground, decor })
+    }
+    draw()
+  }
+  function draw() {
+    const current = images.get(biome)
+    if (!current) return
+    const { ground, decor } = current
+    const w = canvas.width, h = canvas.height, size = 384 * zoom
+    ctx.fillStyle = '#0c1014'
+    ctx.fillRect(0, 0, w, h)
+    // Same 384×384 nominal world screen draw size and 96px square source cells
+    // as src/game/render/environment.ts. No resampling of the source atlas.
+    const x0 = Math.round((w - size * 2) / 2)
+    const y0 = Math.round((h - size * 2) / 2)
+    for (let row = 0; row < 2; row++) for (let col = 0; col < 2; col++) {
+      ctx.drawImage(ground, x0 + col * size, y0 + row * size, size, size)
+    }
+    if (seams) {
+      ctx.save()
+      ctx.strokeStyle = '#fff15bcc'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.moveTo(x0 + size, y0)
+      ctx.lineTo(x0 + size, y0 + size * 2)
+      ctx.moveTo(x0, y0 + size)
+      ctx.lineTo(x0 + size * 2, y0 + size)
+      ctx.stroke()
+      ctx.restore()
+    }
+    if (props) {
+      // All 4 existing atlas cells are reviewed independently: x=0,96,192,288.
+      const sourceSide = decor.naturalHeight
+      const drawSide = 110 * zoom
+      for (let variant = 0; variant < 4; variant++) {
+        const center = (variant + 0.5) * w / 4
+        const foot = Math.min(h - 36, y0 + size * 1.48)
+        ctx.drawImage(decor, variant * sourceSide, 0, sourceSide, sourceSide,
+          center - drawSide / 2, foot - drawSide, drawSide, drawSide)
+        ctx.fillStyle = '#ffffff'
+        ctx.font = 'bold 14px system-ui'
+        ctx.textAlign = 'center'
+        ctx.fillText('frame ' + variant, center, foot + 19)
+      }
+    }
+    status.textContent = biome + ' | ground ' + ground.naturalWidth + '×' + ground.naturalHeight +
+      ', drawn at ' + (384 * zoom).toFixed(0) + 'px | decor ' +
+      decor.naturalWidth + '×' + decor.naturalHeight + ', source 4×' +
+      decor.naturalHeight + 'px, drawn at ' + (110 * zoom).toFixed(0) +
+      'px | QA only, approval pending'
+  }
+  preload().catch(error => { status.textContent = error.message })
+})()
+</script>
+</body>
+</html>
