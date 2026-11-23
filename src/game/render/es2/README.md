@@ -30,8 +30,17 @@ The page is a **standalone effect showcase**, not an integration with normal gam
 | 16 | `enemy-death` | Authoritative kill event (already auto-wired in pack) |
 | 17 | `ultimate-attack` | Ultimate action fires successfully |
 | 18 | `victory-finish` | Authoritative winning run-complete event (already auto-wired in pack) |
+| 19 | `hero-shadowblade` | Successful Shadowblade Q cast: crossing violet ambush trails |
+| 20 | `hero-spirit-summoner` | Successful Spirit Summoner Q cast: convergence glyph / soul flames |
+| 21 | `hero-crimson-paladin` | Successful Crimson Paladin Q cast: scarlet aegis / gold pillars |
 
-To capture all 18: select each entry in order using **Next effect**, replay, pause near its visible impact, and save `01-critical-hit.png` through `18-victory-finish.png`. For video, record approximately one complete effect duration per entry (duration is displayed below the canvas). Replay with Reduced motion and Reduced flashing enabled for accessibility regression captures.
+To capture all 21: select each entry in order using **Next effect**, replay, pause near its visible impact, and save `01-critical-hit.png` through `21-hero-crimson-paladin.png`. For video, record approximately one complete effect duration per entry (duration is displayed below the canvas). Replay with Reduced motion and Reduced flashing enabled for accessibility regression captures.
+
+## Hero Q cinematics
+
+The three new specialization casts are connected in `src/game/engine.ts` at the successful `activateHeroSpecial()` boundary. The existing `HeroSpecialAction.vue` owns desktop Q and touch activation. All three preserve original hitboxes, damage, healing and cooldowns. They add one world-space `combat-vfx:hero-*` overlay anchored at the actual cast alongside the original 3× special-pose art. Their 1.08–1.32 second instances are cleared by the normal effect registry, with no new perpetual ticker.
+
+Visual QA: compare anticipation / impact / fade on desktop, mobile portrait / landscape; repeat with reduced motion and reduced flashing, with 130 mobs, pause/resume and viewport resize. The animated motifs use layered Canvas paths without allocating gradients or blur per frame. Real-device FPS and memory measurements are still required before production approval.
 
 ## Integration contract (integration branch only)
 
@@ -47,7 +56,7 @@ emitCombatVfx(effect => registry.addEffect(state, effect),
 
 `createCombatVfxPack({ quality, reducedMotion, reducedFlashing })` accepts static settings or getters, so the existing settings UI can update them live without modifying this branch's renderer. The default pack honors `prefers-reduced-motion`; the integrator should bind the actual user-controlled reduced flashing and quality preferences. The helper validates finite world coordinates and optional angles. The existing Foundation registry owns all lifetimes (at most 4 seconds) and the hard limit of 96 active effects, and clones optional angle metadata without modifying its shared type declarations.
 
-**Important integration boundary:** `ContentEvent` exposes hit/kill/damage/pickup/start/reset/scene-change/run-complete, but does **not** identify criticals, swing direction, phase transitions, spell release, opened chests, shields, or ultimate activations. Do **not** infer those from generic events. This branch now supplies a fully typed, per-run `createLiveCombatVfxAdapter` for all 18 confirmed cues, but **the shared gameplay emitter is integration-owned**. Only `enemy-death` and winning `victory-finish` auto-emit through the existing standard registry events. The remaining 16 must be called by the integration branch at the exact point their outcomes are confirmed.
+**Important integration boundary:** `ContentEvent` exposes hit/kill/damage/pickup/start/reset/scene-change/run-complete, but does **not** identify criticals, swing direction, phase transitions, spell release, opened chests, shields, or ultimate activations. Do **not** infer those from generic events. This branch now supplies a fully typed, per-run `createLiveCombatVfxAdapter` for the original 18 confirmed cues (plus three hero casts), but **the shared gameplay emitter is integration-owned**. Only `enemy-death` and winning `victory-finish` auto-emit through the existing standard registry events. The original remaining 16 require authoritative integration events; the three hero Q effects emit only when `activateHeroSpecial()` succeeds (never on rejected cooldown).
 
 **Depth ordering:** The Foundation renderer currently draws `content.render()` **after** hero, mobs, and legacy effects. All integrated combat effects therefore render as foreground overlays (in emission order). This feature draws ground rings before its own upward debris for local depth cues and avoids large opaque cover, but genuine behind-character layering (boss ground telegraphs, fog behind actors) requires the integration owner to add a dedicated background pass at the correct point in the shared renderer. Never claim that the late-pass overlay is already y-sorted with actors.
 
@@ -159,9 +168,9 @@ no persistent particle pool or event-history allocation, and no independent
 frame loop. The only event deduplication state is one sequence number per adapter
 and one weakly keyed kill/victory tracker per active registry state.
 
-**Verification scope:** `live-events.test.ts` exercises all 18 mappings,
+**Verification scope:** `live-events.test.ts` exercises all 21 mappings,
 confirmed-event sequencing, invalid inputs, direction snapshots, 96-instance
 cap, cleanup, new runs and disposal, plus standard death/victory deduplication.
 The existing `combat-vfx.test.ts` covers geometry, render order, culling,
-context restoration, all 18 visual draws and accessibility quality tiers.
+context restoration, all 21 visual draws and accessibility quality tiers.
 Full local/CI verification still needs to be executed on this new branch.
