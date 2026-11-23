@@ -2,7 +2,6 @@ name: ES2 enemies 3x Chromium source QA
 on:
   push:
     branches:
-      - feature/es2-art-qa-enemies
       - feature/es2-release-readiness-integration
     paths:
       - 'src/assets/es2/production/enemies/**'
