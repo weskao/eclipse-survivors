@@ -13,6 +13,7 @@ import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type Her
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
+import { getBossArrivalWarning } from './bosses/countdown'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
@@ -164,9 +165,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     return legacy
   }
+  const bossTrackUrls = Object.fromEntries(bossIds.map(id => [
+    id, [1, 2, 3].map(phase => import.meta.env.BASE_URL + 'audio/boss/' + id + '-p' + phase + '.mp3'),
+  ])) as Record<BossId, readonly [string, string, string]>
   const audio = opts.audio ?? createAudioSystem({
     bgm: createBgm(BGM_URL),
     menuBgm: createBgm(`${import.meta.env.BASE_URL}audio/eclipse-overture.wav`),
+    bossTracks: bossTrackUrls,
+    warningTrack: import.meta.env.BASE_URL + 'audio/boss/arrival-warning.mp3',
   })
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
   let initialEffect: 'soft' | 'still' = 'soft'
@@ -438,6 +444,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     stick = { x: 0, y: 0 }
     audio.setCombatIntensity('calm')
     audio.setBossTheme?.(null)
+    audio.setBossWarning?.(null)
     wakeAudio()
     screen('play')
     hooks.content?.(s, { type: 'start' })
@@ -575,6 +582,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const liveBoss = s.mobs.find(m => m.type === 'boss' && m.hp > 0)
+      const upcoming = getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null)
+      audio.setBossWarning?.(upcoming?.seconds ?? null)
       audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
       audio.setCombatIntensity(liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm')
     }
