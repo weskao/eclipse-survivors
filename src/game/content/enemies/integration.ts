@@ -99,7 +99,10 @@ export function createFactionBridge(options: FactionBridgeOptions) {
   function hitFaction(state: GameState, enemy: FactionEnemy, amount: number,
     sourceX: number, sourceY: number, hooks: GameHooks): number {
     if (state.mode !== 'play' || !state.hero || !runtime.enemies.includes(enemy)) return 0
-    const applied = damageFactionEnemy(runtime, enemy, amount, sourceX, sourceY, reward => {
+    const modified = hooks.modifyOutgoingDamage?.(amount) ?? amount
+    if (!Number.isFinite(modified) || modified <= 0) return 0
+    const critical = hooks.consumeCriticalHit?.() ?? false
+    const applied = damageFactionEnemy(runtime, enemy, modified, sourceX, sourceY, reward => {
       state.kill++
       defeated[reward.kind] = (defeated[reward.kind] ?? 0) + 1
       // The legacy XP collection path owns level progression; never award XP twice.
@@ -110,6 +113,10 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     })
     if (applied > 0) {
       state.damageDealt += applied
+      state.numberFx.push({ x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
+        value: Math.round(applied), boss: false, critical })
+      if (state.numberFx.length > 80) state.numberFx.shift()
+      if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20 })
       options.onHit?.(enemy, applied)
     }
     return applied
