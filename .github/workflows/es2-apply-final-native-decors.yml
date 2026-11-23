@@ -1,0 +1,101 @@
+name: ES2 install final two native-3x biome decor atlases
+on:
+  push:
+    branches: [feature/es2-art-qa-biomes]
+    paths:
+      - 'src/assets/es2/production/biomes/.art-decor-final-patch-parts/**'
+permissions:
+  contents: write
+concurrency:
+  group: es2-native-decor-final-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  install:
+    if: "github.event.head_commit.message == 'chore(es2): stage final two native 3x biome decor atlases'"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify and apply exact Git binary patch to the two remaining decor sheets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat src/assets/es2/production/biomes/.art-decor-final-patch-parts/part-*.txt > /tmp/es2-decor-final.patch
+          test "$(wc -c < /tmp/es2-decor-final.patch)" -eq 428060
+          printf '%s  %s\n' 'cca84f535e998e82df56e85c203bf4519711e9c0536bfe4187038d1f3245a1e3' /tmp/es2-decor-final.patch | sha256sum -c -
+          git apply --check --binary /tmp/es2-decor-final.patch
+          git apply --binary /tmp/es2-decor-final.patch
+      - name: Verify exact authentic sources, frame geometry and human-review hold
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs'
+          import { createHash } from 'node:crypto'
+          import assert from 'node:assert/strict'
+          const root='src/assets/es2/production/biomes/'
+          const m=JSON.parse(readFileSync(root+'manifest.json','utf8'))
+          assert.equal(m.category,'biomes')
+          assert.equal(m.status,'visual-review-required')
+          assert.equal(m.assets.length,8)
+          const updates=[
+            ['abyssal-necropolis','32bbacea78812a85553efcf4a8b38d6ce0241bb904c2a1cc369d82f45250f0e2','fe3803801161290416b1469e5e8dfeeba0f9404cf02d81424e65a4f14e574880'],
+            ['celestial-rift','8fabfee5295e8799f4dd4d1f586ed5b511532bd5ddef1a5c60cbb27934da993e','fc30b9ac608a8d36648c9f274edc0b24b47e073f92936b2de420cbfe41c60103'],
+          ]
+          for (const [id,sha,sourceSha] of updates) {
+            const a=m.assets.find(x=>x.id===id+':decor')
+            assert.ok(a,id+' missing')
+            assert.equal(a.status,'needs-human-approval')
+            assert.equal(a.native3x,false)
+            const b=readFileSync(root+a.path)
+            assert.ok(b.length<=a.maxBytes,id+' budget exceeded')
+            assert.equal(b.toString('ascii',0,4),'RIFF')
+            assert.equal(b.toString('ascii',8,12),'WEBP')
+            assert.equal(b.toString('ascii',12,16),'VP8X')
+            assert.ok(b[20]&16,id+' missing transparency flag')
+            assert.deepEqual([1+b[24]+(b[25]<<8)+(b[26]<<16),1+b[27]+(b[28]<<8)+(b[29]<<16)],[1320,330])
+            assert.equal(createHash('sha256').update(b).digest('hex'),sha)
+            Object.assign(a,{
+              width:1320,height:330,frames:4,columns:4,rows:1,frameWidth:330,frameHeight:330,
+              native3x:true,sha256:sha,authoredMasterSha256:sourceSha,
+              authoredMasterDimensions:[2172,724],
+              nativeSourceDetailStatus:'newly-authored-2172x724-four-prop-master; human-art-review-pending',
+              qaNote:'Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required.',
+            })
+          }
+          assert.ok(m.assets.every(a=>a.native3x===true && a.status==='needs-human-approval'))
+          writeFileSync(root+'manifest.json',JSON.stringify(m,null,2)+'\n')
+          NODE
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Original image integrity and production consumer tests
+        run: pnpm exec vitest run src/assets/es2/production/world-art-candidates.test.ts src/game/render/es2/production-world.test.ts
+      - name: Strict native-3x admission (must pass all 8)
+        run: pnpm exec vitest run src/assets/es2/production/biomes/native-3x-candidates.test.ts
+      - name: TypeScript
+        run: pnpm typecheck
+      - name: Production build
+        run: pnpm build
+      - name: Release invariant validation
+        run: pnpm check-release
+      - name: Full suite (other independent review gates remain blocking)
+        continue-on-error: true
+        run: pnpm test
+      - name: Commit only approved-branch candidate art by fast-forward
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF}" = 'refs/heads/feature/es2-art-qa-biomes'
+          git rm -r src/assets/es2/production/biomes/.art-decor-final-patch-parts
+          git add src/assets/es2/production/biomes/abyssal-necropolis-decor@3x.webp
+          git add src/assets/es2/production/biomes/celestial-rift-decor@3x.webp
+          git add src/assets/es2/production/biomes/manifest.json
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'art(es2): install final native 3x biome decoration atlases for QA'
+          git fetch origin feature/es2-art-qa-biomes
+          test "$(git rev-parse origin/feature/es2-art-qa-biomes)" = "${GITHUB_SHA}"
+          git push origin HEAD:feature/es2-art-qa-biomes
