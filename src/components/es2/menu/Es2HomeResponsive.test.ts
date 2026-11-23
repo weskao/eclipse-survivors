@@ -42,6 +42,15 @@ describe('phone homepage viewport-first navigation', () => {
     expect(wrapper.get('.es2-menu').attributes('data-mobile-heroes')).toBe('classic')
   })
 
+  it('keeps the actual selected hero readable even when the other hero category is shown', async () => {
+    const wrapper = menu()
+    await wrapper.get('[data-es2-mobile-hero-tab="new"]').trigger('click')
+    expect(wrapper.get('[data-es2-selected-hero]').text().length).toBeGreaterThan(0)
+    await wrapper.setProps({ heroId: 'shadowblade' })
+    await nextTick()
+    expect(wrapper.get('[data-es2-selected-hero]').text()).toContain('影刃')
+  })
+
   it('allows switching between the existing four modes and all five objective modes', async () => {
     const wrapper = menu()
     expect(wrapper.findAll('[data-mode]')).toHaveLength(4)
