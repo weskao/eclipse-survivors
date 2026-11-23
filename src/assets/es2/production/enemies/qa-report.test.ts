@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { FACTION_VISUAL_SIZE } from '../../../../game/render/es2/production-factions'
 import { buildEnemyQaFinding } from './qa-report'
 import type { AtlasFindings } from './frame-qa'
@@ -13,7 +13,7 @@ const cue = { path: 'frost-wraith-telegraph@3x.webp', frameWidth: 150, frameHeig
 
 describe('browser enemy QA export is truthful and never grants approval', () => {
   it('reads 1x gameplay dimensions from the same visual-size contract as the live renderer', () => {
-    const source = readFileSync(fileURLToPath(new URL('./qa-preview.ts', import.meta.url)), 'utf8')
+    const source = readFileSync(resolve('src/assets/es2/production/enemies/qa-preview.ts'), 'utf8')
     expect(source).toContain('FACTION_VISUAL_SIZE[kind]')
     expect(source).not.toContain('ENEMY_DEFINITIONS[kind].radius * 4')
     expect(FACTION_VISUAL_SIZE['shadow-assassin']).toBe(146)
