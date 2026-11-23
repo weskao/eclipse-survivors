@@ -21,6 +21,7 @@ import {
   drawSwipes, drawVignette,
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
+import { sharedProjectileSprites } from './projectile-art'
 import { buildProps } from './props'
 import { buildSprites, domCanvas, type MakeCanvas } from './sprites'
 import type { MobTintCache } from './tint-cache'
@@ -144,10 +145,11 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)
   if (!reduced) drawSwipes(ctx, s, ox, oy)
-  drawShots(ctx, s, ox, oy, assets.magicGlow)
-  drawEnemyProjectiles(ctx, s, ox, oy)
-  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy)
-  drawOrbs(ctx, s, hero, ox, oy)
+  const projectiles = sharedProjectileSprites()
+  drawShots(ctx, s, ox, oy, assets.magicGlow, projectiles)
+  drawEnemyProjectiles(ctx, s, ox, oy, projectiles)
+  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy, projectiles)
+  drawOrbs(ctx, s, hero, ox, oy, projectiles)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced)
