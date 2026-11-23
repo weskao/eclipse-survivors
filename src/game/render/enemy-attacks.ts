@@ -1,6 +1,7 @@
 import { TAU } from '../constants'
 import type { GameState, Mob } from '../types'
 import type { Ctx2D } from './ctx'
+import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
 
 function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number): void {
   const ai = mob.ai
@@ -51,10 +52,16 @@ export function drawEnemyTelegraphs(ctx: Ctx2D, s: GameState, ox: number, oy: nu
   for (const enemy of s.mobs) if (enemy.hp > 0 && enemy.ai?.state === 'windup') warning(ctx, enemy, ox, oy)
 }
 
-export function drawEnemyProjectiles(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawEnemyProjectiles(ctx: Ctx2D, s: GameState, ox: number, oy: number, sprites?: Partial<ProjectileSprites>): void {
   for (const p of s.enemyShots) {
     const x = p.x + ox, y = p.y + oy
-    if (x < -30 || x > s.W + 30 || y < -30 || y > s.H + 30) continue
+    if (x < -50 || x > s.W + 50 || y < -50 || y > s.H + 50) continue
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(Math.atan2(p.vy, p.vx))
+    const drawn = drawProjectileSprite(ctx, sprites, 'enemy-hex', Math.max(32, p.radius * 3.2))
+    ctx.restore()
+    if (drawn) continue
     ctx.save()
     ctx.shadowColor = '#bb81ff'; ctx.shadowBlur = 19
     ctx.fillStyle = '#c99cff'
