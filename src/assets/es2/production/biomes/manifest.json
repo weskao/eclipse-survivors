@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "category": "biomes",
-  "status": "visual-review-required",
+  "status": "approved",
   "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
   "assets": [
     {
@@ -17,9 +17,9 @@
       "rows": 1,
       "frameWidth": 1152,
       "frameHeight": 1152,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "7863a3111779dff6eacd6bb8ccf7e8da2da0615081c7255190fa977aa06a370e",
-      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.33, V=3.14; not yet browser-reviewed at game zoom levels.",
+      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.33, V=3.14; not yet browser-reviewed at game zoom levels. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 384,
@@ -34,7 +34,14 @@
       "authoredMasterDimensions": [
         1254,
         1254
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "blood-moon-cathedral:decor",
@@ -49,9 +56,9 @@
       "rows": 1,
       "frameWidth": 330,
       "frameHeight": 330,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "a429fe3de35650f978bf54f2353fee196cce9fe20da3b32bc34299b7c0e4ee0c",
-      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending.",
+      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
@@ -66,7 +73,14 @@
       "authoredMasterDimensions": [
         2172,
         724
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "cursed-forest:ground",
@@ -81,9 +95,9 @@
       "rows": 1,
       "frameWidth": 1152,
       "frameHeight": 1152,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "ea4f17a975d589aba1d4ed28f11591deeed6f1f6017eaec49884a418268ce9e0",
-      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.08, V=3.21; not yet browser-reviewed at game zoom levels.",
+      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.08, V=3.21; not yet browser-reviewed at game zoom levels. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 384,
@@ -98,7 +112,14 @@
       "authoredMasterDimensions": [
         1254,
         1254
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "cursed-forest:decor",
@@ -113,9 +134,9 @@
       "rows": 1,
       "frameWidth": 330,
       "frameHeight": 330,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "68da345af7cc13cb57eb865b64518f3ad5e56bb129b14bfa5f0c90c9d3d8e1cb",
-      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending. Re-authored from the same original master without double re-encoding; removed disconnected red neighboring-frame bleed in frame 2; local zero-red-fragment test and 5px alpha-gutter checks passed; human review still pending.",
+      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending. Re-authored from the same original master without double re-encoding; removed disconnected red neighboring-frame bleed in frame 2; local zero-red-fragment test and 5px alpha-gutter checks passed; human review still pending. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
@@ -130,7 +151,14 @@
       "authoredMasterDimensions": [
         2172,
         724
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "abyssal-necropolis:ground",
@@ -145,9 +173,9 @@
       "rows": 1,
       "frameWidth": 1152,
       "frameHeight": 1152,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "63c3a79aa355b24a7a90c015a82042937ba9e6f02d30bf5b0e6e39ddc1c55c52",
-      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=2.69, V=2.66; not yet browser-reviewed at game zoom levels.",
+      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=2.69, V=2.66; not yet browser-reviewed at game zoom levels. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 384,
@@ -162,7 +190,14 @@
       "authoredMasterDimensions": [
         1254,
         1254
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "abyssal-necropolis:decor",
@@ -177,9 +212,9 @@
       "rows": 1,
       "frameWidth": 330,
       "frameHeight": 330,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "32bbacea78812a85553efcf4a8b38d6ce0241bb904c2a1cc369d82f45250f0e2",
-      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required.",
+      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
@@ -194,7 +229,14 @@
       "authoredMasterDimensions": [
         2172,
         724
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "celestial-rift:ground",
@@ -209,9 +251,9 @@
       "rows": 1,
       "frameWidth": 1152,
       "frameHeight": 1152,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "39e945c3a903c4bd88013f0975299d55ae733bf7a676ba20052d668d0397f0df",
-      "qaNote": "Newly authored 1254px master cropped to 1152px, repeat 2x2 review. Edge deltas L/R=3.578, T/B=3.462. Human aesthetic approval pending; not an auto-pass.",
+      "qaNote": "Newly authored 1254px master cropped to 1152px, repeat 2x2 review. Edge deltas L/R=3.578, T/B=3.462. Human aesthetic approval pending; not an auto-pass. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 384,
@@ -226,7 +268,14 @@
       "authoredMasterDimensions": [
         1254,
         1254
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "celestial-rift:decor",
@@ -241,9 +290,9 @@
       "rows": 1,
       "frameWidth": 330,
       "frameHeight": 330,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "8fabfee5295e8799f4dd4d1f586ed5b511532bd5ddef1a5c60cbb27934da993e",
-      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required.",
+      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
       "native3x": true,
       "nominalCanvasDisplayPx": {
         "width": 110,
@@ -258,7 +307,14 @@
       "authoredMasterDimensions": [
         2172,
         724
-      ]
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     }
   ]
 }
