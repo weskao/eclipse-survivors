@@ -2,6 +2,10 @@
 
 This project uses **Vue 3, TypeScript, Vite, pnpm, Vitest, and Canvas 2D**. Preserve this stack, existing game art, combat mechanics, accessibility, and mobile support. Follow the existing architecture and work on a dedicated branch; do not create a PR, merge, or modify `main` unless asked.
 
+## Mandatory high-fidelity VFX performance gate
+
+Every new/modified skill card, combat animation, particle, projectile, shader-like Canvas effect or HUD treatment **must follow [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md) §8**. Preserve approved art quality and effects while reducing redundant painting: preload/decode once, reuse bounded 3× sprite caches, cull purely cosmetic offscreen content before draw/state work, keep motion/accessibility modes, and validate dense 130-enemy battles. Record comparable draw operations and real-device frame/memory evidence; Canvas drawImage is not equivalent to a GPU draw call. Do not add PixiJS solely for aesthetics or migrate partially without measured justification.
+
 ## Mandatory skill and combat visual fidelity
 
 For any skill CRUD, ability option, projectile, enemy bullet, damage feedback, or attack animation, **read [`.claude/skills/es2-combat-visual-fidelity/SKILL.md`](.claude/skills/es2-combat-visual-fidelity/SKILL.md) before implementation**. Every skill (built-in, ES2 weapon, evolution and future pack) must use the same high-quality image-first card treatment and animated/static accessibility fallback. Avoid bare circles, lines or emojis when an authored sprite exists. Keep actual collision and danger telegraphs independent of decorative art, preserve dense-combat readability and run TDD plus real-browser mobile QA. Reuse the existing Canvas 2D renderer unless measured evidence justifies a full PixiJS migration.
