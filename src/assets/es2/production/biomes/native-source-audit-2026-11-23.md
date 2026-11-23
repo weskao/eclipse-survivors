@@ -1,3 +1,20 @@
+# Biomes 8 — owner approval recorded (2026-11-24)
+
+**Current owner-approved state:** all **8 / 8** Biomes assets are approved for visual art by the project owner in this conversation on **2026-11-24**. The four 1152×1152 ground images and four 1320×330 (4× 330×330) transparent decor atlases retain their exact original byte hashes and asset paths. This is a human visual-art approval, **not** a statement that the entire repository CI is green or that source branch has been merged to the integration branch.
+
+- `src/assets/es2/production/biomes/manifest.json`: category `status: approved`, all eight `assets[].status: approved`; each has `humanApproval: { status: approved, confirmedBy: project-owner, confirmedOn: 2026-11-24, scope: visual-art, evidence: explicit-user-confirmation }`.
+- Scope approved: `blood-moon-cathedral`, `cursed-forest`, `abyssal-necropolis`, `celestial-rift`, each both `:ground` and `:decor`. Other category approvals (heroes, enemies, bosses, UI) are **unmodified**.
+- Evidence: real Chromium four-biome desktop/mobile QA [Actions 45247582857](https://github.com/weskao/eclipse-survivors/actions/runs/45247582857) succeeded; strict native-3× dimensions and source mapping checks [Actions 45247582566](https://github.com/weskao/eclipse-survivors/actions/runs/45247582566) passed their individual steps, while the full repository suite retains independent non-Biomes failures.
+- A Biomes-owned approval provenance regression test has been added at `src/assets/es2/production/biomes/human-approval.test.ts`.
+- **Integration owner follow-up:** `src/assets/es2/production/world-art-candidates.test.ts` in the *workstream branch* still hardcodes `visual-review-required` and `needs-human-approval` for all four categories. After integrating current approved Biomes sources into `feature/es2-release-readiness-integration`, the shared test should accept `approved` **for Biomes only**, preserving pending requirements for other unapproved categories. This shared consumer/test is deliberately not edited on this owned-art branch.
+- The release-wide `production-art.test.ts` remains a separate blocking gate for other categories and is **not bypassed**.
+
+---
+
+## Earlier technical review history (recorded before this owner's explicit approval)
+
+The historical text below contains earlier pending statements, retained for traceability; the approved status above and the current manifest take precedence.
+
 # Current ES2 Biomes 8 status — 2026-11-24
 
 > **CURRENT VERDICT: 8/8 sources committed at native 3× dimensions; strict technical source gate green; 8/8 still need human visual art approval.** The historical November 23 notes below describe earlier intermediate states and are superseded by this status.
