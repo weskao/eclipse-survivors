@@ -28,10 +28,6 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Verify live-HP classification and reactive UI
-        run: |
-          pnpm exec vitest run src/components/es2/hud/low-health.test.ts
-          pnpm typecheck
       - name: Install isolated Chromium
         run: |
           npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
@@ -50,6 +46,10 @@ jobs:
             test -f "$source" || continue
             ffmpeg -nostdin -hide_banner -loglevel error -y -i "$source" -an -c:v libx264 -preset veryfast -crf 23 -pix_fmt yuv420p -movflags +faststart "${source%.webm}.mp4"
           done
+      - name: Verify live-HP classification and reactive UI
+        run: |
+          pnpm exec vitest run src/components/es2/hud/low-health.test.ts
+          pnpm typecheck
       - uses: actions/upload-artifact@v4
         if: always()
         with:
