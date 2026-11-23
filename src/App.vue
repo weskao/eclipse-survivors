@@ -152,6 +152,7 @@ onBeforeUnmount(() => {
     v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
     :hero-id="ui.heroId"
     :snapshot="ui.heroSpecial"
+    :joystick-side="accessibilityPreferences.joystickSide"
     :active="ui.mode === 'play' && !ui.settingsOpen"
     @activate="engine.activateHeroSpecial"
   />

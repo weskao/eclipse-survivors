@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { animatedEs2ImageSrc, skillImageSrc } from '../../../game/ui-art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
@@ -29,6 +29,32 @@ const props = withDefaults(defineProps<{
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
 const selectedId = ref<string | null>(null)
 const hudRoot = shallowRef<HTMLElement | null>(null)
+const infoOpen = ref(false)
+const infoButton = shallowRef<HTMLElement | null>(null)
+const infoPanel = shallowRef<HTMLElement | null>(null)
+function closeInfo(): void { infoOpen.value = false }
+function onDocumentPointer(event: PointerEvent): void {
+  if (!infoOpen.value || !(event.target instanceof Node)) return
+  if (!infoButton.value?.contains(event.target) && !infoPanel.value?.contains(event.target)) closeInfo()
+}
+function onDocumentKey(event: KeyboardEvent): void {
+  if (infoOpen.value && event.key === 'Escape') closeInfo()
+}
+watch(() => [props.active, props.canReturnHome], ([active, canReturnHome]) => {
+  if (!active || !canReturnHome) closeInfo()
+}, { flush: 'sync' })
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocumentPointer)
+  document.addEventListener('keydown', onDocumentKey)
+  window.addEventListener('resize', closeInfo)
+  window.addEventListener('orientationchange', closeInfo)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocumentPointer)
+  document.removeEventListener('keydown', onDocumentKey)
+  window.removeEventListener('resize', closeInfo)
+  window.removeEventListener('orientationchange', closeInfo)
+})
 watch(() => props.active, active => {
   if (active) return
   selectedId.value = null
@@ -59,7 +85,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
 
 <template>
   <!-- Always mount minimap: engine.mount captures its ref before the first run. -->
-  <aside ref="hudRoot" class="es2-hud" :class="{ 'es2-hud--active': active }" :aria-hidden="!active" :inert="!active" :aria-label="t('戰鬥資訊')">
+  <aside ref="hudRoot" class="es2-hud" :class="{ 'es2-hud--active': active, 'es2-hud--details-open': infoOpen }" :aria-hidden="!active" :inert="!active" :aria-label="t('戰鬥資訊')">
     <span data-es2-announcement class="es2-hud__sr-only" role="status" aria-live="polite" aria-atomic="true">{{ t(liveAnnouncement) }}</span>
     <header class="es2-hud__top">
       <div class="es2-hud__hero es2-hud__plate">
@@ -111,6 +137,14 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
     </header>
+    <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
+      data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
+      :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
+      <span aria-hidden="true">☷</span> {{ t('戰鬥資訊') }}
+    </button>
+    <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" role="status">
+      {{ t(view.notices.find(notice => notice.kind === 'critical')?.text ?? '') }}
+    </div>
     <div v-if="view.boss || view.wave" class="es2-hud__encounter" data-es2-encounter>
       <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss :aria-label="t('首領生命')">
         <div class="es2-hud__boss-heading">
@@ -133,6 +167,12 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
     </div>
+    <div id="es2-combat-info-panel" ref="infoPanel" class="es2-hud__info-drawer"
+      data-es2-info-panel :aria-label="t('戰鬥資訊')">
+      <div class="es2-hud__info-heading">
+        <strong>{{ t('戰鬥資訊') }}</strong>
+        <button type="button" data-es2-info-close :aria-label="t('關閉對話視窗')" @click="closeInfo">×</button>
+      </div>
     <section v-if="view.statuses.length" class="es2-hud__statuses es2-hud__plate" :aria-label="t('暫時效果')">
       <span v-for="status in view.statuses" :key="status.id" :data-es2-status="status.id"
         class="es2-hud__status" :class="'es2-hud__status--' + status.kind"
@@ -198,6 +238,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
     </footer>
+    </div>
   </aside>
 </template>
 

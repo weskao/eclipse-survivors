@@ -7,7 +7,8 @@ const props = withDefaults(defineProps<{
   heroId: SpecializationId
   snapshot: SpecializationSnapshot
   active?: boolean
-}>(), { active: false })
+  joystickSide?: 'left' | 'right'
+}>(), { active: false, joystickSide: 'left' })
 const emit = defineEmits<{ activate: [] }>()
 const hero = computed(() => HERO_DEFINITIONS[props.heroId])
 const remaining = computed(() => Number.isFinite(props.snapshot.cooldown) ? Math.max(0, props.snapshot.cooldown) : Infinity)
@@ -30,7 +31,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 </script>
 
 <template>
-  <div class="es2-hero-special" :aria-label="t(hero.label + ' 主動技能')">
+  <div class="es2-hero-special" :data-side="joystickSide" :aria-label="t(hero.label + ' 主動技能')">
     <button type="button" class="es2-hero-special__button" data-hero-special
       aria-keyshortcuts="Q" :aria-label="t(hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒'))"
       :disabled="!ready" @click="trigger">
@@ -67,4 +68,14 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special__fill { position: absolute; inset: auto auto 0 0; height: 5px; background: #df5979; transition: width .1s linear; }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }
 @media (prefers-reduced-motion: reduce) { .es2-hero-special__fill { transition: none; } }
+@media (orientation: portrait) and (max-width: 760px) {
+  .es2-hero-special { right: max(12px, env(safe-area-inset-right)); bottom: calc(151px + env(safe-area-inset-bottom)); max-width: 112px; flex-direction: column; align-items: flex-end; }
+  .es2-hero-special[data-side="right"] { right: auto; left: max(12px, env(safe-area-inset-left)); align-items: flex-start; }
+  .es2-hero-special__status { font-size: 10px; padding: 2px 5px; }
+}
+@media (orientation: landscape) and (max-height: 440px) {
+  .es2-hero-special { right: max(8px, env(safe-area-inset-right)); bottom: calc(94px + env(safe-area-inset-bottom)); max-width: 100px; }
+  .es2-hero-special[data-side="right"] { right: auto; left: max(8px, env(safe-area-inset-left)); }
+  .es2-hero-special__status { font-size: 10px; padding: 2px 5px; }
+}
 </style>
