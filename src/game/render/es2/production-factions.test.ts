@@ -102,6 +102,7 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     const runtime=createFactionRuntime()
     const size=FACTION_VISUAL_SIZE['fire-imp']
     const enemy=spawnFactionEnemy(runtime,'fire-imp',150,state.H+size+35)!
+    expect(runtime.enemies).toContain(enemy)
     const image=loaded(1260,210)
     const images={ 'fire-imp':{body:image,telegraph:loaded(150,150)} } as FactionArtwork
     const {ctx,drawn}=createFakeCtx()
