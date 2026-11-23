@@ -1,4 +1,5 @@
 import type { GameMode, SfxCue } from '../types'
+import type { BossId } from '../content/bosses/definitions'
 
 /** Minimal `<audio>` surface the engine uses for the MP3 score (testable with a fake). */
 export interface BgmElement {
@@ -33,6 +34,8 @@ export interface AudioSystem {
   interrupt(): void
   /** Adapt the score without modifying gameplay rules. */
   setCombatIntensity(intensity: CombatIntensity): void
+  /** Sets the authored theme for the actual live boss; optional for test adapters. */
+  setBossTheme?(id: BossId | null, phase?: number): void
   playSfx(cue: SfxCue): void
   /** Original `music()`, called once per animation frame with the current mode. */
   tick(mode: GameMode): void
