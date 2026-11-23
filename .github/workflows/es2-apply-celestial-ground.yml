@@ -1,0 +1,83 @@
+name: ES2 apply fourth native 3x biome ground
+on:
+  push:
+    branches: [feature/es2-art-qa-biomes]
+    paths:
+      - 'src/assets/es2/production/biomes/.art-celestial-parts/**'
+permissions:
+  contents: write
+concurrency:
+  group: es2-biome-celestial-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  apply-celestial:
+    if: "github.event.head_commit.message == 'chore(es2): stage fourth native-3x biome ground'"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Reassemble and authenticate exact authored binary difference
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat src/assets/es2/production/biomes/.art-celestial-parts/part-*.txt > /tmp/celestial-ground.patch
+          test "$(wc -c < /tmp/celestial-ground.patch)" -eq 823489
+          printf '%s  %s\n' '778a7ec63734512d3c165d67870be15f42ba21d846daa1ad8dc9175d41b6380a' /tmp/celestial-ground.patch | sha256sum -c -
+          git apply --check --binary /tmp/celestial-ground.patch
+          git apply --binary /tmp/celestial-ground.patch
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          import { createHash } from 'node:crypto'
+          const base='src/assets/es2/production/biomes/'
+          const m=JSON.parse(fs.readFileSync(base+'manifest.json','utf8'))
+          if (m.category!=='biomes' || m.status!=='visual-review-required' || m.assets.length!==8) throw Error('Category mismatch')
+          const ground=['blood-moon-cathedral','cursed-forest','abyssal-necropolis','celestial-rift']
+          for (const a of m.assets) {
+            if (a.status!=='needs-human-approval') throw Error('Unapproved asset: '+a.id)
+            const b=fs.readFileSync(base+a.path)
+            if (createHash('sha256').update(b).digest('hex')!==a.sha256 || b.length>a.maxBytes)
+              throw Error('Asset hash/budget invalid: '+a.id)
+            if (a.id.endsWith(':ground')) {
+              if (!ground.includes(a.id.split(':')[0]) || a.width!==1152 || a.height!==1152
+                  || a.frameWidth!==1152 || a.frameHeight!==1152 || a.native3x!==true
+                  || !a.authoredMasterSha256) throw Error('Unverified native 3x ground '+a.id)
+            } else if (a.native3x!==false) throw Error('Decor falsely marked native 3x '+a.id)
+          }
+          if (m.assets.find(a=>a.id==='celestial-rift:ground').sha256
+              !== '39e945c3a903c4bd88013f0975299d55ae733bf7a676ba20052d668d0397f0df') throw Error('Unexpected SHA')
+          NODE
+          qa=src/assets/es2/production/biomes/qa-live-browser.mjs
+          grep -Fq 'const sizes = [1152, 1152, 1152, 768]' "$qa"
+          sed -i 's/const sizes = \[1152, 1152, 1152, 768\]/const sizes = [1152, 1152, 1152, 1152]/' "$qa"
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Existing world-art integrity and mapping
+        run: pnpm exec vitest run src/assets/es2/production/world-art-candidates.test.ts src/game/render/es2/production-world.test.ts
+      - name: TypeScript
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build
+      - name: Release invariant checks
+        run: pnpm check-release
+      - name: Keep unresolved four decor gate RED
+        continue-on-error: true
+        run: pnpm exec vitest run src/assets/es2/production/biomes/native-3x-candidates.test.ts
+      - name: Commit only authorized workstream files and remove staged patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REF}" = 'refs/heads/feature/es2-art-qa-biomes'
+          git rm -r src/assets/es2/production/biomes/.art-celestial-parts
+          git add src/assets/es2/production/biomes/celestial-rift-ground@3x.webp
+          git add src/assets/es2/production/biomes/manifest.json
+          git add src/assets/es2/production/biomes/qa-live-browser.mjs
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'art(es2): install fourth native-3x biome ground for QA'
+          git fetch origin feature/es2-art-qa-biomes
+          test "$(git rev-parse origin/feature/es2-art-qa-biomes)" = "${GITHUB_SHA}"
+          git push origin HEAD:feature/es2-art-qa-biomes
