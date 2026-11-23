@@ -109,19 +109,31 @@
     {
       "id": "rarity-legendary",
       "path": "rarity-legendary@3x.webp",
-      "width": 192,
-      "height": 192,
+      "width": 240,
+      "height": 240,
       "scale": 3,
       "alpha": true,
       "maxBytes": 75000,
       "frames": 1,
       "columns": 1,
       "rows": 1,
-      "frameWidth": 192,
-      "frameHeight": 192,
+      "frameWidth": 240,
+      "frameHeight": 240,
       "status": "needs-human-approval",
-      "sha256": "5ef5630631c525c3970f017acc0c421f5cb30bd18400719fc5c70f525973e05c",
-      "qaNote": "Explicit c104 source region(s): imgs10.png; visually review animation continuity and alpha."
+      "sha256": "5004385c3f85657d18e24274fce11f12ca070a6267ba9c81e5a7bc113722d1bd",
+      "qaNote": "New gold-amber crystal hand-selected from freshly generated 1254px art; 512px authored-detail archive, 240px alpha WebP for <=72px display. No right-edge tail. 1x gameplay QA / art approval pending.",
+      "qa": {
+        "sourcePixels": 512,
+        "generatedImagePixels": 1254,
+        "masterPath": "sources/rarity-legendary-master@source.webp",
+        "masterSha256": "f1f176049848a816fb37d67cafc402893156f99ccc2646260efa17e7ac04c6db",
+        "provenance": "newly generated high-resolution crystal illustration; crop/alpha composited from 1254px RGB original and downsampled to 512px and 240px; not interpolated from previous 192px asset",
+        "outputPixels": 240,
+        "displayMaximumPx": 72,
+        "visualReview": "pending",
+        "browserReview": "pending",
+        "approval": "pending"
+      }
     },
     {
       "id": "hud-health",
