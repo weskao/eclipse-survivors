@@ -64,6 +64,22 @@ describe('mobile input cancellation and focus regressions', () => {
     expect(wrapper.emitted('stick')?.at(-1)).toEqual([null])
   })
 
+  it('fires dash from the second touch during joystick steering, without a duplicate synthesized click', async () => {
+    const { wrapper, pad } = controls()
+    await pad.trigger('pointerdown', { pointerId: 11, pointerType: 'touch', clientX: 100, clientY: 61 })
+    const dash = wrapper.get('[data-testid="es2-dash"]')
+    // On iOS multi-touch, WebKit may not synthesize a click for the second finger.
+    await dash.trigger('pointerdown', { pointerId: 12, pointerType: 'touch', isPrimary: false, button: 0 })
+    expect(wrapper.emitted('dash')).toHaveLength(1)
+    await dash.trigger('click', { detail: 1 })
+    expect(wrapper.emitted('dash')).toHaveLength(1)
+    await dash.trigger('pointerdown', { pointerId: 13, pointerType: 'touch', isPrimary: false, button: 0 })
+    expect(wrapper.emitted('dash')).toHaveLength(2)
+    await wrapper.setProps({ blocked: true })
+    await dash.trigger('pointerdown', { pointerId: 14, pointerType: 'touch', button: 0 })
+    expect(wrapper.emitted('dash')).toHaveLength(2)
+  })
+
   it('keeps the dash keyboard accessible without sending Space to the game a second time', async () => {
     const { wrapper } = controls()
     const pad = wrapper.get('[data-testid="es2-stick"]')
