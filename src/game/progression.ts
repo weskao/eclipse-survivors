@@ -25,6 +25,22 @@ export function addXp(s: GameState, n: number, hooks: GameHooks): void {
 
 const WEIGHT: Record<SkillRarity, number> = { common: 14, rare: 5, legendary: 1 }
 
+const AREA_SKILLS = new Set<AbilityId>([
+  'orb', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'chain',
+  'weapons:blood-scythe', 'weapons:arcane-mines', 'weapons:poison-cloud',
+  'weapons:solar-beam', 'weapons:gravity-orbs', 'weapons:thorn-chain',
+])
+const SUPPORT_SKILLS = new Set<AbilityId>(['maxhp', 'heal', 'shield'])
+const MOBILITY_SKILLS = new Set<AbilityId>(['speed', 'magnet'])
+
+function skillGroup(id: AbilityId): 'area' | 'support' | 'mobility' | 'attack' | null {
+  if (AREA_SKILLS.has(id)) return 'area'
+  if (SUPPORT_SKILLS.has(id)) return 'support'
+  if (MOBILITY_SKILLS.has(id)) return 'mobility'
+  if (id === 'damage' || id === 'haste' || id === 'multi' || id.startsWith('weapons:')) return 'attack'
+  return null
+}
+
 /** Seedable weighted sampling without replacement. Unlocked evolutions get one guaranteed slot. */
 export function pickUpgrades(hero?: Hero, rng: () => number = random, registry?: ContentRegistry, state?: GameState): UpgradeDef[] {
   const candidates: UpgradeDef[] = hero
@@ -33,6 +49,27 @@ export function pickUpgrades(hero?: Hero, rng: () => number = random, registry?:
   if (hero && registry && state) {
     candidates.push(...registry.eligible(state).map(a => ({ ...a, level: state.content.levels[a.id] ?? 0 })))
   }
+  // Existing investments guide this run's build without removing random choices.
+  // Capped skills still inform the type preference, but cannot be offered again.
+  const invested = new Set<string>()
+  if (hero) for (const [id, level] of Object.entries(hero.skills)) {
+    if (level > 0) {
+      const group = skillGroup(id as UpgradeId)
+      if (group) invested.add(group)
+    }
+  }
+  if (state) for (const [id, level] of Object.entries(state.content.levels)) {
+    if (level > 0) {
+      const group = skillGroup(id as ContentId)
+      if (group) invested.add(group)
+    }
+  }
+  const weightOf = (upgrade: UpgradeDef): number => {
+    const level = upgrade.level ?? 0
+    const group = skillGroup(upgrade.id)
+    return WEIGHT[upgrade.rarity] * (1 + Math.min(1.2, level * 0.3)
+      + (level === 0 && group && invested.has(group) ? 0.12 : 0))
+  }
   const available = hero ? eligibleEvolutions(hero) : []
   const selected: UpgradeDef[] = []
   if (available.length) {
@@ -40,9 +77,9 @@ export function pickUpgrades(hero?: Hero, rng: () => number = random, registry?:
     selected.push({ ...available[index]!, level: 0 })
   }
   while (selected.length < 3 && candidates.length) {
-    const total = candidates.reduce((sum, u) => sum + WEIGHT[u.rarity], 0)
+    const total = candidates.reduce((sum, u) => sum + weightOf(u), 0)
     let roll = Math.min(1 - Number.EPSILON, Math.max(0, rng())) * total
-    const index = candidates.findIndex(u => (roll -= WEIGHT[u.rarity]) < 0)
+    const index = candidates.findIndex(u => (roll -= weightOf(u)) < 0)
     selected.push(candidates.splice(index < 0 ? candidates.length - 1 : index, 1)[0]!)
   }
   return selected
