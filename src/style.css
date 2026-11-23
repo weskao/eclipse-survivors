@@ -170,3 +170,17 @@ h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(29px,4vw,48px);lett
 .skill-slots .skill-sigil{width:100%;height:100%}
 #level .upgrade .portrait.skill-sigil{overflow:hidden}
 #level .upgrade .portrait .skill-art{border-radius:50%;transform:scale(1.04)}
+
+/* WebKit long-press loupe/callout and highlight must not steal game interactions.
+   Keep native menu inputs, link activation and scrollable dialogs selectable/scrollable. */
+#game,
+#app button,
+#app [role="button"],
+#app [role="tab"],
+#app [role="option"],
+.es2-mobile-controls {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
