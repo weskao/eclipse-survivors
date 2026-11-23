@@ -139,4 +139,68 @@ describe('App', () => {
     expect(document.querySelector('#paused.active')).not.toBeNull()
     wrapper.unmount()
   })
+  it('sends mobile dash to the real engine once and respects cooldown and pause', async () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query === '(pointer:coarse)',
+      media: query,
+      addListener: vi.fn(), removeListener: vi.fn(),
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+    }))
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    try {
+      engine.start()
+      await nextTick()
+      const button = wrapper.get('[data-testid="es2-dash"]').element as HTMLButtonElement
+      expect(button.disabled).toBe(false)
+      const hero = engine.state.hero!
+      expect(hero.dash).toBeLessThanOrEqual(0)
+      button.click() // Native click is synthesized by a successful iOS touch tap.
+      expect(hero.dash).toBeGreaterThan(0)
+      expect(hero.inv).toBeGreaterThan(0)
+      const cooldown = hero.dashCd
+      button.click()
+      expect(hero.dashCd).toBe(cooldown)
+      engine.togglePause()
+      await nextTick()
+      expect(button.disabled).toBe(true)
+    } finally {
+      wrapper.unmount()
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('suppresses iPhone long-press on game surfaces without swallowing native controls or scrolling', () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    const touch = (target: Element, fingers = 1) => {
+      const event = new Event('touchstart', { bubbles: true, cancelable: true })
+      Object.defineProperty(event, 'touches', { value: Array.from({ length: fingers }, () => ({})) })
+      target.dispatchEvent(event)
+      return event.defaultPrevented
+    }
+    const button = document.createElement('button')
+    const scroll = document.createElement('div')
+    const child = document.createElement('span')
+    scroll.style.overflowY = 'auto'
+    Object.defineProperties(scroll, {
+      scrollHeight: { value: 200, configurable: true },
+      clientHeight: { value: 100, configurable: true },
+    })
+    scroll.appendChild(child)
+    document.body.append(button, scroll)
+    try {
+      expect(touch(wrapper.get('#game').element)).toBe(true)
+      expect(touch(button)).toBe(false)
+      expect(touch(child)).toBe(false)
+      expect(touch(wrapper.get('#game').element, 2)).toBe(false)
+    } finally {
+      wrapper.unmount()
+      button.remove()
+      scroll.remove()
+    }
+    // Unmount must remove the capture listener, not leave the next app instance guarded.
+    expect(touch(document.body)).toBe(false)
+  })
+
 })
