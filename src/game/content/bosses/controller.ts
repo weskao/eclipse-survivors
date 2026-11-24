@@ -62,12 +62,22 @@ export interface BossEncounterObserver {
   cue?(id: BossCueId): void
 }
 
+/** Presentation state derived from the encounter clock; never used by collision or AI. */
+export type BossBodyPose = 'idle' | 'move' | 'windup' | 'attack' | 'recover' | 'hurt' | 'transform' | 'death'
+export interface BossBodyMotion {
+  readonly pose: BossBodyPose
+  readonly phase: 1 | 2 | 3
+  readonly progress: number
+  readonly x: number
+  readonly y: number
+}
 export interface BossSnapshot {
   readonly id: BossId | null
   readonly phase: 1 | 2 | 3 | null
   readonly telegraphs: readonly BossTelegraph[]
   readonly projectiles: readonly BossProjectile[]
   readonly impacts?: readonly BossImpact[]
+  readonly bodyMotion?: BossBodyMotion
 }
 
 export interface BossHud {
@@ -96,6 +106,9 @@ interface Encounter {
   turn: number
   safeTurn: number
   recovery: number
+  recoveryDuration: number
+  transforming: boolean
+  deathAt: number | null
   windup: Windup | null
   hazards: Hazard[]
   projectiles: MutableProjectile[]
@@ -122,6 +135,35 @@ export function intersectsTelegraph(t: BossTelegraph, x: number, y: number, padd
   const along = Math.max(0, Math.min(t.length, dx * vx + dy * vy))
   const ox = dx - along * vx, oy = dy - along * vy
   return ox * ox + oy * oy <= (t.width + padding) ** 2
+}
+
+const BODY_TRANSFORM_SECONDS = 0.85
+const BODY_DEATH_SECONDS = 1.2
+const clampBodyProgress = (value: number): number => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0))
+
+function bodyMotion(e: Encounter): BossBodyMotion | undefined {
+  const frame = (pose: BossBodyPose, progress: number): BossBodyMotion => ({
+    pose, phase: e.phase, progress: clampBodyProgress(progress), x: e.boss.x, y: e.boss.y,
+  })
+  if (e.boss.hp <= 0 || e.rewarded) {
+    if (e.deathAt === null) return undefined
+    const progress = (e.state.worldClock - e.deathAt) / BODY_DEATH_SECONDS
+    return progress < 1 ? frame('death', progress) : undefined
+  }
+  if (e.transforming && e.recovery > 0)
+    return frame('transform', 1 - e.recovery / BODY_TRANSFORM_SECONDS)
+  if (e.windup)
+    return frame('windup', 1 - e.windup.remaining / BOSS_ATTACKS[e.windup.attackId].windup)
+  const impact = e.impacts[e.impacts.length - 1]
+  if (impact && impact.max > 0) {
+    const progress = clampBodyProgress(1 - impact.life / impact.max)
+    return progress < 0.5 ? frame('attack', progress * 2) : frame('recover', (progress - 0.5) * 2)
+  }
+  if (e.boss.hit > 0) return frame('hurt', 1 - e.boss.hit / 0.16)
+  if (e.boss.bossMoving) return frame('move', (e.state.worldClock * 1.4) % 1)
+  if (e.recovery > 0 && e.recoveryDuration > 0)
+    return frame('recover', 1 - e.recovery / e.recoveryDuration)
+  return frame('idle', (e.state.worldClock * 0.65) % 1)
 }
 
 function phaseFor(boss: Mob): 1 | 2 | 3 {
@@ -198,6 +240,7 @@ function cleanOwnedMinions(e: Encounter): void {
 }
 
 function clearTransient(e: Encounter): void {
+  e.transforming = false
   e.windup = null
   e.hazards.length = 0
   e.projectiles.length = 0
@@ -356,6 +399,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       state.bossDefeated = false
       encounter = {
         state, boss, id, phase: 1, turn: 0, safeTurn: 0, recovery: 0,
+        recoveryDuration: 0, transforming: false, deathAt: null,
         windup: null, hazards: [], projectiles: [], impacts: [], summoned: new Set<Mob>(),
         rewarded: false,
       }
@@ -378,7 +422,8 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         e.phase = phase; e.boss.bossPhase = phase
         e.turn = 0
         clearTransient(e)
-        e.recovery = 0.85
+        e.recovery = BODY_TRANSFORM_SECONDS
+        e.transforming = true
         cue(BOSS_DEFINITIONS[e.id].transitionCue)
         notify({ type: 'phase', boss: e.id, phase })
         hooks.message(`${BOSS_DEFINITIONS[e.id].title} — ${BOSS_DEFINITIONS[e.id].phaseNames[phase - 1]}`)
@@ -399,6 +444,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
           e.windup = null
           release(e, ready, hooks)
           e.recovery = BOSS_ATTACKS[ready.attackId].recover
+          e.recoveryDuration = e.recovery
         }
         return
       }
@@ -407,6 +453,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         e.recovery = Math.max(0, e.recovery - dt)
         if (e.recovery > 0) return
       }
+      e.transforming = false
       warn(e)
     },
     onContentEvent(state, event, _hooks) {
@@ -421,6 +468,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       }
       if (event.type !== 'kill' || event.mob !== e.boss || e.rewarded || e.boss.hp > 0) return
       e.rewarded = true
+      e.deathAt = state.worldClock
       clearTransient(e)
       cleanOwnedMinions(e)
       cue(BOSS_DEFINITIONS[e.id].deathCue)
@@ -442,6 +490,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       if (!e) return { id: null, phase: null, telegraphs: [], projectiles: [], impacts: [] }
       return {
         id: e.id, phase: e.phase,
+        bodyMotion: bodyMotion(e),
         telegraphs: [
           ...(e.windup?.telegraphs.map(t => ({ ...t, stage: 'warning' as const,
             progress: Math.max(0, Math.min(1, 1 - e.windup!.remaining / BOSS_ATTACKS[e.windup!.attackId].windup)),
