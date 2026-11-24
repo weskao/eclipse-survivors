@@ -1,0 +1,53 @@
+name: ES2 safe general PNG to WebP migration
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths: ['.github/workflows/es2-safe-webp-migration.yml']
+permissions:
+  contents: read
+jobs:
+  migrate:
+    if: github.repository == 'weskao/eclipse-survivors' && github.ref == 'refs/heads/feature/es2-release-readiness-integration'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install --disable-pip-version-check Pillow==12.3.0
+      - name: Verify conversion and preservation guards
+        run: python scripts/test_convert_unreferenced_pngs.py -v
+      - name: Convert only reviewed unreferenced general images
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin refs/heads/feature/es2-release-readiness-integration | cut -f1)" = "$GITHUB_SHA"
+          python scripts/convert_unreferenced_pngs.py | tee /tmp/es2-webp-migration.json
+          git add -A -- assets/images/
+          git diff --cached --stat
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm check-release
+      - name: Commit only verified asset conversions if branch has not advanced
+        run: |
+          set -euo pipefail
+          if git diff --cached --quiet; then echo 'No safe asset changes'; exit 0; fi
+          git diff --cached --name-only | grep -vE '^assets/images/imgs([1-9]|10)\.(png|webp)$' > /tmp/unexpected || true
+          test ! -s /tmp/unexpected
+          git diff --exit-code
+          test "$(git ls-remote origin refs/heads/feature/es2-release-readiness-integration | cut -f1)" = "$GITHUB_SHA"
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Convert verified general images to lossless WebP and remove redundant PNGs'
+          git push origin HEAD:refs/heads/feature/es2-release-readiness-integration
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: safe-webp-migration-report
+          path: /tmp/es2-webp-migration.json
+          if-no-files-found: warn

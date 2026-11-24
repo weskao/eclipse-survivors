@@ -27,6 +27,8 @@
 
 ## 4. Splitting atlases and deterministic layout
 
+- Follow the mandatory WebP image asset policy in CLAUDE.md: WebP is the canonical display/runtime raster format. Do not commit a duplicate PNG export of a verified WebP. Convert PNG-only display art without resampling or losing alpha; retain original master/repair/QA PNGs with essential provenance until a safe equivalent migration of hashes, metadata, manifests and tests is proven. When uncertain, retain rather than delete.
+
 - Use **multiple atlases when needed** instead of shrinking character art to fit. Example project paths (actual names depend on content): `src/assets/es2/production/heroes/<character-id>/<pose>-<direction>@3x.webp` or `<character-id>-<pose>-<sheet-index>@3x.webp`.
 - Document for **every** atlas: file path, canonical character ID, source art reference, native source cell size, runtime cell size, `3×` source scale, columns/rows, direction order, pose/frame ordering, independent frame count and timing, foot anchor, transparency, SHA-256, compressed bytes, budget, and human QA status.
 - Pack fixed-size frames with enough transparent gutters (or extrude transparent edge pixels) to avoid cross-cell bleed under filtering. Source coordinates must be exact integers and within the image; no fractional cell crop and no borrowing adjacent character parts.
