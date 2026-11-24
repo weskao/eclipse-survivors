@@ -41,6 +41,13 @@ describe('ES2 boss production art: honest native-3x QA contract', () => {
     }
   })
 
+  it('uses the actual maximum phase-three body draw size, not the old phase-one size', () => {
+    for (const asset of manifest.assets) {
+      expect(asset.qa?.maxCanvasDrawPx, asset.id).toBeCloseTo(255 * 1.24)
+      expect(asset.qa?.requiredNativeFramePx, asset.id).toBe(949)
+    }
+  })
+
   it('never claims native 3x on an atlas smaller than the real Canvas requirement', () => {
     for (const asset of manifest.assets) {
       expect(asset.qa, asset.id + ' must record production review evidence').toBeDefined()
