@@ -28,6 +28,14 @@ describe('ES2 staged hero candidate atlas contract (QA only)', () => {
     ].sort())
   })
 
+
+  it('uses the two uploaded batch-5 atlases in their own directions, never the rejected batch-4 sources', () => {
+    for (const [hero, direction] of [['shadowblade', 'N'], ['spirit-summoner', 'NE']]) {
+      const clip = HERO_CANDIDATE_ATLASES.find(c => c.hero === hero && c.direction === direction && c.pose === 'run')
+      expect(clip?.url).toContain(`/${hero}/candidates/${direction.toLowerCase()}-2026-11-24-batch-5/run-${direction.toLowerCase()}-4frames@3x.webp`)
+    }
+  })
+
   it('never samples into neighboring 704px cells or invents a fifth frame', () => {
     expect(Array.from({ length: 4 }, (_, i) => heroCandidateRect(i))).toEqual([
       { x: 0, y: 0, size: 704 }, { x: 704, y: 0, size: 704 },
