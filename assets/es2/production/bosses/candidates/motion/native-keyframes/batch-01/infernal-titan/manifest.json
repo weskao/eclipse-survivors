@@ -1,0 +1,214 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "906b18d6640b59cda81f3537c59594fc89bea5ee",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "atlas": {
+    "path": "infernal-titan-keyframe-candidates-3x2.png",
+    "sha256": "2a3062fcdc6c3701bbad9fae81cf8b905afe93b9140a1120380b070d1a7a640d",
+    "width": 4032,
+    "height": 2688,
+    "columns": 3,
+    "rows": 2,
+    "cellWidth": 1344,
+    "cellHeight": 1344,
+    "anchor": [
+      672,
+      1290
+    ],
+    "unusedCells": [
+      5
+    ]
+  },
+  "frames": [
+    {
+      "id": "idle-stance-a",
+      "role": "idle-stance-variant",
+      "source": "sources/idle-stance-a.png",
+      "sha256": "860a25f18e27b3cae10f9802599db77dc65e8effde6ffa3c027638a27d7a7b87",
+      "sourceSize": [
+        1312,
+        1199
+      ],
+      "alpha128Bounds": [
+        97,
+        6,
+        1152,
+        1185
+      ],
+      "alpha128Extent": [
+        1055,
+        1179
+      ],
+      "transparentPixels": 819388,
+      "opaquePixels": 227,
+      "rect": [
+        0,
+        0,
+        1344,
+        1344
+      ],
+      "sourceOffset": [
+        16,
+        105
+      ],
+      "nativeResolutionCandidate": true,
+      "visualApproved": false
+    },
+    {
+      "id": "idle-stance-b",
+      "role": "idle-stance-variant",
+      "source": "sources/idle-stance-b.png",
+      "sha256": "7112f49d056d16ac34a72c501e8171b52abd55348594dc1bc2c1f64b5059f4be",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "alpha128Bounds": [
+        52,
+        8,
+        1186,
+        1241
+      ],
+      "alpha128Extent": [
+        1134,
+        1233
+      ],
+      "transparentPixels": 716089,
+      "opaquePixels": 882,
+      "rect": [
+        1344,
+        0,
+        1344,
+        1344
+      ],
+      "sourceOffset": [
+        45,
+        49
+      ],
+      "nativeResolutionCandidate": true,
+      "visualApproved": false
+    },
+    {
+      "id": "idle-stance-c",
+      "role": "idle-stance-variant",
+      "source": "sources/idle-stance-c.png",
+      "sha256": "83e0410ce77885e7270a917966e742db0109a3c336ca8ecb7121529b24fe4929",
+      "sourceSize": [
+        1261,
+        1247
+      ],
+      "alpha128Bounds": [
+        63,
+        7,
+        1178,
+        1239
+      ],
+      "alpha128Extent": [
+        1115,
+        1232
+      ],
+      "transparentPixels": 776046,
+      "opaquePixels": 924,
+      "rect": [
+        2688,
+        0,
+        1344,
+        1344
+      ],
+      "sourceOffset": [
+        41,
+        51
+      ],
+      "nativeResolutionCandidate": true,
+      "visualApproved": false
+    },
+    {
+      "id": "idle-stance-d",
+      "role": "idle-stance-variant",
+      "source": "sources/idle-stance-d.png",
+      "sha256": "572c6466f1bda93f49ba281ee2a8074b92e5e43dd77b998757b7309dff1eee4e",
+      "sourceSize": [
+        1261,
+        1247
+      ],
+      "alpha128Bounds": [
+        116,
+        5,
+        1152,
+        1226
+      ],
+      "alpha128Extent": [
+        1036,
+        1221
+      ],
+      "transparentPixels": 809264,
+      "opaquePixels": 827,
+      "rect": [
+        0,
+        1344,
+        1344,
+        1344
+      ],
+      "sourceOffset": [
+        41,
+        64
+      ],
+      "nativeResolutionCandidate": true,
+      "visualApproved": false
+    },
+    {
+      "id": "windup-key-a",
+      "role": "windup-keyframe",
+      "source": "sources/windup-key-a.png",
+      "sha256": "55ad173ec38f14b12d905d34c2b2e1e7db890121220f3eeeb90e8b9a3527d100",
+      "sourceSize": [
+        1262,
+        1246
+      ],
+      "alpha128Bounds": [
+        107,
+        17,
+        1243,
+        1218
+      ],
+      "alpha128Extent": [
+        1136,
+        1201
+      ],
+      "transparentPixels": 845565,
+      "opaquePixels": 774,
+      "rect": [
+        1344,
+        1344,
+        1344,
+        1344
+      ],
+      "sourceOffset": [
+        41,
+        72
+      ],
+      "nativeResolutionCandidate": true,
+      "visualApproved": false
+    }
+  ],
+  "missing": [
+    "idle coherent loop",
+    "move loop",
+    "windup sequence",
+    "attack release",
+    "recovery",
+    "hurt",
+    "phase transformation",
+    "death",
+    "three other bosses"
+  ],
+  "notes": [
+    "Original PNG bytes preserved. Atlas uses lossless copy and transparent padding only; no resampling.",
+    "Idle variants are alternative candidates, not a continuous animation.",
+    "Alpha quality, edge clipping, proportions and design consistency require manual review. Do not enable release rendering."
+  ]
+}
