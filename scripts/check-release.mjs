@@ -14,6 +14,13 @@ assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\
   'site must work at /eclipse-survivors/, not depend on root-absolute asset paths')
 
 const files = readdirSync(new URL('assets/', dist))
+// C104 originals are immutable source evidence, not public display assets.
+// The WebP derivatives must ship and remain referenced by the real UI.
+for (let i = 1; i <= 10; i++) {
+  assert.ok(!existsSync(new URL(`assets/images/imgs${i}.png`, dist)), `C104 original PNG ${i} must not ship in dist`)
+  assert.ok(files.some(file => file.startsWith(`imgs${i}-`) && file.endsWith('.webp')),
+    `C104 display WebP ${i} must be bundled`)
+}
 assert.ok(files.every(file => !file.includes('-QA-PENDING')),
   'Unapproved boss QA candidate images must not ship in the production bundle')
 const js = files.filter(f => f.endsWith('.js')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')

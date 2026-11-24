@@ -1,12 +1,12 @@
 import { cpSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { relative, resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import type { Plugin } from 'vite'
 
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
 
-// The web manifest and its icons/screenshots stay at the repo root (README links them); ship them as-is.
+// Ship root web statics, but keep immutable C104 PNG masters in the repository only.
 const copyRootStatics = (): Plugin => {
   let root = ''
   let outDir = ''
@@ -20,7 +20,11 @@ const copyRootStatics = (): Plugin => {
     // writeBundle (not closeBundle) only runs after a successful write.
     writeBundle() {
       cpSync(resolve(root, 'manifest.webmanifest'), resolve(outDir, 'manifest.webmanifest'))
-      cpSync(resolve(root, 'assets'), resolve(outDir, 'assets'), { recursive: true })
+      const sourceAssets = resolve(root, 'assets')
+      cpSync(sourceAssets, resolve(outDir, 'assets'), {
+        recursive: true,
+        filter: source => !/^images[\\/]imgs(?:[1-9]|10)\.png$/i.test(relative(sourceAssets, source)),
+      })
     },
   }
 }
