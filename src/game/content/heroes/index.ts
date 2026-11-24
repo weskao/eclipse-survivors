@@ -55,7 +55,7 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     legacyArtJob: 'knight', portraitSrc: shadowPortrait, specialIconSrc: shadowSpecialIcon,
     stats: BALANCE.heroes.special.shadowblade,
     startingAbility: 'heroes:shadow-daggers', startingEquipment: '影鋒雙匕', progressionAbility: 'heroes:shadow-precision',
-    passive: '暗影精準：24% 暴擊機率，造成 170% 傷害；升級增強暴擊倍率。',
+    passive: `暗影精準：${Math.round(BALANCE.heroes.specialEffects.shadowblade.critChance * 100)}% 暴擊機率，造成 ${Math.round(BALANCE.heroes.specialEffects.shadowblade.critMultiplier * 100)}% 傷害；升級增強暴擊倍率。`,
     special: '影襲：突襲周圍最多三名敵人，短暫潛行並取得閃避保護。',
     specialCooldown: BALANCE.heroes.specialCooldowns.shadowblade,
     animation: { idle: 'shadow-breath', attack: 'dual-blade-slash', special: 'shadow-afterimages' },

@@ -243,6 +243,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let objectiveRuntime: ObjectiveRuntime | null = null
   let worldEvents: LiveWorldEvents | null = null
   let ending = false
+  let lastCritical = false
 
   function wakeAudio(): void {
     if (es2Audio) es2Audio.wakeFromGesture()
@@ -256,17 +257,26 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     offerUpgrades,
     end,
     modifyOutgoingDamage: (amount, target) => {
+      lastCritical = false
       const modified = heroSpecialization?.modifyOutgoingDamage(amount) ?? amount
-      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
+      if (!s.hero || s.mode !== 'play' || !Number.isFinite(modified) || modified <= 0) return modified
       const result = calculateRelicAttack(s, modified, {
+        relicsEnabled,
+        baseCritChance: s.heroId === 'shadowblade' ? 0 : BALANCE.combat.baseCriticalChance,
         moving: s.hero.moveAmount > 0,
         boss: target?.type === 'boss',
         targetHp: target?.hp,
         targetHpFraction: target && target.max > 0 ? target.hp / target.max : undefined,
       }, random)
+      lastCritical = result.critical
       return result.execute && target ? Math.max(result.damage, target.hp) : result.damage
     },
-    consumeCriticalHit: () => heroSpecialization?.consumeCriticalHit() ?? false,
+    consumeCriticalHit: () => {
+      const heroCritical = heroSpecialization?.consumeCriticalHit() ?? false
+      const critical = heroCritical || lastCritical
+      lastCritical = false
+      return critical
+    },
     mitigateIncomingDamage: amount => {
       const modified = heroSpecialization?.mitigateIncomingDamage(amount) ?? amount
       if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified

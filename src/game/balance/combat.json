@@ -5,6 +5,9 @@
     "goblin": 5,
     "default": 3
   },
+  "baseCriticalChance": 0.08,
+  "criticalChanceCap": 0.75,
+  "criticalMultiplier": 1.5,
   "dashDuration": 0.22,
   "dashInvulnerability": 0.35,
   "starPickupSpeed": 450,

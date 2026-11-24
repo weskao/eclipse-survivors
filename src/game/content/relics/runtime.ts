@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import type { ContentEvent, GameState } from '../../types'
 import { RELIC_BY_ID, RELIC_CUES, RELICS, type RelicBonuses, type RelicDefinition, type RelicId, type RelicStat } from './catalog'
 
@@ -138,6 +139,8 @@ export function banishTreasure(state: GameState, chestId: number, id: RelicId): 
   return true
 }
 export interface AttackContext {
+  baseCritChance?: number
+  relicsEnabled?: boolean
   element?: 'physical' | 'fire' | 'frost' | 'lightning'
   source?: 'weapon' | 'summon'
   moving?: boolean
@@ -151,21 +154,22 @@ export interface AttackContext {
 export interface AttackResult { damage: number; critical: boolean; execute: boolean; pierce: number; extraProjectile: boolean }
 /** Pre-hit adapter: caller applies the result to the actual target (never an extra XP event). */
 export function calculateRelicAttack(state: GameState, damage: number, context: AttackContext, rng: () => number): AttackResult {
-  const b = relicBonuses(state)
+  const relicsEnabled = context.relicsEnabled !== false
+  const b = relicsEnabled ? relicBonuses(state) : EMPTY_BONUSES
   if (!Number.isFinite(damage) || damage <= 0) return { damage: 0, critical: false, execute: false, pierce: 0, extraProjectile: false }
   let multiplier = 1 + (context.element && context.element !== 'physical' ? b[context.element] ?? 0 : 0)
-  if (context.source === 'summon') multiplier *= 1 + (b.summon ?? 0) + (hasRelic(state, 'relics:wolf-totem') && hasRelic(state, 'relics:shadow-chain') ? 0.15 : 0)
+  if (context.source === 'summon') multiplier *= 1 + (b.summon ?? 0) + (relicsEnabled && hasRelic(state, 'relics:wolf-totem') && hasRelic(state, 'relics:shadow-chain') ? 0.15 : 0)
   if (context.moving) multiplier *= 1 + (b.moving ?? 0)
   else if (context.moving === false) multiplier *= 1 + (b.stationary ?? 0)
   if (context.afterDash) multiplier *= 1 + (b.dashDamage ?? 0)
   if (context.boss) multiplier *= 1 + (b.bossDamage ?? 0)
-  const critChance = Math.min(0.75, Math.max(0, b.critChance ?? 0))
+  const critChance = Math.min(BALANCE.combat.criticalChanceCap, Math.max(0, (context.baseCritChance ?? 0) + (b.critChance ?? 0)))
   const critical = critChance > 0 && rng() < critChance
-  if (critical) multiplier *= 1.5 + (b.critPower ?? 0)
+  if (critical) multiplier *= BALANCE.combat.criticalMultiplier + (b.critPower ?? 0)
   const execute = !context.boss && Number.isFinite(context.targetHpFraction) &&
     context.targetHpFraction! > 0 && context.targetHpFraction! <= Math.min(0.3, b.execute ?? 0)
   const pierce = Math.max(0, Math.floor((b.pierce ?? 0) +
-    (hasRelic(state, 'relics:celestial-lens') && hasRelic(state, 'relics:echo-gem') ? 1 : 0)))
+    (relicsEnabled && hasRelic(state, 'relics:celestial-lens') && hasRelic(state, 'relics:echo-gem') ? 1 : 0)))
   const extraChance = Math.min(0.6, Math.max(0, b.extraProjectile ?? 0))
   const extraProjectile = extraChance > 0 && rng() < extraChance
   return { damage: damage * multiplier, critical, execute, pierce, extraProjectile }

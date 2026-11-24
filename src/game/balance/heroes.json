@@ -52,7 +52,7 @@
   },
   "specialEffects": {
     "shadowblade": {
-      "critChance": 0.24,
+      "critChance": 0.28,
       "critMultiplier": 1.7,
       "critBonusPerRank": 0.18,
       "specialHits": 3,

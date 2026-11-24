@@ -70,6 +70,16 @@ describe('isolated hero specializations', () => {
     expect(registry.acquire(state, 'heroes:spirit-bond', hooks)).toBe(false)
   })
 
+  it('raises Shadowblade critical chance while retaining the original damage multiplier', () => {
+    const { adapter } = setup('shadowblade', () => 0.26)
+    expect(adapter.modifyOutgoingDamage(20)).toBe(34)
+    expect(adapter.consumeCriticalHit()).toBe(true)
+    expect(adapter.consumeCriticalHit()).toBe(false)
+    const normal = setup('shadowblade', () => 0.29).adapter
+    expect(normal.modifyOutgoingDamage(20)).toBe(20)
+    expect(normal.consumeCriticalHit()).toBe(false)
+  })
+
   it('shadowblade has deterministic crits, short stealth, shadow strikes, and cooldown gating', () => {
     const { state, adapter } = setup('shadowblade', () => 0.1)
     expect(adapter.modifyOutgoingDamage(20)).toBe(34)

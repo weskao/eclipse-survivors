@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { BALANCE } from './game/config'
 
 /** Two production catalogs. Chinese display copy is the canonical lookup key. */
 export const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const
@@ -1082,7 +1083,7 @@ const english = new Map<string, string>([
 , ["短射程","Short range"]
 , ["須掌握突襲時機","Requires precise ambush timing"]
 , ["影鋒雙匕","Shadowfang Daggers"]
-, ["暗影精準：24% 暴擊機率，造成 170% 傷害；升級增強暴擊倍率。","Shadow Precision: 24% critical-hit chance at 170% damage; upgrades raise critical damage."]
+, [`暗影精準：${Math.round(BALANCE.heroes.specialEffects.shadowblade.critChance * 100)}% 暴擊機率，造成 ${Math.round(BALANCE.heroes.specialEffects.shadowblade.critMultiplier * 100)}% 傷害；升級增強暴擊倍率。`,`Shadow Precision: ${Math.round(BALANCE.heroes.specialEffects.shadowblade.critChance * 100)}% critical-hit chance at ${Math.round(BALANCE.heroes.specialEffects.shadowblade.critMultiplier * 100)}% damage; upgrades raise critical damage.`]
 , ["影襲：突襲周圍最多三名敵人，短暫潛行並取得閃避保護。","Shadow Assault: strike up to three nearby enemies, briefly enter stealth, and gain evasion protection."]
 , ["與靈體協同作戰，逐步提升召喚數量與支援能力。","Fight alongside spirits, gradually gaining more summons and stronger support."]
 , ["持續召喚傷害","Sustained summon damage"]

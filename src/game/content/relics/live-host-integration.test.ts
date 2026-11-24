@@ -16,8 +16,8 @@ const mob = (x: number, y: number, hp = 1000, max = hp): Mob => ({
   x, y, type: 'slime', hp, max, r: 18, speed: 0, dmg: 0,
   phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
 })
-function session() {
-  const engine = createEngine({ audio: audio(), contentPacks: [RELICS_PACK] })
+function session(relicsEnabled = true) {
+  const engine = createEngine({ audio: audio(), contentPacks: relicsEnabled ? [RELICS_PACK] : [] })
   engine.start()
   const state = engine.state
   state.mobs.length = 0
@@ -50,6 +50,31 @@ describe('ES2 real game-loop relic effects', () => {
     engine.advance(0.016)
     expect(hp - hero.hp).toBeCloseTo(46.5)
     expect(state.damageTaken).toBeCloseTo(46.5)
+  })
+
+  it.each([false, true])('gives ordinary heroes base critical hits with relics enabled=%s', enabled => {
+    for (const [roll, critical] of [[0.05, true], [0.09, false]] as const) {
+      const { engine, state, hero } = session(enabled)
+      setRandom(() => roll)
+      hero.attack = 0
+      const enemy = mob(hero.x + 28, hero.y)
+      state.mobs.push(enemy)
+      engine.advance(0.016)
+      expect(1000 - enemy.hp).toBeCloseTo(hero.damage * (critical ? 1.5 : 1))
+      expect(state.numberFx.at(-1)?.critical).toBe(critical)
+    }
+  })
+
+  it('adds relic critical chance to the base chance and reports genuine critical hits', () => {
+    const { engine, state, hero } = session()
+    expect(acquireRelic(state, 'relics:ritual-dagger')).toBe(true)
+    setRandom(() => 0.12)
+    hero.attack = 0
+    const enemy = mob(hero.x + 28, hero.y)
+    state.mobs.push(enemy)
+    engine.advance(0.016)
+    expect(1000 - enemy.hp).toBeCloseTo(hero.damage * 1.5)
+    expect(state.numberFx.at(-1)?.critical).toBe(true)
   })
 
   it('makes ritual-dagger crits affect actual attacks instead of metadata only', () => {
