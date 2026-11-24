@@ -116,3 +116,39 @@
 @media(max-width:610px),(orientation:landscape) and (max-height:520px){
   .es2-mastery-stats{margin:4px 8px 0;padding-top:3px;gap:2px}
 }
+
+
+/* Short landscape: one continuous illustrated rarity surface, not a tiny
+   framed thumbnail. Art grows into spare space; text keeps its natural height. */
+@media (orientation:landscape) and (max-height:520px){
+  .es2-skill-card{
+    min-height:clamp(200px,calc(100dvh - 105px),360px);
+    padding:0 0 8px;
+    background:
+      linear-gradient(180deg,transparent 20%,#07111fbb 72%,#07111fef),
+      radial-gradient(ellipse 80% 65% at 50% 20%,var(--es2-skill-aura),transparent 85%),
+      var(--es2-card-bg);
+  }
+  .es2-skill-card .es2-card-art{
+    flex:1 0 clamp(96px,30dvh,144px);
+    height:auto;min-height:0;border:0;
+    background:transparent;box-shadow:none;
+  }
+  .es2-skill-card .es2-card-art::before{
+    inset:12% 16%;transform:none;
+    background:radial-gradient(ellipse,var(--es2-skill-aura),transparent 75%);
+    box-shadow:none;
+  }
+  .es2-skill-card .es2-card-art picture{position:absolute;inset:0}
+  .es2-skill-card .es2-card-art img{object-fit:contain;padding:4px 8px}
+  .es2-skill-card .es2-card-meta{flex:0 0 auto;min-height:24px;padding:2px 9px 0}
+  .es2-skill-card .es2-card-name{font-size:max(13px,calc(.9rem * var(--es2-ui-scale,1)));padding:3px 9px 0}
+  .es2-skill-card .es2-card-level{font-size:max(11px,calc(.72rem * var(--es2-ui-scale,1)));margin:4px 9px 0;padding:2px 5px}
+  .es2-skill-card .es2-card-description,.es2-skill-card .es2-card-requirements{
+    font-size:max(11px,calc(.78rem * var(--es2-ui-scale,1)));
+    line-height:1.35;padding:4px 9px 0;
+  }
+  .es2-skill-card .es2-mastery-stats{margin-inline:9px}
+  .es2-skill-card > :not(.es2-card-art){flex-shrink:0;max-width:100%}
+  .es2-skill-card:hover:not(:disabled),.es2-skill-card.es2-choice-focused{transform:none}
+}
