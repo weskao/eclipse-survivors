@@ -6,7 +6,7 @@ from tempfile import NamedTemporaryFile
 from PIL import Image
 
 
-def convert_png(source):
+def convert_png(source, *, preserve_source=False):
     target = source.with_suffix('.webp')
     result = {'source': str(source), 'target': str(target), 'status': 'kept'}
     if source.is_symlink() or target.is_symlink():
@@ -33,6 +33,10 @@ def convert_png(source):
         status = 'deduplicated' if target.exists() else 'converted'
         if not target.exists():
             candidate.replace(target)
+        if preserve_source:
+            return dict(result, status='display-copy' if status == 'converted' else 'display-reused',
+                        originalBytes=before, webpBytes=target.stat().st_size,
+                        sourcePreserved=True)
         source.unlink()
         return dict(result, status=status, originalBytes=before, webpBytes=target.stat().st_size,
                     savedBytes=before - target.stat().st_size if status == 'converted' else before)
@@ -54,5 +58,40 @@ def main():
     print(json.dumps([convert_png(p) for p in paths if p.is_file()], indent=2))
 
 
+def migrate_c104_display():
+    # These ten originals have immutable source-byte SHA records. Do not delete,
+    # rename or edit them, or change provenance/generation references.
+    import hashlib
+    import re
+    root = Path('assets/images')
+    source = Path('src/game/render/es2/c104-source-art.ts')
+    test = Path('src/game/render/es2/c104-source-art.test.ts')
+    provenance = json.loads(Path('src/assets/es2/production/c104-provenance.json').read_text())
+    inputs = [root / f'imgs{i}.png' for i in range(1, 11)]
+    for path in inputs:
+        if hashlib.sha256(path.read_bytes()).hexdigest() != provenance['sourceAssets'][path.name]:
+            raise RuntimeError(f'Immutable C104 source mismatch: {path}')
+    results = [convert_png(path, preserve_source=True) for path in inputs]
+    print(json.dumps(results, indent=2))
+    if any(result['status'] not in ('display-copy', 'display-reused') for result in results):
+        raise RuntimeError('C104 migration blocked; original sources and consumers unchanged')
+    text = source.read_text()
+    updated, count = re.subn(r'(assets/images/imgs(?:10|[1-9]))\.png(\?url)', r'\1.webp\2', text)
+    if count != 10:
+        raise RuntimeError('Unexpected C104 import inventory')
+    expected = test.read_text()
+    expected = expected.replace('references all ten immutable authored PNGs without leaving any as orphan files', 'uses ten lossless WebP display derivatives while retaining immutable PNG masters')
+    old = r'/\.png(?:\?|$)/'
+    new = r'/\.webp(?:\?|$)/'
+    if expected.count(old) != 1:
+        raise RuntimeError('Unexpected C104 source test')
+    source.write_text(updated)
+    test.write_text(expected.replace(old, new))
+
+
 if __name__ == '__main__':
-    main()
+    import sys
+    if sys.argv[1:] == ['--c104-display']:
+        migrate_c104_display()
+    else:
+        main()

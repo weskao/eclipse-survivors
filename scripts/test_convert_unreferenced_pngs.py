@@ -47,6 +47,21 @@ class ConvertPngTests(unittest.TestCase):
         self.assertFalse(self.png.exists())
         self.assertEqual(target.read_bytes(), before)
 
+    def test_display_copy_preserves_immutable_source_bytes(self):
+        original = self.png.read_bytes()
+        result = convert_png(self.png, preserve_source=True)
+        self.assertEqual(result['status'], 'display-copy')
+        self.assertEqual(self.png.read_bytes(), original)
+        with Image.open(self.png.with_suffix('.webp')) as im:
+            self.assertEqual(im.convert('RGBA').tobytes(), self.image.tobytes())
+
+    def test_display_copy_reuses_equivalent_existing_webp(self):
+        target = self.png.with_suffix('.webp')
+        self.image.save(target, lossless=True, exact=True)
+        original = self.png.read_bytes(), target.read_bytes()
+        self.assertEqual(convert_png(self.png, preserve_source=True)['status'], 'display-reused')
+        self.assertEqual((self.png.read_bytes(), target.read_bytes()), original)
+
     def test_animated_png_is_not_replaced(self):
         self.image.save(self.png, save_all=True, append_images=[Image.new('RGBA', self.image.size, 'blue')], duration=100)
         self.assertEqual(convert_png(self.png)['status'], 'kept')
