@@ -6,6 +6,8 @@ on:
       - 'scripts/es2-boss-attack-video.mjs'
       - '.github/workflows/es2-boss-attack-video.yml'
       - 'src/game/content/bosses/render.ts'
+      - 'src/game/render/es2/boss-motion-reference.ts'
+      - 'src/assets/es2/production/bosses/candidates/motion/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,11 +37,20 @@ jobs:
           for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4174/ >/dev/null
           PREVIEW_URL=http://127.0.0.1:4174/ node scripts/es2-boss-attack-video.mjs
+          BOSS_MOTION_QA=1 PREVIEW_URL=http://127.0.0.1:4174/ node scripts/es2-boss-attack-video.mjs
       - name: Preserve real-gameplay MP4, screenshots and attack timestamps
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: es2-four-boss-all-attacks-real-gameplay-mp4
           path: artifacts/es2-boss-attack-video/
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve actual body-motion reference MP4 and drawn-cell evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: es2-four-boss-source-motion-real-gameplay-mp4
+          path: artifacts/es2-boss-motion-video/
           if-no-files-found: warn
           retention-days: 30

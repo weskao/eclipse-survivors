@@ -22,3 +22,7 @@ Four files in `src/assets/es2/production/bosses/candidates/motion/` contain 72 s
 ## Current runtime size correction — 2026-11-24
 
 The earlier 236px and 878px notes above are historical. The shared base draw width is now 255px; phase scales are 1.00 / 1.12 / 1.24. Current display sizes and native-detail requirements: 255 → 765px, 285.6 → 857px, 316.2 → 949px. For a common frame layout use at least 949px authored interior plus a transparent gutter; a 981px cell with 16px gutters is the minimum. A 960px authored interior / 992px cell is a practical option. Split large animation sequences by pose and phase; do not stretch low-resolution source or count transparent padding as native detail. Keep all canonical static approval evidence unchanged and all missing animation art pending.
+
+## Browser motion proof
+
+The attack-video workflow now captures both the existing VFX review and an independent opt-in source-motion review. The latter observes successful real Canvas `drawImage` calls, checks the selected 672×336 WebP and exact 112px source cells, requires all six distinct slots for every phase of every boss, and records the observed rows in the MP4 evidence JSON. It is not a native-3x or visual-approval test. An actual successful workflow with four MP4s and 72 observed cells is required before claiming source-motion capture complete.
