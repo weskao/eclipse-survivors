@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "ec8b355077a5b1d209e1c2a821a1cf98a84bb9b5",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "phase-2-awakening-key-a",
+      "pose": "transform",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/phase-2-awakening-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "c8fc6822-12a3-4632-925e-fa5dc1fa6a46",
+        "originalPngSha256": "d299b26665d7c78f21dad56380c5085779baee21753c240487e20ee7254e378d",
+        "canonicalReferenceHead": "ec8b355077a5b1d209e1c2a821a1cf98a84bb9b5"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1374,
+      "cellHeight": 1145,
+      "frameRects": [
+        [
+          0,
+          0,
+          1374,
+          1145
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        687.0,
+        572.5
+      ],
+      "alphaBounds": [
+        65,
+        39,
+        1333,
+        1114
+      ],
+      "alphaAnyBounds": [
+        0,
+        25,
+        1358,
+        1145
+      ],
+      "alphaExtent": [
+        1268,
+        1075
+      ],
+      "actualSourceResolution": [
+        1374,
+        1145
+      ],
+      "sourceEdgeMargins": [
+        65,
+        39,
+        41,
+        31
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "c332252cfefbf05312ac27ef8191a3eaab69c296d20bdb6d60b9acf50bff17da",
+      "webpCompressedBytes": 719988,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Phase 1 to Phase 2 transition candidate; intended target phase 2, not verified. Compare canonical dark basalt armor, black chest core and molten halo, anchors and silhouette. Not approved sequence."
+    }
+  ],
+  "missing": [
+    "coherent idle and alternating locomotion loop",
+    "continuous windup, attack and recovery",
+    "phase-specific transformations",
+    "terminal debris fade and death timing",
+    "direction, anchor, visual and runtime QA",
+    "three other bosses"
+  ]
+}
