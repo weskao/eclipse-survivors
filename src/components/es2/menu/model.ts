@@ -1,5 +1,6 @@
 import type { AbilityId, SkillRarity } from '../../../game/types'
 import { upgradeKeyIndex } from '../../../game/input'
+import type { MasteryStatChange } from '../../../game/content/heroes/mastery-preview'
 
 export type MenuView = 'main' | 'relics' | 'progression' | 'monsters' | 'skills' | 'achievements'
 export type ChoiceKind = 'level' | 'evolution' | 'treasure'
@@ -8,6 +9,7 @@ export interface MenuChoice {
   id: string
   title: string
   description?: string
+  statChanges?: readonly MasteryStatChange[]
   icon?: string
   imageSrc?: string
   reducedMotionSrc?: string

@@ -4,6 +4,7 @@ import { nextTick, type Component } from 'vue'
 import Es2ChoiceDialog from './Es2ChoiceDialog.vue'
 import Es2Dialog from './Es2Dialog.vue'
 import type { MenuChoice } from './model'
+import { heroMasteryPreview } from '../../../game/content/heroes/mastery-preview'
 
 const choices: MenuChoice[] = [
   { id: 'bolt', title: '閃電術', rarity: 'common', icon: '✦', level: 1, maxLevel: 5 },
@@ -24,6 +25,20 @@ function mounted(component: Component, props: Record<string, unknown>) {
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount(); document.body.innerHTML = '' })
 
 describe('ES2 upgrade and reward picker', () => {
+  it('renders real mastery comparisons on the mastery card only', async () => {
+    const mastery: MenuChoice = {
+      id: 'heroes:shadow-precision', title: '影刃行者 · 專精', rarity: 'rare', level: 0, maxLevel: 3,
+      statChanges: heroMasteryPreview('heroes:shadow-precision', 0, 3),
+    }
+    mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: [mastery, ...choices.slice(0, 2)] })
+    await nextTick()
+    const stats = button(mastery.id).querySelectorAll('.es2-mastery-stat')
+    expect(stats).toHaveLength(2)
+    expect(stats[0]?.textContent).toContain('170% → 188%')
+    expect(stats[1]?.textContent).toContain('140% → 144.5%')
+    expect(button('bolt').querySelector('.es2-mastery-stats')).toBeNull()
+  })
+
   it('shows rarity, actual art, levels, requirements and disables unavailable evolution', async () => {
     mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
     await nextTick()

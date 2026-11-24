@@ -1,4 +1,5 @@
 import { BALANCE } from '../../config'
+import { HERO_MASTERY_DESCRIPTIONS } from './mastery-preview'
 import { damageHero, hit } from '../../combat'
 import { impact, burst } from '../../fx'
 import { random as simulationRandom } from '../../math'
@@ -102,7 +103,7 @@ const abilities: ContentAbility[] = HERO_LIST.flatMap((def): ContentAbility[] =>
   },
   {
     id: def.progressionAbility, kind: 'ability', icon: '✧', title: def.label + ' · 專精',
-    desc: '提升英雄獨有的被動能力', rarity: 'rare', maxLevel: 3,
+    desc: HERO_MASTERY_DESCRIPTIONS[def.id], rarity: 'rare', maxLevel: 3,
     requires: [{ id: def.startingAbility, level: 1 }],
     eligible: state => (state.content.levels[def.startingAbility] ?? 0) > 0,
   },
