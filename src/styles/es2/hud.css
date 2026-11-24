@@ -57,6 +57,8 @@
   padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
 }
 .es2-hud__hero { display: flex; gap: 11px; width: min(360px, 43vw); padding: 12px; min-width: 0; }
+.es2-hud__encounter-stack { display: contents; }
+.es2-hud__scene-title { display: none; }
 .es2-hud__portrait {
   position: relative; width: 82px; height: 90px; flex: 0 0 82px; overflow: hidden;
   border: 1px solid #d1ab70; border-radius: 10px 10px 18px 10px;
@@ -269,6 +271,7 @@
 @media (max-width: 700px) {
   .es2-hud {
     font-size: 12px;
+    --es2-hud-controls-width: 104px;
     --es2-encounter-top: max(140px, calc(env(safe-area-inset-top) + 128px));
     --es2-side-top: max(276px, calc(env(safe-area-inset-top) + 265px));
     --es2-status-top: var(--es2-side-top);
@@ -279,13 +282,12 @@
   .es2-hud__portrait { width: 54px; flex-basis: 54px; height: 68px; }
   .es2-hud__identity { margin-bottom: 3px; }
   .es2-hud__identity strong { font-size: 12px; }
-  .es2-hud__eyebrow { font-size: 8px; }
-  .es2-hud__health-head { font-size: 9px; margin: 1px 0 2px; }
+  .es2-hud__health-head { margin: 1px 0 2px; }
   .es2-hud__health-head--xp { margin-top: 3px; }
   .es2-hud__track { height: 8px; }
   .es2-hud__track--xp { height: 6px; }
   .es2-hud__top-right { display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 5px; }
-  .es2-hud__controls { padding: 2px; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: 104px; }
+  .es2-hud__controls { padding: 2px; gap: 3px; flex-wrap: wrap; justify-content: flex-end; max-width: var(--es2-hud-controls-width); }
   .es2-hud__controls .es2-hud__control-button { width: 44px; min-height: 44px; font-size: 17px; }
   .es2-hud__counters { padding: 4px; gap: 3px; }
   .es2-hud__counter { min-width: 38px; grid-template-columns: 12px auto; }
@@ -329,7 +331,7 @@
   .es2-hud__portrait { width: 48px; height: 58px; flex-basis: 48px; }
   .es2-hud__identity { margin-bottom: 3px; }
   .es2-hud__identity strong { font-size: 11px; }
-  .es2-hud__eyebrow { font-size: 8px; letter-spacing: .05em; }
+  .es2-hud__eyebrow { letter-spacing: .05em; }
   .es2-hud__health-head--xp { margin-top: 3px; }
   .es2-hud__top-right { flex-direction: column-reverse; align-items: flex-end; gap: 4px; }
   .es2-hud__controls { padding: 2px; }
@@ -339,7 +341,7 @@
   .es2-hud__map { display: none; }
   .es2-hud__encounter { width: min(38vw, 330px); gap: 4px; }
   .es2-hud__boss { padding: 5px 8px 6px; }
-  .es2-hud__boss-heading { font-size: 10px; margin-bottom: 3px; }
+  .es2-hud__boss-heading { font-size: 11px; margin-bottom: 3px; }
   .es2-hud__track--boss { height: 8px; }
   .es2-hud__wave { padding: 4px 7px; }
   .es2-hud__wave strong { font-size: 10px; }
@@ -437,6 +439,28 @@
   .es2-hud__info-drawer { bottom: max(116px, calc(env(safe-area-inset-bottom) + 105px)); }
 }
 
+@media (orientation: portrait) and (max-width: 700px),
+       (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
+  .es2-hud__encounter { position: static; transform: none; width: auto; }
+  .es2-hud__scene-title {
+    display: block; text-align: center; color: #fff0cd;
+    font: 700 max(11px, calc(13px * var(--es2-ui-scale, 1)))/1.2 Georgia, 'Noto Serif TC', serif;
+    text-shadow: 0 1px 3px #000, 0 0 6px #000; overflow-wrap: anywhere;
+  }
+}
+@media (orientation: portrait) and (max-width: 700px) {
+  .es2-hud__top {
+    display: grid; grid-template-columns: minmax(0, 205px) var(--es2-hud-controls-width);
+    grid-template-rows: max-content auto; row-gap: 5px;
+  }
+  .es2-hud__hero { grid-area: 1 / 1; width: 100%; }
+  .es2-hud__top-right { grid-area: 1 / 2 / span 2; }
+  .es2-hud__counters { padding-block: 2px; }
+  .es2-hud__identity strong { white-space: normal; overflow-wrap: anywhere; }
+  .es2-hud__scene-title { grid-area: 2 / 1; }
+  .es2-hud__encounter { grid-area: 3 / 1 / auto / -1; }
+}
+
 /* The same compact information drawer protects both phone orientations.
    Landscape overrides only the geometry; no duplicate HUD or input state. */
 @media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
@@ -445,7 +469,12 @@
     --es2-compact-info-top: max(116px, calc(env(safe-area-inset-top) + 105px));
   }
   .es2-hud__hero { width: min(29vw, 230px); }
-  .es2-hud__encounter { width: min(38vw, 330px); }
+  .es2-hud__encounter-stack {
+    display: block; position: absolute; top: var(--es2-encounter-top); left: 50%; transform: translateX(-50%);
+    width: min(38vw, 330px, calc(42vw - 2 * max(10px, env(safe-area-inset-left), env(safe-area-inset-right))));
+  }
+  .es2-hud__scene-title { margin-top: 11px; }
+  .es2-hud__encounter + .es2-hud__scene-title { margin-top: 4px; }
   /* Below the portrait, outside the top-right menu and right-hand special action. */
   .es2-hud__info-toggle { left: max(8px, env(safe-area-inset-left)); right: auto; }
   .es2-hud__info-drawer {
@@ -529,9 +558,20 @@
 @media (orientation: landscape) and (max-height: 520px) {
   .es2-hud__boss-warning { width: min(320px, 100%); padding: 5px 8px 6px; }
   .es2-hud__boss-warning-sigil { width: 27px; height: 27px; flex-basis: 27px; font-size: 15px; }
-  .es2-hud__boss-warning-text > span { font-size: 8px; letter-spacing: .06em; }
+  .es2-hud__boss-warning-text > span { letter-spacing: .06em; }
   .es2-hud__boss-warning-count b { font-size: 16px; }
   .es2-hud__boss-warning-track { margin-top: 4px; }
+}
+@media (max-width: 700px), (orientation: landscape) and (max-height: 520px) {
+  .es2-hud__eyebrow, .es2-hud__counter small, .es2-hud__health-head, .es2-hud__boss-phase,
+  .es2-hud__boss-pointer-distance, .es2-hud__boss-warning-text > span, .es2-hud__boss-warning-count small,
+  .es2-hud__section-label, .es2-hud__equipment-head small, .es2-hud__skill-level,
+  .es2-hud__status, .es2-hud__status small, .es2-hud__objectives, .es2-hud__notice {
+    font-size: max(11px, calc(11px * var(--es2-ui-scale, 1)));
+  }
+  .es2-hud__health-head { align-items: center; line-height: 1.2; }
+  .es2-hud__health-head > :last-child { white-space: nowrap; }
+  .es2-hud__counter { grid-template-rows: auto auto; line-height: 1.2; }
 }
 @media (prefers-reduced-motion: reduce) {
   .es2-hud__boss-warning--urgent .es2-hud__boss-warning-sigil { animation: none; }

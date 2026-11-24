@@ -116,9 +116,13 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillRect(0, 0, W, H)
   if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
   drawWorldMarkers(ctx, s, ox, oy, assets.productionWorld)
-  ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
-  ctx.fillText(t(scene.name) + ' · ' + t(scene.label), W / 2, 34)
-  ctx.restore()
+  // These match the compact title breakpoints in hud.css.
+  const compactHud = W <= H ? W <= 700 : W <= 900 && H <= 520
+  if (!hero || !compactHud) {
+    ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
+    ctx.fillText(t(scene.name) + ' · ' + t(scene.label), W / 2, 34)
+    ctx.restore()
+  }
   if (!hero) {
     const shadow = ctx.createRadialGradient(W / 2, H * 0.49, 55, W / 2, H * 0.49, Math.max(W, H) * 0.76)
     shadow.addColorStop(0, '#090f1207'); shadow.addColorStop(1, '#03070ab8')

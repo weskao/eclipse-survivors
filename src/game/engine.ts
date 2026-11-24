@@ -361,6 +361,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const hero = s.hero
     if (!hero) return
     const sc = currentSceneInfo(s)
+    const sceneTitle = `${sc.name} · ${sc.label}`
     const boss = s.mobs.find(e => e.type === 'boss' && e.hp > 0)
     const xpPct = minmax(hero.xp / hero.need * 100, 0, 100)
     ui.hud = {
@@ -371,7 +372,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       kill: s.kill,
       timer: `${pad2(Math.floor(s.time / 60))}:${pad2(Math.floor(s.time % 60))}`,
       bossPct: boss ? Math.max(0, boss.hp / boss.max * 100) : null,
-      quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
+      sceneTitle,
+      quest: boss ? `最終決戰 · ${sc.name}` : sceneTitle,
       skills: equippedSkillHud(hero, contentRegistry, s),
     }
     ui.heroSpecial = heroSpecialization?.snapshot() ?? null
