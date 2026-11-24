@@ -1,0 +1,40 @@
+name: ES2 one-time Summoner candidate mist repair
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths: ['.github/workflows/es2-summoner-mist-repair.yml']
+permissions:
+  contents: read
+jobs:
+  repair:
+    if: github.repository == 'weskao/eclipse-survivors' && github.ref == 'refs/heads/feature/es2-release-readiness-integration'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install --disable-pip-version-check Pillow==12.3.0
+      - name: Test the repair without changing the original artwork
+        run: |
+          cd scripts/es2
+          python -m unittest -v test_pack_hero_candidate test_repair_summoner_candidate
+      - name: Reproduce the repaired native-size atlas and fast-forward the intended branch once
+        env:
+          TARGET: feature/es2-release-readiness-integration
+        run: |
+          set -euo pipefail
+          root=src/assets/es2/production/heroes/spirit-summoner/candidates
+          out="$root/south-2026-11-24-mist-repair"
+          if test -e "$out"; then echo 'Candidate already exists; no changes'; exit 0; fi
+          test "$(git ls-remote origin "refs/heads/$TARGET" | cut -f1)" = "$GITHUB_SHA"
+          python scripts/es2/repair_summoner_candidate.py "$root/south-2026-11-24-batch-2/source.png" "$out" --expected-sha 24b43f51c7487b208871926e4cb1f762a6692a005d3ff4631f5d051372ab9d6b
+          git diff --exit-code
+          git add -- "$out"
+          test "$(git diff --cached --name-only | wc -l)" -eq 3
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Add repaired native-size Summoner South-run QA candidate'
+          test "$(git ls-remote origin "refs/heads/$TARGET" | cut -f1)" = "$GITHUB_SHA"
+          git push origin "HEAD:refs/heads/$TARGET"
