@@ -59,7 +59,7 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     special: '影襲：突襲周圍最多三名敵人，短暫潛行並取得閃避保護。',
     specialCooldown: BALANCE.heroes.specialCooldowns.shadowblade,
     animation: { idle: 'shadow-breath', attack: 'dual-blade-slash', special: 'shadow-afterimages' },
-    audio: { attack: 'knight', special: 'dash' },
+    audio: { attack: 'knight', special: 'shadowblade-special' },
   },
   'spirit-summoner': {
     id: 'spirit-summoner', label: '靈契召喚師', subtitle: 'Spirit Summoner',
@@ -73,7 +73,7 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     special: '靈潮集結：靈體集中攻擊周圍目標並恢復少量生命。',
     specialCooldown: BALANCE.heroes.specialCooldowns['spirit-summoner'],
     animation: { idle: 'floating-grimoire', attack: 'spirit-cast', special: 'spectral-convergence' },
-    audio: { attack: 'wizard', special: 'vortex' },
+    audio: { attack: 'wizard', special: 'spirit-summoner-special' },
   },
   'crimson-paladin': {
     id: 'crimson-paladin', label: '緋紅聖騎', subtitle: 'Crimson Paladin',
@@ -87,7 +87,7 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     special: '血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；生命低時反擊更強。',
     specialCooldown: BALANCE.heroes.specialCooldowns['crimson-paladin'],
     animation: { idle: 'shield-vigil', attack: 'shield-counter', special: 'crimson-aegis' },
-    audio: { attack: 'knight', special: 'knight' },
+    audio: { attack: 'knight', special: 'crimson-paladin-special' },
   },
 })
 

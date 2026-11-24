@@ -574,3 +574,25 @@ describe('hero art capture East encounter', () => {
     }
   })
 })
+
+describe('hero active skill audio', () => {
+  it.each([
+    ['shadowblade', 'shadowblade-special'],
+    ['spirit-summoner', 'spirit-summoner-special'],
+    ['crimson-paladin', 'crimson-paladin-special'],
+  ] as const)('plays only the dedicated cast cue for %s on success', (hero, cue) => {
+    engine.selectHero(hero)
+    engine.selectRunMode('standard')
+    engine.start()
+    engine.state.mobs = []
+    engine.togglePause()
+    audio.cues.length = 0
+    expect(engine.activateHeroSpecial()).toBe(false)
+    expect(audio.cues).toEqual([])
+    engine.togglePause()
+    audio.cues.length = 0
+    expect(engine.activateHeroSpecial()).toBe(true)
+    expect(engine.activateHeroSpecial()).toBe(false)
+    expect(audio.cues).toEqual([cue])
+  })
+})

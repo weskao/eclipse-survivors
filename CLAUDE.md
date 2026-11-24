@@ -11,7 +11,7 @@ Each requirement lives in exactly one file below. Files under `.claude/rules/` w
 | ANY player-facing UI — every device: desktop, mobile portrait/landscape, tablet, foldable (hinge), safe-area, no occlusion, player-perspective visual review, 11 px text floor, start action visible | [`.claude/rules/ui-responsive-layout.md`](.claude/rules/ui-responsive-layout.md) |
 | Settings, menus, dropdowns, dialogs, pickers (no native browser UI) | [`.claude/rules/no-native-ui.md`](.claude/rules/no-native-ui.md) |
 | Any visible text, ARIA/`alt` label, reward name (`en` / `zh-TW`) | [`.claude/rules/bilingual-copy.md`](.claude/rules/bilingual-copy.md) |
-| Any UI interaction, flow or music transition (audio cue review) | [`.claude/rules/ui-audio.md`](.claude/rules/ui-audio.md) |
+| Any UI interaction, flow, music transition, or hero active skill (mandatory unique cast SFX, Q/touch parity) | [`.claude/rules/ui-audio.md`](.claude/rules/ui-audio.md) |
 | Any gameplay number: heroes, XP, skills, weapons, enemies, events, bosses, relics, 「永久強化」/暮光餘燼 | [`.claude/rules/game-balance-config.md`](.claude/rules/game-balance-config.md) |
 | Game logic, AI, combat, collisions, world, rendering, VFX, perf-critical UI | [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md) (§8 = VFX performance gate) |
 | Any character CRUD: heroes, enemies, bosses, NPCs, summons, portraits, animations (native 3× art at 1×; five authored facings first; independent asymmetric facings when required; verified mirror reuse, no redundant sheets) | [`.claude/rules/character-art-3x.md`](.claude/rules/character-art-3x.md) (§5 = CRUD gate) |

@@ -3,7 +3,7 @@ import type { SfxCue } from '../types'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
 
 // Copied from the original game.js `sfxCooldown` table.
-const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'deny'>, number> = {
+const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'deny' | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'>, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, boss: 0.8, bossDefeat: 0.8,
   hurt: 0.28, pickup: 0.16, scene: 0.45, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
@@ -11,9 +11,22 @@ const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'deny'>, number> = {
 
 describe('sfx tables', () => {
   it('cooldowns match game.js', () => {
-    const { deny, ...legacy } = SFX_COOLDOWN
+    const { deny, 'shadowblade-special': shadow, 'spirit-summoner-special': spirit, 'crimson-paladin-special': paladin, ...legacy } = SFX_COOLDOWN
+    expect([shadow, spirit, paladin]).toEqual([0.55, 0.9, 0.75])
     expect(legacy).toEqual(ORIGINAL_COOLDOWN)
     expect(deny).toBe(0.22)
+  })
+
+  it('hero casts have distinct, finite, bounded one-shot signatures', () => {
+    const cues = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'] as const
+    const signatures = cues.map(cue => SFX_CUES[cue])
+    expect(new Set(signatures.map(notes => JSON.stringify(notes))).size).toBe(3)
+    for (const notes of signatures) {
+      expect(notes.length).toBeGreaterThanOrEqual(3)
+      expect(notes.length).toBeLessThanOrEqual(6)
+      expect(notes[0]?.[1]).toBe(0)
+      expect(notes.every(([, delay, duration, gain]) => delay >= 0 && duration > 0 && delay + duration <= 1.2 && gain > 0 && gain <= 0.085)).toBe(true)
+    }
   })
 
   it('every cue has at least one tone and the original cue count', () => {

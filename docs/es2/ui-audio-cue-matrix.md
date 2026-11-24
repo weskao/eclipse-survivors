@@ -8,6 +8,9 @@ Implementation branch: `feature/es2-release-readiness-integration`. One Web Audi
 | Desktop hover across a new button (not its children) | `hover` | Delegated pointerover; limited by shared cooldown |
 | Hero selection (original and special), run mode change | `select` | Engine validated command |
 | Local archive tabs, dropdown option, and non-gameplay selection | `select` | `data-ui-sfx="select"` |
+| Shadowblade — Shadow Assault (影襲), Q / touch | `shadowblade-special` | Successful hero cast; paired blade accents, dark pulse |
+| Spirit Summoner — 靈潮集結, Q / touch | `spirit-summoner-special` | Successful hero cast; rising spectral resonance |
+| Crimson Paladin — 血誓屏障, Q / touch | `crimson-paladin-special` | Successful hero cast; shield impact and protective chord |
 | Start / retry expedition | `start` | Engine |
 | Pause / resume / game-home request | `pause` / `resume` | Engine |
 | Level-up opening | `level` | Engine |

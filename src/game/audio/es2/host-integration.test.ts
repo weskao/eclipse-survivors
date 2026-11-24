@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createAudioSystem } from '../engine'
+import { SFX_CUES } from '../sfx'
 import { FakeAudioContext } from '../fakeAudio'
 import type { ToneFn } from '../music'
 import type { AudioSystem, BgmElement } from '../types'
@@ -34,6 +35,35 @@ function setup() {
 }
 
 describe('ES2 final host audio wiring', () => {
+  it.each([
+    ['shadowblade', 'shadowblade-special'],
+    ['spirit-summoner', 'spirit-summoner-special'],
+    ['crimson-paladin', 'crimson-paladin-special'],
+  ] as const)('plays the dedicated %s sound via the shared SFX bus and respects mute', (hero, cue) => {
+    const { audio, context, created } = setup()
+    const engine = createEngine({ audio, contentPacks: [] })
+    engine.selectHero(hero)
+    engine.selectRunMode('standard')
+    engine.start()
+    engine.state.mobs = []
+    const before = context.oscillators.length
+    expect(engine.activateHeroSpecial()).toBe(true)
+    const notes = context.oscillators.slice(before)
+    expect(notes.map(note => Math.round(69 + 12 * Math.log2(note.frequency.value / 440))))
+      .toEqual(SFX_CUES[cue].map(([pitch]) => pitch))
+    expect(engine.activateHeroSpecial()).toBe(false)
+    expect(context.oscillators.length).toBe(before + notes.length)
+    engine.goMenu()
+    engine.start()
+    engine.state.mobs = []
+    audio.setSfxVolume(0)
+    const muted = context.oscillators.length
+    expect(engine.activateHeroSpecial()).toBe(true)
+    expect(context.oscillators.length).toBe(muted)
+    expect(created()).toBe(1)
+    audio.dispose()
+  })
+
   it('reuses exactly one existing AudioContext and never runs the old score beside the ES2 score', () => {
     const { audio, bgm, menu, context, created } = setup()
     const host = audio as AudioSystem & HostScoreControls

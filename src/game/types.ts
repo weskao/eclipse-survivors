@@ -17,11 +17,12 @@ export type SkillRarity = 'common' | 'rare' | 'legendary'
 export type Weather = 'sunshower' | 'storm' | 'snow' | 'embers'
 export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard'
 
-/** Every SFX cue name in the original `sfxCues` / `sfxCooldown` tables. */
+/** Shared gameplay and UI SFX cues, including hero-specific active skills. */
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
+  | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 
 export interface JobDef { label: string; hp: number; speed: number; damage: number; delay: number; range: number }
 /** Original tuple `[id, icon, title, desc]` as a named record. */
