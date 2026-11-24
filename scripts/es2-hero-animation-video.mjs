@@ -95,6 +95,35 @@ try {
       await page.keyboard.up('KeyD')
       await page.evaluate(() => window.__test?.forceAttack())
       await page.waitForTimeout(650)
+      if (candidateQA) {
+        // Exercise every selected run atlas using ordinary movement input. Retry
+        // missing cells only, with a bounded time budget; never synthesize evidence.
+        for (const [name, field, keys] of [
+          ['east', 'eastRunFrames', ['KeyD']],
+          ['south', 'southRunFrames', ['KeyS']],
+          ['se', 'southeastRunFrames', ['KeyS', 'KeyD']],
+          ['sw', 'southwestRunFrames', ['KeyS', 'KeyA']],
+        ]) {
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const coverage = assessHeroCandidateCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
+            if (attempt > 0 && coverage[field] === 4) break
+            for (let i = 0; i < 8; i++) {
+              const choice = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
+              if (!await choice.isVisible()) break
+              await choice.click()
+            }
+            if (await page.evaluate(() => window.__test?.mode) !== 'play') break
+            try {
+              for (const key of keys) await page.keyboard.down(key)
+              await page.waitForTimeout(1600)
+              await page.screenshot({ path: `${output}/${heroId}-${name}-run-gameplay.png` })
+              await page.waitForTimeout(500)
+            } finally {
+              for (const key of keys) await page.keyboard.up(key)
+            }
+          }
+        }
+      }
       const ending = await page.evaluate(() => window.__test?.frames ?? 0)
       const candidateCoverage = candidateQA
         ? assessHeroCandidateCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
@@ -102,9 +131,6 @@ try {
       metrics = { heroId, artStatus: capture.status, canvasFramesRendered: ending - beginning,
         elapsedRecordedSeconds: Math.round((Date.now() - startedAt) / 100) / 10,
         candidateCoverage, browserErrors: errors }
-      if (candidateQA) assert.ok(candidateCoverage.hasBothDirections,
-        heroId + ': candidate East/South running atlases were not both really drawn: ' +
-        JSON.stringify(candidateCoverage))
       assert.ok(metrics.canvasFramesRendered > 30, heroId + ': game Canvas stopped drawing')
       assert.deepEqual(errors, [], heroId + ': unexpected page script errors')
       video = page.video()
@@ -124,3 +150,11 @@ try {
   await browser.close()
 }
 await writeFile(`${output}/capture-metrics.json`, JSON.stringify(results, null, 2) + '\n')
+
+// Preserve all three recordings and metrics even if a candidate frame is missing.
+// A green capture means each of the four staged cells was actually drawn for
+// each of the four available run directions, not that the full art is approved.
+if (candidateQA) {
+  const incomplete = results.filter(result => !result.candidateCoverage.hasAllFourRunCandidateFrames)
+  assert.deepEqual(incomplete, [], 'Incomplete real Canvas run-candidate coverage')
+}
