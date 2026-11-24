@@ -1,0 +1,79 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "pose": "run",
+  "direction": "S",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "frameCount": 4,
+  "sourceSHA256": "31b20947e592b69c30376f770d43eab43d67a786ac168e942c9ef84a84ca786d",
+  "webpSHA256": "7920e591d05d876486c694bb7ef87b209ae4f0168a7d2fb297214469285c8274",
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        144,
+        34,
+        504,
+        520
+      ],
+      "rgbaSHA256": "333200b0549969f43c9be56079d343eaebb2e6f03d3cc901c380420371e9b945",
+      "clearedMarginPixels": 52,
+      "outputRGBA256": "970740975eaf582b8ed4b900c23379ebb103f47ba64211fc8b833279a0e11c92"
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        150,
+        39,
+        502,
+        545
+      ],
+      "rgbaSHA256": "1616ce46ba59b388952957c34568afd7b390bb65893e45f34dbf7bd58c8ffa4a",
+      "clearedMarginPixels": 67,
+      "outputRGBA256": "cc3a85dadd08b8fd453685ebda6c01c8d8af98691bf0ac7c59059967205fcb94"
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        126,
+        49,
+        521,
+        529
+      ],
+      "rgbaSHA256": "a7a23d82692a8b7ba3020b0597381ba4c3d90d77610aab55254f4264c706914b",
+      "clearedMarginPixels": 204,
+      "outputRGBA256": "ace2530beae98ece95513f0ead15c3f831042f03e83de760823f5e6c1ac1c868"
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        99,
+        50,
+        519,
+        564
+      ],
+      "rgbaSHA256": "75ed4584f472a1251308d88a34f686b8b73a1628426b9b0375aea453c996d1d5",
+      "clearedMarginPixels": 119,
+      "outputRGBA256": "2c92742f14020c703dbfb43b05ba54336600f0a9346184a3a5f0120e15abb2da"
+    }
+  ]
+}
