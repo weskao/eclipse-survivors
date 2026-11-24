@@ -140,4 +140,11 @@ describe('compact portrait combat HUD regression', () => {
     // 812×375 / 932×430 phones: the 160px desktop button overflowed the 100px landscape column.
     expect(special).toMatch(/@media \(max-width: 760px\), \(orientation: landscape\) and \(max-height: 440px\) \{\s*\.es2-hero-special__button \{ min-width: 66px; width: 66px;/)
   })
+
+  it('keeps the special button in place when stealth/barrier/spirit status chips appear after a cast', () => {
+    const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    // Chips in the button's flex row pushed it 25–115px on cast; they must sit outside the flow.
+    expect(special).toMatch(/<div class="es2-hero-special__statuses">\s*<span v-if="snapshot\.stealth/)
+    expect(special).toMatch(/\.es2-hero-special__statuses \{ position: absolute;/)
+  })
 })

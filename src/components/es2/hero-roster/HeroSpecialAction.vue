@@ -41,9 +41,11 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
       <span class="es2-hero-special__hint">{{ t(ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放') }}</span>
       <span class="es2-hero-special__fill" aria-hidden="true" :style="{ width: progress + '%' }"></span>
     </button>
-    <span v-if="snapshot.stealth > 0" class="es2-hero-special__status" role="status">{{ t("潛行") }} {{ snapshot.stealth.toFixed(1) }} {{ t("秒") }}</span>
-    <span v-if="snapshot.barrier > 0" class="es2-hero-special__status" role="status">{{ t("屏障") }} {{ Math.ceil(snapshot.barrier) }}</span>
-    <span v-if="snapshot.companions.length" class="es2-hero-special__status" role="status">{{ t("靈體") }} {{ snapshot.companions.length }} / 3</span>
+    <div class="es2-hero-special__statuses">
+      <span v-if="snapshot.stealth > 0" class="es2-hero-special__status" role="status">{{ t("潛行") }} {{ snapshot.stealth.toFixed(1) }} {{ t("秒") }}</span>
+      <span v-if="snapshot.barrier > 0" class="es2-hero-special__status" role="status">{{ t("屏障") }} {{ Math.ceil(snapshot.barrier) }}</span>
+      <span v-if="snapshot.companions.length" class="es2-hero-special__status" role="status">{{ t("靈體") }} {{ snapshot.companions.length }} / 3</span>
+    </div>
   </div>
 </template>
 
@@ -109,6 +111,8 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special__hint { color: var(--es2-special-light); }
 .es2-hero-special__icon { filter: drop-shadow(0 0 4px #ffffff44); }
 @keyframes es2-special-sheen { 0%, 63%, 100% { transform: translateX(-90%); } 85% { transform: translateX(90%); } }
+/* Out of flow so chips appearing after a cast never move the button. */
+.es2-hero-special__statuses { position: absolute; right: calc(100% + .45rem); bottom: 0; display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; white-space: nowrap; pointer-events: none; }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }
 @media (prefers-reduced-motion: reduce) {
   .es2-hero-special__fill { transition: none; }
@@ -118,11 +122,13 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 @media (orientation: portrait) and (max-width: 760px) {
   .es2-hero-special { right: max(12px, env(safe-area-inset-right)); bottom: calc(151px + env(safe-area-inset-bottom)); max-width: 112px; flex-direction: column; align-items: flex-end; }
   .es2-hero-special[data-side="right"] { right: auto; left: max(12px, env(safe-area-inset-left)); align-items: flex-start; }
+  .es2-hero-special[data-side="right"] .es2-hero-special__statuses { right: auto; left: calc(100% + .45rem); align-items: flex-start; }
   .es2-hero-special__status { font-size: 10px; padding: 2px 5px; }
 }
 @media (orientation: landscape) and (max-height: 440px) {
   .es2-hero-special { right: max(8px, env(safe-area-inset-right)); bottom: calc(94px + env(safe-area-inset-bottom)); max-width: 100px; }
   .es2-hero-special[data-side="right"] { right: auto; left: max(8px, env(safe-area-inset-left)); }
+  .es2-hero-special[data-side="right"] .es2-hero-special__statuses { right: auto; left: calc(100% + .45rem); align-items: flex-start; }
   .es2-hero-special__status { font-size: 10px; padding: 2px 5px; }
 }
 </style>
