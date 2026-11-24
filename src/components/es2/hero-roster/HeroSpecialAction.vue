@@ -58,7 +58,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special__name, .es2-hero-special__hint { position: relative; z-index: 1; grid-column: 2; }
 .es2-hero-special__name { grid-row: 1; }
 .es2-hero-special__hint { grid-row: 2; }
-@media (max-width: 760px) {
+@media (max-width: 760px), (orientation: landscape) and (max-height: 440px) {
   .es2-hero-special__button { min-width: 66px; width: 66px; min-height: 66px; grid-template-columns: 1fr; grid-template-rows: 44px auto; justify-items: center; padding: .25rem; }
   .es2-hero-special__icon { grid-column: 1; grid-row: 1; }
   .es2-hero-special__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

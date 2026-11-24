@@ -134,4 +134,10 @@ describe('compact portrait combat HUD regression', () => {
     expect(special).toContain('data-side')
     expect(app).toContain(':joystick-side="accessibilityPreferences.joystickSide"')
   })
+
+  it('uses the compact portrait special button in phone landscape wider than 760px instead of clipping it', () => {
+    const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    // 812×375 / 932×430 phones: the 160px desktop button overflowed the 100px landscape column.
+    expect(special).toMatch(/@media \(max-width: 760px\), \(orientation: landscape\) and \(max-height: 440px\) \{\s*\.es2-hero-special__button \{ min-width: 66px; width: 66px;/)
+  })
 })
