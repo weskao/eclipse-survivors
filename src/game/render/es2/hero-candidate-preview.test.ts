@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -10,6 +11,21 @@ afterEach(() => {
 })
 
 describe('ES2 candidate review inventory', () => {
+  it('preserves the uploaded NW WebP and does not waive the manifest review gate', () => {
+    const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-6')
+    const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
+    const atlas = readFileSync(resolve(dir, 'run-nw-4frames@3x.webp'))
+    expect(createHash('sha256').update(atlas).digest('hex')).toBe(m.webpSHA256)
+    expect(atlas.length).toBe(m.bytes)
+    expect(m.atlasPixels).toEqual([1536, 1536])
+    expect(m.outputCellPixels).toEqual([768, 768])
+    expect(m.frameCount).toBe(4)
+    expect(m.eligibleForDevWiring).toBe(false)
+    expect(m.qaGameplayApplied).toBe(false)
+    expect(m.runtimeApplied).toBe(false)
+    expect(m.status).toBe('QA_PENDING')
+  })
+
   it('describes the real committed East/South candidate count in its accessible preview', async () => {
     const html = readFileSync(resolve(process.cwd(), 'src/game/render/es2/hero-candidate-preview.html'), 'utf8')
     expect(html).toContain('id="candidate-summary"')

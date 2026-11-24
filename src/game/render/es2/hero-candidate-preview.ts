@@ -1,4 +1,5 @@
 import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atlas'
+import summonerNWReview from '../../../assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-6/run-nw-4frames@3x.webp'
 
 const grid = document.querySelector<HTMLElement>('#grid')!
 const eastCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'E').length
@@ -6,7 +7,7 @@ const southCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'S
 const diagonalCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'SE' || asset.direction === 'SW').length
 const northernCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'N' || asset.direction === 'NE' || asset.direction === 'NW').length
 document.querySelector<HTMLElement>('#candidate-summary')!.textContent =
-  `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing, ${southCount} South-facing and ${diagonalCount} diagonal four-frame strips; ${northernCount} northern four-frame strips.`
+  `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing, ${southCount} South-facing and ${diagonalCount} diagonal four-frame strips; ${northernCount} northern four-frame strips. Two extra NW comparison panels are review-only.`
 grid.setAttribute('aria-label', `${HERO_CANDIDATE_ATLASES.length} candidate animation strips`)
 
 const pause = document.querySelector<HTMLButtonElement>('#pause')!
@@ -20,35 +21,71 @@ let frame = 0
 let prior = 0
 let scheduled = false
 
-const tiles = HERO_CANDIDATE_ATLASES.map(({ hero, pose, direction, url, cellPixels }) => {
+// Batch 6 is explicitly blocked from gameplay. Compare the authored NW with a
+// reflection of the admitted NE source without adding either to the runtime registry.
+type PreviewClip = {
+  hero: string; pose: string; direction: string; url: string; cellPixels: 704 | 768
+  reviewKind?: string; mirrored?: boolean
+}
+const previewClips: PreviewClip[] = [...HERO_CANDIDATE_ATLASES]
+const summonerNE = HERO_CANDIDATE_ATLASES.find(c =>
+  c.hero === 'spirit-summoner' && c.pose === 'run' && c.direction === 'NE')
+previewClips.push({
+  hero: 'spirit-summoner', pose: 'run', direction: 'NW', url: summonerNWReview,
+  cellPixels: 768, reviewKind: 'batch-6-nw',
+})
+if (summonerNE) previewClips.push({
+  ...summonerNE, direction: 'NW', reviewKind: 'ne-reflected-nw', mirrored: true,
+})
+const decodedSources = new Map<string, HTMLImageElement>()
+const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, reviewKind, mirrored = false }) => {
   const article = document.createElement('article')
   const label = document.createElement('h2')
-  label.textContent = `${hero} · ${pose.toUpperCase()} · ${direction} (4 frames)`
+  const reviewLabel = reviewKind === 'batch-6-nw' ? ' · authored NW (review only)'
+    : reviewKind === 'ne-reflected-nw' ? ' · reflected NE (review only)' : ''
+  label.textContent = `${hero} · ${pose.toUpperCase()} · ${direction} (4 frames)${reviewLabel}`
+  if (reviewKind) article.dataset.reviewKind = reviewKind
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = 336
   canvas.setAttribute('aria-label', label.textContent)
+  canvas.dataset.mirrored = String(mirrored)
   const status = document.createElement('small')
   status.textContent = 'Loading candidate…'
   article.append(label, canvas, status)
   grid.append(article)
-  const image = new Image()
-  image.onload = () => {
-    status.textContent = `QA_PENDING · ${direction} direction only · not release art`
+  const existing = decodedSources.get(url)
+  const image = existing ?? new Image()
+  const readyText = reviewKind
+    ? 'QA_PENDING · comparison only · verify staff handedness before gameplay'
+    : `QA_PENDING · ${direction} direction only · not release art`
+  image.addEventListener('load', () => {
+    status.textContent = readyText
     paint()
+  })
+  image.addEventListener('error', () => { status.textContent = 'Source failed to load' })
+  if (!existing) {
+    decodedSources.set(url, image)
+    image.src = url
+  } else if (image.complete && image.naturalWidth > 0) {
+    status.textContent = readyText
   }
-  image.onerror = () => { status.textContent = 'Source failed to load' }
-  image.src = url
-  return { image, canvas, cellPixels }
+  return { image, canvas, cellPixels, mirrored }
 })
 
 function paint(): void {
-  for (const { image, canvas, cellPixels } of tiles) {
+  for (const { image, canvas, cellPixels, mirrored } of tiles) {
     if (!image.complete || image.naturalWidth !== cellPixels * 2 || image.naturalHeight !== cellPixels * 2) continue
     const rect = heroCandidateRect(frame, cellPixels)!
     const ctx = canvas.getContext('2d')
     if (!ctx) continue
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+    if (mirrored) {
+      ctx.save()
+      ctx.translate(canvas.width, 0)
+      ctx.scale(-1, 1)
+    }
     ctx.drawImage(image, rect.x, rect.y, rect.size, rect.size, 0, 0, canvas.width, canvas.height)
+    if (mirrored) ctx.restore()
   }
 }
 
@@ -59,7 +96,7 @@ function updateControls(): void {
 }
 
 function schedule(): void {
-  // Paused/reduced-motion QA must not redraw 12 canvases at 60 fps.
+  // Paused/reduced-motion QA must not redraw the candidate canvases at 60 fps.
   if (paused || scheduled) return
   scheduled = true
   requestAnimationFrame(render)
