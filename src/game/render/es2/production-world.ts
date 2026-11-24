@@ -20,6 +20,11 @@ const bossMotionSourceLoaders = import.meta.env.DEV
   ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/*-attack-source-reference.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
   : {}
 
+// Raw uploaded sheets are intentionally isolated in an explicit DEV reference mode.
+const bossSheetQaLoaders = import.meta.env.DEV
+  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/spritesheets/*-spritesheet-7x4-QA-PENDING.png', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
+  : {}
+
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
   const path = `../../../assets/es2/production/${category}/${name}@3x.webp`
   const url = urls[path]
@@ -82,7 +87,7 @@ export interface WorldRuntimeImages {
 }
 
 /** Allocate world and common treasure images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion = false): WorldRuntimeImages {
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' = false): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
@@ -112,7 +117,8 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   let bossMotionReference: WorldRuntimeImages['bossMotionReference']
   if (import.meta.env.DEV && reviewMotion && reviewBossId) {
     const path = '../../../assets/es2/production/bosses/candidates/motion/' + reviewBossId + '-attack-source-reference.webp'
-    const loadSource = bossMotionSourceLoaders[path]
+    const sheetPath = '../../../assets/es2/production/bosses/candidates/motion/spritesheets/' + reviewBossId + '-spritesheet-7x4-QA-PENDING.png'
+    const loadSource = reviewMotion === 'sheet' ? bossSheetQaLoaders[sheetPath] : bossMotionSourceLoaders[path]
     if (loadSource) {
       const image = makeImage()
       bossMotionReference = { id: reviewBossId, image }

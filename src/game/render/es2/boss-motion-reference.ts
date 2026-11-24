@@ -2,6 +2,7 @@ import type { BossSnapshot } from '../../content/bosses/controller'
 import type { BossId } from '../../content/bosses/definitions'
 import type { Ctx2D } from '../ctx'
 import { bossPhaseVisualScale } from './production-world'
+import { sampleBossSheetFrame } from './boss-sheet-reference'
 
 type SourceRect = readonly [left: number, top: number, right: number, bottom: number]
 type Reference = { readonly source: 'imgs7.png' | 'imgs8.png'; readonly phases: readonly (readonly SourceRect[])[] }
@@ -52,6 +53,15 @@ export function drawBossAttackReference(ctx: Ctx2D, image: HTMLImageElement, sna
   displaySize: number, reducedMotion = false): boolean {
   if (reducedMotion || !image.complete || !Number.isFinite(displaySize) || displaySize <= 0
       || !snapshot.id || !snapshot.phase) return false
+  // Explicit DEV sheet review only; these raw reference frames still have alpha/identity defects.
+  if (image.naturalWidth === 948 && image.naturalHeight === 1659) {
+    if (!import.meta.env.DEV || !snapshot.bodyMotion) return false
+    const frame = sampleBossSheetFrame(snapshot.bodyMotion.pose, snapshot.bodyMotion.progress)
+    if (!frame) return false
+    const side = displaySize * bossPhaseVisualScale(snapshot.phase)
+    ctx.drawImage(image, ...frame, -side / 2, 4 - side, side, side)
+    return true
+  }
   const rect = sampleBossAttackReference(snapshot)
   if (!rect) return false
   if (image.naturalWidth === REFERENCE_CELL * 6 && image.naturalHeight === REFERENCE_CELL * 3) {

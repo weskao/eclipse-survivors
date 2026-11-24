@@ -13,7 +13,8 @@ import { type HealthBarMotion } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
 import { preloadHeroSpecialVfx } from './es2/hero-special-vfx'
-import type { WorldRuntimeImages } from './es2/production-world'
+import { BOSS_BASE_DRAW_PX, type WorldRuntimeImages } from './es2/production-world'
+import { drawBossAttackReference } from './es2/boss-motion-reference'
 import { drawLiveFactionArt, drawLiveFactionProjectiles, type FactionArtwork } from './es2/production-factions'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
@@ -155,6 +156,17 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
           motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars)
+  }
+  // Dead mobs are excluded from depthOrder. Only the explicit DEV sheet may paint a death reference.
+  const deathReference = assets.productionWorld?.bossMotionReference
+  const death = bossSnapshot?.bodyMotion
+  if (import.meta.env.DEV && death?.pose === 'death' && bossSnapshot?.id === deathReference?.id
+      && deathReference?.image.naturalWidth === 948 && deathReference.image.naturalHeight === 1659
+      && !objects.some(obj => 'type' in obj && obj.type === 'boss')) {
+    ctx.save()
+    ctx.translate(death.x + ox, death.y + oy)
+    drawBossAttackReference(ctx, deathReference.image, bossSnapshot, BOSS_BASE_DRAW_PX, reduced)
+    ctx.restore()
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)
