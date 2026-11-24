@@ -2,6 +2,7 @@ import { BIOME_IDS, type BiomeId } from '../../content/biomes'
 import { BOSS_DEFINITIONS, type BossId } from '../../content/bosses/definitions'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import type { Ctx2D } from '../ctx'
+import { BOSS_NATIVE_KEYFRAMES, registerBossNativeKeyframe, type NativeBossKeyframe } from './boss-native-keyframes'
 
 /** Vite resolves all URLs at build time. The browser only fetches a bitmap when it is used. */
 const urls = import.meta.glob('../../../assets/es2/production/{enemies,bosses,biomes,ui}/*.webp', {
@@ -23,6 +24,11 @@ const bossMotionSourceLoaders = import.meta.env.DEV
 // Raw uploaded sheets are intentionally isolated in an explicit DEV reference mode.
 const bossSheetQaLoaders = import.meta.env.DEV
   ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/spritesheets/*-spritesheet-7x4-QA-PENDING.png', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
+  : {}
+
+// Native source candidates are opt-in DEV diagnostics, never release assets.
+const bossNativeQaLoaders = import.meta.env.DEV
+  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-*/infernal-titan/**/*.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
   : {}
 
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
@@ -82,12 +88,13 @@ export interface WorldRuntimeImages {
   chest: HTMLImageElement
   bosses: Record<BossId, HTMLImageElement>
   bossMotionReference?: { id: BossId; image: HTMLImageElement }
+  bossNativeKeyframes?: Partial<Record<NativeBossKeyframe, HTMLImageElement>>
   ground: Record<BiomeId, HTMLImageElement>
   decor: Record<BiomeId, HTMLImageElement>
 }
 
 /** Allocate world and common treasure images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' = false): WorldRuntimeImages {
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' | 'native' = false): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
@@ -96,7 +103,7 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   const loadBoss = (id: BossId): HTMLImageElement => {
     const candidatePath = `../../../assets/es2/production/bosses/candidates/${id}-phases-native3x-QA-PENDING.webp`
     const image = load(WORLD_ART.bosses[id])
-    const loadCandidate = import.meta.env.DEV && reviewBossId === id ? bossQaLoaders[candidatePath] : undefined
+    const loadCandidate = import.meta.env.DEV && reviewMotion !== 'native' && reviewBossId === id ? bossQaLoaders[candidatePath] : undefined
     if (loadCandidate) {
       void loadCandidate().then(url => {
         image.onerror = () => {
@@ -115,7 +122,19 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
     return image
   }
   let bossMotionReference: WorldRuntimeImages['bossMotionReference']
-  if (import.meta.env.DEV && reviewMotion && reviewBossId) {
+  let bossNativeKeyframes: WorldRuntimeImages['bossNativeKeyframes']
+  if (import.meta.env.DEV && reviewMotion === 'native' && reviewBossId === 'infernal-titan') {
+    bossNativeKeyframes = {}
+    for (const key of Object.keys(BOSS_NATIVE_KEYFRAMES) as NativeBossKeyframe[]) {
+      const [path] = BOSS_NATIVE_KEYFRAMES[key]
+      const loadSource = bossNativeQaLoaders['../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path]
+      if (!loadSource) continue
+      const image = makeImage()
+      registerBossNativeKeyframe(image, key)
+      bossNativeKeyframes[key] = image
+      void loadSource().then(url => { image.src = url }).catch(() => { /* static fallback */ })
+    }
+  } else if (import.meta.env.DEV && reviewMotion && reviewMotion !== 'native' && reviewBossId) {
     const path = '../../../assets/es2/production/bosses/candidates/motion/' + reviewBossId + '-attack-source-reference.webp'
     const sheetPath = '../../../assets/es2/production/bosses/candidates/motion/spritesheets/' + reviewBossId + '-spritesheet-7x4-QA-PENDING.png'
     const loadSource = reviewMotion === 'sheet' ? bossSheetQaLoaders[sheetPath] : bossMotionSourceLoaders[path]
@@ -127,6 +146,7 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   return {
     bossMotionReference,
+    bossNativeKeyframes,
     chest: load(WORLD_ART.ui['treasure-common']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
       [id, loadBoss(id)])) as Record<BossId, HTMLImageElement>,

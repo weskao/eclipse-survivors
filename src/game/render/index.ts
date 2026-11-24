@@ -15,6 +15,7 @@ import type { ProductionHeroArtwork } from './es2/production-heroes'
 import { preloadHeroSpecialVfx } from './es2/hero-special-vfx'
 import { BOSS_BASE_DRAW_PX, type WorldRuntimeImages } from './es2/production-world'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
+import { selectBossNativeKeyframe, isBossNativeKeyframe } from './es2/boss-native-keyframes'
 import { drawLiveFactionArt, drawLiveFactionProjectiles, type FactionArtwork } from './es2/production-factions'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
@@ -148,20 +149,23 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
+  const nativeKey = import.meta.env.DEV && bossSnapshot && assets.productionWorld?.bossNativeKeyframes
+    ? selectBossNativeKeyframe(bossSnapshot) : null
+  const nativeImage = nativeKey ? assets.productionWorld?.bossNativeKeyframes?.[nativeKey] : undefined
+  const motionReference = nativeImage ? { id: 'infernal-titan' as const, image: nativeImage } : assets.productionWorld?.bossMotionReference
   for (const obj of objects) {
     const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
-    const motionReference = assets.productionWorld?.bossMotionReference
     const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase
       ? { image: bossImage, phase: bossSnapshot.phase,
           motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars)
   }
-  // Dead mobs are excluded from depthOrder. Only the explicit DEV sheet may paint a death reference.
-  const deathReference = assets.productionWorld?.bossMotionReference
+  // Dead mobs are excluded from depthOrder. Only explicit DEV review may paint a death reference.
+  const deathReference = motionReference
   const death = bossSnapshot?.bodyMotion
   if (import.meta.env.DEV && bossSnapshot && deathReference && death?.pose === 'death' && bossSnapshot.id === deathReference.id
-      && deathReference.image.naturalWidth === 948 && deathReference.image.naturalHeight === 1659
+      && (isBossNativeKeyframe(deathReference.image) || (deathReference.image.naturalWidth === 948 && deathReference.image.naturalHeight === 1659))
       && !objects.some(obj => 'type' in obj && obj.type === 'boss')) {
     ctx.save()
     ctx.translate(death.x + ox, death.y + oy)

@@ -3,6 +3,7 @@ import type { BossId } from '../../content/bosses/definitions'
 import type { Ctx2D } from '../ctx'
 import { bossPhaseVisualScale } from './production-world'
 import { sampleBossSheetFrame } from './boss-sheet-reference'
+import { drawBossNativeKeyframe, isBossNativeKeyframe } from './boss-native-keyframes'
 
 type SourceRect = readonly [left: number, top: number, right: number, bottom: number]
 type Reference = { readonly source: 'imgs7.png' | 'imgs8.png'; readonly phases: readonly (readonly SourceRect[])[] }
@@ -53,6 +54,7 @@ export function drawBossAttackReference(ctx: Ctx2D, image: HTMLImageElement, sna
   displaySize: number, reducedMotion = false): boolean {
   if (reducedMotion || !image.complete || !Number.isFinite(displaySize) || displaySize <= 0
       || !snapshot.id || !snapshot.phase) return false
+  if (isBossNativeKeyframe(image)) return import.meta.env.DEV && drawBossNativeKeyframe(ctx, image, snapshot, displaySize * bossPhaseVisualScale(snapshot.phase), reducedMotion)
   // Explicit DEV sheet review only; these raw reference frames still have alpha/identity defects.
   if (image.naturalWidth === 948 && image.naturalHeight === 1659) {
     if (!import.meta.env.DEV || !snapshot.bodyMotion) return false

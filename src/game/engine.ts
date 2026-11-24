@@ -948,7 +948,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     assets.productionWorld = loadWorldRuntimeImages(
       undefined, bossArtQaId && Object.hasOwn(BOSS_DEFINITIONS, bossArtQaId) ? bossArtQaId as BossId : undefined,
       import.meta.env.DEV && typeof window !== 'undefined'
-        ? (new URLSearchParams(window.location.search).get('es2BossMotionQa') === '2' ? 'sheet'
+        ? (new URLSearchParams(window.location.search).get('es2BossMotionQa') === '3' ? 'native'
+          : new URLSearchParams(window.location.search).get('es2BossMotionQa') === '2' ? 'sheet'
           : new URLSearchParams(window.location.search).get('es2BossMotionQa') === '1')
         : false,
     )
