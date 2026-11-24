@@ -142,15 +142,16 @@ test('rejects other heroes, duplicate, mirrored, malformed and spoofed candidate
 })
 
 test('northern run evidence requires all four real distinct cells per eligible direction', () => {
-  const cell = (hero, direction, index) => ({
-    src: `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/${direction}-2026-11-24-batch-4/run-${direction}-4frames@3x.webp`,
+  const cell = (hero, direction, index, batch = ((hero === 'shadowblade' && direction === 'n') || (hero === 'spirit-summoner' && direction === 'ne')) ? 5 : 4) => ({
+    src: `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/${direction}-2026-11-24-batch-${batch}/run-${direction}-4frames@3x.webp`,
     sx: index % 2 * 768, sy: Math.floor(index / 2) * 768, sw: 768, sh: 768,
   })
-  for (const [hero, directions] of [['shadowblade', ['ne', 'nw']], ['spirit-summoner', ['n']], ['crimson-paladin', ['n']]]) {
+  for (const [hero, directions] of [['shadowblade', ['n', 'ne', 'nw']], ['spirit-summoner', ['n', 'ne']], ['crimson-paladin', ['n']]]) {
     const draws = directions.flatMap(d => [0, 1, 2, 3].map(i => cell(hero, d, i)))
     assert.equal(assessHeroNorthernRunCoverage(hero, draws).complete, true)
     assert.equal(assessHeroNorthernRunCoverage(hero, draws.slice(1)).complete, false)
     assert.equal(assessHeroNorthernRunCoverage(hero, draws.map(d => ({ ...d, mirrored: true }))).complete, false)
   }
-  assert.deepEqual(assessHeroNorthernRunCoverage('shadowblade', [cell('shadowblade', 'n', 0), cell('crimson-paladin', 'ne', 0)]), { counts: { ne: 0, nw: 0 }, complete: false })
+  assert.deepEqual(assessHeroNorthernRunCoverage('shadowblade', [cell('shadowblade', 'n', 0, 4), cell('crimson-paladin', 'ne', 0)]), { counts: { n: 0, ne: 0, nw: 0 }, complete: false })
+  assert.equal(assessHeroNorthernRunCoverage('spirit-summoner', [cell('spirit-summoner', 'ne', 0, 4)]).counts.ne, 0)
 })

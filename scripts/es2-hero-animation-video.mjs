@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { chromium } from 'playwright'
-import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage, assessHeroNorthernRunCoverage } from './es2-hero-video-config.mjs'
+import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage, assessHeroNorthernRunCoverage, heroNorthernRunBatches } from './es2-hero-video-config.mjs'
 
 const candidateQA = process.env.ES2_HERO_QA === '1'
 const capture = heroVideoCaptureConfig(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/', candidateQA)
@@ -129,8 +129,8 @@ try {
       }
       if (candidateQA) {
         // Exercise only the newly admitted directions in actual combat.
-        for (const [direction, keys] of heroId === 'shadowblade'
-          ? [['ne', ['KeyW', 'KeyD']], ['nw', ['KeyW', 'KeyA']]] : [['n', ['KeyW']]]) {
+        for (const direction of Object.keys(heroNorthernRunBatches(heroId))) {
+          const keys = direction === 'ne' ? ['KeyW', 'KeyD'] : direction === 'nw' ? ['KeyW', 'KeyA'] : ['KeyW']
           for (let attempt = 0; attempt < 3; attempt++) {
             const evidence = assessHeroNorthernRunCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
             if (attempt > 0 && evidence.counts[direction] === 4) break

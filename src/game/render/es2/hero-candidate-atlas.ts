@@ -50,8 +50,15 @@ export const HERO_DIAGONAL_RUN_ATLASES = [
   { hero: 'crimson-paladin', pose: 'run', direction: 'SW', cellPixels: 768, url: paladinSW, footBottoms: paladinSWManifest.footBottoms },
 ] as const
 
-/** Only the four batch-4 clips with clean margins and matching character identity. */
+import shadowN from '../../../assets/es2/production/heroes/shadowblade/candidates/n-2026-11-24-batch-5/run-n-4frames@3x.webp'
+import shadowNManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/n-2026-11-24-batch-5/manifest.json'
+import summonerNE from '../../../assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-5/run-ne-4frames@3x.webp'
+import summonerNEManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-5/manifest.json'
+
+/** Explicitly selected northern candidates; DEV review only, not approved production art. */
 export const HERO_NORTHERN_RUN_ATLASES = [
+  { hero: 'shadowblade', pose: 'run', direction: 'N', cellPixels: 768, url: shadowN, footBottoms: shadowNManifest.footBottoms, folder: 'n-2026-11-24-batch-5' },
+  { hero: 'spirit-summoner', pose: 'run', direction: 'NE', cellPixels: 768, url: summonerNE, footBottoms: summonerNEManifest.footBottoms, folder: 'ne-2026-11-24-batch-5' },
   { hero: 'shadowblade', pose: 'run', direction: 'NE', cellPixels: 768, url: shadowNE, footBottoms: shadowNEManifest.footBottoms },
   { hero: 'shadowblade', pose: 'run', direction: 'NW', cellPixels: 768, url: shadowNW, footBottoms: shadowNWManifest.footBottoms },
   { hero: 'spirit-summoner', pose: 'run', direction: 'N', cellPixels: 768, url: summonerN, footBottoms: summonerNManifest.footBottoms },

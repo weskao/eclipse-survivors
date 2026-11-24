@@ -63,14 +63,22 @@ export function assessHeroEastActionCoverage(hero, draws) {
   }
 }
 
-/** Northern batch-4 evidence is independent of the legacy four-direction gate. */
+/** Selected authored northern clips and their exact source batch. */
+export function heroNorthernRunBatches(hero) {
+  if (hero === 'shadowblade') return { n: 5, ne: 4, nw: 4 }
+  if (hero === 'spirit-summoner') return { n: 4, ne: 5 }
+  if (hero === 'crimson-paladin') return { n: 4 }
+  return {}
+}
+
+/** Northern evidence is independent of the legacy four-direction gate. */
 export function assessHeroNorthernRunCoverage(hero, draws) {
-  const directions = hero === 'shadowblade' ? ['ne', 'nw'] :
-    hero === 'spirit-summoner' || hero === 'crimson-paladin' ? ['n'] : []
+  const batches = heroNorthernRunBatches(hero)
+  const directions = Object.keys(batches)
   const counts = {}
   for (const direction of directions) {
     const cells = new Set()
-    const expected = `/src/assets/es2/production/heroes/${hero}/candidates/${direction}-2026-11-24-batch-4/run-${direction}-4frames@3x.webp`
+    const expected = `/src/assets/es2/production/heroes/${hero}/candidates/${direction}-2026-11-24-batch-${batches[direction]}/run-${direction}-4frames@3x.webp`
     for (const { src, sx, sy, sw, sh, mirrored } of draws) {
       let pathname
       try { pathname = new URL(src).pathname } catch { continue }

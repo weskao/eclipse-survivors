@@ -5,7 +5,7 @@
   "direction": "NE",
   "native3x": "unverified",
   "runtimeApplied": false,
-  "qaGameplayApplied": false,
+  "qaGameplayApplied": true,
   "completeEightDirections": false,
   "sourcePixels": [
     1254,
