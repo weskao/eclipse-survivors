@@ -29,15 +29,15 @@ const manifest = JSON.parse(readFileSync(join(directory, 'manifest.json'), 'utf8
 const bossIds = ['abyss-monarch', 'frost-sovereign', 'infernal-titan', 'eclipse-seraph']
 
 describe('ES2 boss production art: honest native-3x QA contract', () => {
-  it('tracks all four three-phase atlases without unreviewed approval', () => {
+  it('tracks all four approved canonical three-phase atlases', () => {
     expect(manifest.assets.map(asset => asset.id).sort()).toEqual([...bossIds].sort())
-    expect(manifest.status).toBe('visual-review-required')
+    expect(manifest.status).toBe('approved')
     for (const asset of manifest.assets) {
       expect(asset.frames).toBe(3)
       expect(asset.columns).toBe(3)
       expect(asset.width).toBe(asset.frameWidth * asset.columns)
       expect(asset.height).toBe(asset.frameWidth)
-      expect(asset.status).toBe('needs-human-approval')
+      expect(asset.status).toBe('approved')
     }
   })
 
