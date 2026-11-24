@@ -1,7 +1,7 @@
 import type { BossSnapshot } from '../../content/bosses/controller'
 import type { Ctx2D } from '../ctx'
 
-// Provisional alpha128 bottom-center anchors from the three committed manifests.
+// Provisional alpha128 bottom-center anchors from the four committed manifests.
 // These are isolated candidate poses, not an approved sequence or phase assignment.
 export const BOSS_NATIVE_KEYFRAMES = {
   idle: ['batch-01/infernal-titan/sources/idle-stance-a.webp', 1312, 1199, 624.5, 1185],
@@ -11,6 +11,11 @@ export const BOSS_NATIVE_KEYFRAMES = {
   hurt: ['batch-02/infernal-titan/hurt/recoil-key-b.webp', 1312, 1199, 657.5, 1178],
   transform: ['batch-02/infernal-titan/transform/overload-key-a.webp', 1312, 1199, 656, 1195],
   death: ['batch-03/infernal-titan/death/collapse-key-a.webp', 1312, 1199, 659, 1112],
+  windupB: ['batch-04/infernal-titan/windup/crouch-key-b.webp', 1312, 1199, 653, 1186],
+  slamB: ['batch-04/infernal-titan/attack/ground-slam-key-b.webp', 1312, 1199, 658, 1193],
+  recover: ['batch-04/infernal-titan/recover/ground-slam-retract-key-a.webp', 1312, 1199, 654.5, 1149],
+  deathDim: ['batch-04/infernal-titan/death/core-dimming-key-b.webp', 1312, 1199, 659, 1154],
+  deathRubble: ['batch-04/infernal-titan/death/rubble-key-c.webp', 1448, 1086, 722, 889],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -27,9 +32,10 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   if (snapshot.id !== 'infernal-titan' || !snapshot.phase || !motion || motion.phase !== snapshot.phase
       || !Number.isFinite(motion.progress) || motion.progress < 0 || motion.progress > 1) return null
   switch (motion.pose) {
-    case 'windup': return snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'titan-slam') ? 'windup' : null
-    case 'attack': return snapshot.impacts?.at(-1)?.attackId === 'titan-slam' ? 'slam' : null
-    case 'recover': return null
+    case 'windup': return snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'titan-slam') ? (motion.progress < .5 ? 'windup' : 'windupB') : null
+    case 'attack': return snapshot.impacts?.at(-1)?.attackId === 'titan-slam' ? (motion.progress < .5 ? 'slam' : 'slamB') : null
+    case 'recover': return snapshot.impacts?.at(-1)?.attackId === 'titan-slam' ? 'recover' : null
+    case 'death': return motion.progress < 1 / 3 ? 'death' : motion.progress < 2 / 3 ? 'deathDim' : 'deathRubble'
     default: return motion.pose
   }
 }
