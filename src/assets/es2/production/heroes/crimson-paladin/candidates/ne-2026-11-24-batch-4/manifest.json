@@ -88,7 +88,16 @@
     }
   ],
   "reviewNotes": [
-    "Short hair / apparent silhouette differs from canonical long-haired female paladin; identity review required."
+    "Short hair / apparent silhouette differs from canonical long-haired female paladin; identity review required.",
+    "Rejected source retired from working tree; historical provenance retained in retiredSource."
   ],
-  "eligibleForDevWiring": false
+  "eligibleForDevWiring": false,
+  "retiredSource": {
+    "reason": "Rejected identity mismatch; still requires a correct NE candidate.",
+    "commit": "8d6b9ded3e374792f5c17278f62bd04bf19fbca4",
+    "path": "src/assets/es2/production/heroes/crimson-paladin/candidates/ne-2026-11-24-batch-4/source.png",
+    "gitBlob": "d2c9c217df2dbd9bbf332dc47c58520f4816fed5",
+    "bytes": 1363782,
+    "sha256": "282f068ca70128880d8cbe03c6fa1affeb04043fcba816271f85ce4e38ff58cd"
+  }
 }

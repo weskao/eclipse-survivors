@@ -88,7 +88,16 @@
     }
   ],
   "reviewNotes": [
-    "Staff appears on opposite side; verify handedness against canonical asset."
+    "Staff appears on opposite side; verify handedness against canonical asset.",
+    "Rejected source retired from working tree; historical provenance retained in retiredSource."
   ],
-  "eligibleForDevWiring": false
+  "eligibleForDevWiring": false,
+  "retiredSource": {
+    "reason": "Rejected handedness; independent batch-6 WebP remains comparison-only.",
+    "commit": "8d6b9ded3e374792f5c17278f62bd04bf19fbca4",
+    "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-4/source.png",
+    "gitBlob": "84d3ffb3601da33b0f989714d990631199ee0c2d",
+    "bytes": 1436745,
+    "sha256": "b33bf0cb6de9deab3407f5cd1fc90390a3569ea3c02a0ca5baa3d2b8d0425fa0"
+  }
 }

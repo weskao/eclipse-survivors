@@ -88,7 +88,16 @@
     }
   ],
   "reviewNotes": [
-    "Original alpha margin below 8px; source clipping risk, requires remediation."
+    "Original alpha margin below 8px; source clipping risk, requires remediation.",
+    "Rejected source retired from working tree; historical provenance retained in retiredSource."
   ],
-  "eligibleForDevWiring": false
+  "eligibleForDevWiring": false,
+  "retiredSource": {
+    "reason": "Rejected edge contact; superseded by batch-5 NE.",
+    "commit": "8d6b9ded3e374792f5c17278f62bd04bf19fbca4",
+    "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-4/source.png",
+    "gitBlob": "a0f563bdcb68afacc3802a069442492f3fccfae1",
+    "bytes": 1555277,
+    "sha256": "f04f565dfb7536ae5fab7262ad1fbe987f97cbe46d95bd560258c9e74a71e381"
+  }
 }

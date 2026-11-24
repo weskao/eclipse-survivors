@@ -88,7 +88,17 @@
     }
   ],
   "reviewNotes": [
-    "Original alpha margin below 8px; source clipping risk, requires remediation."
+    "Original alpha margin below 8px; source clipping risk, requires remediation.",
+    "Rejected source retired from working tree; historical provenance retained in retiredSource."
   ],
-  "eligibleForDevWiring": false
+  "eligibleForDevWiring": false,
+  "retiredSource": {
+    "reason": "Identical Git blob to the retained batch-5 source; original margin fixed by batch 5.",
+    "commit": "8d6b9ded3e374792f5c17278f62bd04bf19fbca4",
+    "path": "src/assets/es2/production/heroes/shadowblade/candidates/n-2026-11-24-batch-4/source.png",
+    "gitBlob": "742b15e65f8a0150c34b01f4798df203109e7947",
+    "bytes": 977458,
+    "sha256": "8486745646c7d27db9eb4a3f4e7de70960634bbb5f8fb9d9bfb4c64084b55504",
+    "canonicalPath": "src/assets/es2/production/heroes/shadowblade/candidates/n-2026-11-24-batch-5/source.png"
+  }
 }
