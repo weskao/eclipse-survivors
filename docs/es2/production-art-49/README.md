@@ -1,5 +1,8 @@
 # ES2 49 項既有美術：檢查、分工與整合
 
+> **2026-11-24 更新：敵人與預警 20/20、魔王 4/4 已由專案擁有者人工驗收通過，正式 Manifest 均為 `approved`。** 加上之前已批准的 UI 17/17 與 Biomes 8/8，目前共 **49/49 項 canonical 世界美術完成 owner visual approval**。紀錄：[13-enemies-20-bosses-4-owner-approval-2026-11-24.md](13-enemies-20-bosses-4-owner-approval-2026-11-24.md)。這不代表全部原生 3× 細節、DEV 待審候選圖、英雄三項或最新 CI 自動通過。
+
+
 > **2026-11-24 更新：UI 17/17 正式素材已由專案擁有者確認通過人工美術驗收，Manifest 已逐項改為 `approved`。** 簽核紀錄：[10-ui-17-owner-approval-2026-11-24.md](10-ui-17-owner-approval-2026-11-24.md)。下方 2026-11-23 以前的 `needs-human-approval`／`visual-review-required` 描述只代表歷史快照，**不能再用來表示目前 17 項 UI 的人工美術狀態**。此批准不等於其他 32 項素材、英雄、原生 3×來源或最新 HEAD 全專案 CI 已全部通過。
 
 
@@ -9,7 +12,7 @@
 
 ## 先看結論
 
-**49/49 項現有 WebP 已存在；不要無故重新生成。** Enemy 20、Boss 4、Biome 8、UI 17；所有檔案在此基準分支已由 manifest 紀錄 SHA-256，且有現有 WORLD_ART 資源引用。它們的 technical integrity 與 human visual approval 是兩件事：在原始稽核快照中四個類別均為 visual-review-required；**目前 UI 17/17 已由擁有者正式人工簽核為 approved**，其他類別仍需各自核准。
+**49/49 項現有 WebP 已存在；不要無故重新生成。** Enemy 20、Boss 4、Biome 8、UI 17；所有檔案在此基準分支已由 manifest 紀錄 SHA-256，且有現有 WORLD_ART 資源引用。它們的 technical integrity 與 human visual approval 是兩件事：在原始稽核快照中四個類別均為 visual-review-required；**目前 UI 17/17 已由擁有者正式人工簽核為 approved**，其餘敵人與 Boss 已於 2026-11-24 收到獨立的擁有者核准；本段原文僅供歷史對照。
 
 ## 完整可執行 Prompts
 
@@ -37,3 +40,5 @@
 四類可平行 QA，合回目標分支時需逐一以最新 HEAD 驗證，不用同時寫 shared 文件。不動 develop/main；不開 PR、不 force-push、不部署。若現有素材合格，只保存審核證據並重用，不需要重複產圖。沒有人工視覺核准，不得冒充全綠 CI。
 
 - [12-biomes-8-owner-approval-2026-11-24.md](12-biomes-8-owner-approval-2026-11-24.md)：原生 3× 地板與裝飾正式整合／核准紀錄。
+
+- [13-enemies-20-bosses-4-owner-approval-2026-11-24.md](13-enemies-20-bosses-4-owner-approval-2026-11-24.md)：敵人 20 + 魔王 4 的 owner visual approval 證據與技術界線。
