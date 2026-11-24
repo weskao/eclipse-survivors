@@ -11,6 +11,9 @@ const sizes = [
   ['portrait-320', 320, 640, true],
   ['portrait-375', 375, 812, true],
   ['landscape-640', 640, 360, true],
+  ['landscape-640-short-zh', 640, 320, true],
+  ['landscape-812-en', 812, 375, true],
+  ['landscape-852-zh', 852, 393, true],
   ['desktop-1440', 1440, 900, false],
 ]
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
@@ -37,6 +40,7 @@ try {
     const context = await browser.newContext({
       viewport: { width, height }, deviceScaleFactor: touch ? 2 : 1,
       isMobile: touch, hasTouch: touch,
+      ...(name.endsWith('-zh') ? { locale: 'zh-TW' } : name.endsWith('-en') ? { locale: 'en-US' } : {}),
     })
     const page = await context.newPage()
     const errors = []
@@ -87,6 +91,45 @@ try {
       await page.evaluate(() => { if (!window.__test) throw new Error('Game test API unavailable'); window.__test.level() })
       const rarity = page.locator('img[data-es2-rarity-icon]')
       await rarity.first().waitFor({ state: 'visible', timeout: 30000 })
+      if (width > height && height <= 520) {
+        const cards = page.locator('.es2-dialog-choice .es2-skill-card')
+        assert.ok(await cards.count() >= 1, name + ': missing real skill cards')
+        await cards.first().evaluate(element => Promise.all(
+          element.closest('.es2-dialog').getAnimations().map(animation => animation.finished)))
+        const geometry = await cards.evaluateAll(elements => elements.map(card => {
+          const box = element => {
+            const b = element.getBoundingClientRect()
+            return { top: b.top, bottom: b.bottom, left: b.left, right: b.right, height: b.height, width: b.width }
+          }
+          const art = card.querySelector('.es2-card-art')
+          const image = art.querySelector('img')
+          const text = [...card.querySelectorAll('.es2-card-name,.es2-card-level,.es2-card-description,.es2-card-requirements,.es2-mastery-stat')]
+          return { card: box(card), art: box(art), meta: box(card.querySelector('.es2-card-meta')),
+            image: image ? { ...box(image), fit: getComputedStyle(image).objectFit } : null,
+            text: text.map(element => ({ ...box(element), font: parseFloat(getComputedStyle(element).fontSize),
+              scrollWidth: element.scrollWidth, clientWidth: element.clientWidth })) }
+        }))
+        for (const g of geometry) {
+          assert.ok(g.art.height >= 95, name + ': artwork still compressed: ' + JSON.stringify(g))
+          assert.ok(g.art.bottom <= g.meta.top + 2, name + ': artwork overlaps rarity')
+          assert.ok(g.card.width >= 44 && g.card.height >= 44, name + ': touch target too small')
+          assert.ok(g.card.left >= -2 && g.card.right <= width + 2, name + ': card horizontal overflow')
+          if (g.image) assert.equal(g.image.fit, 'contain', name + ': artwork must not crop')
+          for (const text of g.text) {
+            assert.ok(text.font >= 11, name + ': text below minimum size')
+            assert.ok(text.top >= g.art.bottom - 2 && text.bottom <= g.card.bottom + 2 &&
+              text.left >= g.card.left - 2 && text.right <= g.card.right + 2 &&
+              text.scrollWidth <= text.clientWidth + 2, name + ': clipped card text: ' + JSON.stringify(g))
+          }
+        }
+        const body = await modal.locator('.es2-dialog-body').evaluate(element => ({
+          height: element.clientHeight, scrollHeight: element.scrollHeight,
+          overflow: getComputedStyle(element).overflowY,
+        }))
+        if (body.scrollHeight > body.height + 2)
+          assert.ok(['auto', 'scroll'].includes(body.overflow), name + ': long card content unreachable')
+        record.skillCards = geometry
+      }
       for (let i = 0; i < await rarity.count(); i++) {
         // Every card is vertically scrollable on small phones; check its visible position after scrolling.
         await rarity.nth(i).scrollIntoViewIfNeeded()
