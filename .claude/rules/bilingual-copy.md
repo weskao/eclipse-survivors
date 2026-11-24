@@ -1,0 +1,8 @@
+# Mandatory bilingual player-facing copy (`en` / `zh-TW`)
+
+- All visible game text, ARIA labels, `alt` text, tooltips, dialogs, notices, achievement/reward names and content descriptions must support `en` and `zh-TW` through the existing `src/i18n.ts` catalog. Do not create another translation system or display internal IDs as reward names.
+- Call `t()` at the display boundary so the player can switch languages without reloading. For dynamic numbers/names use a named-parameter template (`t('…{value}…', { value })`), never concatenation of already-localized fragments. Never translate user-provided parameter values implicitly.
+- **Dynamic names inside `alt` / `aria-label`** use a named-parameter template, e.g. `t('{name} 主動技能圖示', { name: t(label) })` — never `t(name + ' 後綴')`. Concatenation produced mixed text such as "Nightmark Ranger 原始Character Illustration" (UX audit, 2026-11-24).
+- Preserve intentional game jargon, keyboard hints, technical abbreviations and branding (e.g. HP, XP, Lv., WASD, ECLIPSE SURVIVORS) when translation would reduce clarity.
+- Verify both locales on mobile portrait, mobile landscape, tablet and desktop. Text wraps inside its own card/dialog/HUD region without page-wide horizontal scrolling or clipping essential art and actions; keep the existing internal dialog scrolling for genuinely long content.
+- Add bilingual regression tests for new copy, including runtime strings and reward names, and extend browser viewport checks when UI geometry changes.
