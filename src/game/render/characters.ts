@@ -9,6 +9,8 @@ import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
 import { bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
+import { drawBossAttackReference } from './es2/boss-motion-reference'
+import type { BossSnapshot } from '../content/bosses/controller'
 import { sampleHealthBar, type HealthBarMotion } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
@@ -222,7 +224,7 @@ export function drawCharacter(
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
-  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3 },
+  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
   healthBars?: WeakMap<Mob, HealthBarMotion>,
 ): void {
   const { W, H } = s
@@ -336,7 +338,8 @@ export function drawCharacter(
       }
       // Use the controller's real phase; the original boss sprite remains the decode fallback.
       const painted = mob.type === 'boss' && productionBoss
-        ? drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
+        ? (productionBoss.motion && drawBossAttackReference(ctx, productionBoss.motion.image, productionBoss.motion.snapshot, Math.min(sx, sy), reducedMotion))
+          || drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
       if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy)
     }
   }

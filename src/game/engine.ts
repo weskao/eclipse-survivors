@@ -908,6 +908,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ? new URLSearchParams(window.location.search).get('es2BossArtQa') : null
     assets.productionWorld = loadWorldRuntimeImages(
       undefined, bossArtQaId && Object.hasOwn(BOSS_DEFINITIONS, bossArtQaId) ? bossArtQaId as BossId : undefined,
+      import.meta.env.DEV && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('es2BossMotionQa') === '1',
     )
     if (factions) {
       assets.factions = factions

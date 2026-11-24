@@ -15,6 +15,10 @@ const bossQaLoaders = import.meta.env.DEV
   }) as Record<string, () => Promise<string>>
   : {}
 const bossQaInsets = new WeakMap<HTMLImageElement, number>()
+// Source sheets are loaded only for an explicit development motion review.
+const bossMotionSourceLoaders = import.meta.env.DEV
+  ? import.meta.glob('../../../../assets/images/imgs{7,8}.png', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
+  : {}
 
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
   const path = `../../../assets/es2/production/${category}/${name}@3x.webp`
@@ -72,12 +76,13 @@ export interface WorldRuntimeImages {
   /** Reuse authored treasure art in live world events. */
   chest: HTMLImageElement
   bosses: Record<BossId, HTMLImageElement>
+  bossMotionReference?: { id: BossId; image: HTMLImageElement }
   ground: Record<BiomeId, HTMLImageElement>
   decor: Record<BiomeId, HTMLImageElement>
 }
 
 /** Allocate world and common treasure images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId): WorldRuntimeImages {
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion = false): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
@@ -104,7 +109,18 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
     }
     return image
   }
+  let bossMotionReference: WorldRuntimeImages['bossMotionReference']
+  if (import.meta.env.DEV && reviewMotion && reviewBossId) {
+    const sheet = reviewBossId === 'abyss-monarch' || reviewBossId === 'frost-sovereign' ? 'imgs7.png' : 'imgs8.png'
+    const loadSource = bossMotionSourceLoaders['../../../../assets/images/' + sheet]
+    if (loadSource) {
+      const image = makeImage()
+      bossMotionReference = { id: reviewBossId, image }
+      void loadSource().then(url => { image.src = url }).catch(() => { /* static fallback */ })
+    }
+  }
   return {
+    bossMotionReference,
     chest: load(WORLD_ART.ui['treasure-common']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
       [id, loadBoss(id)])) as Record<BossId, HTMLImageElement>,

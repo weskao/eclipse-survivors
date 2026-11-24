@@ -145,8 +145,11 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   objects.sort((a, b) => a.y - b.y)
   for (const obj of objects) {
     const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
+    const motionReference = assets.productionWorld?.bossMotionReference
     const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase
-      ? { image: bossImage, phase: bossSnapshot.phase } : undefined
+      ? { image: bossImage, phase: bossSnapshot.phase,
+          motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
+      : undefined
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars)
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
