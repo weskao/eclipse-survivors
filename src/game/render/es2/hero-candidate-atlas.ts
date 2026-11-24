@@ -4,7 +4,7 @@ import shadowSouthRun from '../../../assets/es2/production/heroes/shadowblade/ca
 import shadowAttack from '../../../assets/es2/production/heroes/shadowblade/candidates/east-2026-11-23/attack-east-4frames@3x.webp'
 import shadowSpecial from '../../../assets/es2/production/heroes/shadowblade/candidates/east-2026-11-23/special-east-4frames@3x.webp'
 import summonerRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/run-east-4frames@3x.webp'
-import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-23/run-south-4frames@3x.webp'
+import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/run-south-4frames@3x.webp'
 import summonerAttack from '../../../assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/attack-east-4frames@3x.webp'
 import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summoner/candidates/east-2026-11-23/special-east-4frames@3x.webp'
 import paladinRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/run-east-4frames@3x.webp'
@@ -15,7 +15,7 @@ import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladi
 /** The current South review clips; older candidate originals remain archived. */
 export const HERO_SOUTH_RUN_DIRS = {
   shadowblade: 'south-2026-11-24-batch-2',
-  'spirit-summoner': 'south-2026-11-23',
+  'spirit-summoner': 'south-2026-11-24-mist-repair',
   'crimson-paladin': 'south-2026-11-24-batch-2',
 } as const
 

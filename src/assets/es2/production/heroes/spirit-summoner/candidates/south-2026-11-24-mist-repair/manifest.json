@@ -94,7 +94,7 @@
     2,
     2
   ],
-  "qaGameplayApplied": false,
+  "qaGameplayApplied": true,
   "frameTiming": "four distinct poses; not a complete 10-frame run cycle",
   "repair": "attenuate outer mist only; preserve RGB and all alpha >=64 pixels; no resampling"
 }

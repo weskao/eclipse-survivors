@@ -35,7 +35,7 @@ test('real Canvas draw evidence must contain distinct East and South running fra
 
 test('cannot claim coverage from another hero, duplicate frames or a malformed crop', () => {
   const hero = 'spirit-summoner'
-  const src = `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/south-2026-11-23/run-south-4frames@3x.webp`
+  const src = `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/south-2026-11-24-mist-repair/run-south-4frames@3x.webp`
   const other = src.replace(hero, 'crimson-paladin')
   assert.deepEqual(assessHeroCandidateCoverage(hero, [
     { src, sx: 0, sy: 0, sw: 768, sh: 768 },
@@ -63,4 +63,11 @@ test('new South gameplay evidence uses the exact selected atlas, not the superse
     assert.equal(assessHeroCandidateCoverage(hero, [draw('south-2026-11-24-batch-2')]).southRunFrames, 1)
     assert.equal(assessHeroCandidateCoverage(hero, [draw('south-2026-11-23')]).southRunFrames, 0)
   }
+})
+
+test('Summoner gameplay evidence accepts only repaired South atlas', () => {
+  const hero = 'spirit-summoner'
+  const draw = folder => ({ src: `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/${folder}/run-south-4frames@3x.webp`, sx: 0, sy: 0, sw: 768, sh: 768 })
+  assert.equal(assessHeroCandidateCoverage(hero, [draw('south-2026-11-24-mist-repair')]).southRunFrames, 1)
+  assert.equal(assessHeroCandidateCoverage(hero, [draw('south-2026-11-23')]).southRunFrames, 0)
 })

@@ -13,7 +13,7 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
       'crimson-paladin', 'shadowblade', 'spirit-summoner',
     ])
     for (const [hero, src] of Object.entries(PRODUCTION_HERO_SOUTH_RUN_SOURCES)) {
-      const folder = hero === 'spirit-summoner' ? 'south-2026-11-23' : 'south-2026-11-24-batch-2'
+      const folder = hero === 'spirit-summoner' ? 'south-2026-11-24-mist-repair' : 'south-2026-11-24-batch-2'
       expect(src).toContain(hero + '/candidates/' + folder + '/')
       expect(src).toContain('run-south-4frames@3x.webp')
     }

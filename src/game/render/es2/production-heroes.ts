@@ -5,6 +5,7 @@ import type { HeroSheets } from '../hero-sheets'
 import { drawPortraitMotion } from './portrait-motion'
 import { CHARACTER_FOOT_BOTTOMS } from './character-foot-anchors'
 import { HERO_CANDIDATE_ATLASES } from './hero-candidate-atlas'
+import summonerSouthManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/manifest.json'
 import shadowSouthManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/manifest.json'
 import paladinSouthManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/manifest.json'
 import shadowblade from '../../../assets/es2/production/heroes/shadowblade-portrait@3x.webp'
@@ -26,7 +27,7 @@ import paladinDirection from '../../../assets/es2/production/heroes/crimson-pala
 import paladinRunAttack from '../../../assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp'
 import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/special@3x.webp'
 import shadowSouthRun from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp'
-import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-23/run-south-4frames@3x.webp'
+import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/run-south-4frames@3x.webp'
 import paladinSouthRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp'
 
 /** Full 900×900 3x character illustrations, matching the homepage and HUD. */
@@ -319,6 +320,7 @@ function loadHeroPoseOnDemand(hero: HeroWithMotion, sheet: PoseSheet): HTMLImage
 
 const SOUTH_QA_FOOT_BOTTOMS: Partial<Record<SpecializationId, readonly number[]>> = {
   shadowblade: shadowSouthManifest.footBottoms,
+  'spirit-summoner': summonerSouthManifest.footBottoms,
   'crimson-paladin': paladinSouthManifest.footBottoms,
 }
 

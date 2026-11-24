@@ -8,6 +8,7 @@ describe('imported South candidate source integrity and honest 3x status', () =>
     ['shadowblade', 'south-2026-11-24-batch-2'],
     ['shadowblade', 'south-2026-11-24-margin-repair'],
     ['crimson-paladin', 'south-2026-11-24-batch-2'],
+    ['spirit-summoner', 'south-2026-11-24-mist-repair'],
   ]) {
     it(`${hero}/${folder}: preserves source, SHA and independent non-resampled frames`, () => {
       const dir = join(process.cwd(), 'src/assets/es2/production/heroes', hero!, 'candidates', folder!)
@@ -26,6 +27,13 @@ describe('imported South candidate source integrity and honest 3x status', () =>
       for (const f of m.frames) {
         const [x0,y0,x1,y1] = f.originalAlphaBounds
         expect(Math.min(x0,y0,627-x1,627-y1)).toBeGreaterThanOrEqual(8)
+      }
+      if (hero === 'spirit-summoner') {
+        const original = readFileSync(join(dir, m.originalSourceFile))
+        expect(sha(original)).toBe(m.originalSourceSHA256)
+        expect(m.sourceSHA256).not.toBe(m.originalSourceSHA256)
+        expect(m.footBottoms).toEqual([606, 630, 659, 629])
+        expect(m.qaGameplayApplied).toBe(true)
       }
       expect(m.native3x).toBe('unverified')
       expect(m.status).toBe('QA_PENDING')

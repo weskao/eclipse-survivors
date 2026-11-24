@@ -104,3 +104,17 @@ Two new image-generation experiments were inspected but **not committed**:
 2. A three-hero eight-direction illustrated overview had labels, decorative panels, small artwork and pixel-art styling, so it was not a splittable transparent source sheet and does not match the established realistic character-art contract.
 
 Neither image is included in source manifests, runtime imports or accepted-frame counts. Re-author clean transparent original frames rather than manufacturing completion through resizing, masking away actual body detail, or mistaking a labeled overview for animation. Review tools and associated regression tests were updated, but do not change the `QA_PENDING` release gate.
+
+## 2026-11-24 — owner-uploaded South candidates moved, repaired and bound to real gameplay QA
+
+The owner's upload `40217de5b3c466d0214c94231d971bcf701d6955` was moved into `src/assets/es2/production/heroes/<id>/candidates/` without changing the eleven original Git blobs (move commit `efc44fe702a1a0f1d6139a64b23c842e47ea6920`). The three supplied WebP files were renamed `run-south-4frames@3x.webp`. Original source PNGs remain in their respective candidate directories.
+
+| Hero | Selected South run QA directory | Frame count | Measured opaque bottom in packed cell |
+| --- | --- | ---: | --- |
+| shadowblade | south-2026-11-24-batch-2 | 4 | 653, 657, 665, 661 |
+| spirit-summoner | south-2026-11-24-mist-repair | 4 | 606, 630, 659, 629 |
+| crimson-paladin | south-2026-11-24-batch-2 | 4 | 587, 612, 593, 631 |
+
+The original source frames are 627×627, padded to 768×768 and packed losslessly at 1536×1536; no resampling. Rendering scales authored source pixels by at most 147/627, exceeding the 3× source pixel requirement without certifying visual approval. The original Summoner mist crossed source-cell margins. `scripts/es2/repair_summoner_candidate.py` attenuates only the diffuse outer mist, retains all original RGB and alpha ≥64 source pixels, refuses a core silhouette near the cell boundary, verifies the original SHA-256, and retains its untouched original. Repaired PNG and WebP were reproduced on GitHub in `bd3cc403f2492756c1dc7730c33b512ad19a19bd`, matching the locally verified binary blobs. The temporary one-time branch-only repair workflow was removed after the repair. The alternate Shadowblade margin-repair and prior November 23 sources remain archived for review, not mixed into the four-pose cycle.
+
+These South strips replace the old **development-only** gameplay and isolated QA preview sources; real Canvas capture URL verification now requires the actual selected source path and per-frame foot anchors are taken from the matching manifests. Use `?es2HeroArtQA=1` with Vite dev for live combat review. Production art and other directions retain existing same-character fallbacks. All candidates remain `QA_PENDING`, `native3x: unverified`, `runtimeApplied: false` for release. Four poses are not a 10-frame run cycle, and eight-direction action coverage, complete native-detail artwork, actual-size visual approval and final gameplay evidence remain mandatory.
