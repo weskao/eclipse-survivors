@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { chromium } from 'playwright'
-import { heroVideoCaptureConfig, assessHeroCandidateCoverage } from './es2-hero-video-config.mjs'
+import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage } from './es2-hero-video-config.mjs'
 
 const candidateQA = process.env.ES2_HERO_QA === '1'
 const capture = heroVideoCaptureConfig(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/', candidateQA)
@@ -127,13 +127,39 @@ try {
           }
         }
       }
+      if (candidateQA) {
+        // Sample the existing East attack and special atlases in live gameplay.
+        // An attempted input is not proof: only actual Canvas source cells count.
+        for (let i = 0; i < 8; i++) {
+          const choice = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
+          if (!await choice.isVisible()) break
+          await choice.click()
+        }
+        if (await page.evaluate(() => window.__test?.mode) === 'play') {
+          try {
+            await page.keyboard.down('KeyD')
+            await page.waitForTimeout(350)
+            await page.keyboard.up('KeyD')
+            await page.evaluate(() => window.__test?.forceAttack())
+            await page.waitForTimeout(900)
+            await page.keyboard.press('KeyQ')
+            await page.waitForTimeout(1000)
+          } finally {
+            await page.keyboard.up('KeyD')
+          }
+        }
+      }
       const ending = await page.evaluate(() => window.__test?.frames ?? 0)
       const candidateCoverage = candidateQA
         ? assessHeroCandidateCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
         : null
       metrics = { heroId, artStatus: capture.status, canvasFramesRendered: ending - beginning,
         elapsedRecordedSeconds: Math.round((Date.now() - startedAt) / 100) / 10,
-        candidateCoverage, browserErrors: errors }
+        candidateCoverage,
+        eastActionCandidateCoverage: candidateQA
+          ? assessHeroEastActionCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
+          : null,
+        browserErrors: errors }
       assert.ok(metrics.canvasFramesRendered > 30, heroId + ': game Canvas stopped drawing')
       assert.deepEqual(errors, [], heroId + ': unexpected page script errors')
       video = page.video()

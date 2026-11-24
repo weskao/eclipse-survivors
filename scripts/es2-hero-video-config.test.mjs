@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { heroVideoCaptureConfig, assessHeroCandidateCoverage } from './es2-hero-video-config.mjs'
+import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage } from './es2-hero-video-config.mjs'
 
 test('production gameplay recording never enables pending hero art', () => {
   const config = heroVideoCaptureConfig('http://127.0.0.1:4173/?foo=bar', false)
@@ -111,4 +111,32 @@ test('ordinary east remains east; other heroes cannot claim mirrored West', () =
     assert.equal(coverage.eastRunFrames, 1)
     assert.equal(coverage.mirroredWestRunFrames, hero === 'shadowblade' ? 1 : 0)
   }
+})
+
+const actionCell = (hero, pose, i) => ({
+  src: `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/east-2026-11-23/${pose}-east-4frames@3x.webp`,
+  sx: i % 2 * 704, sy: Math.floor(i / 2) * 704, sw: 704, sh: 704,
+})
+
+test('counts unique actual East attack and special cells independently for each hero', () => {
+  for (const hero of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+    const attack = [0, 1, 2, 3].map(i => actionCell(hero, 'attack', i))
+    const special = [0, 1, 2, 3].map(i => actionCell(hero, 'special', i))
+    assert.deepEqual(assessHeroEastActionCoverage(hero, [...attack, ...special]), {
+      eastAttackFrames: 4, eastSpecialFrames: 4, hasAllEastActionCandidateFrames: true,
+    })
+    assert.equal(assessHeroEastActionCoverage(hero, [...attack, ...special.slice(0, 3)]).hasAllEastActionCandidateFrames, false)
+  }
+})
+
+test('rejects other heroes, duplicate, mirrored, malformed and spoofed candidate draws', () => {
+  const hero = 'shadowblade'
+  const valid = actionCell(hero, 'attack', 0)
+  const special = actionCell(hero, 'special', 1)
+  assert.deepEqual(assessHeroEastActionCoverage(hero, [valid, valid, special,
+    actionCell('spirit-summoner', 'attack', 1), { ...actionCell(hero, 'special', 2), mirrored: true },
+    { ...actionCell(hero, 'attack', 2), sx: 1 }, { ...actionCell(hero, 'special', 3), sw: 768 },
+    { ...actionCell(hero, 'attack', 3), src: `http://localhost:4174/other?src=${encodeURIComponent(valid.src)}` },
+    actionCell(hero, 'run', 2),
+  ]), { eastAttackFrames: 1, eastSpecialFrames: 1, hasAllEastActionCandidateFrames: false })
 })

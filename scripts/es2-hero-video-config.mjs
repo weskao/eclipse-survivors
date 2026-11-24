@@ -43,3 +43,22 @@ export function assessHeroCandidateCoverage(hero, draws) {
     hasBothDirections: frames.E.size >= 2 && frames.S.size >= 2,
   }
 }
+
+/** Report real East attack/special candidate cells independently of run evidence. */
+export function assessHeroEastActionCoverage(hero, draws) {
+  const frames = { attack: new Set(), special: new Set() }
+  for (const { src, sx, sy, sw, sh, mirrored } of draws) {
+    if (mirrored || sw !== 704 || sh !== 704 || ![0, 704].includes(sx) || ![0, 704].includes(sy)) continue
+    let pathname
+    try { pathname = new URL(src).pathname } catch { continue }
+    for (const pose of ['attack', 'special']) {
+      if (pathname === `/src/assets/es2/production/heroes/${hero}/candidates/east-2026-11-23/${pose}-east-4frames@3x.webp`)
+        frames[pose].add(`${sx}:${sy}`)
+    }
+  }
+  return {
+    eastAttackFrames: frames.attack.size,
+    eastSpecialFrames: frames.special.size,
+    hasAllEastActionCandidateFrames: frames.attack.size === 4 && frames.special.size === 4,
+  }
+}
