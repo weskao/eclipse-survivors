@@ -4,8 +4,9 @@ const grid = document.querySelector<HTMLElement>('#grid')!
 const eastCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'E').length
 const southCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'S').length
 const diagonalCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'SE' || asset.direction === 'SW').length
+const northernCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'N' || asset.direction === 'NE' || asset.direction === 'NW').length
 document.querySelector<HTMLElement>('#candidate-summary')!.textContent =
-  `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing, ${southCount} South-facing and ${diagonalCount} diagonal four-frame strips.`
+  `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing, ${southCount} South-facing and ${diagonalCount} diagonal four-frame strips; ${northernCount} northern four-frame strips.`
 grid.setAttribute('aria-label', `${HERO_CANDIDATE_ATLASES.length} candidate animation strips`)
 
 const pause = document.querySelector<HTMLButtonElement>('#pause')!

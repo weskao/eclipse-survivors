@@ -34,11 +34,11 @@ function webpDimensions(data: Buffer): [number, number] {
   throw new Error('Unexpected WebP kind: ' + kind)
 }
 
-describe('ES2 all eighteen candidate hero motion atlases (real assets, QA only)', () => {
-  it('inventories exactly three East action clips and three southern run clips per hero', () => {
-    expect(HERO_CANDIDATE_ATLASES).toHaveLength(18)
+describe('ES2 all twenty-two candidate hero motion atlases (real assets, QA only)', () => {
+  it('inventories all existing southern/East clips and four eligible northern run clips', () => {
+    expect(HERO_CANDIDATE_ATLASES).toHaveLength(22)
     const found = new Set(HERO_CANDIDATE_ATLASES.map(c => c.hero + ':' + c.direction + ':' + c.pose))
-    expect(found.size).toBe(18)
+    expect(found.size).toBe(22)
     for (const hero of heroes) {
       for (const pose of poses) expect(found.has(hero + ':E:' + pose)).toBe(true)
       for (const direction of ['S', 'SE', 'SW']) expect(found.has(hero + ':' + direction + ':run')).toBe(true)
@@ -50,7 +50,7 @@ describe('ES2 all eighteen candidate hero motion atlases (real assets, QA only)'
     for (const clip of HERO_CANDIDATE_ATLASES) {
       const folder = clip.direction === 'E' ? 'east-2026-11-23'
         : clip.direction === 'S' ? HERO_SOUTH_RUN_DIRS[clip.hero]
-          : clip.direction.toLowerCase() + '-2026-11-24-batch-3'
+          : clip.direction.toLowerCase() + (clip.direction === 'SE' || clip.direction === 'SW' ? '-2026-11-24-batch-3' : '-2026-11-24-batch-4')
       const expected = clip.direction === 'E'
         ? eastManifest.candidatePoseSources[clip.hero + ':' + clip.pose]
         : JSON.parse(readFileSync(join(root, clip.hero,
@@ -82,7 +82,7 @@ describe('ES2 all eighteen candidate hero motion atlases (real assets, QA only)'
         expect((rect?.y ?? 9999) + clip.cellPixels).toBeLessThanOrEqual(clip.cellPixels * 2)
       }
     }
-    expect(hashes.size).toBe(18)
+    expect(hashes.size).toBe(22)
   })
 
   it('rejects invalid playback clocks before sampling source rectangles', () => {

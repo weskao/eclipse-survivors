@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage } from './es2-hero-video-config.mjs'
+import { assessHeroNorthernRunCoverage, heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage } from './es2-hero-video-config.mjs'
 
 test('production gameplay recording never enables pending hero art', () => {
   const config = heroVideoCaptureConfig('http://127.0.0.1:4173/?foo=bar', false)
@@ -139,4 +139,18 @@ test('rejects other heroes, duplicate, mirrored, malformed and spoofed candidate
     { ...actionCell(hero, 'attack', 3), src: `http://localhost:4174/other?src=${encodeURIComponent(valid.src)}` },
     actionCell(hero, 'run', 2),
   ]), { eastAttackFrames: 1, eastSpecialFrames: 1, hasAllEastActionCandidateFrames: false })
+})
+
+test('northern run evidence requires all four real distinct cells per eligible direction', () => {
+  const cell = (hero, direction, index) => ({
+    src: `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/${direction}-2026-11-24-batch-4/run-${direction}-4frames@3x.webp`,
+    sx: index % 2 * 768, sy: Math.floor(index / 2) * 768, sw: 768, sh: 768,
+  })
+  for (const [hero, directions] of [['shadowblade', ['ne', 'nw']], ['spirit-summoner', ['n']], ['crimson-paladin', ['n']]]) {
+    const draws = directions.flatMap(d => [0, 1, 2, 3].map(i => cell(hero, d, i)))
+    assert.equal(assessHeroNorthernRunCoverage(hero, draws).complete, true)
+    assert.equal(assessHeroNorthernRunCoverage(hero, draws.slice(1)).complete, false)
+    assert.equal(assessHeroNorthernRunCoverage(hero, draws.map(d => ({ ...d, mirrored: true }))).complete, false)
+  }
+  assert.deepEqual(assessHeroNorthernRunCoverage('shadowblade', [cell('shadowblade', 'n', 0), cell('crimson-paladin', 'ne', 0)]), { counts: { ne: 0, nw: 0 }, complete: false })
 })

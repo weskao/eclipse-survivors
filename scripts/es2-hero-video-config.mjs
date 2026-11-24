@@ -62,3 +62,23 @@ export function assessHeroEastActionCoverage(hero, draws) {
     hasAllEastActionCandidateFrames: frames.attack.size === 4 && frames.special.size === 4,
   }
 }
+
+/** Northern batch-4 evidence is independent of the legacy four-direction gate. */
+export function assessHeroNorthernRunCoverage(hero, draws) {
+  const directions = hero === 'shadowblade' ? ['ne', 'nw'] :
+    hero === 'spirit-summoner' || hero === 'crimson-paladin' ? ['n'] : []
+  const counts = {}
+  for (const direction of directions) {
+    const cells = new Set()
+    const expected = `/src/assets/es2/production/heroes/${hero}/candidates/${direction}-2026-11-24-batch-4/run-${direction}-4frames@3x.webp`
+    for (const { src, sx, sy, sw, sh, mirrored } of draws) {
+      let pathname
+      try { pathname = new URL(src).pathname } catch { continue }
+      if (pathname !== expected || mirrored || sw !== 768 || sh !== 768 ||
+        ![0, 768].includes(sx) || ![0, 768].includes(sy)) continue
+      cells.add(`${sx}:${sy}`)
+    }
+    counts[direction] = cells.size
+  }
+  return { counts, complete: directions.length > 0 && directions.every(direction => counts[direction] === 4) }
+}

@@ -4,7 +4,7 @@ import type { Ctx2D } from '../ctx'
 import type { HeroSheets } from '../hero-sheets'
 import { drawPortraitMotion } from './portrait-motion'
 import { CHARACTER_FOOT_BOTTOMS } from './character-foot-anchors'
-import { HERO_CANDIDATE_ATLASES, HERO_DIAGONAL_RUN_ATLASES } from './hero-candidate-atlas'
+import { HERO_CANDIDATE_ATLASES, HERO_DIAGONAL_RUN_ATLASES, HERO_NORTHERN_RUN_ATLASES } from './hero-candidate-atlas'
 import summonerSouthManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/manifest.json'
 import shadowSouthManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/manifest.json'
 import paladinSouthManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/manifest.json'
@@ -73,8 +73,8 @@ type HeroWithMotion = AtlasWithAction & {
   poseAtlases?: Partial<Record<PoseSheet, HTMLImageElement>>
   qaSouthRunUrl?: string
   qaSouthRunAtlas?: HTMLImageElement
-  qaDiagonalSources?: Partial<Record<1 | 3, { url: string; footBottoms: readonly number[] }>>
-  qaDiagonalAtlases?: Partial<Record<1 | 3, HTMLImageElement>>
+  qaDiagonalSources?: Partial<Record<1 | 3 | 5 | 6 | 7, { url: string; footBottoms: readonly number[] }>>
+  qaDiagonalAtlases?: Partial<Record<1 | 3 | 5 | 6 | 7, HTMLImageElement>>
   qaEastSources?: Partial<Record<'run' | 'attack' | 'special', string>>
   qaEastAtlases?: Partial<Record<'run' | 'attack' | 'special', HTMLImageElement>>
 }
@@ -112,8 +112,9 @@ export function loadProductionHeroes(
     if (enableSouthRunQA) {
       image.qaSouthRunUrl = PRODUCTION_HERO_SOUTH_RUN_SOURCES[id]
       image.qaDiagonalSources = {}
-      for (const clip of HERO_DIAGONAL_RUN_ATLASES)
-        if (clip.hero === id) image.qaDiagonalSources[clip.direction === 'SE' ? 1 : 3] = clip
+      const facingIndex = { SE: 1, SW: 3, NW: 5, N: 6, NE: 7 } as const
+      for (const clip of [...HERO_DIAGONAL_RUN_ATLASES, ...HERO_NORTHERN_RUN_ATLASES])
+        if (clip.hero === id) image.qaDiagonalSources[facingIndex[clip.direction]] = clip
       image.qaDiagonalAtlases = {}
       const east: Partial<Record<'run' | 'attack' | 'special', string>> = {}
       for (const clip of HERO_CANDIDATE_ATLASES)
@@ -137,7 +138,7 @@ export function productionHeroActionFrame(anim: HeroAnimation): number {
 }
 
 /** Four-frame QA footage for a selected southern facing; defaults to South for existing callers. */
-export function productionHeroSouthRunRect(anim: HeroAnimation, facing: 1 | 2 | 3 = 2): { x: number; y: number; size: 768 } | null {
+export function productionHeroSouthRunRect(anim: HeroAnimation, facing: 1 | 2 | 3 | 5 | 6 | 7 = 2): { x: number; y: number; size: 768 } | null {
   const direction = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
   if (anim.reducedMotion || direction !== facing || (anim.pose !== 'run' && anim.pose !== 'dash') ||
     !Number.isFinite(anim.frame) || !Number.isFinite(anim.count)) return null
@@ -493,7 +494,7 @@ export function drawProductionHeroFrame(
         return true
       }
     }
-    const diagonal = facing === 1 || facing === 3 ? facing : undefined
+    const diagonal = facing === 1 || facing === 3 || facing === 5 || facing === 6 || facing === 7 ? facing : undefined
     const clip = diagonal === undefined ? undefined : hero.qaDiagonalSources?.[diagonal]
     const qaRect = clip && diagonal !== undefined ? productionHeroSouthRunRect(anim, diagonal)
       : hero.qaSouthRunUrl ? productionHeroSouthRunRect(anim) : null

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { chromium } from 'playwright'
-import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage } from './es2-hero-video-config.mjs'
+import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage, assessHeroNorthernRunCoverage } from './es2-hero-video-config.mjs'
 
 const candidateQA = process.env.ES2_HERO_QA === '1'
 const capture = heroVideoCaptureConfig(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/', candidateQA)
@@ -128,6 +128,28 @@ try {
         }
       }
       if (candidateQA) {
+        // Exercise only the newly admitted directions in actual combat.
+        for (const [direction, keys] of heroId === 'shadowblade'
+          ? [['ne', ['KeyW', 'KeyD']], ['nw', ['KeyW', 'KeyA']]] : [['n', ['KeyW']]]) {
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const evidence = assessHeroNorthernRunCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
+            if (attempt > 0 && evidence.counts[direction] === 4) break
+            for (let i = 0; i < 8; i++) {
+              const choice = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
+              if (!await choice.isVisible()) break
+              await choice.click()
+            }
+            if (await page.evaluate(() => window.__test?.mode) !== 'play') break
+            try {
+              for (const key of keys) await page.keyboard.down(key)
+              await page.waitForTimeout(1600)
+              await page.screenshot({ path: `${output}/${heroId}-${direction}-run-gameplay.png` })
+              await page.waitForTimeout(500)
+            } finally {
+              for (const key of keys) await page.keyboard.up(key)
+            }
+          }
+        }
         // Predecode the exact assets without drawing or claiming coverage.
         // The game renderer must still draw each source cell in real combat.
         await page.evaluate(async id => {
@@ -167,6 +189,9 @@ try {
         eastActionCandidateCoverage: candidateQA
           ? assessHeroEastActionCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
           : null,
+        northernRunCandidateCoverage: candidateQA
+          ? assessHeroNorthernRunCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
+          : null,
         browserErrors: errors }
       assert.ok(metrics.canvasFramesRendered > 30, heroId + ': game Canvas stopped drawing')
       assert.deepEqual(errors, [], heroId + ': unexpected page script errors')
@@ -195,6 +220,8 @@ if (candidateQA) {
   const incomplete = results.filter(result => !result.candidateCoverage.hasAllFourRunCandidateFrames ||
     (result.heroId === 'shadowblade' && result.candidateCoverage.mirroredWestRunFrames !== 4))
   assert.deepEqual(incomplete, [], 'Incomplete real Canvas run-candidate coverage')
+  assert.deepEqual(results.filter(result => !result.northernRunCandidateCoverage.complete), [],
+    'Incomplete real Canvas northern run-candidate coverage')
   assert.deepEqual(results.filter(result => !result.eastActionCandidateCoverage.hasAllEastActionCandidateFrames), [],
     'Incomplete real Canvas East attack/special candidate coverage')
 }
