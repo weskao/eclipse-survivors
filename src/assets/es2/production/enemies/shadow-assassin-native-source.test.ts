@@ -15,7 +15,7 @@ describe('Shadow Assassin actual native 3x six-pose source contract', () => {
       path: 'shadow-assassin-body@3x.webp',
       width: 1296, height: 216, frameWidth: 216, frameHeight: 216,
       columns: 6, rows: 1, frames: 6, native3x: true,
-      status: 'needs-human-approval',
+      status: 'approved',
       sourceMaster: 'masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp',
       sourceMasterWidth: 1536, sourceMasterHeight: 1024,
       sourceMasterFrameWidth: 512, sourceMasterFrameHeight: 512,

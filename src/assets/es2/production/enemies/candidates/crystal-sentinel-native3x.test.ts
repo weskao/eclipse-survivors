@@ -43,7 +43,7 @@ describe('Crystal Sentinel six-pose 3x QA candidate (not production release)', (
     expect(qa.humanApproval).toBe('pending')
   })
 
-  it('shows the candidate beside the native runtime art and preserves pending approval', () => {
+  it('keeps separate QA candidate pending while canonical artwork is owner-approved', () => {
     const source = readFileSync(join(parent, 'qa-preview.ts'), 'utf8')
     expect(source).toContain('crystalSentinelCandidate')
     expect(source).toContain("import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'")
@@ -52,7 +52,7 @@ describe('Crystal Sentinel six-pose 3x QA candidate (not production release)', (
     const canonical = manifest.assets.find(a => a.id === 'crystal-sentinel')
     expect(canonical).toBeDefined()
     expect(canonical?.path).toBe('crystal-sentinel-body@3x.webp')
-    expect(canonical?.status).toBe('needs-human-approval')
+    expect(canonical?.status).toBe('approved')
     expect(canonical?.native3x).toBe(true)
   })
 })

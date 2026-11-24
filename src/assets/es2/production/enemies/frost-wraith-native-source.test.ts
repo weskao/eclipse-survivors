@@ -16,7 +16,7 @@ describe('Frost Wraith authored native 3x world art', () => {
       path: 'frost-wraith-body@3x.webp',
       width: 1368, height: 228, frameWidth: 228, frameHeight: 228,
       frames: 6, columns: 6, rows: 1,
-      native3x: true, alpha: true, status: 'needs-human-approval',
+      native3x: true, alpha: true, status: 'approved',
       sourceMaster: 'masters/frost-wraith-6poses-3x2-master-1536x1024.png',
       sourceMasterWidth: 1536, sourceMasterHeight: 1024,
       sourceMasterFrameWidth: 512, sourceMasterFrameHeight: 512,
