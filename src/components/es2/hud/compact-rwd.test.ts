@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { emptyHud } from '../../../game/store'
+import { currentLocale, setLocale } from '../../../i18n'
 import CombatHud from './CombatHud.vue'
 
 const wrappers: Array<{ unmount(): void }> = []
@@ -34,6 +35,24 @@ function render() {
 }
 
 describe('compact portrait combat HUD regression', () => {
+  it('shows the localized biome and weather while the boss objective is active', async () => {
+    const locale = currentLocale.value
+    const wrapper = render()
+    try {
+      setLocale('en')
+      await wrapper.setProps({ hud: {
+        ...emptyHud(), bossPct: 80, quest: '最終決戰 · 黎明遺庭', sceneTitle: '黎明遺庭 · 晨光薄霧',
+      } })
+      const title = wrapper.get('[data-es2-scene-title]')
+      expect(title.text()).toBe('Dawnfall Courtyard · Dawn Mist')
+      setLocale('zh-TW')
+      await nextTick()
+      expect(title.text()).toBe('黎明遺庭 · 晨光薄霧')
+    } finally {
+      setLocale(locale)
+    }
+  })
+
   it('exposes one accessible, collapsed-by-default information control without duplicating combat data', async () => {
     const wrapper = render()
     const toggle = wrapper.get('[data-es2-info-toggle]')

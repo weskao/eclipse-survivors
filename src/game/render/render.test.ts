@@ -257,6 +257,29 @@ describe('drawMiniMap', () => {
 })
 
 describe('biome renderer contracts', () => {
+  it('draws the scene title at the original height except during compact phone combat', () => {
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const titlePositions = (s: GameState, width: number, height: number): number[] => {
+      s.W = width
+      s.H = height
+      const { ctx } = createFakeCtx()
+      const baselines: number[] = []
+      ctx.fillText = (text, _x, y) => {
+        if (text === '黎明遺庭 · 晨光薄霧' || text === 'Dawnfall Courtyard · Dawn Mist') baselines.push(y)
+      }
+      drawFrame(ctx, s, 1, assets)
+      return baselines
+    }
+    const run = busyState()
+    expect(titlePositions(run, 320, 640)).toEqual([])
+    expect(titlePositions(run, 700, 700)).toEqual([])
+    expect(titlePositions(run, 640, 320)).toEqual([])
+    expect(titlePositions(run, 812, 375)).toEqual([])
+    expect(titlePositions(run, 701, 900)).toEqual([34])
+    expect(titlePositions(run, 901, 520)).toEqual([34])
+    expect(titlePositions(menuState(), 375, 812)).toEqual([34])
+  })
+
   it('uses different cached world tiles and landmarks across scenes', () => {
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(true), make)
