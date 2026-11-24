@@ -96,6 +96,13 @@ describe('home selection persistence', () => {
     expect(engine.state.runMode).toBe('relic-hunt')
   })
 
+  it('stores an explicitly selected default mode without replaying selection audio', () => {
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBeNull()
+    engine.selectRunMode('quick')
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBe('quick')
+    expect(audio.cues).toEqual([])
+  })
+
   it('replaces both stored selections immediately, even without starting combat', () => {
     engine.selectHero('shadowblade')
     engine.selectRunMode('boss-rush')

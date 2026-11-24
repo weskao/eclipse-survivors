@@ -1043,9 +1043,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     mount,
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) {
-      if (s.mode !== 'menu' || !isRunModeId(mode) || ui.runMode === mode) return
-      ui.runMode = mode
+      if (s.mode !== 'menu' || !isRunModeId(mode)) return
       saveSetting('eclipseSelectedRunMode', mode)
+      if (ui.runMode === mode) return
+      ui.runMode = mode
       wakeAudio()
       audio.playSfx('select')
     },
