@@ -49,4 +49,20 @@ describe('DEV boss action source references (not native-3x production art)', () 
     expect(y + h).toBeCloseTo(4)
     expect(Math.max(w, h)).toBeCloseTo(236 * 1.24)
   })
+  it.each(ids)('%s draws packed source poses at a constant scale and foot anchor', id => {
+    const packed = { complete: true, naturalWidth: 672, naturalHeight: 336 } as HTMLImageElement
+    for (const phase of [1, 2, 3] as const) {
+      const calls: unknown[][] = []
+      const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+      for (const progress of [0, .5, 1]) expect(drawBossAttackReference(ctx, packed, snapshot(id, phase, progress), 236)).toBe(true)
+      for (const life of [1, .5, 0]) expect(drawBossAttackReference(ctx, packed, snapshot(id, phase, undefined, life), 236)).toBe(true)
+      expect(calls).toHaveLength(6)
+      const scale = Number(calls[0]![7]) / 112
+      for (const [i, call] of calls.entries()) {
+        expect(call.slice(1, 5)).toEqual([i * 112, (phase - 1) * 112, 112, 112])
+        expect(call.slice(5)).toEqual([-56 * scale, 4 - 107 * scale, 112 * scale, 112 * scale])
+      }
+    }
+  })
+
 })
