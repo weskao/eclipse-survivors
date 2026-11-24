@@ -12,12 +12,34 @@ import paladinSouthRun from '../../../assets/es2/production/heroes/crimson-palad
 import paladinAttack from '../../../assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/attack-east-4frames@3x.webp'
 import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/candidates/east-2026-11-23/special-east-4frames@3x.webp'
 
+import shadowSE from '../../../assets/es2/production/heroes/shadowblade/candidates/se-2026-11-24-batch-3/run-se-4frames@3x.webp'
+import shadowSEManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/se-2026-11-24-batch-3/manifest.json'
+import shadowSW from '../../../assets/es2/production/heroes/shadowblade/candidates/sw-2026-11-24-batch-3/run-sw-4frames@3x.webp'
+import shadowSWManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/sw-2026-11-24-batch-3/manifest.json'
+import summonerSE from '../../../assets/es2/production/heroes/spirit-summoner/candidates/se-2026-11-24-batch-3/run-se-4frames@3x.webp'
+import summonerSEManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/se-2026-11-24-batch-3/manifest.json'
+import summonerSW from '../../../assets/es2/production/heroes/spirit-summoner/candidates/sw-2026-11-24-batch-3/run-sw-4frames@3x.webp'
+import summonerSWManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/sw-2026-11-24-batch-3/manifest.json'
+import paladinSE from '../../../assets/es2/production/heroes/crimson-paladin/candidates/se-2026-11-24-batch-3/run-se-4frames@3x.webp'
+import paladinSEManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/se-2026-11-24-batch-3/manifest.json'
+import paladinSW from '../../../assets/es2/production/heroes/crimson-paladin/candidates/sw-2026-11-24-batch-3/run-sw-4frames@3x.webp'
+import paladinSWManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/sw-2026-11-24-batch-3/manifest.json'
+
 /** The current South review clips; older candidate originals remain archived. */
 export const HERO_SOUTH_RUN_DIRS = {
   shadowblade: 'south-2026-11-24-batch-2',
   'spirit-summoner': 'south-2026-11-24-mist-repair',
   'crimson-paladin': 'south-2026-11-24-batch-2',
 } as const
+
+export const HERO_DIAGONAL_RUN_ATLASES = [
+  { hero: 'shadowblade', pose: 'run', direction: 'SE', cellPixels: 768, url: shadowSE, footBottoms: shadowSEManifest.footBottoms },
+  { hero: 'shadowblade', pose: 'run', direction: 'SW', cellPixels: 768, url: shadowSW, footBottoms: shadowSWManifest.footBottoms },
+  { hero: 'spirit-summoner', pose: 'run', direction: 'SE', cellPixels: 768, url: summonerSE, footBottoms: summonerSEManifest.footBottoms },
+  { hero: 'spirit-summoner', pose: 'run', direction: 'SW', cellPixels: 768, url: summonerSW, footBottoms: summonerSWManifest.footBottoms },
+  { hero: 'crimson-paladin', pose: 'run', direction: 'SE', cellPixels: 768, url: paladinSE, footBottoms: paladinSEManifest.footBottoms },
+  { hero: 'crimson-paladin', pose: 'run', direction: 'SW', cellPixels: 768, url: paladinSW, footBottoms: paladinSWManifest.footBottoms },
+] as const
 
 export const HERO_CANDIDATE_ATLASES = [
   { hero: 'shadowblade', pose: 'run', direction: 'E', cellPixels: 704, url: shadowRun },
@@ -32,6 +54,7 @@ export const HERO_CANDIDATE_ATLASES = [
   { hero: 'shadowblade', pose: 'run', direction: 'S', cellPixels: 768, url: shadowSouthRun },
   { hero: 'spirit-summoner', pose: 'run', direction: 'S', cellPixels: 768, url: summonerSouthRun },
   { hero: 'crimson-paladin', pose: 'run', direction: 'S', cellPixels: 768, url: paladinSouthRun },
+  ...HERO_DIAGONAL_RUN_ATLASES,
 ] as const
 
 /** Each isolated 2×2 atlas is sampled using its declared exact source-cell size. */

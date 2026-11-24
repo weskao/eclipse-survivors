@@ -94,7 +94,7 @@
     2,
     2
   ],
-  "qaGameplayApplied": false,
+  "qaGameplayApplied": true,
   "frameTiming": "four independent candidate poses; incomplete 10-frame cycle",
   "marginRepair": {
     "maxAlphaRemoved": 3,

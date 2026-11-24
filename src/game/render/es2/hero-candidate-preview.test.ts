@@ -27,6 +27,7 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain(`${HERO_CANDIDATE_ATLASES.length} local WebP candidates`)
     expect(summary).toContain(`${east} East-facing`)
     expect(summary).toContain(`${south} South-facing`)
+    expect(summary).toContain('6 diagonal four-frame strips')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
       .toBe(`${HERO_CANDIDATE_ATLASES.length} candidate animation strips`)
     expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { drawProductionHeroFrame, loadProductionHeroes, productionHeroSouthRunRect, productionHeroQAEastRect, PRODUCTION_HERO_SOUTH_RUN_SOURCES } from './production-heroes'
+import { HERO_DIAGONAL_RUN_ATLASES } from './hero-candidate-atlas'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 
@@ -98,6 +99,32 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
     expect(calls).toHaveLength(1)
   })
 
+  it('draws independent SE and SW atlases for each hero with exact source cells and anchors', () => {
+    const images: HTMLImageElement[] = []
+    const heroes = loadProductionHeroes(() => {
+      const image = { src: '', complete: true,
+        get naturalWidth() { return this.src.includes('4frames@3x.webp') ? 1536 : 900 },
+        get naturalHeight() { return this.naturalWidth },
+      } as HTMLImageElement
+      images.push(image)
+      return image
+    }, true)
+    expect(images).toHaveLength(3)
+    for (const clip of HERO_DIAGONAL_RUN_ATLASES) {
+      const calls: unknown[][] = []
+      const ctx = { save: () => {}, restore: () => {}, drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+      const direction = clip.direction === 'SE' ? 1 : 3
+      const count = images.length
+      for (let frame = 0; frame < 4; frame++) {
+        expect(drawProductionHeroFrame(ctx, heroes[clip.hero], makeAnim({ direction, frame, count: 4 }), 117, 147)).toBe(true)
+        expect(calls[frame]?.slice(1, 5)).toEqual([(frame % 2) * 768, Math.floor(frame / 2) * 768, 768, 768])
+        expect(Number(calls[frame]?.[6])).toBeCloseTo(4 - 147 * clip.footBottoms[frame]! / 627)
+        expect((calls[frame]?.[0] as HTMLImageElement).src).toBe(clip.url)
+      }
+      expect(images).toHaveLength(count + 1)
+    }
+  })
+
   it('never loads QA images when disabled', () => {
     const images: HTMLImageElement[] = []
     const heroes = loadProductionHeroes(() => {
@@ -107,5 +134,6 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
     }, false)
     expect(images).toHaveLength(3)
     expect((heroes.shadowblade as HTMLImageElement & { qaSouthRunUrl?: string }).qaSouthRunUrl).toBeUndefined()
+    expect((heroes.shadowblade as HTMLImageElement & { qaDiagonalSources?: unknown }).qaDiagonalSources).toBeUndefined()
   })
 })

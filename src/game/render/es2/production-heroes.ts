@@ -4,7 +4,7 @@ import type { Ctx2D } from '../ctx'
 import type { HeroSheets } from '../hero-sheets'
 import { drawPortraitMotion } from './portrait-motion'
 import { CHARACTER_FOOT_BOTTOMS } from './character-foot-anchors'
-import { HERO_CANDIDATE_ATLASES } from './hero-candidate-atlas'
+import { HERO_CANDIDATE_ATLASES, HERO_DIAGONAL_RUN_ATLASES } from './hero-candidate-atlas'
 import summonerSouthManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/manifest.json'
 import shadowSouthManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/manifest.json'
 import paladinSouthManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/manifest.json'
@@ -73,6 +73,8 @@ type HeroWithMotion = AtlasWithAction & {
   poseAtlases?: Partial<Record<PoseSheet, HTMLImageElement>>
   qaSouthRunUrl?: string
   qaSouthRunAtlas?: HTMLImageElement
+  qaDiagonalSources?: Partial<Record<1 | 3, { url: string; footBottoms: readonly number[] }>>
+  qaDiagonalAtlases?: Partial<Record<1 | 3, HTMLImageElement>>
   qaEastSources?: Partial<Record<'run' | 'attack' | 'special', string>>
   qaEastAtlases?: Partial<Record<'run' | 'attack' | 'special', HTMLImageElement>>
 }
@@ -109,6 +111,10 @@ export function loadProductionHeroes(
     image.motionAtlasFactory = makeImage
     if (enableSouthRunQA) {
       image.qaSouthRunUrl = PRODUCTION_HERO_SOUTH_RUN_SOURCES[id]
+      image.qaDiagonalSources = {}
+      for (const clip of HERO_DIAGONAL_RUN_ATLASES)
+        if (clip.hero === id) image.qaDiagonalSources[clip.direction === 'SE' ? 1 : 3] = clip
+      image.qaDiagonalAtlases = {}
       const east: Partial<Record<'run' | 'attack' | 'special', string>> = {}
       for (const clip of HERO_CANDIDATE_ATLASES)
         if (clip.hero === id && clip.direction === 'E') east[clip.pose] = clip.url
@@ -130,10 +136,10 @@ export function productionHeroActionFrame(anim: HeroAnimation): number {
   return 0
 }
 
-/** South-only four-frame QA footage. Indexing is bounded; other facings keep production art. */
-export function productionHeroSouthRunRect(anim: HeroAnimation): { x: number; y: number; size: 768 } | null {
+/** Four-frame QA footage for a selected southern facing; defaults to South for existing callers. */
+export function productionHeroSouthRunRect(anim: HeroAnimation, facing: 1 | 2 | 3 = 2): { x: number; y: number; size: 768 } | null {
   const direction = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
-  if (anim.reducedMotion || direction !== 2 || (anim.pose !== 'run' && anim.pose !== 'dash') ||
+  if (anim.reducedMotion || direction !== facing || (anim.pose !== 'run' && anim.pose !== 'dash') ||
     !Number.isFinite(anim.frame) || !Number.isFinite(anim.count)) return null
   const count = Math.max(1, anim.count)
   const index = Math.min(3, Math.floor(Math.max(0, anim.frame) * 4 / count) % 4)
@@ -480,17 +486,23 @@ export function drawProductionHeroFrame(
         return true
       }
     }
-    const qaRect = hero.qaSouthRunUrl ? productionHeroSouthRunRect(anim) : null
+    const facing = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+    const diagonal = facing === 1 || facing === 3 ? facing : undefined
+    const clip = diagonal === undefined ? undefined : hero.qaDiagonalSources?.[diagonal]
+    const qaRect = clip && diagonal !== undefined ? productionHeroSouthRunRect(anim, diagonal)
+      : hero.qaSouthRunUrl ? productionHeroSouthRunRect(anim) : null
     if (qaRect) {
-      let qaAtlas = hero.qaSouthRunAtlas
+      const diagonalCache = clip && diagonal !== undefined ? (hero.qaDiagonalAtlases ??= {}) : undefined
+      let qaAtlas = diagonalCache && diagonal !== undefined ? diagonalCache[diagonal] : hero.qaSouthRunAtlas
       if (!qaAtlas) {
         qaAtlas = hero.motionAtlasFactory ? hero.motionAtlasFactory() : new Image()
-        hero.qaSouthRunAtlas = qaAtlas
-        qaAtlas.src = hero.qaSouthRunUrl!
+        if (diagonalCache && diagonal !== undefined) diagonalCache[diagonal] = qaAtlas
+        else hero.qaSouthRunAtlas = qaAtlas
+        qaAtlas.src = clip?.url ?? hero.qaSouthRunUrl!
       }
       if (qaAtlas.complete && qaAtlas.naturalWidth === 1536 && qaAtlas.naturalHeight === 1536) {
         const index = qaRect.x / qaRect.size + 2 * qaRect.y / qaRect.size
-        const anchor = hero.heroId ? SOUTH_QA_FOOT_BOTTOMS[hero.heroId]?.[index] : undefined
+        const anchor = clip?.footBottoms[index] ?? (hero.heroId ? SOUTH_QA_FOOT_BOTTOMS[hero.heroId]?.[index] : undefined)
         drawSmoothedHero(ctx, image, { type: 'candidate', atlas: qaAtlas, rect: qaRect, anchor },
           anim, width, height, frameTimeSeconds)
         return true
