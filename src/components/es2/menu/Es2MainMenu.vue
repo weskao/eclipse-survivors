@@ -101,7 +101,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               :aria-label="t(hero.name) + ' · ' + t(hero.role)"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
               <span class="es2-hero-number">{{ hero.number }} / {{ t('HERO') }}</span>
-              <img :src="ART_URLS[hero.id]" :alt="t(hero.name + ' 原始角色插畫')" decoding="async" draggable="false" />
+              <img :src="ART_URLS[hero.id]" :alt="t('{name} 原始角色插畫', { name: t(hero.name) })" decoding="async" draggable="false" />
               <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small>
                 <HeroStats class="es2-roster__stats" data-es2-classic-preview :stats="JOB[hero.id]" />
                 <span class="es2-hero-selection">{{ t((heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span></span>
@@ -156,7 +156,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <p>{{ t(detailSpecialization.description) }}</p>
           <p>{{ t('起始武器 ·') }} {{ t(detailSpecialization.startingEquipment) }}</p>
           <div class="es2-hero-detail-special">
-            <img :src="detailSpecialization.specialIconSrc" :alt="t(detailSpecialization.label + ' 主動技能圖示')"
+            <img :src="detailSpecialization.specialIconSrc" :alt="t('{name} 主動技能圖示', { name: t(detailSpecialization.label) })"
               width="44" height="44" decoding="async" />
             <span>{{ t('主動技能 ·') }} {{ t(detailSpecialization.special) }}{{ t('（冷卻') }} {{ detailSpecialization.specialCooldown }} {{ t('秒）') }}</span>
           </div>

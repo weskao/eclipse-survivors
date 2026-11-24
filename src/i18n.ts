@@ -1700,6 +1700,9 @@ const english = new Map<string, string>([
   , ["收藏家徽章", "Collector Badge"]
   , ["完美挑戰徽章", "Flawless Badge"]
   , ["{name} 裝飾圖案", "{name} decorative artwork"]
+  , ["{name} 原始角色插畫", "{name} original character illustration"]
+  , ["{name} 主動技能圖示", "{name} active ability icon"]
+  , ["{name} 主動技能", "{name} active ability"]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],

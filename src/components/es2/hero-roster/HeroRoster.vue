@@ -48,7 +48,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
         <span class="es2-roster__gear">{{ t("起始武器 ·") }} {{ t(hero.startingEquipment) }}</span>
         <span class="es2-roster__skill">
           <img data-hero-skill-icon class="es2-roster__skill-icon" :src="hero.specialIconSrc"
-            :alt="t(hero.label + ' 主動技能圖示')" width="44" height="44"
+            :alt="t('{name} 主動技能圖示', { name: t(hero.label) })" width="44" height="44"
             loading="lazy" decoding="async" draggable="false" />
           <span>{{ t("主動技能 ·") }} {{ t(hero.special) }}{{ t("（冷卻") }} {{ hero.specialCooldown }} {{ t("秒）") }}</span>
         </span>

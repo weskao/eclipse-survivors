@@ -22,6 +22,22 @@ function menu(props: Record<string, unknown> = {}) {
   return wrapper
 }
 
+describe('homepage image alternative text', () => {
+  afterEach(() => setLocale('zh-TW'))
+
+  it('never mixes Chinese fragments into English hero art and skill icon labels', () => {
+    setLocale('en')
+    const alts = menu().findAll('img[alt]').map(image => image.attributes('alt')!).filter(Boolean)
+    expect(alts).toContain('Nightmark Ranger original character illustration')
+    for (const alt of alts) expect(alt, alt).not.toMatch(/[㐀-鿿]/)
+  })
+
+  it('keeps the Traditional Chinese hero art label', () => {
+    setLocale('zh-TW')
+    expect(menu().get('[data-hero="ranger"] img').attributes('alt')).toBe('夜痕遊俠 原始角色插畫')
+  })
+})
+
 describe('phone homepage viewport-first navigation', () => {
   it('keeps each classic hero\'s four base stats on its card without a duplicate panel', () => {
     const wrapper = menu()
