@@ -22,6 +22,32 @@ function menu(props: Record<string, unknown> = {}) {
   return wrapper
 }
 
+describe('homepage game title', () => {
+  it('updates the title when switching locale without remounting', async () => {
+    const locale = getLocale()
+    try {
+      setLocale('en')
+      const wrapper = menu()
+      const heading = wrapper.get('.es2-menu-brand h1')
+      expect(heading.text()).toBe('ECLIPSE SURVIVORS')
+      expect(heading.get('em').text()).toBe('SURVIVORS')
+      expect(document.title).toBe('Eclipse Survivors')
+
+      setLocale('zh-TW')
+      await nextTick()
+      expect(heading.text()).toBe('暮境遠征')
+      expect(document.title).toBe('暮境遠征｜ECLIPSE SURVIVORS')
+
+      setLocale('en')
+      await nextTick()
+      expect(heading.text()).toBe('ECLIPSE SURVIVORS')
+      expect(heading.get('em').text()).toBe('SURVIVORS')
+    } finally {
+      setLocale(locale)
+    }
+  })
+})
+
 describe('homepage image alternative text', () => {
   afterEach(() => setLocale('zh-TW'))
 

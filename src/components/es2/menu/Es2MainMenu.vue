@@ -15,6 +15,7 @@ import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
 import type { MenuView } from './model'
 const props = defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
   'blood-moon-cathedral', 'cursed-forest', 'abyssal-necropolis', 'celestial-rift',
 ] as const
@@ -92,7 +93,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
     <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div class="es2-menu-shell">
       <header class="es2-menu-header">
-        <div class="es2-menu-brand"><span class="es2-eyebrow">{{ t('✦ 天穹星蝕 ✦') }}</span><h1>ECLIPSE <em>SURVIVORS</em></h1><p>{{ t("穿越失落的國度，成為黑夜之後的第一道曙光。") }}</p></div>
+        <div class="es2-menu-brand"><span class="es2-eyebrow">{{ t('✦ 天穹星蝕 ✦') }}</span><h1>{{ titleParts[0] }}<em v-if="titleParts.length > 1">{{ ' ' + titleParts.slice(1).join(' ') }}</em></h1><p>{{ t("穿越失落的國度，成為黑夜之後的第一道曙光。") }}</p></div>
         <div class="es2-top-actions"><span id="gameVersion" class="es2-version menu-version">v{{ version }}</span>
           <button type="button" class="es2-icon-button" data-es2-settings :aria-label="t('開啟遊戲設定')" @click="emit('settings')">⚙ <span>{{ t("設定") }}</span></button>
           <button v-if="needsAudioUnlock" type="button" class="es2-icon-button" data-es2-audio-unlock @click="emit('enableAudio')">{{ t("♫ 啟用音樂") }}</button>

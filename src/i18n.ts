@@ -8,6 +8,7 @@ export interface LocaleStorage { getItem(key: string): string | null; setItem(ke
 export const LOCALE_STORAGE_KEY = 'eclipse-survivors-locale'
 
 const english = new Map<string, string>([
+  ['暮境遠征', 'Eclipse Survivors'],
   ['血量偏低', 'Low health'],
   ['生命危急', 'Critical health'],
   ['瀕死', 'Near death'],
@@ -1739,7 +1740,8 @@ export const getLocale = (): Locale => currentLocale.value
 function syncDocument(): void {
   if (typeof document === 'undefined') return
   document.documentElement.lang = currentLocale.value
-  document.title = currentLocale.value === 'en' ? 'Eclipse Survivors' : '暮境遠征｜ECLIPSE SURVIVORS'
+  const gameTitle = t('暮境遠征')
+  document.title = currentLocale.value === 'en' ? gameTitle : `${gameTitle}｜${english.get('暮境遠征')!.toUpperCase()}`
   document.querySelector('meta[name="description"]')?.setAttribute('content', currentLocale.value === 'en'
     ? 'A fantasy survival action game featuring evolving skills, bosses and mobile controls.'
     : '奇幻生存動作遊戲：英雄、武器進化、首領挑戰與行動裝置操控。')
