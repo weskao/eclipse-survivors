@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seeded, setRandom } from './math'
+import { BALANCE } from './config'
 import { createHero, createState } from './state'
 import { rollEventKind, trySpawnEvent, tickWorld } from './events'
 import { nearbyHazards, nearbyObstacles } from './world'
@@ -43,23 +44,34 @@ describe('controlled random events', () => {
     }
     expect(sequence()).toEqual(sequence())
   })
-  it('leaves chests and healing shrines reachable for 20 seconds', () => {
+  it('leaves chests and healing shrines reachable for the configured lifetime', () => {
     const s = make()
     const spawned = trySpawnEvent(s, 'shrine', seeded(91))
     expect(spawned).toBe(true)
-    expect(s.events[0]?.expiresAt).toBe(20)
+    expect(s.events[0]?.expiresAt).toBe(BALANCE.events.lifetime)
   })
-  it('permits a 70% event-roll opportunity while keeping placement rules', () => {
+  it('permits a 90% event-roll opportunity while keeping placement rules', () => {
     const s = make()
     s.nextEventAt = 0
     const position = seeded(91)
     let draws = 0
     setRandom(() => {
       draws++
-      return draws === 1 ? 0 : draws === 2 ? 0.70 : draws === 3 ? 0.1 : position()
+      return draws === 1 ? 0 : draws === 2 ? 0.90 : draws === 3 ? 0.1 : position()
     })
     tickWorld(s, .016, hooks())
     expect(s.events).toHaveLength(1)
+  })
+  it('allows a third scattered reward but respects the configured active cap', () => {
+    const s = make()
+    s.events = Array.from({ length: BALANCE.events.maxActive - 1 }, (_, i) => ({
+      id: i + 1, kind: 'chest' as const, x: 2000 + i * 200, y: 2000, expiresAt: 100,
+    }))
+    s.eventSerial = s.events.length
+    expect(BALANCE.events.maxActive).toBeGreaterThanOrEqual(3)
+    expect(trySpawnEvent(s, 'shrine', seeded(91))).toBe(true)
+    expect(s.events).toHaveLength(BALANCE.events.maxActive)
+    expect(trySpawnEvent(s, 'chest', seeded(91))).toBe(false)
   })
   it('awards a chest exactly once and expires unused events', () => {
     const s = make()

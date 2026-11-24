@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createWorldEventDirector } from './director'
+import { BALANCE } from '../../config'
 import { WORLD_EVENT_DEFINITIONS } from './definitions'
 import { WORLD_EVENTS_PACK } from '../packs/events'
 import { createContentRegistry } from '../registry'
@@ -107,7 +108,31 @@ describe('world event contract', () => {
     expect(director.spawn('events:wandering-merchant', w, point)).not.toBeNull()
     expect(director.spawn('events:cursed-altar', w, { x: 250, y: 0 })).toBeNull()
     expect(director.spawn('events:cursed-altar', w, { x: -240, y: 0 })).not.toBeNull()
-    expect(director.spawn('events:divine-shrine', w, { x: 0, y: 250 })).toBeNull()
+    expect(director.spawn('events:divine-shrine', w, { x: 0, y: 250 })).not.toBeNull()
+    expect(director.spawn('events:blood-pact', w, { x: 0, y: -250 })).not.toBeNull()
+    expect(director.active).toHaveLength(BALANCE.events.interactive.maxActive)
+    expect(director.spawn('events:ancient-forge', w, { x: 500, y: 0 })).toBeNull()
+  })
+
+  it('introduces events earlier and covers all twelve types before repeating', () => {
+    const { director } = setup()
+    const w = world()
+    w.time = BALANCE.events.firstSpawnAt
+    director.tick(w)
+    expect(director.active).toHaveLength(1)
+    const seen = new Map<string, string>()
+    for (let time = w.time; time <= 150; time++) {
+      w.time = time
+      director.tick(w)
+      expect(director.active.length).toBeLessThanOrEqual(BALANCE.events.interactive.maxActive)
+      for (const event of director.active) {
+        if (seen.has(event.id)) continue
+        seen.set(event.id, event.kind)
+      }
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(WORLD_EVENT_DEFINITIONS.length)
+    expect(new Set([...seen.values()].slice(0, WORLD_EVENT_DEFINITIONS.length)).size)
+      .toBe(WORLD_EVENT_DEFINITIONS.length)
   })
 
   it('schedules deterministically with a bounded number of attempts and no pausing drift', () => {

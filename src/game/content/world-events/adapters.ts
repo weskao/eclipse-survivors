@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import { addXp } from '../../progression'
 import type { GameHooks, GameState, Point } from '../../types'
 import { clearApproach, pointIsClear } from '../../world'
@@ -80,7 +81,7 @@ export function createLegacyEventCommit(
 
 /** Guidance for engine integration; no shared files are modified by this branch. */
 export const WORLD_EVENT_INTEGRATION = {
-  maxActive: 2,
+  maxActive: BALANCE.events.interactive.maxActive,
   interactionRadius: 64,
   /** Current engine world tick must call director.tick(createLegacyEventWorld(state)) only during play. */
   lifecycle: ['reset', 'scene-change', 'play-tick'] as const,

@@ -65,6 +65,22 @@ describe('single-source numerical game balance', () => {
     expect(rollEventKind(() => 0.99999)).toBe('challenge')
   })
 
+  it('keeps map events frequent, reachable and bounded throughout a run', () => {
+    const events = BALANCE.events
+    expect(events.spawnChance).toBeGreaterThanOrEqual(0.9)
+    expect(events.spawnChance).toBeLessThanOrEqual(1)
+    expect(events.firstSpawnAt).toBeLessThanOrEqual(4)
+    expect(events.sceneSpawnDelay).toBeLessThanOrEqual(4)
+    for (const settings of [events, events.interactive]) {
+      expect(settings.spawnIntervalBase).toBeGreaterThan(0)
+      expect(settings.spawnIntervalBase + settings.spawnIntervalVariation).toBeLessThanOrEqual(8)
+      expect(settings.lifetime).toBeGreaterThanOrEqual(28)
+      expect(settings.maxActive).toBeGreaterThanOrEqual(3)
+      expect(settings.maxActive).toBeLessThanOrEqual(4)
+    }
+    expect(events.interactive.maxRadius).toBeGreaterThan(events.interactive.minRadius)
+  })
+
   it('keeps boss telegraphs, expanded factions and relic effects synchronized with JSON', () => {
     expect(BOSS_ATTACKS).toEqual(BALANCE.bosses.attacks)
     for (const id of Object.keys(BOSS_DEFINITIONS) as Array<keyof typeof BOSS_DEFINITIONS>)

@@ -58,7 +58,7 @@ number keys 1–9, Tab focus, Esc, pointer and touch (44+ px controls).
   MAX_MOBS = 130. Spawn placement uses bounded terrain/path/occupancy checks.
 - The replay ledger holds 256 recent transaction IDs with a retired serial
   watermark: old IDs are refused rather than rewarded again. Director markers
-  expire after 24 playable seconds, at most two exist, and objective completion
+  use the lifetime and active cap in `src/game/balance/events.json` (`interactive`), and objective completion
   cannot be claimed twice. Pause freezes simulation ticking; the live engine's
   play clock must itself stop on pause (as GameState.time already does).
 - reset() clears active director markers/objectives, event tags and temporary
@@ -87,3 +87,7 @@ The existing .github/workflows/es2-world-events-ci.yml only triggers on
 feature/es2-world-events pushes; this remediation branch requires a CI
 workflow dispatch or a separately authorized branch-specific workflow change
 before GitHub can provide full green verification evidence.
+
+## Map event density tuning
+
+The integration branch uses `BALANCE.events` for legacy automatic events and `BALANCE.events.interactive` for the twelve interactive events. Both start after 3 playable seconds (including scene entry); legacy opportunities occur every 5–8 seconds at 95% probability, with three markers lasting 30 seconds. Interactive opportunities occur every 5–7 seconds with four markers lasting 32 seconds. Interactive placement samples 180–380 world units from the hero with existing terrain and approach checks; it prefers event types not yet spawned this run. Only one interactive objective can be active; rewards, costs, pause behavior and actor budgets are unchanged.

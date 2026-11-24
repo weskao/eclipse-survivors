@@ -7,11 +7,11 @@
     "bargain": 0.11,
     "challenge": 0.1
   },
-  "spawnChance": 0.75,
-  "spawnIntervalBase": 11,
-  "spawnIntervalVariation": 5,
-  "lifetime": 20,
-  "maxActive": 2,
+  "spawnChance": 0.95,
+  "spawnIntervalBase": 5,
+  "spawnIntervalVariation": 3,
+  "lifetime": 30,
+  "maxActive": 3,
   "placementRetries": 12,
   "chestXp": 12,
   "shrineHealing": 36,
@@ -24,11 +24,22 @@
   "challengeXp": 28,
   "invasionCount": 3,
   "invasionHp": 250,
-  "firstSpawnAt": 7,
+  "firstSpawnAt": 3,
   "hazards": {
     "sceneGraceSeconds": 1.2,
     "hitCooldownSeconds": 1.4,
     "baseDamage": 7,
     "damagePerScene": 2
+  },
+  "sceneSpawnDelay": 3,
+  "interactive": {
+    "spawnIntervalBase": 5,
+    "spawnIntervalVariation": 2,
+    "lifetime": 32,
+    "maxActive": 4,
+    "minRadius": 180,
+    "maxRadius": 380,
+    "expiryRetryDelay": 2,
+    "minSeparation": 150
   }
 }
