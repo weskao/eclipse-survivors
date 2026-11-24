@@ -135,10 +135,10 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     }
   })
 
-  it('blends discrete walk frames and heading changes instead of abruptly replacing them', () => {
+  it.each(['spirit-summoner', 'crimson-paladin'] as const)('blends discrete walk frames and heading changes for %s', heroId => {
     const atlas = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
     const hero = { complete: true, naturalWidth: 900, naturalHeight: 900,
-      poseAtlases: { direction: atlas, action: atlas }, heroId: 'shadowblade' } as unknown as HTMLImageElement
+      poseAtlases: { direction: atlas, action: atlas }, heroId } as unknown as HTMLImageElement
     const images: { crop: number; alpha: number }[] = []
     const ctx = {
       globalAlpha: 1, save: () => {}, restore: () => {},
@@ -160,6 +160,34 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     images.length = 0
     drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 6, frame: 2, count: 8 }), 108, 134, undefined, 0.300)
     expect(images).toHaveLength(1)
+    expect(ctx.globalAlpha).toBe(1)
+  })
+
+  it('smooths Shadowblade movement but cuts heading and action boundaries to avoid ghost blades', () => {
+    const atlas = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+    const hero = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      poseAtlases: { direction: atlas, action: atlas }, heroId: 'shadowblade' } as unknown as HTMLImageElement
+    const images: { crop: number; alpha: number }[] = []
+    const ctx = { globalAlpha: 1, save: () => {}, restore: () => {}, scale: () => {},
+      drawImage: (...args: unknown[]) => { images.push({ crop: Number(args[1]), alpha: ctx.globalAlpha }) },
+    } as unknown as Ctx2D
+    const draw = (time: number, overrides: Partial<HeroAnimation>) => {
+      images.length = 0
+      expect(drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', count: 8, ...overrides }), 108, 134, undefined, time)).toBe(true)
+    }
+    draw(0, { frame: 0 })
+    draw(.016, { frame: 1 })
+    expect(images).toHaveLength(2)
+    expect(images.reduce((sum, image) => sum + image.alpha, 0)).toBeCloseTo(1)
+    draw(.080, { direction: 6, frame: 2 })
+    expect(images).toEqual([{ crop: 904, alpha: 1 }])
+    draw(.140, { direction: 6, frame: 2 })
+    expect(images).toEqual([{ crop: 904, alpha: 1 }])
+    draw(.160, { direction: 6, pose: 'attack', phase: .4 })
+    expect(images).toEqual([{ crop: 904, alpha: 1 }])
+    draw(.180, { direction: 0, pose: 'attack', phase: .4 })
+    expect(images).toHaveLength(1)
+    expect(images[0]?.alpha).toBe(1)
     expect(ctx.globalAlpha).toBe(1)
   })
 

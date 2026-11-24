@@ -6,8 +6,8 @@ import { chromium } from 'playwright'
 const base = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4174/'
 const directory = 'artifacts/es2-low-health-visual'
 const devices = [
-  { name: 'desktop-1440', width: 1440, height: 900, touch: false },
-  { name: 'portrait-390', width: 390, height: 844, touch: true },
+  { name: 'desktop-1440', width: 1440, height: 900, touch: false, locale: 'en-US' },
+  { name: 'portrait-390', width: 390, height: 844, touch: true, locale: 'zh-TW' },
   { name: 'landscape-844', width: 844, height: 390, touch: true },
   { name: 'portrait-320-reduced', width: 320, height: 640, touch: true, reduced: true },
 ]
@@ -27,6 +27,7 @@ try {
       deviceScaleFactor: device.touch ? 2 : 1,
       isMobile: device.touch,
       hasTouch: device.touch,
+      locale: device.locale ?? 'en-US',
       reducedMotion: device.reduced ? 'reduce' : 'no-preference',
       ...(!device.reduced ? { recordVideo: { dir: directory,
         size: { width: device.width, height: device.height } } } : {}),
@@ -60,7 +61,9 @@ try {
             canvasDrawn: canvas instanceof HTMLCanvasElement && canvas.width > 0 && canvas.height > 0,
             vignette: !!vignette,
             touchBlock: vignette ? getComputedStyle(vignette).pointerEvents : 'none',
-            hp: document.querySelector('[aria-label="生命值"][role="progressbar"]')?.getAttribute('aria-valuenow'),
+            hp: document.querySelector('.es2-hud__track--health[role="progressbar"]')?.getAttribute('aria-valuenow'),
+            hpLabel: document.querySelector('.es2-hud__track--health[role="progressbar"]')?.getAttribute('aria-label'),
+            locale: document.documentElement.lang,
             badge: !!document.querySelector('[data-es2-life-alert]'),
           }
         })
@@ -68,7 +71,10 @@ try {
         assert.ok(metrics.portrait.left >= -2 && metrics.portrait.right <= device.width + 2 &&
           metrics.portrait.top >= -2 && metrics.portrait.bottom <= device.height + 2,
           device.name + ': portrait clipped ' + JSON.stringify(metrics))
-        assert.ok(Math.abs(Number(metrics.hp) - stage.percent) < .01,
+        assert.equal(metrics.locale, device.locale === 'zh-TW' ? 'zh-TW' : 'en')
+        assert.ok(metrics.hpLabel && (device.locale === 'zh-TW' ? metrics.hpLabel === '生命值' : !/[\u3400-\u9fff]/.test(metrics.hpLabel)),
+          device.name + ': missing or untranslated health label ' + metrics.hpLabel)
+        assert.ok(metrics.hp != null && Math.abs(Number(metrics.hp) - stage.percent) < .01,
           device.name + ': non-authoritative HUD value ' + metrics.hp)
         assert.equal(metrics.badge, stage.tier !== 'normal')
         assert.equal(metrics.vignette, stage.percent <= 25)

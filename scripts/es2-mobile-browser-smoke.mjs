@@ -54,17 +54,24 @@ try {
         const selector = family === 'new'
           ? '.es2-hero-section .es2-roster__portrait'
           : '.es2-hero-section .es2-hero-card img'
-        const art = await page.locator(selector).first().evaluate(element => {
+        const portraits = await page.locator(selector).evaluateAll(elements => elements.map(element => {
           const rect = element.getBoundingClientRect()
-          return { height:rect.height, width:rect.width, top:rect.top, bottom:rect.bottom }
-        })
+          const card = element.closest('.es2-hero-select-card').getBoundingClientRect()
+          const copy = element.nextElementSibling.getBoundingClientRect()
+          return { height:rect.height, width:rect.width, top:rect.top, bottom:rect.bottom, copyTop:copy.top, copyBottom:copy.bottom, cardBottom:card.bottom }
+        }))
         // Prior small, fixed 10dvh images wasted most of the portrait viewport.
         // Landscape remains bounded by 44px navigation and compact action controls.
         const minimum = viewport.height >= viewport.width
           ? Math.min(120, viewport.height * 0.15)
           : Math.min(60, viewport.height * 0.18)
-        assert.ok(art.height >= minimum,
-          `${viewport.name}: ${family} art wastes available space: ${JSON.stringify({art, minimum})}`)
+        assert.equal(portraits.length, 3)
+        for (const art of portraits) {
+          assert.ok(art.height >= minimum,
+            `${viewport.name}: ${family} art wastes available space: ${JSON.stringify({art, minimum})}`)
+          assert.ok(art.bottom <= art.copyTop + 2 && art.copyBottom <= art.cardBottom + 2,
+            `${viewport.name}: ${family} art or stats clipped: ${JSON.stringify(art)}`)
+        }
       }
       await assertHomepage('classic hero / classic mode')
       await assertHeroArtUsesSpace('classic')
@@ -239,6 +246,7 @@ try {
     page.on('pageerror', error => errors.push(error.message))
     try {
       await page.goto(target, { waitUntil: 'domcontentloaded' })
+      await page.locator('[data-es2-mobile-hero-tab="new"]').click()
       const card = page.locator(`button[data-hero-id="${heroId}"]`)
       await card.waitFor({ state: 'visible', timeout: 30000 })
       await card.click()
@@ -255,9 +263,9 @@ try {
         const style = getComputedStyle(element)
         return { source: style.backgroundImage, size: style.backgroundSize }
       })
-      assert.ok(preview.source.includes(heroId + '-run-attack@3x'),
+      assert.ok(preview.source.includes('run-attack@3x') && !preview.source.includes(heroId + '-run-attack@3x'),
         `${heroId}: no real 8-frame action preview`)
-      assert.equal(preview.size, '800% 100%', `${heroId}: preview is not divided into 8 cells`)
+      assert.equal(preview.size, '400% 400%', `${heroId}: preview must use the gameplay 4×4 atlas`)
       await page.screenshot({ path: `${directory}/portrait-375-${heroId}-selection.png`, animations: 'disabled' })
       await page.locator('.es2-start').click()
       // Newly selected specializations can enter a real level-up dialog at
@@ -273,7 +281,8 @@ try {
         if (await page.locator('.es2-hud--active').isVisible()) break
         const offered = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
         await offered.waitFor({ state: 'visible', timeout: 30000 })
-        await offered.click()
+        const index = await offered.evaluate(button => Array.from(button.parentElement.children).indexOf(button))
+        await page.keyboard.press(String(index + 1))
       }
       const mode = await page.evaluate(() => window.__test?.mode)
       assert.equal(mode, 'play', `${heroId}: still in ${mode} after ${picks} real upgrade picks`)

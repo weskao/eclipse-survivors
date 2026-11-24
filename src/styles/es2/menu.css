@@ -432,8 +432,8 @@
   .es2-hero-copy{flex:0 0 auto}
   .es2-menu .es2-hero-section .es2-roster{flex:1 1 auto;min-height:90px;grid-template-rows:minmax(0,1fr);align-items:stretch}
   .es2-menu .es2-hero-section .es2-roster__card{display:flex;flex-direction:column;min-height:0}
-  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
-  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto}
+  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:min(60px,18dvh);height:auto;max-height:none;object-fit:contain}
+  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto;gap:1px;padding:3px 1px}
 }
 
 /* A single stat strip is shared by all three classic and all three new heroes.
