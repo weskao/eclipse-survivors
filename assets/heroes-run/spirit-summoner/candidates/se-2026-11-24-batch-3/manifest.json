@@ -1,0 +1,109 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "SE",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "frameCount": 4,
+  "sourceSHA256": "6d52ce13b2e6fa59110725a953ca2fb8b66012a1fc61195347d6ac85548bba04",
+  "webpSHA256": "953faa3575c7598b1e99a40296031908ba582ba0d5dec4fd32f0e2933ca6fca2",
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        25,
+        8,
+        611,
+        619
+      ],
+      "rgbaSHA256": "7fc670a7dfb3d90999df5590d808902d011fdfce2acb5767dfa056025ae6a382",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "7fc670a7dfb3d90999df5590d808902d011fdfce2acb5767dfa056025ae6a382"
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        8,
+        15,
+        531,
+        619
+      ],
+      "rgbaSHA256": "9382d550354b1efd8cd3eb53862b262fd876bbe8e1a431c9c24ad2453ca63f25",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "9382d550354b1efd8cd3eb53862b262fd876bbe8e1a431c9c24ad2453ca63f25"
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        8,
+        8,
+        605,
+        592
+      ],
+      "rgbaSHA256": "25753da665719fa4946b9364e074ae24502310f89778428719714e46a3939986",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "25753da665719fa4946b9364e074ae24502310f89778428719714e46a3939986"
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        11,
+        8,
+        529,
+        556
+      ],
+      "rgbaSHA256": "872a093f22299ce29e4c4f4982e0eb020d6250414f707e87b0394c0a7a510878",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "872a093f22299ce29e4c4f4982e0eb020d6250414f707e87b0394c0a7a510878"
+    }
+  ],
+  "originalSourceFile": "original.png",
+  "originalSourceSHA256": "7a503f6bb1ca81bfd0cf19d495bf494fa7625178065b67156510177413dd572b",
+  "sourceFile": "source.png",
+  "atlasFile": "run-se-4frames@3x.webp",
+  "bytes": 1383990,
+  "footBottoms": [
+    648,
+    632,
+    656,
+    620
+  ],
+  "footAnchorMethod": "alpha >=128 bottom exclusive per 768px cell",
+  "maxDisplayCSSPixels": 147,
+  "sourceResolutionRatio": 4.26530612244898,
+  "grid": [
+    2,
+    2
+  ],
+  "qaGameplayApplied": false,
+  "frameTiming": "four independent candidate poses; incomplete 10-frame cycle",
+  "marginRepair": {
+    "maxAlphaRemoved": 3,
+    "perFrameChangedAlphaPixels": [
+      8186,
+      4824,
+      6545,
+      4765
+    ],
+    "method": "zero alpha only in 8px source border; preserve RGB and all alpha >=64 pixels; no resampling"
+  }
+}
