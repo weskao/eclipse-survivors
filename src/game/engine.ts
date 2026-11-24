@@ -6,7 +6,7 @@ import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
-import { dash as heroDash, hit } from './combat'
+import { attack, dash as heroDash, hit } from './combat'
 import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
@@ -73,6 +73,8 @@ export interface TestApi {
   /** Dev capture reads which real boss attack is currently telegraphing. */
   readonly bossAttackPreview: { id: string | null; activeImpacts: number }
   forceAttack(): void
+  /** DEV art capture only: stage a real East target and invoke normal combat. */
+  prepareHeroArtEastAttack(): boolean
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
   /** Capture-only biome preview; requires ?showcase=1. */
@@ -783,6 +785,28 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       for (let i = 0; i < 8; i++) spawnMob(s)
       trySpawnEvent(s, index % 2 ? 'shrine' : 'chest')
       hud()
+    },
+    prepareHeroArtEastAttack() {
+      const hero = s.hero
+      if (!import.meta.env.DEV || typeof window === 'undefined' ||
+          new URLSearchParams(window.location.search).get('es2HeroArtQA') !== '1' ||
+          s.mode !== 'play' || !hero || !isSpecializationId(s.heroId)) return false
+      // Isolate a real target in this explicit QA scenario. No fabricated pose,
+      // altered skill implementation, production cheat, or renderer override.
+      s.mobs = []
+      s.enemyShots = []
+      factions?.reset()
+      s.spawnT = 999
+      spawnMob(s)
+      const target = s.mobs[0]
+      if (!target) return false
+      target.x = hero.x + Math.min(140, Math.max(64, hero.range * 0.85))
+      target.y = hero.y
+      target.speed = 0
+      hero.attack = 2
+      hero.inv = 0
+      attack(s, hooks, factions ?? undefined)
+      return hero.strike > 0 && Math.abs(hero.aimAngle) < Math.PI / 8
     },
     forceAttack() {
       const hero = s.hero

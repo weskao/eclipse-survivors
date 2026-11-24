@@ -128,25 +128,33 @@ try {
         }
       }
       if (candidateQA) {
-        // Sample the existing East attack and special atlases in live gameplay.
-        // An attempted input is not proof: only actual Canvas source cells count.
+        // Predecode the exact assets without drawing or claiming coverage.
+        // The game renderer must still draw each source cell in real combat.
+        await page.evaluate(async id => {
+          for (const pose of ['attack', 'special']) {
+            const image = new Image()
+            image.src = `/src/assets/es2/production/heroes/${id}/candidates/east-2026-11-23/${pose}-east-4frames@3x.webp`
+            await image.decode()
+          }
+        }, heroId)
         for (let i = 0; i < 8; i++) {
           const choice = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
           if (!await choice.isVisible()) break
           await choice.click()
         }
+        // Moving East does not control automatic targeting. Use the explicit
+        // dev-only real combat scenario, then the ordinary Q activation.
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const coverage = assessHeroEastActionCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
+          if (coverage.eastAttackFrames === 4) break
+          if (!await page.evaluate(() => window.__test?.prepareHeroArtEastAttack())) break
+          await page.waitForTimeout(450)
+        }
         if (await page.evaluate(() => window.__test?.mode) === 'play') {
-          try {
-            await page.keyboard.down('KeyD')
-            await page.waitForTimeout(350)
-            await page.keyboard.up('KeyD')
-            await page.evaluate(() => window.__test?.forceAttack())
-            await page.waitForTimeout(900)
-            await page.keyboard.press('KeyQ')
-            await page.waitForTimeout(1000)
-          } finally {
-            await page.keyboard.up('KeyD')
-          }
+          await page.evaluate(() => window.__test?.prepareHeroArtEastAttack())
+          await page.waitForTimeout(350)
+          await page.keyboard.press('KeyQ')
+          await page.waitForTimeout(1000)
         }
       }
       const ending = await page.evaluate(() => window.__test?.frames ?? 0)
@@ -187,4 +195,6 @@ if (candidateQA) {
   const incomplete = results.filter(result => !result.candidateCoverage.hasAllFourRunCandidateFrames ||
     (result.heroId === 'shadowblade' && result.candidateCoverage.mirroredWestRunFrames !== 4))
   assert.deepEqual(incomplete, [], 'Incomplete real Canvas run-candidate coverage')
+  assert.deepEqual(results.filter(result => !result.eastActionCandidateCoverage.hasAllEastActionCandidateFrames), [],
+    'Incomplete real Canvas East attack/special candidate coverage')
 }

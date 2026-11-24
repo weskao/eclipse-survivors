@@ -448,3 +448,35 @@ describe('interruption and input lifecycle', () => {
     stop()
   })
 })
+
+describe('hero art capture East encounter', () => {
+  it('cannot alter a normal game without the explicit dev QA flag', () => {
+    engine.selectHero('shadowblade')
+    engine.start()
+    const mobs = [...engine.state.mobs]
+    const aim = engine.state.hero!.aimAngle
+    expect(engine.testApi.prepareHeroArtEastAttack()).toBe(false)
+    expect(engine.state.mobs).toEqual(mobs)
+    expect(engine.state.hero!.aimAngle).toBe(aim)
+  })
+
+  it('uses real attack against an East target only in explicit dev QA', () => {
+    const old = window.location.href
+    try {
+      window.history.replaceState(null, '', '?es2HeroArtQA=1')
+      for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+        engine.selectHero(id)
+        engine.start()
+        expect(engine.testApi.prepareHeroArtEastAttack(), id).toBe(true)
+        const hero = engine.state.hero!
+        expect(hero.strike, id).toBeGreaterThan(0)
+        expect(Math.abs(hero.aimAngle), id).toBeLessThan(Math.PI / 8)
+        expect(hero.face, id).toBe(1)
+        expect(engine.activateHeroSpecial(), id).toBe(true)
+        engine.goMenu()
+      }
+    } finally {
+      window.history.replaceState(null, '', old)
+    }
+  })
+})
