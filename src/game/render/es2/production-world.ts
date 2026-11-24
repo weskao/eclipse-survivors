@@ -131,6 +131,9 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
 }
 
+/** Shared authored body display width before phase growth. */
+export const BOSS_BASE_DRAW_PX = 255
+
 /** Scale art only; collision geometry and source rects remain unchanged. */
 export function bossPhaseVisualScale(phase: 1 | 2 | 3): number {
   return phase === 3 ? 1.24 : phase === 2 ? 1.12 : 1

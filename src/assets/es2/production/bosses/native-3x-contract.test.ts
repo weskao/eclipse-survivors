@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from '../../../../game/render/es2/production-world'
 
 const directory = dirname(fileURLToPath(import.meta.url))
 const manifest = JSON.parse(readFileSync(join(directory, 'manifest.json'), 'utf8')) as {
@@ -43,8 +44,8 @@ describe('ES2 boss production art: honest native-3x QA contract', () => {
 
   it('uses the actual maximum phase-three body draw size, not the old phase-one size', () => {
     for (const asset of manifest.assets) {
-      expect(asset.qa?.maxCanvasDrawPx, asset.id).toBeCloseTo(255 * 1.24)
-      expect(asset.qa?.requiredNativeFramePx, asset.id).toBe(949)
+      expect(asset.qa?.maxCanvasDrawPx, asset.id).toBeCloseTo(BOSS_BASE_DRAW_PX * bossPhaseVisualScale(3))
+      expect(asset.qa?.requiredNativeFramePx, asset.id).toBe(Math.ceil(BOSS_BASE_DRAW_PX * bossPhaseVisualScale(3) * 3))
     }
   })
 

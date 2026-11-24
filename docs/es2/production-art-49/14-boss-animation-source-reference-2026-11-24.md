@@ -18,3 +18,7 @@ The original project source files `assets/images/imgs7.png` and `imgs8.png` (144
 ## Isolated motion reference delivery
 
 Four files in `src/assets/es2/production/bosses/candidates/motion/` contain 72 source pose cells total. Combined compressed size: 498226 bytes, compared with approximately 3.5–3.8 MB for one original concept sheet. Per-boss atlases preserve the crop pixels without upscaling; 112px cells are padding, not original detail. Their status remains REFERENCE_ONLY_NOT_NATIVE_3X. No canonical visual approval is extended to animation. New high-resolution authored frames and human runtime animation approval remain outstanding.
+
+## Current runtime size correction — 2026-11-24
+
+The earlier 236px and 878px notes above are historical. The shared base draw width is now 255px; phase scales are 1.00 / 1.12 / 1.24. Current display sizes and native-detail requirements: 255 → 765px, 285.6 → 857px, 316.2 → 949px. For a common frame layout use at least 949px authored interior plus a transparent gutter; a 981px cell with 16px gutters is the minimum. A 960px authored interior / 992px cell is a practical option. Split large animation sequences by pose and phase; do not stretch low-resolution source or count transparent padding as native detail. Keep all canonical static approval evidence unchanged and all missing animation art pending.

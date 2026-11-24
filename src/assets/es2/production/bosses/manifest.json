@@ -21,14 +21,15 @@
       "sha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
       "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "qa": {
-        "maxCanvasDrawPx": 236,
-        "requiredNativeFramePx": 708,
+        "maxCanvasDrawPx": 316.2,
+        "requiredNativeFramePx": 949,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
         "realGameplayReview": "pending",
         "issues": [
-          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
-          "Compared against original imgs7.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥708px original authored frame detail needed at 236px Canvas display."
+          "Current 192px cells cannot satisfy the 949px native 3x runtime requirement; authentic master detail not verified.",
+          "Compared against original imgs7.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥949px original authored frame detail needed at 316.2px maximum phase-three Canvas display.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 949px maximum phase-three requirement. Do not upscale these to claim native 3x."
         ],
         "existingAtlasPreviewReview": "inspected",
         "originalContactSheetReview": "inspected",
@@ -59,15 +60,16 @@
       "sha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
       "qaNote": "Explicit c104 source region(s): imgs7.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "qa": {
-        "maxCanvasDrawPx": 236,
-        "requiredNativeFramePx": 708,
+        "maxCanvasDrawPx": 316.2,
+        "requiredNativeFramePx": 949,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
         "realGameplayReview": "pending",
         "issues": [
-          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
+          "Current 192px cells cannot satisfy the 949px native 3x runtime requirement; authentic master detail not verified.",
           "Potential detached upper-edge fragments in phases 1-2: compare to imgs7.png original.",
-          "Compared against original imgs7.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥708px original authored frame detail needed at 236px Canvas display."
+          "Compared against original imgs7.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥949px original authored frame detail needed at 316.2px maximum phase-three Canvas display.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 949px maximum phase-three requirement. Do not upscale these to claim native 3x."
         ],
         "existingAtlasPreviewReview": "inspected",
         "originalContactSheetReview": "inspected",
@@ -98,15 +100,16 @@
       "sha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
       "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "qa": {
-        "maxCanvasDrawPx": 236,
-        "requiredNativeFramePx": 708,
+        "maxCanvasDrawPx": 316.2,
+        "requiredNativeFramePx": 949,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
         "realGameplayReview": "pending",
         "issues": [
-          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
+          "Current 192px cells cannot satisfy the 949px native 3x runtime requirement; authentic master detail not verified.",
           "Potential disconnected pixels at left edge of phase 3: compare to imgs8.png original.",
-          "Compared against original imgs8.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥708px original authored frame detail needed at 236px Canvas display."
+          "Compared against original imgs8.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥949px original authored frame detail needed at 316.2px maximum phase-three Canvas display.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 949px maximum phase-three requirement. Do not upscale these to claim native 3x."
         ],
         "existingAtlasPreviewReview": "inspected",
         "originalContactSheetReview": "inspected",
@@ -137,15 +140,16 @@
       "sha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
       "qaNote": "Explicit c104 source region(s): imgs8.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "qa": {
-        "maxCanvasDrawPx": 236,
-        "requiredNativeFramePx": 708,
+        "maxCanvasDrawPx": 316.2,
+        "requiredNativeFramePx": 949,
         "verifiedOriginalMasterFramePx": null,
         "native3x": false,
         "realGameplayReview": "pending",
         "issues": [
-          "Current 192px cells cannot satisfy the 708px native 3x runtime requirement; authentic master detail not verified.",
+          "Current 192px cells cannot satisfy the 949px native 3x runtime requirement; authentic master detail not verified.",
           "Potential horizontal detached strips above phase 3 and at atlas edges: compare to imgs8.png original.",
-          "Compared against original imgs8.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥708px original authored frame detail needed at 236px Canvas display."
+          "Compared against original imgs8.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥949px original authored frame detail needed at 316.2px maximum phase-three Canvas display.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 949px maximum phase-three requirement. Do not upscale these to claim native 3x."
         ],
         "existingAtlasPreviewReview": "inspected",
         "originalContactSheetReview": "inspected",

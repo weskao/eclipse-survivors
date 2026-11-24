@@ -8,7 +8,7 @@ import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type Rigid
 import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
-import { bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
+import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
 import { sampleHealthBar, type HealthBarMotion } from './health-bars'
@@ -216,7 +216,7 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
 
 const DIMS: Record<string, [number, number]> = {
   knight: [108, 134], ranger: [111, 144], wizard: [117, 147], slime: [87, 75],
-  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [255, 266],
+  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [BOSS_BASE_DRAW_PX, 266],
 }
 
 export function drawCharacter(
