@@ -18,3 +18,7 @@ paths:
 ## Body atlas
 - A sprite atlas stores body animation only, clears every frame before baking, and is keyed by hero, pose, direction, facing, dimensions and frame count. Held projectiles, current weapon orientation, and release accents are live overlays, never part of its cache.
 - All three heroes have at least ten running and twelve action/cast sequential frames; preserve weapon aspect ratio, run eight-direction and projectile-release regression tests, and avoid repainting source texture masks in the hot loop.
+
+## Directional reflection of complete character atlases
+
+For all heroes, including ES2, a full-character baked sprite cannot use horizontal reflection when it would change the canonical weapon or shield hand. Reuse five authored facings only where equipment, costume and action remain equivalent; otherwise require the independent facing or an existing correct rigid equipment overlay. Do not add an overlay architecture solely to avoid a few necessary drawings. See [character art contract §3](character-art-3x.md#3-direction-and-animation-contract) for the per-pose source decision and current ES2 exceptions.
