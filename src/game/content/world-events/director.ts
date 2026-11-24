@@ -74,7 +74,7 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
       target = { x: hero.x + Math.cos(angle) * radius, y: hero.y + Math.sin(angle) * radius }
     }
     if (!Number.isFinite(target.x) || !Number.isFinite(target.y) ||
-        !world.canPlace(target, 42) || !world.canApproach(hero, target) || world.isOccupied(target, 52)) return null
+        !world.canPlace(target, SETTINGS.terrainClearance) || !world.canApproach(hero, target) || world.isOccupied(target, SETTINGS.mobClearance)) return null
     for (const e of active) {
       const dx = e.x - target.x, dy = e.y - target.y
       if (dx * dx + dy * dy < SETTINGS.minSeparation ** 2) return null

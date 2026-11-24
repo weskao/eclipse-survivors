@@ -40,6 +40,19 @@
     "minRadius": 180,
     "maxRadius": 380,
     "expiryRetryDelay": 2,
-    "minSeparation": 150
+    "minSeparation": 150,
+    "terrainClearance": 42,
+    "mobClearance": 52,
+    "approachClearance": 28,
+    "legacyMarkerClearance": 48
+  },
+  "legacyPlacement": {
+    "minRadius": 220,
+    "minExtraRadius": 190,
+    "maxExtraRadius": 280,
+    "viewportWidthFactor": 0.55,
+    "terrainClearance": 35,
+    "minSeparation": 120,
+    "mobClearance": 42
   }
 }

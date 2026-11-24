@@ -91,3 +91,5 @@ before GitHub can provide full green verification evidence.
 ## Map event density tuning
 
 The integration branch uses `BALANCE.events` for legacy automatic events and `BALANCE.events.interactive` for the twelve interactive events. Both start after 3 playable seconds (including scene entry); legacy opportunities occur every 5–8 seconds at 95% probability, with three markers lasting 30 seconds. Interactive opportunities occur every 5–7 seconds with four markers lasting 32 seconds. Interactive placement samples 180–380 world units from the hero with existing terrain and approach checks; it prefers event types not yet spawned this run. Only one interactive objective can be active; rewards, costs, pause behavior and actor budgets are unchanged.
+
+All spawn-placement tuning (legacy viewport-scaled radius, terrain/mob clearance, marker separation, interactive approach and cross-system clearance) also lives in `events.json` under `legacyPlacement` and `interactive`. Geometry and seeded sampling remain in the existing runtime modules.

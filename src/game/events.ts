@@ -18,15 +18,18 @@ export function rollEventKind(rng: () => number = random): WorldEventKind {
   return 'challenge'
 }
 
-/** Twelve retries, never infinite loops or unreachable/offscreen rewards. */
+/** Bounded placement retries with terrain and occupancy checks. */
 export function trySpawnEvent(s: GameState, kind: WorldEventKind, rng: () => number = random): boolean {
   const hero = s.hero
   if (!hero || s.events.length >= BALANCE.events.maxActive || (kind === 'bargain' && hero.hp <= BALANCE.events.bargainMinHp)) return false
+  const placement = BALANCE.events.legacyPlacement
+  const extraRadius = Math.min(placement.maxExtraRadius,
+    Math.max(placement.minExtraRadius, s.W * placement.viewportWidthFactor))
   for (let i = 0; i < BALANCE.events.placementRetries; i++) {
-    const point = radialPoint(hero, rng(), 220 + rng() * Math.min(280, Math.max(190, s.W * 0.55)))
-    if (!pointIsClear(s.currentScene, point, 35) || !clearApproach(s.currentScene, hero, point)) continue
-    if (s.events.some(e => Math.hypot(e.x - point.x, e.y - point.y) < 120)) continue
-    if (s.mobs.some(e => e.hp > 0 && Math.hypot(e.x - point.x, e.y - point.y) < e.r + 42)) continue
+    const point = radialPoint(hero, rng(), placement.minRadius + rng() * extraRadius)
+    if (!pointIsClear(s.currentScene, point, placement.terrainClearance) || !clearApproach(s.currentScene, hero, point)) continue
+    if (s.events.some(e => Math.hypot(e.x - point.x, e.y - point.y) < placement.minSeparation)) continue
+    if (s.mobs.some(e => e.hp > 0 && Math.hypot(e.x - point.x, e.y - point.y) < e.r + placement.mobClearance)) continue
     s.events.push({ id: ++s.eventSerial, kind, ...point, expiresAt: s.time + BALANCE.events.lifetime })
     return true
   }

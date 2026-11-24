@@ -27,12 +27,17 @@ describe('controlled random events', () => {
   it('places events away from the hero, hazards, scenery and other rewards, even on narrow phones', () => {
     const s = make()
     setRandom(seeded(91))
-    for (let i = 0; i < 4; i++) trySpawnEvent(s, 'chest')
+    for (let i = 0; i < BALANCE.events.maxActive; i++) trySpawnEvent(s, 'chest')
+    expect(s.events.length).toBeGreaterThan(0)
+    const placement = BALANCE.events.legacyPlacement
+    const maxRadius = placement.minRadius + Math.min(placement.maxExtraRadius,
+      Math.max(placement.minExtraRadius, s.W * placement.viewportWidthFactor))
     for (const e of s.events) {
-      expect(Math.hypot(e.x, e.y)).toBeGreaterThanOrEqual(200)
-      expect(nearbyObstacles(0, e.x, e.y, 80).every(o => Math.hypot(e.x-o.x, e.y-o.y) > o.r + 30)).toBe(true)
-      expect(nearbyHazards(0, e.x, e.y, 100).every(h => Math.hypot(e.x-h.x, e.y-h.y) > h.r + 26)).toBe(true)
-      expect(s.events.filter(other => other !== e).every(other => Math.hypot(e.x-other.x, e.y-other.y) > 110)).toBe(true)
+      expect(Math.hypot(e.x, e.y)).toBeGreaterThanOrEqual(placement.minRadius - 1e-6)
+      expect(Math.hypot(e.x, e.y)).toBeLessThanOrEqual(maxRadius + 1e-6)
+      expect(nearbyObstacles(0, e.x, e.y, 80).every(o => Math.hypot(e.x-o.x, e.y-o.y) > o.r + placement.terrainClearance)).toBe(true)
+      expect(nearbyHazards(0, e.x, e.y, 100).every(h => Math.hypot(e.x-h.x, e.y-h.y) > h.r + placement.terrainClearance)).toBe(true)
+      expect(s.events.filter(other => other !== e).every(other => Math.hypot(e.x-other.x, e.y-other.y) >= placement.minSeparation)).toBe(true)
     }
   })
   it('is reproducible with the same seed', () => {

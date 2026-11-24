@@ -79,6 +79,20 @@ describe('single-source numerical game balance', () => {
       expect(settings.maxActive).toBeLessThanOrEqual(4)
     }
     expect(events.interactive.maxRadius).toBeGreaterThan(events.interactive.minRadius)
+    const placement = events.legacyPlacement
+    expect(placement.minRadius).toBeGreaterThan(0)
+    expect(placement.minExtraRadius).toBeGreaterThan(0)
+    expect(placement.maxExtraRadius).toBeGreaterThanOrEqual(placement.minExtraRadius)
+    expect(placement.viewportWidthFactor).toBeGreaterThan(0)
+    expect(Number.isInteger(events.placementRetries)).toBe(true)
+    expect(events.placementRetries).toBeGreaterThan(0)
+    for (const settings of [placement, events.interactive]) {
+      expect(settings.terrainClearance).toBeGreaterThan(0)
+      expect(settings.minSeparation).toBeGreaterThan(0)
+      expect(settings.mobClearance).toBeGreaterThan(0)
+    }
+    expect(events.interactive.approachClearance).toBeGreaterThan(0)
+    expect(events.interactive.legacyMarkerClearance).toBeGreaterThan(0)
   })
 
   it('keeps boss telegraphs, expanded factions and relic effects synchronized with JSON', () => {
