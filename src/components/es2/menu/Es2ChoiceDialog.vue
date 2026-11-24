@@ -3,7 +3,7 @@ import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
 import Es2Dialog from './Es2Dialog.vue'
 import Es2ChoiceCards from './Es2ChoiceCards.vue'
-import { shortcutIndex } from './model'
+import { CHOICE_ARM_MS, shortcutIndex } from './model'
 import type { ChoiceKind, MenuChoice } from './model'
 const props = defineProps<{ active: boolean; kind: ChoiceKind; items: readonly MenuChoice[]; still?: boolean }>()
 const emit = defineEmits<{ choose: [id: string]; cancel: []; settings: [] }>()
@@ -25,14 +25,26 @@ function shortcut(event: KeyboardEvent): void {
   const item = uniqueItems.value[index]
   if (item) choose(item.id)
 }
-watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), props.kind], () => { selecting.value = false })
+// Pointer only: a thumb aimed at joystick/dash/special as the cards pop in must not pick one.
+let shownAt = -Infinity
+let earlyTap = false
+function pointerdown(): void { earlyTap = performance.now() - shownAt < CHOICE_ARM_MS }
+function tap(id: string): void {
+  if (earlyTap) { earlyTap = false; return }
+  choose(id)
+}
+watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), props.kind], () => {
+  selecting.value = false
+  shownAt = performance.now()
+  earlyTap = false
+}, { immediate: true })
 </script>
 <template>
   <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(captions[kind])" :dismissible="kind !== 'level'"
     wide variant="choice" :tone="kind === 'evolution' ? 'legendary' : 'neutral'" @cancel="emit('cancel')" @shortcut="shortcut">
     <template #header-actions><button v-if="kind === 'level'" type="button" class="es2-secondary es2-dialog-settings" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></template>
-    <div class="es2-selection-scene" :class="{ 'es2-still': still }">
-      <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="choose" />
+    <div class="es2-selection-scene" :class="{ 'es2-still': still }" @pointerdown.capture="pointerdown">
+      <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="tap" />
       <p class="es2-hint">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</p>
     </div>
   </Es2Dialog>

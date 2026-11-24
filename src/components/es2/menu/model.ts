@@ -29,6 +29,8 @@ export function shortcutIndex(event: KeyInput, length: number): number {
   const index = upgradeKeyIndex(event.code)
   return index >= 0 && index < length ? index : -1
 }
+/** Taps starting this soon after cards appear were aimed at combat controls, not a card. */
+export const CHOICE_ARM_MS = 500
 export function nextIndex(current: number, direction: -1 | 1, count: number): number {
   return count <= 0 ? -1 : (current + direction + count) % count
 }

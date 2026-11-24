@@ -1,9 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick, type Component } from 'vue'
 import Es2ChoiceDialog from './Es2ChoiceDialog.vue'
 import Es2Dialog from './Es2Dialog.vue'
-import type { MenuChoice } from './model'
+import { CHOICE_ARM_MS, type MenuChoice } from './model'
 import { heroMasteryPreview } from '../../../game/content/heroes/mastery-preview'
 
 const choices: MenuChoice[] = [
@@ -25,6 +25,37 @@ function mounted(component: Component, props: Record<string, unknown>) {
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount(); document.body.innerHTML = '' })
 
 describe('ES2 upgrade and reward picker', () => {
+  it('ignores a tap that starts right after the picker opens mid-combat, then accepts a deliberate tap', async () => {
+    let now = 1000
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => now)
+    try {
+      const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
+      await nextTick()
+      const tap = (id: string) => {
+        const card = button(id)
+        card.dispatchEvent(new Event('pointerdown', { bubbles: true }))
+        card.click()
+      }
+      now += CHOICE_ARM_MS - 1 // thumb was heading for dash/joystick when the cards appeared
+      tap('bolt')
+      expect(wrapper.emitted('choose')).toBeUndefined()
+      expect(button('bolt').disabled).toBe(false) // never disabled: focus and keyboard stay usable
+      now += 1
+      tap('bolt')
+      expect(wrapper.emitted('choose')).toEqual([['bolt']])
+      // Chained level-ups show a fresh set of cards, which re-arms the guard.
+      await wrapper.setProps({ items: choices.slice(1, 2) })
+      await nextTick()
+      tap('frost')
+      expect(wrapper.emitted('choose')).toHaveLength(1)
+      now += CHOICE_ARM_MS
+      tap('frost')
+      expect(wrapper.emitted('choose')).toEqual([['bolt'], ['frost']])
+    } finally {
+      clock.mockRestore()
+    }
+  })
+
   it('renders real mastery comparisons on the mastery card only', async () => {
     const mastery: MenuChoice = {
       id: 'heroes:shadow-precision', title: '影刃行者 · 專精', rarity: 'rare', level: 0, maxLevel: 3,
