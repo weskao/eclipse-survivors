@@ -1,0 +1,94 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "pose": "run",
+  "direction": "NW",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "sourceSHA256": "a4be4c0c1edb5358facea4cd581a6ff79971873985cad4dc2df383d7d6f85a49",
+  "frameCount": 4,
+  "sourceClippingRisk": false,
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        72,
+        16,
+        538,
+        597
+      ],
+      "coreAlphaBounds": [
+        77,
+        18,
+        535,
+        595
+      ],
+      "rgbaSHA256": "8608f6e52cc965ac0c11e1c615241e67fde73c8bb5ea7100fbf4e8ab0f115073",
+      "originalMargin": 16
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        92,
+        21,
+        565,
+        539
+      ],
+      "coreAlphaBounds": [
+        95,
+        25,
+        563,
+        537
+      ],
+      "rgbaSHA256": "8f86c12a60c891812a951a8aabe4759c8596a23cfdbcc404a078baaf69efddc5",
+      "originalMargin": 21
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        82,
+        23,
+        559,
+        587
+      ],
+      "coreAlphaBounds": [
+        86,
+        25,
+        554,
+        582
+      ],
+      "rgbaSHA256": "ba8c1587888a420cee9cd2076fa58c7a29839281898e0ab64455bde35820efae",
+      "originalMargin": 23
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        76,
+        18,
+        559,
+        600
+      ],
+      "coreAlphaBounds": [
+        79,
+        23,
+        554,
+        597
+      ],
+      "rgbaSHA256": "4073b120063ce983ad9cf3389c50a9dc3d4cc0f98f00ab4bb0002c4192006021",
+      "originalMargin": 18
+    }
+  ],
+  "reviewNotes": [
+    "Short hair / apparent silhouette differs from canonical long-haired female paladin; identity review required."
+  ],
+  "eligibleForDevWiring": false
+}

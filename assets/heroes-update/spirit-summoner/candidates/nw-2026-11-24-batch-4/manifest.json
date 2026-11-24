@@ -1,0 +1,94 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "NW",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "sourceSHA256": "b33bf0cb6de9deab3407f5cd1fc90390a3569ea3c02a0ca5baa3d2b8d0425fa0",
+  "frameCount": 4,
+  "sourceClippingRisk": false,
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        94,
+        13,
+        542,
+        619
+      ],
+      "coreAlphaBounds": [
+        97,
+        15,
+        539,
+        609
+      ],
+      "rgbaSHA256": "ebdd836a616377576fcf77252c595e9aaca4505f919df0639e50cfb7d556e2e6",
+      "originalMargin": 8
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        85,
+        14,
+        547,
+        598
+      ],
+      "coreAlphaBounds": [
+        88,
+        16,
+        544,
+        586
+      ],
+      "rgbaSHA256": "5ce5dd1177fcd11880fdf856440a89135045a482faee7fb535d79656f604961b",
+      "originalMargin": 14
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        82,
+        12,
+        552,
+        511
+      ],
+      "coreAlphaBounds": [
+        85,
+        14,
+        549,
+        508
+      ],
+      "rgbaSHA256": "6b9f4207d633b4a1e7cd4fe8ad37c4669f4616bda8085be6f2795cb7a10677e5",
+      "originalMargin": 12
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        68,
+        14,
+        555,
+        596
+      ],
+      "coreAlphaBounds": [
+        74,
+        16,
+        552,
+        585
+      ],
+      "rgbaSHA256": "d8dd88b33e434e89435a33dae2901d5d80b2a8b0af20e121e5173066b81411e5",
+      "originalMargin": 14
+    }
+  ],
+  "reviewNotes": [
+    "Staff appears on opposite side; verify handedness against canonical asset."
+  ],
+  "eligibleForDevWiring": false
+}
