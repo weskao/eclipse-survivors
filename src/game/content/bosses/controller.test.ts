@@ -228,4 +228,38 @@ describe('independent premium boss content', () => {
     }
     expect(run()).toEqual(run())
   })
+  it.each(Object.keys(BOSS_DEFINITIONS) as BossId[])('%s: exposes actual body-pose timing without changing attack or reward logic', id => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, id, { x: 520, y: 0 }, hooks)!
+    state.hero!.inv = 100
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'idle', phase: 1 })
+    controller.tick(state, 0.01, hooks)
+    const warning = controller.snapshot(state).telegraphs[0]!
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'windup', progress: 0, phase: 1 })
+    const windup = BOSS_ATTACKS[warning.attackId as keyof typeof BOSS_ATTACKS].windup
+    controller.tick(state, windup / 2, hooks)
+    expect(controller.snapshot(state).bodyMotion?.progress).toBeCloseTo(0.5)
+    controller.tick(state, windup, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'attack', phase: 1 })
+    controller.tick(state, 0.3, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'recover', phase: 1 })
+    boss.hp = boss.max * 0.6
+    controller.tick(state, 0.01, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'transform', progress: 0, phase: 2 })
+    controller.tick(state, 0.2, hooks)
+    expect(controller.snapshot(state).bodyMotion?.progress).toBeCloseTo(0.2 / 0.85)
+    state.mode = 'level'
+    const paused = controller.snapshot(state).bodyMotion
+    controller.tick(state, 0.1, hooks)
+    expect(controller.snapshot(state).bodyMotion).toEqual(paused)
+    state.mode = 'play'
+    hit(state, boss, boss.hp, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'death', phase: 2, progress: 0 })
+    expect(controller.snapshot(state).bodyMotion?.x).toBe(boss.x)
+    expect(state.kill).toBe(1)
+    expect(state.stars).toHaveLength(1)
+    controller.reset(state)
+    expect(controller.snapshot(state).bodyMotion).toBeUndefined()
+  })
+
 })
