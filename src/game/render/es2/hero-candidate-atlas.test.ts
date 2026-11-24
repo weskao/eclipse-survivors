@@ -18,6 +18,15 @@ describe('ES2 staged hero candidate atlas contract (QA only)', () => {
     }
   })
 
+
+  it('includes the four eligible northern run atlases and excludes the five blocked sources', () => {
+    const keys = HERO_CANDIDATE_ATLASES.map(c => c.hero + ':' + c.direction + ':' + c.pose)
+    expect(keys.filter(key => /:(N|NE|NW):run$/.test(key)).sort()).toEqual([
+      'shadowblade:NE:run', 'shadowblade:NW:run',
+      'spirit-summoner:N:run', 'crimson-paladin:N:run',
+    ].sort())
+  })
+
   it('never samples into neighboring 704px cells or invents a fifth frame', () => {
     expect(Array.from({ length: 4 }, (_, i) => heroCandidateRect(i))).toEqual([
       { x: 0, y: 0, size: 704 }, { x: 704, y: 0, size: 704 },
