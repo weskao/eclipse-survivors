@@ -1,7 +1,7 @@
 import type { BossSnapshot } from '../../content/bosses/controller'
 import type { Ctx2D } from '../ctx'
 
-// Provisional alpha128 bottom-center anchors from the four committed manifests.
+// Provisional alpha128 bottom-center anchors from the committed manifests.
 // These are isolated candidate poses, not an approved sequence or phase assignment.
 export const BOSS_NATIVE_KEYFRAMES = {
   idle: ['batch-01/infernal-titan/sources/idle-stance-a.webp', 1312, 1199, 624.5, 1185],
@@ -10,6 +10,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   slam: ['batch-02/infernal-titan/attack/ground-slam-key-a.webp', 1437, 1095, 724.5, 1087],
   hurt: ['batch-02/infernal-titan/hurt/recoil-key-b.webp', 1312, 1199, 657.5, 1178],
   transform: ['batch-02/infernal-titan/transform/overload-key-a.webp', 1312, 1199, 656, 1195],
+  transformPhase2: ['batch-06/infernal-titan/transform/phase-2-awakening-key-a.webp', 1374, 1145, 699, 1114],
   death: ['batch-03/infernal-titan/death/collapse-key-a.webp', 1312, 1199, 659, 1112],
   windupB: ['batch-04/infernal-titan/windup/crouch-key-b.webp', 1312, 1199, 653, 1186],
   slamB: ['batch-04/infernal-titan/attack/ground-slam-key-b.webp', 1312, 1199, 658, 1193],
@@ -35,6 +36,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
     case 'windup': return snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'titan-slam') ? (motion.progress < .5 ? 'windup' : 'windupB') : null
     case 'attack': return snapshot.impacts?.at(-1)?.attackId === 'titan-slam' ? (motion.progress < .5 ? 'slam' : 'slamB') : null
     case 'recover': return snapshot.impacts?.at(-1)?.attackId === 'titan-slam' ? 'recover' : null
+    case 'transform': return motion.phase === 2 ? 'transformPhase2' : motion.phase === 3 ? 'transform' : null
     case 'death': return motion.progress < 1 / 3 ? 'death' : motion.progress < 2 / 3 ? 'deathDim' : 'deathRubble'
     default: return motion.pose
   }

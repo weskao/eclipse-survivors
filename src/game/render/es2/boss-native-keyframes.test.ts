@@ -37,6 +37,24 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(selectBossNativeKeyframe(at('death', NaN))).toBeNull()
     expect(selectBossNativeKeyframe(at('death', 1.01))).toBeNull()
   })
+  it('selects the Batch 06 awakening only for the phase 2 transition and preserves its provisional anchor', () => {
+    const state = snapshot('transform')
+    const phase2: BossSnapshot = { ...state, phase: 2, bodyMotion: { ...state.bodyMotion!, phase: 2 } }
+    const phase1: BossSnapshot = { ...state, phase: 1, bodyMotion: { ...state.bodyMotion!, phase: 1 } }
+    expect(selectBossNativeKeyframe(phase2)).toBe('transformPhase2')
+    expect(selectBossNativeKeyframe(state)).toBe('transform')
+    expect(selectBossNativeKeyframe(phase1)).toBeNull()
+    expect(selectBossNativeKeyframe({ ...phase2, id: 'abyss-monarch' })).toBeNull()
+    const image = { complete: true, naturalWidth: 1374, naturalHeight: 1145 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'transformPhase2')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, phase2, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1374, 1145, -174.75, -274.5, 343.5, 286.25])
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, phase2, 300, true)).toBe(false)
+    expect(calls).toHaveLength(1)
+  })
   it('preserves the low rubble silhouette at the shared scale with reduced-motion fallback', () => {
     const image = { complete: true, naturalWidth: 1448, naturalHeight: 1086 } as HTMLImageElement
     registerBossNativeKeyframe(image, 'deathRubble')
