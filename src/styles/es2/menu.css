@@ -215,14 +215,23 @@
   .es2-dialog-settings{min-height:44px;padding:7px 9px;font-size:.76rem}
   .es2-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .es2-choice{min-height:0;padding:0 0 5px}
-  /* Full-card art stage: the dialog fills the short screen, cards stretch, and the contained art
-     takes all height the text does not need. Badges sit in a reserved band so the art stays whole. */
+  /* Full-card art stage: the dialog fills the short screen and the contained art takes all height the
+     text does not need. Cards share subgrid rows so art and text align across all three, even when a
+     hero passive (mastery) card adds several stat rows. Badges sit in a reserved band; art stays whole. */
   .es2-dialog-choice{height:calc(100dvh - max(5px,env(safe-area-inset-top)) - max(5px,env(safe-area-inset-bottom)))}
+  .es2-dialog-choice .es2-dialog-header p{display:none}
   .es2-dialog-choice .es2-dialog-body{display:flex;flex-direction:column}
   .es2-dialog-choice .es2-selection-scene{flex:1 0 auto;display:flex;flex-direction:column}
-  .es2-dialog-choice .es2-choice-grid{flex:1 0 auto;grid-template-rows:minmax(min-content,1fr)}
-  .es2-dialog-choice .es2-choice{background:linear-gradient(180deg,transparent 42%,#050b18e6 100%),var(--es2-card-art-bg)}
-  .es2-dialog-choice .es2-choice .es2-card-art{flex:1 1 0;height:auto;min-height:clamp(64px,22dvh,96px);padding-top:26px;border-bottom:0;box-shadow:none;background:radial-gradient(ellipse 46% 50% at 50% 58%,var(--es2-skill-aura,#d6ac5d40),transparent 100%)}
+  .es2-dialog-choice .es2-choice-grid{flex:1 0 auto;grid-template-rows:minmax(clamp(64px,22dvh,96px),1fr) repeat(6,auto);row-gap:0}
+  .es2-dialog-choice .es2-choice{display:grid;grid-row:span 7;grid-template-rows:subgrid;align-content:start;background:linear-gradient(180deg,transparent 42%,#050b18e6 100%),var(--es2-card-art-bg)}
+  .es2-dialog-choice .es2-choice .es2-card-art{grid-row:1;height:auto;min-height:clamp(64px,22dvh,96px);contain:size;padding-top:26px;border-bottom:0;box-shadow:none;background:radial-gradient(ellipse 46% 50% at 50% 58%,var(--es2-skill-aura,#d6ac5d40),transparent 100%)}
+  .es2-dialog-choice .es2-choice .es2-card-name{grid-row:2}
+  .es2-dialog-choice .es2-choice .es2-card-level{grid-row:3;justify-self:start}
+  .es2-dialog-choice .es2-choice .es2-card-description{grid-row:4}
+  .es2-dialog-choice .es2-choice .es2-mastery-stats{grid-row:5;gap:1px}
+  .es2-dialog-choice .es2-choice .es2-mastery-stat{line-height:1.25}
+  .es2-dialog-choice .es2-choice .es2-card-requirements{grid-row:6}
+  .es2-dialog-choice .es2-choice .es2-card-selected-text{grid-row:7}
   .es2-dialog-choice .es2-choice .es2-card-art::before{display:none}
   .es2-dialog-choice .es2-choice .es2-card-art img{max-height:180px;padding:2px 6px}
   .es2-dialog-choice .es2-choice .es2-card-meta{position:absolute;top:6px;left:6px;right:6px;z-index:2;justify-content:flex-start;flex-wrap:nowrap;gap:4px;min-height:0;padding:0;pointer-events:none}
@@ -250,6 +259,7 @@
   .es2-result-stats small{font-size:.72rem}
   .es2-reward-strip{gap:5px;padding:7px}
 }
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){.es2-dialog-choice .es2-hint{display:none}}
 
 /* Locale-safe wrapping: longer English and large zh-TW text must not widen cards or dialogs. */
 .es2-menu .es2-hero-copy strong,

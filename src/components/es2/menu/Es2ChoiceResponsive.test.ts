@@ -24,8 +24,17 @@ describe('ES2 choice card responsive illustrations', () => {
     const landscape = css.slice(start, css.indexOf('\n}', start))
     // Dialog fills the short viewport so the three cards stretch and the art takes the leftover height.
     expect(landscape).toMatch(/\.es2-dialog-choice\{height:calc\(100dvh/)
-    expect(landscape).toMatch(/\.es2-dialog-choice \.es2-choice-grid\{[^}]*grid-template-rows:minmax\(min-content,1fr\)/)
-    expect(landscape).toMatch(/\.es2-dialog-choice \.es2-choice \.es2-card-art\{[^}]*flex:1 1 0/)
+    // Shared subgrid rows: art row takes leftover height, text rows align across all three cards even when a
+    // hero passive (mastery) card carries several stat rows.
+    expect(landscape).toMatch(/\.es2-dialog-choice \.es2-choice-grid\{[^}]*grid-template-rows:minmax\(clamp\([^)]*\),1fr\) repeat\(6,auto\)/)
+    // The art must not push its intrinsic size into the shared row, or long text forces scrolling instead.
+    expect(landscape).toMatch(/\.es2-dialog-choice \.es2-choice \.es2-card-art\{[^}]*contain:size/)
+    expect(landscape).toMatch(/\.es2-dialog-choice \.es2-choice\{[^}]*grid-row:span 7;grid-template-rows:subgrid/)
+    for (const [cls, row] of [['es2-card-art', 1], ['es2-card-name', 2], ['es2-card-level', 3], ['es2-card-description', 4], ['es2-mastery-stats', 5], ['es2-card-requirements', 6], ['es2-card-selected-text', 7]] as const)
+      expect(landscape).toMatch(new RegExp(`\\.${cls}[^{]*\\{[^}]*grid-row:${row}[;}]`))
+    // Reclaim height for long passive text: flavor subtitle and the keyboard hint (touch) step aside.
+    expect(landscape).toMatch(/\.es2-dialog-choice \.es2-dialog-header p\{display:none\}/)
+    expect(css).toMatch(/@media \(orientation:landscape\) and \(max-height:520px\) and \(pointer:coarse\)\{\.es2-dialog-choice \.es2-hint\{display:none\}/)
     expect(landscape).not.toContain('height:clamp(50px,16dvh,76px)')
     // Rarity aura spans the whole card; rarity/key badges sit in a reserved band so they never cover the art.
     expect(landscape).toMatch(/\.es2-dialog-choice \.es2-choice\{[^}]*background:[^}]*var\(--es2-card-art-bg\)/)
