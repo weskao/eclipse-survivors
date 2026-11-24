@@ -16,7 +16,7 @@ Each requirement lives in exactly one file below. Files under `.claude/rules/` w
 | Game logic, AI, combat, collisions, world, rendering, VFX, perf-critical UI | [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md) (§8 = VFX performance gate) |
 | Any character CRUD: heroes, enemies, bosses, NPCs, summons, portraits, animations (native 3× art at 1×; five authored facings first, verified mirror reuse, no redundant sheets) | [`.claude/rules/character-art-3x.md`](.claude/rules/character-art-3x.md) (§5 = CRUD gate) |
 | Knight/ranger/wizard sprites, rigid weapons, held projectiles, body atlas | [`.claude/rules/hero-weapon-rendering.md`](.claude/rules/hero-weapon-rendering.md) |
-| Any raster image (WebP-only runtime, lossless source migration, redundant PNG cleanup) | [`.claude/rules/webp-assets.md`](.claude/rules/webp-assets.md) |
+| Any raster image generation or delivery — mandatory [Polytool](https://github.com/weskao/polytool) `towebp`, WebP-only assets and ZIPs, no redundant PNG | [`.claude/rules/webp-assets.md`](.claude/rules/webp-assets.md) |
 | Images: commit real asset files first, code consumer second | [`.claude/rules/asset-workflow.md`](.claude/rules/asset-workflow.md) |
 | Any BOSS create/read/update/delete (original orchestral score + phase music) | [`.claude/rules/boss-music-production.md`](.claude/rules/boss-music-production.md) |
 | Skill CRUD, ability option, projectile, enemy bullet, damage feedback, attack animation | [es2-combat-visual-fidelity](.claude/skills/es2-combat-visual-fidelity/SKILL.md) skill (see below) |
