@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { drawProductionHeroFrame, loadProductionHeroes, productionHeroSouthRunRect, productionHeroQAEastRect, PRODUCTION_HERO_SOUTH_RUN_SOURCES } from './production-heroes'
 import { HERO_DIAGONAL_RUN_ATLASES, HERO_NORTHERN_RUN_ATLASES } from './hero-candidate-atlas'
-import type { HeroAnimation } from '../animation'
+import { sampleHeroAnimation, type HeroAnimation } from '../animation'
+import { createHero, createState } from '../../state'
 import type { Ctx2D } from '../ctx'
 
 const makeAnim = (overrides: Partial<HeroAnimation> = {}): HeroAnimation => ({
@@ -205,5 +206,80 @@ describe('explicitly permitted horizontal candidate reuse', () => {
     // Verify the strict resolver also retains its existing East-only default.
     expect(productionHeroQAEastRect(makeAnim({ direction: 4, pose: 'attack' }))).toBeNull()
     expect(images.every(image => !image.src.includes('/candidates/'))).toBe(true)
+  })
+})
+
+describe('Shadowblade real-state to Canvas continuity', () => {
+  it('selects the velocity-facing candidate in all eight dash headings even after a different prior heading', () => {
+    const state = createState()
+    state.heroId = 'shadowblade'
+    state.mode = 'play'
+    state.hero = createHero('ranger')
+    const hero = state.hero
+    const images: HTMLImageElement[] = []
+    const art = loadProductionHeroes(() => {
+      const image = { src: '', complete: true,
+        get naturalWidth() {
+          return this.src.includes('/east-2026-11-23/') ? 1408 :
+            this.src.includes('4frames@3x.webp') ? 1536 : 900
+        },
+        get naturalHeight() { return this.naturalWidth },
+      } as HTMLImageElement
+      images.push(image)
+      return image
+    }, true).shadowblade
+    const names = ['east', 'se', 'south', 'sw', 'east', 'nw', 'n', 'ne']
+    const draws: unknown[][] = [], scales: number[][] = []
+    const ctx = { save: () => {}, restore: () => {}, scale: (...args: number[]) => scales.push(args),
+      drawImage: (...args: unknown[]) => draws.push(args) } as unknown as Ctx2D
+    for (let direction = 0; direction < 8; direction++) {
+      hero.dash = 0
+      hero.moveAmount = 1
+      hero.vx = 100 * Math.cos((direction + 4) * Math.PI / 4)
+      hero.vy = 100 * Math.sin((direction + 4) * Math.PI / 4)
+      sampleHeroAnimation(state, hero)
+      hero.dash = 0.11
+      hero.vx = 100 * Math.cos(direction * Math.PI / 4)
+      hero.vy = 100 * Math.sin(direction * Math.PI / 4)
+      const anim = sampleHeroAnimation(state, hero)
+      expect(anim).toMatchObject({ pose: 'dash', direction })
+      draws.length = 0
+      scales.length = 0
+      expect(drawProductionHeroFrame(ctx, art, anim, 117, 147)).toBe(true)
+      expect(draws).toHaveLength(1)
+      expect((draws[0]?.[0] as HTMLImageElement).src).toContain('run-' + names[direction] + '-4frames@3x.webp')
+      expect(scales).toEqual(direction === 4 ? [[-1, 1]] : [])
+    }
+    expect(images).toHaveLength(10) // three portraits and seven distinct run sources
+    hero.vx = hero.vy = 0
+    expect(sampleHeroAnimation(state, hero).direction).toBe(7)
+  })
+
+  it('never blends the previous facing or attack silhouette into a newly selected Shadowblade action', () => {
+    const art = loadProductionHeroes(() => ({
+      src: '', complete: true,
+      get naturalWidth() { return this.src.includes('/east-2026-11-23/') ? 1408 :
+        this.src.includes('4frames@3x.webp') ? 1536 : 900 },
+      get naturalHeight() { return this.naturalWidth },
+    }) as HTMLImageElement, true).shadowblade
+    const draws: unknown[][] = [], scales: number[][] = []
+    const ctx = { globalAlpha: 1, save: () => {}, restore: () => {},
+      scale: (...args: number[]) => scales.push(args),
+      drawImage: (...args: unknown[]) => draws.push(args) } as unknown as Ctx2D
+    const draw = (anim: HeroAnimation, time: number) => {
+      draws.length = scales.length = 0
+      expect(drawProductionHeroFrame(ctx, art, anim, 117, 147, undefined, time)).toBe(true)
+      expect(ctx.globalAlpha).toBe(1)
+    }
+    draw(makeAnim({ direction: 0 }), 1)
+    draw(makeAnim({ direction: 4 }), 1.016)
+    expect(draws).toHaveLength(1)
+    expect(scales).toEqual([[-1, 1]])
+    draw(makeAnim({ direction: 0, pose: 'attack', phase: .4 }), 1.032)
+    expect(draws).toHaveLength(1)
+    expect((draws[0]?.[0] as HTMLImageElement).src).toContain('attack-east-4frames')
+    draw(makeAnim({ direction: 0, pose: 'cast', special: true, phase: .4 }), 1.048)
+    expect(draws).toHaveLength(1)
+    expect((draws[0]?.[0] as HTMLImageElement).src).toContain('special-east-4frames')
   })
 })
