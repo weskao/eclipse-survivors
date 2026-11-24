@@ -160,8 +160,8 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   // Dead mobs are excluded from depthOrder. Only the explicit DEV sheet may paint a death reference.
   const deathReference = assets.productionWorld?.bossMotionReference
   const death = bossSnapshot?.bodyMotion
-  if (import.meta.env.DEV && death?.pose === 'death' && bossSnapshot?.id === deathReference?.id
-      && deathReference?.image.naturalWidth === 948 && deathReference.image.naturalHeight === 1659
+  if (import.meta.env.DEV && bossSnapshot && deathReference && death?.pose === 'death' && bossSnapshot.id === deathReference.id
+      && deathReference.image.naturalWidth === 948 && deathReference.image.naturalHeight === 1659
       && !objects.some(obj => 'type' in obj && obj.type === 'boss')) {
     ctx.save()
     ctx.translate(death.x + ox, death.y + oy)
