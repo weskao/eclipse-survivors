@@ -7,6 +7,7 @@ import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
 import { attack, dash as heroDash, hit } from './combat'
+import { getFiringOrigin } from './weapon-geometry'
 import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
@@ -800,8 +801,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       spawnMob(s)
       const target = s.mobs[0]
       if (!target) return false
-      target.x = hero.x + Math.min(140, Math.max(64, hero.range * 0.85))
-      target.y = hero.y
+      // Ranged aim starts at the real weapon grip, not at ground contact.
+      const grip = s.choice === 'knight' ? { x: 0, y: 0 } : getFiringOrigin(s.choice, 1)
+      target.x = hero.x + Math.min(140, Math.max(64, hero.range * 0.75))
+      target.y = hero.y + grip.y
       target.speed = 0
       hero.attack = 2
       hero.inv = 0
