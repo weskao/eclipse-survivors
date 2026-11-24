@@ -40,6 +40,30 @@ class CandidateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'duplicate'):
             pack(self.source(duplicate=True), self.root/'out')
 
+    def test_cleans_only_alpha_one_noise_in_source_margin(self):
+        src = self.source()
+        with Image.open(src) as original:
+            im = original.copy()
+        im.putpixel((0, 0), (255, 0, 255, 1))
+        im.putpixel((100, 100), (255, 0, 255, 1))
+        im.save(src)
+        manifest = pack(src, self.root/'out')
+        with Image.open(self.root/'out'/'atlas.webp') as atlas:
+            self.assertEqual(atlas.getpixel((70,70)), (0,0,0,0))
+            self.assertEqual(atlas.getpixel((170,170)), (255,0,255,1))
+        self.assertEqual(manifest['frames'][0]['clearedMarginPixels'], 1)
+        self.assertEqual((self.root/'out'/'source.png').read_bytes(), src.read_bytes())
+
+    def test_rejects_margin_alpha_above_one(self):
+        src = self.source()
+        with Image.open(src) as original:
+            im = original.copy()
+        im.putpixel((0, 0), (255, 0, 255, 2))
+        im.save(src)
+        with self.assertRaisesRegex(ValueError, 'margin'):
+            pack(src, self.root/'out')
+        self.assertFalse((self.root/'out').exists())
+
     def test_refuses_overwrite(self):
         src = self.source()
         pack(src, self.root/'out')

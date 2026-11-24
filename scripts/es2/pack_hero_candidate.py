@@ -25,15 +25,26 @@ def pack(source: Path, output: Path, hero='shadowblade', pose='run', direction='
         for i in range(4):
             x, y = i%2, i//2
             tile = original.crop((x*cw, y*ch, (x+1)*cw, (y+1)*ch))
-            bounds = tile.getchannel('A').point(lambda a: 255 if a > 8 else 0).getbbox()
+            bounds = tile.getchannel('A').point(lambda a: 255 if a > 1 else 0).getbbox()
             if not bounds or min(bounds[0], bounds[1], cw-bounds[2], ch-bounds[3]) < MARGIN:
                 raise ValueError(f'frame {i}: insufficient original alpha margin')
             sha = hashlib.sha256(tile.tobytes()).hexdigest()
             if sha in seen:
                 raise ValueError(f'frame {i}: duplicate source pixels')
             seen.add(sha)
+            # Only remove near-invisible alpha=1 noise inside the reserved margin.
+            # Never erase a more opaque pixel to manufacture a safe crop.
+            cleared = 0
+            pixels = tile.load()
+            for py in range(ch):
+                for px in range(cw):
+                    if (px < MARGIN or px >= cw-MARGIN or py < MARGIN or py >= ch-MARGIN) and pixels[px, py][3] == 1:
+                        pixels[px, py] = (0, 0, 0, 0)
+                        cleared += 1
             atlas.paste(tile, (x*CELL+(CELL-cw)//2, y*CELL+(CELL-ch)//2))
-            frames.append({'index': i, 'originalAlphaBounds': list(bounds), 'rgbaSHA256': sha})
+            frames.append({'index': i, 'originalAlphaBounds': list(bounds), 'rgbaSHA256': sha,
+                           'clearedMarginPixels': cleared,
+                           'outputRGBA256': hashlib.sha256(tile.tobytes()).hexdigest()})
     output.mkdir(parents=True, exist_ok=False)
     (output/'source.png').write_bytes(source_bytes)
     target = output/'atlas.webp'
