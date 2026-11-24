@@ -4,7 +4,7 @@ Owner asked to re-check actual animation connectivity after static-art signoff, 
 
 ## Implemented source reference playback
 
-The original project source files `assets/images/imgs7.png` and `imgs8.png` (1448×1086) contain small authored action pose sequences. A visual source audit found six selected attack poses per phase for all four bosses (72 rectangles). The source files remain unchanged and are consumed directly by the DEV renderer, without duplicate PNG/WebP copies or upscaling claims.
+The original project source files `assets/images/imgs7.png` and `imgs8.png` (1448×1086) contain small authored action pose sequences. A visual source audit found six selected attack poses per phase for all four bosses (72 rectangles). The source files remain unchanged. Four lossless 672×336 WebP reference atlases now isolate the selected poses in a 6×3 grid of 112px cells (native source detail unchanged). The DEV renderer loads only the selected boss's compact atlas, with fixed source scaling and a common bottom anchor; the full concept sheets are no longer loaded at runtime.
 
 `?showcase=1&es2BossArtQa=<boss-id>&es2BossMotionQa=1` enables the source-reference motion review in Vite DEV. IDs: abyss-monarch, frost-sovereign, infernal-titan, eclipse-seraph. The first three selected poses are sampled against actual windup progress and the last three against release impact lifetime. The sprite preserves aspect ratio, ground anchor and phase growth. On missing source, idle, or reduced-motion preference it falls back to existing static phase rendering. The source review is intentionally excluded from the production build; it is not an approved animation or full-size replacement.
 
@@ -14,3 +14,7 @@ The original project source files `assets/images/imgs7.png` and `imgs8.png` (144
 - New authored idle, locomotion, windup, attack, recovery, hurt, transition and death frames are still required, with consistent per-phase identity and anchors. Existing Canvas VFX, AI and combat geometry remain independent.
 - The prior owner's static canonical visual signoff does not approve the 72 reference poses, high-resolution QA-PENDING candidates, or a complete body animation. Preserve static approval and separately track animation as incomplete, pending real cross-device footage and explicit owner review.
 - No newly painted art is claimed for this change. No combat, hitbox, timing, heroes or balance changes.
+
+## Isolated motion reference delivery
+
+Four files in `src/assets/es2/production/bosses/candidates/motion/` contain 72 source pose cells total. Combined compressed size: 498226 bytes, compared with approximately 3.5–3.8 MB for one original concept sheet. Per-boss atlases preserve the crop pixels without upscaling; 112px cells are padding, not original detail. Their status remains REFERENCE_ONLY_NOT_NATIVE_3X. No canonical visual approval is extended to animation. New high-resolution authored frames and human runtime animation approval remain outstanding.

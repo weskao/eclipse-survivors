@@ -24,6 +24,12 @@ export const BOSS_MOTION_REFERENCES: Readonly<Record<BossId, Reference>> = {
   'infernal-titan': { source: 'imgs8.png', phases: ([[328,389],[392,458],[463,533]] as const).map(y => rows(titanXs, y)) },
   'eclipse-seraph': { source: 'imgs8.png', phases: ([[848,914],[918,985],[990,1063]] as const).map(y => rows(seraphXs, y)) },
 }
+// Packed lossless reference cells are centered on x=56 and end at y=107.
+const REFERENCE_CELL = 112
+const REFERENCE_FOOT = 107
+const REFERENCE_EXTENT: Readonly<Record<BossId, number>> = {
+  'abyss-monarch': 53, 'frost-sovereign': 59, 'infernal-titan': 80, 'eclipse-seraph': 78,
+}
 const clamp = (n: number): number => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0))
 
 /** Drive QA pose playback from the real combat clock, never a separate animation timer. */
@@ -44,10 +50,22 @@ export function sampleBossAttackReference(snapshot: BossSnapshot): SourceRect | 
 /** DEV review only. Preserve aspect ratio and phase size; keep static fallback for unavailable art. */
 export function drawBossAttackReference(ctx: Ctx2D, image: HTMLImageElement, snapshot: BossSnapshot,
   displaySize: number, reducedMotion = false): boolean {
-  if (reducedMotion || !image.complete || image.naturalWidth !== 1448 || image.naturalHeight !== 1086
-      || !Number.isFinite(displaySize) || displaySize <= 0 || !snapshot.phase) return false
+  if (reducedMotion || !image.complete || !Number.isFinite(displaySize) || displaySize <= 0
+      || !snapshot.id || !snapshot.phase) return false
   const rect = sampleBossAttackReference(snapshot)
   if (!rect) return false
+  if (image.naturalWidth === REFERENCE_CELL * 6 && image.naturalHeight === REFERENCE_CELL * 3) {
+    const slot = BOSS_MOTION_REFERENCES[snapshot.id].phases[snapshot.phase - 1]?.indexOf(rect) ?? -1
+    if (slot < 0) return false
+    // Constant per-boss source scale avoids resizing the body when a weapon or wing extends.
+    const scale = displaySize * bossPhaseVisualScale(snapshot.phase) / REFERENCE_EXTENT[snapshot.id]
+    const side = REFERENCE_CELL * scale
+    ctx.drawImage(image, slot * REFERENCE_CELL, (snapshot.phase - 1) * REFERENCE_CELL,
+      REFERENCE_CELL, REFERENCE_CELL, -side / 2, 4 - REFERENCE_FOOT * scale, side, side)
+    return true
+  }
+  // Legacy source geometry remains supported for offline comparison only.
+  if (image.naturalWidth !== 1448 || image.naturalHeight !== 1086) return false
   const [x, y, right, bottom] = rect
   const sw = right - x, sh = bottom - y
   const ratio = displaySize * bossPhaseVisualScale(snapshot.phase) / Math.max(sw, sh)

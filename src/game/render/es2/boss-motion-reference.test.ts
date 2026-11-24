@@ -60,7 +60,8 @@ describe('DEV boss action source references (not native-3x production art)', () 
       const scale = Number(calls[0]![7]) / 112
       for (const [i, call] of calls.entries()) {
         expect(call.slice(1, 5)).toEqual([i * 112, (phase - 1) * 112, 112, 112])
-        expect(call.slice(5)).toEqual([-56 * scale, 4 - 107 * scale, 112 * scale, 112 * scale])
+        const expected = [-56 * scale, 4 - 107 * scale, 112 * scale, 112 * scale]
+        call.slice(5).forEach((value, i) => expect(Number(value)).toBeCloseTo(expected[i]!))
       }
     }
   })

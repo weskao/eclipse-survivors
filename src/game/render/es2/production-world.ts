@@ -15,9 +15,9 @@ const bossQaLoaders = import.meta.env.DEV
   }) as Record<string, () => Promise<string>>
   : {}
 const bossQaInsets = new WeakMap<HTMLImageElement, number>()
-// Source sheets are loaded only for an explicit development motion review.
+// Isolated reference atlases are loaded only for an explicit development motion review.
 const bossMotionSourceLoaders = import.meta.env.DEV
-  ? import.meta.glob('../../../../assets/images/imgs{7,8}.png', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
+  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/*-attack-source-reference.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
   : {}
 
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
@@ -111,8 +111,8 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   let bossMotionReference: WorldRuntimeImages['bossMotionReference']
   if (import.meta.env.DEV && reviewMotion && reviewBossId) {
-    const sheet = reviewBossId === 'abyss-monarch' || reviewBossId === 'frost-sovereign' ? 'imgs7.png' : 'imgs8.png'
-    const loadSource = bossMotionSourceLoaders['../../../../assets/images/' + sheet]
+    const path = '../../../assets/es2/production/bosses/candidates/motion/' + reviewBossId + '-attack-source-reference.webp'
+    const loadSource = bossMotionSourceLoaders[path]
     if (loadSource) {
       const image = makeImage()
       bossMotionReference = { id: reviewBossId, image }
