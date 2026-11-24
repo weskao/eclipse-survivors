@@ -146,13 +146,14 @@ export function productionHeroSouthRunRect(anim: HeroAnimation, facing: 1 | 2 | 
   return { x: (index % 2) * 768, y: Math.floor(index / 2) * 768, size: 768 }
 }
 
-/** Exactly nine East QA clips: 3 heroes × run/attack/special. Never mirror for West. */
-export function productionHeroQAEastRect(anim: HeroAnimation): {
+/** East source crops; only an explicitly selected West run may reuse them. */
+export function productionHeroQAEastRect(anim: HeroAnimation, facing: 0 | 4 = 0): {
   pose: 'run' | 'attack' | 'special'; rect: { x: number; y: number; size: 704 }
 } | null {
   const direction = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
-  if (anim.reducedMotion || direction !== 0) return null
+  if (anim.reducedMotion || direction !== facing) return null
   const running = anim.pose === 'run' || anim.pose === 'dash'
+  if (facing === 4 && !running) return null
   if (!running && anim.pose !== 'attack' && anim.pose !== 'cast') return null
   if (running && (!Number.isFinite(anim.frame) || !Number.isFinite(anim.count))) return null
   if (!running && !Number.isFinite(anim.phase)) return null
@@ -332,7 +333,7 @@ const SOUTH_QA_FOOT_BOTTOMS: Partial<Record<SpecializationId, readonly number[]>
 
 type PoseRect = ReturnType<typeof productionHeroPoseRect>
 type SmoothFrame = { type: 'atlas'; atlas: HTMLImageElement; rect: PoseRect; anchor: number }
-  | { type: 'candidate'; atlas: HTMLImageElement; rect: { x: number; y: number; size: 704 | 768 }; anchor?: number }
+  | { type: 'candidate'; atlas: HTMLImageElement; rect: { x: number; y: number; size: 704 | 768 }; anchor?: number; mirror?: boolean }
   | { type: 'portrait'; atlas: HTMLImageElement; anim: HeroAnimation }
 
 interface PoseTransition {
@@ -391,6 +392,7 @@ function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: 
     const paintedHeight = Math.min(height * 1.05, 147) * cell / 627
     const footBottom = frame.anchor ?? (cell - 627) / 2 + 600
     ctx.save()
+    if (frame.mirror) ctx.scale(-1, 1)
     ctx.drawImage(frame.atlas, frame.rect.x, frame.rect.y, cell, cell,
       -paintedWidth / 2, 4 - paintedHeight * footBottom / cell, paintedWidth, paintedHeight)
     ctx.restore()
@@ -429,7 +431,7 @@ function drawSmoothedHero(
     a.type === 'atlas' && b.type === 'atlas' &&
     (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.rect.mirror !== b.rect.mirror)) || (
     a.type === 'candidate' && b.type === 'candidate' &&
-    (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y))
+    (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.mirror !== b.mirror))
   if (changed) {
     const poseOrDirection = previous.pose !== anim.pose || previous.direction !== anim.direction
       || a.type !== b.type || (a.type === 'atlas' && b.type === 'atlas' && a.rect.sheet !== b.rect.sheet)
@@ -471,7 +473,12 @@ export function drawProductionHeroFrame(
   // 3x Canvas cache is bounded and reused across frames.
   if (image.naturalWidth === 900 && image.naturalHeight === 900) {
     const hero = image as HeroWithMotion
-    const eastQA = hero.qaEastSources ? productionHeroQAEastRect(anim) : null
+    const facing = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
+    // Twin-dagger locomotion is a reviewable reflection. Do not extend this
+    // allowlist to staff/sword-shield, attack or special poses without art QA.
+    const mirrorEast = hero.heroId === 'shadowblade' && facing === 4 &&
+      (anim.pose === 'run' || anim.pose === 'dash')
+    const eastQA = hero.qaEastSources ? productionHeroQAEastRect(anim, mirrorEast ? 4 : 0) : null
     if (eastQA && hero.qaEastSources?.[eastQA.pose]) {
       const atlases = hero.qaEastAtlases ?? (hero.qaEastAtlases = {})
       let atlas = atlases[eastQA.pose]
@@ -481,12 +488,11 @@ export function drawProductionHeroFrame(
         atlas.src = hero.qaEastSources[eastQA.pose]!
       }
       if (atlas.complete && atlas.naturalWidth === 1408 && atlas.naturalHeight === 1408) {
-        drawSmoothedHero(ctx, image, { type: 'candidate', atlas, rect: eastQA.rect },
+        drawSmoothedHero(ctx, image, { type: 'candidate', atlas, rect: eastQA.rect, mirror: mirrorEast },
           anim, width, height, frameTimeSeconds)
         return true
       }
     }
-    const facing = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
     const diagonal = facing === 1 || facing === 3 ? facing : undefined
     const clip = diagonal === undefined ? undefined : hero.qaDiagonalSources?.[diagonal]
     const qaRect = clip && diagonal !== undefined ? productionHeroSouthRunRect(anim, diagonal)

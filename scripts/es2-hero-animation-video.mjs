@@ -33,7 +33,9 @@ try {
         CanvasRenderingContext2D.prototype.drawImage = function (source, ...args) {
           const src = source?.src
           if (typeof src === 'string' && src.includes('/candidates/') && args.length >= 4) {
-            const draw = { src, sx: args[0], sy: args[1], sw: args[2], sh: args[3] }
+            const transform = this.getTransform()
+            const mirrored = transform.a * transform.d - transform.b * transform.c < 0
+            const draw = { src, sx: args[0], sy: args[1], sw: args[2], sh: args[3], mirrored }
             const key = JSON.stringify(draw)
             if (!seen.has(key) && seen.size < 128) {
               seen.add(key)
@@ -103,6 +105,7 @@ try {
           ['south', 'southRunFrames', ['KeyS']],
           ['se', 'southeastRunFrames', ['KeyS', 'KeyD']],
           ['sw', 'southwestRunFrames', ['KeyS', 'KeyA']],
+          ...(heroId === 'shadowblade' ? [['west', 'mirroredWestRunFrames', ['KeyA']]] : []),
         ]) {
           for (let attempt = 0; attempt < 3; attempt++) {
             const coverage = assessHeroCandidateCoverage(heroId, await page.evaluate(() => window.__es2CandidateDraws ?? []))
@@ -155,6 +158,7 @@ await writeFile(`${output}/capture-metrics.json`, JSON.stringify(results, null, 
 // A green capture means each of the four staged cells was actually drawn for
 // each of the four available run directions, not that the full art is approved.
 if (candidateQA) {
-  const incomplete = results.filter(result => !result.candidateCoverage.hasAllFourRunCandidateFrames)
+  const incomplete = results.filter(result => !result.candidateCoverage.hasAllFourRunCandidateFrames ||
+    (result.heroId === 'shadowblade' && result.candidateCoverage.mirroredWestRunFrames !== 4))
   assert.deepEqual(incomplete, [], 'Incomplete real Canvas run-candidate coverage')
 }

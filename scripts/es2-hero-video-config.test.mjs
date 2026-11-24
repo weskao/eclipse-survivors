@@ -29,7 +29,7 @@ test('real Canvas draw evidence must contain distinct East and South running fra
     { src: south, sx: 0, sy: 768, sw: 768, sh: 768 },
   ]
   assert.deepEqual(assessHeroCandidateCoverage(hero, observed), {
-    eastRunFrames: 2, southRunFrames: 2, southeastRunFrames: 0, southwestRunFrames: 0, hasAllFourRunCandidateFrames: false, hasBothDirections: true,
+    mirroredWestRunFrames: 0, eastRunFrames: 2, southRunFrames: 2, southeastRunFrames: 0, southwestRunFrames: 0, hasAllFourRunCandidateFrames: false, hasBothDirections: true,
   })
 })
 
@@ -42,7 +42,7 @@ test('cannot claim coverage from another hero, duplicate frames or a malformed c
     { src, sx: 0, sy: 0, sw: 768, sh: 768 },
     { src, sx: 1, sy: 0, sw: 768, sh: 768 },
     { src: other, sx: 768, sy: 0, sw: 768, sh: 768 },
-  ]), { eastRunFrames: 0, southRunFrames: 1, southeastRunFrames: 0, southwestRunFrames: 0, hasAllFourRunCandidateFrames: false, hasBothDirections: false })
+  ]), { mirroredWestRunFrames: 0, eastRunFrames: 0, southRunFrames: 1, southeastRunFrames: 0, southwestRunFrames: 0, hasAllFourRunCandidateFrames: false, hasBothDirections: false })
 })
 
 test('candidate evidence rejects unrelated paths and query-string URL spoofing', () => {
@@ -53,7 +53,7 @@ test('candidate evidence rejects unrelated paths and query-string URL spoofing',
     { src: `http://localhost:4174/other${path}`, sx: 704, sy: 0, sw: 704, sh: 704 },
   ]
   assert.deepEqual(assessHeroCandidateCoverage(hero, fake), {
-    eastRunFrames: 0, southRunFrames: 0, southeastRunFrames: 0, southwestRunFrames: 0, hasAllFourRunCandidateFrames: false, hasBothDirections: false,
+    mirroredWestRunFrames: 0, eastRunFrames: 0, southRunFrames: 0, southeastRunFrames: 0, southwestRunFrames: 0, hasAllFourRunCandidateFrames: false, hasBothDirections: false,
   })
 })
 
@@ -96,4 +96,19 @@ test('rejects old folders, other heroes, duplicate frames and malformed diagonal
   assert.equal(coverage.southeastRunFrames, 1)
   assert.equal(coverage.southwestRunFrames, 0)
   assert.equal(coverage.hasAllFourRunCandidateFrames, false)
+})
+
+test('mirrored West cannot count toward authored East', () => {
+  const hero = 'shadowblade'
+  const coverage = assessHeroCandidateCoverage(hero, [0, 1, 2, 3].map(i => ({ ...draw(hero, 'east', i), mirrored: true })))
+  assert.equal(coverage.eastRunFrames, 0)
+  assert.equal(coverage.mirroredWestRunFrames, 4)
+})
+test('ordinary east remains east; other heroes cannot claim mirrored West', () => {
+  for (const hero of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+    const frame = draw(hero, 'east', 0)
+    const coverage = assessHeroCandidateCoverage(hero, [frame, { ...frame, mirrored: true }, { ...frame, mirrored: true }])
+    assert.equal(coverage.eastRunFrames, 1)
+    assert.equal(coverage.mirroredWestRunFrames, hero === 'shadowblade' ? 1 : 0)
+  }
 })

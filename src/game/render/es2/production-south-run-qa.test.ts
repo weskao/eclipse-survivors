@@ -137,3 +137,47 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
     expect((heroes.shadowblade as HTMLImageElement & { qaDiagonalSources?: unknown }).qaDiagonalSources).toBeUndefined()
   })
 })
+
+describe('explicitly permitted horizontal candidate reuse', () => {
+  it('reuses the same Shadowblade East run image and crop for West, flipping only Canvas', () => {
+    const images: HTMLImageElement[] = []
+    const heroes = loadProductionHeroes(() => {
+      const image = { src: '', complete: true,
+        get naturalWidth() { return this.src.includes('/east-2026-11-23/') ? 1408 : 900 },
+        get naturalHeight() { return this.naturalWidth },
+      } as HTMLImageElement
+      images.push(image)
+      return image
+    }, true)
+    const draws: unknown[][] = [], scales: number[][] = []
+    const ctx = { save: () => {}, restore: () => {},
+      scale: (...args: number[]) => scales.push(args),
+      drawImage: (...args: unknown[]) => draws.push(args) } as unknown as Ctx2D
+    drawProductionHeroFrame(ctx, heroes.shadowblade, makeAnim({ direction: 0, frame: 2, count: 4 }), 117, 147)
+    drawProductionHeroFrame(ctx, heroes.shadowblade, makeAnim({ direction: 4, frame: 2, count: 4 }), 117, 147)
+    expect(images).toHaveLength(4)
+    expect(draws).toHaveLength(2)
+    expect(draws[1]).toEqual(draws[0])
+    expect(scales).toEqual([[-1, 1]])
+  })
+
+  it('does not substitute West attack, special, staff or sword/shield candidates', () => {
+    const images: HTMLImageElement[] = []
+    const heroes = loadProductionHeroes(() => {
+      const image = { src: '', complete: true,
+        get naturalWidth() { return this.src.includes('/east-2026-11-23/') ? 1408 : this.src.includes('run-attack@3x') ? 1792 : 900 },
+        get naturalHeight() { return this.naturalWidth },
+      } as HTMLImageElement
+      images.push(image)
+      return image
+    }, true)
+    const ctx = { save: () => {}, restore: () => {}, scale: () => {},
+      drawImage: () => {}, translate: () => {}, rotate: () => {} } as unknown as Ctx2D
+    for (const hero of [heroes['spirit-summoner'], heroes['crimson-paladin']]) {
+      drawProductionHeroFrame(ctx, hero, makeAnim({ direction: 4 }), 117, 147)
+    }
+    // Verify the strict resolver also retains its existing East-only default.
+    expect(productionHeroQAEastRect(makeAnim({ direction: 4, pose: 'attack' }))).toBeNull()
+    expect(images.every(image => !image.src.includes('/candidates/'))).toBe(true)
+  })
+})
