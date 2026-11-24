@@ -40,7 +40,7 @@
 @media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px);border-color:#e7c896}}
 .es2-menu .es2-hero-select-card:active:not(:disabled){transform:translateY(-1px) scale(.99)}
 .es2-menu .es2-hero-select-card[aria-pressed="true"]{border-color:#e7c896;box-shadow:0 0 0 1px #e7c896,0 0 32px #dfbb7055}
-.es2-hero-number{position:absolute;top:12px;left:12px;z-index:1;font:700 .65rem system-ui,sans-serif;color:#eddeb9;text-shadow:0 2px 5px #000}
+.es2-hero-number{position:absolute;top:12px;left:12px;z-index:1;font:700 .6875rem system-ui,sans-serif;color:#eddeb9;text-shadow:0 2px 5px #000}
 .es2-hero-card img{width:100%;height:clamp(165px,27vw,360px);object-fit:contain;object-position:center bottom;background:radial-gradient(ellipse,#ac905348,#091421 72%);padding:15px 5px 0}
 .es2-hero-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:13px;background:linear-gradient(#122033,#0a111b);border-top:1px solid var(--es2-line)}
 .es2-hero-copy strong{font-size:clamp(.83rem,1.3vw,1.12rem)}
@@ -54,8 +54,8 @@
 .es2-mode-copy{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
 .es2-mode-copy strong{font-size:.97rem}
 .es2-mode-copy small{font:400 .75rem/1.5 system-ui,sans-serif;color:var(--es2-muted)}
-.es2-mode-time{font:700 .66rem system-ui,sans-serif;color:#d4c4a6;white-space:nowrap}
-.es2-start{width:100%;min-height:59px;margin-top:18px;font-size:1.13rem!important}
+.es2-mode-time{font:700 .6875rem system-ui,sans-serif;color:#d4c4a6;white-space:nowrap}
+.es2-start{width:100%;min-height:59px;font-size:1.13rem!important}
 .es2-start span{margin-left:14px}
 .es2-menu-footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-top:auto;padding-top:19px;border-top:1px solid var(--es2-line)}
 .es2-hall-links{display:flex;flex-wrap:wrap;gap:8px}
@@ -159,8 +159,8 @@
 @keyframes es2-glow{from{opacity:.5;transform:scale(.88)}to{opacity:1;transform:scale(1.1)}}
 @keyframes es2-loading{from{transform:translateX(-110%)}to{transform:translateX(300%)}}
 @media(max-width:1000px){.es2-menu-layout{grid-template-columns:1fr}.es2-hero-card img{height:clamp(145px,29vw,285px)}.es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:610px){.es2-menu{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}.es2-menu-header{flex-direction:column}.es2-menu-brand h1{font-size:clamp(1.8rem,8vw,3rem)}.es2-hero-grid{gap:6px}.es2-hero-card img{height:clamp(115px,34vw,200px);padding:22px 0 0}.es2-hero-number{font-size:.52rem;left:7px;top:7px}.es2-hero-copy{padding:10px 7px}.es2-hero-copy strong{font-size:.8rem}.es2-hero-copy small{font-size:.66rem}.es2-hero-selection{font-size:.67rem}.es2-mode-grid{grid-template-columns:1fr}.es2-menu-footer{align-items:flex-start}.es2-dialog{max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:18px 14px}.es2-dialog-header h2{font-size:1.45rem}.es2-dialog-actions button{flex:1;min-width:0}.es2-choice-grid{grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:10px}.es2-choice{min-height:235px}.es2-card-art{height:clamp(118px,32vw,148px)}.es2-card-name{font-size:.92rem}.es2-card-description{font-size:.72rem}}
-@media(max-width:380px){.es2-choice-grid{grid-template-columns:1fr}.es2-choice{min-height:0}.es2-card-art{height:clamp(142px,44vw,190px)}.es2-hero-copy small{display:none}.es2-mode-card{gap:9px}}
+@media(max-width:610px){.es2-menu{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}.es2-menu-header{flex-direction:column}.es2-menu-brand h1{font-size:clamp(1.8rem,8vw,3rem)}.es2-hero-grid{gap:6px}.es2-hero-card img{height:clamp(115px,34vw,200px);padding:22px 0 0}.es2-hero-copy{padding:10px 7px}.es2-hero-copy strong{font-size:.8rem}.es2-mode-grid{grid-template-columns:1fr}.es2-menu-footer{align-items:flex-start}.es2-dialog{max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:18px 14px}.es2-dialog-header h2{font-size:1.45rem}.es2-dialog-actions button{flex:1;min-width:0}.es2-choice-grid{grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:10px}.es2-choice{min-height:235px}.es2-card-art{height:clamp(118px,32vw,148px)}.es2-card-name{font-size:.92rem}.es2-card-description{font-size:.72rem}}
+@media(max-width:380px){.es2-choice-grid{grid-template-columns:1fr}.es2-choice{min-height:0}.es2-card-art{height:clamp(142px,44vw,190px)}.es2-mode-card{gap:9px}}
 @media(max-height:570px){.es2-dialog{max-height:calc(100dvh - max(6px,env(safe-area-inset-top)) - max(6px,env(safe-area-inset-bottom)));padding:15px}.es2-dialog-header{margin-bottom:12px}}
 @media(prefers-reduced-motion:reduce){.es2-system *, .es2-backdrop *, .es2-loading *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.es2-choice:hover,.es2-hero-card:hover{transform:none}}
 
@@ -270,19 +270,38 @@
 .es2-backdrop .es2-reward-strip { min-width: 0; }
 .es2-backdrop .es2-reward-strip span { max-width: 100%; }
 
+/* End the wide menu's scroll area above the action bar so focused controls remain reachable. */
+.es2-menu{bottom:var(--es2-action-bar-height,0px)}
+.es2-menu-action-bar{
+  position:fixed;inset-inline:0;bottom:0;z-index:5;display:grid;gap:6px;
+  padding:12px max(20px,env(safe-area-inset-right),calc((100% - 640px) / 2))
+    max(12px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left),calc((100% - 640px) / 2));
+  background:var(--es2-bg);border-top:1px solid var(--es2-line);
+}
+@media (horizontal-viewport-segments: 2){
+  .es2-menu-action-bar{
+    padding-left:max(calc(env(viewport-segment-left 1 0) + 20px),env(safe-area-inset-left));
+    padding-right:max(20px,env(safe-area-inset-right));
+  }
+}
+.es2-mobile-selected-mode{margin:0;text-align:center;color:var(--es2-muted);font:400 .82rem/1.35 system-ui,sans-serif;overflow-wrap:anywhere}
+.es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
+.es2-menu-action-bar>.es2-hint{margin:0}
+
 /* Small-screen homepage: choose one hero family and one expedition family at a time.
    The underlying six heroes and nine modes are untouched and stay visible on desktop. */
-.es2-mobile-switch,.es2-mobile-archive-toggle,.es2-mobile-selected-mode{display:none}
+.es2-mobile-switch,.es2-mobile-archive-toggle{display:none}
 @media (orientation: portrait) and (max-width: 700px),
        (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
-  .es2-menu{height:100dvh;overflow-y:auto;overscroll-behavior:contain;padding:max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+  .es2-menu{bottom:0;height:100dvh;overflow-y:auto;overscroll-behavior:contain;padding:max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
   .es2-menu-shell{min-height:100%;gap:6px}
+  .es2-menu-action-bar{position:static;display:block;padding:0;background:none;border:0}
   .es2-menu-header{flex-direction:row;align-items:center;gap:7px;padding-bottom:4px}
   .es2-menu-brand{flex:1;min-width:0}
   .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.55rem);line-height:1.1;letter-spacing:.02em;margin:0;overflow-wrap:anywhere}
   .es2-menu-brand .es2-eyebrow,.es2-menu-brand p{display:none}
   .es2-top-actions{display:flex;align-items:center;flex:none;width:auto;gap:5px}
-  .es2-top-actions #gameVersion{font-size:.65rem}
+  .es2-top-actions #gameVersion{font-size:.6875rem}
   .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
   .es2-top-actions [data-es2-settings] span{display:none}
   .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:105px;padding:3px 6px;font-size:.72rem;line-height:1.25;white-space:normal}
@@ -300,34 +319,32 @@
   .es2-menu[data-mobile-modes="classic"] .es2-objective-chooser{display:none}
   .es2-hero-grid{gap:5px}
   .es2-hero-card img{height:clamp(62px,10dvh,88px);padding:4px 2px 0}
-  .es2-hero-number{top:3px;left:4px;font-size:.48rem}
+  .es2-hero-number{top:3px;left:4px}
   .es2-hero-copy{align-items:center;text-align:center;padding:4px 3px;gap:1px}
-  .es2-hero-copy strong{font-size:clamp(.67rem,2.6vw,.82rem);line-height:1.18}
+  .es2-hero-copy strong{font-size:clamp(.6875rem,2.6vw,.82rem);line-height:1.18}
   .es2-hero-copy small{display:none}
-  .es2-hero-selection{font-size:.63rem;padding-top:2px;margin-top:auto}
+  .es2-hero-selection{font-size:.6875rem;padding-top:2px;margin-top:auto}
   .es2-menu .es2-hero-section .es2-roster{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
   .es2-menu .es2-hero-section .es2-hero-select-card{min-width:0;border-radius:10px}
   .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(62px,10dvh,88px);background:transparent}
   .es2-menu .es2-hero-section .es2-roster__copy{gap:2px;padding:4px 3px;text-align:center}
-  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.66rem,2.5vw,.82rem);line-height:1.18}
+  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.6875rem,2.5vw,.82rem);line-height:1.18}
   .es2-menu .es2-hero-section .es2-roster__copy :is(.es2-roster__subtitle,.es2-roster__description,.es2-roster__stats,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits){display:none}
-  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.62rem;padding:0}
+  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.6875rem;padding:0}
   .es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   .es2-mode-card{min-height:44px;padding:5px;gap:5px}
   .es2-mode-mark{width:17px;font-size:1rem}
   .es2-mode-copy strong{font-size:clamp(.72rem,2.6vw,.85rem);line-height:1.2;overflow-wrap:anywhere}
   .es2-mode-copy small{display:none}
-  .es2-mode-time{font-size:.58rem}
   .es2-menu .es2-mode-section .es2-objective-chooser header{display:none}
   .es2-menu .es2-mode-section .es2-objective-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
   .es2-menu .es2-mode-section .es2-objective-choice{display:grid;align-content:center;gap:0;min-height:44px;padding:6px 8px}
   .es2-menu .es2-mode-section .es2-objective-choice strong{font-size:clamp(.7rem,2.4vw,.83rem);line-height:1.2;overflow-wrap:anywhere}
   .es2-menu .es2-mode-section .es2-objective-choice>:not(strong){display:none}
-  .es2-mobile-selected-mode{display:block;min-width:0;margin:5px 0 0;color:var(--es2-muted);font:400 .73rem/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
-  .es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
+  .es2-mobile-selected-mode{margin:5px 0 0;text-align:start;font-size:.73rem;line-height:1.3}
   .es2-start{min-height:44px;margin-top:6px;padding:7px;font-size:.95rem!important}
   .es2-start span{margin-left:5px}
-  .es2-mode-section>.es2-hint{display:none}
+  .es2-menu-action-bar>.es2-hint{display:none}
   .es2-menu-footer{gap:6px;align-items:center;justify-content:space-between;min-height:44px;margin-top:auto;padding-top:5px}
   .es2-mobile-archive-toggle{display:block;min-height:44px;padding:5px 9px;background:#192c3e;border:1px solid #8c9cae;border-radius:8px;color:#f7e4c4;font:.73rem system-ui,sans-serif}
   .es2-menu:not(.es2-mobile-archive-open) .es2-hall-links{display:none}
@@ -346,13 +363,12 @@
   .es2-hero-card img{height:clamp(40px,13dvh,66px)}
   .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(40px,13dvh,66px)}
   .es2-hero-copy{padding:3px 1px}
-  .es2-hero-copy strong,.es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.63rem,1.7vw,.75rem)}
-  .es2-hero-selection,.es2-menu .es2-hero-section .es2-roster__selection{font-size:.59rem}
+  .es2-hero-copy strong,.es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.6875rem,1.7vw,.75rem)}
   .es2-mobile-selected-mode{display:none}
   .es2-mode-card{padding:4px}
   .es2-mode-mark{font-size:.85rem;width:14px}
   .es2-mode-time{display:none}
-  .es2-mode-copy strong,.es2-objective-choice strong{font-size:clamp(.65rem,1.65vw,.77rem)}
+  .es2-mode-copy strong{font-size:clamp(.6875rem,1.65vw,.77rem)}
   .es2-start{margin-top:4px}
   .es2-menu-footer{padding:0;border-top:0}
 }
@@ -412,19 +428,22 @@
   box-shadow:inset 0 1px 0 #fff1;
 }
 .es2-menu .es2-hero-stat-strip .es2-hero-stat-label{
-  color:#d4c5a7;font:800 clamp(.54rem,.76vw,.68rem)/1.15 system-ui,sans-serif;
+  color:#d4c5a7;font:800 .6875rem/1.15 system-ui,sans-serif;
   letter-spacing:.01em;white-space:nowrap;
 }
 .es2-menu .es2-hero-stat-strip .es2-hero-stat-value{
-  color:#ffe4a6;font:800 clamp(.65rem,1vw,.83rem)/1.2 system-ui,sans-serif;
+  color:#ffe4a6;font:800 clamp(.6875rem,1vw,.83rem)/1.2 system-ui,sans-serif;
   white-space:nowrap;min-width:0;
+}
+.es2-menu :is(.es2-hero-copy,.es2-roster__copy){container-type:inline-size}
+@container (max-width: 13rem){
+  .es2-menu .es2-hero-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:700px),
        (orientation:landscape) and (max-height:520px) and (max-width:900px){
   .es2-menu .es2-hero-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;margin-top:2px}
   .es2-menu .es2-hero-stat-strip .es2-hero-stat{padding:2px 1px;gap:0}
-  .es2-menu .es2-hero-stat-strip .es2-hero-stat-label{font-size:clamp(.5rem,1.7vw,.6rem)}
-  .es2-menu .es2-hero-stat-strip .es2-hero-stat-value{font-size:clamp(.59rem,2vw,.73rem)}
+  .es2-menu .es2-hero-stat-strip .es2-hero-stat-value{font-size:clamp(.6875rem,2vw,.73rem)}
   /* The earlier short-phone rule hides extended roster details, but not the
      same essential four base stats shown for classic heroes. */
   .es2-menu .es2-hero-section .es2-roster__copy .es2-roster__stats.es2-hero-stat-strip{display:grid}

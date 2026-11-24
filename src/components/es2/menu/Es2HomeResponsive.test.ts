@@ -125,7 +125,10 @@ describe('phone homepage viewport-first navigation', () => {
     await wrapper.setProps({ runMode: 'quick' })
     await nextTick()
     expect(wrapper.get('.es2-menu').attributes('data-mobile-modes')).toBe('classic')
-    await wrapper.get('.es2-start').trigger('click')
+    const actionBar = wrapper.get('.es2-menu-action-bar')
+    expect(actionBar.get('.es2-mobile-selected-mode').attributes('aria-live')).toBe('polite')
+    expect(actionBar.get('.es2-hint').text()).toContain('WASD')
+    await actionBar.get('.es2-start').trigger('click')
     expect(wrapper.emitted('start')).toHaveLength(1)
   })
 
@@ -150,6 +153,27 @@ describe('phone homepage viewport-first navigation', () => {
     expect(css).toContain('env(safe-area-inset-bottom)')
     expect(css).toContain('100dvh')
     expect(css).not.toContain('-webkit-line-clamp')
+  })
+})
+
+describe('homepage menu layout across devices', () => {
+  it('keeps the wide-layout start action in view and reserves room below the scrolling controls', () => {
+    expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*position:fixed;[^}]*bottom:0/)
+    expect(css).toMatch(/\.es2-menu\s*\{[^}]*bottom:var\(--es2-action-bar-height/)
+    expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*env\(safe-area-inset-bottom\)/)
+  })
+
+  it.each([
+    '.es2-hero-stat-label', '.es2-hero-stat-value', '.es2-hero-number',
+    '.es2-mode-time', '#gameVersion', '.es2-hero-selection', '.es2-roster__selection',
+    '.es2-mode-copy strong', '.es2-objective-choice strong',
+  ])('keeps explicitly sized %s text at least 11 CSS px', selector => {
+    const fontSizes = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .filter(([, selectors]) => selectors!.includes(selector))
+      .flatMap(([, , declarations]) => [...declarations!.matchAll(/font(?:-size)?:\s*(?:\d+\s+)?(?:clamp\()?([\d.]+)(rem|px)/g)])
+      .map(([, amount, unit]) => Number(amount) * (unit === 'rem' ? 16 : 1))
+    expect(fontSizes.length).toBeGreaterThan(0)
+    expect(Math.min(...fontSizes)).toBeGreaterThanOrEqual(11)
   })
 })
 

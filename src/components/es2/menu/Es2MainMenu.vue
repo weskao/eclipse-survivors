@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch, watchPostEffect } from 'vue'
 import { JOB } from '../../../game/constants'
 import { ART_URLS } from '../../../game/art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
@@ -53,6 +53,19 @@ const selectedHeroLabel = computed(() => {
 const mobileHeroGroup = ref<'classic' | 'new'>(heroes.some(hero => hero.id === (props.heroId ?? props.choice)) ? 'classic' : 'new')
 const mobileModeGroup = ref<'classic' | 'objective'>(objectiveSelection.value ? 'objective' : 'classic')
 const archiveOpen = ref(false)
+const menu = useTemplateRef('menu')
+const actionBar = useTemplateRef('actionBar')
+watchPostEffect(onCleanup => {
+  const scrollArea = menu.value
+  const bar = actionBar.value
+  if (!scrollArea || !bar) return
+  const reserveSpace = () => scrollArea.style.setProperty('--es2-action-bar-height', Math.ceil(bar.getBoundingClientRect().height) + 'px')
+  reserveSpace()
+  if (typeof ResizeObserver === 'undefined') return
+  const observer = new ResizeObserver(reserveSpace)
+  observer.observe(bar, { box: 'border-box' })
+  onCleanup(() => observer.disconnect())
+})
 watch(() => props.heroId ?? props.choice, id => {
   mobileHeroGroup.value = heroes.some(hero => hero.id === id) ? 'classic' : 'new'
 })
@@ -73,7 +86,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveChoice(ev
 const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoice(event, id, modeIds, '.es2-mode-card', next => emit('mode', next as RunModeId)) }
 </script>
 <template>
-  <main class="es2-menu" :class="{ 'es2-mobile-archive-open': archiveOpen }"
+  <main ref="menu" class="es2-menu" :class="{ 'es2-mobile-archive-open': archiveOpen }"
     :data-mobile-heroes="mobileHeroGroup" :data-mobile-modes="mobileModeGroup"
     :aria-label="t('Eclipse Survivors 主選單')">
     <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
@@ -132,12 +145,14 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
             </button>
           </div>
           <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
-          <p class="es2-mobile-selected-mode" aria-live="polite">
-            <span :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span> · {{ t(MODES[runMode].label) }}
-            <span class="es2-mobile-mode-desc"> · {{ t(MODES[runMode].description) }}</span>
-          </p>
-          <button class="es2-primary es2-start" type="button" data-ui-sfx="managed" @click="emit('start')">{{ t("踏入幽暮之門") }} <span aria-hidden="true">✦</span></button>
-          <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
+          <div ref="actionBar" class="es2-menu-action-bar">
+            <p class="es2-mobile-selected-mode" aria-live="polite">
+              <span :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span> · {{ t(MODES[runMode].label) }}
+              <span class="es2-mobile-mode-desc"> · {{ t(MODES[runMode].description) }}</span>
+            </p>
+            <button class="es2-primary es2-start" type="button" data-ui-sfx="managed" @click="emit('start')">{{ t("踏入幽暮之門") }} <span aria-hidden="true">✦</span></button>
+            <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
+          </div>
         </section>
       </div>
       <footer class="es2-menu-footer">
