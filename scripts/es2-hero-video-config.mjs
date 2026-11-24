@@ -19,7 +19,9 @@ export function assessHeroCandidateCoverage(hero, draws) {
       // Match the actual image pathname; a query parameter or unrelated path is not Canvas evidence.
       let pathname
       try { pathname = new URL(src).pathname } catch { continue }
-      const expected = `/src/assets/es2/production/heroes/${hero}/candidates/${name}-2026-11-23/run-${name}-4frames@3x.webp`
+      const folder = direction === 'S' && (hero === 'shadowblade' || hero === 'crimson-paladin')
+        ? 'south-2026-11-24-batch-2' : `${name}-2026-11-23`
+      const expected = `/src/assets/es2/production/heroes/${hero}/candidates/${folder}/run-${name}-4frames@3x.webp`
       if (pathname !== expected) continue
       if (sw !== size || sh !== size || ![0, size].includes(sx) || ![0, size].includes(sy)) continue
       frames[direction].add(`${sx}:${sy}`)

@@ -21,7 +21,7 @@ test('candidate gameplay recording enables only the existing development QA swit
 test('real Canvas draw evidence must contain distinct East and South running frames', () => {
   const hero = 'shadowblade'
   const east = `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/east-2026-11-23/run-east-4frames@3x.webp`
-  const south = `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/south-2026-11-23/run-south-4frames@3x.webp`
+  const south = `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp`
   const observed = [
     { src: east, sx: 0, sy: 0, sw: 704, sh: 704 },
     { src: east, sx: 704, sy: 0, sw: 704, sh: 704 },
@@ -55,4 +55,12 @@ test('candidate evidence rejects unrelated paths and query-string URL spoofing',
   assert.deepEqual(assessHeroCandidateCoverage(hero, fake), {
     eastRunFrames: 0, southRunFrames: 0, hasBothDirections: false,
   })
+})
+
+test('new South gameplay evidence uses the exact selected atlas, not the superseded clip', () => {
+  for (const hero of ['shadowblade', 'crimson-paladin']) {
+    const draw = folder => ({ src: `http://localhost:4174/src/assets/es2/production/heroes/${hero}/candidates/${folder}/run-south-4frames@3x.webp`, sx: 0, sy: 0, sw: 768, sh: 768 })
+    assert.equal(assessHeroCandidateCoverage(hero, [draw('south-2026-11-24-batch-2')]).southRunFrames, 1)
+    assert.equal(assessHeroCandidateCoverage(hero, [draw('south-2026-11-23')]).southRunFrames, 0)
+  }
 })

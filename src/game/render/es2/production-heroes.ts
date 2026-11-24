@@ -5,6 +5,8 @@ import type { HeroSheets } from '../hero-sheets'
 import { drawPortraitMotion } from './portrait-motion'
 import { CHARACTER_FOOT_BOTTOMS } from './character-foot-anchors'
 import { HERO_CANDIDATE_ATLASES } from './hero-candidate-atlas'
+import shadowSouthManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/manifest.json'
+import paladinSouthManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/manifest.json'
 import shadowblade from '../../../assets/es2/production/heroes/shadowblade-portrait@3x.webp'
 import summoner from '../../../assets/es2/production/heroes/spirit-summoner-portrait@3x.webp'
 import paladin from '../../../assets/es2/production/heroes/crimson-paladin-portrait@3x.webp'
@@ -23,9 +25,9 @@ import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summon
 import paladinDirection from '../../../assets/es2/production/heroes/crimson-paladin/idle-ready@3x.webp'
 import paladinRunAttack from '../../../assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp'
 import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/special@3x.webp'
-import shadowSouthRun from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-23/run-south-4frames@3x.webp'
+import shadowSouthRun from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp'
 import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-23/run-south-4frames@3x.webp'
-import paladinSouthRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-23/run-south-4frames@3x.webp'
+import paladinSouthRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp'
 
 /** Full 900×900 3x character illustrations, matching the homepage and HUD. */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
@@ -315,9 +317,14 @@ function loadHeroPoseOnDemand(hero: HeroWithMotion, sheet: PoseSheet): HTMLImage
   return readyPoseAtlas(atlas, sheet) ? atlas : null
 }
 
+const SOUTH_QA_FOOT_BOTTOMS: Partial<Record<SpecializationId, readonly number[]>> = {
+  shadowblade: shadowSouthManifest.footBottoms,
+  'crimson-paladin': paladinSouthManifest.footBottoms,
+}
+
 type PoseRect = ReturnType<typeof productionHeroPoseRect>
 type SmoothFrame = { type: 'atlas'; atlas: HTMLImageElement; rect: PoseRect; anchor: number }
-  | { type: 'candidate'; atlas: HTMLImageElement; rect: { x: number; y: number; size: 704 | 768 } }
+  | { type: 'candidate'; atlas: HTMLImageElement; rect: { x: number; y: number; size: 704 | 768 }; anchor?: number }
   | { type: 'portrait'; atlas: HTMLImageElement; anim: HeroAnimation }
 
 interface PoseTransition {
@@ -374,10 +381,10 @@ function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: 
     const cell = frame.rect.size
     const paintedWidth = Math.min(width * 1.16, 147) * cell / 627
     const paintedHeight = Math.min(height * 1.05, 147) * cell / 627
-    const approximateFoot = (cell - 627) / 2 + 600
+    const footBottom = frame.anchor ?? (cell - 627) / 2 + 600
     ctx.save()
     ctx.drawImage(frame.atlas, frame.rect.x, frame.rect.y, cell, cell,
-      -paintedWidth / 2, 4 - paintedHeight * approximateFoot / cell, paintedWidth, paintedHeight)
+      -paintedWidth / 2, 4 - paintedHeight * footBottom / cell, paintedWidth, paintedHeight)
     ctx.restore()
   } else {
     // Canonical portraits only face right. During a pending west-facing sheet,
@@ -480,7 +487,9 @@ export function drawProductionHeroFrame(
         qaAtlas.src = hero.qaSouthRunUrl!
       }
       if (qaAtlas.complete && qaAtlas.naturalWidth === 1536 && qaAtlas.naturalHeight === 1536) {
-        drawSmoothedHero(ctx, image, { type: 'candidate', atlas: qaAtlas, rect: qaRect },
+        const index = qaRect.x / qaRect.size + 2 * qaRect.y / qaRect.size
+        const anchor = hero.heroId ? SOUTH_QA_FOOT_BOTTOMS[hero.heroId]?.[index] : undefined
+        drawSmoothedHero(ctx, image, { type: 'candidate', atlas: qaAtlas, rect: qaRect, anchor },
           anim, width, height, frameTimeSeconds)
         return true
       }

@@ -75,5 +75,23 @@
       "clearedMarginPixels": 119,
       "outputRGBA256": "2c92742f14020c703dbfb43b05ba54336600f0a9346184a3a5f0120e15abb2da"
     }
-  ]
+  ],
+  "atlasFile": "run-south-4frames@3x.webp",
+  "sourceFile": "source.png",
+  "bytes": 679990,
+  "footBottoms": [
+    587,
+    612,
+    593,
+    631
+  ],
+  "footAnchorMethod": "opaque alpha >=128 bottom exclusive, measured in each packed 768px cell",
+  "maxDisplayCSSPixels": 147,
+  "sourceResolutionRatio": 4.26530612244898,
+  "grid": [
+    2,
+    2
+  ],
+  "qaGameplayApplied": true,
+  "frameTiming": "four distinct poses indexed by normalized run progress; not complete 10-frame cycle"
 }

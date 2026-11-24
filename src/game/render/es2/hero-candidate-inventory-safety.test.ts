@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atlas'
+import { HERO_CANDIDATE_ATLASES, HERO_SOUTH_RUN_DIRS, heroCandidateRect } from './hero-candidate-atlas'
 import { productionHeroQAEastRect, productionHeroSouthRunRect } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 
@@ -51,14 +51,14 @@ describe('ES2 all twelve candidate hero motion atlases (real assets, QA only)', 
       const expected = clip.direction === 'E'
         ? eastManifest.candidatePoseSources[clip.hero + ':' + clip.pose]
         : JSON.parse(readFileSync(join(root, clip.hero,
-          'candidates/south-2026-11-23/manifest.json'), 'utf8')) as {
+          'candidates', HERO_SOUTH_RUN_DIRS[clip.hero], 'manifest.json'), 'utf8')) as {
             webpSHA256: string; bytes: number; frameCount: number
             status: string; native3x: string; runtimeApplied: boolean
           }
       expect(expected, clip.hero + '/' + clip.pose + '/' + clip.direction).toBeDefined()
       if (!expected) continue
       const path = resolve(root, clip.hero, 'candidates',
-        clip.direction === 'E' ? 'east-2026-11-23' : 'south-2026-11-23',
+        clip.direction === 'E' ? 'east-2026-11-23' : HERO_SOUTH_RUN_DIRS[clip.hero],
         clip.pose + '-' + (clip.direction === 'E' ? 'east' : 'south') + '-4frames@3x.webp')
       expect(path.startsWith(root + sep)).toBe(true)
       const data = readFileSync(path)

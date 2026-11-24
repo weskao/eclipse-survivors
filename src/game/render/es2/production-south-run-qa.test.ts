@@ -13,7 +13,8 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
       'crimson-paladin', 'shadowblade', 'spirit-summoner',
     ])
     for (const [hero, src] of Object.entries(PRODUCTION_HERO_SOUTH_RUN_SOURCES)) {
-      expect(src).toContain(hero + '/candidates/south-2026-11-23/')
+      const folder = hero === 'spirit-summoner' ? 'south-2026-11-23' : 'south-2026-11-24-batch-2'
+      expect(src).toContain(hero + '/candidates/' + folder + '/')
       expect(src).toContain('run-south-4frames@3x.webp')
     }
   })
@@ -48,6 +49,9 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
     expect(calls).toHaveLength(1)
     expect(calls[0]?.slice(1, 5)).toEqual([0, 768, 768, 768])
     expect(Number(calls[0]?.[8])).toBeGreaterThan(147)
+    // Frame 2 uses its measured opaque bottom (665px), not the old approximate 670.5px.
+    expect(Number(calls[0]?.[6])).toBeCloseTo(4 - 147 * 665 / 627)
+    expect(768 / Number(calls[0]?.[8])).toBeGreaterThanOrEqual(3)
     calls.length = 0
     drawProductionHeroFrame(ctx, hero, makeAnim({ frame: 6 }), 117, 147)
     expect(images).toHaveLength(4)
