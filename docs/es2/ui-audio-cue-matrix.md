@@ -1,6 +1,6 @@
 # ES2 UI sound/music cue matrix
 
-Implementation branch: `feature/es2-release-readiness-integration`. One Web Audio owner; prefer shared synth SFX and existing menu/battle tracks.
+Implementation branch: `feature/es2-release-readiness-integration`. One Web Audio owner; prefer shared synth SFX and existing menu/battle tracks, except cinematic hero active casts which use pre-rendered stereo samples with immediate synth fallback.
 
 | Interaction | Cue | Ownership |
 | --- | --- | --- |
@@ -20,6 +20,10 @@ Implementation branch: `feature/es2-release-readiness-integration`. One Web Audi
 | World event opening, returning home, irreversible progress reset | `scene` | Engine |
 | Victory / defeat | `victory` / `defeat` | Engine |
 | Volume slider drag, movement joystick, scroll, disabled buttons | Silent | Deliberate restraint |
+
+## Cinematic hero cast assets
+
+Original deterministic synthesis and baked stereo reflections: `node scripts/generate-hero-special-sfx.mjs`. No third-party samples or licenses. 32 kHz, 16-bit stereo PCM, normalized peak 0.84. Shadowblade 1.35 s (dual blade, shadow impact), Spirit Summoner 2.10 s (spectral choir-like layers and summoning burst), Crimson Paladin 1.85 s (shield strike, resonant metal, protective chord). Three decoded buffers per context; one active cast voice, no runtime convolution. The previous synth signature is retained only for immediate playback while decoding or if an asset fails to load.
 
 ## Integration rules
 

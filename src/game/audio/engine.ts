@@ -59,6 +59,8 @@ export interface AudioSystemOptions {
   /** Pre-rendered, non-looping victory theme (falls back to ES2 synthesis on load error). */
   victoryTrack?: string
   loadMusic?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
+  /** Testable loader for the short, pre-rendered hero cast samples. */
+  loadHeroSfx?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Omit for `localStorage`; `null` disables persistence. */
   storage?: SettingsStorage | null
   /** Omit for `window.AudioContext ?? webkitAudioContext`. */
@@ -86,6 +88,7 @@ const MUSIC_GAIN = 0.65
 const SFX_GAIN = 0.52
 const clampVolume = (value: number, fallback: number): number =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
+const HERO_CAST_CUES = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'] as const
 const MAX_SFX_PER_100MS = 8
 const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'boss', 'bossDefeat', 'victory', 'defeat',
   'shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'])
@@ -107,6 +110,31 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let intensity: CombatIntensity = 'calm'
   let warningMix = false
   let noiseBuffer: BufferLike | null = null
+  const heroCastBuffers = new Map<SfxCue, BufferLike>()
+  let heroCastVoice: BufferSourceLike | null = null
+  const stopHeroCast = (): void => {
+    const source = heroCastVoice
+    heroCastVoice = null
+    if (source && ac) {
+      try { source.stop(ac.currentTime) } catch { /* already ended */ }
+    }
+  }
+  const preloadHeroCasts = (ctx: AudioContextLike): void => {
+    heroCastBuffers.clear()
+    if (!opts.loadHeroSfx && (!ctx.decodeAudioData || typeof fetch !== 'function')) return
+    for (const cue of HERO_CAST_CUES) {
+      const url = import.meta.env.BASE_URL + 'audio/heroes/' + cue + '.wav'
+      void Promise.resolve().then(() => opts.loadHeroSfx
+        ? opts.loadHeroSfx(url, ctx)
+        : fetch(url).then(res => {
+          if (!res.ok) throw new Error('Hero cast sample unavailable')
+          return res.arrayBuffer()
+        }).then(data => ctx.decodeAudioData!(data)))
+        .then(buffer => {
+          if (buffer && ac === ctx) heroCastBuffers.set(cue, buffer)
+        }).catch(() => { /* retain immediate fallback, never replay a missed cast */ })
+    }
+  }
   const recentSfx: number[] = []
   const menu = createMenuScore()
   const battle = createBattleScore()
@@ -228,6 +256,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         musicBus = ac.createGain()
         musicBus.gain.value = musicOn ? MUSIC_GAIN * musicVolume / 100 : 0
         musicBus.connect(ac.destination)
+        preloadHeroCasts(ac)
       }
       if (ac.state !== 'running' && ac.state !== 'closed') {
         void ac.resume().catch(() => { /* Browsers may require another gesture. */ })
@@ -248,6 +277,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     bgm.pause()
     menuBgm?.pause()
     cinematic.stop(true)
+    stopHeroCast()
     resultScore.interrupt()
     if (ac && ac.state === 'running') {
       void ac.suspend().catch(() => { /* Visibility can change during suspension. */ })
@@ -290,6 +320,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     setSfxVolume(value: number) {
       sfxVolume = clampVolume(value, sfxVolume)
       if (sfxVolume > 0) previousSfxVolume = sfxVolume
+      else stopHeroCast()
       try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
       if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
     },
@@ -328,6 +359,19 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
       recentSfx.push(now)
       sfxLast.set(cue, now)
+      const cast = heroCastBuffers.get(cue)
+      if (cast && master) {
+        stopHeroCast()
+        try {
+          const source = ctx.createBufferSource()
+          source.buffer = cast
+          source.loop = false
+          source.connect(master)
+          source.start(now)
+          heroCastVoice = source
+          return
+        } catch { /* fall back to the bounded original cue */ }
+      }
       for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) tone(pitch, now + delay, duration, gain, wave)
       if (NOISE_CUES.has(cue)) noiseBurst(now)
     },
@@ -361,6 +405,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     onScreen(nextMode: GameMode) {
       const previous = mode
       mode = nextMode
+      if (mode !== 'play') stopHeroCast()
       if (mode !== 'result') {
         resultScene = null
         resultScore.dispose()
@@ -435,6 +480,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       save('starSfx', sfxOn)
       if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
       if (sfxOn) wake()
+      else stopHeroCast()
       return sfxOn
     },
     dispose() {
@@ -442,6 +488,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       bgm.pause()
       menuBgm?.pause()
       cinematic.dispose()
+      stopHeroCast()
+      heroCastBuffers.clear()
       ac?.close().catch(() => {})
       ac = null
       master = null

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createAudioSystem } from '../engine'
 import { SFX_CUES } from '../sfx'
-import { FakeAudioContext } from '../fakeAudio'
+import { FakeAudioContext, FakeBuffer } from '../fakeAudio'
 import type { ToneFn } from '../music'
 import type { AudioSystem, BgmElement } from '../types'
 import { createEs2AudioAdapter } from './adapter'
@@ -35,6 +35,54 @@ function setup() {
 }
 
 describe('ES2 final host audio wiring', () => {
+  it.each([
+    ['shadowblade', 'shadowblade-special'],
+    ['spirit-summoner', 'spirit-summoner-special'],
+    ['crimson-paladin', 'crimson-paladin-special'],
+  ] as const)('plays a single preloaded cinematic sample for %s, without legacy layering', async (hero, cue) => {
+    const context = new FakeAudioContext()
+    const loaded = new Map<string, FakeBuffer>()
+    const audio = createAudioSystem({
+      bgm: new Media(), storage: null, createContext: () => context,
+      loadHeroSfx: async (url) => {
+        const buffer = new FakeBuffer(64000, 32000)
+        loaded.set(url, buffer)
+        return buffer
+      },
+    })
+    const engine = createEngine({ audio, contentPacks: [] })
+    engine.selectHero(hero)
+    engine.selectRunMode('standard')
+    engine.start()
+    engine.state.mobs = []
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+    expect(loaded.size).toBe(3)
+    const expected = [...loaded.entries()].find(([url]) => url.endsWith(cue + '.wav'))?.[1]
+    expect(expected).toBeDefined()
+    const before = context.oscillators.length
+    const sources = context.sources.length
+    expect(engine.activateHeroSpecial()).toBe(true)
+    expect(context.sources).toHaveLength(sources + 1)
+    const source = context.sources[sources]!
+    expect(source.buffer).toBe(expected)
+    expect(source.targets).toContain(context.gains[0])
+    expect(source.loop).not.toBe(true)
+    expect(context.oscillators).toHaveLength(before)
+    expect(engine.activateHeroSpecial()).toBe(false)
+    expect(context.sources).toHaveLength(sources + 1)
+    audio.interrupt()
+    expect(source.stoppedAt).not.toBeNull()
+    audio.wake()
+    engine.goMenu()
+    engine.start()
+    engine.state.mobs = []
+    audio.setSfxVolume(0)
+    const muted = context.sources.length
+    expect(engine.activateHeroSpecial()).toBe(true)
+    expect(context.sources).toHaveLength(muted)
+    audio.dispose()
+  })
+
   it.each([
     ['shadowblade', 'shadowblade-special'],
     ['spirit-summoner', 'spirit-summoner-special'],
