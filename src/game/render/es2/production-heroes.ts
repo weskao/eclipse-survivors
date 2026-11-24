@@ -433,6 +433,18 @@ function drawSmoothedHero(
     (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.rect.mirror !== b.rect.mirror)) || (
     a.type === 'candidate' && b.type === 'candidate' &&
     (a.rect.x !== b.rect.x || a.rect.y !== b.rect.y || a.mirror !== b.mirror))
+  // Shadowblade's full-body blades are baked into each facing/action. Blending
+  // a reversed heading or a different action produces a ghost weapon. Cut at
+  // those boundaries; retain normal frame/decode smoothing in the same action.
+  const shadowbladeActionBoundary = (portrait as HeroWithMotion).heroId === 'shadowblade' &&
+    (previous.pose !== anim.pose || previous.direction !== anim.direction ||
+      (a.type === 'candidate' && b.type === 'candidate' && a.atlas !== b.atlas))
+  if (shadowbladeActionBoundary) {
+    poseTransitions.set(portrait, { current: b, pose: anim.pose, direction: anim.direction,
+      lastAt: timeSeconds, startedAt: timeSeconds, duration: 0 })
+    drawSmoothFrame(ctx, b, width, height)
+    return
+  }
   if (changed) {
     const poseOrDirection = previous.pose !== anim.pose || previous.direction !== anim.direction
       || a.type !== b.type || (a.type === 'atlas' && b.type === 'atlas' && a.rect.sheet !== b.rect.sheet)
