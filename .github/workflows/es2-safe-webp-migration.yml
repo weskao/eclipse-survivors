@@ -64,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           if git diff --cached --quiet; then echo 'No safe asset changes'; exit 0; fi
-          git diff --cached --name-only | grep -vE '^(assets/images/imgs([1-9]|10)\.webp|src/game/render/es2/c104-source-art(\.test)?\.ts) > /tmp/unexpected || true
+          git diff --cached --name-only | grep -vE '^(assets/images/imgs([1-9]|10)\.webp|src/game/render/es2/c104-source-art(\.test)?\.ts)$' > /tmp/unexpected || true
           test ! -s /tmp/unexpected
           git diff --exit-code
           if test "$(git ls-remote origin refs/heads/feature/es2-release-readiness-integration | cut -f1)" != "$MIGRATION_BASE"; then
@@ -72,21 +72,6 @@ jobs:
             exit 1
           fi
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Use verified C104 WebP display art while retaining immutable PNG masters'
-          git push origin HEAD:refs/heads/feature/es2-release-readiness-integration
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: safe-webp-migration-report
-          path: /tmp/es2-webp-migration.json
-          if-no-files-found: warn
- > /tmp/unexpected || true
-          test ! -s /tmp/unexpected
-          git diff --exit-code
-          if test "$(git ls-remote origin refs/heads/feature/es2-release-readiness-integration | cut -f1)" != "$MIGRATION_BASE"; then
-            echo "::error::Concurrent branch update; converted files were NOT committed. Retry from current HEAD."
-            exit 1
-          fi
-          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Convert verified general images to lossless WebP and remove redundant PNGs'
           git push origin HEAD:refs/heads/feature/es2-release-readiness-integration
       - uses: actions/upload-artifact@v4
         if: always()
