@@ -3,16 +3,16 @@ import type { Ctx2D } from '../ctx'
 // Source art was committed to the repository BEFORE its UI/Canvas consumer.
 // These large originals are reference atlases, not certified runtime animation cells.
 // Render only as complete, opt-in art sheets until individual cells pass alpha QA.
-import imgs1 from '../../../../assets/images/imgs1.png?url'
-import imgs2 from '../../../../assets/images/imgs2.png?url'
-import imgs3 from '../../../../assets/images/imgs3.png?url'
-import imgs4 from '../../../../assets/images/imgs4.png?url'
-import imgs5 from '../../../../assets/images/imgs5.png?url'
-import imgs6 from '../../../../assets/images/imgs6.png?url'
-import imgs7 from '../../../../assets/images/imgs7.png?url'
-import imgs8 from '../../../../assets/images/imgs8.png?url'
-import imgs9 from '../../../../assets/images/imgs9.png?url'
-import imgs10 from '../../../../assets/images/imgs10.png?url'
+import imgs1 from '../../../../assets/images/imgs1.webp?url'
+import imgs2 from '../../../../assets/images/imgs2.webp?url'
+import imgs3 from '../../../../assets/images/imgs3.webp?url'
+import imgs4 from '../../../../assets/images/imgs4.webp?url'
+import imgs5 from '../../../../assets/images/imgs5.webp?url'
+import imgs6 from '../../../../assets/images/imgs6.webp?url'
+import imgs7 from '../../../../assets/images/imgs7.webp?url'
+import imgs8 from '../../../../assets/images/imgs8.webp?url'
+import imgs9 from '../../../../assets/images/imgs9.webp?url'
+import imgs10 from '../../../../assets/images/imgs10.webp?url'
 
 export const C104_SOURCES = Object.freeze({
   imgs1, imgs2, imgs3, imgs4, imgs5, imgs6, imgs7, imgs8, imgs9, imgs10,
