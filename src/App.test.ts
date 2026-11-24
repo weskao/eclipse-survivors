@@ -7,6 +7,27 @@ import App from './App.vue'
 import { createEngine } from './game/engine'
 
 describe('App', () => {
+  it('restores the selected new hero and objective mode on a fresh home screen', async () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const first = mount(App, { props: { engine }, attachTo: document.body })
+    try {
+      await first.get('[data-es2-mobile-hero-tab="new"]').trigger('click')
+      await first.get('[data-hero-id="spirit-summoner"]').trigger('click')
+      await first.get('[data-es2-mobile-mode-tab="objective"]').trigger('click')
+      await first.get('[data-objective-mode="relic-hunt"]').trigger('click')
+    } finally { first.unmount() }
+
+    const reopened = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const second = mount(App, { props: { engine: reopened }, attachTo: document.body })
+    try {
+      expect(second.get('.es2-menu').attributes('data-mobile-heroes')).toBe('new')
+      expect(second.get('.es2-menu').attributes('data-mobile-modes')).toBe('objective')
+      expect(second.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('true')
+      expect(second.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
+      expect(second.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('spirit-summoner')
+    } finally { second.unmount() }
+  })
+
   it('mounts the engine on canvas#game and labels the menu with the CHANGELOG version', () => {
     const latest = readFileSync(resolve(process.cwd(), 'CHANGELOG.md'), 'utf8').match(/^## \[([0-9.]+)\]/m)?.[1]
     const stop = vi.fn()

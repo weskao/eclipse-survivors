@@ -50,6 +50,93 @@ afterEach(() => {
 
 const key = (code: string): void => { window.dispatchEvent(new KeyboardEvent('keydown', { code })) }
 
+describe('home selection persistence', () => {
+  it.each([
+    ['knight', 'knight', 'quick'],
+    ['ranger', 'ranger', 'standard'],
+    ['wizard', 'wizard', 'endless'],
+    ['shadowblade', 'knight', 'challenge'],
+    ['spirit-summoner', 'wizard', 'boss-rush'],
+    ['crimson-paladin', 'knight', 'endless-eclipse'],
+    ['shadowblade', 'knight', 'relic-hunt'],
+    ['spirit-summoner', 'wizard', 'cursed-expedition'],
+    ['crimson-paladin', 'knight', 'chaos-arena'],
+  ] as const)('restores %s with %s legacy job in %s mode before starting a run', (hero, job, mode) => {
+    engine.selectHero(hero)
+    engine.selectRunMode(mode)
+    const freshAudio = new SpyAudio()
+    const reopened = createEngine({ audio: freshAudio })
+    expect(reopened.ui.heroId).toBe(hero)
+    expect(reopened.ui.choice).toBe(job)
+    expect(reopened.ui.runMode).toBe(mode)
+    expect(reopened.state.heroId).toBe(hero)
+    expect(reopened.state.choice).toBe(job)
+    expect(freshAudio.cues).toEqual([])
+    expect(freshAudio.wakeCalls).toBe(0)
+    reopened.start()
+    expect(reopened.state.heroId).toBe(hero)
+    expect(reopened.state.runMode).toBe(mode)
+  })
+
+  it('reads the latest stored selection on returning from combat without a select cue', () => {
+    engine.selectJob('ranger')
+    engine.selectRunMode('standard')
+    engine.start()
+    localStorage.setItem('eclipseSelectedHero', 'spirit-summoner')
+    localStorage.setItem('eclipseSelectedRunMode', 'relic-hunt')
+    audio.cues.length = 0
+    engine.goMenu()
+    expect(engine.ui.mode).toBe('menu')
+    expect(engine.ui.heroId).toBe('spirit-summoner')
+    expect(engine.ui.choice).toBe('wizard')
+    expect(engine.ui.runMode).toBe('relic-hunt')
+    expect(audio.cues).toEqual(['scene'])
+    engine.start()
+    expect(engine.state.heroId).toBe('spirit-summoner')
+    expect(engine.state.runMode).toBe('relic-hunt')
+  })
+
+  it('replaces both stored selections immediately, even without starting combat', () => {
+    engine.selectHero('shadowblade')
+    engine.selectRunMode('boss-rush')
+    engine.selectJob('wizard')
+    engine.selectRunMode('quick')
+    expect(localStorage.getItem('eclipseSelectedHero')).toBe('wizard')
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBe('quick')
+    expect(createEngine({ audio }).ui).toMatchObject({ heroId: 'wizard', choice: 'wizard', runMode: 'quick' })
+  })
+
+  it.each(['removed-id', 'constructor', '__proto__', ''])('ignores invalid saved IDs (%s) independently', invalid => {
+    localStorage.setItem('eclipseSelectedHero', invalid)
+    localStorage.setItem('eclipseSelectedRunMode', 'challenge')
+    expect(createEngine({ audio }).ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'challenge' })
+    localStorage.setItem('eclipseSelectedHero', 'ranger')
+    localStorage.setItem('eclipseSelectedRunMode', invalid)
+    expect(createEngine({ audio }).ui).toMatchObject({ heroId: 'ranger', choice: 'ranger', runMode: 'quick' })
+  })
+
+  it('keeps the active selection usable when storage writes are unavailable', () => {
+    const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked') })
+    try {
+      engine.selectHero('shadowblade')
+      engine.selectRunMode('challenge')
+      engine.start()
+      engine.goMenu()
+      expect(engine.ui).toMatchObject({ heroId: 'shadowblade', choice: 'knight', runMode: 'challenge' })
+    } finally { write.mockRestore() }
+  })
+
+  it('ignores mode changes during combat and rejects invalid mode IDs', () => {
+    engine.selectRunMode('constructor' as never)
+    expect(engine.ui.runMode).toBe('quick')
+    engine.selectRunMode('challenge')
+    engine.start()
+    engine.selectRunMode('endless')
+    expect(engine.ui.runMode).toBe('challenge')
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBe('challenge')
+  })
+})
+
 describe('engine commands fire the original cues', () => {
   it('select → spotlight choice + select cue', () => {
     engine.selectJob('ranger')

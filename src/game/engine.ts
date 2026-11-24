@@ -1,6 +1,6 @@
 import { shallowReactive } from 'vue'
 import { createProfileStore, type ProfileStore } from '../meta/profile'
-import { getMode, isObjectiveModeId } from '../meta/modes'
+import { MODES, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { createAudioSystem } from './audio/engine'
@@ -211,6 +211,28 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       },
     }) : null
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
+  function readSetting(key: string): string | null {
+    try { return settingsStorage?.getItem(key) ?? null } catch { return null }
+  }
+  function isHeroId(id: unknown): id is HeroId {
+    return isSpecializationId(id) || (typeof id === 'string' && Object.prototype.hasOwnProperty.call(JOB, id))
+  }
+  function isRunModeId(id: unknown): id is RunModeId {
+    return typeof id === 'string' && Object.prototype.hasOwnProperty.call(MODES, id)
+  }
+  function applyHeroChoice(id: HeroId): void {
+    s.heroId = id
+    s.choice = isSpecializationId(id) ? HERO_DEFINITIONS[id].legacyArtJob : id
+    s.cosmetic = displayProfile().equippedCosmetics[s.choice]
+  }
+  // Restore silently: reopening the page is not a player gesture or a new selection.
+  function restoreMenuSelection(fallbackMode = s.runMode): void {
+    const hero = readSetting('eclipseSelectedHero')
+    const mode = readSetting('eclipseSelectedRunMode')
+    if (isHeroId(hero)) applyHeroChoice(hero)
+    s.runMode = isRunModeId(mode) ? mode : fallbackMode
+  }
+  restoreMenuSelection()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = false
   try {
@@ -222,7 +244,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
-    runMode: 'quick', objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
+    runMode: s.runMode, objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
     profile: displayProfile(), metaState: metaStore?.get().state ?? null,
     metaStatus: metaStore?.get().status ?? null, runResult: null, rewards: null,
   })
@@ -454,14 +476,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function selectHero(id: HeroId): void {
-    if (s.mode !== 'menu' || ( !isSpecializationId(id) && !Object.prototype.hasOwnProperty.call(JOB, id))) return
-    const fallback = isSpecializationId(id) ? HERO_DEFINITIONS[id].legacyArtJob : id as JobId
-    s.heroId = id
-    ui.heroId = id
-    s.choice = fallback
-    ui.choice = fallback
-    s.cosmetic = displayProfile().equippedCosmetics[fallback]
+    if (s.mode !== 'menu' || !isHeroId(id)) return
+    applyHeroChoice(id)
+    ui.heroId = s.heroId
+    ui.choice = s.choice
     ui.heroSpecial = null
+    saveSetting('eclipseSelectedHero', id)
     wakeAudio()
     audio.playSfx('select')
   }
@@ -1023,8 +1043,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     mount,
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) {
-      if (!getMode(mode) || ui.runMode === mode) return
+      if (s.mode !== 'menu' || !isRunModeId(mode) || ui.runMode === mode) return
       ui.runMode = mode
+      saveSetting('eclipseSelectedRunMode', mode)
       wakeAudio()
       audio.playSfx('select')
     },
@@ -1124,6 +1145,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       worldEvents?.reset()
       heroSpecialization = null
       ui.heroSpecial = null
+      restoreMenuSelection(ui.runMode)
+      ui.heroId = s.heroId
+      ui.choice = s.choice
+      ui.runMode = s.runMode
       screen('menu')
     },
     setStick(v) { stick = v ?? { x: 0, y: 0 } },
