@@ -7,8 +7,8 @@
   "native3xApproved": false,
   "minimumSourceExtentPx": 949,
   "atlas": {
-    "path": "infernal-titan-keyframe-candidates-3x2.png",
-    "sha256": "2a3062fcdc6c3701bbad9fae81cf8b905afe93b9140a1120380b070d1a7a640d",
+    "path": "infernal-titan-keyframe-candidates-3x2.webp",
+    "sha256": "50bfb5fde417f0da96a16bb378284e63d0535b4a46956c00c6b0a7019137dbec",
     "width": 4032,
     "height": 2688,
     "columns": 3,
@@ -21,14 +21,15 @@
     ],
     "unusedCells": [
       5
-    ]
+    ],
+    "originalPngSha256": "2a3062fcdc6c3701bbad9fae81cf8b905afe93b9140a1120380b070d1a7a640d"
   },
   "frames": [
     {
       "id": "idle-stance-a",
       "role": "idle-stance-variant",
-      "source": "sources/idle-stance-a.png",
-      "sha256": "860a25f18e27b3cae10f9802599db77dc65e8effde6ffa3c027638a27d7a7b87",
+      "source": "sources/idle-stance-a.webp",
+      "sha256": "9af3612c7f94d65dc627c3f5c74e8fb9823371689b6a29a86d31b8d150578dc2",
       "sourceSize": [
         1312,
         1199
@@ -56,13 +57,14 @@
         105
       ],
       "nativeResolutionCandidate": true,
-      "visualApproved": false
+      "visualApproved": false,
+      "originalPngSha256": "860a25f18e27b3cae10f9802599db77dc65e8effde6ffa3c027638a27d7a7b87"
     },
     {
       "id": "idle-stance-b",
       "role": "idle-stance-variant",
-      "source": "sources/idle-stance-b.png",
-      "sha256": "7112f49d056d16ac34a72c501e8171b52abd55348594dc1bc2c1f64b5059f4be",
+      "source": "sources/idle-stance-b.webp",
+      "sha256": "22e3791274f9fea30f962704a0efd6f0fe013cdf655558323e1ac954e485233f",
       "sourceSize": [
         1254,
         1254
@@ -90,13 +92,14 @@
         49
       ],
       "nativeResolutionCandidate": true,
-      "visualApproved": false
+      "visualApproved": false,
+      "originalPngSha256": "7112f49d056d16ac34a72c501e8171b52abd55348594dc1bc2c1f64b5059f4be"
     },
     {
       "id": "idle-stance-c",
       "role": "idle-stance-variant",
-      "source": "sources/idle-stance-c.png",
-      "sha256": "83e0410ce77885e7270a917966e742db0109a3c336ca8ecb7121529b24fe4929",
+      "source": "sources/idle-stance-c.webp",
+      "sha256": "e380f5c43ad3cdb4b3e3b5406362e434121df83768c1aeeae9ee291b6eaa22f4",
       "sourceSize": [
         1261,
         1247
@@ -124,13 +127,14 @@
         51
       ],
       "nativeResolutionCandidate": true,
-      "visualApproved": false
+      "visualApproved": false,
+      "originalPngSha256": "83e0410ce77885e7270a917966e742db0109a3c336ca8ecb7121529b24fe4929"
     },
     {
       "id": "idle-stance-d",
       "role": "idle-stance-variant",
-      "source": "sources/idle-stance-d.png",
-      "sha256": "572c6466f1bda93f49ba281ee2a8074b92e5e43dd77b998757b7309dff1eee4e",
+      "source": "sources/idle-stance-d.webp",
+      "sha256": "20c49785771c83199f9c6bd6df1b4e5947644e7199082d27e4218fc764b057ac",
       "sourceSize": [
         1261,
         1247
@@ -158,13 +162,14 @@
         64
       ],
       "nativeResolutionCandidate": true,
-      "visualApproved": false
+      "visualApproved": false,
+      "originalPngSha256": "572c6466f1bda93f49ba281ee2a8074b92e5e43dd77b998757b7309dff1eee4e"
     },
     {
       "id": "windup-key-a",
       "role": "windup-keyframe",
-      "source": "sources/windup-key-a.png",
-      "sha256": "55ad173ec38f14b12d905d34c2b2e1e7db890121220f3eeeb90e8b9a3527d100",
+      "source": "sources/windup-key-a.webp",
+      "sha256": "ccb8972d015cbb74be5b6e93173823cf10383e0d8770d0e81abd7de772d3a0d7",
       "sourceSize": [
         1262,
         1246
@@ -192,7 +197,8 @@
         72
       ],
       "nativeResolutionCandidate": true,
-      "visualApproved": false
+      "visualApproved": false,
+      "originalPngSha256": "55ad173ec38f14b12d905d34c2b2e1e7db890121220f3eeeb90e8b9a3527d100"
     }
   ],
   "missing": [
@@ -209,6 +215,8 @@
   "notes": [
     "Original PNG bytes preserved. Atlas uses lossless copy and transparent padding only; no resampling.",
     "Idle variants are alternative candidates, not a continuous animation.",
-    "Alpha quality, edge clipping, proportions and design consistency require manual review. Do not enable release rendering."
-  ]
+    "Alpha quality, edge clipping, proportions and design consistency require manual review. Do not enable release rendering.",
+    "Converted from verified PNG sources to lossless WebP. All decoded RGBA pixels, dimensions, alpha, and frame rectangles are identical; original PNG hashes retained. QA approval unchanged."
+  ],
+  "encoding": "webp-lossless-exact"
 }
