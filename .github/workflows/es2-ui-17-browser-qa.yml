@@ -1,11 +1,14 @@
 name: ES2 UI 17 real Chromium visual QA
 on:
   push:
-    branches: [feature/es2-release-readiness-integration]
+    branches: [feature/es2-release-readiness-integration, feature/es2-landscape-skill-card-art]
     paths:
       - 'src/assets/es2/production/ui/**'
       - 'src/components/es2/menu/Es2Archive.vue'
       - 'src/components/es2/menu/Es2ChoiceCards.vue'
+      - 'src/styles/es2/skill-polish.css'
+      - 'src/styles/es2/menu.css'
+      - 'src/components/es2/menu/Es2SkillPolish.test.ts'
       - 'src/components/es2/menu/Es2MenuSystem.vue'
       - 'src/components/es2/hud/CombatHud.vue'
       - 'src/components/es2/relic-rewards/RelicRewardOverlay.vue'
@@ -16,7 +19,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: es2-ui-17-integration
+  group: es2-ui-17-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   verify-ui:
@@ -30,7 +33,7 @@ jobs:
           node-version: '24'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec vitest run src/assets/es2/production/ui/ui-browser-qa-contract.test.ts src/assets/es2/production/ui/ui-runtime-sizing.test.ts src/assets/es2/production/ui/treasure-icons-native3x.test.ts src/components/es2/menu/Es2MenuSystem.test.ts
+      - run: pnpm exec vitest run src/assets/es2/production/ui/ui-browser-qa-contract.test.ts src/assets/es2/production/ui/ui-runtime-sizing.test.ts src/assets/es2/production/ui/treasure-icons-native3x.test.ts src/components/es2/menu/Es2MenuSystem.test.ts src/components/es2/menu/Es2SkillPolish.test.ts
       - run: pnpm build
       - name: Install Chromium for real QA
         run: |
