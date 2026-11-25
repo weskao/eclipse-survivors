@@ -75,6 +75,23 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('home')).toHaveLength(1)
   })
 
+  it('renders ordinary, weapon and hero upgrades with the same before/after emphasis', async () => {
+    mounted({ screen: 'level', upgrades: [
+      { ...UP[0]!, level: 1 },
+      { id: 'weapons:shadow-daggers', title: 'Shadow Daggers', desc: '', icon: '✦', rarity: 'common', level: 1, maxLevel: 5 },
+      { id: 'heroes:shadow-precision', title: 'Shadow Precision', desc: '', icon: '✦', rarity: 'rare', level: 0, maxLevel: 3 },
+    ] })
+    await nextTick()
+    for (const [id, expected] of [
+      ['damage', '163.84%'], ['weapons:shadow-daggers', '65%'], ['heroes:shadow-precision', '188%'],
+    ]) {
+      const card = find('[data-choice="' + id + '"]')
+      const values = card.querySelector('.es2-mastery-values')
+      expect(values?.textContent).toContain('→')
+      expect(values?.querySelector('strong')?.textContent).toBe(expected)
+    }
+  })
+
   it('forwards both legacy level-up and independently supplied treasure choices', async () => {
     const wrapper = mounted({ screen: 'level' })
     await nextTick()
