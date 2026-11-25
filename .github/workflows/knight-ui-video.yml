@@ -1,0 +1,48 @@
+name: Knight gait and knee actual game MP4 capture
+on:
+  push:
+    branches: [qa/knight-gait-review-e547225]
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npm ci --prefix experiments/pixijs-knight
+      - name: Install recording browser
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get install -y ffmpeg
+      - name: Record real DEV game
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 5173 --strictPort >/tmp/knight-record.log 2>&1 &
+          for i in {1..45}; do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:5173/ >/dev/null
+          node scripts/knight-pixi-record.mjs
+      - name: Convert actual browser recordings to MP4
+        if: always()
+        run: |
+          for name in desktop mobile-landscape desktop-bones; do
+            if [ -s "artifacts/knight-video/$name.webm" ]; then
+              ffmpeg -hide_banner -loglevel error -y -i "artifacts/knight-video/$name.webm" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -preset fast -crf 19 -pix_fmt yuv420p -movflags +faststart "artifacts/knight-video/$name.mp4"
+              ffprobe -v error -show_entries format=duration,size -of json "artifacts/knight-video/$name.mp4"
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: knight-actual-ui-mp4
+          path: |
+            artifacts/knight-video/*.mp4
+            artifacts/knight-video/capture-report.json
+            /tmp/knight-record.log
+          if-no-files-found: error
