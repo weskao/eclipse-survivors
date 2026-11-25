@@ -255,6 +255,24 @@ describe('phone homepage viewport-first navigation', () => {
 })
 
 describe('homepage menu layout across devices', () => {
+  it('uses only a gear for settings in both languages and keeps its accessible action', async () => {
+    const previous = getLocale()
+    try {
+      const wrapper = menu()
+      const settings = wrapper.get('[data-es2-settings]')
+      for (const locale of ['zh-TW', 'en'] as const) {
+        setLocale(locale)
+        await nextTick()
+        expect(settings.text()).toBe('⚙')
+        expect(settings.attributes('aria-label')).toBeTruthy()
+        expect(settings.attributes('title')).toBe(settings.attributes('aria-label'))
+      }
+      await settings.trigger('click')
+      expect(wrapper.emitted('settings')).toHaveLength(1)
+      expect(css).toContain('grid-template-areas:"version account settings"')
+    } finally { setLocale(previous) }
+  })
+
   it('keeps the start dock separate from the scrollable hero or mode page', () => {
     expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*position:fixed;[^}]*bottom:0/)
     expect(css).toMatch(/\.es2-menu\s*\{[^}]*bottom:var\(--es2-action-bar-height/)
