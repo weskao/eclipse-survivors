@@ -26,17 +26,40 @@ export function advanceKnightMotion(old,s) {
   return p
 }
 const near=(u,v,x,y,rx,ry)=>1-ease(Math.hypot((u-x)/rx,(v-y)/ry))
+const LEG_JOINTS={left:[[.46,.63],[.41,.77],[.32,.86]],right:[[.57,.64],[.68,.80],[.74,.96]]}
+const rotateBone=(origin,from,to,angle)=>{
+  const x=to.x-from.x,y=to.y-from.y,c=Math.cos(angle),s=Math.sin(angle)
+  return {x:origin.x+x*c-y*s,y:origin.y+x*s+y*c}
+}
+// FK for both legs: the hip is fixed, and the upper and lower bone lengths never change.
+export function sampleLegBones(side,width,height,step,heading,stride){
+  const [hip,knee,foot]=LEG_JOINTS[side].map(([x,y])=>({x:x*width,y:y*height}))
+  const wave=Math.sin(step+(side==='right'?Math.PI:0))*stride
+  const upper=wave*(.24*Math.cos(heading)+.05*Math.sin(heading))
+  const lower=upper+Math.max(0,wave)*(.21+.1*Math.abs(Math.sin(heading)))*(side==='right'?1:-1)
+  const bentKnee=rotateBone(hip,hip,knee,upper)
+  return {hip,knee:bentKnee,foot:rotateBone(bentKnee,knee,foot,lower)}
+}
+// Same diagonal as Pixi PlaneGeometry (top-left, top-right, bottom-left).
+export function meshPoint(vertices,columns,rows,u,v){
+  const x=clamp(u)*(columns-1),y=clamp(v)*(rows-1)
+  const col=Math.min(columns-2,Math.floor(x)),row=Math.min(rows-2,Math.floor(y)),a=x-col,b=y-row
+  const tl=(row*columns+col)*2,tr=tl+2,bl=tl+columns*2,br=bl+2
+  const at=k=>a+b<=1?vertices[tl+k]*(1-a-b)+vertices[tr+k]*a+vertices[bl+k]*b:
+    vertices[tr+k]*(1-b)+vertices[bl+k]*(1-a)+vertices[br+k]*(a+b-1)
+  return {x:at(0),y:at(1)}
+}
 // Precompute the visual joint regions once. One illustration, not authored rear art.
 export function createKnightSkin(rest,width,height,grip) {
-  const weights=new Float32Array(rest.length/2*9)
+  const weights=new Float32Array(rest.length/2*11)
   for(let i=0;i<rest.length;i+=2){
-    const u=rest[i]/width,v=rest[i+1]/height,j=i/2*9
+    const u=rest[i]/width,v=rest[i+1]/height,j=i/2*11
     const hand=near(u,v,...grip,.23,.24), free=1-hand
-    weights.set([hand,free*near(u,v,.27,.41,.20,.23),free*near(u,v,.75,.56,.23,.25),free*near(u,v,.72,.41,.19,.24),free*near(u,v,.52,.45,.32,.31),free*near(u,v,.54,.11,.20,.23),free*near(u,v,.36,.82,.24,.30),free*near(u,v,.72,.90,.24,.30),free*near(u,v,.90,.55,.25,.35)],j)
+    weights.set([hand,free*near(u,v,.27,.41,.20,.23),free*near(u,v,.75,.56,.23,.25),free*near(u,v,.72,.41,.19,.24),free*near(u,v,.52,.45,.32,.31),free*near(u,v,.54,.11,.20,.23),free*near(u,v,.41,.77,.20,.22),free*near(u,v,.32,.86,.19,.20),free*near(u,v,.68,.80,.20,.22),free*near(u,v,.74,.96,.19,.20),free*near(u,v,.90,.55,.25,.35)],j)
   }
-  return {rest:rest.slice(),weights}
+  return {rest:rest.slice(),weights,width,height,legRest:[sampleLegBones('left',width,height,0,0,0),sampleLegBones('right',width,height,0,0,0)]}
 }
-export function deformKnight({rest,weights},out,p){
+export function deformKnight({rest,weights,width,height,legRest},out,p){
   if(p.reducedMotion){out.set(rest);return}
   const phase=clamp(p.phase),cycle=Math.sin(p.step),lift=Math.abs(cycle),stride=p.stride
   const x=Math.cos(p.heading),y=Math.sin(p.heading)
@@ -46,9 +69,13 @@ export function deformKnight({rest,weights},out,p){
   const attack=p.pose==='attack'||p.pose==='cast'?pulse:0
   const bodyX=x*lean+attack*Math.cos(p.aim)*1.8+fall*5
   const bodyY=y*lean+fall*8-triumph-lift*stride*1.4+(p.pose==='idle'?idle:0)
+  const left=sampleLegBones('left',width,height,p.step,p.heading,stride),right=sampleLegBones('right',width,height,p.step,p.heading,stride)
+  const [l0,r0]=legRest
+  const lx=left.knee.x-l0.knee.x,ly=left.knee.y-l0.knee.y,lfx=left.foot.x-l0.foot.x,lfy=left.foot.y-l0.foot.y
+  const rx=right.knee.x-r0.knee.x,ry=right.knee.y-r0.knee.y,rfx=right.foot.x-r0.foot.x,rfy=right.foot.y-r0.foot.y
   for(let i=0;i<rest.length;i+=2){
-    const j=i/2*9,h=weights[j],e=weights[j+1],sh=weights[j+2],se=weights[j+3],torso=weights[j+4],head=weights[j+5],legs=weights[j+6]-weights[j+7],cape=weights[j+8]
-    out[i]=rest[i]+h*p.handX+e*p.elbowX+sh*p.supportX+se*p.supportElbowX+(torso+head)*bodyX+legs*cycle*stride*4.3*x+cape*(cycle*stride*3-x*lean*.5)
-    out[i+1]=rest[i+1]+h*p.handY+e*p.elbowY+sh*p.supportY+se*p.supportElbowY+(torso+head)*bodyY+legs*cycle*stride*(2.2+2*y)+cape*(Math.sin(p.step-.8)*stride*2+fall*4+(p.pose==='idle'?idle:0))
+    const j=i/2*11,h=weights[j],e=weights[j+1],sh=weights[j+2],se=weights[j+3],torso=weights[j+4],head=weights[j+5],l=weights[j+6],lf=weights[j+7],r=weights[j+8],rf=weights[j+9],cape=weights[j+10]
+    out[i]=rest[i]+h*p.handX+e*p.elbowX+sh*p.supportX+se*p.supportElbowX+(torso+head)*bodyX+l*lx+lf*lfx+r*rx+rf*rfx+cape*(cycle*stride*3-x*lean*.5)
+    out[i+1]=rest[i+1]+h*p.handY+e*p.elbowY+sh*p.supportY+se*p.supportElbowY+(torso+head)*bodyY+l*ly+lf*lfy+r*ry+rf*rfy+cape*(Math.sin(p.step-.8)*stride*2+fall*4+(p.pose==='idle'?idle:0))
   }
 }

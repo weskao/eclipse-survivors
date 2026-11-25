@@ -1,7 +1,7 @@
 import { Application, Container, MeshPlane, Sprite, Texture } from 'pixi.js'
 import { getRigidWeaponLayers } from '../../src/game/render/rigid-weapons.ts'
 import { sampleWeaponRig } from '../../src/game/render/weapon-rig.ts'
-import { advanceKnightMotion, createKnightSkin, deformKnight } from './motion.mjs'
+import { advanceKnightMotion, createKnightSkin, deformKnight, meshPoint } from './motion.mjs'
 import { rigidSword } from './pose.mjs'
 
 const W=108,H=134, WIDTH=256,HEIGHT=240,FOOT_X=128,FOOT_Y=182
@@ -29,6 +29,7 @@ export async function createKnightPixi(image, report) {
       rest[i+1]=vertices[i+1]*H/layers.body.height
     }
     const skin=createKnightSkin(rest,W,H,layers.grip)
+    const restGrip=meshPoint(rest,11,13,...layers.grip)
     const sword=new Sprite(Texture.from(layers.weapon))
     sword.anchor.set(...layers.grip)
     root.addChild(body,sword)
@@ -52,7 +53,8 @@ export async function createKnightPixi(image, report) {
               supportElbowX:rig.supportElbow.x-idle.supportElbow.x,supportElbowY:rig.supportElbow.y-idle.supportElbow.y})
             deformKnight(skin,vertices,current)
             buffer.update()
-            const transform=rigidSword(layers.weapon.width,layers.weapon.height,H,layers.grip,W,current.handX,current.handY,current.blade)
+            const grip=meshPoint(vertices,11,13,...layers.grip)
+            const transform=rigidSword(layers.weapon.width,layers.weapon.height,H,layers.grip,W,grip.x-restGrip.x,grip.y-restGrip.y,current.blade)
             sword.position.set(transform.x,transform.y)
             sword.scale.set(transform.scale)
             sword.rotation=transform.rotation

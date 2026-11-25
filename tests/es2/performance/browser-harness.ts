@@ -55,6 +55,14 @@ async function run() {
     })
   }))
   const assets = createRenderAssets(art)
+  const usePixi = new URLSearchParams(location.search).get('knightPixi') === '1'
+  let rendererStatus: string = 'canvas'
+  if (usePixi) {
+    const { createKnightPixi } = await import('virtual:knight-pixi')
+    const renderer = await createKnightPixi(art.knight, mode => { rendererStatus = mode })
+    if (!renderer) throw new Error('Knight Pixi dependency unavailable')
+    assets.knightPixi = renderer
+  }
   assets.content = engine.contentRegistry
   const low = resolvePresentationPolicy({
     ...DEFAULT_ACCESSIBILITY_PREFERENCES,
@@ -86,9 +94,11 @@ async function run() {
     renderMs.push(performance.now() - renderStart)
   }
   const heapAfter = heap()
+  assets.knightPixi?.dispose()
+  if (usePixi && rendererStatus !== 'pixi') throw new Error('Benchmark did not use the real Knight GPU renderer')
   return {
     label: 'ES2_REAL_CHROMIUM_CANVAS_PERFORMANCE_NOT_PHYSICAL_DEVICE',
-    platform: navigator.userAgent, preset, viewport: [s.W, s.H], dpr,
+    renderer: rendererStatus, platform: navigator.userAgent, preset, viewport: [s.W, s.H], dpr,
     initialMobs: 130, liveMobs: s.mobs.length,
     frames: 120,
     simulationMs: distribution(simMs),

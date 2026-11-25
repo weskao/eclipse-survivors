@@ -38,3 +38,28 @@ test('all remaining pose samples are finite and differ from rest',()=>{
     assert.ok(out.every(Number.isFinite),pose);assert.notDeepEqual(out,rest,pose)
   }
 })
+test('both leg chains preserve their segment lengths during a full stride in all directions',()=>{
+  assert.equal(typeof motion.sampleLegBones,'function')
+  for(let i=0;i<8;i++) for(let j=0;j<16;j++) for(const side of ['left','right']){
+    const a=motion.sampleLegBones(side,108,134,0,i*Math.PI/4,0)
+    const b=motion.sampleLegBones(side,108,134,j*Math.PI/8,i*Math.PI/4,1)
+    const length=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y)
+    close(length(a.hip,a.knee),length(b.hip,b.knee));close(length(a.knee,a.foot),length(b.knee,b.foot))
+  }
+})
+test('mesh grip is sampled from the same triangles as the body, not an independent approximation',()=>{
+  assert.equal(typeof motion.meshPoint,'function')
+  const vertices=new Float32Array([0,0,10,0,0,10,12,15])
+  const a=motion.meshPoint(vertices,2,2,.2,.3)
+  close(a.x,2);close(a.y,3)
+  const b=motion.meshPoint(vertices,2,2,.8,.9)
+  close(b.x,9.4);close(b.y,12.5)
+})
+test('all eight independent attack aims align at contact',()=>{
+  for(let i=0;i<8;i++){
+    const aim=i*Math.PI/4
+    const p=motion.advanceKnightMotion(null,{...base,pose:'attack',aim,phase:0})
+    close(Math.cos(p.blade+motion.SOURCE_BLADE_ANGLE),Math.cos(aim))
+    close(Math.sin(p.blade+motion.SOURCE_BLADE_ANGLE),Math.sin(aim))
+  }
+})
