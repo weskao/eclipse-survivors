@@ -289,3 +289,23 @@ describe('hitbox-based melee targeting', () => {
     expect(nearestAlive([small, boss], hero)[0]).toBe(boss)
   })
 })
+
+describe('ES3 per-run kill feedback', () => {
+  it('counts actual kills, tracks the highest streak and burst, and never rewards a corpse again', () => {
+    const { s } = setup()
+    const hooks = spyHooks()
+    const first = mob(40, 0, { hp: 1 })
+    hit(s, first, 10, hooks)
+    hit(s, first, 10, hooks)
+    s.time = 0.15; s.worldClock = 0.15
+    hit(s, mob(50, 0, { hp: 1 }), 10, hooks)
+    s.time = 0.3; s.worldClock = 0.3
+    hit(s, mob(60, 0, { hp: 1 }), 10, hooks)
+    expect(s).toMatchObject({ kill: 3, killStreak: { current: 3, best: 3, burst: 3, bestBurst: 3 } })
+    s.time = 4; s.worldClock = 4
+    hit(s, mob(70, 0, { hp: 1 }), 10, hooks)
+    expect(s).toMatchObject({ kill: 4, killStreak: { current: 1, best: 3, burst: 1, bestBurst: 3 } })
+    resetRun(s)
+    expect(s).toMatchObject({ kill: 0, killStreak: { current: 0, best: 0, burst: 0, bestBurst: 0 } })
+  })
+})

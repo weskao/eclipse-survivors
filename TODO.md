@@ -41,7 +41,8 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Qualitative rank breakthroughs: projectile count, AoE, chains, elemental effects or summons; e.g. chain lightning single target to chaining, shock, kill discharge and evolution.
 - [ ] Improve first-upgrade timing with mode-specific balance tests.
 - [x] Coalesce same-tick XP gem pickup audio while preserving exact per-gem XP and pickup receipts (RED: run 45677562464; GREEN: run 45678439675, step.test.ts).
-- [ ] XP gem acceleration, trails and optional magnet pickups; preserve exact reward totals.
+- [x] XP gem acceleration and same-tick collection, preserving exact XP and pickup receipts (RED: run 45680019938; GREEN: run 45680367799, step.test.ts; player simulation path verified).
+- [ ] XP gem trails and optional magnet pickups; preserve exact reward totals.
 - [ ] Rare/epic/legendary chest reveal animations with skip, single claim and uninterrupted essential audio.
 - [ ] Distinct evolution reveal and actual gameplay transformation.
 

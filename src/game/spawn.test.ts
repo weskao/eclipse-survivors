@@ -107,3 +107,20 @@ describe('boss-cap regression', () => {
     expect(hooks.message).toHaveBeenCalledWith('⚠ 魔王降臨！')
   })
 })
+
+describe('ES3 live encounter pacing', () => {
+  it('intensifies ordinary assault spawns and eases the reward phase without changing the underlying spawn curve', () => {
+    const s = setup()
+    setRandom(seeded(12))
+    s.time = 20
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.spawnT).toBeLessThan(spawnInterval(s.time, s.currentScene))
+    s.time = 35; s.spawnT = 0
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.spawnT).toBeGreaterThan(spawnInterval(s.time, s.currentScene))
+    s.time = 42; s.spawnT = 0
+    const count = s.mobs.length
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.mobs).toHaveLength(count)
+  })
+})

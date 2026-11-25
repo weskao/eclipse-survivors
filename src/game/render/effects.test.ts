@@ -3,7 +3,7 @@ import { DASH_COOLDOWN, TAU } from '../constants'
 import { createState, resetRun } from '../state'
 import type { GameMode, Hero } from '../types'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
-import { createParticleSpriteCache, drawFx, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
+import { buildGemSprites, createParticleSpriteCache, drawFx, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
 import { loadProjectileSprites } from './projectile-art'
 
 function scene() {
@@ -184,5 +184,32 @@ describe('hero foot status', () => {
 
   it('stays visible while paused so the state can be read', () => {
     expect(readout({ hp: 10, dashCd: 1 }, { mode: 'paused' }).calls).toContain('stroke')
+  })
+})
+
+describe('ES3 magnetized gem trail', () => {
+  it('draws bounded cached energy behind a moving gem, but never for resting, reduced-motion or offscreen gems', () => {
+    const s = scene()
+    resetRun(s)
+    s.hero!.x = 150; s.hero!.y = 100
+    const factory = fakeCanvasFactory()
+    const gems = buildGemSprites(factory.make)
+    s.stars = [{ x: 100, y: 100, value: 3, t: 1, attractionSpeed: 600 }]
+    const moving = createFakeCtx()
+    drawStars(moving.ctx, s, 0, 0, false, gems)
+    expect(moving.drawn.length).toBeGreaterThan(1)
+    expect(moving.drawn.length).toBeLessThanOrEqual(3)
+    const reduced = createFakeCtx()
+    drawStars(reduced.ctx, s, 0, 0, true, gems)
+    expect(reduced.drawn).toHaveLength(1)
+    s.stars[0]!.attractionSpeed = undefined
+    const resting = createFakeCtx()
+    drawStars(resting.ctx, s, 0, 0, false, gems)
+    expect(resting.drawn).toHaveLength(1)
+    s.stars[0]!.x = 4000; s.stars[0]!.attractionSpeed = 600
+    const offscreen = createFakeCtx()
+    drawStars(offscreen.ctx, s, 0, 0, false, gems)
+    expect(offscreen.drawn).toHaveLength(0)
+    expect(factory.made).toHaveLength(2)
   })
 })
