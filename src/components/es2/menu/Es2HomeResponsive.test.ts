@@ -199,6 +199,14 @@ describe('phone homepage viewport-first navigation', () => {
 })
 
 describe('homepage menu layout across devices', () => {
+  it('keeps the short-landscape start dock and natural selection height, including wider touch phones', () => {
+    expect(css).toContain('(orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse)')
+    expect(css).toMatch(/\.es2-menu-action-bar\{position:fixed;display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/)
+    expect(css).toContain('.es2-menu{bottom:var(--es2-action-bar-height,0px);height:auto;overflow-x:hidden}')
+    expect(css).toContain('.es2-menu-shell{height:auto;min-height:100%}')
+    expect(css).toContain('.es2-menu-layout{flex:1 0 auto;min-height:0;align-items:stretch}')
+  })
+
   it('keeps the wide-layout start action in view and reserves room below the scrolling controls', () => {
     expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*position:fixed;[^}]*bottom:0/)
     expect(css).toMatch(/\.es2-menu\s*\{[^}]*bottom:var\(--es2-action-bar-height/)
