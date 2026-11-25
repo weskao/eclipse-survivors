@@ -75,6 +75,23 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('home')).toHaveLength(1)
   })
 
+  it('renders ordinary, weapon and hero upgrades with the same before/after emphasis', async () => {
+    mounted({ screen: 'level', upgrades: [
+      { ...UP[0]!, level: 1 },
+      { id: 'weapons:shadow-daggers', title: 'Shadow Daggers', desc: '', icon: '✦', rarity: 'common', level: 1, maxLevel: 5 },
+      { id: 'heroes:shadow-precision', title: 'Shadow Precision', desc: '', icon: '✦', rarity: 'rare', level: 0, maxLevel: 3 },
+    ] })
+    await nextTick()
+    for (const [id, expected] of [
+      ['damage', '163.84%'], ['weapons:shadow-daggers', '65%'], ['heroes:shadow-precision', '188%'],
+    ]) {
+      const card = find('[data-choice="' + id + '"]')
+      const values = card.querySelector('.es2-mastery-values')
+      expect(values?.textContent).toContain('→')
+      expect(values?.querySelector('strong')?.textContent).toBe(expected)
+    }
+  })
+
   it('forwards both legacy level-up and independently supplied treasure choices', async () => {
     const wrapper = mounted({ screen: 'level' })
     await nextTick()
@@ -140,7 +157,26 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('musicVolume')).toEqual([[32]])
     click('.es2-toggle-set button:last-child')
     expect(wrapper.emitted('upgradeEffect')).toEqual([['still']])
-    click('.es2-setting-option > .es2-secondary')
+    const audioButtons = document.querySelectorAll<HTMLButtonElement>('.es2-slider-row > button')
+    expect(audioButtons).toHaveLength(2)
+    expect(document.querySelectorAll('.es2-slider-row [role="switch"]')).toHaveLength(0)
+    expect(audioButtons[0]?.textContent).toBe('♫')
+    expect(audioButtons[1]?.textContent).toBe('♬')
+    expect(audioButtons[0]?.getAttribute('aria-pressed')).toBe('false')
+    expect(audioButtons[1]?.getAttribute('aria-pressed')).toBe('false')
+    expect(find('.es2-slider-row label').textContent?.trim()).toBe('音樂 70%')
+    expect(document.querySelectorAll('.es2-slider-row label')[1]?.textContent?.trim()).toBe('音效 50%')
+    expect(find('.es2-setting-option > [role="switch"]').getAttribute('aria-checked')).toBe('false')
+    audioButtons[0]!.click()
+    audioButtons[1]!.click()
+    await wrapper.setProps({ musicOn: false, sfxOn: false })
+    expect(audioButtons[0]?.textContent).toBe('♪')
+    expect(audioButtons[1]?.textContent).toBe('♩')
+    expect(audioButtons[0]?.getAttribute('aria-pressed')).toBe('true')
+    expect(audioButtons[1]?.getAttribute('aria-pressed')).toBe('true')
+    expect(wrapper.emitted('toggleMusic')).toHaveLength(1)
+    expect(wrapper.emitted('toggleSfx')).toHaveLength(1)
+    click('.es2-setting-option > [role="switch"]')
     expect(wrapper.emitted('cameraShake')).toEqual([[true]])
     click('.es2-close')
     expect(wrapper.emitted('closeSettings')).toHaveLength(1)

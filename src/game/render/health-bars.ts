@@ -1,4 +1,6 @@
-import type { Mob } from '../types'
+import type { Ctx2D } from './ctx'
+
+export interface HealthBarTarget { hp: number; max: number }
 
 export interface HealthBarMotion {
   front: number
@@ -7,16 +9,23 @@ export interface HealthBarMotion {
   at: number
 }
 
-export interface HealthBarFrame { readonly front: number; readonly trail: number }
+export interface HealthBarFrame { readonly front: number; readonly trail: number; readonly target: number }
 
-const ratio = (mob: Mob): number => mob.max > 0 && Number.isFinite(mob.hp) && Number.isFinite(mob.max)
+/** Use remaining HP fraction, never raw HP: elites and bosses can have larger maxima. */
+export function healthBarColor(fraction: number): string {
+  return fraction >= .75 ? '#78d8a0' : fraction >= .5 ? '#eac95f'
+    : fraction >= .25 ? '#ed9851' : '#e66b73'
+}
+
+const ratio = (mob: HealthBarTarget): number => mob.max > 0 && Number.isFinite(mob.hp) && Number.isFinite(mob.max)
   ? Math.max(0, Math.min(1, mob.hp / mob.max)) : 0
 
 /** A WeakMap lives with the renderer: dead mobs never retain history and simulation HP is untouched. */
 export function sampleHealthBar(
-  mob: Mob, time: number, cache: WeakMap<Mob, HealthBarMotion>, reduceMotion = false,
+  mob: HealthBarTarget, time: number, cache?: WeakMap<HealthBarTarget, HealthBarMotion>, reduceMotion = false,
 ): HealthBarFrame {
   const target = ratio(mob)
+  if (!cache) return { front: target, trail: target, target }
   const old = cache.get(mob)
   if (!old || reduceMotion || !Number.isFinite(time) || time < old.at) {
     const current: HealthBarMotion = { front: target, trail: target, target, at: time }
@@ -40,4 +49,25 @@ export function sampleHealthBar(
   if (Math.abs(target - old.front) < 0.002) old.front = target
   if (Math.abs(target - old.trail) < 0.002) old.trail = target
   return old
+}
+
+/** Keep healing visible until the existing fill and trail finish settling. */
+export function shouldShowHealthBar(motion: HealthBarFrame, showFull = false): boolean {
+  return showFull || motion.target < 1 || motion.front < 1 || motion.trail < 1
+}
+
+/** Shared overhead UI for all non-boss enemies, regardless of their simulation pool. */
+export function drawEnemyHealthBar(
+  ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number, spriteWidth: number, elite = false,
+): void {
+  const bar = Math.max(34, spriteWidth * 0.58), left = x - bar / 2
+  ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
+  if (motion.trail > motion.front + 0.002) {
+    ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.trail, 4)
+  }
+  // Keep elite identity separate from the authoritative HP color.
+  if (elite) { ctx.strokeStyle = '#d6a4f3'; ctx.lineWidth = 1; ctx.strokeRect(left, top, bar, 6) }
+  ctx.fillStyle = healthBarColor(motion.target)
+  ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 4)
+  ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 1)
 }

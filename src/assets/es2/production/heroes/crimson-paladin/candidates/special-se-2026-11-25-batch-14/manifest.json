@@ -1,0 +1,183 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "special",
+  "direction": "SE",
+  "sourceDirection": "SE",
+  "mirrorAllowed": false,
+  "native3x": "UNVERIFIED",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "completeEightDirections": false,
+  "eligibleForDevWiring": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": null,
+  "atlasPixels": null,
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 627,
+  "cellHeight": 627,
+  "frameRects": null,
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": null,
+  "footBottomsStatus": "alpha>=128 proxy only; not a foot measurement",
+  "alphaBounds": null,
+  "frames": [
+    {
+      "index": 0,
+      "sourceRect": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "rect": null,
+      "sourceAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        32,
+        7,
+        589,
+        627
+      ],
+      "coreExtent": [
+        557,
+        620
+      ],
+      "sourceBoundaryMaxAlpha": 252,
+      "footBottomProxy": null,
+      "footAnchor": null,
+      "outputAlphaBounds": null
+    },
+    {
+      "index": 1,
+      "sourceRect": [
+        627,
+        0,
+        627,
+        627
+      ],
+      "rect": null,
+      "sourceAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        40,
+        8,
+        571,
+        594
+      ],
+      "coreExtent": [
+        531,
+        586
+      ],
+      "sourceBoundaryMaxAlpha": 45,
+      "footBottomProxy": null,
+      "footAnchor": null,
+      "outputAlphaBounds": null
+    },
+    {
+      "index": 2,
+      "sourceRect": [
+        0,
+        627,
+        627,
+        627
+      ],
+      "rect": null,
+      "sourceAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        17,
+        0,
+        602,
+        609
+      ],
+      "coreExtent": [
+        585,
+        609
+      ],
+      "sourceBoundaryMaxAlpha": 251,
+      "footBottomProxy": null,
+      "footAnchor": null,
+      "outputAlphaBounds": null
+    },
+    {
+      "index": 3,
+      "sourceRect": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "rect": null,
+      "sourceAlphaBounds": [
+        0,
+        0,
+        615,
+        627
+      ],
+      "coreAlphaBounds": [
+        30,
+        6,
+        599,
+        607
+      ],
+      "coreExtent": [
+        569,
+        601
+      ],
+      "sourceBoundaryMaxAlpha": 21,
+      "footBottomProxy": null,
+      "footAnchor": null,
+      "outputAlphaBounds": null
+    }
+  ],
+  "paddingOffset": null,
+  "sourceFile": "source.webp",
+  "sourceSHA256": "2cfcda9dd54b8385657e3a7f5b1e974faa9809477be4d7b76fd74b7389c3ef39",
+  "originalPNGSHA256": "c86d05c74fbb9679ee8952eb515f096174ceec0da28ad4a18e4cd73412d7a25a",
+  "atlasFile": null,
+  "webpSHA256": null,
+  "bytes": 1401736,
+  "sourceProvenance": {
+    "generationId": "efe3597b-4a09-48f0-817a-d87001e7b844",
+    "reference": "user-supplied canonical Crimson Paladin portrait; repository canonical portrait inspected",
+    "referenceGitBlob": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+    "inputName": "a_clean_transparent_background_checkerboard_trans_5_batch_5.png"
+  },
+  "encoding": "Pillow WebP quality 100; review only; Polytool not run",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "sourceSeamMaxAlpha": 252,
+  "reviewNotes": [
+    "Alternate review candidate; do not replace existing art automatically. Direction label is provisional until visual verification.",
+    "Native pixel sizes are measured from alpha>=128, include equipment/effects and do not certify anatomical detail or 1x gameplay scale.",
+    "No resampling. No alpha pixels removed. Source boundary may contain glow or clipped content.",
+    "Foot anchors and timing unverified; four poses are not a completed production animation.",
+    "Polytool unavailable; Pillow quality 100 review encoding only. No production or DEV wiring.",
+    "SOURCE ONLY: opaque pixels cross the proposed 2x2 seam; do not split into runtime frames or use as an atlas. Re-author isolated frames."
+  ]
+}

@@ -166,15 +166,56 @@ describe('ES2 upgrade and reward picker', () => {
     expect(wrapper.emitted('choose')).toEqual([['frost'], ['bolt']])
   })
 
-  it('traps Tab and restores focus when the choice dialog closes', async () => {
+  it.each(['level', 'evolution', 'treasure'] as const)('blocks non-numeric keys on %s choices', async (kind) => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind, items: choices })
+    await nextTick(); await nextTick()
+    const card = button('bolt')
+    card.focus()
+    const background = vi.fn()
+    window.addEventListener('keydown', background)
+    try {
+      for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Escape', 'Home', 'End', 'PageUp', 'PageDown', 'w', 'q', 'p', '0']) {
+        const code = key === '0' ? 'Digit0' : key.length === 1 ? `Key${key.toUpperCase()}` : key
+        for (const type of ['keydown', 'keyup'] as const) {
+          const event = new KeyboardEvent(type, { key, code, bubbles: true, cancelable: true })
+          card.dispatchEvent(event)
+          expect(event.defaultPrevented, `${type} ${key}`).toBe(true)
+        }
+        expect(document.activeElement).toBe(card)
+      }
+      expect(background).not.toHaveBeenCalled()
+      expect(wrapper.emitted('choose')).toBeUndefined()
+      expect(wrapper.emitted('cancel')).toBeUndefined()
+      expect(wrapper.emitted('settings')).toBeUndefined()
+      press('2')
+      expect(wrapper.emitted('choose')).toEqual([['frost']])
+    } finally {
+      window.removeEventListener('keydown', background)
+    }
+  })
+
+  it('allows key releases to clear held gameplay controls without activating the choice', async () => {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
+    await nextTick()
+    const release = vi.fn()
+    window.addEventListener('keyup', release)
+    try {
+      const event = new KeyboardEvent('keyup', { key: 'w', code: 'KeyW', bubbles: true, cancelable: true })
+      button('bolt').dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(true)
+      expect(release).toHaveBeenCalledWith(event)
+      expect(wrapper.emitted('choose')).toBeUndefined()
+    } finally {
+      window.removeEventListener('keyup', release)
+    }
+  })
+
+  it('restores focus when the choice dialog closes through its pointer controls', async () => {
     const launch = document.createElement('button'); launch.textContent = 'launch'; document.body.append(launch); launch.focus()
     const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'treasure', items: choices })
     await nextTick(); await nextTick()
     expect(dialog().contains(document.activeElement)).toBe(true)
-    button('frost').focus()
-    press('Tab')
-    expect(dialog().contains(document.activeElement)).toBe(true)
-    press('Escape')
+    dialog().querySelector<HTMLButtonElement>('.es2-close')!.click()
     expect(wrapper.emitted('cancel')).toHaveLength(1)
     await wrapper.setProps({ active: false })
     expect(document.activeElement).toBe(launch)

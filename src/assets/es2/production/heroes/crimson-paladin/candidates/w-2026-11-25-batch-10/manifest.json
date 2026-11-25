@@ -1,0 +1,262 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "run",
+  "direction": "W",
+  "sourceDirection": "W",
+  "mirrorAllowed": false,
+  "native3x": "core_height_threshold_pass_visual_unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "completeEightDirections": false,
+  "eligibleForDevWiring": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    657,
+    649,
+    659,
+    666
+  ],
+  "footBottomsStatus": "alpha>=128 bottom proxy; manual gameplay anchor review required",
+  "alphaBounds": [
+    [
+      83,
+      79,
+      689,
+      689
+    ],
+    [
+      78,
+      78,
+      685,
+      689
+    ],
+    [
+      85,
+      78,
+      689,
+      677
+    ],
+    [
+      78,
+      78,
+      687,
+      681
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        13,
+        9,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        18,
+        13,
+        604,
+        587
+      ],
+      "coreExtent": [
+        586,
+        574
+      ],
+      "outputAlphaBounds": [
+        83,
+        79,
+        689,
+        689
+      ],
+      "clearedMarginPixels": 266,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 657,
+      "footAnchor": null
+    },
+    {
+      "index": 1,
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        8,
+        615,
+        627
+      ],
+      "coreAlphaBounds": [
+        11,
+        13,
+        603,
+        579
+      ],
+      "coreExtent": [
+        592,
+        566
+      ],
+      "outputAlphaBounds": [
+        78,
+        78,
+        685,
+        689
+      ],
+      "clearedMarginPixels": 166,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 649,
+      "footAnchor": null
+    },
+    {
+      "index": 2,
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        19,
+        13,
+        583,
+        589
+      ],
+      "coreExtent": [
+        564,
+        576
+      ],
+      "outputAlphaBounds": [
+        85,
+        78,
+        689,
+        677
+      ],
+      "clearedMarginPixels": 144,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 659,
+      "footAnchor": null
+    },
+    {
+      "index": 3,
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        617,
+        627
+      ],
+      "coreAlphaBounds": [
+        18,
+        14,
+        614,
+        596
+      ],
+      "coreExtent": [
+        596,
+        582
+      ],
+      "outputAlphaBounds": [
+        78,
+        78,
+        687,
+        681
+      ],
+      "clearedMarginPixels": 191,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 666,
+      "footAnchor": null
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "4be2a66fd191b6e670463da91b9638eaa9d2ebeef84a152c91eca5dafa963427",
+  "originalPNGSHA256": "dc15ec06c84a4062379f520dcc9d3b497ff93360f9e663f978f87396014bce5d",
+  "atlasFile": "run-w-4frames@3x.webp",
+  "webpSHA256": "354bece9fab226c0f6e0cee7ac3aabfd7bc28a7ee9db29b0bf794ff3147b1088",
+  "bytes": 642948,
+  "sourceProvenance": {
+    "generationId": "af5cfaeb-eb87-408d-8085-047dc7f10df6",
+    "reference": "user supplied canonical portrait and repository character art",
+    "inputName": "a_clean_png_sprite_sheet_style_composite_on_a_tran.png"
+  },
+  "encoding": "Pillow WebP quality 100; review only; Polytool not run",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "No resizing; 627px original cells centered on transparent 768px cells. Only alpha=1 outer 8px source margin pixels cleared in padded derivative.",
+    "Core height is an alpha-bound proxy, not manual native-detail approval. Verify equipment, identity, stride and foot anchor at game size.",
+    "Polytool install blocked by GitHub DNS and cwebp unavailable. Review only; do not mark eligible before official conversion/provenance review."
+  ]
+}

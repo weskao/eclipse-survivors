@@ -9,7 +9,7 @@ import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
-import { type HealthBarMotion } from './health-bars'
+import type { HealthBarMotion, HealthBarTarget } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
 import { preloadHeroSpecialVfx } from './es2/hero-special-vfx'
@@ -54,7 +54,7 @@ export interface RenderAssets {
   gems: GemSprites
   particles: ParticleSpriteCache
   mobTint: MobTintCache
-  healthBars: WeakMap<Mob, HealthBarMotion>
+  healthBars: WeakMap<HealthBarTarget, HealthBarMotion>
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -99,6 +99,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const hero = s.hero
   const policy = assets.presentation?.()
   const reduced = policy?.reduceMotion ?? assets.prefersReducedMotion()
+  const showFullHealthBars = policy?.showFullEnemyHealthBars ?? false
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.fillStyle = '#27352d'
   ctx.fillRect(0, 0, W, H)
@@ -140,7 +141,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)
-    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy)
+    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy, assets.healthBars, reduced, showFullHealthBars)
   const objects = assets.depthOrder
   objects.length = 0
   // Reject offscreen and dead mobs before sorting, not after the sort in drawCharacter.
@@ -154,14 +155,14 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const nativeKey = import.meta.env.DEV && bossSnapshot && assets.productionWorld?.bossNativeKeyframes
     ? selectBossNativeKeyframe(bossSnapshot) : null
   const nativeImage = nativeKey ? assets.productionWorld?.bossNativeKeyframes?.[nativeKey] : undefined
-  const motionReference = nativeImage ? { id: 'infernal-titan' as const, image: nativeImage } : assets.productionWorld?.bossMotionReference
+  const motionReference = nativeImage && bossSnapshot?.id ? { id: bossSnapshot.id, image: nativeImage } : assets.productionWorld?.bossMotionReference
   for (const obj of objects) {
     const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
     const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase
       ? { image: bossImage, phase: bossSnapshot.phase,
           motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
-    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, assets.knightPixi, policy?.reduceFlashing ?? false)
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, showFullHealthBars, assets.knightPixi, policy?.reduceFlashing ?? false)
   }
   // Dead mobs are excluded from depthOrder. Only explicit DEV review may paint a death reference.
   const deathReference = motionReference

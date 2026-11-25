@@ -33,24 +33,29 @@ describe('live low-health danger feedback', () => {
     const root = wrapper.get('.es2-hud')
     expect(root.attributes('data-es2-life-tier')).toBe('normal')
     expect(wrapper.find('[data-es2-life-alert]').exists()).toBe(false)
+    expect(wrapper.find('[data-es2-life-message]').exists()).toBe(false)
     expect(wrapper.find('[data-es2-life-vignette]').exists()).toBe(false)
 
     await wrapper.setProps({ hud: { ...hud, hpPct: 40 } })
     expect(root.attributes('data-es2-life-tier')).toBe('warning')
     expect(wrapper.get('.es2-hud__portrait [data-es2-life-alert]').attributes('aria-label')).toBeTruthy()
+    expect(wrapper.get('.es2-hud__hero [data-es2-life-message]').text()).toBe('血量偏低')
     expect(wrapper.find('[data-es2-life-vignette]').exists()).toBe(false)
 
     await wrapper.setProps({ hud: { ...hud, hpPct: 25 } })
     expect(root.attributes('data-es2-life-tier')).toBe('critical')
+    expect(wrapper.get('[data-es2-life-message]').text()).toBe('生命危急')
     expect(wrapper.get('[data-es2-life-vignette]').attributes('aria-hidden')).toBe('true')
     expect(wrapper.get('[role="progressbar"][aria-label="生命值"]').attributes('aria-valuenow')).toBe('25')
 
     await wrapper.setProps({ hud: { ...hud, hpPct: 12 } })
     expect(root.attributes('data-es2-life-tier')).toBe('emergency')
+    expect(wrapper.get('[data-es2-life-message]').text()).toBe('瀕死')
     expect(wrapper.get('[data-es2-life-vignette]').attributes('aria-hidden')).toBe('true')
 
     await wrapper.setProps({ hud: { ...hud, hpPct: 75 } })
     expect(root.attributes('data-es2-life-tier')).toBe('normal')
+    expect(wrapper.find('[data-es2-life-message]').exists()).toBe(false)
     expect(wrapper.find('[data-es2-life-alert]').exists()).toBe(false)
     expect(wrapper.find('[data-es2-life-vignette]').exists()).toBe(false)
 

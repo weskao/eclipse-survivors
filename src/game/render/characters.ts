@@ -11,7 +11,7 @@ import { isSpecializationId } from '../content/heroes'
 import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
-import { sampleHealthBar, type HealthBarMotion } from './health-bars'
+import { drawEnemyHealthBar, healthBarColor, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
 import type { Ctx2D } from './ctx'
 import type { KnightPixiRenderer } from './knight-pixi-contract'
 import { softGlow } from './environment'
@@ -226,7 +226,7 @@ export function drawCharacter(
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
-  healthBars?: WeakMap<Mob, HealthBarMotion>,
+  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, showFullHealthBars = false,
   knightPixi?: KnightPixiRenderer,
   reduceFlashing = false,
 ): void {
@@ -282,8 +282,7 @@ export function drawCharacter(
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
     if (hero && anim) {
-      // The isolated Knight GPU candidate is composited at the original depth-sorted position.
-      // Loading/failure/other identities continue through the existing Canvas path.
+      // Keep the accepted GPU actor at the original y-sorted draw boundary.
       if (s.heroId === 'knight' && kind === 'knight' && drawable === im &&
           knightPixi?.draw(ctx, hero, anim, s.worldClock, s.mode === 'paused' || s.mode === 'level', reduceFlashing)) {
         ctx.restore()
@@ -300,11 +299,11 @@ export function drawCharacter(
         || (productionImage?.complete
           && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512)
       // Follow the same octant/facing contract as the original three heroes.
-      // A 900px portrait has only one authored view, so mirror it for westward
-      // aim without pretending to have eight different camera perspectives.
+      // Keep legacy rig mirroring only for the original classes. Specialization
+      // portraits contain baked equipment and have no approved portrait mirror.
       const facing = anim.direction === 2 || anim.direction === 6 ? hero.face
         : anim.direction > 2 && anim.direction < 6 ? -1 : 1
-      if (facing < 0 && !directionalReady) ctx.scale(-1, 1)
+      if (facing < 0 && !directionalReady && !isSpecializationId(s.heroId)) ctx.scale(-1, 1)
       let productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock) : false
       if (!productionDrawn && isSpecializationId(s.heroId)) {
@@ -354,12 +353,11 @@ export function drawCharacter(
     }
   }
   ctx.restore()
-  if (mob) {
+  if (mob && mob.hp > 0) {
     // The cache is renderer-owned and weakly keyed. Full-health enemies only seed one entry;
     // no gradients, timers or extra frame loops are needed in dense combat.
-    const motion = healthBars ? sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
-      : { front: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))),
-          trail: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))) }
+    const motion = sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
+    if (!shouldShowHealthBar(motion, showFullHealthBars)) return
     if (mob.type === 'boss') {
       const bar = 190, left = x - bar / 2
       const growth = productionBoss ? Math.min(sx, sy) * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
@@ -369,17 +367,10 @@ export function drawCharacter(
       if (motion.trail > motion.front + 0.002) {
         ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.trail, 8)
       }
-      ctx.fillStyle = '#ce63a5'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
-      ctx.fillStyle = '#f9c0d8'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
-    } else if (mob.hp < mob.max || motion.front < 0.998) {
-      const bar = Math.max(34, sx * 0.58), left = x - bar / 2, top = y - sy - 8
-      ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
-      if (motion.trail > motion.front + 0.002) {
-        ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.trail, 4)
-      }
-      ctx.fillStyle = mob.elite ? '#d6a4f3' : '#e98275'
-      ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 4)
-      ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 1)
+      ctx.fillStyle = healthBarColor(motion.target); ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
+      ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
+    } else {
+      drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite)
     }
   }
 }

@@ -168,6 +168,15 @@ try {
         const toggle = page.locator('[data-es2-info-toggle]')
         const panel = page.locator('[data-es2-info-panel]')
         await toggle.waitFor({ state: 'visible' })
+        const iconOffset = await toggle.evaluate(button => {
+          const icon = button.querySelector('svg')
+          if (!icon) return null
+          const b = button.getBoundingClientRect(), i = icon.getBoundingClientRect()
+          return { x: Math.abs((b.left + b.right - i.left - i.right) / 2),
+            y: Math.abs((b.top + b.bottom - i.top - i.bottom) / 2) }
+        })
+        assert.ok(iconOffset && iconOffset.x <= 1 && iconOffset.y <= 1,
+          `${viewport.name}: battle information icon is not centered: ${JSON.stringify(iconOffset)}`)
         assert.equal(await toggle.getAttribute('aria-expanded'), 'false', `${viewport.name}: drawer must start collapsed`)
         assert.equal(await panel.isVisible(), false, `${viewport.name}: optional panels occupy battlefield`)
         assert.equal(await page.locator('.es2-hud__bottom').isVisible(), false,

@@ -5,6 +5,7 @@ import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
 import { t } from '../../../i18n'
 import { LOW_HP_PCT } from '../../../game/constants'
+import { healthBarColor } from '../../../game/render/health-bars'
 import { lowHealthTier } from './low-health'
 import '../../../styles/es2/low-health.css'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
@@ -111,7 +112,8 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
         <div class="es2-hud__vitals">
           <div class="es2-hud__identity">
-            <span class="es2-hud__eyebrow">{{ t('ECLIPSE · 英雄') }}</span>
+            <span v-if="lifeTier === 'warning' || lifeTier === 'critical' || lifeTier === 'emergency'" class="es2-hud__eyebrow es2-hud__life-message" data-es2-life-message>{{ t(lifeMessage) }}</span>
+            <span v-else class="es2-hud__eyebrow">{{ t('ECLIPSE · 英雄') }}</span>
             <strong>{{ t(view.identity) }}</strong>
           </div>
           <div class="es2-hud__health-head"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-health']" alt="" />{{ t("生命值") }}</span><span>{{ t(view.health.label) }}</span></div>
@@ -184,7 +186,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             </div>
             <div class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
               :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100"
-              :style="{ '--es2-progress': view.boss.percent / 100 }">
+              :style="{ '--es2-progress': view.boss.percent / 100, '--es2-boss-hp-color': healthBarColor(view.boss.percent / 100) }">
               <span class="es2-hud__track-trail" aria-hidden="true"></span>
               <span class="es2-hud__track-fill" aria-hidden="true"></span>
             </div>
@@ -221,7 +223,10 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
       data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
       :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
-      <span aria-hidden="true">☷</span> {{ t('戰鬥資訊') }}
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <path d="M4 6h2m4 0h10M4 12h2m4 0h10M4 18h2m4 0h10" />
+      </svg>
     </button>
     <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" aria-hidden="true">
       {{ t(view.notices.find(notice => notice.kind === 'critical')?.text ?? '') }}

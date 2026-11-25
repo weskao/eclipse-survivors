@@ -54,6 +54,20 @@ describe('ES2 choice card responsive illustrations', () => {
       for (const [, rem] of block.matchAll(/font-size:(?:clamp\()?\.(\d+)rem/g)) expect(Number(`0.${rem}`) * 16).toBeGreaterThanOrEqual(11)
     }
   })
+  it('centers portrait artwork independently of the variable-height text column', () => {
+    const start = css.indexOf('@media (max-width:610px) and (orientation:portrait) {')
+    const portrait = css.slice(start, css.indexOf('\n}', start))
+    expect(portrait).toMatch(/\.es2-dialog-choice \.es2-choice>\.es2-card-art\{[^}]*height:auto[^}]*place-items:center/)
+    expect(portrait).toMatch(/\.es2-dialog-choice \.es2-card-art>picture\{[^}]*position:absolute;inset:0/)
+    expect(portrait).toMatch(/\.es2-dialog-choice \.es2-card-art img\{[^}]*object-fit:contain;object-position:center/)
+  })
+  it('uses only conditional vertical scrolling and lets compact cards fit before overflowing', () => {
+    expect(css).toMatch(/\.es2-dialog-choice\{overflow:clip\}/)
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-dialog-body\{[^}]*overflow-x:hidden;overflow-y:auto;overscroll-behavior:none/)
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-selection-scene\{flex:1 1 auto;min-height:min-content/)
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-choice-grid\{flex:1 1 auto;min-height:min-content/)
+    expect(css).toContain('.es2-dialog-choice .es2-choice>.es2-card-art{contain:size}')
+  })
   it('keeps long choices scrollable within the dialog body and notch-safe viewport', () => {
     expect(css).toMatch(/\.es2-dialog\{[^}]*display:flex;flex-direction:column;overflow:hidden/)
     expect(css).toMatch(/\.es2-dialog-body\{[^}]*min-height:0;overflow-y:auto/)

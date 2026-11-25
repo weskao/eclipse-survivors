@@ -2,7 +2,7 @@
 import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
 import { resolveSkillChoiceArt } from '../../../game/ui-art'
-import { heroMasteryPreview } from '../../../game/content/heroes/mastery-preview'
+import { upgradeStatPreview } from '../../../game/upgrade-preview'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { RELIC_BY_ID, type RelicId } from '../../../game/content/relics/catalog'
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
@@ -65,7 +65,7 @@ const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
   ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, props.upgradeEffect === 'still'),
   rarity: upgrade.rarity, level: upgrade.level, maxLevel: upgrade.maxLevel,
   requirements: upgrade.requirements, evolution: upgrade.isEvolution,
-  statChanges: heroMasteryPreview(upgrade.id, upgrade.level, upgrade.maxLevel),
+  statChanges: upgradeStatPreview(upgrade.id, upgrade.level, upgrade.maxLevel),
 })))
 const specialCards = computed(() => {
   const offer = props.specialChoice
@@ -73,6 +73,7 @@ const specialCards = computed(() => {
   if (offer.kind === 'evolution') return { ...offer, items: offer.items.map(item => ({
     ...item,
     ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, props.upgradeEffect === 'still'),
+    statChanges: item.statChanges ?? upgradeStatPreview(item.id, item.level ?? 0, item.maxLevel ?? 1),
   })) }
   return { ...offer, items: offer.items.map(item => ({
     ...item,

@@ -173,11 +173,12 @@
 .es2-hud__boss-phase { font: 750 10px system-ui; color: #f2c586; letter-spacing: .08em; white-space: nowrap; }
 .es2-hud__track--boss { height: 12px; border-color: #b16c73; }
 .es2-hud__track--boss > .es2-hud__track-fill {
-  color: #dc6dae; background: linear-gradient(180deg, #ffd0e7, #c4529a 54%, #69244e);
+  color: var(--es2-boss-hp-color, #78d8a0);
+  background: linear-gradient(180deg, #ffffff44, #00000033), currentColor;
   transition-duration: .42s;
 }
 .es2-hud__track--boss > .es2-hud__track-trail {
-  background: linear-gradient(90deg, #c86da9, #ffd1c9); opacity: .65;
+  background: #f2c37e; opacity: .65;
 }
 .es2-hud__wave {
   align-self: center; width: max-content; max-width: 100%; min-width: 0;
@@ -385,14 +386,14 @@
   .es2-hud__wave strong { font-size: 11px; }
   .es2-hud__info-toggle {
     position: absolute; top: var(--es2-compact-info-top); right: max(8px, env(safe-area-inset-right));
-    z-index: 2; display: inline-flex; justify-content: center; align-items: center; gap: 6px;
+    z-index: 2; display: grid; place-items: center;
     min-width: 44px; width: 44px; min-height: 44px; padding: 0; border: 1px solid #dfc084; border-radius: 9px;
     color: #fff0cc; background: #131b2de8;
-    font: 700 0/1.2 system-ui, sans-serif; /* aria-label provides the full accessible name. */
+    /* The SVG is the only visual child; aria-label supplies the accessible name. */
     pointer-events: auto; cursor: pointer;
   }
   .es2-hud__info-toggle[aria-expanded="true"] { background: #453523; }
-  .es2-hud__info-toggle > span { font-size: 19px; }
+  .es2-hud__info-toggle > svg { display: block; pointer-events: none; }
   .es2-hud__info-drawer {
     position: absolute; top: calc(var(--es2-compact-info-top) + 49px);
     bottom: max(156px, calc(env(safe-area-inset-bottom) + 146px));

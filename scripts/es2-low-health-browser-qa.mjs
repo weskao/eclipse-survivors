@@ -10,6 +10,7 @@ const devices = [
   { name: 'portrait-390', width: 390, height: 844, touch: true, locale: 'zh-TW' },
   { name: 'landscape-844', width: 844, height: 390, touch: true },
   { name: 'portrait-320-reduced', width: 320, height: 640, touch: true, reduced: true },
+  { name: 'portrait-390-reduced-flashing', width: 390, height: 844, touch: true, flashing: true },
 ]
 const stages = [
   { percent: 40, tier: 'warning' },
@@ -32,6 +33,7 @@ try {
       ...(!device.reduced ? { recordVideo: { dir: directory,
         size: { width: device.width, height: device.height } } } : {}),
     })
+    if (device.flashing) await context.addInitScript(() => localStorage.setItem('eclipse-survivors.accessibility.v1', JSON.stringify({ reducedFlashing: true })))
     const page = await context.newPage()
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
@@ -56,6 +58,9 @@ try {
           const canvas = document.querySelector('#game')
           const vignette = document.querySelector('[data-es2-life-vignette]')
           const rect = hero.getBoundingClientRect()
+          const panel = document.querySelector('.es2-hud__hero')
+          const ring = getComputedStyle(panel, '::after')
+          const label = panel.querySelector('[data-es2-life-message]')
           return {
             portrait: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
             canvasDrawn: canvas instanceof HTMLCanvasElement && canvas.width > 0 && canvas.height > 0,
@@ -65,6 +70,13 @@ try {
             hpLabel: document.querySelector('.es2-hud__track--health[role="progressbar"]')?.getAttribute('aria-label'),
             locale: document.documentElement.lang,
             badge: !!document.querySelector('[data-es2-life-alert]'),
+            label: label?.textContent?.trim() ?? '',
+            panelBorder: getComputedStyle(panel).borderTopColor,
+            ringAnimation: ring.animationName,
+            ringOpacity: Number(ring.opacity),
+            ringShadow: ring.boxShadow,
+            vignetteAnimation: vignette ? getComputedStyle(vignette).animationName : 'none',
+            vignetteOpacity: vignette ? Number(getComputedStyle(vignette).opacity) : 0,
           }
         })
         assert.ok(metrics.canvasDrawn, device.name + ': no real game Canvas')
@@ -79,6 +91,22 @@ try {
         assert.equal(metrics.badge, stage.tier !== 'normal')
         assert.equal(metrics.vignette, stage.percent <= 25)
         assert.equal(metrics.touchBlock, 'none')
+        if (stage.tier === 'normal') {
+          assert.equal(metrics.label, '')
+          assert.equal(metrics.ringAnimation, 'none')
+          assert.equal(metrics.ringOpacity, 0)
+        } else {
+          assert.ok(metrics.label, device.name + ': no visible warning text')
+          assert.notEqual(metrics.ringShadow, 'none')
+          assert.equal(metrics.panelBorder, stage.tier === 'warning' ? 'rgb(255, 192, 128)' :
+            stage.tier === 'critical' ? 'rgb(255, 129, 118)' : 'rgb(255, 151, 143)')
+          if (device.reduced || device.flashing) {
+            assert.equal(metrics.ringAnimation, 'none')
+            assert.ok(metrics.ringOpacity >= .7)
+            assert.equal(metrics.vignetteAnimation, 'none')
+            if (metrics.vignette) assert.ok(metrics.vignetteOpacity > 0)
+          } else assert.equal(metrics.ringAnimation, 'es2-life-panel-pulse')
+        }
         await page.waitForTimeout(stage.percent === 25 || stage.percent === 12 ? 1250 : 500)
         const name = device.name + '-hp-' + stage.percent
         await page.screenshot({ path: directory + '/' + name + '.png' })
@@ -101,7 +129,7 @@ try {
     sha: process.env.GITHUB_SHA ?? null,
     evidence,
   }, null, 2) + '\n')
-  console.log('Low-health real-game QA PASS: 4 viewports × 4 HP states; genuine PNG + WebM captures')
+  console.log('Low-health real-game QA PASS: 5 configurations × 4 HP states; genuine PNG + WebM captures')
 } finally {
   await browser.close()
 }

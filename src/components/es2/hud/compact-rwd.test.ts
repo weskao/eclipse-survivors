@@ -59,6 +59,9 @@ describe('compact portrait combat HUD regression', () => {
     expect(toggle.attributes('aria-expanded')).toBe('false')
     expect(toggle.attributes('aria-controls')).toBe('es2-combat-info-panel')
     expect(toggle.attributes('aria-label')).toBeTruthy()
+    expect(toggle.element.children).toHaveLength(1)
+    expect(toggle.get('svg').attributes('aria-hidden')).toBe('true')
+    expect(toggle.text()).toBe('') // No invisible text flex item pushing the icon off center.
     expect(wrapper.get('#es2-combat-info-panel').attributes('data-es2-info-panel')).toBeDefined()
     expect(wrapper.findAll('[data-es2-status="slow"]')).toHaveLength(1)
     expect(wrapper.findAll('[data-es2-relic="rune"]')).toHaveLength(1)

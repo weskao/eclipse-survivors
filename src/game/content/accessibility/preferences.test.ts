@@ -6,6 +6,9 @@ describe('accessibility preferences', () => {
   it('keeps legacy behavior by default and safely ignores corrupt storage', () => {
     expect(DEFAULT_ACCESSIBILITY_PREFERENCES.quality).toBe('auto')
     expect(DEFAULT_ACCESSIBILITY_PREFERENCES.showDamageNumbers).toBe(true)
+    expect(DEFAULT_ACCESSIBILITY_PREFERENCES.showFullEnemyHealthBars).toBe(false)
+    expect(loadAccessibilityPreferences({ getItem: () => '{}', setItem: vi.fn() }).showFullEnemyHealthBars).toBe(false)
+    expect(loadAccessibilityPreferences({ getItem: () => '{"showFullEnemyHealthBars":"true"}', setItem: vi.fn() }).showFullEnemyHealthBars).toBe(false)
     expect(DEFAULT_ACCESSIBILITY_PREFERENCES.joystickSide).toBe('left')
     const broken = { getItem: () => '{broken', setItem: vi.fn() }
     expect(loadAccessibilityPreferences(broken)).toEqual(DEFAULT_ACCESSIBILITY_PREFERENCES)
@@ -30,10 +33,13 @@ describe('accessibility preferences', () => {
       setItem: (key: string, value: string) => { values.set(key, value) },
     }
     const controller = createAccessibilityPreferencesController(storage)
-    controller.update({ joystickSide: 'right', showDamageNumbers: false })
+    controller.update({ joystickSide: 'right', showDamageNumbers: false, showFullEnemyHealthBars: true })
     expect(createAccessibilityPreferencesController(storage).current).toMatchObject({
-      joystickSide: 'right', showDamageNumbers: false,
+      joystickSide: 'right', showDamageNumbers: false, showFullEnemyHealthBars: true,
     })
+    expect(resolvePresentationPolicy(controller.current).showFullEnemyHealthBars).toBe(true)
+    controller.update({ showFullEnemyHealthBars: false })
+    expect(createAccessibilityPreferencesController(storage).current.showFullEnemyHealthBars).toBe(false)
     expect([...values.keys()]).toEqual([ACCESSIBILITY_STORAGE_KEY])
   })
 

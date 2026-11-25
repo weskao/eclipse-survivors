@@ -41,6 +41,8 @@ const english = new Map<string, string>([
     "音訊",
     "Audio"
   ],
+  ["音樂", "Music"],
+  ["音效", "Sound effects"],
   [
     "背景音樂",
     "Background music"
@@ -78,32 +80,8 @@ const english = new Map<string, string>([
     "Combat camera shake"
   ],
   [
-    "已開啟",
-    "Enabled"
-  ],
-  [
-    "已關閉",
-    "Disabled"
-  ],
-  [
     "完成設定",
     "Done"
-  ],
-  [
-    "將背景音樂靜音",
-    "Mute background music"
-  ],
-  [
-    "開啟背景音樂",
-    "Enable background music"
-  ],
-  [
-    "將遊戲音效靜音",
-    "Mute game sound effects"
-  ],
-  [
-    "開啟遊戲音效",
-    "Enable game sound effects"
   ],
   [
     "設定",
@@ -1057,6 +1035,8 @@ const english = new Map<string, string>([
 , ["以符號及文字區分狀態，不只靠顏色","Use symbols and text, not color alone, to distinguish states"]
 , ["傷害數字","Damage Numbers"]
 , ["顯示或隱藏戰鬥傷害浮字","Show or hide floating combat damage numbers"]
+, ["滿血時顯示怪物血條","Show full-health enemy bars"]
+, ["關閉時僅隱藏滿血怪物頭頂的血條；首領 HUD 保持顯示","When off, hide overhead bars for full-health enemies only; the boss HUD stays visible."]
 , ["即時預覽 ·","Live Preview ·"]
 , ["預覽左右控制鈕位置","Preview left and right controls"]
 , ["● 狀態正常","● Status Normal"]
@@ -1112,6 +1092,27 @@ const english = new Map<string, string>([
 , ["強化靈體攻擊、治療與靈潮集結。","Boost spirit attacks, healing and Spectral Convergence."]
 , ["強化減傷、反擊、低血量增傷與屏障。","Boost mitigation, counters, low-HP damage and barriers."]
 , ["暴擊傷害倍率","Crit damage multiplier"]
+, ["技能攻擊倍率","Skill attack multiplier"]
+, ["技能移動倍率","Skill movement multiplier"]
+, ["技能攻擊間隔倍率","Skill attack interval multiplier"]
+, ["技能生命上限加成","Skill max HP bonus"]
+, ["同時攻擊數","Simultaneous attacks"]
+, ["技能射程倍率","Skill range multiplier"]
+, ["飛刃數量","Orbiting blades"]
+, ["經驗吸取範圍","XP pickup radius"]
+, ["每秒生命恢復","HP regeneration / s"]
+, ["目標數量","Targets"]
+, ["技能冷卻時間","Skill cooldown"]
+, ["技能傷害倍率","Skill damage multiplier"]
+, ["技能作用範圍","Skill reach"]
+, ["減速持續時間","Slow duration"]
+, ["投射物數量","Projectiles"]
+, ["彈跳次數","Bounces"]
+, ["穿透數量","Pierce count"]
+, ["吸血上限","Lifesteal cap"]
+, ["召喚物數量","Summons"]
+, ["光束寬度","Beam width"]
+, ["法球數量","Orbs"]
 , ["主動傷害倍率（Q）","Active damage (Q)"]
 , ["夥伴傷害倍率","Companion damage multiplier"]
 , ["守護靈每次治療","Guardian heal per tick"]
