@@ -62,21 +62,29 @@ try {
       }))
       assert.ok(bounds.documentWidth <= bounds.viewportWidth + inset,
         name + ': horizontal overflow: ' + JSON.stringify(bounds))
-      // Wide menus should expose every selection and archive entry above the fixed Start dock.
-      if (width >= 1000 && height >= 700) {
-        const layout = await page.evaluate(() => {
+      // All devices expose the hall in the first viewport; wide devices also fit all six heroes.
+      const verifyPage = async (selector, count, requireFit) => {
+        const layout = await page.evaluate(({selector, requireFit}) => {
           const menu = document.querySelector('.es2-menu')
           const bar = menu.querySelector('.es2-menu-action-bar').getBoundingClientRect()
-          const choices = [...menu.querySelectorAll('[data-hero], [data-hero-id], [data-mode], [data-objective-mode], .es2-hall-links button')]
+          const choices = [...menu.querySelectorAll(selector)]
           return { count: choices.length, offenders: choices.filter(el => {
             const r = el.getBoundingClientRect()
-            return r.width === 0 || r.height === 0 || r.top < 0 || r.bottom > bar.top + 2 || r.left < 0 || r.right > innerWidth + 2
+            return r.width === 0 || r.height === 0 || r.left < 0 || r.right > innerWidth + 2 ||
+              (requireFit && (r.top < 0 || r.bottom > bar.top + 2))
           }).map(el => el.textContent.trim().slice(0, 80)) }
-        })
-        assert.equal(layout.count, 20, name + ': missing menu choices')
+        }, {selector, requireFit})
+        assert.equal(layout.count, count, name + ': missing choices')
         assert.deepEqual(layout.offenders, [], name + ': choices outside visible menu')
-        await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
       }
+      await verifyPage('[data-es2-hall-navigation] button', 5, true)
+      await verifyPage('[data-hero], [data-hero-id]', 6, width >= 1000 && height >= 700)
+      await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
+      await verifyPage('[data-es2-hall-navigation] button', 5, true)
+      await page.screenshot({ path: destination + '/' + name + '-expeditions.png', animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
       await page.locator('.es2-top-actions [data-es2-settings]').click()
       const dialog = page.locator('.es2-dialog[role="dialog"]')
       await dialog.waitFor({ state: 'visible' })
@@ -151,8 +159,6 @@ try {
       await page.locator('#es2-language-listbox [data-es2-value="en"]').click()
       await page.screenshot({ path: destination + '/' + name + '-settings.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
-      const archiveToggle = page.locator('[data-es2-mobile-archive-toggle]')
-      if (await archiveToggle.isVisible()) await archiveToggle.click()
       await page.locator('.es2-hall-links button').first().click()
       const tabs = page.locator('.es2-archive-tabs button')
       await tabs.first().waitFor({ state: 'visible' })
@@ -227,7 +233,6 @@ try {
         await page.locator('.es2-hud--active').waitFor({ state: 'visible' })
       }
       if (mobile && width <= 430 && height > width) {
-        await page.locator('[data-es2-mobile-hero-tab="new"]').click()
         await page.locator('[data-hero-id="spirit-summoner"]').click()
         await page.locator('.es2-start').click()
         await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })

@@ -29,6 +29,8 @@ describe('ES2 main menu integration adapter', () => {
   it('keeps legacy hero, mode and start action names with original artwork', async () => {
     const wrapper = mounted()
     click('[data-hero="ranger"]')
+    click('[data-es2-expedition-navigation]')
+    await nextTick()
     click('[data-mode="challenge"]')
     click('.es2-start')
     expect(wrapper.emitted('select')).toEqual([['ranger']])

@@ -92,25 +92,20 @@ try {
             `${viewport.name}: ${family} art or stats clipped: ${JSON.stringify(art)}`)
         }
       }
-      await assertHomepage('classic hero / classic mode')
+      await assertHomepage('all heroes')
       await assertHeroArtUsesSpace('classic')
-      await page.locator('[data-es2-mobile-hero-tab="new"]').click()
-      assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-heroes'), 'new')
-      assert.ok(await page.locator('[data-hero-id="shadowblade"]').isVisible(),
-        `${viewport.name}: new heroes are hidden`)
-      await assertHomepage('new heroes')
       await assertHeroArtUsesSpace('new')
-      await page.screenshot({ path: `${directory}/${viewport.name}-menu-new-heroes.png`, animations: 'disabled' })
-      await page.locator('[data-es2-mobile-mode-tab="objective"]').click()
-      assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-modes'), 'objective')
-      assert.ok(await page.locator('[data-objective-mode="boss-rush"]').isVisible(),
-        `${viewport.name}: objective modes are hidden`)
-      await assertHomepage('new heroes / objective modes')
-      await page.screenshot({ path: `${directory}/${viewport.name}-menu-objectives.png`, animations: 'disabled' })
-      await page.locator('[data-es2-mobile-mode-tab="classic"]').click()
-      await page.locator('[data-es2-mobile-hero-tab="classic"]').click()
-      await assertHomepage('return to classic')
+      assert.equal(await page.locator('[data-hero]:visible, [data-hero-id]:visible').count(), 6)
+      assert.equal(await page.locator('[data-es2-hall-navigation] button:visible').count(), 5)
       await page.screenshot({ path: `${directory}/${viewport.name}-menu.png`, animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      assert.equal(await page.locator('.es2-mode-section').isVisible(), true)
+      assert.equal(await page.locator('[data-mode]:visible, [data-objective-mode]:visible').count(), 9)
+      assert.equal(await page.locator('.es2-hero-section').isVisible(), false)
+      await assertHomepage('expedition selection')
+      await page.screenshot({ path: `${directory}/${viewport.name}-menu-objectives.png`, animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await assertHomepage('return to all heroes')
 
       // Exercise the actual in-game Settings listbox across both phone orientations.
       await page.locator('.es2-top-actions [data-es2-settings]').click()
@@ -276,7 +271,6 @@ try {
       const side = heroId === 'spirit-summoner' ? 'right' : 'left'
       await page.addInitScript(side => localStorage.setItem('eclipse-survivors.accessibility.v1', JSON.stringify({ joystickSide: side })), side)
       await page.goto(target, { waitUntil: 'domcontentloaded' })
-      await page.locator('[data-es2-mobile-hero-tab="new"]').click()
       const card = page.locator(`button[data-hero-id="${heroId}"]`)
       await card.waitFor({ state: 'visible', timeout: 30000 })
       await card.click()
