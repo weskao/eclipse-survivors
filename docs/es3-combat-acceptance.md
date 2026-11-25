@@ -59,3 +59,11 @@ pnpm check-release
 ```
 
 Use the ES3 automated gameplay and performance acceptance workflow for Chromium responsive/layout and live-browser diagnostics. Never equate simulation/recording Canvas timing with real GPU performance.
+
+## Follow-up evidence at ba34d948
+
+- [Full regression 45702064115](https://github.com/weskao/eclipse-survivors/actions/runs/45702064115): 1,965 passed, 1 skipped, 1 failed (unchanged human art gate). Typecheck, production build and release check passed. Opening terrain regression: RED 45701540066, GREEN 45702064115. Faction living-pressure, camera direction and typed contact regressions: RED 45701923875, GREEN 45702064115. Audio signature table also passed; its CI RED was not observed.
+- [Diagnostics 45702064486](https://github.com/weskao/eclipse-survivors/actions/runs/45702064486): all five simulation/recorded Canvas diagnostics passed. Chromium passed 11/12 profiles; remaining 640×360 (200%-zoom equivalent) hover dossier intercepted the hero card. Normal desktops and tablet landscape passed. Fix 01883573 adds adaptive side sizing before vertical fallback; browser acceptance remains pending.
+- Latest hosted-run simulation median/p95/p99: .202269/.378615/.511911 ms; mobile/desktop recorded Canvas median .213744/.334501 ms; paint operations 829/1055 per frame. Ten-minute simulated Endless p95/p99 .138258/.153493 ms; all ten actor checkpoints 130; observed heap endpoint change −2,644,584 bytes. This runner was slower than the earlier later sample; no performance improvement claim or real-device/GPU inference.
+- Opening fixture after terrain placement correction (XP/kills/DPS/first upgrade seconds): Quick 209/71/80.69/1.92; Standard 138/45/54.10/2.43; Endless 205/71/79.02/2.43; Challenge 259/83/123.20/4.68.
+- Additional test-first commit b7bdd9f2 and implementation 786d1405 add objective-specific ordinary encounter cycles and rarity-specific claim audio; exact-HEAD results pending. No new artwork or human approval is claimed.

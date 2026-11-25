@@ -71,11 +71,13 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 Implementation status (2026-11-26): substantial implementation integrated. See [ES3 evidence report](docs/es3-combat-acceptance.md). Run 45696301536 at f9ca7928: 1,942 passed, 1 skipped, 1 acknowledged manual art gate failure. Run 45696301552: all five diagnostic tests, typecheck, build and release checks passed; real browser found a 1024x768 tablet hero-card clipping regression. Corrective implementation 99b12c5f and subsequent faction dissolve test/implementation await final exact-HEAD acceptance. Owner authorized implementation-first batching without waiting on CI between batches. Unchecked items remain unverified; tests written before implementation but not observed RED/GREEN must not be claimed as completed TDD. Original manual art gate remains unchanged. Intermediate integrated run 45688647153 (ac1ccfd0): 1,846 passed, 1 skipped, only the acknowledged three-hero manual art gate failed; subsequent commits require final verification.
 
 ### Wave 0 — Baseline [P0]
+- [x] Count only living faction actors in same-tick encounter pressure telemetry (observed RED 45701923875; GREEN 45702064115).
 - [ ] Deterministic seed scenarios and per-run combat statistics. Implemented: bounded 10-second combat telemetry, deterministic opening fixtures and run-result fields.
 - [ ] Measure XP, DPS, kill speed, and encounter pressure curves. Implementation and deterministic GREEN evidence in 45696301552; measured four-mode curves and comparison recorded in docs/es3-combat-acceptance.md. Formal RED evidence not reconstructed.
 - [ ] Establish automated frame-time, memory and draw-operation baselines using comparable workloads; two comparable diagnostic runs recorded in docs/es3-combat-acceptance.md; browser GPU measurements not inferred from mocked Canvas. Physical-device thermal and manual hardware sign-off WAIVED for ES3.
 
 ### Wave 1 — Combat Juice [P0; first delivery]
+- [x] Share typed elemental/evolution/hero impact audio and directional camera kick across legacy and faction damage (observed RED 45701923875; GREEN 45702064115).
 - [x] Normal/heavy/critical contact differentiation with single cached rendering path and priority preservation (RED 45683517312; GREEN 45683993331).
 - [ ] Remaining tiered impact feedback: evolved, mass kill, boss stagger, hero active and boss death. Implemented distinct mass-kill feedback, boss break/cleanse, typed elemental/evolution/hero contact, existing skill-specific owners and bounded authored-contact texture reuse. New dedicated art not produced.
 - [x] Legacy heavy/critical local animation hit stop (35/50ms) without pausing simulation or input (RED 45684497744; GREEN 45685008359).
@@ -90,6 +92,7 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 - [ ] Camera impact and accessibility controls; reduced motion/flashing, supported mobile haptics. Implemented opt-in touch-only haptics and reduced-flashing lightning; browser acceptance pending.
 
 ### Wave 2 — Power Fantasy [P0; first delivery]
+- [ ] Five distinct rarity-specific claim signatures routed from the actual acquired relic; preserve one claim. Test-first b7bdd9f2, implementation 786d1405; full CI evidence pending.
 - [ ] Review skill Lv.1–5 power curves; keep tuning in balance config. Reviewed legacy and arsenal rank previews; added config-driven capstones for all 12 ES2 weapons with corresponding previews; unified legacy/faction targeting for six area skills, chain, 12 weapons and 12 ES2 evolutions; GREEN full suite at f9ca7928.
 - [x] Chain lightning Lv.1–5 target progression, Lv.4 shock and bounded Lv.5 kill discharge; actual damage and upgrade preview (RED 45684497744; GREEN 45685008359).
 - [ ] Other qualitative rank breakthroughs: projectile count, AoE, elemental effects or summons. Implemented orb extra blade, bolt shock, frost/vortex/blaze/meteor outer-range bonuses and all twelve arsenal Lv.5 qualitative bonuses. GREEN full suite at f9ca7928.
@@ -111,6 +114,8 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 - [ ] Build balance and weighted-selection tests.
 
 ### Wave 4 — Encounter Director [P1; first delivery]
+- [x] Opening-wave legacy and faction actors use bounded terrain-safe placement without moving the hero (RED 45701540066; GREEN 45702064115).
+- [ ] Objective-mode-specific ordinary encounter cycle configuration, preserving explicit boss/wave gates (test-first b7bdd9f2; implementation 786d1405; full CI evidence pending).
 - [ ] Audit and extend existing director, single authoritative spawn owner. Implemented ordinary and faction spawn pulse integration with shared actor caps.
 - [x] Eight encounter identities and legacy spawn composition policies; deterministic rotation, swarm/elite live tests (RED 45684497744; GREEN 45685008359).
 - [ ] Integrated encounter acceptance across all eight compositions and faction spawn ownership. Added production-pulse tests for seven assaults plus recovery, per-run seed, distinct intervals and shared faction treasure XP; GREEN full suite at f9ca7928.
@@ -140,7 +145,7 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 ### Wave 7 — Integration & QA [P0; continuous]
 - [ ] Observed RED → GREEN → REFACTOR and full regression suite.
 - [ ] Gameplay parity across all quality settings. Fixed-seed low/medium/high parity test passed in 45696301552 and 45696950248; formal RED not observed.
-- [ ] Automated responsive and localization regression coverage for desktop, phone portrait/landscape, tablet and foldable; manual device review WAIVED. Real matrix passed first six device profiles, failed tablet-landscape-1024 at f9ca7928; compact wide layout fix at 99b12c5f awaits exact-HEAD confirmation.
+- [ ] Automated responsive and localization regression coverage for desktop, phone portrait/landscape, tablet and foldable; manual device review WAIVED. Real Chromium run 45702064486 at ba34d948 passed 11/12 profiles, including tablet landscape and desktop 1280/1440/1920. Remaining 640×360 zoom-equivalent hover obstruction addressed in 01883573; exact-HEAD verification pending.
 - [ ] Reduced Motion and Reduced Flashing; no HUD or telegraph occlusion.
 - [x] Actual gameplay screenshots and MP4 clips — WAIVED by owner for this ES3 delivery; no capture or review claimed.
 - [ ] Automated long-run diagnostics: p95/p99 timing, memory and comparable draw operations/overdraw; manual FPS and physical-device thermals WAIVED, do not invent metrics.
