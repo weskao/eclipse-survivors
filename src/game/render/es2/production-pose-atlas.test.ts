@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, productionHeroPoseReady, productionHeroFrameAnchor, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
+import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, productionHeroMotionRect, productionHeroPoseReady, productionHeroFrameAnchor, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 
@@ -68,13 +68,38 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
       const running = productionHeroPoseRect(anim({ pose: 'run', direction: 0, frame: i, count: 8 }))
       expect(running.sheet).toBe('action')
       expect([running.x, running.y]).toEqual([(i % 4) * 448, Math.floor(i / 4) * 448])
-      const attacking = productionHeroPoseRect(anim({ pose: 'attack', direction: 4, phase: (i + 0.01) / 8 }))
+      const attacking = productionHeroPoseRect(anim({ pose: 'attack', direction: 0, phase: (i + 0.01) / 8 }))
       expect(attacking.sheet).toBe('action')
-      expect(attacking.mirror).toBe(true)
+      expect(attacking.mirror).toBe(false)
       expect([attacking.x, attacking.y]).toEqual([(i % 4) * 448, Math.floor((i + 8) / 4) * 448])
       const special = productionHeroPoseRect(anim({ pose: 'cast', direction: 0, phase: (i + 0.01) / 8, special: true }))
       expect(special.sheet).toBe('special')
       expect([special.x, special.y]).toEqual([(i % 4) * 448, Math.floor(i / 4) * 448])
+    }
+  })
+
+  it('holds the independently authored west guard for unapproved production motion instead of swapping weapon hands', () => {
+    for (const pose of ['run', 'dash', 'attack', 'cast'] as const) {
+      for (const special of [false, true]) {
+        const sample = anim({ pose, direction: 4, frame: 3, count: 8, phase: .5, special })
+        expect(productionHeroPoseRect(sample)).toEqual({
+          sheet: 'direction', x: 0, y: 1344, width: 448, height: 448, mirror: false,
+        })
+        expect(productionHeroMotionRect(sample)).toEqual({
+          x: 0, y: 384, width: 384, height: 384, mirror: false,
+        })
+        for (const heroId of ids) {
+          const direction = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+          const action = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+          const hero = { complete: true, naturalWidth: 900, naturalHeight: 900, heroId,
+            poseAtlases: { direction, action, special: action } } as unknown as HTMLImageElement
+          const { ctx, calls } = capture()
+          expect(drawProductionHeroFrame(ctx, hero, sample, 117, 147)).toBe(true)
+          expect(calls).toHaveLength(1)
+          expect(calls[0]![0]).toBe(direction)
+          expect(calls[0]!.slice(1, 5)).toEqual([8, 1352, 432, 432])
+        }
+      }
     }
   })
 

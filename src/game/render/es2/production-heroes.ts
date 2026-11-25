@@ -210,34 +210,30 @@ export function productionHeroDirectionRect(anim: HeroAnimation): ProductionHero
 /**
  * Source artwork is an 8×5 grid of independently isolated 384px cells.
  * Artist's direction columns are W, SW, S, SE, E, NE, N, NW.
- * The three eight-frame motion rows are EAST-facing only; W may mirror
- * those strips, while other octants keep their individually authored
- * direction-specific ready sprite instead of snapping toward the camera.
+ * The three eight-frame motion rows are EAST-facing only. Other octants
+ * use their own ready sprites; the West guard preserves equipment hands.
  */
 export function productionHeroMotionRect(anim: HeroAnimation): { x: number; y: number; width: 384; height: 384; mirror: boolean } {
   const direction = Number.isFinite(anim.direction) ? ((Math.round(anim.direction) % 8) + 8) % 8 : 0
   const directionColumn = (4 - direction + 8) % 8
-  const eastOrWest = direction === 0 || direction === 4
   const activity = anim.pose === 'run' || anim.pose === 'dash' ||
     anim.pose === 'attack' || anim.pose === 'cast'
   let row = 0
   let column = directionColumn
-  let mirror = false
   if (!anim.reducedMotion && activity) {
-    if (eastOrWest) {
+    if (direction === 0) {
       row = anim.pose === 'run' || anim.pose === 'dash' ? 2 : anim.special ? 4 : 3
       const progress = row === 2 ? Math.max(0, Math.floor(anim.frame)) / Math.max(1, anim.count)
         : Math.max(0, Math.min(0.9999, anim.phase))
       column = Math.min(7, Math.floor((progress % 1) * 8))
-      mirror = direction === 4
     } else {
       // These six directions have only authored idle and guard images.
       // Do not label the right-facing eight-frame strip as a true eight-way run.
-      row = anim.pose === 'run' || anim.pose === 'dash'
+      row = direction !== 4 && (anim.pose === 'run' || anim.pose === 'dash')
         ? Math.floor(anim.frame) % 2 : 1
     }
   }
-  return { x: column * 384, y: row * 384, width: 384, height: 384, mirror }
+  return { x: column * 384, y: row * 384, width: 384, height: 384, mirror: false }
 }
 
 function drawHeroMotionAtlas(
@@ -264,8 +260,8 @@ function drawHeroMotionAtlas(
  * The new split contact sheets have strict integer 448px source cells and
  * transparent 8px gutters per side. Direction order E,SE,S,SW,W,NW,N,NE is
  * arranged 4×2 (row 0/1 idle, row 2/3 guard). Only east has authored
- * 8-frame running/attack/special sequences. West can mirror those frames;
- * other directions hold the correct independent guard silhouette without
+ * 8-frame running/attack/special sequences. All other directions hold
+ * the correct independent guard silhouette without
  * the old alternating idle/guard flicker or borrowed side-facing images.
  */
 export function productionHeroPoseRect(anim: HeroAnimation): {
@@ -282,7 +278,7 @@ export function productionHeroPoseRect(anim: HeroAnimation): {
   if (anim.reducedMotion || anim.pose === 'idle' ||
     anim.pose === 'hurt' || anim.pose === 'death' || anim.pose === 'victory')
     return directional(false)
-  if (direction !== 0 && direction !== 4) return directional(true)
+  if (direction !== 0) return directional(true)
   const running = anim.pose === 'run' || anim.pose === 'dash'
   const frame = running
     ? Math.min(7, Math.floor(Math.max(0, anim.frame) * 8 / Math.max(1, anim.count)))
@@ -290,7 +286,7 @@ export function productionHeroPoseRect(anim: HeroAnimation): {
   const sheet: PoseSheet = !running && anim.special ? 'special' : 'action'
   const cell = sheet === 'action' && !running ? frame + 8 : frame
   return { sheet, x: (cell % 4) * 448, y: Math.floor(cell / 4) * 448,
-    width: 448, height: 448, mirror: direction === 4 }
+    width: 448, height: 448, mirror: false }
 }
 
 function readyPoseAtlas(atlas: HTMLImageElement | undefined, sheet: PoseSheet): atlas is HTMLImageElement {
