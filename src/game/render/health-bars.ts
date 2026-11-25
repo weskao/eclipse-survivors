@@ -73,25 +73,58 @@ export function shouldShowHealthBar(motion: HealthBarFrame, showFull = false): b
   return showFull || motion.target < 1 || motion.front < 1 || motion.trail < 1
 }
 
-/** Static mirrored forged-metal caps, only for the boss. No per-frame gradients or images. */
+/** Static mirrored blackened-bronze wings and faceted blood crystals.
+ * All points stay outside the HP fill; no shadow blur, gradients or animated particles.
+ */
 function drawBossEnd(ctx: Ctx2D, x: number, y: number, direction: -1 | 1): void {
   ctx.beginPath()
-  ctx.moveTo(x + direction * 8, y)
+  ctx.moveTo(x + direction * 14, y)
+  ctx.lineTo(x + direction * 7, y - 5)
+  ctx.lineTo(x + direction * 3, y - 9)
   ctx.lineTo(x, y - 8)
-  ctx.lineTo(x, y - 4)
-  ctx.lineTo(x, y + 4)
   ctx.lineTo(x, y + 8)
+  ctx.lineTo(x + direction * 3, y + 9)
+  ctx.lineTo(x + direction * 7, y + 5)
   ctx.closePath()
-  ctx.fillStyle = '#2b242c'; ctx.fill()
-  ctx.strokeStyle = '#bd9775'; ctx.lineWidth = 1; ctx.stroke()
+  ctx.fillStyle = '#241923'; ctx.fill()
+  ctx.strokeStyle = '#d6ac7c'; ctx.lineWidth = 1; ctx.stroke()
   ctx.beginPath()
-  ctx.moveTo(x + direction * 6, y)
-  ctx.lineTo(x + direction * 3, y - 4)
+  ctx.moveTo(x + direction * 10, y)
+  ctx.lineTo(x + direction * 4, y - 5)
   ctx.lineTo(x + direction, y)
-  ctx.lineTo(x + direction * 3, y + 4)
+  ctx.lineTo(x + direction * 4, y + 5)
   ctx.closePath()
-  ctx.fillStyle = '#96374e'; ctx.fill()
-  ctx.strokeStyle = '#d1a38b'; ctx.stroke()
+  ctx.fillStyle = '#b14260'; ctx.fill()
+  ctx.strokeStyle = '#f1c4a0'; ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(x + direction, y)
+  ctx.lineTo(x + direction * 4, y - 5)
+  ctx.lineTo(x + direction * 4, y)
+  ctx.closePath()
+  ctx.fillStyle = '#f594a0'; ctx.fill()
+}
+
+/** Small crown-shaped sigil above the track, not a phase/HP indicator. */
+function drawBossCrest(ctx: Ctx2D, x: number, top: number): void {
+  ctx.beginPath()
+  ctx.moveTo(x, top - 14)
+  ctx.lineTo(x + 5, top - 7)
+  ctx.lineTo(x + 13, top - 11)
+  ctx.lineTo(x + 10, top - 1)
+  ctx.lineTo(x - 10, top - 1)
+  ctx.lineTo(x - 13, top - 11)
+  ctx.lineTo(x - 5, top - 7)
+  ctx.closePath()
+  ctx.fillStyle = '#2e2029'; ctx.fill()
+  ctx.strokeStyle = '#e5bd86'; ctx.lineWidth = 1; ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(x, top - 10)
+  ctx.lineTo(x + 4, top - 6)
+  ctx.lineTo(x, top - 2)
+  ctx.lineTo(x - 4, top - 6)
+  ctx.closePath()
+  ctx.fillStyle = '#d35c73'; ctx.fill()
+  ctx.strokeStyle = '#f4c6ad'; ctx.stroke()
 }
 
 /** One painter for all ranks. Small preselected color bands mimic metal and enamel
@@ -101,11 +134,17 @@ function drawHealthBar(
   ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number, width: number, rank: HealthBarRank,
 ): void {
   const boss = rank === 'boss', elite = rank === 'elite'
-  const height = boss ? 14 : elite ? 9 : 6
+  const height = boss ? 18 : elite ? 9 : 6
   const inset = boss || elite ? 2 : 1
   const inner = width - inset * 2, innerHeight = height - inset * 2
   const left = x - width / 2, fillLeft = left + inset, fillTop = top + inset
   const front = inner * motion.front, trail = inner * motion.trail
+  if (boss) {
+    // Outer metal shoulders and opaque backing retain contrast on bright battle effects.
+    ctx.fillStyle = '#08070de8'; ctx.fillRect(left - 2, top - 2, width + 4, height + 4)
+    ctx.fillStyle = '#b28b62'; ctx.fillRect(left, top - 1, width, 1)
+    ctx.fillStyle = '#4c3235'; ctx.fillRect(left, top + height, width, 1)
+  }
   // The recessed dark track and narrow bevels are static, independent of HP.
   ctx.fillStyle = boss ? '#170e19' : elite ? '#171322' : '#101720'
   ctx.fillRect(left, top, width, height)
@@ -131,6 +170,14 @@ function drawHealthBar(
     ctx.fillRect(fillLeft, fillTop, front, Math.max(1, Math.floor(innerHeight * .35)))
     ctx.fillStyle = '#00000055'
     ctx.fillRect(fillLeft, fillTop + innerHeight - 1, front, 1)
+    if (boss) {
+      ctx.fillStyle = '#ffba9c'; ctx.fillRect(fillLeft, fillTop, front, 1)
+      ctx.fillStyle = '#ffcfbf26'; ctx.fillRect(fillLeft, fillTop + 2, front, 3)
+      ctx.fillStyle = '#310b2466'; ctx.fillRect(fillLeft, fillTop + innerHeight - 4, front, 3)
+      if (motion.trail > motion.front + .002 && front >= 5) {
+        ctx.fillStyle = '#ffd89a'; ctx.fillRect(fillLeft + front - 5, fillTop + 2, 5, innerHeight - 4)
+      }
+    }
     if ((boss || elite) && motion.trail > motion.front + .002 && front >= 2) {
       // Local moving edge (no flash or pulse). Reduced motion has no trail/edge.
       ctx.fillStyle = '#fff3cf'; ctx.fillRect(fillLeft + front - 2, fillTop, 2, innerHeight)
@@ -139,6 +186,7 @@ function drawHealthBar(
   if (boss) {
     drawBossEnd(ctx, left, top + height / 2, -1)
     drawBossEnd(ctx, left + width, top + height / 2, 1)
+    drawBossCrest(ctx, x, top)
   }
 }
 
@@ -150,5 +198,8 @@ export function drawEnemyHealthBar(
 }
 
 export function drawBossHealthBar(ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number): void {
-  drawHealthBar(ctx, motion, x, top - 2, 190, 'boss')
+  // Extend upward, not toward the boss sprite. Keep the old track bottom edge.
+  ctx.save()
+  drawHealthBar(ctx, motion, x, top - 6, 206, 'boss')
+  ctx.restore()
 }

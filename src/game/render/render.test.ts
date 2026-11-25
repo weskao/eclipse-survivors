@@ -91,7 +91,7 @@ describe('smooth Canvas enemy and boss health bars', () => {
     expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(kinds.length + factionKinds.length)
     expect(fills.filter(f => f.color === '#b697fa')).toHaveLength(2)
     expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(2)
-    expect(fills.filter(f => f.color === '#a94463' && f.width === 186)).toHaveLength(1)
+    expect(fills.filter(f => f.color === '#a94463' && f.width === 202)).toHaveLength(1)
     showFullEnemyHealthBars = false
     fills.length = 0
     s.mobs[0]!.hp = 5
@@ -169,7 +169,7 @@ describe('smooth Canvas enemy and boss health bars', () => {
     expect(bossFill).toBeDefined()
     expect(fills.some(item => item.color === '#f2c37e')).toBe(true)
     expect(enemyFill!.width).toBeGreaterThan(30 * 0.4)
-    expect(bossFill!.width).toBeGreaterThan(186 * 0.25)
+    expect(bossFill!.width).toBeGreaterThan(202 * 0.25)
     expect(enemy.hp).toBe(4)
     expect(boss.hp).toBe(25)
     // A fully restored normal enemy keeps its bar until the visual fill reaches 100%.

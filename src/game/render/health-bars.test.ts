@@ -101,7 +101,7 @@ describe('ranked enemy health presentation', () => {
     drawEnemyHealthBar(ctx, hit, 0, 0, 100, true)
     drawBossHealthBar(ctx, hit, 0, 0)
     expect(fills.find(f => f.color === '#e97ba1' && f.height === 5)?.width).toBeCloseTo(31)
-    expect(fills).toContainEqual({ color: '#d35048', width: 93, height: 10 })
+    expect(fills).toContainEqual({ color: '#d35048', width: 101, height: 14 })
     expect(borders).toEqual(['#d6a4f3', '#98765e'])
     expect(fills.filter(f => f.color === '#fff3cf' && f.width === 2)).toHaveLength(2)
     fills.length = 0
@@ -152,10 +152,10 @@ describe('forged health bar materials', () => {
     ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
     const frame = { target: .25, front: .25, trail: .25 }
     drawBossHealthBar(ctx, frame, 100, 20)
-    expect(points).toContain(-3)
-    expect(points).toContain(203)
-    expect(calls.filter(c => c === 'beginPath')).toHaveLength(4)
-    expect(fills).toContainEqual({ color: '#d35048', width: 46.5 })
+    expect(points).toContain(-17)
+    expect(points).toContain(217)
+    expect(calls.filter(c => c === 'beginPath')).toHaveLength(8)
+    expect(fills).toContainEqual({ color: '#d35048', width: 50.5 })
     expect(frame.target).toBe(.25)
   })
   it('does not paint a highlight or fill into empty or nearly empty tracks', () => {
@@ -165,5 +165,40 @@ describe('forged health bar materials', () => {
     drawBossHealthBar(ctx, { target: 0, front: 0, trail: 0 }, 0, 0)
     expect(fills.some(f => f.color === '#eb674d' || f.color === '#ffffff26' || f.color === '#fff3cf')).toBe(false)
     expect(fills.every(f => f.width >= 0)).toBe(true)
+  })
+})
+
+describe('sovereign boss overhead ornament', () => {
+  it('adds a crown and symmetric wings outside the fill, with bounded geometry', () => {
+    const { ctx, calls } = createFakeCtx()
+    const points: { x: number; y: number }[] = []
+    ctx.moveTo = (x, y) => { points.push({ x, y }) }
+    ctx.lineTo = (x, y) => { points.push({ x, y }) }
+    ctx.createLinearGradient = () => { throw Error('no per-frame gradient') }
+    const fills: { color: string; x: number; y: number; width: number; height: number }[] = []
+    ctx.fillRect = (x, y, width, height) => { fills.push({ color: String(ctx.fillStyle), x, y, width, height }) }
+    const frame = { target: .4, front: .5, trail: .8 }
+    drawBossHealthBar(ctx, frame, 100, 20)
+    expect(points).toContainEqual({ x: 100, y: 0 })
+    expect(Math.min(...points.map(p => p.x))).toBe(-17)
+    expect(Math.max(...points.map(p => p.x))).toBe(217)
+    expect(Math.max(...points.map(p => p.y))).toBeLessThanOrEqual(32)
+    expect(fills).toContainEqual({ color: '#d35048', x: -1, y: 16, width: 101, height: 14 })
+    expect(fills.some(f => f.color === '#ffba9c' && f.width === 101)).toBe(true)
+    expect(fills.some(f => f.color === '#ffd89a' && f.width <= 5)).toBe(true)
+    expect(calls[0]).toBe('save')
+    expect(calls.at(-1)).toBe('restore')
+    expect(frame).toEqual({ target: .4, front: .5, trail: .8 })
+  })
+  it('omits the damage accent when reduced motion supplies an exact fill', () => {
+    const { ctx } = createFakeCtx()
+    const colors: string[] = []
+    ctx.fillRect = () => { colors.push(String(ctx.fillStyle)) }
+    const frame = sampleHealthBar({ hp: 20, max: 100 }, 0, new WeakMap(), true)
+    drawBossHealthBar(ctx, frame, 0, 0)
+    expect(colors).not.toContain('#ffd89a')
+    expect(colors).not.toContain('#fff3cf')
+    expect(colors).not.toContain('#f2c37e')
+    expect(colors).toContain('#eb674d')
   })
 })
