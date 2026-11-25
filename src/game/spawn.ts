@@ -148,7 +148,7 @@ export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBo
     if (spawnBoss) spawnBoss(s, hooks)
     else {
       s.bossSpawned = true
-      spawnMob(s, 'boss', otherLiving)
+      spawnMob(s, 'boss', factions?.runtime.enemies.length ?? otherLiving)
       hooks.sfx('boss')
       hooks.message('⚠ 魔王降臨！')
     }

@@ -17,7 +17,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
   const sk = hero.skills
 
   if (sk.orb) {
-    const n = Math.min(sk.orb + 1 + (hero.evolutions['blade-tempest'] ? 2 : 0), AREA.orb.maxBlades)
+    const n = Math.min(sk.orb + 1 + (sk.orb >= 5 ? AREA.orb.maxRankBonusBlades : 0) + (hero.evolutions['blade-tempest'] ? 2 : 0), AREA.orb.maxBlades)
     for (let k = 0; k < n; k++) {
       const a = s.worldClock * 2.7 + (k * TAU) / n
       const ox = hero.x + Math.cos(a) * 71
@@ -38,6 +38,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
       const dx = e.x - hero.x, dy = e.y - hero.y
       if (dx * dx + dy * dy < AREA.bolt.range * AREA.bolt.range) {
         hit(s, e, hero.damage * AREA.bolt.damageRatio, hooks)
+        if (e.hp > 0 && sk.bolt >= 5) e.slow = Math.max(e.slow, AREA.bolt.maxRankShockSeconds)
         zigzag(s, e.x + rand(-28, 28), e.y - 160, e.x, e.y)
         impact(s, e.x, e.y, 52, '#bdf4ff', 0.5)
         s.fx.push({ x: e.x, y: e.y - 75, vx: 0, vy: 140, life: 0.26, max: 0.26, color: '#bbf5ff', r: 11, type: 'spark' })
@@ -70,8 +71,8 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
     hero.meteorCd = Math.max(AREA.meteor.cooldownFloor, AREA.meteor.cooldownBase - sk.meteor * AREA.meteor.cooldownPerRank)
     for (const e of nearestAlive(s.mobs, hero).slice(0, Math.min(AREA.meteor.targetBase + sk.meteor, AREA.meteor.maxTargets))) {
       s.fx.push({ x: e.x, y: e.y, life: 0.8, max: 0.8, color: '#ffba7c', r: 18, type: 'meteor' })
-      impact(s, e.x, e.y, 84, '#ffb26b', 1.1)
-      const reach = AREA.meteor.rangeBase + sk.meteor * AREA.meteor.rangePerRank
+      impact(s, e.x, e.y, 84 + (sk.meteor >= 5 ? AREA.meteor.maxRankRangeBonus : 0), '#ffb26b', 1.1)
+      const reach = AREA.meteor.rangeBase + sk.meteor * AREA.meteor.rangePerRank + (sk.meteor >= 5 ? AREA.meteor.maxRankRangeBonus : 0)
       for (const m of s.mobs) {
         const dx = m.x - e.x, dy = m.y - e.y
         if (m.hp > 0 && dx * dx + dy * dy < reach * reach) hit(s, m, hero.damage * (AREA.meteor.damageBase + AREA.meteor.damagePerRank * sk.meteor), hooks)
@@ -83,7 +84,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
   if (sk.blaze) {
     if (hero.blazeTick <= 0) {
       hero.blazeTick = Math.max(AREA.blaze.cooldownFloor, AREA.blaze.cooldownBase - sk.blaze * AREA.blaze.cooldownPerRank)
-      const reach = AREA.blaze.rangeBase + sk.blaze * AREA.blaze.rangePerRank
+      const reach = AREA.blaze.rangeBase + sk.blaze * AREA.blaze.rangePerRank + (sk.blaze >= 5 ? AREA.blaze.maxRankRangeBonus : 0)
       for (const e of s.mobs) {
         const dx = e.x - hero.x, dy = e.y - hero.y
         if (dx * dx + dy * dy < reach * reach) hit(s, e, hero.damage * (AREA.blaze.damageBase + AREA.blaze.damagePerRank * sk.blaze), hooks)

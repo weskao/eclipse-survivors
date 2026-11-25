@@ -1,4 +1,5 @@
 import { t as translate } from '../../i18n'
+import { BALANCE } from '../config'
 import { DASH_COOLDOWN, LOW_HP_PCT, TAU } from '../constants'
 import { easing } from '../math'
 import type { GameState, Hero } from '../types'
@@ -119,11 +120,11 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     return true
   }
   const blaze = hero.skills.blaze
-  if (blaze && !aura('blaze-aura', hero.x + ox, hero.y + oy - 18, 100 + blaze * 12, 56 + blaze * 6, 0.66 + Math.sin(q * 3) * 0.1)) {
+  if (blaze && !aura('blaze-aura', hero.x + ox, hero.y + oy - 18, 100 + blaze * 12 + (blaze >= 5 ? 36 : 0), 56 + blaze * 6 + (blaze >= 5 ? 18 : 0), 0.66 + Math.sin(q * 3) * 0.1)) {
     ctx.save(); ctx.translate(hero.x + ox, hero.y + oy); ctx.globalAlpha = 0.55
     for (let k = 0; k < 3 + blaze; k++) {
       const a = q * 3 + k * TAU / (3 + blaze)
-      const r = 38 + blaze * 5 + Math.sin(q * 5 + k) * 6
+      const r = 38 + blaze * 5 + (blaze >= 5 ? BALANCE.skills.area.blaze.maxRankRangeBonus : 0) + Math.sin(q * 5 + k) * 6
       ctx.fillStyle = BLAZE_COLORS[k % 3]!
       ctx.beginPath(); ctx.ellipse(Math.cos(a) * r, Math.sin(a) * r * 0.55 - 18, 9, 5, a, 0, TAU); ctx.fill()
     }
@@ -308,7 +309,7 @@ export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: n
   if (!orb) return
   const q = s.worldClock
   const evolved = !!hero.evolutions['blade-tempest']
-  const n = Math.min(orb + 1 + (evolved ? 2 : 0), 8)
+  const n = Math.min(orb + 1 + (orb >= 5 ? BALANCE.skills.area.orb.maxRankBonusBlades : 0) + (evolved ? 2 : 0), BALANCE.skills.area.orb.maxBlades)
   for (let k = 0; k < n; k++) {
     const a = q * 2.7 + k * TAU / n
     const x = hero.x + ox + Math.cos(a) * 71

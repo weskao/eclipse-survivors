@@ -40,12 +40,13 @@ export function upgradeStatPreview(id: string, level?: number, maxLevel?: number
     case 'multi':
       row('同時攻擊數', rank => Math.min(4, rank + 1))
       row('技能射程倍率', rank => S.multiRangeMultiplier ** rank, percent); break
-    case 'orb': count('飛刃數量', rank => Math.min(A.orb.maxBlades, rank + 1)); break
+    case 'orb': count('飛刃數量', rank => Math.min(A.orb.maxBlades, rank + 1 + (rank >= 5 ? A.orb.maxRankBonusBlades : 0))); break
     case 'magnet': row('經驗吸取範圍', linear(P.xpMagnetBase, P.xpMagnetPerRank)); break
     case 'heal': row('每秒生命恢復', rank => P.regenPerRank * rank); break
     case 'bolt':
       count('目標數量', rank => Math.min(A.bolt.maxTargets, A.bolt.targetBase + rank))
-      cooldown(A.bolt.cooldownBase, A.bolt.cooldownPerRank, A.bolt.cooldownFloor); break
+      cooldown(A.bolt.cooldownBase, A.bolt.cooldownPerRank, A.bolt.cooldownFloor)
+      row('感電減速時間', rank => rank >= 5 ? A.bolt.maxRankShockSeconds : 0, seconds); break
     case 'frost': area(A.frost); row('減速持續時間', linear(A.frost.slowBase, A.frost.slowPerRank), seconds, true); break
     case 'meteor': area(A.meteor); count('目標數量', rank => Math.min(A.meteor.maxTargets, A.meteor.targetBase + rank)); break
     case 'blaze': area(A.blaze); break
