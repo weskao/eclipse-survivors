@@ -1,4 +1,6 @@
-export type CloudRuntime = { mode: 'unavailable' | 'emulator' | 'live' | 'auth-only'; config?: string; projectId?: string }
+import { firebaseConfig } from './firebase-config'
+
+export type CloudRuntime ={ mode: 'unavailable' | 'emulator' | 'live' | 'auth-only'; config?: string; projectId?: string }
 export function resolveCloudRuntime(options: { dev: boolean; emulator: boolean; unlocked: boolean; hostname: string; config?: string }): CloudRuntime {
   if (options.dev && options.emulator) {
     if (options.hostname !== '127.0.0.1' && options.hostname !== 'localhost') return { mode: 'unavailable' }
@@ -14,6 +16,6 @@ export function cloudRuntime(): CloudRuntime {
     emulator: import.meta.env.VITE_ES2_FIREBASE_EMULATOR === '1',
     unlocked: import.meta.env.VITE_ES2_UNLOCKED === '1',
     hostname: typeof location === 'undefined' ? '' : location.hostname,
-    config: import.meta.env.VITE_ES2_FIREBASE_CONFIG as string | undefined,
+    config: firebaseConfig(),
   })
 }
