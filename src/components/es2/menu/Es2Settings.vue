@@ -23,7 +23,7 @@ function changeLanguage(value: string): void { setLocale(value) }
 function volume(e: Event): number { return Number((e.target as HTMLInputElement).value) }
 </script>
 <template>
-  <Es2Dialog :active="active" :title="t('遊戲設定')" :subtitle="t('控制聲音、視覺效果與戰鬥體驗')" @cancel="emit('close')">
+  <Es2Dialog variant="settings" :active="active" :title="t('遊戲設定')" :subtitle="t('控制聲音、視覺效果與戰鬥體驗')" @cancel="emit('close')">
     <div class="es2-settings">
       <section :aria-label="t('語言設定')">
         <h3>{{ t('語言') }}</h3>
@@ -56,7 +56,7 @@ function volume(e: Event): number { return Number((e.target as HTMLInputElement)
 </template>
 
 <style scoped>
-.es2-language-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(155px,210px);
+.es2-language-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,210px);
   align-items: center; gap: .65rem; margin: .65rem 0; }
-@media (max-width: 420px) { .es2-language-row { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 480px) { .es2-language-row { grid-template-columns: minmax(0,1fr); } }
 </style>

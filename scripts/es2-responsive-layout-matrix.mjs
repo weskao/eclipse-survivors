@@ -5,6 +5,7 @@ import { chromium } from 'playwright'
 const base = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const destination = 'artifacts/es2-mobile-browser'
 const cases = [
+  ['portrait-320', 320, 640, true],
   ['portrait-390', 390, 844, true],
   ['portrait-430', 430, 932, true],
   ['landscape-844', 844, 390, true],
@@ -84,7 +85,30 @@ try {
         if (layout.actions) assert.ok(layout.actions.bottom <= layout.panel.bottom + inset,
           name + ': ' + kind + ' footer is outside the dialog: ' + JSON.stringify(layout))
       }
+      const verifySettingsWidth = async (stage) => {
+        const result = await dialog.evaluate(panel => {
+          const body = panel.querySelector('.es2-dialog-body')
+          const box = body.getBoundingClientRect()
+          const left = box.left + body.clientLeft, right = left + body.clientWidth
+          const offenders = [...body.querySelectorAll('section, header, div, button, input, label, output, p, strong, small, span')]
+            .filter(el => el.getClientRects().length && el.getBoundingClientRect().width > 0)
+            .filter(el => { const r = el.getBoundingClientRect(); return r.left < left - 1 || r.right > right + 1 })
+            .map(el => ({ tag: el.tagName, class: el.className, text: el.textContent?.trim().slice(0, 50) }))
+          const range = body.scrollWidth - body.clientWidth
+          body.scrollLeft = 100
+          const offset = body.scrollLeft
+          body.scrollLeft = 0
+          return { range, offset, panelRange: panel.scrollWidth - panel.clientWidth,
+            overflowX: getComputedStyle(body).overflowX, overflowY: getComputedStyle(body).overflowY, offenders }
+        })
+        assert.equal(result.overflowX, 'hidden', name + ': ' + stage + ' horizontal scrolling enabled')
+        assert.equal(result.overflowY, 'auto', name + ': ' + stage + ' vertical scrolling disabled')
+        assert.ok(result.range <= 1 && result.panelRange <= 1 && result.offset <= 1,
+          name + ': ' + stage + ' settings horizontal overflow ' + JSON.stringify(result))
+        assert.deepEqual(result.offenders, [], name + ': ' + stage + ' settings controls clipped')
+      }
       await verifyDialogChrome('settings')
+      await verifySettingsWidth('initial')
       await dialog.locator('.es2-dialog-body').evaluate(element => { element.scrollTop = element.scrollHeight })
       await verifyDialogChrome('settings after scrolling')
       const scale = page.locator('#es2-interface-scale')
@@ -101,10 +125,12 @@ try {
       await option.click()
       assert.equal(await language.getAttribute('aria-expanded'), 'false')
       await assertLocalizedTextFits(page, name, 'en')
+      await verifySettingsWidth('English 125%')
       // Run the same real-browser layout check in Traditional Chinese.
       await language.click()
       await page.locator('#es2-language-listbox [data-es2-value="zh-TW"]').click()
       await assertLocalizedTextFits(page, name, 'zh-TW')
+      await verifySettingsWidth('Traditional Chinese 125%')
       await language.click()
       await page.locator('#es2-language-listbox [data-es2-value="en"]').click()
       await page.screenshot({ path: destination + '/' + name + '-settings.png', animations: 'disabled' })

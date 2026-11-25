@@ -139,6 +139,15 @@
 .es2-reward-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;padding:15px;border:1px solid #b5a06c7a;border-radius:10px;background:#4d3a2655}
 .es2-reward-strip strong{color:#f9d596}
 .es2-reward-strip span{font-size:.8rem}
+.es2-backdrop-preferences{grid-template-columns:minmax(0,1fr)}
+.es2-dialog-preferences{min-width:0;max-width:100%;overflow:clip}
+.es2-dialog-preferences .es2-dialog-body{overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;padding-inline:5px;box-sizing:border-box}
+.es2-dialog-preferences .es2-settings{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.es2-dialog-preferences :is(section,header,.es2-slider-row,.es2-setting-option,.es2-toggle-set){min-width:0;max-width:100%}
+.es2-dialog-preferences :is(button,label,output){max-width:100%;overflow-wrap:anywhere}
+.es2-dialog-preferences input[type=range]{min-width:0;max-width:100%;margin-inline:0;box-sizing:border-box}
+.es2-dialog-preferences .es2-toggle-set button{min-width:0;white-space:normal}
+.es2-dialog-preferences .es2-slider-row label{overflow-wrap:anywhere}
 .es2-settings section+section{margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-settings h3{font-size:1.1rem;color:#f1dcb8;margin:0 0 12px}
 .es2-slider-row{display:flex;align-items:center;gap:14px;padding:12px 0}
