@@ -1,7 +1,11 @@
 // Visual-effect emitters (original burst / impact / zigzag / pushEcho).
 import { rand } from './math'
 import { BALANCE } from './config'
-import type { GameState, ImpactWave, JobId, NumberFx, Point } from './types'
+import type { ContactKind, Fx, GameState, ImpactWave, JobId, NumberFx, Point } from './types'
+
+export function pushParticle(s: GameState, particle: Fx): void {
+  if (s.fx.length < 240) s.fx.push(particle)
+}
 
 export function burst(s: GameState, x: number, y: number, color: string, n = 7): void {
   for (let i = 0; i < n && s.fx.length < 240; i++) {
@@ -32,11 +36,11 @@ export function impact(s: GameState, x: number, y: number, size = 36, color = '#
 }
 
 /** Single-owner local hit cue: independent of damage text, no secondary particle pool. */
-export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean, heavy = false): void {
-  const contact = critical ? 'critical' : heavy ? 'heavy' : 'normal'
+export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean, heavy = false, kind?: ContactKind): void {
+  const contact = critical ? 'critical' : heavy || kind === 'evolved' || kind === 'hero' ? 'heavy' : 'normal'
   const { duration, scale } = BALANCE.combat.hitImpact[contact]
   enqueueImpact(s, { x, y, angle, size: Math.max(44, Math.min(124, radius * scale)),
-    color: critical ? '#ffc577' : heavy ? '#eeb78c' : '#f4d9b0', life: duration, max: duration, contact })
+    color: critical ? '#ffc577' : kind === 'evolved' ? '#c6a0ff' : kind === 'elemental' ? '#9ae7ff' : kind === 'hero' ? '#ffe49b' : heavy ? '#eeb78c' : '#f4d9b0', life: duration, max: duration, contact, kind })
 }
 
 /** At most one brief camera nudge per 0.6 game-seconds, regardless of hit count. */
@@ -67,7 +71,7 @@ export function pushEcho(s: GameState, x: number, y: number, kind: JobId, frame:
 /** Bounded damage labels; ordinary hit spam must not evict a readable critical popup. */
 export function pushDamageNumber(s: GameState, number: NumberFx): void {
   // Incoming harm and criticals remain readable when a horde fills the queue.
-  const priority = (n: NumberFx) => n.received ? 3 : n.critical ? 2 : n.boss ? 1 : 0
+  const priority = (n: NumberFx) => n.received ? 3 : n.critical ? 2 : n.boss || n.kind === 'heal' || n.kind === 'evolved' || n.kind === 'hero' ? 1 : 0
   if (s.numberFx.length >= 80) {
     let index = -1, lowest = priority(number)
     for (let i = 0; i < s.numberFx.length; i++) {

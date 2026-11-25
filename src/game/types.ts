@@ -59,6 +59,7 @@ export interface Mob {
   /** Cosmetic animation clock; authoritative phase and AI always advance. */
   visualPhase?: number
   deathVisual?: number
+  deathVisualTotal?: number
   weaknessRemaining?: number
   visualHold?: number
   lastVisualHoldAt?: number
@@ -118,8 +119,9 @@ export type ContentEvent =
   | { type: 'run-complete'; win: boolean }
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
-export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean }
-export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number; contact?: 'normal' | 'heavy' | 'critical'; angle?: number }
+export type ContactKind = 'elemental' | 'evolved' | 'hero'
+export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean; kind?: ContactKind | 'heavy' | 'heal' }
+export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number; contact?: 'normal' | 'heavy' | 'critical'; angle?: number; kind?: ContactKind }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
 export interface MotionEcho { x: number; y: number; kind: JobId; frame: number; angle: number; life: number; max: number }
@@ -197,6 +199,7 @@ export interface MoveInput { x: number; y: number }
  * Mirrors the original free functions `playSfx`, `message`, `chooseUpgrade`, `end`.
  */
 export interface GameHooks {
+  contactKind?: ContactKind
   otherLivingActors?(): number
   /** Same authoritative actors used by legacy, arsenal and evolution combat. */
   factions?(): import('./content/enemies/integration').FactionBridge | undefined

@@ -699,6 +699,10 @@ const english = new Map<string, string>([
     "Monsters Defeated"
   ],
   ["最高連殺", "Best kill streak"],
+  ["經驗值獲得", "XP earned"],
+  ["平均每秒傷害", "Average DPS"],
+  ["每分鐘擊殺", "Kills per minute"],
+  ["首次升級時間", "First upgrade"],
   ["最高瞬間多殺", "Best multikill"],
   [
     "英雄等級",

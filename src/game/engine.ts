@@ -374,7 +374,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (reflect > 0) {
         // Only the original colliding Mob receives reflected damage.
         // Do not roll relic critical hits a second time for the reflected strike.
-        hit(s, source, amount * reflect, { ...hooks, modifyOutgoingDamage: undefined, consumeCriticalHit: undefined })
+        hit(s, source, amount * reflect, { ...hooks, contactKind: 'hero', modifyOutgoingDamage: undefined, consumeCriticalHit: undefined })
       }
     },
     canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,

@@ -30,6 +30,12 @@ const stats = computed(() => props.result ? [
   { title: '造成傷害', value: formatNumber(props.result.damageDealt) },
   { title: '承受傷害', value: formatNumber(props.result.damageTaken) },
   { title: '剩餘生命', value: String(props.result.remainingHp) },
+  ...(props.result.xpEarned === undefined ? [] : [
+    { title: '經驗值獲得', value: formatNumber(props.result.xpEarned) },
+    { title: '平均每秒傷害', value: formatNumber(Math.round(props.result.damageDealt / Math.max(1, props.result.seconds))) },
+    { title: '每分鐘擊殺', value: formatNumber(Math.round(props.result.kills * 60 / Math.max(1, props.result.seconds))) },
+  ]),
+  ...(props.result.firstUpgradeSeconds === undefined ? [] : [{ title: '首次升級時間', value: props.result.firstUpgradeSeconds.toFixed(1) + 's' }]),
   ...(props.result.bestKillStreak === undefined ? [] : [{ title: '最高連殺', value: formatNumber(props.result.bestKillStreak) }]),
   ...(props.result.bestMultiKill === undefined ? [] : [{ title: '最高瞬間多殺', value: formatNumber(props.result.bestMultiKill) }]),
 ] : [])

@@ -336,6 +336,13 @@ export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number
       ctx.save(); ctx.translate(x, y); ctx.rotate(z.angle ?? 0)
       ctx.globalAlpha *= opacity
       drawHitImpact(ctx, z.contact, z.size, t, reduced, flashing)
+      // The cached contact remains the single texture owner. A small colored afterglow
+      // distinguishes skill families without another particle pool or image allocation.
+      if (z.kind && !reduced) {
+        ctx.globalAlpha *= .6 * (1-t)
+        ctx.strokeStyle = z.color; ctx.lineWidth = 2
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(z.size * .45,0); ctx.stroke()
+      }
       ctx.restore()
       continue
     }
@@ -454,7 +461,7 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     let budget = tier === 0 ? 32 : tier === 1 ? 12 : 4
     for (let i = s.numberFx.length - 1; i >= 0 && budget > 0; i--) {
       const z = s.numberFx[i]!
-      if ((z.received ? 2 : z.critical || z.boss ? 1 : 0) !== tier) continue
+      if ((z.received ? 2 : z.critical || z.boss || z.kind === 'heal' || z.kind === 'evolved' || z.kind === 'hero' ? 1 : 0) !== tier) continue
       const x = z.x + ox, y = z.y + oy
     if (x < -80 || x > s.W + 80 || y < -80 || y > s.H + 80) continue
     budget--
@@ -481,10 +488,10 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
       ctx.fillStyle = '#fff4bf'
       ctx.fillText(translate('暴擊!'), 0, -29)
     }
-    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss ? 21 : 16)}px system-ui`
-    const label = received ? `−${z.value}` : String(z.value)
+    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss || z.kind ? 21 : 16)}px system-ui`
+    const label = received ? `−${z.value}` : z.kind === 'heal' ? `+${z.value}` : String(z.value)
     ctx.strokeText(label, 0, 0)
-    ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
+    ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.kind === 'heal' ? '#9be9b6' : z.kind === 'elemental' ? '#9ae7ff' : z.kind === 'evolved' ? '#c6a0ff' : z.kind === 'hero' ? '#ffe49b' : z.boss || z.kind === 'heavy' ? '#ffca7c' : '#fff1d0'
     ctx.fillText(label, 0, 0)
     ctx.restore()
     }

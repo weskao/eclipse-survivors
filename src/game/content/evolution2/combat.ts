@@ -50,7 +50,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     hitMobs.add(mob)
     hitCount++
     const before = mob.hp
-    hitTarget(state, mob, hero.damage * power, hooks, factions)
+    hitTarget(state, mob, hero.damage * power, hooks, factions, hero, 'evolved')
     return before - mob.hp
   }
   const cueAt = (x: number, y: number): void => {

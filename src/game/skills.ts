@@ -3,7 +3,7 @@ import { BALANCE } from './config'
 import { TAU } from './constants'
 import { combatTargets, hitTarget, nearestCombatTargets, slowTarget, targetRadius } from './combat'
 import type { FactionBridge } from './content/enemies/integration'
-import { impact, zigzag } from './fx'
+import { impact, pushParticle, zigzag } from './fx'
 import { tickEvolutions } from './evolutions'
 import { rand, random } from './math'
 import type { GameHooks, GameState } from './types'
@@ -41,11 +41,11 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
     for (const e of nearestCombatTargets(targets, hero).slice(0, Math.min(AREA.bolt.targetBase + sk.bolt, AREA.bolt.maxTargets))) {
       const dx = e.x - hero.x, dy = e.y - hero.y
       if (dx * dx + dy * dy < AREA.bolt.range * AREA.bolt.range) {
-        if (!hitTarget(s, e, hero.damage * AREA.bolt.damageRatio, hooks, factions)) continue
+        if (!hitTarget(s, e, hero.damage * AREA.bolt.damageRatio, hooks, factions, hero, 'elemental')) continue
         if (sk.bolt >= 5) slowTarget(e, AREA.bolt.maxRankShockSeconds)
         zigzag(s, e.x + rand(-28, 28), e.y - 160, e.x, e.y)
         impact(s, e.x, e.y, 52, '#bdf4ff', 0.5)
-        s.fx.push({ x: e.x, y: e.y - 75, vx: 0, vy: 140, life: 0.26, max: 0.26, color: '#bbf5ff', r: 11, type: 'spark' })
+        pushParticle(s, { x: e.x, y: e.y - 75, vx: 0, vy: 140, life: 0.26, max: 0.26, color: '#bbf5ff', r: 11, type: 'spark' })
       }
     }
     hooks.sfx('bolt')
@@ -55,7 +55,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
     hero.frostCd = Math.max(AREA.frost.cooldownFloor, AREA.frost.cooldownBase - sk.frost * AREA.frost.cooldownPerRank)
     impact(s, hero.x, hero.y, 120 + sk.frost * 12 + (sk.frost >= 5 ? AREA.frost.maxRankRangeBonus : 0), '#bcefff', 1)
     for (let i = 0; i < 20; i++) {
-      s.fx.push({
+      pushParticle(s, {
         x: hero.x + rand(-18, 18), y: hero.y + rand(-18, 12), vx: rand(-110, 110), vy: rand(-150, 10),
         life: 0.7, max: 0.7, color: '#d8f7ff', r: 2 + random() * 5, type: 'ice',
       })
@@ -64,7 +64,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
     for (const e of targets) {
       const dx = e.x - hero.x, dy = e.y - hero.y
       if (dx * dx + dy * dy < reach * reach) {
-        if (hitTarget(s, e, hero.damage * (AREA.frost.damageBase + AREA.frost.damagePerRank * sk.frost), hooks, factions)) slowTarget(e, AREA.frost.slowBase + AREA.frost.slowPerRank * sk.frost)
+        if (hitTarget(s, e, hero.damage * (AREA.frost.damageBase + AREA.frost.damagePerRank * sk.frost), hooks, factions, hero, 'elemental')) slowTarget(e, AREA.frost.slowBase + AREA.frost.slowPerRank * sk.frost)
       }
     }
     hooks.sfx('frost')
@@ -73,12 +73,12 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
   if (sk.meteor && hero.meteorCd <= 0) {
     hero.meteorCd = Math.max(AREA.meteor.cooldownFloor, AREA.meteor.cooldownBase - sk.meteor * AREA.meteor.cooldownPerRank)
     for (const e of nearestCombatTargets(targets, hero).slice(0, Math.min(AREA.meteor.targetBase + sk.meteor, AREA.meteor.maxTargets))) {
-      s.fx.push({ x: e.x, y: e.y, life: 0.8, max: 0.8, color: '#ffba7c', r: 18, type: 'meteor' })
+      pushParticle(s, { x: e.x, y: e.y, life: 0.8, max: 0.8, color: '#ffba7c', r: 18, type: 'meteor' })
       impact(s, e.x, e.y, 84 + (sk.meteor >= 5 ? AREA.meteor.maxRankRangeBonus : 0), '#ffb26b', 1.1)
       const reach = AREA.meteor.rangeBase + sk.meteor * AREA.meteor.rangePerRank + (sk.meteor >= 5 ? AREA.meteor.maxRankRangeBonus : 0)
       for (const m of targets) {
         const dx = m.x - e.x, dy = m.y - e.y
-        if (m.hp > 0 && dx * dx + dy * dy < reach * reach) hitTarget(s, m, hero.damage * (AREA.meteor.damageBase + AREA.meteor.damagePerRank * sk.meteor), hooks, factions, e)
+        if (m.hp > 0 && dx * dx + dy * dy < reach * reach) hitTarget(s, m, hero.damage * (AREA.meteor.damageBase + AREA.meteor.damagePerRank * sk.meteor), hooks, factions, e, 'elemental')
       }
     }
     hooks.sfx('meteor')
@@ -90,11 +90,11 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
       const reach = AREA.blaze.rangeBase + sk.blaze * AREA.blaze.rangePerRank + (sk.blaze >= 5 ? AREA.blaze.maxRankRangeBonus : 0)
       for (const e of targets) {
         const dx = e.x - hero.x, dy = e.y - hero.y
-        if (dx * dx + dy * dy < reach * reach) hitTarget(s, e, hero.damage * (AREA.blaze.damageBase + AREA.blaze.damagePerRank * sk.blaze), hooks, factions)
+        if (dx * dx + dy * dy < reach * reach) hitTarget(s, e, hero.damage * (AREA.blaze.damageBase + AREA.blaze.damagePerRank * sk.blaze), hooks, factions, hero, 'elemental')
       }
     }
     if (random() < dt * 10) {
-      s.fx.push({
+      pushParticle(s, {
         x: hero.x + rand(-42, 42), y: hero.y + rand(-25, 18), vx: rand(-20, 20), vy: rand(-120, -20),
         life: 0.55, max: 0.55, color: EMBER_COLORS[Math.floor(random() * 3)] ?? '#ffd29f', r: 3 + random() * 4, type: 'ember',
       })
@@ -105,7 +105,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
     hero.vortexCd = Math.max(AREA.vortex.cooldownFloor, AREA.vortex.cooldownBase - sk.vortex * AREA.vortex.cooldownPerRank)
     impact(s, hero.x, hero.y, 145 + (sk.vortex >= 5 ? AREA.vortex.maxRankRangeBonus : 0), '#cbaeff', 1.4)
     for (let i = 0; i < 36; i++) {
-      s.fx.push({
+      pushParticle(s, {
         x: hero.x + Math.cos((i / 36) * TAU) * 90, y: hero.y + Math.sin((i / 36) * TAU) * 90, vx: 0, vy: 0,
         life: 0.8, max: 0.8, color: '#baa1ff', r: 2 + random() * 4, type: 'vortex', a: (i / 36) * TAU,
       })
@@ -118,7 +118,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
         const pull = Math.max(0, 1 - Math.sqrt(squared) / reach)
         e.x += (hero.x - e.x) * AREA.vortex.pullRatio * pull
         e.y += (hero.y - e.y) * AREA.vortex.pullRatio * pull
-        hitTarget(s, e, hero.damage * (AREA.vortex.damageBase + AREA.vortex.damagePerRank * sk.vortex), hooks, factions)
+        hitTarget(s, e, hero.damage * (AREA.vortex.damageBase + AREA.vortex.damagePerRank * sk.vortex), hooks, factions, hero, 'elemental')
       }
     }
     hooks.sfx('vortex')

@@ -281,7 +281,7 @@ export function drawCharacter(
   }
   ctx.save(); ctx.translate(x, y)
   if (mob?.deathVisual && mob.hp <= 0) {
-    const alpha = Math.min(1, mob.deathVisual / (mob.type === 'boss' ? .7 : .28))
+    const alpha = Math.min(1, mob.deathVisual / (mob.deathVisualTotal ?? (mob.type === 'boss' ? .7 : .28)))
     ctx.globalAlpha = alpha
     ctx.translate(mob.kx * (1 - alpha) * 12, (1 - alpha) * 8)
     ctx.scale(1, .65 + .35 * alpha)

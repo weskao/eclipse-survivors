@@ -184,10 +184,13 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const nativeImage = nativeKey ? assets.productionWorld?.bossNativeKeyframes?.[nativeKey] : undefined
   const motionReference = nativeImage && bossSnapshot?.id ? { id: bossSnapshot.id, image: nativeImage } : assets.productionWorld?.bossMotionReference
   for (const obj of objects) {
-    const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
-    const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase
-      ? { image: bossImage, phase: bossSnapshot.phase,
-          motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
+    const boss = 'type' in obj && obj.type === 'boss' ? obj : undefined
+    const bossId = boss?.bossArtId ?? (boss?.hp && bossSnapshot?.id || undefined)
+    const phase = boss?.bossPhase ?? bossSnapshot?.phase
+    const bossImage = bossId && assets.productionWorld?.bosses[bossId]
+    const liveBossArt = boss && bossImage && phase
+      ? { image: bossImage, phase,
+          motion: boss.hp > 0 && bossSnapshot && bossSnapshot.id === bossId && motionReference?.id === bossId ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, showFullHealthBars)
   }

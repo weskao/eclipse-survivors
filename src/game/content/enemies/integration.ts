@@ -101,7 +101,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
   }
 
   function hitFaction(state: GameState, enemy: FactionEnemy, amount: number,
-    sourceX: number, sourceY: number, hooks: GameHooks): number {
+    sourceX: number, sourceY: number, hooks: GameHooks, kind = hooks.contactKind): number {
     if (state.mode !== 'play' || !state.hero || !runtime.enemies.includes(enemy) || enemy.hp <= 0 || enemy.state === 'phase' || !Number.isFinite(amount) || amount <= 0) return 0
     const modified = hooks.modifyOutgoingDamage?.(amount, enemy) ?? amount
     if (!Number.isFinite(modified) || modified <= 0) return 0
@@ -124,10 +124,10 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       }
       state.damageDealt += applied
       pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
-        value: Math.round(applied), boss: false, critical })
+        value: Math.round(applied), boss: false, critical, kind: kind ?? (enemy.radius >= 24 || enemy.affix ? 'heavy' : undefined) })
       const angle = Math.atan2(enemy.y - sourceY, enemy.x - sourceX)
       const heavy = enemy.radius >= 24 || !!enemy.affix
-      emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical, heavy)
+      emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical, heavy, kind)
       hooks.contactSfx?.(critical ? 'hitCritical' : heavy ? 'hitHeavy' : 'hitNormal')
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)

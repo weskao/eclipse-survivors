@@ -5,7 +5,7 @@ import { burst, impact, emitHitImpact, pushDamageNumber, pushEcho, requestCamera
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
-import type { GameHooks, GameState, Hero, Mob } from './types'
+import type { ContactKind, GameHooks, GameState, Hero, Mob } from './types'
 import type { FactionBridge } from './content/enemies/integration'
 import type { FactionEnemy } from './content/enemies/runtime'
 
@@ -40,11 +40,11 @@ export function nearestCombatTargets(targets: CombatTarget[], hero: Hero): Comba
   return alive.sort((a,b) => distances.get(a)! - distances.get(b)!)
 }
 
-export function hitTarget(s: GameState, e: CombatTarget, damage: number, hooks: GameHooks, factions?: FactionBridge, source: {x: number; y: number} | null = s.hero): boolean {
+export function hitTarget(s: GameState, e: CombatTarget, damage: number, hooks: GameHooks, factions?: FactionBridge, source: {x: number; y: number} | null = s.hero, kind = hooks.contactKind): boolean {
   if (!source || e.hp <= 0) return false
   const before = e.hp
-  if ('radius' in e) factions?.hitFaction(s, e, damage, source.x, source.y, hooks)
-  else hit(s, e, damage, hooks, source)
+  if ('radius' in e) factions?.hitFaction(s, e, damage, source.x, source.y, hooks, kind)
+  else hit(s, e, damage, hooks, source, kind)
   return e.hp < before
 }
 
@@ -52,7 +52,7 @@ export function slowTarget(e: CombatTarget, seconds: number): void {
   if (e.hp > 0) e.slow = Math.max(e.slow ?? 0, seconds)
 }
 
-export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero): void {
+export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero, kind: ContactKind | undefined = hooks.contactKind): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
   const modified = hooks.modifyOutgoingDamage?.(d, e) ?? d
@@ -77,20 +77,20 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
   e.ky = (e.y - origin.y) / knock
   const impactAngle = Math.atan2(e.ky, e.kx)
   if (critical || heavy) requestCameraKick(s, boss ? 1.6 : critical ? 1.25 : .85, impactAngle)
-  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy)
+  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy, kind)
   hooks.contactSfx?.(critical ? 'hitCritical' : heavy ? 'hitHeavy' : 'hitNormal')
-  pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
+  pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical, kind: kind ?? (heavy ? 'heavy' : undefined) })
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     recordKill(s)
     if (s.fallenMobs.length >= 24) s.fallenMobs.shift()
-    e.deathVisual = boss ? .7 : .28
+    e.deathVisual = e.deathVisualTotal = boss ? .7 : e.elite ? .46 : e.type === 'golem' ? .36 : .28
     s.fallenMobs.push(e)
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
     const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
     s.stars.push({ x: e.x, y: e.y, value: Math.round(value * (e.rewardXpMultiplier ?? 1)), t: rand(0, 6) })
-    burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
+    burst(s, e.x, e.y, boss ? '#ffae83' : e.elite ? '#dab0ff' : e.type === 'golem' ? '#e3bc92' : e.type === 'bat' ? '#a99ce0' : '#8cebbf', boss ? 35 : e.elite ? 18 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
     if (!boss && e.elite) hooks.contactSfx?.('eliteKill')
     if (boss) {
@@ -188,7 +188,7 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
     let count = 0, next = 0
     for (; next < chainTargets.length && count < limit; next++) {
       const to = chainTargets[next]!
-      if (!hitTarget(s, to, damage, hooks, factions, from)) continue
+      if (!hitTarget(s, to, damage, hooks, factions, from, 'elemental')) continue
       zigzag(s, from.x, from.y - 25, to.x, to.y)
       if (shock) slowTarget(to, BALANCE.combat.chainShockSeconds)
       if (to.hp === 0) killed ??= to
@@ -207,7 +207,7 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
       }
       if (extra) {
         zigzag(s, killed.x, killed.y - 25, extra.x, extra.y)
-        if (hitTarget(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, hooks, factions, killed)) slowTarget(extra, BALANCE.combat.chainShockSeconds)
+        if (hitTarget(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, hooks, factions, killed, 'elemental')) slowTarget(extra, BALANCE.combat.chainShockSeconds)
       }
     }
     hooks.sfx('chain')

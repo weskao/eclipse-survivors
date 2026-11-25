@@ -917,3 +917,8 @@
   .es2-menu .es2-hero-select-card[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-3px}
   .es2-menu .es2-hero-select-card[aria-pressed="true"] .es2-hero-selection-status{background:Highlight;color:HighlightText;clip-path:none}
 }
+
+/* Compact wide landscape keeps all six selectable cards above the persistent dock. */
+@media (min-width:1000px) and (max-height:850px) {
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(105px,calc(100dvh - var(--es2-action-bar-height,112px) - 470px),300px);padding:4px 2px}
+}
