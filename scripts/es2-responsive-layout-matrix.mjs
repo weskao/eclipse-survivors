@@ -98,7 +98,7 @@ try {
             const r = el.getBoundingClientRect()
             return r.width === 0 || r.height === 0 || r.left < 0 || r.right > innerWidth + 2 ||
               (requireFit && (r.top < 0 || r.bottom > bar.top + 2))
-          }).map(el => el.textContent.trim().slice(0, 80)) }
+          }).map(el => { const r = el.getBoundingClientRect(); return { text: el.textContent.trim().slice(0, 80), rect: { left:r.left, top:r.top, right:r.right, bottom:r.bottom }, dockTop:bar.top, viewport: [innerWidth, innerHeight] } }) }
         }, {selector, requireFit})
         assert.equal(layout.count, count, name + ': missing choices')
         assert.deepEqual(layout.offenders, [], name + ': choices outside visible menu')
