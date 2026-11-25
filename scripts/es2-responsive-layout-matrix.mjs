@@ -61,6 +61,21 @@ try {
       }))
       assert.ok(bounds.documentWidth <= bounds.viewportWidth + inset,
         name + ': horizontal overflow: ' + JSON.stringify(bounds))
+      // Wide menus should expose every selection and archive entry above the fixed Start dock.
+      if (width >= 1000 && height >= 700) {
+        const layout = await page.evaluate(() => {
+          const menu = document.querySelector('.es2-menu')
+          const bar = menu.querySelector('.es2-menu-action-bar').getBoundingClientRect()
+          const choices = [...menu.querySelectorAll('[data-hero], [data-hero-id], [data-mode], [data-objective-mode], .es2-hall-links button')]
+          return { count: choices.length, offenders: choices.filter(el => {
+            const r = el.getBoundingClientRect()
+            return r.width === 0 || r.height === 0 || r.top < 0 || r.bottom > bar.top + 2 || r.left < 0 || r.right > innerWidth + 2
+          }).map(el => el.textContent.trim().slice(0, 80)) }
+        })
+        assert.equal(layout.count, 20, name + ': missing menu choices')
+        assert.deepEqual(layout.offenders, [], name + ': choices outside visible menu')
+        await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
+      }
       await page.locator('.es2-top-actions [data-es2-settings]').click()
       const dialog = page.locator('.es2-dialog[role="dialog"]')
       await dialog.waitFor({ state: 'visible' })
@@ -207,6 +222,26 @@ try {
         await page.screenshot({ path: destination + '/' + name + '-home-confirm.png', animations: 'disabled' })
         await page.locator('[data-es2-home-cancel]').click()
         await page.locator('.es2-hud--active').waitFor({ state: 'visible' })
+      }
+      if (mobile && width <= 430 && height > width) {
+        await page.locator('[data-es2-mobile-hero-tab="new"]').click()
+        await page.locator('[data-hero-id="spirit-summoner"]').click()
+        await page.locator('.es2-start').click()
+        await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
+        // Stress the actual rendered HUD with a long health/status value, independent of combat RNG.
+        const healthLayout = await page.locator('.es2-hud__health-head').first().evaluate(row => {
+          const value = row.lastElementChild
+          value.textContent = 'HP 89 / 204 | 3/3 Charges ready'
+          const r = row.getBoundingClientRect(), v = value.getBoundingClientRect()
+          const hero = row.closest('.es2-hud__hero').getBoundingClientRect()
+          const controls = document.querySelector('.es2-hud__controls').getBoundingClientRect()
+          return { rowRight:r.right, valueRight:v.right, heroRight:hero.right, controlsLeft:controls.left,
+            valueOverflow:value.scrollWidth-value.clientWidth }
+        })
+        assert.ok(healthLayout.valueRight <= healthLayout.rowRight + 1 &&
+          healthLayout.valueRight <= healthLayout.heroRight + 1 &&
+          healthLayout.heroRight <= healthLayout.controlsLeft + 1 && healthLayout.valueOverflow <= 1,
+          name + ': health/status overflows player panel ' + JSON.stringify(healthLayout))
       }
       assert.deepEqual(errors, [], name + ': uncaught browser exceptions')
       console.log('PASS ' + name + ': settings, scale, language, archive tabs and viewport bounds')
