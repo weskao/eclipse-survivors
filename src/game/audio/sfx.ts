@@ -88,3 +88,15 @@ const TREASURE_TONES: readonly (readonly SfxTone[])[] = [
 export function treasureTones(tier: number): readonly SfxTone[] {
   return TREASURE_TONES[tier] ?? SFX_CUES.treasureReveal
 }
+
+/** Claim celebrates the actual acquired relic, independently of the chest reveal tier. */
+const TREASURE_CLAIM_TONES: readonly (readonly SfxTone[])[] = [
+  SFX_CUES.treasureClaim,
+  [[60,0,.18,.042,'triangle'],[72,.05,.22,.034,'sine'],[84,.14,.28,.025,'sine']],
+  [[48,0,.22,.052,'triangle'],[67,.04,.25,.034,'sawtooth'],[79,.12,.3,.027,'triangle'],[91,.23,.34,.018,'sine']],
+  [[36,0,.28,.06,'triangle'],[55,.045,.32,.04,'sawtooth'],[67,.14,.38,.035,'triangle'],[79,.27,.42,.027,'sine'],[91,.4,.45,.018,'sine']],
+  [[39,0,.22,.05,'triangle'],[46,.03,.24,.036,'sawtooth'],[58,.12,.32,.03,'triangle'],[65,.22,.36,.022,'sine']],
+]
+export function treasureClaimTones(tier: number): readonly SfxTone[] {
+  return TREASURE_CLAIM_TONES[tier] ?? SFX_CUES.treasureClaim
+}

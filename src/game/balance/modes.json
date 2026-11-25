@@ -4,6 +4,17 @@
     "enemyDamage": 1,
     "spawnFrequency": 1
   },
+  "waveCycleSeconds": {
+    "quick": 48,
+    "standard": 72,
+    "endless": 48,
+    "challenge": 40.8,
+    "boss-rush": 36,
+    "endless-eclipse": 60,
+    "relic-hunt": 56,
+    "cursed-expedition": 42,
+    "chaos-arena": 48
+  },
   "classic": {
     "quick": {
       "duration": 150,

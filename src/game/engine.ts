@@ -49,6 +49,8 @@ import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
 import type { AbilityId, ContentEvent, ContentId, EvolutionId, GameHooks, GameMode, GameState, HeroId, JobId, MoveInput, Point, UpgradeId } from './types'
 
+const TREASURE_AUDIO_TIERS = ['common', 'rare', 'epic', 'legendary', 'cursed'] as const
+
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
   readonly mode: GameMode
@@ -404,7 +406,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }) }
       ui.upgrades = []
       screen('level')
-      const reveal = ['common','rare','epic','legendary','cursed'].indexOf(offer.tier ?? 'common')
+      const reveal = TREASURE_AUDIO_TIERS.indexOf(offer.tier ?? 'common')
       audio.playSfx('treasureReveal', reveal)
       return true
     } : undefined,
@@ -647,7 +649,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (!claimTreasure(s, offer.chestId, id as RelicId)) return
     ui.specialChoice = null
     const relic = RELIC_BY_ID.get(id as RelicId)!
-    audio.playSfx('treasureClaim')
+    audio.playSfx('treasureClaim', TREASURE_AUDIO_TIERS.indexOf(relic.cursed ? 'cursed' : relic.rarity))
     message('✦ 已獲得聖物：' + relic.title)
     screen('play')
     if (s.hero) {

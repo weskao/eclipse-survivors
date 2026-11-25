@@ -6,6 +6,7 @@
  * See ./INTEGRATION.md for the handoff contract.
  */
 import { MAX_MOBS } from '../../constants'
+import { BALANCE } from '../../config'
 import { getMode } from '../../../meta/modes'
 import { getObjectiveMode, objectiveModeIds, type ObjectiveModeId } from '../modes/definitions'
 import type { RunModeId } from '../../../meta/types'
@@ -153,8 +154,8 @@ export function describeWave(mode: WaveModeId, seed: number, timeSeconds: number
   validTime(timeSeconds)
   if (!Number.isSafeInteger(seed)) throw new RangeError('Wave seed must be a safe integer')
   const config = schedule(mode)
-  const scale = mode === 'standard' ? 1.5 : mode === 'challenge' ? 0.85 : 1
-  const cycleSeconds = WAVE_CYCLE_SECONDS * scale
+  const cycleSeconds = BALANCE.modes.waveCycleSeconds[mode]
+  const scale = cycleSeconds / WAVE_CYCLE_SECONDS
   const cycle = Math.floor(timeSeconds / cycleSeconds)
   const offset = (timeSeconds - cycle * cycleSeconds) / scale
   const phase = STAGES.find(p => offset >= p.from && offset < p.to)!
