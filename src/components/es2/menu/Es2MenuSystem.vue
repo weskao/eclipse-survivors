@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<{
   audioUnlocked?: boolean; musicOn?: boolean; sfxOn?: boolean
   musicVolume?: number; sfxVolume?: number
   accessibilityPreferences?: AccessibilityPreferences
-  specialChoice?: { kind: 'evolution' | 'treasure'; items: readonly MenuChoice[] } | null
+  specialChoice?: { kind: 'evolution' | 'treasure'; tier?: import('../../../game/types').TreasureTier; items: readonly MenuChoice[] } | null
   relics?: readonly RelicEntry[]
   notification?: { title: string; message: string } | null
   loading?: { message?: string; hero?: JobId; progress?: number } | null
@@ -108,7 +108,7 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
     </Es2MainMenu>
     <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still'"
       @choose="chooseUpgrade" @settings="emit('settings')" />
-    <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :items="specialCards.items"
+    <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :tier="specialCards.tier" :items="specialCards.items"
       :still="upgradeEffect === 'still'" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')">

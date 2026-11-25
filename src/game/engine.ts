@@ -29,7 +29,7 @@ import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
-import { impact } from './fx'
+import { burst, impact } from './fx'
 import { emitCombatVfx } from './content/packs/combat-vfx'
 import { EVOLUTIONS } from './evolutions'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
@@ -398,12 +398,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     openTreasure: relicsEnabled ? (state, chestId, tier) => {
       const offer = openTreasure(state, chestId, random, undefined, tier)
       if (!offer) return false
-      ui.specialChoice = { kind: 'treasure', items: offer.options.map(id => {
+      ui.specialChoice = { kind: 'treasure', tier: offer.tier, items: offer.options.map(id => {
         const relic = RELIC_BY_ID.get(id)!
         return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity, cursed: relic.cursed }
       }) }
       ui.upgrades = []
       screen('level')
+      const reveal = ['common','rare','epic','legendary','cursed'].indexOf(offer.tier ?? 'common')
+      audio.playSfx('treasureReveal', reveal)
       return true
     } : undefined,
   }
@@ -643,9 +645,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         !ui.specialChoice.items.some(item => item.id === id)) return
     if (!claimTreasure(s, offer.chestId, id as RelicId)) return
     ui.specialChoice = null
-    audio.playSfx('upgrade')
-    message('✦ 已獲得聖物：' + RELIC_BY_ID.get(id as RelicId)!.title)
+    const relic = RELIC_BY_ID.get(id as RelicId)!
+    audio.playSfx('treasureClaim')
+    message('✦ 已獲得聖物：' + relic.title)
     screen('play')
+    if (s.hero) {
+      const color = relic.cursed ? '#ef8db5' : relic.rarity === 'legendary' ? '#ffdb86' : relic.rarity === 'epic' ? '#c5a1ff' : '#8fc7ff'
+      impact(s, s.hero.x, s.hero.y, relic.rarity === 'legendary' ? 160 : 96, color, .8)
+      burst(s, s.hero.x, s.hero.y, color, relic.rarity === 'legendary' ? 24 : 12)
+    }
     if (s.levelQueue) offerUpgrades()
     hud()
   }

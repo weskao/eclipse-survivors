@@ -21,7 +21,7 @@ export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'massKill' | 'boss' | 'bossStagger' | 'bossDefeat' | 'hurt' | 'pickup' | 'pickupBurst' | 'evolution'
-  | 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill'
+  | 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill' | 'treasureReveal' | 'treasureClaim'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 

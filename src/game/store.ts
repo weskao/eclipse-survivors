@@ -79,8 +79,9 @@ export interface HudView {
 
 export interface UiTreasureChoice {
   readonly kind: 'treasure'
+  readonly tier?: import('./types').TreasureTier
   readonly items: readonly { id: string; title: string; description?: string; icon?: string;
-    rarity: SkillRarity | 'epic' }[]
+    rarity: SkillRarity | 'epic'; cursed?: boolean }[]
 }
 
 /** Reactive UI snapshot (engine owns it as a `shallowReactive`; replace nested objects, don't mutate). */

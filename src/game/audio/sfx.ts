@@ -7,6 +7,7 @@ export type SfxTone = readonly [number, number, number, number, OscillatorType]
 export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
+  treasureReveal: .35, treasureClaim: .35,
   hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, eliteKill: 0.45,
   hurt: 0.28, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
   'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75,
@@ -32,6 +33,8 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   boss: [[38, 0, 0.65, 0.075, 'sawtooth'], [45, 0.13, 0.79, 0.04, 'triangle']],
   bossStagger: [[36, 0, 0.23, 0.07, 'triangle'], [55, 0.025, 0.24, 0.05, 'sawtooth'], [67, 0.12, 0.38, 0.035, 'sine'], [79, 0.2, 0.4, 0.025, 'triangle']],
   bossDefeat: [[52, 0, 0.4, 0.076, 'triangle'], [59, 0.2, 0.54, 0.055, 'sine'], [64, 0.34, 0.68, 0.05, 'sine']],
+  treasureReveal: [[60,0,.18,.035,'triangle'],[72,.08,.32,.028,'sine']],
+  treasureClaim: [[67,0,.16,.04,'triangle'],[79,.08,.24,.034,'sine'],[84,.18,.32,.024,'sine']],
   hitNormal: [[45, 0, .07, .025, 'triangle'], [76, .012, .055, .016, 'sine']],
   hitHeavy: [[31, 0, .14, .055, 'triangle'], [43, .012, .13, .032, 'sawtooth'], [65, .04, .18, .024, 'triangle']],
   hitCritical: [[38, 0, .12, .049, 'triangle'], [77, .015, .11, .035, 'sawtooth'], [89, .05, .2, .028, 'sine'], [96, .12, .22, .016, 'sine']],
@@ -70,4 +73,15 @@ const STREAK_TONES: Readonly<Record<number, readonly SfxTone[]>> = {
 }
 export function milestoneTones(count: number): readonly SfxTone[] {
   return STREAK_TONES[count] ?? SFX_CUES.killStreak
+}
+
+const TREASURE_TONES: readonly (readonly SfxTone[])[] = [
+  SFX_CUES.treasureReveal,
+  [[55,0,.18,.035,'triangle'],[67,.09,.25,.035,'sine'],[79,.18,.30,.025,'sine']],
+  [[48,0,.22,.05,'triangle'],[60,.07,.30,.036,'triangle'],[72,.17,.35,.03,'sine'],[84,.28,.34,.023,'sine']],
+  [[36,0,.35,.058,'triangle'],[48,.04,.36,.044,'sawtooth'],[67,.14,.38,.037,'triangle'],[79,.27,.42,.028,'sine'],[91,.40,.48,.02,'sine']],
+  [[33,0,.29,.055,'triangle'],[46,.04,.34,.045,'sawtooth'],[58,.14,.36,.033,'triangle'],[65,.24,.38,.025,'sine']],
+]
+export function treasureTones(tier: number): readonly SfxTone[] {
+  return TREASURE_TONES[tier] ?? SFX_CUES.treasureReveal
 }
