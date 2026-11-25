@@ -115,20 +115,32 @@ try {
           name + ': overflowing content is not reachable: ' + JSON.stringify(scroll))
       record.choiceScroll = scroll
       if (touch && width < height) {
-        record.portraitArt = await choice.locator('.es2-card-art').evaluateAll(frames => frames.map(frame => {
+        record.portraitArt = await choice.locator('.es2-card-art').evaluateAll(async frames => (await Promise.all(frames.map(async frame => {
           const image = frame.querySelector('img')
           if (!image) return null
+          await image.decode()
+          const picture = frame.querySelector('picture')
+          const pictureStyle = getComputedStyle(picture)
           const f = frame.getBoundingClientRect(), i = image.getBoundingClientRect()
           const style = getComputedStyle(image)
           const x = f.left + frame.clientLeft + frame.clientWidth / 2
           const y = f.top + frame.clientTop + frame.clientHeight / 2
           return { x: Math.abs(x - (i.left + i.right) / 2), y: Math.abs(y - (i.top + i.bottom) / 2),
-            width: i.width, height: i.height, fit: style.objectFit, position: style.objectPosition }
-        }).filter(Boolean))
+            width: i.width, height: i.height, fit: style.objectFit, position: style.objectPosition,
+            frameWidth: frame.clientWidth, frameHeight: frame.clientHeight,
+            picturePosition: pictureStyle.position, pictureDisplay: pictureStyle.display,
+            pictureAlign: pictureStyle.alignItems, pictureJustify: pictureStyle.justifyContent }
+        }))).filter(Boolean))
         assert.ok(record.portraitArt.length > 0, name + ': no choice illustrations')
         for (const art of record.portraitArt) {
           assert.ok(art.width > 0 && art.height > 0 && art.x <= 1 && art.y <= 1,
             name + ': illustration not centered in its left frame: ' + JSON.stringify(art))
+          assert.equal(art.picturePosition, 'absolute', name + ': portrait rules overridden by skill polish')
+          assert.equal(art.pictureDisplay, 'flex')
+          assert.equal(art.pictureAlign, 'center')
+          assert.equal(art.pictureJustify, 'center')
+          assert.ok(art.width <= art.frameWidth + 1 && art.height <= art.frameHeight + 1,
+            name + ': illustration clips outside frame: ' + JSON.stringify(art))
           assert.equal(art.fit, 'contain')
           assert.equal(art.position, '50% 50%')
         }

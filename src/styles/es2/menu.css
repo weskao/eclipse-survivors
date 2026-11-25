@@ -204,8 +204,9 @@
   .es2-dialog-choice .es2-choice>.es2-card-art{contain:size}
   /* Stretch the frame to the text rows, but center art against the frame itself. */
   .es2-dialog-choice .es2-choice>.es2-card-art{height:auto;align-self:stretch;place-items:center}
-  .es2-dialog-choice .es2-card-art>picture{position:absolute;inset:0;display:block;width:100%;height:100%}
-  .es2-dialog-choice .es2-card-art img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;padding:6px}
+  /* Outrank the later skill-polish picture grid; center the intrinsic art without stretching. */
+  .es2-dialog-choice .es2-choice>.es2-card-art>picture{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;width:auto;height:auto}
+  .es2-dialog-choice .es2-choice>.es2-card-art img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center;padding:6px}
   .es2-dialog-choice .es2-choice .es2-card-meta{min-height:0}
   .es2-choice>:not(.es2-card-art){grid-column:2;min-width:0}
   .es2-choice .es2-card-meta{padding:3px 8px 0}
