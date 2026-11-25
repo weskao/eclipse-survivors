@@ -65,3 +65,28 @@ test('projected shin can foreshorten without moving the ankle attachment away fr
  const p=mapProjectedSegment(b,a,b,c,d);close(p[0],d[0]);close(p[1],d[1])
  const q=mapProjectedSegment([2,0],a,b,c,d);close(len(q,c),2)
 })
+
+test('Knight full-speed cadence avoids seven footfalls per second without changing movement speed',async()=>{
+ const {advanceHumanGait}=await import('./human-motion.mjs')
+ let gait=advanceHumanGait(null,{step:0,clock:0,vx:190,vy:0,pose:'run'},134)
+ for(let i=1;i<=120;i++)gait=advanceHumanGait(gait,{step:(190*i/120)/18,clock:i/120,vx:190,vy:0,pose:'run'},134)
+ assert.ok(gait.cycle*2>2.5&&gait.cycle*2<4.2)
+ assert.ok(gait.stance<.5&&gait.strideLength>90)
+})
+test('gait phase is continuous when changing speed or attacking, and dash does not machine-step',async()=>{
+ const {advanceHumanGait}=await import('./human-motion.mjs')
+ const a=advanceHumanGait(null,{step:0,clock:0,vx:60,vy:0,pose:'run'},134)
+ const b=advanceHumanGait(a,{step:1/18,clock:.016,vx:60,vy:0,pose:'run'},134)
+ const c=advanceHumanGait(b,{step:3/18,clock:.032,vx:125,vy:0,pose:'attack'},134)
+ assert.ok(a.stance>.55);assert.ok(c.cycle>b.cycle&&c.cycle-b.cycle<.06)
+ const dash=advanceHumanGait(c,{step:12/18,clock:.048,vx:500,vy:0,pose:'dash'},134)
+ close(dash.cycle,c.cycle);close(dash.strength,0)
+})
+
+test('long run stride lowers pelvis to keep the support leg within reach',()=>{
+ const p={...profile,viewAngle:0},gait={cycle:0,strideLength:120,stance:.48,strength:1}
+ const pose=sampleHumanPose(p,{...base,pose:'run',stride:1,heading:Math.PI,gait})
+ const hip=pose.left[0],restHip=p.legJoints.left[0].map((v,i)=>v*(i?p.height:p.width))
+ assert.ok(hip[1]-restHip[1]>3)
+ const leg=pose.left;assert.ok(len(leg[0],leg[2])<=len(restHip,p.legJoints.left[1].map((v,i)=>v*(i?p.height:p.width)))+len(p.legJoints.left[1].map((v,i)=>v*(i?p.height:p.width)),p.legJoints.left[2].map((v,i)=>v*(i?p.height:p.width)))+1e-5)
+})

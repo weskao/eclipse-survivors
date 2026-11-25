@@ -42,12 +42,21 @@ function segmentTransform(a,b,c,d){const r=angle(c,d)-angle(a,b),cos=Math.cos(r)
 function apply(t,p){return [t[0]*p[0]+(t[4]??-t[1])*p[1]+t[2],t[1]*p[0]+(t[5]??t[0])*p[1]+t[3]]}
 export function mapSegment(p,a,b,c,d){return apply(segmentTransform(a,b,c,d),p)}
 function restChains(profile){return Object.fromEntries(keys.map(k=>[k,(profile.armJoints?.[k]??profile.legJoints[k]).map(([x,y])=>[x*profile.width,y*profile.height])]))}
+// Integrate gait in distance space; changing speed never redivides accumulated travel.
+export function advanceHumanGait(old,p,height){
+ const speed=Math.hypot(p.vx,p.vy),run=ease((speed/height-.65)/.7),strideLength=height*(.48+.42*run),stance=.6-.12*run
+ const reset=!old||p.clock<old.clock||p.step<old.step,dt=reset?0:Math.max(0,p.clock-old.clock)
+ const dash=p.pose==='dash',strength=dash?0:ease(speed/(height*.25))
+ const delta=reset||dash?0:Math.min(2.1*dt,Math.max(0,(p.step-old.step)*18)/strideLength)
+ return {cycle:(reset?0:old.cycle)+delta,step:p.step,clock:p.clock,strideLength,stance,strength}
+}
 // Distance-driven contact curve: stance cancels root displacement at full gait.
-export function sampleFootCycle(distance,strideLength,side,stride){
- const u=((distance/strideLength+side*.5)%1+1)%1,stance=.6
+export function sampleFootCycle(distance,strideLength,side,stride,stance=.6){
+ const u=((distance/strideLength+side*.5)%1+1)%1
  const t=clamp((u-stance)/(1-stance)),travel=u<stance?strideLength*(stance/2-u):strideLength*stance*(ease(t)-.5)
  const lift=u<stance?0:Math.sin(Math.PI*t)**2
- const pitch=u<.12?-.22*(1-ease(u/.12)):u<.45?0:u<stance?.42*ease((u-.45)/.15):.42*(1-ease(t))-.22*ease(t)
+ const heelEnd=stance*.2,toeStart=stance*.75
+ const pitch=u<heelEnd?-.22*(1-ease(u/heelEnd)):u<toeStart?0:u<stance?.42*ease((u-toeStart)/(stance-toeStart)):.42*(1-ease(t))-.22*ease(t)
  return {travel:travel*stride,lift:lift*stride,pitch:pitch*stride,phase:u,planted:u<stance}
 }
 export function sampleSwordArc(p){
@@ -69,9 +78,10 @@ function footRest(profile,k,ankle){
 }
 function bootPose(foot,restAnkle,ankle,pitch){return {heel:add(ankle,rotateVector(sub(foot.heel,restAnkle),pitch)),toe:add(ankle,rotateVector(sub(foot.toe,restAnkle),pitch)),pitch}}
 export function sampleHumanPose(profile,p,rest=restChains(profile)){
- const w=profile.width,h=profile.height,phase=clamp(p.phase),stride=clamp(p.stride),dir=[Math.cos(p.heading),Math.sin(p.heading)],aim=[Math.cos(p.aim),Math.sin(p.aim)]
+ const w=profile.width,h=profile.height,phase=clamp(p.phase),stride=clamp(p.gait?.strength??p.stride),dir=[Math.cos(p.heading),Math.sin(p.heading)],aim=[Math.cos(p.aim),Math.sin(p.aim)]
  const attack=p.pose==='attack'||p.pose==='cast',arc=sampleSwordArc(p),strike=Math.max(0,arc.extension),windup=Math.max(0,-arc.extension)
- const cycle=p.step*18/(h*.39),a=sampleFootCycle(p.step*18,h*.39,0,stride),b=sampleFootCycle(p.step*18,h*.39,1,stride)
+ const length=p.gait?.strideLength??h*.39,cycle=p.gait?.cycle??p.step*18/length,stance=p.gait?.stance??.6
+ const a=sampleFootCycle(cycle*length,length,0,stride,stance),b=sampleFootCycle(cycle*length,length,1,stride,stance)
  const pelvis=[(rest.left[0][0]+rest.right[0][0])/2,(rest.left[0][1]+rest.right[0][1])/2]
  if(p.reducedMotion)return {...rest,root:[1,0,0,0],cape:0,feet:{left:bootPose(footRest(profile,'left',rest.left[2]),rest.left[2],rest.left[2],0),right:bootPose(footRest(profile,'right',rest.right[2]),rest.right[2],rest.right[2],0)},blade:0,reducedMotion:true}
  const roll=dir[0]*stride*.09+aim[0]*(strike-windup)*.10
@@ -81,6 +91,18 @@ export function sampleHumanPose(profile,p,rest=restChains(profile)){
  if(p.pose==='dash')shift[0]+=dir[0]*(1-phase)*w*.04
  if(p.pose==='death')shift[1]+=phase*h*.08
  if(p.pose==='victory')shift[1]-=Math.sin(phase*Math.PI)*h*.03
+ // Ground depth is foreshortened in the angled game view. Lower the pelvis
+ // when a long support stride would otherwise force a fully extended knee.
+ const groundY=Number.isFinite(profile.viewAngle)?.55:1
+ if(p.gait&&stride>0){
+  let compression=0
+  for(const [key,g] of [['left',a],['right',b]])if(g.planted){
+   const [hip,knee,ankle]=rest[key],reach=distance(hip,knee)+distance(knee,ankle)
+   const dx=ankle[0]+dir[0]*g.travel-hip[0]-shift[0],dy=ankle[1]+dir[1]*g.travel*groundY-hip[1]-shift[1]
+   compression=Math.max(compression,dy-Math.sqrt(Math.max(0,reach*reach-dx*dx)))
+  }
+  shift[1]+=Math.min(h*.09,compression)
+ }
  const c=Math.cos(roll),s=Math.sin(roll),root=[c,s,pelvis[0]+shift[0]-pelvis[0]*c+pelvis[1]*s,pelvis[1]+shift[1]-pelvis[0]*s-pelvis[1]*c]
  const contact=Math.atan2(Math.sin(p.aim-(profile.sourceAngle??p.aim)),Math.cos(p.aim-(profile.sourceAngle??p.aim)))
  const result={root,cape:Math.sin(cycle*TAU-.8)*stride*h*.025,feet:{},blade:attack?contact*(1-arc.recovery)+arc.angle:arc.angle,reducedMotion:false,neutral:stride===0&&arc.extension===0&&arc.angle===0&&['idle','run','attack','cast'].includes(p.pose)}
@@ -92,7 +114,7 @@ export function sampleHumanPose(profile,p,rest=restChains(profile)){
   if(leg){
    foot=footRest(profile,k,chain[2]);pitch=swing.pitch*Math.cos(p.heading)
    const contactPoint=swing.pitch>0?foot.toe:foot.heel,lever=sub(contactPoint,chain[2]),rolled=rotateVector(lever,pitch)
-   target=add(chain[2],[dir[0]*swing.travel+lever[0]-rolled[0],dir[1]*swing.travel-swing.lift*h*.065+lever[1]-rolled[1]])
+   target=add(chain[2],[dir[0]*swing.travel+lever[0]-rolled[0],dir[1]*swing.travel*groundY-swing.lift*h*.065+lever[1]-rolled[1]])
   }else{
    const side=k==='weapon'?1:-1,reach=k==='weapon'?w*.22:w*.09,extension=(strike-windup)*side*reach
    const swingAim=rotateVector(aim,arc.angle*side)

@@ -3,7 +3,7 @@ import { getRigidWeaponLayers } from '../../src/game/render/rigid-weapons.ts'
 import { sampleWeaponRig } from '../../src/game/render/weapon-rig.ts'
 import { advanceRigMotion, createRigSkin, deformRig, meshPoint, movementSlot } from './motion.mjs'
 import { loadDirectionalAssets } from './rig-assets.mjs'
-import { createHumanSkin, sampleHumanPose, deformHumanSkin } from './human-motion.mjs'
+import { createHumanSkin, sampleHumanPose, deformHumanSkin, advanceHumanGait } from './human-motion.mjs'
 import { needsRigRender } from './frame-policy.mjs'
 import { KNIGHT_RIG, defineRig, facingFor, validateViews, sampleRigVfx } from './rig.mjs'
 
@@ -94,6 +94,7 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             const selected=views?views[facing]:fallback
             if(active!==selected){if(active)active.group.visible=false;selected.group.visible=true;active=selected}
             const current=advanceRigMotion(old,input,selected.profile)
+            if(selected.human)current.gait=advanceHumanGait(old?.gait,input,selected.profile.height)
             const {body,vertices,skin,buffer,weapon:sword,layer}=selected
             const humanPose=selected.human?sampleHumanPose(selected.profile,current,skin.chains):null
             if(humanPose)deformHumanSkin(skin,vertices,humanPose)
