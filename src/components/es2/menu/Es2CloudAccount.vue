@@ -18,7 +18,7 @@ const resultMessage = computed(() => {
     if (props.cloud.status.value === 'error') return '暮光餘燼尚未同步，請重試。'
     return '正在同步暮光餘燼…'
   }
-  if (props.cloud.busy.value) return '正在連線 Google 帳號…'
+  if (props.cloud.busy.value || props.cloud.signingIn.value) return '正在連線 Google 帳號…'
   if (props.cloud.status.value === 'unavailable') return '雲端存檔尚未設定'
   if (props.cloud.status.value === 'error') return 'Google 登入失敗，請重試。'
   return '訪客餘燼保存在本機；登入後可跨裝置同步帳號餘燼。'

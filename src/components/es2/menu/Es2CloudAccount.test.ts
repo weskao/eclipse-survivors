@@ -14,8 +14,9 @@ function fixture() {
   const sync = vi.fn(async () => {})
   const available = ref(true)
   const confirmed = ref(false)
-  const cloud: Cloud = { status, user, login, sync, logout: vi.fn(async () => {}), available: computed(() => available.value), busy: computed(() => false), confirmed: computed(() => confirmed.value) }
-  return { cloud, status, user, login, sync, available, confirmed }
+  const signingIn = ref(false)
+  const cloud: Cloud = { status, user, login, sync, signingIn, logout: vi.fn(async () => {}), available: computed(() => available.value), busy: computed(() => false), confirmed: computed(() => confirmed.value) }
+  return { cloud, status, user, login, sync, available, confirmed, signingIn }
 }
 afterEach(() => { setLocale('zh-TW'); document.body.innerHTML = '' })
 describe('Google OAuth entry points', () => {
@@ -72,6 +73,16 @@ describe('Google OAuth entry points', () => {
     expect(wrapper.get('[data-es2-result-cloud-status]').text()).toContain('測試模式')
     expect(wrapper.get('[data-es2-result-cloud-status]').text()).not.toContain('已儲存至')
     expect(wrapper.find('[data-es2-result-cloud-retry]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+  it('keeps Google login clickable while a closed popup is still pending in Firebase', async () => {
+    const { cloud, login, signingIn } = fixture()
+    signingIn.value = true
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 0 } })
+    const button = wrapper.get('[data-es2-cloud-account]')
+    expect(button.attributes('disabled')).toBeUndefined()
+    await button.trigger('click')
+    expect(login).toHaveBeenCalledTimes(1)
     wrapper.unmount()
   })
   it('does not launch OAuth when Firebase is unavailable', async () => {
