@@ -21,6 +21,7 @@ export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'massKill' | 'boss' | 'bossStagger' | 'bossDefeat' | 'hurt' | 'pickup' | 'pickupBurst' | 'evolution'
+  | 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 
@@ -194,7 +195,9 @@ export interface MoveInput { x: number; y: number }
  */
 export interface GameHooks {
   otherLivingActors?(): number
-  sfx(cue: SfxCue): void
+  sfx(cue: SfxCue, milestone?: number): void
+  /** Optional local contact layer, routed through the same bounded audio mixer. */
+  contactSfx?(cue: 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill'): void
   message(text: string): void
   /** Original `chooseUpgrade()`: switch to 'level' mode and offer 3 upgrades. */
   offerUpgrades(): void

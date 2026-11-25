@@ -326,8 +326,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   const hooks: GameHooks = {
     otherLivingActors: () => factions?.runtime.enemies.length ?? 0,
-    sfx: cue => {
-      audio.playSfx(cue)
+    contactSfx: cue => audio.playSfx(cue),
+    sfx: (cue, milestone) => {
+      if (milestone === undefined) audio.playSfx(cue)
+      else audio.playSfx(cue, milestone)
       if (s.mode !== 'play' || !presentationPolicy?.haptics || !ui.coarsePointer || s.time - lastHapticAt < 0.65) return
       const duration = cue === 'bossDefeat' ? 45 : cue === 'bossStagger' || cue === 'killStreak' ? 30 : cue === 'massKill' || cue.endsWith('-special') ? 18 : 0
       if (!duration || typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return

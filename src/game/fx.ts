@@ -54,6 +54,7 @@ export function zigzag(s: GameState, x1: number, y1: number, x2: number, y2: num
     pts.push({ x: x1 + (x2 - x1) * t + rand(-22, 22), y: y1 + (y2 - y1) * t + rand(-19, 19) })
   }
   pts.push({ x: x2, y: y2 })
+  if (s.lightningFx.length >= 48) s.lightningFx.shift()
   s.lightningFx.push({ pts, life: 0.23, max: 0.23 })
 }
 

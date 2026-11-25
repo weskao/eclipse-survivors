@@ -7,6 +7,7 @@ export type SfxTone = readonly [number, number, number, number, OscillatorType]
 export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
+  hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, eliteKill: 0.45,
   hurt: 0.28, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
   'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75,
 }
@@ -31,6 +32,10 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   boss: [[38, 0, 0.65, 0.075, 'sawtooth'], [45, 0.13, 0.79, 0.04, 'triangle']],
   bossStagger: [[36, 0, 0.23, 0.07, 'triangle'], [55, 0.025, 0.24, 0.05, 'sawtooth'], [67, 0.12, 0.38, 0.035, 'sine'], [79, 0.2, 0.4, 0.025, 'triangle']],
   bossDefeat: [[52, 0, 0.4, 0.076, 'triangle'], [59, 0.2, 0.54, 0.055, 'sine'], [64, 0.34, 0.68, 0.05, 'sine']],
+  hitNormal: [[45, 0, .07, .025, 'triangle'], [76, .012, .055, .016, 'sine']],
+  hitHeavy: [[31, 0, .14, .055, 'triangle'], [43, .012, .13, .032, 'sawtooth'], [65, .04, .18, .024, 'triangle']],
+  hitCritical: [[38, 0, .12, .049, 'triangle'], [77, .015, .11, .035, 'sawtooth'], [89, .05, .2, .028, 'sine'], [96, .12, .22, .016, 'sine']],
+  eliteKill: [[36, 0, .21, .048, 'triangle'], [48, .05, .25, .036, 'sawtooth'], [67, .13, .28, .027, 'sine']],
   hurt: [[42, 0, 0.2, 0.07, 'sawtooth'], [35, 0.06, 0.19, 0.05, 'triangle'], [30, 0.12, 0.13, 0.022, 'sine']],
   pickup: [[81, 0, 0.1, 0.033, 'sine'], [88, 0.06, 0.16, 0.025, 'triangle'], [93, 0.12, 0.15, 0.014, 'sine']],
   pickupBurst: [[72, 0, 0.14, 0.05, 'triangle'], [84, 0.04, 0.18, 0.044, 'sine'], [88, 0.09, 0.2, 0.03, 'triangle'], [96, 0.14, 0.24, 0.022, 'sine']],
@@ -53,3 +58,16 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
 
 /** Cues that also get a short percussive noise burst. */
 export const NOISE_CUES: ReadonlySet<SfxCue> = new Set<SfxCue>(['knight', 'dash', 'hurt', 'boss'])
+
+/** Precomputed, distinct musical accents; no additional per-hit audio allocation. */
+const STREAK_TONES: Readonly<Record<number, readonly SfxTone[]>> = {
+  10: SFX_CUES.killStreak,
+  25: [[43,0,.22,.052,'triangle'],[55,.06,.24,.045,'sawtooth'],[67,.15,.32,.033,'triangle'],[79,.23,.45,.028,'sine']],
+  50: [[36,0,.28,.058,'triangle'],[55,.04,.25,.046,'sawtooth'],[64,.12,.34,.037,'triangle'],[76,.22,.42,.029,'sine'],[88,.36,.35,.018,'sine']],
+  100: [[31,0,.35,.065,'triangle'],[43,.04,.36,.046,'sawtooth'],[55,.14,.4,.038,'triangle'],[67,.26,.46,.031,'sine'],[79,.4,.4,.025,'sine']],
+  200: [[28,0,.39,.064,'triangle'],[40,.035,.42,.048,'sawtooth'],[55,.13,.45,.042,'triangle'],[64,.26,.49,.033,'sine'],[76,.4,.53,.025,'sine'],[88,.53,.48,.018,'sine']],
+  500: [[24,0,.48,.07,'triangle'],[36,.04,.45,.049,'sawtooth'],[48,.16,.46,.043,'triangle'],[67,.29,.55,.036,'sine'],[79,.46,.62,.029,'sine'],[91,.64,.65,.02,'sine']],
+}
+export function milestoneTones(count: number): readonly SfxTone[] {
+  return STREAK_TONES[count] ?? SFX_CUES.killStreak
+}

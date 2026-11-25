@@ -40,6 +40,8 @@ export function recordKill(state: GameState): void {
   streak.bestBurst = Math.max(streak.bestBurst, streak.burst)
 }
 
+const STREAK_COLORS: Readonly<Record<number, string>> = { 10:'#bca4ff', 25:'#a6d5ff', 50:'#e8b7ff', 100:'#ffc177', 200:'#ff9d9e', 500:'#fff0af' }
+
 const MILESTONE_LABELS: Readonly<Record<number, string>> = {
   10: '殺戮序曲', 25: '狂暴殺戮', 50: '無盡屠戮', 100: '毀滅狂潮', 200: '暮光浩劫', 500: '神之殲滅',
 }
@@ -55,8 +57,8 @@ export function flushKillMilestone(state: GameState, hooks: GameHooks): void {
     streak.milestone = streak.pendingMilestone
     streak.pendingMilestone = 0
     hooks.message(MILESTONE_LABELS[streak.milestone]!)
-    hooks.sfx('killStreak')
-    if (hero) impact(state, hero.x, hero.y, Math.min(180, 70 + streak.milestone), streak.milestone >= 100 ? '#ffc177' : '#bca4ff', 2)
+    hooks.sfx('killStreak', streak.milestone)
+    if (hero) impact(state, hero.x, hero.y, Math.min(180, 70 + streak.milestone), STREAK_COLORS[streak.milestone] ?? '#bca4ff', 2)
   } else {
     hooks.message(`瞬間多殺 · ${burst}×`)
     hooks.sfx('massKill')

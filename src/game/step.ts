@@ -147,6 +147,13 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
   compactXpGems(s.stars)
 }
 
+/** Stable in-place cosmetic compaction: no per-frame filter arrays. */
+function compactEffects<T extends {life: number}>(items: T[]): void {
+  let write = 0
+  for (let i = 0; i < items.length; i++) if (items[i]!.life > 0) items[write++] = items[i]!
+  items.length = write
+}
+
 function ageEffects(s: GameState, hero: Hero, dt: number): void {
   let fallenWrite = 0
   for (const mob of s.fallenMobs) {
@@ -177,16 +184,16 @@ function ageEffects(s: GameState, hero: Hero, dt: number): void {
     z.y -= (z.critical ? 42 : 34) * dt
     z.life -= dt
   }
-  s.numberFx = s.numberFx.filter((z) => z.life > 0)
-  s.fx = s.fx.filter((f) => f.life > 0)
+  compactEffects(s.numberFx)
+  compactEffects(s.fx)
   for (const z of s.impactWaves) z.life -= dt
-  s.impactWaves = s.impactWaves.filter((z) => z.life > 0)
+  compactEffects(s.impactWaves)
   for (const z of s.lightningFx) z.life -= dt
-  s.lightningFx = s.lightningFx.filter((z) => z.life > 0)
+  compactEffects(s.lightningFx)
   for (const z of s.motionEchoes) z.life -= dt
-  s.motionEchoes = s.motionEchoes.filter((z) => z.life > 0)
+  compactEffects(s.motionEchoes)
   for (const w of s.swipes) w.life -= dt
-  s.swipes = s.swipes.filter((w) => w.life > 0)
+  compactEffects(s.swipes)
 }
 
 export interface BossStepAdapter {

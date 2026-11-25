@@ -7,7 +7,7 @@ import { createEs2Score } from './es2/score'
 import type { BossId } from '../content/bosses/definitions'
 import { ATTACK_PRESENTATION } from '../content/bosses/attack-presentation'
 import { createBossAttackAudio } from './boss-attacks'
-import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
+import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones } from './sfx'
 import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
@@ -377,7 +377,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     prepareBossAttackAudio(id) { bossAttacks.prepare(id) },
     playBossAttack(id, stage) { bossAttacks.play(id, stage) },
     cancelBossAttackAudio() { bossAttacks.cancel() },
-    playSfx(cue) {
+    playSfx(cue, milestone) {
       const ctx = running()
       if (!sfxOn || !sfxVolume || !ctx) return
       const now = ctx.currentTime
@@ -400,7 +400,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
           return
         } catch { /* fall back to the bounded original cue */ }
       }
-      for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) {
+      for (const [pitch, delay, duration, gain, wave] of (cue === 'killStreak' && milestone !== undefined ? milestoneTones(milestone) : SFX_CUES[cue])) {
         const source = tone(pitch, now + delay, duration, gain, wave)
         if (heroCast && source) heroCastVoices.push({ source, endsAt: now + delay + duration + 0.03 })
       }

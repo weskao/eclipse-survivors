@@ -49,7 +49,7 @@ export interface AudioSystem {
   prepareBossAttackAudio?(id: BossId | null): void
   playBossAttack?(id: BossAttackId, stage: BossAttackStage): void
   cancelBossAttackAudio?(): void
-  playSfx(cue: SfxCue): void
+  playSfx(cue: SfxCue, milestone?: number): void
   /** Original `music()`, called once per animation frame with the current mode. */
   tick(mode: GameMode): void
   /** bgm side of original `screen(name)`: pause/rewind/volume/play and menu motif reset. */

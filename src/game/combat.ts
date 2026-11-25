@@ -40,7 +40,7 @@ export function nearestCombatTargets(targets: CombatTarget[], hero: Hero): Comba
   return alive.sort((a,b) => distances.get(a)! - distances.get(b)!)
 }
 
-export function hitTarget(s: GameState, e: CombatTarget, damage: number, hooks: GameHooks, factions?: FactionBridge, source = s.hero): boolean {
+export function hitTarget(s: GameState, e: CombatTarget, damage: number, hooks: GameHooks, factions?: FactionBridge, source: {x: number; y: number} | null = s.hero): boolean {
   if (!source || e.hp <= 0) return false
   const before = e.hp
   if ('radius' in e) factions?.hitFaction(s, e, damage, source.x, source.y, hooks)
@@ -76,6 +76,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   e.ky = (e.y - hero.y) / knock
   const impactAngle = Math.atan2(e.ky, e.kx)
   emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy)
+  hooks.contactSfx?.(critical ? 'hitCritical' : heavy ? 'hitHeavy' : 'hitNormal')
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
@@ -89,6 +90,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
     s.stars.push({ x: e.x, y: e.y, value: Math.round(value * (e.rewardXpMultiplier ?? 1)), t: rand(0, 6) })
     burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
+    if (!boss && e.elite) hooks.contactSfx?.('eliteKill')
     if (boss) {
       s.bossDefeated = true
       s.enemyShots.length = 0
