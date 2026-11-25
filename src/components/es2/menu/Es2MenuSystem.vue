@@ -77,6 +77,7 @@ const specialCards = computed(() => {
   })) }
   return { ...offer, items: offer.items.map(item => ({
     ...item,
+    cursed: RELIC_BY_ID.get(item.id as RelicId)?.cursed,
     imageSrc: RELIC_BY_ID.get(item.id as RelicId)?.cursed ? WORLD_ART.ui['treasure-cursed']
       : item.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary']
         : item.rarity === 'rare' || item.rarity === 'epic' ? WORLD_ART.ui['treasure-rare']

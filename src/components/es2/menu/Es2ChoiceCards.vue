@@ -28,6 +28,7 @@ function select(item: MenuChoice): void {
         <span v-if="item.evolution" class="es2-evolution-sigil" aria-hidden="true">✧</span>
       </div>
       <span class="es2-card-meta"><img class="es2-rarity-icon" :src="rarityIcon(item.rarity)" data-es2-rarity-icon alt="" loading="lazy" decoding="async" /><span class="es2-rarity-label">{{ t(item.evolution ? '究極進化' : item.rarity === 'legendary' ? '傳說' : item.rarity === 'epic' ? '史詩' : item.rarity === 'rare' ? '稀有' : '普通') }}</span><span v-if="index < 9" class="es2-key-hint" aria-hidden="true">{{ index + 1 }}</span></span>
+      <small v-if="item.cursed" class="es3-curse-warning" data-es3-cursed>{{ t('詛咒 · 有代價') }}</small>
       <strong class="es2-card-name">{{ t(item.title) }}</strong>
       <span v-if="item.level !== undefined" class="es2-card-level">Lv.{{ item.level }} <template v-if="item.maxLevel">→ {{ Math.min(item.maxLevel, item.level + 1) }} / {{ item.maxLevel }}</template></span>
       <small v-if="item.description" class="es2-card-description">{{ t(item.description) }}</small>
@@ -42,3 +43,7 @@ function select(item: MenuChoice): void {
     </button>
   </div>
 </template>
+
+<style scoped>
+.es3-curse-warning { color: #ffd4e7; border: 1px solid #9d4e83; border-radius: .25rem; padding: .16rem .45rem; background: #351d36; font-weight: 600; }
+</style>

@@ -7,7 +7,7 @@ export type SfxTone = readonly [number, number, number, number, OscillatorType]
 export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, boss: 0.8, bossDefeat: 0.8,
-  hurt: 0.28, pickup: 0.16, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
+  hurt: 0.28, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
   'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75,
 }
 
@@ -31,6 +31,8 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   bossDefeat: [[52, 0, 0.4, 0.076, 'triangle'], [59, 0.2, 0.54, 0.055, 'sine'], [64, 0.34, 0.68, 0.05, 'sine']],
   hurt: [[42, 0, 0.2, 0.07, 'sawtooth'], [35, 0.06, 0.19, 0.05, 'triangle'], [30, 0.12, 0.13, 0.022, 'sine']],
   pickup: [[81, 0, 0.1, 0.033, 'sine'], [88, 0.06, 0.16, 0.025, 'triangle'], [93, 0.12, 0.15, 0.014, 'sine']],
+  pickupBurst: [[72, 0, 0.14, 0.05, 'triangle'], [84, 0.04, 0.18, 0.044, 'sine'], [88, 0.09, 0.2, 0.03, 'triangle'], [96, 0.14, 0.24, 0.022, 'sine']],
+  evolution: [[43, 0, 0.38, 0.065, 'triangle'], [55, 0.04, 0.4, 0.055, 'sawtooth'], [67, 0.14, 0.45, 0.042, 'triangle'], [79, 0.24, 0.48, 0.035, 'sine'], [91, 0.36, 0.5, 0.025, 'sine']],
   scene: [[57, 0, 0.35, 0.035, 'sine'], [64, 0.1, 0.52, 0.032, 'triangle'], [76, 0.26, 0.64, 0.022, 'sine']],
   deny: [[56, 0, 0.11, 0.026, 'triangle'], [49, 0.09, 0.18, 0.019, 'sine']],
   victory: [[64, 0, 0.28, 0.043, 'triangle'], [67, 0.13, 0.34, 0.035, 'sine'], [76, 0.29, 0.43, 0.023, 'sine']],

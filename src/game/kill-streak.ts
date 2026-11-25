@@ -38,7 +38,7 @@ export function recordKill(state: GameState): void {
 }
 
 const MILESTONE_LABELS: Readonly<Record<number, string>> = {
-  10: '殺戮序曲', 25: '狂暴殺戮', 50: '無情屠戮', 100: '戰場主宰', 200: '暮光浩劫', 500: '不朽傳奇',
+  10: '殺戮序曲', 25: '狂暴殺戮', 50: '無盡屠戮', 100: '毀滅狂潮', 200: '暮光浩劫', 500: '神之殲滅',
 }
 
 /** One announcement and one layered cue for the highest milestone crossed in a tick. */

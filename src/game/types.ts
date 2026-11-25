@@ -20,7 +20,7 @@ export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard
 /** Shared gameplay and UI SFX cues, including hero-specific active skills. */
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
-  | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup'
+  | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup' | 'pickupBurst' | 'evolution'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 
@@ -121,7 +121,7 @@ export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
 export interface MotionEcho { x: number; y: number; kind: JobId; frame: number; angle: number; life: number; max: number }
 
-export type WorldEventKind = 'chest' | 'shrine' | 'invasion' | 'blessing' | 'bargain' | 'challenge'
+export type WorldEventKind = 'chest' | 'shrine' | 'invasion' | 'blessing' | 'bargain' | 'challenge' | 'magnet'
 export interface WorldEvent extends Point { id: number; kind: WorldEventKind; expiresAt: number }
 
 /** Everything the original kept in IIFE-level `let`s that gameplay and rendering read. */
@@ -171,6 +171,7 @@ export interface GameState {
   sceneEnteredAt: number
   hazardLastHitAt: number
   blessingUntil: number
+  magnetUntil: number
   challengeUntil: number
   challengePoint: Point | null
   /** Viewport in CSS pixels (original `W`, `H`); spawn radius depends on it. */

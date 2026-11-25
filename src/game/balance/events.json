@@ -5,7 +5,8 @@
     "invasion": 0.12,
     "blessing": 0.19,
     "bargain": 0.11,
-    "challenge": 0.1
+    "magnet": 0.02,
+    "challenge": 0.08
   },
   "spawnChance": 0.95,
   "spawnIntervalBase": 5,
@@ -16,6 +17,7 @@
   "chestXp": 12,
   "shrineHealing": 36,
   "blessingSeconds": 12,
+  "magnetSeconds": 5,
   "blessingHealPerSecond": 2.4,
   "bargainMinHp": 24,
   "bargainHpCost": 14,

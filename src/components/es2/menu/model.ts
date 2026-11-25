@@ -18,6 +18,7 @@ export interface MenuChoice {
   maxLevel?: number
   requirements?: string
   evolution?: boolean
+  cursed?: boolean
   disabled?: boolean
 }
 export interface RelicEntry extends MenuChoice { owned?: boolean; effect?: string }

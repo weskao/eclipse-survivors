@@ -76,6 +76,10 @@ function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eve
       addXp(s, BALANCE.events.bargainXp, hooks)
       hooks.message('✦ 禁忌契約 · 以生命換取力量')
       break
+    case 'magnet':
+      s.magnetUntil = s.time + BALANCE.events.magnetSeconds
+      hooks.message('✦ 全場磁吸 · 吸引所有經驗水晶')
+      break
     case 'challenge':
       s.challengeUntil = s.time + BALANCE.events.challengeSeconds
       s.challengePoint = { x: hero.x, y: hero.y }

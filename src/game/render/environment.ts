@@ -87,11 +87,11 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
 }
 
 export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number, world?: WorldRuntimeImages): void {
-  const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎' }
+  const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎', magnet: '✦' }
   const titles = { chest: '古代寶箱', shrine: '魔法祭壇', invasion: '菁英入侵',
-    blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉' }
+    blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉', magnet: '全場磁吸' }
   const colors = { chest: '#ffcc75', shrine: '#b9d9ff', invasion: '#ff8176',
-    blessing: '#a8ffc9', bargain: '#d6a9ff', challenge: '#ffc288' }
+    blessing: '#a8ffc9', bargain: '#d6a9ff', challenge: '#ffc288', magnet: '#8ddfff' }
   for (const e of s.events) {
     const x = e.x + ox
     const y = e.y + oy
@@ -105,6 +105,8 @@ export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: numbe
     if (e.kind === 'chest' && world?.chest && ready(world.chest)) {
       // 192px authored WebP at 48px: 4x source detail, no new bitmap.
       ctx.drawImage(world.chest, x - 24, y - 40, 48, 48)
+    } else if (e.kind === 'magnet' && world?.magnet && ready(world.magnet)) {
+      ctx.drawImage(world.magnet, x - 24, y - 40, 48, 48)
     } else ctx.fillText(symbols[e.kind], x, y - 14)
     ctx.fillStyle = '#101a23db'; ctx.fillRect(x - 49, y + 11, 98, 20)
     ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = glow

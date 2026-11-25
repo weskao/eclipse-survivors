@@ -590,10 +590,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function chooseUpgrade(id: AbilityId): void {
     if (s.mode !== 'level' || !s.hero || ui.specialChoice || !ui.upgrades.some(up => up.id === id)) return
+    const evolved = ui.upgrades.some(up => up.id === id && up.isEvolution)
     if (!applyUpgrade(s, id, hooks, contentRegistry)) return
     screen('play')
     if (s.levelQueue) offerUpgrades()
-    audio.playSfx('upgrade')
+    if (!evolved) audio.playSfx('upgrade')
     hud()
   }
 

@@ -1,6 +1,7 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { BALANCE } from './config'
 import { expireKillStreak, flushKillMilestone } from './kill-streak'
+import { burst } from './fx'
 import { compactXpGems } from './xp-gems'
 import { attack, hit, victoryConditionMet } from './combat'
 import type { ContentRegistry } from './content/registry'
@@ -47,11 +48,15 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
     const travel = Math.min(dt, Math.max(0, b.life))
     b.x += b.vx * travel
     b.y += b.vy * travel
+    if (travel <= 0) { b.life -= dt; continue }
+    // The bridge owns both target pools, including misses. Resolve before
+    // expiring the projectile so its final swept segment can still hit.
+    if (factions) {
+      factions.resolveShot(s, b, hooks, { x: b.prevX, y: b.prevY })
+      b.life -= dt
+      continue
+    }
     b.life -= dt
-    if (travel <= 0) continue
-    // The faction bridge computes first contact against both legacy and new
-    // actors, preventing double hits and keeping existing XP ownership.
-    if (factions && factions.resolveShot(s, b, hooks, { x: b.prevX!, y: b.prevY! })) continue
     const dx = b.x - b.prevX
     const dy = b.y - b.prevY
     const lengthSquared = dx * dx + dy * dy
@@ -93,8 +98,8 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
 }
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
-  let playedPickup = false
-  const reach = BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
+  let collected = 0
+  const reach = s.magnetUntil > s.time ? Infinity : BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
   const pickupSquared = BALANCE.combat.starPickupDistance ** 2
   for (const star of s.stars) {
     if (star.dead) continue
@@ -121,21 +126,23 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
       // Keep one receipt per original drop, including pickup-triggered relic effects.
       if (star.mergedReceipts) {
         for (const [amount, count] of star.mergedReceipts) {
+          collected += count
           for (let i = 0; i < count; i++) {
             addXp(s, amount * s.pickupGainMultiplier, hooks)
             hooks.content?.(s, { type: 'pickup', kind: 'xp', amount })
           }
         }
       } else {
+        collected++
         addXp(s, star.value * s.pickupGainMultiplier, hooks)
         hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
       }
-      if (!playedPickup) {
-        hooks.sfx('pickup')
-        playedPickup = true
-      }
     }
   }
+  if (collected >= BALANCE.combat.xpBurstThreshold) {
+    hooks.sfx('pickupBurst')
+    burst(s, hero.x, hero.y - 10, '#8ddfff', BALANCE.combat.xpBurstParticles)
+  } else if (collected > 0) hooks.sfx('pickup')
   compactXpGems(s.stars)
 }
 

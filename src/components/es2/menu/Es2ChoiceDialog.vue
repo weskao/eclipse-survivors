@@ -8,7 +8,9 @@ import type { ChoiceKind, MenuChoice } from './model'
 const props = defineProps<{ active: boolean; kind: ChoiceKind; items: readonly MenuChoice[]; still?: boolean }>()
 const emit = defineEmits<{ choose: [id: string]; cancel: []; settings: [] }>()
 const selecting = ref(false)
+const revealSkipped = ref(false)
 const uniqueItems = computed(() => props.items.filter((item, i, all) => all.findIndex(other => other.id === item.id) === i))
+const reveal = computed(() => !props.active || props.still || revealSkipped.value ? undefined : props.kind === 'treasure' ? 'treasure' : props.kind === 'evolution' || uniqueItems.value.some(item => item.evolution && !item.disabled) ? 'evolution' : undefined)
 const titles: Record<ChoiceKind, string> = { level: '獲得新的命運刻印', evolution: '命運覺醒 · 神兵進化', treasure: '打開遠古秘藏' }
 const captions: Record<ChoiceKind, string> = { level: '選擇一項能力，繼續你的遠征', evolution: '一份傳說之力，改變戰鬥之道', treasure: '選擇並領取一項戰利品' }
 function choose(id: string): void {
@@ -35,6 +37,7 @@ function tap(id: string): void {
 }
 watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), props.kind], () => {
   selecting.value = false
+  revealSkipped.value = false
   shownAt = performance.now()
   earlyTap = false
 }, { immediate: true })
@@ -43,9 +46,22 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
   <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(captions[kind])" :dismissible="kind !== 'level'"
     wide variant="choice" :tone="kind === 'evolution' ? 'legendary' : 'neutral'" @cancel="emit('cancel')" @shortcut="shortcut">
     <template #header-actions><button v-if="kind === 'level'" type="button" class="es2-secondary es2-dialog-settings" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></template>
-    <div class="es2-selection-scene" :class="{ 'es2-still': still }" @pointerdown.capture="pointerdown">
+    <div class="es2-selection-scene" :class="{ 'es2-still': still }" :data-es3-reveal="reveal" @pointerdown.capture="pointerdown">
       <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="tap" />
+      <button v-if="reveal" type="button" class="es2-secondary es3-skip-reveal" data-es3-skip-reveal @click="revealSkipped = true">{{ t('跳過揭曉動畫') }}</button>
       <p class="es2-hint">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</p>
     </div>
   </Es2Dialog>
 </template>
+
+<style scoped>
+[data-es3-reveal] :deep(.es2-choice) { animation: es3-reveal 220ms ease-out both; }
+[data-es3-reveal] :deep(.es2-rarity-rare) { animation-duration: 300ms; }
+[data-es3-reveal] :deep(.es2-rarity-epic) { animation-duration: 420ms; }
+[data-es3-reveal] :deep(.es2-rarity-legendary) { animation-duration: 550ms; }
+[data-es3-reveal="evolution"] :deep(.es2-choice-evolution) { animation-duration: 650ms; }
+.es3-skip-reveal { display: block; margin: .5rem auto 0; }
+@keyframes es3-reveal { from { opacity: .55; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { [data-es3-reveal] :deep(.es2-choice) { animation: none; } .es3-skip-reveal { display: none; } }
+:global([data-es2-reduce-motion="true"]) [data-es3-reveal] :deep(.es2-choice), :global([data-es2-reduce-flashing="true"]) [data-es3-reveal] :deep(.es2-choice) { animation: none; }
+</style>

@@ -282,7 +282,7 @@ describe('ES3 bounded XP conservation', () => {
     expect(s.stars).toHaveLength(0)
     const receipts = content.mock.calls.filter(([, event]) => event.type === 'pickup').map(([, event]) => event.amount)
     expect(receipts.sort((a, b) => a - b)).toEqual(Array.from({ length: 250 }, (_, i) => i + 1))
-    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickup')).toHaveLength(1)
+    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickupBurst')).toHaveLength(1)
     step(s, 0.016, still, hooks)
     expect(hero.xp).toBe(total)
   })
