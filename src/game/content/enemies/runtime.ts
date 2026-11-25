@@ -38,6 +38,8 @@ export interface FactionEnemy {
   visualFrame?: number
   lastVisualHoldAt?: number
   deathVisual?: number
+  slow?: number
+  orbCooldown?: number
 }
 
 export interface FactionProjectile {
@@ -217,7 +219,7 @@ function move(e: FactionEnemy, hero: FactionArena['hero'], dt: number): void {
   const kind = e.kind
   const rage = kind === 'berserker' && e.hp <= e.max * 0.5 ? 1.75 : 1
   const swift = e.affix === 'swift' ? 1.45 : 1
-  const step = Math.min(length, e.speed * rage * swift * dt)
+  const step = Math.min(length, e.speed * rage * swift * ((e.slow ?? 0) > 0 ? 0.55 : 1) * dt)
   let toward = 1, strafe = 0
   if (kind === 'shadow-assassin') { toward = 0.6; strafe = e.cycle % 2 ? -1.05 : 1.05 }
   if (kind === 'dark-archer') { toward = length < 170 ? -0.7 : length > 290 ? 0.75 : 0; strafe = 0.6 }
@@ -379,6 +381,8 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
     const e = r.enemies[i]!
     if (!e || e.hp <= 0) continue
     e.phaseCooldown = Math.max(0, e.phaseCooldown - dt)
+    if (e.slow) e.slow = Math.max(0, e.slow - dt)
+    if (e.orbCooldown) e.orbCooldown = Math.max(0, e.orbCooldown - dt)
     if (e.visualHold) e.visualHold = Math.max(0, e.visualHold - dt)
     if (e.hitTime) e.hitTime = Math.max(0, e.hitTime - dt)
     if (e.releaseFx) e.releaseFx = Math.max(0, e.releaseFx - dt)

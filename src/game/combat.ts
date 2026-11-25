@@ -7,6 +7,7 @@ import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
 import type { GameHooks, GameState, Hero, Mob } from './types'
 import type { FactionBridge } from './content/enemies/integration'
+import type { FactionEnemy } from './content/enemies/runtime'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
 export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
@@ -18,6 +19,37 @@ export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
     distances.set(e, dist(e.x - hero.x, e.y - hero.y) - e.r)
   }
   return alive.sort((a, b) => distances.get(a)! - distances.get(b)!)
+}
+
+export type CombatTarget = Mob | FactionEnemy
+
+/** Preserve both actor identities and their authoritative damage/reward paths. */
+export function combatTargets(s: GameState, factions?: FactionBridge): CombatTarget[] {
+  if (!factions?.runtime.enemies.length) return s.mobs
+  return [...s.mobs, ...factions.runtime.enemies.filter(e => e.hp > 0 && e.state !== 'phase')]
+}
+
+export function targetRadius(e: CombatTarget): number {
+  return 'radius' in e ? e.radius : e.r
+}
+
+export function nearestCombatTargets(targets: CombatTarget[], hero: Hero): CombatTarget[] {
+  const alive = targets.filter(e => e.hp > 0 && (!('state' in e) || e.state !== 'phase'))
+  const distances = new Map<CombatTarget, number>()
+  for (const e of alive) distances.set(e, dist(e.x - hero.x, e.y - hero.y) - targetRadius(e))
+  return alive.sort((a,b) => distances.get(a)! - distances.get(b)!)
+}
+
+export function hitTarget(s: GameState, e: CombatTarget, damage: number, hooks: GameHooks, factions?: FactionBridge, source = s.hero): boolean {
+  if (!source || e.hp <= 0) return false
+  const before = e.hp
+  if ('radius' in e) factions?.hitFaction(s, e, damage, source.x, source.y, hooks)
+  else hit(s, e, damage, hooks)
+  return e.hp < before
+}
+
+export function slowTarget(e: CombatTarget, seconds: number): void {
+  if (e.hp > 0) e.slow = Math.max(e.slow ?? 0, seconds)
 }
 
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
@@ -146,33 +178,32 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
     const limit = BALANCE.combat.chainTargetsByRank[Math.min(chain, BALANCE.combat.chainTargetsByRank.length) - 1]!
     const damage = hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain)
     const shock = chain >= BALANCE.combat.chainShockRank
-    let from: Hero | Mob = hero
-    let killed: Mob | undefined
+    const chainTargets = factions ? nearestCombatTargets(combatTargets(s, factions), hero) : close
+    let from: {x: number; y: number} = hero
+    let killed: CombatTarget | undefined
     let count = 0, next = 0
-    for (; next < close.length && count < limit; next++) {
-      const to = close[next]!
-      if (to.hp <= 0) continue
+    for (; next < chainTargets.length && count < limit; next++) {
+      const to = chainTargets[next]!
+      if (!hitTarget(s, to, damage, hooks, factions, from)) continue
       zigzag(s, from.x, from.y - 25, to.x, to.y)
-      hit(s, to, damage, hooks)
-      if (to.hp > 0 && shock) to.slow = Math.max(to.slow, BALANCE.combat.chainShockSeconds)
+      if (shock) slowTarget(to, BALANCE.combat.chainShockSeconds)
       if (to.hp === 0) killed ??= to
       from = to
       count++
     }
     // One non-recursive discharge per cast. Only unvisited targets qualify.
     if (killed && chain >= BALANCE.combat.chainDischargeRank) {
-      let extra: Mob | undefined
+      let extra: CombatTarget | undefined
       let nearest = BALANCE.combat.chainDischargeRadius ** 2
-      for (; next < close.length; next++) {
-        const to = close[next]!
+      for (; next < chainTargets.length; next++) {
+        const to = chainTargets[next]!
         if (to.hp <= 0) continue
         const d2 = (to.x - killed.x) ** 2 + (to.y - killed.y) ** 2
         if (d2 < nearest) { nearest = d2; extra = to }
       }
       if (extra) {
         zigzag(s, killed.x, killed.y - 25, extra.x, extra.y)
-        hit(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, hooks)
-        if (extra.hp > 0) extra.slow = Math.max(extra.slow, BALANCE.combat.chainShockSeconds)
+        if (hitTarget(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, hooks, factions, killed)) slowTarget(extra, BALANCE.combat.chainShockSeconds)
       }
     }
     hooks.sfx('chain')

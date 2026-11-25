@@ -219,7 +219,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   tickEnemyProjectiles(s, dt, hooks)
   factions?.tick(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
-  tickSkills(s, dt, hooks)
+  tickSkills(s, dt, hooks, factions)
   moveShots(s, hero, dt, hooks, factions)
   flushKillMilestone(s, hooks)
   collectStars(s, hero, dt, hooks)
