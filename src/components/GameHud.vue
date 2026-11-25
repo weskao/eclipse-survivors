@@ -54,7 +54,7 @@ defineExpose({ minimap })
     </div>
     <div class="boss-wrap" id="bossWrap" :class="{ show: hud.bossPct !== null }">
       <div class="boss-label">{{ t("☠ 墮落守望者 · MVP") }}</div>
-      <div class="boss-track"><i id="bossHealth" :style="{ width: (hud.bossPct ?? 0) + '%', background: `linear-gradient(180deg, #ffffff44, #00000033), ${healthBarColor((hud.bossPct ?? 0) / 100)}` }"></i></div>
+      <div class="boss-track"><i id="bossHealth" :style="{ width: (hud.bossPct ?? 0) + '%', background: `linear-gradient(180deg, #ffffff44, #00000033), ${healthBarColor((hud.bossPct ?? 0) / 100, 'boss')}` }"></i></div>
     </div>
     <div class="quest" id="quest">{{ t(hud.quest) }}</div>
     <div class="toast" id="toast" :style="{ opacity: toastVisible ? '1' : '0' }">{{ t(toastText) }}</div>

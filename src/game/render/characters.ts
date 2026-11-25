@@ -11,7 +11,7 @@ import { isSpecializationId } from '../content/heroes'
 import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
-import { drawEnemyHealthBar, healthBarColor, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
+import { drawBossHealthBar, drawEnemyHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -350,16 +350,8 @@ export function drawCharacter(
     const motion = sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
     if (!shouldShowHealthBar(motion, showFullHealthBars)) return
     if (mob.type === 'boss') {
-      const bar = 190, left = x - bar / 2
       const growth = productionBoss ? Math.min(sx, sy) * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
-      const top = y - sy - 25 - growth
-      ctx.fillStyle = '#05090dec'; ctx.fillRect(left, top, bar, 12)
-      ctx.strokeStyle = '#dcc391aa'; ctx.strokeRect(left, top, bar, 12)
-      if (motion.trail > motion.front + 0.002) {
-        ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.trail, 8)
-      }
-      ctx.fillStyle = healthBarColor(motion.target); ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
-      ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
+      drawBossHealthBar(ctx, motion, x, y - sy - 25 - growth)
     } else {
       drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite)
     }

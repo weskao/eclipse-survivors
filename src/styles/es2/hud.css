@@ -171,14 +171,19 @@
 .es2-hud__boss-heading > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .es2-hud__boss-heading { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; font: 750 14px/1.3 Georgia, serif; color: #ffdbc2; }
 .es2-hud__boss-phase { font: 750 10px system-ui; color: #f2c586; letter-spacing: .08em; white-space: nowrap; }
-.es2-hud__track--boss { height: 12px; border-color: #b16c73; }
+.es2-hud__track--boss {
+  height: 14px; border-color: #e9c078; border-radius: 4px;
+  box-shadow: inset 0 1px 4px #000d, 0 1px 3px #0009;
+}
 .es2-hud__track--boss > .es2-hud__track-fill {
-  color: var(--es2-boss-hp-color, #78d8a0);
-  background: linear-gradient(180deg, #ffffff44, #00000033), currentColor;
-  transition-duration: .42s;
+  color: var(--es2-boss-hp-color, #efc46c);
+  background: linear-gradient(180deg, #ffffff33, transparent 45%, #0005), currentColor;
+  box-shadow: inset 0 1px #fff9, inset 0 -1px #0008;
+  transition: transform .24s cubic-bezier(.22, .72, .25, 1), color .18s ease-out;
 }
 .es2-hud__track--boss > .es2-hud__track-trail {
-  background: #f2c37e; opacity: .65;
+  background: #f2c37e; opacity: .85;
+  transition: transform .58s cubic-bezier(.22, .68, .25, 1) .08s;
 }
 .es2-hud__wave {
   align-self: center; width: max-content; max-width: 100%; min-width: 0;
@@ -343,7 +348,7 @@
   .es2-hud__encounter { width: min(38vw, 330px); gap: 4px; }
   .es2-hud__boss { padding: 5px 8px 6px; }
   .es2-hud__boss-heading { font-size: 11px; margin-bottom: 3px; }
-  .es2-hud__track--boss { height: 8px; }
+  .es2-hud__track--boss { height: 10px; }
   .es2-hud__wave { padding: 4px 7px; }
   .es2-hud__wave strong { font-size: 10px; }
   .es2-hud__side { width: min(24vw, 210px); right: max(8px, env(safe-area-inset-right)); gap: 4px; }
@@ -356,6 +361,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .es2-hud, .es2-hud__boss-pointer, .es2-hud__boss-pointer-arrow, .es2-hud__track > span, .es2-hud__wave-track > span, .es2-hud__skill, .es2-hud__controls .es2-hud__control-button, .es2-hud__cooldown { transition: none; }
+  .es2-hud__track--boss > .es2-hud__track-fill, .es2-hud__track--boss > .es2-hud__track-trail { transition: none; }
   .es2-hud__notice { animation: none; }
 }
 
@@ -381,7 +387,7 @@
   .es2-hud__encounter { width: calc(100vw - 16px); }
   .es2-hud__boss { padding: 5px 8px; }
   .es2-hud__boss-heading { margin-bottom: 3px; }
-  .es2-hud__track--boss { height: 8px; }
+  .es2-hud__track--boss { height: 10px; }
   .es2-hud__wave { padding: 4px 8px; }
   .es2-hud__wave strong { font-size: 11px; }
   .es2-hud__info-toggle {

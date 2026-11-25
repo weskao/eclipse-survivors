@@ -7,14 +7,21 @@ export interface HealthBarMotion {
   trail: number
   target: number
   at: number
+  holdUntil: number
 }
 
 export interface HealthBarFrame { readonly front: number; readonly trail: number; readonly target: number }
 
-/** Use remaining HP fraction, never raw HP: elites and bosses can have larger maxima. */
-export function healthBarColor(fraction: number): string {
-  return fraction >= .75 ? '#78d8a0' : fraction >= .5 ? '#eac95f'
-    : fraction >= .25 ? '#ed9851' : '#e66b73'
+export type HealthBarRank = 'ordinary' | 'elite' | 'boss'
+const HEALTH_PALETTES = {
+  ordinary: ['#78d8a0', '#eac95f', '#ed9851', '#e66b73'],
+  elite: ['#b697fa', '#d78ee9', '#e97ba1', '#ef526f'],
+  boss: ['#efc46c', '#eaa34f', '#e46a48', '#d93859'],
+} as const
+
+/** Remaining HP fraction, not raw HP; rank changes the palette, never the thresholds. */
+export function healthBarColor(fraction: number, rank: HealthBarRank = 'ordinary'): string {
+  return HEALTH_PALETTES[rank][fraction >= .75 ? 0 : fraction >= .5 ? 1 : fraction >= .25 ? 2 : 3]
 }
 
 const ratio = (mob: HealthBarTarget): number => mob.max > 0 && Number.isFinite(mob.hp) && Number.isFinite(mob.max)
@@ -27,8 +34,8 @@ export function sampleHealthBar(
   const target = ratio(mob)
   if (!cache) return { front: target, trail: target, target }
   const old = cache.get(mob)
-  if (!old || reduceMotion || !Number.isFinite(time) || time < old.at) {
-    const current: HealthBarMotion = { front: target, trail: target, target, at: time }
+  if (!old || reduceMotion || !Number.isFinite(time) || !Number.isFinite(old.at) || time < old.at) {
+    const current: HealthBarMotion = { front: target, trail: target, target, at: time, holdUntil: time }
     cache.set(mob, current)
     return current
   }
@@ -38,14 +45,24 @@ export function sampleHealthBar(
     return old
   }
   const dt = Math.max(0, Math.min(0.1, time - old.at))
+  const healing = target > old.target
+  if (healing) {
+    // Even a partial heal below the eased front must not leave a false damage trail.
+    old.trail = Math.min(old.front, target)
+    old.holdUntil = time
+  } else if (target < old.target && old.trail <= old.front + .002) {
+    old.trail = old.front
+    old.holdUntil = time + .08
+  }
+  const hasDamageTrail = !healing && (target < old.target || old.trail > old.front + .002)
+  const trailDt = Math.max(0, Math.min(dt, time - Math.max(old.at, old.holdUntil)))
   old.at = time
-  if (target > old.target) old.trail = old.front // Healing never leaves a false damage trail.
   old.target = target
   if (dt > 0) {
-    old.front += (target - old.front) * (1 - Math.exp(-dt * 13))
-    old.trail += (target - old.trail) * (1 - Math.exp(-dt * 3.8))
+    old.front += (target - old.front) * (1 - Math.exp(-dt * (target < old.front ? 18 : 10)))
+    if (trailDt > 0) old.trail += (target - old.trail) * (1 - Math.exp(-trailDt * 5))
   }
-  if (target >= old.front) old.trail = old.front
+  if (!hasDamageTrail || target >= old.front || old.trail < old.front) old.trail = old.front
   if (Math.abs(target - old.front) < 0.002) old.front = target
   if (Math.abs(target - old.trail) < 0.002) old.trail = target
   return old
@@ -56,18 +73,46 @@ export function shouldShowHealthBar(motion: HealthBarFrame, showFull = false): b
   return showFull || motion.target < 1 || motion.front < 1 || motion.trail < 1
 }
 
-/** Shared overhead UI for all non-boss enemies, regardless of their simulation pool. */
+/** One painter for ordinary, elite and boss bars. Only special ranks add bevel/caps.
+ * Flat rectangles avoid per-actor gradients, extra textures and Canvas state allocations.
+ */
+function drawHealthBar(
+  ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number, width: number, rank: HealthBarRank,
+): void {
+  const boss = rank === 'boss', elite = rank === 'elite'
+  const height = boss ? 14 : elite ? 9 : 6
+  const inset = boss || elite ? 2 : 1
+  const inner = width - inset * 2, innerHeight = height - inset * 2
+  const left = x - width / 2, fillLeft = left + inset, fillTop = top + inset
+  const front = inner * motion.front, trail = inner * motion.trail
+  ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, width, height)
+  if (boss || elite) {
+    ctx.strokeStyle = boss ? '#e9c078' : '#d6a4f3'
+    ctx.lineWidth = 1
+    ctx.strokeRect(left, top, width, height)
+  }
+  if (motion.trail > motion.front + .002) {
+    ctx.fillStyle = '#f2c37e'; ctx.fillRect(fillLeft, fillTop, trail, innerHeight)
+  }
+  ctx.fillStyle = healthBarColor(motion.target, rank)
+  ctx.fillRect(fillLeft, fillTop, front, innerHeight)
+  ctx.fillStyle = '#fff1de88'; ctx.fillRect(fillLeft, fillTop, front, 1)
+  if (boss || elite) {
+    ctx.fillStyle = '#00000044'; ctx.fillRect(fillLeft, fillTop + innerHeight - 1, front, 1)
+    if (motion.trail > motion.front + .002 && front >= 2) {
+      // Local moving edge (no flash or pulse). Reduced motion has no trail/edge.
+      ctx.fillStyle = '#fff3cf'; ctx.fillRect(fillLeft + front - 2, fillTop, 2, innerHeight)
+    }
+  }
+}
+
 export function drawEnemyHealthBar(
   ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number, spriteWidth: number, elite = false,
 ): void {
-  const bar = Math.max(34, spriteWidth * 0.58), left = x - bar / 2
-  ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
-  if (motion.trail > motion.front + 0.002) {
-    ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.trail, 4)
-  }
-  // Keep elite identity separate from the authoritative HP color.
-  if (elite) { ctx.strokeStyle = '#d6a4f3'; ctx.lineWidth = 1; ctx.strokeRect(left, top, bar, 6) }
-  ctx.fillStyle = healthBarColor(motion.target)
-  ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 4)
-  ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 1)
+  const width = Math.max(34, spriteWidth * .58) + (elite ? 8 : 0)
+  drawHealthBar(ctx, motion, x, top - (elite ? 3 : 0), width, elite ? 'elite' : 'ordinary')
+}
+
+export function drawBossHealthBar(ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number): void {
+  drawHealthBar(ctx, motion, x, top - 2, 190, 'boss')
 }

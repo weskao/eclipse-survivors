@@ -88,9 +88,10 @@ describe('smooth Canvas enemy and boss health bars', () => {
     fills.length = 0
     borders.length = 0
     drawFrame(ctx, s, 1, assets)
-    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(kinds.length + factionKinds.length + 3)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(kinds.length + factionKinds.length)
+    expect(fills.filter(f => f.color === '#b697fa')).toHaveLength(2)
     expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(2)
-    expect(fills.filter(f => f.color === '#78d8a0' && f.width === 186)).toHaveLength(1)
+    expect(fills.filter(f => f.color === '#efc46c' && f.width === 186)).toHaveLength(1)
     showFullEnemyHealthBars = false
     fills.length = 0
     s.mobs[0]!.hp = 5
@@ -98,7 +99,8 @@ describe('smooth Canvas enemy and boss health bars', () => {
     s.worldClock += .05
     drawFrame(ctx, s, 1, assets)
     expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(0)
-    expect(fills.filter(f => f.color === '#eac95f')).toHaveLength(2)
+    expect(fills.filter(f => f.color === '#eac95f')).toHaveLength(1)
+    expect(fills.filter(f => f.color === '#d78ee9')).toHaveLength(1)
   })
 
   it('shares faction damage trails, healing and reduced motion with legacy bars', () => {
@@ -162,7 +164,7 @@ describe('smooth Canvas enemy and boss health bars', () => {
     s.worldClock += 0.05
     drawFrame(ctx, s, 1, assets)
     const enemyFill = fills.find(item => item.color === '#ed9851' && item.width < 100)
-    const bossFill = fills.find(item => item.color === '#ed9851' && item.width > 100)
+    const bossFill = fills.find(item => item.color === '#e46a48' && item.width > 100)
     expect(enemyFill).toBeDefined()
     expect(bossFill).toBeDefined()
     expect(fills.some(item => item.color === '#f2c37e')).toBe(true)

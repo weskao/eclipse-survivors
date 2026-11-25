@@ -186,7 +186,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             </div>
             <div class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
               :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100"
-              :style="{ '--es2-progress': view.boss.percent / 100, '--es2-boss-hp-color': healthBarColor(view.boss.percent / 100) }">
+              :style="{ '--es2-progress': view.boss.percent / 100, '--es2-boss-hp-color': healthBarColor(view.boss.percent / 100, 'boss') }">
               <span class="es2-hud__track-trail" aria-hidden="true"></span>
               <span class="es2-hud__track-fill" aria-hidden="true"></span>
             </div>
