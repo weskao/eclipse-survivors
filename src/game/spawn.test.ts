@@ -172,7 +172,7 @@ it('reserves the shared actor budget for boss summons including faction actors',
 
 it('drives all seven assault compositions and recovery through the production spawn pulse', () => {
   for (let cycle = 0; cycle < 7; cycle++) {
-    const s = setup(); s.runMode = 'endless'; s.bossSpawned = true; s.time = cycle * 48 + 23
+    const s = setup(); s.runMode = 'endless'; s.bossSpawned = true; s.time = cycle * 48 + 20
     setRandom(seeded(42 + cycle))
     for (let i = 0; i < 8; i++) { s.spawnT = 0; tickSpawning(s, .016, spyHooks()); s.time += .2 }
     const expected = [['slime','bat'],['goblin'],['golem','goblin'],['slime','warlock'],['golem'],['goblin'],['goblin','warlock']][cycle]!
