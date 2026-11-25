@@ -20,7 +20,7 @@ const BASE_HP: Record<MobType, number> = BALANCE.enemies.baseHp
 
 interface OrdinarySpawn { type: MobType; elite: boolean; angle?: number; rewardXpMultiplier?: number }
 
-export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0, planned?: OrdinarySpawn): void {
+export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0, planned?: OrdinarySpawn, safePlacement = false): void {
   const hero = s.hero
   // Boss spawns even when the normal crowd budget is exhausted.
   if (!hero || s.mobs.length + otherLiving >= MAX_MOBS + (type === 'boss' ? 1 : 0)) return
@@ -33,7 +33,7 @@ export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0, planned?:
   const modifiers = getMode(s.runMode).modifiers
   const hp = Math.round((BASE_HP[t] + lvl * (t === 'boss' ? BALANCE.enemies.bossHpPerLevel : BALANCE.enemies.hpPerLevel)) * (elite ? BALANCE.enemies.eliteHpMultiplier : 1) * modifiers.enemyHp)
   let x = hero.x + Math.cos(a) * r, y = hero.y + Math.sin(a) * r
-  if (planned) {
+  if (planned || safePlacement) {
     const distance = Math.max(r, Math.min(1600, Math.hypot(s.W / 2 + 32, s.H / 2 + 32)))
     let safe = false
     for (let attempt = 0; attempt < 8; attempt++) {
@@ -138,8 +138,8 @@ export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBo
           spawnMob(s, undefined, otherLiving, encounterSpawn(wave.encounter, index + 1, angle + Math.PI * 0.5))
         }
       } else {
-        spawnMob(s, undefined, otherLiving)
-        if (s.time > BALANCE.enemies.extraSpawnAfterSeconds && random() < BALANCE.enemies.extraSpawnChance + sceneBonus(s.currentScene)) spawnMob(s, undefined, otherLiving)
+        spawnMob(s, undefined, otherLiving, undefined, true)
+        if (s.time > BALANCE.enemies.extraSpawnAfterSeconds && random() < BALANCE.enemies.extraSpawnChance + sceneBonus(s.currentScene)) spawnMob(s, undefined, otherLiving, undefined, true)
       }
     }
     if (factions) factionPulse(s, factions, wave.encounter, stage !== 'recovery')

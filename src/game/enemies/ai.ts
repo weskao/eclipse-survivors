@@ -60,7 +60,7 @@ function resolveStrike(s: GameState, e: Mob, hooks: GameHooks): void {
   const ai = brain(e), hero = s.hero
   ai.releaseFx = 0.32
   if (ai.attack === 'bolt') fire(s, e)
-  else if (ai.attack === 'summon') summonBossMinions(s, e)
+  else if (ai.attack === 'summon') summonBossMinions(s, e, hooks.otherLivingActors?.() ?? 0)
   else if (ai.attack === 'slam') {
     const radius = e.type === 'boss' ? AI.slamRadius.boss : e.elite ? AI.slamRadius.elite : AI.slamRadius.default
     if (dist(hero.x - ai.aimX, hero.y - ai.aimY) <= radius + AI.slamContactMargin) damageHero(s, e.dmg, hooks, e)

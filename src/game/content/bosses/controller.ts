@@ -354,7 +354,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         if (minion.hp <= 0 || !e.state.mobs.includes(minion)) e.summoned.delete(minion)
       }
       const before = new Set(e.state.mobs)
-      if (e.summoned.size < MAX_OWNED_MINIONS) summonBossMinions(e.state, e.boss)
+      if (e.summoned.size < MAX_OWNED_MINIONS) summonBossMinions(e.state, e.boss, hooks.otherLivingActors?.() ?? 0)
       for (const mob of e.state.mobs) if (!before.has(mob)) e.summoned.add(mob)
       return
     }
@@ -406,7 +406,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     spawn(state, id, point, hooks) {
       if (encounter || !state.hero || state.mode !== 'play'
         || !Number.isFinite(point.x) || !Number.isFinite(point.y)
-        || state.mobs.length >= MAX_MOBS + 1
+        || state.mobs.length + (hooks.otherLivingActors?.() ?? 0) >= MAX_MOBS + 1
         || state.mobs.some(m => m.type === 'boss' && m.hp > 0)) return null
       const definition = BOSS_DEFINITIONS[id]
       if (!definition) return null

@@ -295,6 +295,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   const hooks: GameHooks = {
+    otherLivingActors: () => factions?.runtime.enemies.length ?? 0,
     sfx: cue => {
       audio.playSfx(cue)
       if (s.mode !== 'play' || !presentationPolicy?.haptics || !ui.coarsePointer || s.time - lastHapticAt < 0.65) return

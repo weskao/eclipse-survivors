@@ -53,16 +53,21 @@ function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eve
       hooks.message('✦ 魔法祭壇 · 回復生命')
       break
     case 'invasion': {
-      const count = Math.min(BALANCE.events.invasionCount, MAX_MOBS - s.mobs.length)
+      const count = Math.min(BALANCE.events.invasionCount, MAX_MOBS - s.mobs.length - (hooks.otherLivingActors?.() ?? 0))
+      if (count <= 0) return false
+      let spawned = 0
       for (let i = 0; i < count; i++) {
         const a = i * Math.PI * 2 / 3
         const x = hero.x + Math.cos(a) * 245
         const y = hero.y + Math.sin(a) * 245
+        if (!pointIsClear(s.currentScene, { x, y }, 32)) continue
+        spawned++
         s.mobs.push({
           x, y, type: 'golem', hp: BALANCE.events.invasionHp, max: BALANCE.events.invasionHp, r: 30, speed: 68, dmg: 17,
           phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
         })
       }
+      if (!spawned) return false
       hooks.message('⚠ 菁英入侵 · 遺跡守衛現身')
       break
     }

@@ -193,6 +193,7 @@ export interface MoveInput { x: number; y: number }
  * Mirrors the original free functions `playSfx`, `message`, `chooseUpgrade`, `end`.
  */
 export interface GameHooks {
+  otherLivingActors?(): number
   sfx(cue: SfxCue): void
   message(text: string): void
   /** Original `chooseUpgrade()`: switch to 'level' mode and offer 3 upgrades. */

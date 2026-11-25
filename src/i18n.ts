@@ -1290,7 +1290,7 @@ const english = new Map<string, string>([
 , ["獲得秘庫獎勵憑證","Receive a vault cache token"]
 , ["強行突破秘庫","Force the vault"]
 , ["在 18 秒內召喚並擊敗 3 名守衛","Summon 3 guardians and defeat them in 18 seconds"]
-, ["成功後獲得稀有秘藏","Receive a rare cache on success"]
+, ["成功後獲得稀有秘藏","Receive a legendary cache on success"]
 , ["魔物伏擊","Monster Ambush"]
 , ["正面迎戰","Stand and fight"]
 , ["18 秒內擊敗 3 名召喚的襲擊者","Defeat 3 summoned attackers within 18 seconds"]
