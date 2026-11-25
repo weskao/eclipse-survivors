@@ -123,7 +123,7 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   let bossMotionReference: WorldRuntimeImages['bossMotionReference']
   let bossNativeKeyframes: WorldRuntimeImages['bossNativeKeyframes']
-  if (import.meta.env.DEV && reviewMotion === 'native' && reviewBossId && (reviewBossId === 'infernal-titan' || reviewBossId === 'abyss-monarch')) {
+  if (import.meta.env.DEV && reviewMotion === 'native' && reviewBossId && (reviewBossId === 'infernal-titan' || reviewBossId === 'abyss-monarch' || reviewBossId === 'frost-sovereign')) {
     bossNativeKeyframes = {}
     for (const key of Object.keys(BOSS_NATIVE_KEYFRAMES) as NativeBossKeyframe[]) {
       const [path] = BOSS_NATIVE_KEYFRAMES[key]

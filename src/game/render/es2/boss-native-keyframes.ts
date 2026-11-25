@@ -21,6 +21,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   abyssWindupB: ['batch-08/abyss-monarch/windup/shadow-orb-windup-key-b.webp', 1374, 1145, 690, 1130],
   abyssReleaseA: ['batch-08/abyss-monarch/attack/shadow-fan-release-key-a.webp', 1312, 1199, 660.5, 1190],
   abyssReleaseB: ['batch-08/abyss-monarch/attack/shadow-fan-release-key-b.webp', 1312, 1199, 656, 1180],
+  frostWindup: ['batch-10/frost-sovereign/windup/ice-fan-windup-key-a.webp', 1254, 1254, 611, 1243],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -44,6 +45,8 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
       return motion.progress < .5 ? 'abyssReleaseA' : 'abyssReleaseB'
     return null
   }
+  if (snapshot.id === 'frost-sovereign') return motion.phase === 1 && motion.pose === 'windup'
+    && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'ice-fan') ? 'frostWindup' : null
   if (snapshot.id !== 'infernal-titan') return null
   switch (motion.pose) {
     case 'windup': return snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'titan-slam') ? (motion.progress < .5 ? 'windup' : 'windupB') : null
