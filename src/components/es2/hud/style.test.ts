@@ -108,3 +108,12 @@ describe('bounded fixed boss health HUD', () => {
     expect(shared).toContain('.boss-wrap{width:min(330px,38vw)}')
   })
 })
+
+describe('boss arrival warning vertical alignment', () => {
+  it('nudges only the taller warning upward within the boss lane without crossing the safe area', () => {
+    expect(css).toMatch(/\.es2-hud__boss-warning\s*\{[^}]*top: clamp\(-12px, calc\(env\(safe-area-inset-top\) \+ 4px - var\(--es2-encounter-top\)\), 0px\)/s)
+    expect(css).toContain('.es2-hud__boss-warning { top: -3px; }')
+    expect(css).toMatch(/\.es2-hud__encounter\s*\{[^}]*top: var\(--es2-encounter-top\)/s)
+    expect(component).toMatch(/data-es2-encounter[\s\S]*?data-es2-boss-warning[\s\S]*?data-es2-boss\s/)
+  })
+})
