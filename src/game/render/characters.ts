@@ -11,7 +11,8 @@ import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type Rigid
 import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
-import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
+import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, bossFrameLayout, drawProductionBossFrame } from './es2/production-world'
+import { BOSS_DRAW_CULL_MARGIN } from './es2/boss-phase-layout'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
 import { drawBossHealthBar, drawEnemyHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
@@ -231,6 +232,12 @@ const DIMS: Record<string, [number, number]> = {
   bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [BOSS_BASE_DRAW_PX, 266],
 }
 
+/** Identical culling for the depth sort and body painter, including enlarged boss silhouettes. */
+export function characterOutsideViewport(x: number, y: number, W: number, H: number, boss: boolean): boolean {
+  const horizontal = boss ? BOSS_DRAW_CULL_MARGIN : 180
+  return x < -horizontal || x > W + horizontal || y < -(boss ? BOSS_DRAW_CULL_MARGIN : 240) || y > H + (boss ? BOSS_DRAW_CULL_MARGIN : 220)
+}
+
 export function drawCharacter(
   ctx: Ctx2D, s: GameState, art: Artwork, sprites: Record<string, HTMLCanvasElement>,
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
@@ -245,7 +252,7 @@ export function drawCharacter(
   const x = e.x + ox
   const y = e.y + oy
   const kind = mob ? mob.type : s.choice
-  if (x < -180 || x > W + 180 || y < -240 || y > H + 220) return
+  if (characterOutsideViewport(x, y, W, H, mob?.type === 'boss')) return
   const dims = DIMS[kind] || [86, 100]
   const sx = dims[0]!
   const sy = dims[1]!
@@ -286,6 +293,7 @@ export function drawCharacter(
   const productionImage = hero && productionHeroes && Object.prototype.hasOwnProperty.call(productionHeroes, s.heroId)
     ? productionHeroes[s.heroId as keyof ProductionHeroArtwork] : undefined
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
+  let bossMotionPainted = false
   if (drawable) {
     if (hero && anim) {
       // Original three heroes keep their existing rig and equipment animation.
@@ -347,7 +355,7 @@ export function drawCharacter(
       }
       // Use the controller's real phase; the original boss sprite remains the decode fallback.
       const painted = mob.type === 'boss' && productionBoss
-        ? (productionBoss.motion && drawBossAttackReference(ctx, productionBoss.motion.image, productionBoss.motion.snapshot, Math.min(sx, sy), reducedMotion))
+        ? (bossMotionPainted = !!(productionBoss.motion && drawBossAttackReference(ctx, productionBoss.motion.image, productionBoss.motion.snapshot, Math.min(sx, sy), reducedMotion)))
           || drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
       if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy, reducedMotion)
     }
@@ -359,8 +367,10 @@ export function drawCharacter(
     const motion = sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
     if (!shouldShowHealthBar(motion, showFullHealthBars)) return
     if (mob.type === 'boss') {
-      const growth = productionBoss ? Math.min(sx, sy) * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
-      drawBossHealthBar(ctx, motion, x, y - sy - 25 - growth)
+      const base = Math.min(sx, sy)
+      const layout = productionBoss && !bossMotionPainted ? bossFrameLayout(productionBoss.image, productionBoss.phase) : undefined
+      const growth = productionBoss ? base * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
+      drawBossHealthBar(ctx, motion, x, layout ? y + 4 + base * layout.bodyTop - 25 : y - sy - 25 - growth)
     } else {
       drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite)
     }

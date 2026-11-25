@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { WORLD_ART, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame } from './production-world'
 import type { Ctx2D } from '../ctx'
+import { cacheBossPhaseLayouts, bossFrameLayout } from './production-world'
+import { BOSS_MAX_DRAW_PX, BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
+import { characterOutsideViewport } from '../characters'
 
 const loaded = (width: number, height: number): HTMLImageElement => ({
   complete: true, naturalWidth: width, naturalHeight: height,
@@ -168,6 +171,38 @@ describe('ES2 world art live asset mapping', () => {
       expect(x).toBe(-w / 2)
       expect(y + h).toBe(4)
     }
+  })
+
+  it('normalizes real visible phase height, not the transparent square, and never stretches or crops the source', () => {
+    const cell = 192
+    const atlas = loaded(cell * 3, cell)
+    const rgba = new Uint8ClampedArray(cell * cell * 12)
+    const bodies = [[20, 20, 100, 150], [30, 60, 120, 140], [15, 80, 170, 150]] as const
+    for (const [i, [left, top, right, bottom]] of bodies.entries()) {
+      for (let y = top; y < bottom; y++) for (let x = left; x < right; x++)
+        rgba[(y * cell * 3 + i * cell + x) * 4 + 3] = 255
+      // Detached source-sheet noise must not inflate the measured body.
+      if (i) for (let x = 10; x < 60; x++) rgba[(10 * cell * 3 + i * cell + x) * 4 + 3] = 255
+    }
+    cacheBossPhaseLayouts(atlas, rgba)
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    const base = BOSS_BASE_DRAW_PX
+    for (const phase of [1, 2, 3] as const) {
+      expect(drawProductionBossFrame(ctx, atlas, phase, base, base)).toBe(true)
+      const [, sx, sy, sw, sh, x, y, w, h] = calls[phase - 1] as [unknown, number, number, number, number, number, number, number, number]
+      const [left, top, right, bottom] = bodies[phase - 1]!
+      expect([sx, sy, sw, sh]).toEqual([(phase - 1) * cell, 0, cell, cell])
+      expect(w / sw).toBeCloseTo(h / sh)
+      expect(h).toBeLessThanOrEqual(BOSS_MAX_DRAW_PX)
+      expect((bottom - top) * h / cell).toBeCloseTo(130 * base / cell * bossPhaseVisualScale(phase))
+      expect(y + bottom * h / cell).toBeCloseTo(4 - base + 150 * base / cell)
+      expect(x + (left + right) / 2 * w / cell).toBeCloseTo(-base / 2 + 60 * base / cell)
+      expect(4 + base * bossFrameLayout(atlas, phase)!.bodyTop).toBeCloseTo(y + top * h / cell)
+    }
+    expect(calls[0]?.slice(5)).toEqual([-base / 2, 4 - base, base, base])
+    expect(characterOutsideViewport(400, 900, 800, 600, true)).toBe(false)
+    expect(characterOutsideViewport(400, 900, 800, 600, false)).toBe(true)
   })
 
 })

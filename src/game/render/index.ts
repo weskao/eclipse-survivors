@@ -8,7 +8,7 @@ import { drawBossImpacts, drawBossTelegraphs, preloadBossAttackArt } from '../co
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
-import { drawCharacter } from './characters'
+import { characterOutsideViewport, drawCharacter } from './characters'
 import type { PixiVfxBridge, VfxFrame } from './pixi-vfx/bridge'
 import { runVfxPass } from './pixi-vfx/plan'
 import { preloadEnemyReleaseArt } from './enemy-motion'
@@ -166,7 +166,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   // Keep the same conservative bounds as the individual sprite renderer.
   for (const mob of s.mobs) {
     const x = mob.x + ox, y = mob.y + oy
-    if (mob.hp > 0 && x >= -180 && x <= W + 180 && y >= -240 && y <= H + 220) objects.push(mob)
+    if (mob.hp > 0 && !characterOutsideViewport(x, y, W, H, mob.type === 'boss')) objects.push(mob)
   }
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
