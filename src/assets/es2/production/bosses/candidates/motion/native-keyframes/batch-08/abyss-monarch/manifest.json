@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "8389cb46cec6769f9118843944eb94181ce90ba6",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "shadow-fan-release-key-a",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/shadow-fan-release-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "2851a129-aee2-4996-a97b-2ca7f00f8829",
+        "originalPngSha256": "6cb3deb623b7a9730bd4b5493a98fa2bbc2bd3406f1eb241c62065b3c1465b6a",
+        "canonicalReferenceHead": "8389cb46cec6769f9118843944eb94181ce90ba6"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        26,
+        15,
+        1295,
+        1190
+      ],
+      "alphaAnyBounds": [
+        0,
+        1,
+        1301,
+        1199
+      ],
+      "alphaExtent": [
+        1269,
+        1175
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        26,
+        15,
+        17,
+        9
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "7a47741800f411e80802390e25f7e7621184b47269b80ad638a53dd999317caa",
+      "webpCompressedBytes": 891316,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Two-handed outward release candidate. Embedded energy is cosmetic; verify direction, phase and attack assignment against real encounter. Not a verified consecutive frame. Source alpha128 margins [26, 15, 17, 9]; safe margin gate not approved."
+    },
+    {
+      "bossId": "abyss-monarch",
+      "id": "shadow-orb-windup-key-b",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/shadow-orb-windup-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "371a6cf8-0af7-4cf2-a885-478990da8270",
+        "originalPngSha256": "2d3ad4cdbfb66fb7776cbe9ae46637db1a41fdc9bbcd286ab14e08b8e10dcebf",
+        "canonicalReferenceHead": "8389cb46cec6769f9118843944eb94181ce90ba6"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1374,
+      "cellHeight": 1145,
+      "frameRects": [
+        [
+          0,
+          0,
+          1374,
+          1145
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        687.0,
+        572.5
+      ],
+      "alphaBounds": [
+        67,
+        9,
+        1313,
+        1130
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1368,
+        1145
+      ],
+      "alphaExtent": [
+        1246,
+        1121
+      ],
+      "actualSourceResolution": [
+        1374,
+        1145
+      ],
+      "sourceEdgeMargins": [
+        67,
+        9,
+        61,
+        15
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "e5449412bf3ed0560b9472804b4943d3bc2bff2b2d1afadd8e5da0dc2534e382",
+      "webpCompressedBytes": 769010,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Two-handed orb concentration, alternate windup. Not a glide or a confirmed consecutive frame. Source alpha128 margins [67, 9, 61, 15]; safe margin gate not approved."
+    },
+    {
+      "bossId": "abyss-monarch",
+      "id": "shadow-fan-release-key-b",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/shadow-fan-release-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "268251af-16ce-482a-8dd6-064fbdd5dbad",
+        "originalPngSha256": "9fff980f954a722c6e4445790d52104933ffe36a233452649cf8fbea105c90c4",
+        "canonicalReferenceHead": "8389cb46cec6769f9118843944eb94181ce90ba6"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        43,
+        0,
+        1269,
+        1180
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1306,
+        1199
+      ],
+      "alphaExtent": [
+        1226,
+        1180
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        43,
+        0,
+        43,
+        19
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "432b7a1fdc698e49828b8c9c95e5cad024f58655ad25ad8001e6d96216afc933",
+      "webpCompressedBytes": 958394,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Asymmetric outward cast alternate. Not approved attack assignment or temporal sequence. Source alpha128 margins [43, 0, 43, 19]; safe margin gate not approved."
+    }
+  ],
+  "missing": [
+    "idle and hovering locomotion",
+    "verified attack-specific release sequence and recovery",
+    "hurt and phase-specific transformations",
+    "death sequence",
+    "direction, hover anchor, visual and runtime QA"
+  ]
+}
