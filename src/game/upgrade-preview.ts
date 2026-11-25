@@ -53,7 +53,7 @@ export function upgradeStatPreview(id: string, level?: number, maxLevel?: number
     case 'shield': row('受到傷害減免', rank => Math.min(P.shieldReductionCap, rank * P.shieldReductionPerRank), percent); break
     case 'chain':
       damage(P.chainDamageBase, P.chainDamagePerRank)
-      count('目標數量', rank => Math.min(BALANCE.combat.chainMaxTargets, BALANCE.combat.chainTargetBase + rank))
+      count('目標數量', rank => BALANCE.combat.chainTargetsByRank[Math.min(rank, BALANCE.combat.chainTargetsByRank.length) - 1] ?? 0)
       cooldown(P.chainCooldownBase, P.chainCooldownPerRank, BALANCE.combat.chainMinCooldown); break
   }
   if (rows.length) return rows

@@ -32,11 +32,13 @@ describe('authoritative critical feedback', () => {
     const enemy = mob()
     hit(s, enemy, 20, hooks)
     expect(s.numberFx[0]).toMatchObject({ value: 34, critical: true })
-    expect(s.content.effects.map(effect => effect.id)).toContain('combat-vfx:critical-hit')
+    expect(s.impactWaves.filter(effect => effect.contact === 'critical')).toHaveLength(1)
+    expect(s.content.effects.filter(effect => effect.id === 'combat-vfx:critical-hit')).toHaveLength(0)
 
     hit(s, enemy, 20, hooks)
     expect(s.numberFx[1]).toMatchObject({ value: 20, critical: false })
-    expect(s.content.effects.filter(effect => effect.id === 'combat-vfx:critical-hit')).toHaveLength(1)
+    expect(s.impactWaves.filter(effect => effect.contact === 'critical')).toHaveLength(1)
+    expect(s.content.effects.filter(effect => effect.id === 'combat-vfx:critical-hit')).toHaveLength(0)
   })
 
   it('does not infer crits from the normal damage boost of other heroes', () => {

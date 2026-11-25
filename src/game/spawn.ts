@@ -1,5 +1,6 @@
 // Mob spawning (original spawnMob + the spawn/boss section of update()).
 import { BALANCE } from './config'
+import { describeWave } from './content/director'
 import { MAX_MOBS, TAU } from './constants'
 import { getMode } from '../meta/modes'
 import { rand, random } from './math'
@@ -43,13 +44,19 @@ export const sceneBonus = (currentScene: number): number => BALANCE.enemies.scen
 export const spawnInterval = (time: number, currentScene: number, frequency = 1): number =>
   Math.max(BALANCE.enemies.intervalFloor, BALANCE.enemies.intervalBase - time * BALANCE.enemies.intervalTimeFactor - sceneBonus(currentScene)) / frequency
 
+export function ordinarySpawnsAllowed(s: GameState): boolean {
+  return describeWave(s.runMode, 0, s.time).stage !== 'recovery'
+}
+
 /** Counts down `spawnT`, spawns the wave (plus a 32%+ extra after 38s) and the boss after 92s. */
 export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void, otherLiving = 0): void {
   s.spawnT -= dt
   if (s.spawnT <= 0) {
     s.spawnT = spawnInterval(s.time, s.currentScene, getMode(s.runMode).modifiers.spawnFrequency)
-    spawnMob(s, undefined, otherLiving)
-    if (s.time > BALANCE.enemies.extraSpawnAfterSeconds && random() < BALANCE.enemies.extraSpawnChance + sceneBonus(s.currentScene)) spawnMob(s, undefined, otherLiving)
+    if (ordinarySpawnsAllowed(s)) {
+      spawnMob(s, undefined, otherLiving)
+      if (s.time > BALANCE.enemies.extraSpawnAfterSeconds && random() < BALANCE.enemies.extraSpawnChance + sceneBonus(s.currentScene)) spawnMob(s, undefined, otherLiving)
+    }
   }
   if (!s.bossSpawned && s.time > getMode(s.runMode).bossAt) {
     if (spawnBoss) spawnBoss(s, hooks)

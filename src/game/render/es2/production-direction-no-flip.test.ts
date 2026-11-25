@@ -20,7 +20,7 @@ describe('authoritative eight-direction atlas, no accidental face mirroring', ()
     expect(calls).not.toContain('scale')
   })
 
-  it('mirrors only the 900px portrait when attacking a left octant, even if the movement facing lags', () => {
+  it('keeps the asymmetric 900px fallback portrait unmirrored when attacking a left octant', () => {
     const s = createState()
     resetRun(s)
     s.mode = 'play'
@@ -35,7 +35,7 @@ describe('authoritative eight-direction atlas, no accidental face mirroring', ()
     drawCharacter(ctx, s, fakeArtwork(true), {}, s.hero!, 100, 100, false, undefined, undefined,
       { shadowblade: portrait } as unknown as ProductionHeroArtwork)
     expect(drawn).toContain(portrait)
-    expect(calls).toContain('scale')
+    expect(calls).not.toContain('scale')
   })
 
   it('holds the authored atlas, unmirrored, for unillustrated death states instead of the legacy rig', () => {

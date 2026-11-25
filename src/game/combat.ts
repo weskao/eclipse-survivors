@@ -131,7 +131,7 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
     hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank)
-    const chainTargets = close.slice(0, Math.min(BALANCE.combat.chainTargetBase + chain, BALANCE.combat.chainMaxTargets))
+    const chainTargets = close.slice(0, BALANCE.combat.chainTargetsByRank[Math.min(chain, BALANCE.combat.chainTargetsByRank.length) - 1]!)
     for (let i = 0; i < chainTargets.length; i++) {
       const from: Hero | Mob = i ? chainTargets[i - 1]! : hero
       const to = chainTargets[i]!

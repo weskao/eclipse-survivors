@@ -41,7 +41,7 @@ import { loadProductionHeroes } from './render/es2/production-heroes'
 import { markHeroSpecialAnimation } from './render/animation'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
-import { spawnMob } from './spawn'
+import { ordinarySpawnsAllowed, spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
@@ -658,7 +658,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const window = Math.floor(s.time / 8)
       if (window > factionWindow) {
         factionWindow = window
-        if (factions.availableSpawnSlots(s) > 0) {
+        if (ordinarySpawnsAllowed(s) && factions.availableSpawnSlots(s) > 0) {
           const theta = factionSequence * 2.399963229728653
           factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
             s.hero.x + Math.cos(theta) * 315, s.hero.y + Math.sin(theta) * 230)

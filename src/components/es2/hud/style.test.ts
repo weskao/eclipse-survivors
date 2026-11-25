@@ -69,7 +69,8 @@ describe('responsive ES2 encounter and information rail', () => {
     expect(component).toMatch(/class="es2-hud__counter-row"[\s\S]*?data-es2-info-toggle[\s\S]*?class="es2-hud__counters/)
     expect(component.match(/data-es2-info-toggle/g)).toHaveLength(1)
     expect(css).toContain('min-width: 44px; width: 44px; min-height: 44px; padding: 0')
-    expect(css).toContain('font: 700 0/1.2 system-ui')
+    expect(component).toMatch(/data-es2-info-toggle[\s\S]*?<svg[^>]*width="22"[^>]*height="22"/)
+    expect(css).toContain('.es2-hud__info-toggle > svg { display: block; pointer-events: none; }')
     expect(landscape).toContain('bottom: max(108px')
   })
 

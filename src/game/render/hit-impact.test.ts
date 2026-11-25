@@ -18,7 +18,8 @@ describe('directional combat contact', () => {
     const hooks: GameHooks = { end() {}, message() {}, offerUpgrades() {}, sfx() {}, consumeCriticalHit: () => true, content: (state, event) => registry.emit(state, event, hooks) }
     hit(s, mob, 20, hooks)
     expect(s.impactWaves).toHaveLength(1)
-    expect(s.impactWaves[0]).toMatchObject({ contact: 'critical', angle: Math.atan2(40, 30) })
+    expect(s.impactWaves[0]).toMatchObject({ contact: 'critical' })
+    expect(s.impactWaves[0]?.angle).toBeCloseTo(Math.atan2(40, 30), 12)
     expect(s.content.effects).toHaveLength(0)
     expect(s.numberFx[0]?.critical).toBe(true)
     expect(s.fx).toHaveLength(0)
