@@ -364,3 +364,17 @@ it('keeps dead visual actors out of collision and rewards and expires them on ga
   expect(s.fallenMobs).toHaveLength(0)
   expect(s.kill).toBe(1)
 })
+
+describe('ES3 multikill feedback', () => {
+  it('coalesces a same-tick burst into one distinct cue without adding rewards', () => {
+    const s = createState(); s.mode = 'play'; s.hero = createHero('knight'); s.spawnT = 999
+    const hooks = spyHooks()
+    for (let i = 0; i < 5; i++) hit(s, mob(200, i, { hp: 1 }), 10, hooks)
+    step(s, 0.016, still, hooks)
+    expect(s.kill).toBe(5)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'massKill')).toHaveLength(1)
+    expect(hooks.message).toHaveBeenCalledWith('瞬間多殺 · 5×')
+    step(s, 0.016, still, hooks)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'massKill')).toHaveLength(1)
+  })
+})

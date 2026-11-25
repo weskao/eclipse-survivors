@@ -88,3 +88,12 @@ describe('visual presentation only', () => {
     expect(el.dataset.es2ReduceMotion).toBeUndefined()
   })
 })
+
+it('keeps haptics opt-in, respecting reduced motion and coarse-pointer capability', () => {
+  const defaults = DEFAULT_ACCESSIBILITY_PREFERENCES
+  expect(resolvePresentationPolicy(defaults, { coarsePointer: true }).haptics).toBe(false)
+  const enabled = updateAccessibilityPreferences(defaults, { haptics: true })
+  expect(resolvePresentationPolicy(enabled, { coarsePointer: true }).haptics).toBe(true)
+  expect(resolvePresentationPolicy(enabled, { coarsePointer: true, prefersReducedMotion: true }).haptics).toBe(false)
+  expect(resolvePresentationPolicy(enabled, { coarsePointer: false }).haptics).toBe(false)
+})

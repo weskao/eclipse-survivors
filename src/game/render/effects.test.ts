@@ -226,3 +226,13 @@ it('paints incoming damage and critical text after ordinary labels without excee
   expect(labels.slice(-2)).toContain('−888')
   expect(labels).toContain('999')
 })
+
+it('culls lightning wholly outside the viewport but preserves crossing bolts', () => {
+  const s = scene()
+  s.lightningFx = [
+    { pts: [{ x: -500, y: -500 }, { x: -400, y: -400 }], life: 0.2, max: 0.23 },
+    { pts: [{ x: -100, y: 300 }, { x: 900, y: 300 }], life: 0.2, max: 0.23 },
+  ]
+  const f = createFakeCtx(); drawLightning(f.ctx, s, 0, 0)
+  expect(f.calls.filter(x => x === 'stroke')).toHaveLength(3)
+})
