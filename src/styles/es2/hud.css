@@ -5,7 +5,7 @@
   initial-value: 0%;
 }
 .es2-hud {
-  --es2-encounter-top: max(15px, env(safe-area-inset-top));
+  --es2-encounter-top: max(48px, calc(env(safe-area-inset-top) + 8px));
   --es2-side-top: max(190px, calc(env(safe-area-inset-top) + 168px));
   --es2-status-top: max(143px, calc(env(safe-area-inset-top) + 125px));
   --es2-footer-clear: max(180px, calc(env(safe-area-inset-bottom) + 165px));
@@ -345,7 +345,7 @@
 /* Short landscape keeps the boss in the center lane and scrollable details on the sides. */
 @media (orientation: landscape) and (max-height: 520px) {
   .es2-hud {
-    --es2-encounter-top: max(8px, env(safe-area-inset-top));
+    --es2-encounter-top: max(48px, calc(env(safe-area-inset-top) + 8px));
     --es2-side-top: max(142px, calc(env(safe-area-inset-top) + 123px));
     --es2-status-top: var(--es2-side-top);
     --es2-footer-clear: max(118px, calc(env(safe-area-inset-bottom) + 109px));
@@ -465,8 +465,7 @@
 }
 
 @media (orientation: portrait) and (max-width: 700px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 900px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse) {
+       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) {
   .es2-hud__encounter { position: static; transform: none; width: auto; }
   .es2-hud__scene-title {
     display: block; text-align: center; color: #fff0cd;
@@ -485,7 +484,19 @@
   .es2-hud__identity strong { white-space: normal; overflow-wrap: anywhere; }
   .es2-hud__scene-title { grid-area: 2 / 1; }
   .es2-hud__encounter { grid-area: 3 / 1 / auto / -1; }
+  .es2-hud__scene-title + .es2-hud__encounter { margin-top: 3px; }
   .es2-hud__boss { width: min(100%, 360px, 78vw); }
+}
+
+/* The title and both encounter states use the same safe top-center lane.
+   Do not depend on pointer type: landscape browser emulation and foldables share this geometry. */
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) {
+  .es2-hud { --es2-encounter-top: max(8px, env(safe-area-inset-top)); }
+  .es2-hud__encounter-stack {
+    display: block; position: absolute; top: var(--es2-encounter-top); left: 50%; transform: translateX(-50%);
+    width: min(38vw, 330px, calc(42vw - 2 * max(10px, env(safe-area-inset-left), env(safe-area-inset-right))));
+  }
+  .es2-hud__scene-title + .es2-hud__encounter { margin-top: 8px; }
 }
 
 /* The same compact information drawer protects both phone orientations.
@@ -497,12 +508,7 @@
     --es2-compact-info-top: max(116px, calc(env(safe-area-inset-top) + 105px));
   }
   .es2-hud__hero { width: min(29vw, 230px); }
-  .es2-hud__encounter-stack {
-    display: block; position: absolute; top: var(--es2-encounter-top); left: 50%; transform: translateX(-50%);
-    width: min(38vw, 330px, calc(42vw - 2 * max(10px, env(safe-area-inset-left), env(safe-area-inset-right))));
-  }
-  .es2-hud__scene-title { margin-top: 11px; }
-  .es2-hud__encounter + .es2-hud__scene-title { margin-top: 4px; }
+
   /* Reserve a real slot next to the timer, below the top controls and clear of either touch-action lane. */
   .es2-hud__counter-row { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
   .es2-hud__info-toggle { position: static; flex: 0 0 44px; height: 44px; }
@@ -530,8 +536,6 @@
 /* A short pre-boss signal occupies the existing encounter lane, never gameplay space. */
 .es2-hud__boss-warning {
   --es2-warning-accent: #f3b873;
-  /* The warning is taller than the boss meter; raise its visual center in the same lane. */
-  top: clamp(-12px, calc(env(safe-area-inset-top) + 4px - var(--es2-encounter-top)), 0px);
   align-self: center; width: min(380px, 100%); max-width: 100%; min-width: 0;
   padding: 9px 12px 10px; border-color: var(--es2-warning-accent);
   background:
@@ -580,10 +584,6 @@
 @keyframes es2-boss-alert-glow {
   from { opacity: .75; box-shadow: 0 0 4px #c8707055; }
   to { opacity: 1; box-shadow: 0 0 12px #c8707099; }
-}
-/* The portrait grid follows the scene title with a 5px gap; do not overlap it. */
-@media (orientation: portrait) and (max-width: 700px) {
-  .es2-hud__boss-warning { top: -3px; }
 }
 @media (max-width: 700px) {
   .es2-hud__boss-warning { width: min(340px, 100%); padding: 7px 9px 8px; }

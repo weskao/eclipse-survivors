@@ -371,7 +371,10 @@ describe('biome renderer contracts', () => {
     expect(titlePositions(run, 640, 320)).toEqual([])
     expect(titlePositions(run, 812, 375)).toEqual([])
     expect(titlePositions(run, 701, 900)).toEqual([34])
-    expect(titlePositions(run, 901, 520)).toEqual([34])
+    expect(titlePositions(run, 901, 520)).toEqual([])
+    expect(titlePositions(run, 924, 412)).toEqual([])
+    expect(titlePositions(run, 1100, 520)).toEqual([])
+    expect(titlePositions(run, 1101, 520)).toEqual([34])
     expect(titlePositions(menuState(), 375, 812)).toEqual([34])
   })
 

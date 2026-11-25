@@ -110,10 +110,16 @@ describe('bounded fixed boss health HUD', () => {
 })
 
 describe('boss arrival warning vertical alignment', () => {
-  it('nudges only the taller warning upward within the boss lane without crossing the safe area', () => {
-    expect(css).toMatch(/\.es2-hud__boss-warning\s*\{[^}]*top: clamp\(-12px, calc\(env\(safe-area-inset-top\) \+ 4px - var\(--es2-encounter-top\)\), 0px\)/s)
-    expect(css).toContain('.es2-hud__boss-warning { top: -3px; }')
+  it('uses the same top edge under the scene title for warning and live boss meter', () => {
+    expect(component).toMatch(/class="es2-hud__encounter-stack">\s*<div[^>]*data-es2-scene-title[^>]*>[\s\S]*?<div[^>]*data-es2-encounter>/)
+    expect(css).toContain('.es2-hud__scene-title + .es2-hud__encounter { margin-top: 8px; }')
+    expect(css).toContain('.es2-hud__scene-title + .es2-hud__encounter { margin-top: 3px; }')
+    expect(css).not.toMatch(/\.es2-hud__boss-warning\s*\{[^}]*\btop\s*:/s)
     expect(css).toMatch(/\.es2-hud__encounter\s*\{[^}]*top: var\(--es2-encounter-top\)/s)
     expect(component).toMatch(/data-es2-encounter[\s\S]*?data-es2-boss-warning[\s\S]*?data-es2-boss\s/)
+  })
+  it('uses the safe centered top lane on wide short-landscape screens regardless of pointer type', () => {
+    expect(css).toMatch(/@media \(orientation: landscape\) and \(max-height: 520px\) and \(max-width: 1100px\)\s*\{[^]*?\.es2-hud__encounter-stack\s*\{[^}]*top: var\(--es2-encounter-top\)[^}]*width: min\(38vw, 330px,/)
+    expect(css).toContain('--es2-encounter-top: max(48px, calc(env(safe-area-inset-top) + 8px))')
   })
 })

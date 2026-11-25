@@ -120,7 +120,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
   drawWorldMarkers(ctx, s, ox, oy, assets.productionWorld)
   // These match the compact title breakpoints in hud.css.
-  const compactHud = W <= H ? W <= 700 : W <= 900 && H <= 520
+  const compactHud = W <= H ? W <= 700 : W <= 1100 && H <= 520
   if (!hero || !compactHud) {
     ctx.save(); ctx.globalAlpha = 0.7; ctx.textAlign = 'center'; ctx.font = '700 14px Georgia'; ctx.fillStyle = '#f4e1ba'
     ctx.fillText(t(scene.name) + ' · ' + t(scene.label), W / 2, 34)

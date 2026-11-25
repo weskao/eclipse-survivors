@@ -168,6 +168,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
       <div class="es2-hud__encounter-stack">
+        <div v-if="hud.sceneTitle" class="es2-hud__scene-title" data-es2-scene-title>{{ t(hud.sceneTitle) }}</div>
         <div v-if="view.boss || view.wave || view.bossWarning" class="es2-hud__encounter" data-es2-encounter>
           <section v-if="!view.boss && view.bossWarning" class="es2-hud__boss-warning es2-hud__plate"
             data-es2-boss-warning :class="{ 'es2-hud__boss-warning--urgent': view.bossWarning.urgent }"
@@ -213,7 +214,6 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             </div>
           </div>
         </div>
-        <div v-if="hud.sceneTitle" class="es2-hud__scene-title" data-es2-scene-title>{{ t(hud.sceneTitle) }}</div>
       </div>
     </header>
     <div v-if="active && view.boss?.offscreen && !infoOpen" class="es2-hud__boss-pointer" data-es2-boss-pointer
