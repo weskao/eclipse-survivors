@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { readFileSync } from 'node:fs'
 import { emptyHud } from '../../../game/store'
 import CombatHud from './CombatHud.vue'
 import { lowHealthTier } from './low-health'
@@ -11,6 +12,19 @@ afterEach(() => {
 })
 
 describe('live low-health danger feedback', () => {
+  it('uses bounded four-sided edge illumination and a readable static accessibility fallback', () => {
+    const css = readFileSync('src/styles/es2/low-health.css', 'utf8')
+    for (const direction of ['to right', 'to left', 'to bottom', 'to top'])
+      expect(css).toContain('linear-gradient(' + direction + ', var(--es2-life-edge)')
+    expect(css).toContain('--es2-life-edge-x: clamp(24px, 12vw, 160px)')
+    expect(css).toContain('--es2-life-edge-y: clamp(20px, 14dvh, 120px)')
+    expect(css).toContain('18% { opacity: var(--es2-life-strong); }')
+    expect(css).toContain('48% { opacity: var(--es2-life-echo); }')
+    expect(css).toContain('opacity: var(--es2-life-static)')
+    expect(css).toContain('.es2-hud:is([data-es2-life-tier="critical"], [data-es2-life-tier="emergency"]) .es2-hud__life-message')
+    expect(css).not.toMatch(/(?:backdrop-filter|filter):/)
+  })
+
   it('uses configured thresholds and ignores zero HP after death', () => {
     expect(lowHealthTier(100)).toBe('normal')
     expect(lowHealthTier(40.01)).toBe('normal')
