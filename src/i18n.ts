@@ -13,6 +13,8 @@ const english = new Map<string, string>([
   ['生命危急', 'Critical health'],
   ['瀕死', 'Near death'],
   ["查看英雄詳情", "View hero details"],
+  ["選擇遠征模式", "Choose expedition"],
+  ["返回英雄選擇", "Back to heroes"],
   ["查看模式詳情：{name}", "View mode details: {name}"],
   ["英雄初始數值", "Base hero stats"],
   ["攻擊力", "Attack"],

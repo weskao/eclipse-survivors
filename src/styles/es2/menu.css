@@ -310,160 +310,6 @@
 .es2-backdrop .es2-reward-strip { min-width: 0; }
 .es2-backdrop .es2-reward-strip span { max-width: 100%; }
 
-/* End the wide menu's scroll area above the action bar so focused controls remain reachable. */
-.es2-menu{bottom:var(--es2-action-bar-height,0px)}
-.es2-menu-action-bar{
-  position:fixed;inset-inline:0;bottom:0;z-index:5;display:grid;gap:6px;
-  padding:12px max(20px,env(safe-area-inset-right),calc((100% - 640px) / 2))
-    max(12px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left),calc((100% - 640px) / 2));
-  background:var(--es2-bg);border-top:1px solid var(--es2-line);
-}
-@media (horizontal-viewport-segments: 2){
-  .es2-menu-action-bar{
-    padding-left:max(calc(env(viewport-segment-left 1 0) + 20px),env(safe-area-inset-left));
-    padding-right:max(20px,env(safe-area-inset-right));
-  }
-}
-.es2-mobile-selected-mode{margin:0;text-align:center;color:var(--es2-muted);font:400 .82rem/1.35 system-ui,sans-serif;overflow-wrap:anywhere}
-.es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
-.es2-menu-action-bar>.es2-hint{margin:0}
-
-/* Small-screen homepage: choose one hero family and one expedition family at a time.
-   The underlying six heroes and nine modes are untouched and stay visible on desktop. */
-.es2-mobile-switch,.es2-mobile-archive-toggle{display:none}
-@media (orientation: portrait) and (max-width: 700px),
-       (orientation: portrait) and (min-width: 701px) and (max-width: 999px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 900px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse) {
-  .es2-menu{bottom:0;height:100dvh;overflow-y:auto;overscroll-behavior:contain;padding:max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
-  .es2-menu-shell{min-height:100%;gap:6px}
-  .es2-menu-action-bar{position:static;display:block;padding:0;background:none;border:0}
-  .es2-menu-header{flex-direction:row;align-items:center;gap:7px;padding-bottom:4px}
-  .es2-menu-brand{flex:1;min-width:0}
-  .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.55rem);line-height:1.1;letter-spacing:.02em;margin:0;overflow-wrap:anywhere}
-  .es2-menu-brand .es2-eyebrow,.es2-menu-brand p{display:none}
-  .es2-top-actions{display:flex;align-items:center;flex:none;width:auto;gap:5px}
-  .es2-top-actions #gameVersion{font-size:.6875rem}
-  .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
-  .es2-top-actions [data-es2-settings] span{display:none}
-  .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:105px;padding:3px 6px;font-size:.72rem;line-height:1.25;white-space:normal}
-  .es2-menu-layout{grid-template-columns:1fr;gap:8px}
-  .es2-section-heading{margin-bottom:4px}
-  .es2-section-heading>span,.es2-section-heading p{display:none}
-  .es2-section-heading h2{font-size:clamp(.88rem,3vw,1.1rem);line-height:1.2;margin:0}
-  .es2-hero-section>h3.es2-section-heading{display:none}
-  .es2-mobile-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:5px 0}
-  .es2-mobile-switch button{min-height:44px;padding:5px 8px;border:1px solid #7c90a5;border-radius:8px;background:#1b2d42;color:#e7e0d1;font:700 clamp(.73rem,2.5vw,.9rem)/1.2 system-ui,sans-serif;touch-action:manipulation}
-  .es2-mobile-switch button[aria-pressed="true"]{border-color:#e9c890;background:#54412d;color:#fff1d0}
-  .es2-menu[data-mobile-heroes="new"] .es2-hero-grid{display:none}
-  .es2-menu[data-mobile-heroes="classic"] .es2-roster{display:none}
-  .es2-menu[data-mobile-modes="objective"] .es2-mode-grid{display:none}
-  .es2-menu[data-mobile-modes="classic"] .es2-objective-chooser{display:none}
-  .es2-hero-grid{gap:5px}
-  .es2-hero-card img{height:clamp(62px,10dvh,88px);padding:4px 2px 0}
-  .es2-hero-number{top:3px;left:4px}
-  .es2-hero-copy{align-items:center;text-align:center;padding:4px 3px;gap:1px}
-  .es2-hero-copy strong{font-size:clamp(.6875rem,2.6vw,.82rem);line-height:1.18}
-  .es2-hero-copy small{display:none}
-  .es2-hero-selection{font-size:.6875rem;padding-top:2px;margin-top:auto}
-  .es2-menu .es2-hero-section .es2-roster{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-  .es2-menu .es2-hero-section .es2-hero-select-card{min-width:0;border-radius:10px}
-  .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(62px,10dvh,88px);background:transparent}
-  .es2-menu .es2-hero-section .es2-roster__copy{gap:2px;padding:4px 3px;text-align:center}
-  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.6875rem,2.5vw,.82rem);line-height:1.18}
-  .es2-menu .es2-hero-section .es2-roster__copy :is(.es2-roster__subtitle,.es2-roster__description,.es2-roster__stats,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits){display:none}
-  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.6875rem;padding:0}
-  .es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-  .es2-mode-card{min-height:44px;padding:5px;gap:5px}
-  .es2-mode-mark{width:17px;font-size:1rem}
-  .es2-mode-copy strong{font-size:clamp(.72rem,2.6vw,.85rem);line-height:1.2;overflow-wrap:anywhere}
-  .es2-mode-copy small{display:none}
-  .es2-menu .es2-mode-section .es2-objective-chooser header{display:none}
-  .es2-menu .es2-mode-section .es2-objective-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-  .es2-menu .es2-mode-section .es2-objective-choice{display:grid;align-content:center;gap:0;min-height:44px;padding:6px 8px}
-  .es2-menu .es2-mode-section .es2-objective-choice strong{font-size:clamp(.7rem,2.4vw,.83rem);line-height:1.2;overflow-wrap:anywhere}
-  .es2-menu .es2-mode-section .es2-objective-choice>:not(strong){display:none}
-  .es2-mobile-selected-mode{margin:5px 0 0;text-align:start;font-size:.73rem;line-height:1.3}
-  .es2-start{min-height:44px;margin-top:6px;padding:7px;font-size:.95rem!important}
-  .es2-start span{margin-left:5px}
-  .es2-menu-action-bar>.es2-hint{display:none}
-  .es2-menu-footer{gap:6px;align-items:center;justify-content:space-between;min-height:44px;margin-top:auto;padding-top:5px}
-  .es2-mobile-archive-toggle{display:block;min-height:44px;padding:5px 9px;background:#192c3e;border:1px solid #8c9cae;border-radius:8px;color:#f7e4c4;font:.73rem system-ui,sans-serif}
-  .es2-menu:not(.es2-mobile-archive-open) .es2-hall-links{display:none}
-  .es2-menu.es2-mobile-archive-open .es2-menu-footer{flex-wrap:wrap}
-  .es2-menu .es2-hall-links{order:3;width:100%;gap:5px}
-  .es2-menu .es2-hall-links button{min-height:44px;padding:6px;font-size:.74rem}
-  .es2-embers{font-size:.73rem}
-}
-@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse) {
-  /* Keep Start outside the scrolling selection area on short landscape screens. */
-  .es2-menu{bottom:var(--es2-action-bar-height,0px);height:auto;overflow-x:hidden}
-  .es2-menu-action-bar{position:fixed;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:8px;padding:5px max(8px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));background:var(--es2-bg);border-top:1px solid var(--es2-line)}
-  .es2-menu-shell{gap:4px}
-  .es2-menu-header{padding-bottom:2px}
-  .es2-menu-brand h1{font-size:clamp(.98rem,2.6vw,1.3rem)}
-  .es2-menu-layout{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start}
-  .es2-menu .es2-section-heading{display:none}
-  .es2-mobile-switch{margin:0 0 4px}
-  .es2-hero-card img{height:clamp(40px,13dvh,66px)}
-  .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(40px,13dvh,66px)}
-  .es2-hero-copy{padding:3px 1px}
-  .es2-hero-copy strong,.es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.6875rem,1.7vw,.75rem)}
-  .es2-mobile-selected-mode{display:block;min-width:0;margin:0;font-size:.75rem;line-height:1.3}
-  .es2-mobile-mode-desc{display:none}
-  .es2-mode-card{padding:4px}
-  .es2-mode-mark{font-size:.85rem;width:14px}
-  .es2-mode-time{display:none}
-  .es2-mode-copy strong{font-size:clamp(.6875rem,1.65vw,.77rem)}
-  .es2-start{margin:0;min-height:44px;padding:7px 12px;font-size:clamp(.95rem,2.2vw,1.12rem)!important;line-height:1.2}
-  .es2-menu-footer{padding:0;border-top:0}
-}
-@media (orientation: portrait) and (max-width: 700px) and (max-height: 680px) {
-  .es2-menu-shell{gap:4px}
-  .es2-menu .es2-section-heading{display:none}
-  .es2-mobile-switch{margin:0 0 4px}
-  .es2-mobile-selected-mode{font-size:.7rem}
-  .es2-mobile-mode-desc{display:none}
-  .es2-menu-footer{padding-top:2px}
-}
-
-/* Expand mobile hero artwork into available space, without changing existing
-   card content/selection or sacrificing the main action on short devices. */
-@media (orientation: portrait) and (max-width: 700px),
-       (orientation: portrait) and (min-width: 701px) and (max-width: 999px) {
-  .es2-menu-shell{height:100%;min-height:0}
-  .es2-menu-layout{flex:1 1 auto;min-height:0;grid-template-rows:minmax(0,1fr) auto;align-items:stretch}
-  .es2-hero-section{display:flex;flex-direction:column;min-height:0}
-  .es2-hero-grid{flex:1 1 auto;min-height:clamp(105px,22dvh,180px);grid-template-rows:minmax(0,1fr);align-items:stretch}
-  .es2-hero-card{min-height:0}
-  .es2-hero-card img{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
-  .es2-hero-copy{flex:0 0 auto}
-  .es2-hero-copy strong{font-size:clamp(.76rem,2.9vw,.95rem)}
-  .es2-hero-selection{font-size:.74rem}
-  .es2-menu .es2-hero-section .es2-roster{flex:1 1 auto;min-height:clamp(105px,22dvh,180px);grid-template-rows:minmax(0,1fr);align-items:stretch}
-  .es2-menu .es2-hero-section .es2-roster__card{display:flex;flex-direction:column;min-height:0}
-  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
-  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto}
-  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.76rem,2.9vw,.95rem)}
-  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.74rem}
-}
-@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse) {
-  .es2-menu-shell{height:auto;min-height:100%}
-  .es2-menu-layout{flex:1 0 auto;min-height:0;align-items:stretch}
-  .es2-menu-layout>section{min-width:0}
-  .es2-hero-section{display:flex;flex-direction:column;min-height:0}
-  .es2-hero-grid{flex:1 0 auto;min-height:90px;grid-template-rows:auto;align-items:stretch}
-  .es2-hero-card{min-height:0}
-  .es2-hero-card img{flex:1 1 auto;min-height:min(60px,18dvh);height:clamp(60px,22dvh,112px);max-height:none;object-fit:contain}
-  .es2-hero-copy{flex:0 0 auto}
-  .es2-menu .es2-hero-section .es2-roster{flex:1 0 auto;min-height:90px;grid-template-rows:auto;align-items:stretch}
-  .es2-menu .es2-hero-section .es2-roster__card{display:flex;flex-direction:column;min-height:0}
-  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:min(60px,18dvh);height:clamp(60px,22dvh,112px);max-height:none;object-fit:contain}
-  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto;gap:1px;padding:3px 1px}
-}
-
 /* A single stat strip is shared by all three classic and all three new heroes.
    Numeric values come straight from JOB/HERO_DEFINITIONS (never UI copies). */
 .es2-menu .es2-hero-stat-strip{
@@ -549,59 +395,113 @@
   .es2-menu .es2-hero-select-card[aria-pressed="true"] > img{transform:none}
 }
 
-/* Wide selection board: spend the horizontal space on six heroes and nine modes,
-   and bound artwork by available height rather than desktop width alone. Full
-   descriptions remain reachable in the existing detail dialogs. */
-@media (min-width: 1000px) and (min-height: 600px) and (orientation: landscape) {
-  .es2-menu {padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));overflow-x:hidden}
-  .es2-menu-shell {max-width:1640px;gap:clamp(9px,1.4dvh,18px)}
-  .es2-menu-header {padding-bottom:8px;align-items:center}
-  .es2-menu-brand h1 {font-size:clamp(1.8rem,4.3dvh,3.4rem);margin:2px 0 4px}
-  .es2-menu-layout {grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);gap:clamp(12px,2vw,28px)}
-  .es2-menu-layout>section {min-width:0}
-  .es2-section-heading {margin-bottom:7px}
-  .es2-section-heading h2 {font-size:clamp(1.1rem,2.5dvh,1.7rem);margin:3px 0}
-  .es2-section-heading p {font-size:.75rem}
-  .es2-hero-section>h3.es2-section-heading {margin:8px 0 6px;font-size:.9rem}
-  .es2-hero-grid,.es2-menu .es2-hero-section .es2-roster {grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait {
-    height:clamp(92px,calc((100dvh - 500px) / 2),260px);padding:4px;object-fit:contain
-  }
-  .es2-menu .es2-hero-copy,.es2-menu .es2-hero-section .es2-roster__copy {
-    display:flex;flex:1;flex-direction:column;gap:2px;padding:7px 6px;text-align:center;min-width:0
-  }
-  .es2-menu .es2-hero-copy strong,.es2-menu .es2-roster__copy strong {font-size:clamp(.82rem,1.2vw,1.05rem);line-height:1.2;overflow-wrap:anywhere}
-  .es2-menu .es2-hero-copy small,.es2-menu .es2-roster__subtitle {font-size:.75rem;line-height:1.25;overflow-wrap:anywhere}
-  .es2-menu .es2-roster__copy :is(.es2-roster__description,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits) {display:none}
-  .es2-menu :is(.es2-hero-selection,.es2-roster__selection) {margin-top:auto;padding-top:3px;font-size:.75rem}
-  .es2-menu .es2-hero-stat-strip {gap:3px;margin-top:2px}
-  .es2-menu .es2-hero-stat-strip .es2-hero-stat {padding:2px 1px}
-  .es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger {
-    position:absolute;top:0;right:0;z-index:2;display:grid;place-items:start end;
-    width:44px;height:44px;padding:5px;border:0;background:transparent;cursor:pointer
-  }
-  .es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger) span {
-    display:grid;place-items:center;width:22px;height:22px;border:1px solid #bda473;border-radius:50%;
-    background:#111d29;color:#ffe5b2;font:italic bold 15px/1 Georgia,serif
-  }
-  .es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger):focus-visible span {outline:2px solid #ffe5b2;outline-offset:2px}
-  .es2-menu .es2-hero-section .es2-hero-action-preview {top:5px;left:5px;right:auto;width:42px;height:42px}
-  .es2-menu .es2-mode-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-  .es2-menu .es2-mode-card {min-height:55px;gap:5px;padding:7px}
-  .es2-menu .es2-mode-mark {width:22px;font-size:1.2rem}
-  .es2-menu .es2-mode-copy strong {font-size:.85rem;line-height:1.2}
-  .es2-menu .es2-mode-copy small {font-size:max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)));line-height:1.25}
-  .es2-menu .es2-objective-chooser {margin-top:9px}
-  .es2-menu .es2-objective-chooser header {margin-bottom:5px}
-  .es2-menu .es2-objective-chooser h2 {font-size:1.05rem;margin:2px 0}
-  .es2-menu .es2-objective-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-  .es2-menu .es2-objective-choice {min-height:54px;padding:7px 40px 7px 9px;gap:3px;justify-content:center;overflow-wrap:anywhere}
-  .es2-menu .es2-objective-choice strong {font-size:.86rem;line-height:1.2}
-  .es2-menu .es2-objective-choice .reward {font-size:.7rem;line-height:1.25}
-  .es2-menu .es2-objective-choice>:not(strong):not(.reward) {display:none}
-  .es2-menu-footer {gap:8px;padding-top:7px}
-  .es2-menu .es2-hall-links {gap:6px}
-  .es2-menu .es2-hall-links button {padding:5px 9px}
-  .es2-menu-action-bar {gap:3px;padding-block:6px max(6px,env(safe-area-inset-bottom))}
-  .es2-menu-action-bar .es2-start {min-height:44px}
+
+/* Hero-first lobby: one page per task and one fixed dock, with five direct hall actions. */
+.es2-menu{
+  bottom:var(--es2-action-bar-height,0px);height:auto;overflow-x:hidden;
+  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left));
+}
+.es2-menu-shell{max-width:1680px;min-height:100%;height:auto;gap:clamp(8px,1.4dvh,18px)}
+.es2-menu-header{align-items:center;flex-direction:row;padding-bottom:8px}
+.es2-menu-brand{min-width:0;flex:1}
+.es2-menu-brand h1{font-size:clamp(1.55rem,4.6dvh,3.5rem);margin:2px 0 4px;overflow-wrap:anywhere}
+.es2-top-actions{flex:none;width:auto}
+.es2-menu-layout{display:block;flex:1;min-width:0}
+.es2-hall-navigation{display:grid;gap:5px;min-width:0;padding:7px 9px;border:1px solid var(--es2-line);border-radius:10px;background:#101e2c}
+.es2-hall-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--es2-gold);font:700 .8rem/1.2 system-ui,sans-serif}
+.es2-hall-heading .es2-embers{font-size:.72rem;white-space:normal;text-align:end}
+.es2-menu .es2-hall-links{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%}
+.es2-menu .es2-hall-links button{display:flex;align-items:center;justify-content:center;gap:6px;padding:5px;min-height:44px;min-width:0;font:700 max(.6875rem,calc(.8rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;overflow-wrap:anywhere;text-align:center}
+.es2-menu .es2-hall-links button span{margin:0;font-size:1.1rem;flex:none;color:var(--es2-gold)}
+.es2-hero-section{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1vw,16px);align-items:stretch}
+.es2-hero-section>.es2-section-heading,.es2-mode-section>.es2-section-heading{grid-column:1/-1;margin:0}
+.es2-section-heading h2{margin:3px 0;font-size:clamp(1.1rem,2.8dvh,1.9rem)}
+.es2-hero-grid,.es2-menu .es2-hero-section .es2-roster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,.8vw,12px);min-width:0}
+.es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{
+  height:clamp(170px,calc(100dvh - 380px),560px);width:100%;padding:8px 4px;object-fit:contain;
+}
+.es2-menu .es2-hero-copy,.es2-menu .es2-hero-section .es2-roster__copy{
+  display:flex;flex:1;flex-direction:column;gap:4px;padding:8px 6px;text-align:center;min-width:0
+}
+.es2-menu .es2-hero-copy strong,.es2-menu .es2-roster__copy strong{font-size:max(.75rem,calc(clamp(.85rem,1.25vw,1.15rem) * var(--es2-ui-scale,1)));line-height:1.2;overflow-wrap:anywhere}
+.es2-menu .es2-hero-copy small,.es2-menu .es2-roster__subtitle{font-size:.75rem;line-height:1.25;overflow-wrap:anywhere}
+.es2-menu .es2-roster__copy :is(.es2-roster__description,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits){display:none}
+.es2-menu :is(.es2-hero-selection,.es2-roster__selection){margin-top:auto;padding-top:3px;font-size:.75rem}
+.es2-menu .es2-hero-stat-strip .es2-hero-stat{padding:3px 1px}
+.es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger{
+  position:absolute;top:0;right:0;z-index:2;display:grid;place-items:start end;
+  width:44px;height:44px;padding:5px;border:0;background:transparent;cursor:pointer
+}
+.es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger) span{
+  display:grid;place-items:center;width:22px;height:22px;border:1px solid #bda473;border-radius:50%;
+  background:#111d29;color:#ffe5b2;font:italic bold 15px/1 Georgia,serif
+}
+.es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger):focus-visible{position:absolute}
+.es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger):focus-visible span{outline:2px solid #ffe5b2;outline-offset:2px}
+.es2-menu .es2-hero-section .es2-hero-action-preview{top:5px;left:5px;right:auto;width:min(45%,48px);height:auto;aspect-ratio:1}
+.es2-mode-section{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;align-items:start}
+.es2-menu .es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.es2-menu .es2-mode-card{min-height:70px;gap:8px;padding:9px}
+.es2-menu .es2-mode-mark{width:24px;font-size:1.2rem}
+.es2-menu .es2-mode-copy strong{font-size:.9rem;line-height:1.25}
+.es2-menu .es2-mode-copy small{font-size:max(.6875rem,calc(.75rem * var(--es2-ui-scale,1)));line-height:1.3}
+.es2-menu .es2-objective-chooser header{margin-bottom:6px}
+.es2-menu .es2-objective-chooser h2{font-size:1.05rem;margin:2px 0}
+.es2-menu .es2-objective-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.es2-menu .es2-objective-choice{min-height:68px;padding:8px 40px 8px 9px;gap:4px;justify-content:center;overflow-wrap:anywhere}
+.es2-menu .es2-objective-choice strong{font-size:.86rem;line-height:1.25}
+.es2-menu .es2-objective-choice .reward{font-size:.7rem;line-height:1.25}
+.es2-menu .es2-objective-choice>:not(strong):not(.reward){display:none}
+.es2-menu-action-bar{
+  position:fixed;inset-inline:0;bottom:0;z-index:5;display:grid;gap:4px;
+  padding:6px max(12px,env(safe-area-inset-right),calc((100% - 760px) / 2)) max(6px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left),calc((100% - 760px) / 2));
+  background:var(--es2-bg);border-top:1px solid var(--es2-line)
+}
+.es2-menu-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:8px}
+.es2-menu-actions button{min-height:44px;min-width:0;padding:7px 9px;line-height:1.25;overflow-wrap:anywhere;font-size:.9rem!important}
+.es2-menu-action-bar .es2-start{width:100%;margin:0}
+.es2-menu-action-bar .es2-start span{margin-left:4px}
+.es2-menu-action-bar>.es2-hint{margin:0}
+.es2-mobile-selected-mode{margin:0;text-align:center;color:var(--es2-muted);font:400 max(.6875rem,calc(.82rem * var(--es2-ui-scale,1)))/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
+.es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
+@media (horizontal-viewport-segments: 2){
+  .es2-menu-action-bar{padding-left:max(calc(env(viewport-segment-left 1 0) + 12px),env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .es2-hero-section,.es2-mode-section{column-gap:max(12px,calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0) + 12px))}
+}
+@media (max-width: 999px) and (orientation: portrait){
+  .es2-hero-section,.es2-mode-section{grid-template-columns:minmax(0,1fr);gap:8px}
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(100px,calc((100dvh - 410px) / 2),300px);padding:4px 2px}
+}
+@media (max-width: 700px), (orientation: landscape) and (max-height: 520px){
+  .es2-menu{padding:max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) 8px max(8px,env(safe-area-inset-left))}
+  .es2-menu-shell{gap:6px}
+  .es2-menu-header{gap:6px;padding-bottom:4px}
+  .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.6rem);line-height:1.1;letter-spacing:.02em;margin:0}
+  .es2-menu-brand .es2-eyebrow,.es2-menu-brand p{display:none}
+  .es2-top-actions{display:flex;align-items:center;gap:5px}
+  .es2-top-actions #gameVersion{font-size:.6875rem}
+  .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
+  .es2-top-actions [data-es2-settings] span{display:none}
+  .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:80px;padding:3px 5px;font-size:.72rem;line-height:1.25;white-space:normal}
+  .es2-hall-navigation{padding:4px;gap:3px}
+  .es2-menu .es2-hall-links{gap:3px}
+  .es2-menu .es2-hall-links button{flex-direction:column;gap:1px;padding:3px 1px;font-size:max(.6875rem,calc(.6875rem * var(--es2-ui-scale,1)));line-height:1.1}
+  .es2-menu .es2-hall-links button span{font-size:.9rem}
+  .es2-section-heading>span,.es2-section-heading p{display:none}
+  .es2-section-heading h2{font-size:1rem;margin:0}
+  .es2-menu .es2-hero-copy,.es2-menu .es2-hero-section .es2-roster__copy{gap:2px;padding:4px 3px}
+  .es2-menu .es2-hero-copy small,.es2-menu .es2-roster__subtitle{display:none}
+  .es2-menu .es2-hero-stat-strip .es2-hero-stat{padding:2px 1px}
+  .es2-menu .es2-mode-card{min-height:52px;padding:6px;gap:5px}
+  .es2-menu .es2-mode-mark{width:16px;font-size:1rem}
+  .es2-menu .es2-objective-choice{min-height:54px}
+  .es2-menu-action-bar>.es2-hint{display:none}
+}
+@media (orientation: landscape) and (max-height: 520px){
+  .es2-menu-brand h1{font-size:1.1rem}
+  .es2-menu .es2-hall-links button{flex-direction:row;gap:4px}
+  .es2-hero-section>.es2-section-heading,.es2-mode-section>.es2-section-heading{display:none}
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(60px,calc(100dvh - 250px),180px);padding:3px}
+  .es2-menu-action-bar{grid-template-columns:minmax(0,.6fr) minmax(0,1.4fr);align-items:center;gap:8px;padding-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right))}
+  .es2-menu-actions{gap:5px}
 }
