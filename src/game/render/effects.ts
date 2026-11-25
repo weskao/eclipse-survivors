@@ -339,8 +339,8 @@ export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number
       ctx.restore()
       continue
     }
-    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 1.7) * 0.85; ctx.strokeStyle = z.color; ctx.lineWidth = (1 - t) * 4.6
-    ctx.shadowColor = z.color; ctx.shadowBlur = 9
+    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 1.7) * 0.85 * opacity * (flashing ? 0.65 : 1); ctx.strokeStyle = z.color; ctx.lineWidth = (1 - t) * 4.6
+    ctx.shadowColor = z.color; ctx.shadowBlur = reduced || flashing ? 0 : 9
     ctx.beginPath(); ctx.ellipse(x, y, 9 + z.size * easing(t), 4 + z.size * 0.36 * easing(t), 0, 0, TAU); ctx.stroke()
     ctx.restore()
   }

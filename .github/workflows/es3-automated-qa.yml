@@ -1,5 +1,7 @@
 name: ES3 automated gameplay and performance acceptance
 on:
+  push:
+    branches: [feature/es3-combat-juice-power-pacing-rewards]
   workflow_dispatch:
 permissions:
   contents: read
