@@ -335,3 +335,22 @@ describe('in-game volume control shares HUD action button geometry', () => {
     expect(menuAudio.get('.audio-trigger').classes()).not.toContain('es2-hud__control-button')
   })
 })
+
+describe('portal start interaction feedback', () => {
+  it('keeps decorative hover feedback pointer-transparent and never starts gameplay on entry', async () => {
+    const wrapper = menu()
+    const start = wrapper.get('.es2-portal-start')
+    expect(start.get('.es2-portal-sheen').attributes('aria-hidden')).toBe('true')
+    await start.trigger('pointerenter')
+    await start.trigger('mouseover')
+    await start.trigger('focus')
+    expect(wrapper.emitted('start')).toBeUndefined()
+    await start.trigger('click')
+    expect(wrapper.emitted('start')).toHaveLength(1)
+  })
+  it('provides a finite fine-pointer sweep, press feedback, focus and reduced-flashing fallback', () => {
+    for (const token of [".es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before","animation:es2-portal-sweep .72s","@keyframes es2-portal-sweep",".es2-portal-start:hover:not(:disabled) .es2-portal-decoration",".es2-portal-start:active:not(:disabled) .es2-portal-core","[data-es2-reduce-flashing=\"true\"] .es2-portal-start",".es2-portal-start:focus-visible:not(:disabled)"]) expect(css).toContain(token)
+    expect(css).toMatch(/\.es2-portal-sheen\s*\{[^}]*pointer-events:none/)
+    expect(css).toMatch(/@media\s*\(hover:hover\) and \(pointer:fine\)\s*\{\s*\.es2-menu \.es2-portal-start:hover/)
+  })
+})

@@ -15,6 +15,52 @@ const viewports = [
 await mkdir(directory, { recursive: true })
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 try {
+  // Run the real fine-pointer interaction before mobile-only scenarios.
+  const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'no-preference' })
+  try {
+    const page = await desktop.newPage()
+    await page.goto(target, { waitUntil: 'domcontentloaded' })
+    const portal = page.locator('.es2-portal-start')
+    await portal.waitFor({ state: 'visible', timeout: 30000 })
+    const paint = () => portal.evaluate(el => {
+      const rect = el.getBoundingClientRect()
+      return { frame: getComputedStyle(el, '::before').backgroundImage,
+        fill: getComputedStyle(el, '::after').backgroundImage,
+        width: rect.width, height: rect.height, x: rect.x, y: rect.y,
+        sweep: getComputedStyle(el.querySelector('.es2-portal-sheen'), '::before').animationName,
+        menu: !!el.closest('.es2-menu'),
+      }
+    })
+    await page.mouse.move(0, 0)
+    const idle = await paint()
+    await portal.screenshot({ path: directory + '/portal-start-idle.png', animations: 'disabled' })
+    await portal.hover()
+    const hover = await paint()
+    assert.notEqual(hover.frame, idle.frame, 'Portal hover must illuminate its metal rim')
+    assert.notEqual(hover.fill, idle.fill, 'Portal hover must change its illuminated interior')
+    assert.equal(hover.sweep, 'es2-portal-sweep')
+    assert.deepEqual([hover.x, hover.y, hover.width, hover.height], [idle.x, idle.y, idle.width, idle.height], 'Hover must not move the hit area')
+    assert.equal(hover.menu, true)
+    await page.waitForTimeout(220)
+    await portal.screenshot({ path: directory + '/portal-start-hover.png' })
+    await page.mouse.move(0, 0)
+    assert.equal((await paint()).frame, idle.frame, 'Leaving the portal restores its idle rim')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await portal.hover()
+    assert.equal((await paint()).sweep, 'none', 'Reduced motion disables the sweep')
+    assert.notEqual((await paint()).frame, idle.frame, 'Reduced motion retains static hover feedback')
+    await page.mouse.move(0, 0)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.evaluate(() => document.documentElement.dataset.es2ReduceFlashing = 'true')
+    await portal.hover()
+    assert.equal((await paint()).sweep, 'none', 'Reduced flashing disables the sweep')
+    await page.mouse.move(0, 0)
+    await portal.focus()
+    assert.notEqual((await paint()).frame, idle.frame, 'Keyboard focus retains illuminated feedback')
+    await page.screenshot({ path: directory + '/portal-start-focus.png', animations: 'disabled' })
+    console.log('PASS desktop: portal hover, leave, focus, stable hit area and accessibility')
+  } finally { await desktop.close() }
+
   for (const viewport of viewports) {
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },

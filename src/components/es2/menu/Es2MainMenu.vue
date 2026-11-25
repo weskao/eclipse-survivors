@@ -182,6 +182,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
             <span class="es2-expedition-change">{{ t(page === 'heroes' ? '變更遠征' : '返回英雄選擇') }} <span aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span></span>
           </button>
           <button class="es2-primary es2-start es2-portal-start" type="button" data-ui-sfx="managed" @click="emit('start')">
+            <span class="es2-portal-sheen" aria-hidden="true"></span>
             <span class="es2-portal-decoration" data-es2-portal-decoration aria-hidden="true"><span class="es2-portal-core">✦</span></span>
             <span class="es2-portal-label">{{ t("踏入幽暮之門") }}</span>
           </button>

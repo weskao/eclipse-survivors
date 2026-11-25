@@ -607,14 +607,73 @@
 .es2-menu .es2-expedition-description{display:block;min-width:0;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif;overflow-wrap:anywhere}
 .es2-menu .es2-expedition-hero{font:600 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif}
 .es2-menu .es2-expedition-change{color:#e9cc95;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:end;max-width:30%;overflow-wrap:anywhere}
-.es2-menu .es2-portal-start{padding:10px 14px;gap:12px;color:#fff4d5!important;text-align:center}
+.es2-menu .es2-portal-start{
+  --es2-portal-rim:linear-gradient(105deg,#8b5630,#f2d28e 40%,#ffdf9d 58%,#8b5630);
+  --es2-portal-fill:radial-gradient(ellipse at 22% 50%,#9b612f88,transparent 50%),linear-gradient(112deg,#583221,#936235 48%,#503022);
+  --es2-portal-lit-rim:linear-gradient(105deg,#ba763c,#fff2bd 26%,#ffdc83 58%,#c68b42 82%,#fff0b5);
+  --es2-portal-lit-fill:radial-gradient(ellipse at 24% 50%,#edb45388,transparent 57%),linear-gradient(180deg,#ad783e,#80502c 46%,#46291c 52%,#694024);
+  padding:10px 14px;gap:12px;color:#fff4d5!important;text-align:center;transition:none
+}
 .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{
   clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%)
 }
-.es2-menu .es2-portal-start::before{background:linear-gradient(105deg,#8b5630,#f2d28e 40%,#ffdf9d 58%,#8b5630)}
-.es2-menu .es2-portal-start::after{inset:2px;z-index:-1;background:radial-gradient(ellipse at 22% 50%,#9b612f88,transparent 50%),linear-gradient(112deg,#583221,#936235 48%,#503022)}
+.es2-menu .es2-portal-start::before{background:var(--es2-portal-rim)}
+.es2-menu .es2-portal-start::after{inset:2px;z-index:-1;background:var(--es2-portal-fill)}
 .es2-menu .es2-portal-start:hover:not(:disabled){background:none}
-.es2-menu .es2-portal-start:hover::after{background:linear-gradient(110deg,#80502c,#b78545,#673b24)}
+.es2-menu .es2-portal-start:focus-visible:not(:disabled),
+.es2-menu .es2-portal-start:active:not(:disabled){
+  --es2-portal-rim:var(--es2-portal-lit-rim);
+  --es2-portal-fill:var(--es2-portal-lit-fill);
+  background:none;
+  text-shadow:0 0 8px #e7b96e
+}
+/* A clipped, one-shot light sweep; no pointer tracking, layout changes or animated paint properties. */
+.es2-menu .es2-portal-sheen{
+  position:absolute;inset:3px;margin:0;z-index:0;pointer-events:none;overflow:hidden;
+  clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%)
+}
+.es2-menu .es2-portal-sheen::before{
+  content:'';position:absolute;inset:0 auto 0 -48%;width:42%;
+  background:linear-gradient(105deg,transparent,#ffe5a636 32%,#fff4cc9e 51%,#ffe5a625 70%,transparent);
+  opacity:0;transform:translateX(0) skewX(-17deg)
+}
+.es2-menu .es2-portal-start .es2-portal-decoration{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.es2-menu .es2-portal-start .es2-portal-core{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.es2-menu .es2-portal-start .es2-portal-label{position:relative;text-shadow:0 2px 3px #21110c}
+@media(hover:hover) and (pointer:fine){
+  .es2-menu .es2-portal-start:hover:not(:disabled){
+    --es2-portal-rim:var(--es2-portal-lit-rim);
+    --es2-portal-fill:var(--es2-portal-lit-fill)
+  }
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before{animation:es2-portal-sweep .72s ease-out both}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{
+    transform:scale(1.08);border-color:#fff2bc;
+    box-shadow:0 0 17px #f6c66e88,inset 0 0 12px #e8a74d99
+  }
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-core{transform:scale(1.13) rotate(12deg);text-shadow:0 0 14px #fff1c4,0 0 22px #eab86c}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-label{color:#fff8df;text-shadow:0 2px 3px #21110c,0 0 10px #f6c66e}
+}
+.es2-menu .es2-portal-start:active:not(:disabled) .es2-portal-core{transform:scale(.92)}
+.es2-menu .es2-portal-start:active:not(:disabled) .es2-portal-decoration{transform:scale(.96)}
+@keyframes es2-portal-sweep{
+  0%{opacity:0;transform:translateX(0) skewX(-17deg)}
+  20%{opacity:.85}
+  80%{opacity:.75}
+  100%{opacity:0;transform:translateX(370%) skewX(-17deg)}
+}
+@media(prefers-reduced-motion:reduce){
+  .es2-menu .es2-portal-start .es2-portal-sheen::before{animation:none!important}
+  .es2-menu .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+}
+[data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen::before,
+[data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen::before{animation:none!important}
+[data-es2-reduce-motion="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core),
+[data-es2-reduce-flashing="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+@media(forced-colors:active){
+  .es2-menu .es2-portal-start{border:2px solid ButtonText;color:ButtonText!important;background:ButtonFace}
+  .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after,.es2-menu .es2-portal-sheen{display:none}
+  .es2-menu .es2-portal-start:focus-visible:not(:disabled){outline:3px solid Highlight}
+}
 .es2-menu .es2-portal-decoration{
   position:relative;display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;
   border-radius:50%;margin:0;border:1px solid #f4d29b;
