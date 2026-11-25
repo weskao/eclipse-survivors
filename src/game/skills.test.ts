@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { tickSkills } from './skills'
+import { attack } from './combat'
+import { createFactionBridge } from './content/enemies/integration'
 import { seeded, setRandom } from './math'
 import { createHero, createState } from './state'
 import type { GameHooks, GameState, Hero, Mob } from './types'
@@ -147,4 +149,60 @@ it('maximum-rank blaze reaches a new outer band without changing rank four', () 
   const a = mob(180, 0), b = mob(180, 0); low.s.mobs.push(a); high.s.mobs.push(b)
   tickSkills(low.s, .016, spyHooks()); tickSkills(high.s, .016, spyHooks())
   expect(a.hp).toBe(a.max); expect(b.hp).toBeLessThan(b.max)
+})
+
+describe('ES3 unified skill targets', () => {
+  it.each(['orb', 'bolt', 'frost', 'meteor', 'blaze', 'vortex'] as const)('%s hits a faction enemy through its authoritative damage owner', skill => {
+    const {s, hero} = setup()
+    hero.skills[skill] = 5
+    const bridge = createFactionBridge({random: () => 0})
+    const enemy = bridge.spawn(s, 'berserker', 71, 0)!
+    enemy.hp = enemy.max = 1000
+    tickSkills(s, .016, spyHooks(), bridge)
+    expect(enemy.hp).toBeLessThan(1000)
+    expect(s.damageDealt).toBeCloseTo(1000 - enemy.hp)
+    if (skill === 'bolt' || skill === 'frost') expect(enemy.slow).toBeGreaterThan(0)
+    if (skill === 'vortex') expect(enemy.x).toBeLessThan(71)
+  })
+  it('uses one bolt target cap across legacy and faction enemies', () => {
+    const {s, hero} = setup(); hero.skills.bolt = 1
+    const bridge = createFactionBridge({random: () => 0})
+    const a = bridge.spawn(s, 'berserker', 40, 0)!
+    const b = bridge.spawn(s, 'berserker', 70, 0)!
+    const c = mob(130, 0), d = mob(180, 0)
+    s.mobs.push(c,d)
+    tickSkills(s,.016,spyHooks(),bridge)
+    expect([a,b,c].every(e => e.hp < e.max)).toBe(true)
+    expect(d.hp).toBe(d.max)
+  })
+  it('chain lightning shocks faction-only targets without fabricating legacy mobs', () => {
+    const {s, hero} = setup(); s.choice = 'ranger'; hero.skills.chain = 5
+    const bridge = createFactionBridge({random: () => 0})
+    const a = bridge.spawn(s,'berserker',40,0)!
+    a.hp = a.max = 1000
+    attack(s,spyHooks(),bridge)
+    expect(a.hp).toBeLessThan(1000)
+    expect(a.slow).toBeGreaterThan(0)
+    expect(s.mobs).toHaveLength(0)
+  })
+  it.each(['frozen-thunderstorm','infernal-singularity','apocalypse-rain','blade-tempest'] as const)('%s affects faction-only targets', id => {
+    const {s,hero} = setup()
+    hero.evolutions[id] = true
+    const bridge = createFactionBridge({random: () => 0})
+    const enemy = bridge.spawn(s,'berserker',65,0)!
+    enemy.hp = enemy.max = 1000
+    tickSkills(s,.016,spyHooks(),bridge)
+    expect(enemy.hp).toBeLessThan(1000)
+    expect(s.damageDealt).toBeCloseTo(1000-enemy.hp)
+  })
+  it('preserves phase immunity and does not consume a target slot for phased enemies', () => {
+    const {s,hero} = setup(); hero.skills.bolt = 1
+    const bridge = createFactionBridge({random: () => 0})
+    const ghost = bridge.spawn(s,'phantom',20,0)!
+    ghost.state = 'phase'
+    const enemies = [50,100,150].map(x=>bridge.spawn(s,'berserker',x,0)!)
+    tickSkills(s,.016,spyHooks(),bridge)
+    expect(ghost.hp).toBe(ghost.max)
+    expect(enemies.every(e=>e.hp<e.max)).toBe(true)
+  })
 })
