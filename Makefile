@@ -36,7 +36,7 @@ phone-pixi-unlocked: export VITE_ES2_UNLOCKED := 1
 phone-pixi-unlocked: phone-pixi ## Phone PixiJS playtest with disposable unlocked progression
 
 test-pixi: ## Run isolated rig, motion and frame-policy regression tests
-	node --test $(PIXI_DIR)/pose.test.mjs $(PIXI_DIR)/motion.test.mjs $(PIXI_DIR)/rig.test.mjs $(PIXI_DIR)/frame-policy.test.mjs
+	node --test $(PIXI_DIR)/pose.test.mjs $(PIXI_DIR)/motion.test.mjs $(PIXI_DIR)/rig.test.mjs $(PIXI_DIR)/frame-policy.test.mjs $(PIXI_DIR)/human-motion.test.mjs
 
 dev: node_modules ## Start the game at localhost (auto-opens your browser); PORT=5174 to override
 	$(PNPM) dev --host localhost --port $(PORT) --open

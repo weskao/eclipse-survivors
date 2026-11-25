@@ -32,6 +32,7 @@ try {
       await page.locator('canvas[data-knight-renderer="pixi"]').waitFor({state:'attached',timeout:30000})
       const surface=page.locator('canvas[data-knight-renderer="pixi"]')
       assert.equal(await surface.getAttribute('data-knight-rig-assets'),viewport.candidate?'directional':'legacy','actual asset path must not silently fall back')
+      assert.equal(await surface.getAttribute('data-knight-rig-skin'),viewport.candidate?'articulated':'legacy','must use the new anatomical rig rather than legacy weights')
       await page.screenshot({path:out+'/'+viewport.name+'-idle.png'})
       if(!mobile) {
         for(let i=0;i<8;i++) {

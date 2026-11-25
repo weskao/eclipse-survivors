@@ -3,6 +3,7 @@ import { getRigidWeaponLayers } from '../../src/game/render/rigid-weapons.ts'
 import { sampleWeaponRig } from '../../src/game/render/weapon-rig.ts'
 import { advanceRigMotion, createRigSkin, deformRig, meshPoint, movementSlot } from './motion.mjs'
 import { loadDirectionalAssets } from './rig-assets.mjs'
+import { createHumanSkin, sampleHumanPose, deformHumanSkin } from './human-motion.mjs'
 import { needsRigRender } from './frame-policy.mjs'
 import { KNIGHT_RIG, defineRig, facingFor, validateViews, sampleRigVfx } from './rig.mjs'
 
@@ -34,7 +35,7 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
     const specialFx=new Graphics().circle(0,0,42).stroke({color:0xe8c06a,width:2,alpha:.7}).circle(0,0,35).stroke({color:0xffdf9e,width:1})
     root.addChild(dashFx)
     dashFx.visible=slashFx.visible=specialFx.visible=false
-    function createView(layer, viewProfile, anchor=[.5,1]) {
+    function createView(layer, viewProfile, anchor=[.5,1], weaponDepth='front') {
       const group=new Container()
       const body=new MeshPlane({texture:Texture.from(layer.body),verticesX:11,verticesY:13})
       body.autoResize=false
@@ -45,19 +46,21 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
         rest[i]=vertices[i]*W/layer.body.width
         rest[i+1]=vertices[i+1]*H/layer.body.height
       }
-      const skin=createRigSkin(rest,W,H,layer.grip,viewProfile)
+      const human=!!viewProfile.armJoints
+      const skin=human?createHumanSkin(rest,viewProfile):createRigSkin(rest,W,H,layer.grip,viewProfile)
       const weapon=new Sprite(Texture.from(layer.weapon))
       weapon.anchor.set(...layer.grip)
-      group.addChild(body,weapon)
+      if(weaponDepth==='behind')group.addChild(weapon,body)
+      else group.addChild(body,weapon)
       group.visible=false
       root.addChild(group)
-      return {group,body,buffer,vertices,skin,weapon,layer,profile:viewProfile}
+      return {group,body,buffer,vertices,skin,human,weapon,layer,profile:viewProfile}
     }
     // A second hero supplies its own validated rig profile and same-handed native layers.
     // Directional textures are opt-in and loaded once, never created per frame.
     const views=directionalLayers ? validateViews(directionalLayers.map(v=>v.meta),profile.weaponHand).map(meta=>{
       const v=directionalLayers.find(x=>x.meta.direction===meta.direction)
-      return createView(v.layers,defineRig({...profile,...v.profile,id:profile.id,sourceAngle:meta.sourceAngle}),meta.footAnchor)
+      return createView(v.layers,defineRig({...profile,...v.profile,id:profile.id,sourceAngle:meta.sourceAngle}),meta.footAnchor,meta.weaponDepth)
     }) : null
     const fallback=views?null:createView(layers,profile)
     root.addChild(slashFx,specialFx)
@@ -88,7 +91,8 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             if(active!==selected){if(active)active.group.visible=false;selected.group.visible=true;active=selected}
             const current=advanceRigMotion(old,input,selected.profile)
             const {body,vertices,skin,buffer,weapon:sword,layer}=selected
-            deformRig(skin,vertices,current)
+            if(selected.human)deformHumanSkin(skin,vertices,sampleHumanPose(selected.profile,current,skin.chains))
+            else deformRig(skin,vertices,current)
             buffer.update()
             const grip=meshPoint(vertices,11,13,...layer.grip)
             sword.position.set(body.position.x+grip.x,body.position.y+grip.y)
@@ -119,6 +123,7 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             const d=ctx.canvas.dataset
             if(d.knightRigResolution!==String(resolution))d.knightRigResolution=String(resolution)
             const view=views?String(facing):'single', count=String(renderCount), pose=previousFrame.pose
+            if(d.knightRigSkin!==(active.human?'articulated':'legacy'))d.knightRigSkin=active.human?'articulated':'legacy'
             if(d.knightRigAssets!==(views?'directional':'legacy'))d.knightRigAssets=views?'directional':'legacy'
             if(d.knightRigView!==view)d.knightRigView=view
             if(d.knightRigPose!==pose)d.knightRigPose=pose
