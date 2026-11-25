@@ -231,7 +231,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   flushKillMilestone(s, hooks)
   collectStars(s, hero, dt, hooks)
   tickWorld(s, dt, hooks)
-  sampleCombat(s, factions?.runtime.enemies.length ?? 0)
+  sampleCombat(s, factions?.runtime.enemies)
   if (hero.hp <= 0 || s.mode !== 'play') return
   if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * BALANCE.skills.passive.regenPerRank * dt)
   ageEffects(s, hero, dt)

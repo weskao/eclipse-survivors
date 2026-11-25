@@ -9,11 +9,12 @@ export function emptyCombatTelemetry(): CombatTelemetry {
 }
 
 /** Sample actual simulation data once per ten gameplay seconds, independent of rendering quality. */
-export function sampleCombat(s: GameState, factionCount = 0): void {
+export function sampleCombat(s: GameState, factionEnemies?: readonly { hp: number }[]): void {
   const t = s.combatTelemetry
   if (s.time < t.nextSampleAt) return
   const seconds = s.time
-  let enemies = factionCount
+  let enemies = 0
+  if (factionEnemies) for (const enemy of factionEnemies) if (enemy.hp > 0) enemies++
   for (const mob of s.mobs) if (mob.hp > 0) enemies++
   if (t.samples.length >= MAX_SAMPLES) t.samples.shift()
   t.samples.push({ seconds, xp: t.xpEarned, kills: s.kill, dps: s.damageDealt / seconds, enemies, killsPerMinute: s.kill * 60 / seconds })

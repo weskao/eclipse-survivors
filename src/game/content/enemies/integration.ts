@@ -1,8 +1,8 @@
-import { damageHero, hit } from '../../combat'
+import { damageHero, emitCombatContact, hit } from '../../combat'
 import { BALANCE } from '../../config'
 import { recordKill } from '../../kill-streak'
 import { compactXpGems } from '../../xp-gems'
-import { burst, emitHitImpact, pushDamageNumber } from '../../fx'
+import { burst, pushDamageNumber } from '../../fx'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ELITE_AFFIXES, ENEMY_DEFINITIONS, type FactionAffix, type FactionKind } from './definitions'
@@ -128,8 +128,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
         value: Math.round(applied), boss: false, critical, kind: kind ?? (enemy.radius >= 24 || enemy.affix ? 'heavy' : undefined) })
       const angle = Math.atan2(enemy.y - sourceY, enemy.x - sourceX)
       const heavy = enemy.radius >= 24 || !!enemy.affix
-      emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical, heavy, kind)
-      hooks.contactSfx?.(critical ? 'hitCritical' : heavy ? 'hitHeavy' : 'hitNormal')
+      emitCombatContact(state, hooks, enemy.x, enemy.y, enemy.radius, angle, critical, heavy, kind)
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)
     }

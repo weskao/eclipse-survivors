@@ -17,11 +17,13 @@ export type SkillRarity = 'common' | 'rare' | 'legendary'
 export type Weather = 'sunshower' | 'storm' | 'snow' | 'embers'
 export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard'
 
+export type ContactSfxCue = 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'hitElemental' | 'hitEvolved' | 'hitHero' | 'eliteKill'
+
 /** Shared gameplay and UI SFX cues, including hero-specific active skills. */
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'massKill' | 'boss' | 'bossStagger' | 'bossDefeat' | 'hurt' | 'pickup' | 'pickupBurst' | 'evolution'
-  | 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill' | 'treasureReveal' | 'treasureClaim'
+  | ContactSfxCue | 'treasureReveal' | 'treasureClaim'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 
@@ -205,7 +207,7 @@ export interface GameHooks {
   factions?(): import('./content/enemies/integration').FactionBridge | undefined
   sfx(cue: SfxCue, milestone?: number): void
   /** Optional local contact layer, routed through the same bounded audio mixer. */
-  contactSfx?(cue: 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill'): void
+  contactSfx?(cue: ContactSfxCue): void
   message(text: string): void
   /** Original `chooseUpgrade()`: switch to 'level' mode and offer 3 upgrades. */
   offerUpgrades(): void

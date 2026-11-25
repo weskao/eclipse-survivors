@@ -52,6 +52,14 @@ export function slowTarget(e: CombatTarget, seconds: number): void {
   if (e.hp > 0) e.slow = Math.max(e.slow ?? 0, seconds)
 }
 
+/** One contact presentation path for both actor pools; never owns damage or rewards. */
+export function emitCombatContact(s: GameState, hooks: GameHooks, x: number, y: number, radius: number, angle: number, critical: boolean, heavy: boolean, kind?: ContactKind, boss = false): void {
+  if (critical || heavy) requestCameraKick(s, boss ? 1.6 : critical ? 1.25 : .85, angle)
+  emitHitImpact(s, x, y - Math.min(30, radius), radius, angle, critical, heavy, kind)
+  hooks.contactSfx?.(critical ? 'hitCritical' : kind === 'elemental' ? 'hitElemental'
+    : kind === 'evolved' ? 'hitEvolved' : kind === 'hero' ? 'hitHero' : heavy ? 'hitHeavy' : 'hitNormal')
+}
+
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero, kind: ContactKind | undefined = hooks.contactKind): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
@@ -76,9 +84,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
   e.kx = (e.x - origin.x) / knock
   e.ky = (e.y - origin.y) / knock
   const impactAngle = Math.atan2(e.ky, e.kx)
-  if (critical || heavy) requestCameraKick(s, boss ? 1.6 : critical ? 1.25 : .85, impactAngle)
-  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy, kind)
-  hooks.contactSfx?.(critical ? 'hitCritical' : heavy ? 'hitHeavy' : 'hitNormal')
+  emitCombatContact(s, hooks, e.x, e.y, e.r, impactAngle, critical, heavy, kind, boss)
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical, kind: kind ?? (heavy ? 'heavy' : undefined) })
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })

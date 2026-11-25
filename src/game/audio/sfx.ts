@@ -8,7 +8,7 @@ export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
   treasureReveal: .35, treasureClaim: .35,
-  hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, eliteKill: 0.45,
+  hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, hitElemental: .22, hitEvolved: .32, hitHero: .35, eliteKill: 0.45,
   hurt: 0.28, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
   'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75,
 }
@@ -38,6 +38,9 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   hitNormal: [[45, 0, .07, .025, 'triangle'], [76, .012, .055, .016, 'sine']],
   hitHeavy: [[31, 0, .14, .055, 'triangle'], [43, .012, .13, .032, 'sawtooth'], [65, .04, .18, .024, 'triangle']],
   hitCritical: [[38, 0, .12, .049, 'triangle'], [77, .015, .11, .035, 'sawtooth'], [89, .05, .2, .028, 'sine'], [96, .12, .22, .016, 'sine']],
+  hitElemental: [[79, 0, .09, .028, 'sawtooth'], [91, .02, .13, .023, 'triangle'], [84, .07, .18, .018, 'sine']],
+  hitEvolved: [[33, 0, .19, .044, 'triangle'], [57, .025, .17, .034, 'sawtooth'], [76, .09, .24, .023, 'sine']],
+  hitHero: [[41, 0, .15, .047, 'triangle'], [65, .015, .19, .033, 'triangle'], [84, .08, .25, .025, 'sine'], [91, .16, .23, .016, 'sine']],
   eliteKill: [[36, 0, .21, .048, 'triangle'], [48, .05, .25, .036, 'sawtooth'], [67, .13, .28, .027, 'sine']],
   hurt: [[42, 0, 0.2, 0.07, 'sawtooth'], [35, 0.06, 0.19, 0.05, 'triangle'], [30, 0.12, 0.13, 0.022, 'sine']],
   pickup: [[81, 0, 0.1, 0.033, 'sine'], [88, 0.06, 0.16, 0.025, 'triangle'], [93, 0.12, 0.15, 0.014, 'sine']],
