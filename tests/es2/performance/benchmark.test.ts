@@ -142,3 +142,17 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
     }
   })
 })
+
+it('ES3 gameplay remains identical across graphical quality and reduced motion/flashing', () => {
+  const run = (quality: 'low' | 'medium' | 'high') => {
+    setRandom(seeded(20261126))
+    const state = createStressScenario('desktop'), fake = createFakeCtx()
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    assets.presentation = () => resolvePresentationPolicy({ ...DEFAULT_ACCESSIBILITY_PREFERENCES, quality, reducedMotion: quality === 'low' ? 'on' : 'off', reducedFlashing: quality === 'low' })
+    try {
+      for (let i = 0; i < 60; i++) { step(state, 1/60, { x: 0, y: 0 }, hooks); drawFrame(fake.ctx, state, 1, assets); fake.calls.length = 0; fake.drawn.length = 0 }
+      return { time: state.time, hp: state.hero?.hp, xp: state.hero?.xp, kills: state.kill, mobs: state.mobs.map(m => [m.x,m.y,m.hp]), telemetry: state.combatTelemetry }
+    } finally { setRandom() }
+  }
+  const high = run('high'); expect(run('medium')).toEqual(high); expect(run('low')).toEqual(high)
+})

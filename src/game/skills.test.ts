@@ -134,3 +134,17 @@ describe('ES3 maximum-rank area breakthroughs', () => {
     expect(outside.x).toBe(350)
   })
 })
+
+it('maximum-rank bolt applies a short shock without expanding the target cap', () => {
+  const {s, hero} = setup(); hero.skills.bolt = 5
+  const target = mob(100, 0); s.mobs.push(target)
+  tickSkills(s, .016, spyHooks())
+  expect(target.slow).toBeGreaterThan(0)
+  expect(target.slow).toBeLessThanOrEqual(1)
+})
+it('maximum-rank blaze reaches a new outer band without changing rank four', () => {
+  const low = setup(), high = setup(); low.hero.skills.blaze = 4; high.hero.skills.blaze = 5
+  const a = mob(180, 0), b = mob(180, 0); low.s.mobs.push(a); high.s.mobs.push(b)
+  tickSkills(low.s, .016, spyHooks()); tickSkills(high.s, .016, spyHooks())
+  expect(a.hp).toBe(a.max); expect(b.hp).toBeLessThan(b.max)
+})

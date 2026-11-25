@@ -169,3 +169,16 @@ it('reserves the shared actor budget for boss summons including faction actors',
   summonBossMinions(s, boss, MAX_MOBS - 1)
   expect(s.mobs).toHaveLength(1)
 })
+
+it('drives all seven assault compositions and recovery through the production spawn pulse', () => {
+  for (let cycle = 0; cycle < 7; cycle++) {
+    const s = setup(); s.runMode = 'endless'; s.bossSpawned = true; s.time = cycle * 48 + 23
+    setRandom(seeded(42 + cycle))
+    for (let i = 0; i < 8; i++) { s.spawnT = 0; tickSpawning(s, .016, spyHooks()); s.time += .2 }
+    const expected = [['slime','bat'],['goblin'],['golem','goblin'],['slime','warlock'],['golem'],['goblin'],['goblin','warlock']][cycle]!
+    expect(s.mobs.length).toBeGreaterThan(0)
+    expect(s.mobs.every(m => expected.includes(m.type))).toBe(true)
+    if (cycle === 5) expect(s.mobs.every(m => m.rewardXpMultiplier === 1.5)).toBe(true)
+  }
+  const s = setup(); s.runMode = 'endless'; s.time = 42; s.spawnT = 0; tickSpawning(s,.016,spyHooks()); expect(s.mobs).toHaveLength(0)
+})
