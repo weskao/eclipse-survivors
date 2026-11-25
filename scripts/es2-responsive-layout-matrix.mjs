@@ -140,6 +140,26 @@ try {
       }
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
       await verifyPage('[data-hero], [data-hero-id]', 6, width >= 1000 && height >= 700)
+      // Verify the real selection treatment is exclusive, visible, and stronger than an unselected card.
+      const verifyHeroSelection = async () => {
+        const result = await page.evaluate(() => {
+          const selected = document.querySelector('.es2-hero-select-card[aria-pressed="true"]')
+          const ordinary = document.querySelector('.es2-hero-select-card[aria-pressed="false"]')
+          const status = selected.querySelector('[data-es2-hero-selected]')
+          const a = selected.getBoundingClientRect(), b = status?.getBoundingClientRect()
+          const style = getComputedStyle(selected), rest = getComputedStyle(ordinary)
+          return { selectedCount: document.querySelectorAll('[data-es2-hero-selected]').length,
+            insideCard: !!b && b.left >= a.left && b.right <= a.right && b.top >= a.top && b.bottom <= a.bottom,
+            statusVisible: !!b && b.width > 0 && b.height > 0,
+            borderDifferent: style.borderColor !== rest.borderColor, shadowDifferent: style.boxShadow !== rest.boxShadow,
+            statusBackground: status && getComputedStyle(status).backgroundImage,
+            textFits: status && status.scrollWidth <= status.clientWidth + 2 }
+        })
+        assert.ok(result.selectedCount === 1 && result.insideCard && result.statusVisible &&
+          result.borderDifferent && result.shadowDifferent && result.statusBackground !== 'none' && result.textFits,
+          name + ': unclear or clipped selected hero ' + JSON.stringify(result))
+      }
+      await verifyHeroSelection()
       const hoverCapable = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
       const cursor = await page.evaluate(() => ({
         body: getComputedStyle(document.body).cursor,

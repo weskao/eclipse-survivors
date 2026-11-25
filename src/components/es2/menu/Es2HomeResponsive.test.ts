@@ -83,6 +83,23 @@ describe('phone homepage viewport-first navigation', () => {
     }
   })
 
+  it.each(['zh-TW', 'en'] as const)('keeps one shared selected-hero indicator across all six heroes in %s', async locale => {
+    const previous = getLocale()
+    try {
+      setLocale(locale)
+      const wrapper = menu()
+      for (const id of ['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+        await wrapper.setProps({ heroId: id })
+        const selected = wrapper.get('.es2-hero-select-card[aria-pressed="true"]')
+        expect(selected.attributes('data-hero') ?? selected.attributes('data-hero-id')).toBe(id)
+        expect(wrapper.findAll('[data-es2-hero-selected]')).toHaveLength(1)
+        expect(selected.get('[data-es2-hero-selected]').text()).toMatch(/已選擇|selected/i)
+        expect(wrapper.findAll('.es2-hero-selection-status')).toHaveLength(6)
+        expect(wrapper.findAll('.es2-hero-select-card[aria-pressed="false"] [data-es2-hero-selected]')).toHaveLength(0)
+      }
+    } finally { setLocale(previous) }
+  })
+
   it('keeps each classic hero\'s four base stats on its card without a duplicate panel', () => {
     const wrapper = menu()
     for (const id of ['knight', 'ranger', 'wizard'] as const) {
