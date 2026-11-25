@@ -76,6 +76,27 @@ function footRest(profile,k,ankle){
  const foot=profile.footJoints?.[k]
  return foot?{heel:foot.heel.map((x,i)=>x*(i?profile.height:profile.width)),toe:foot.toe.map((x,i)=>x*(i?profile.height:profile.width))}:{heel:add(ankle,[-profile.width*.025,profile.height*.035]),toe:add(ankle,[profile.width*.055,profile.height*.035])}
 }
+const signedAngle=a=>Math.atan2(Math.sin(a),Math.cos(a))
+const bound=(x,lo,hi)=>Math.max(lo,Math.min(hi,x))
+const shinRotation=(rest,solved)=>signedAngle(angle(solved[1],solved[2])-angle(rest[1],rest[2]))
+// Keep the armored ankle within a conservative projected hinge envelope.
+// If an unreachable stride would require a grotesque shin/boot angle,
+// reduce the visual target excursion, not the actual player movement.
+function solveAnkleLeg(chain,target,viewAngle,activity,limits,pitch){
+ const solve=(t,a)=>Number.isFinite(viewAngle)?solveProjectedLeg(chain,t,viewAngle,a,limits).points:solveChain(chain,t,limits)
+ const maxShin=radians(40),maxRelative=radians(30),maxBoot=radians(18)
+ let points=solve(target,activity)
+ if(Math.abs(shinRotation(chain,points))>maxShin){
+  let lo=0,hi=1
+  points=chain.map(p=>p.slice())
+  for(let i=0;i<10;i++){
+   const t=(lo+hi)/2,goal=chain[2].map((x,k)=>x+(target[k]-x)*t),candidate=solve(goal,activity*t)
+   if(Math.abs(shinRotation(chain,candidate))<=maxShin){lo=t;points=candidate}else hi=t
+  }
+ }
+ const shin=shinRotation(chain,points)
+ return {points,pitch:bound(pitch,Math.max(-maxBoot,shin-maxRelative),Math.min(maxBoot,shin+maxRelative))}
+}
 function bootPose(foot,restAnkle,ankle,pitch){return {heel:add(ankle,rotateVector(sub(foot.heel,restAnkle),pitch)),toe:add(ankle,rotateVector(sub(foot.toe,restAnkle),pitch)),pitch}}
 export function sampleHumanPose(profile,p,rest=restChains(profile)){
  const w=profile.width,h=profile.height,phase=clamp(p.phase),stride=clamp(p.gait?.strength??p.stride),dir=[Math.cos(p.heading),Math.sin(p.heading)],aim=[Math.cos(p.aim),Math.sin(p.aim)]
@@ -112,7 +133,7 @@ export function sampleHumanPose(profile,p,rest=restChains(profile)){
   let target
   let foot,pitch=0
   if(leg){
-   foot=footRest(profile,k,chain[2]);pitch=swing.pitch*Math.cos(p.heading)
+   foot=footRest(profile,k,chain[2]);pitch=swing.pitch*Math.cos(Number.isFinite(profile.viewAngle)?profile.viewAngle:p.heading)*.70
    const contactPoint=swing.pitch>0?foot.toe:foot.heel,lever=sub(contactPoint,chain[2]),rolled=rotateVector(lever,pitch)
    target=add(chain[2],[dir[0]*swing.travel+lever[0]-rolled[0],dir[1]*swing.travel*groundY-swing.lift*h*.065+lever[1]-rolled[1]])
   }else{
@@ -121,9 +142,11 @@ export function sampleHumanPose(profile,p,rest=restChains(profile)){
    target=add(apply(root,chain[2]),[dir[0]*swing.travel*.20+swingAim[0]*extension,dir[1]*swing.travel*.13+swingAim[1]*extension-strike*h*.025])
   }
   const limits=limitsFor(chain,leg),localTarget=sub(target,delta)
-  const solved=leg&&Number.isFinite(profile.viewAngle)?solveProjectedLeg(chain,localTarget,profile.viewAngle,Math.max(stride,strike*.25),limits).points:solveChain(chain,localTarget,limits)
-  result[k]=solved.map(p=>add(p,delta))
-  if(leg)result.feet[k]=bootPose(foot,chain[2],result[k][2],pitch)
+  if(leg){
+   const solved=solveAnkleLeg(chain,localTarget,profile.viewAngle,Math.max(stride,strike*.25),limits,pitch)
+   result[k]=solved.points.map(p=>add(p,delta))
+   result.feet[k]=bootPose(foot,chain[2],result[k][2],solved.pitch)
+  }else result[k]=solveChain(chain,localTarget,limits).map(p=>add(p,delta))
  }
  return result
 }
@@ -135,10 +158,17 @@ export function createHumanSkin(vertices,profile){
   const [x,y,rx,ry]=profile.regions[9],cape=Math.max(0,1-Math.hypot((p[0]/profile.width-x)/rx,(p[1]/profile.height-y)/ry))**2
   weights[j+8]=cape*.35;weights[j+9]=Math.max(.08,1-Math.min(1,sum));sum+=weights[j+8]+weights[j+9]
   for(let k=0;k<10;k++)weights[j+k]/=sum
-  const boot=['left','right'].map(k=>{const ankle=chains[k][2],foot=footRest(profile,k,ankle);return p[1]<ankle[1]-profile.height*.025?0:Math.max(0,1-segmentDistance(p,foot.heel,foot.toe)/(profile.height*.075))})
-  const total=Math.max(1,boot[0]+boot[1]),mix=Math.min(1,boot[0]+boot[1])
-  for(let k=0;k<10;k++)weights[j+k]*=1-mix
-  weights[j+10]=boot[0]/total;weights[j+11]=boot[1]/total
+  // Each lower leg owns its ankle and boot. The two transforms share the
+  // same solved ankle pivot; never blend a boot with the opposite leg/cape.
+  const dl=distance(p,chains.left[2]),dr=distance(p,chains.right[2])
+  const side=dl<=dr?0:1,chain=side===0?chains.left:chains.right
+  const [_,knee,ankle]=chain,foot=footRest(profile,side===0?'left':'right',ankle)
+  const own=ease((p[1]-knee[1]-(ankle[1]-knee[1])*.35)/Math.max(1,(ankle[1]-knee[1])*.55))
+  const boot=ease((p[1]-ankle[1]+profile.height*.018)/(profile.height*.048))
+  const shinIndex=side===0?5:7
+  for(let k=0;k<10;k++)weights[j+k]*=1-own
+  weights[j+shinIndex]+=own*(1-boot)
+  weights[j+10+side]=own*boot
  }
  return {rest,chains,weights,profile}
 }

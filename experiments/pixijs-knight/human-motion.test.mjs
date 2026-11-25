@@ -90,3 +90,25 @@ test('long run stride lowers pelvis to keep the support leg within reach',()=>{
  assert.ok(hip[1]-restHip[1]>3)
  const leg=pose.left;assert.ok(len(leg[0],leg[2])<=len(restHip,p.legJoints.left[1].map((v,i)=>v*(i?p.height:p.width)))+len(p.legJoints.left[1].map((v,i)=>v*(i?p.height:p.width)),p.legJoints.left[2].map((v,i)=>v*(i?p.height:p.width)))+1e-5)
 })
+
+test('actual eight direction ankles stay attached to their own shin and boot during gait and strafing attacks',async()=>{
+ const {readFile}=await import('node:fs/promises')
+ const manifest=JSON.parse(await readFile(new URL('./assets/knight/manifest.json',import.meta.url),'utf8'))
+ for(const v of manifest.views){
+  const p={width:108,height:134,...v.profile}
+  for(let i=0;i<100;i++)for(const offset of [0,Math.PI/2,Math.PI]){
+   const input={...base,pose:offset?'attack':'run',phase:.32,step:i/10,stride:1,heading:v.direction*Math.PI/4+offset,aim:v.direction*Math.PI/4,gait:{cycle:i/100,strideLength:120.6,stance:.48,strength:1}}
+   const pose=sampleHumanPose(p,input)
+   for(const k of ['left','right']){
+    const chain=p.legJoints[k].map(z=>z.map((x,i)=>x*(i?134:108))),ankle=chain[2]
+    const skin=createHumanSkin(new Float32Array(ankle),p),out=new Float32Array(2)
+    deformHumanSkin(skin,out,pose)
+    assert.ok(len(out,pose[k][2])<.05,v.name+' '+k+' detached ankle')
+    const shin=Math.atan2(pose[k][2][1]-pose[k][1][1],pose[k][2][0]-pose[k][1][0])-Math.atan2(ankle[1]-chain[1][1],ankle[0]-chain[1][0])
+    const diff=pose.feet[k].pitch-shin
+    assert.ok(Math.abs(Math.atan2(Math.sin(diff),Math.cos(diff)))<=Math.PI/6+1e-6,v.name+' '+k+' excessive relative ankle rotation')
+    assert.ok(Math.abs(pose.feet[k].pitch)<=Math.PI/10+1e-6,v.name+' '+k+' excessive boot tilt')
+   }
+  }
+ }
+})
