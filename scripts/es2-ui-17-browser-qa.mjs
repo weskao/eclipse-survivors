@@ -114,6 +114,25 @@ try {
         assert.ok(scroll.inner > 0 && Math.abs(scroll.inner - scroll.range) <= 1,
           name + ': overflowing content is not reachable: ' + JSON.stringify(scroll))
       record.choiceScroll = scroll
+      if (touch && width < height) {
+        record.portraitArt = await choice.locator('.es2-card-art').evaluateAll(frames => frames.map(frame => {
+          const image = frame.querySelector('img')
+          if (!image) return null
+          const f = frame.getBoundingClientRect(), i = image.getBoundingClientRect()
+          const style = getComputedStyle(image)
+          const x = f.left + frame.clientLeft + frame.clientWidth / 2
+          const y = f.top + frame.clientTop + frame.clientHeight / 2
+          return { x: Math.abs(x - (i.left + i.right) / 2), y: Math.abs(y - (i.top + i.bottom) / 2),
+            width: i.width, height: i.height, fit: style.objectFit, position: style.objectPosition }
+        }).filter(Boolean))
+        assert.ok(record.portraitArt.length > 0, name + ': no choice illustrations')
+        for (const art of record.portraitArt) {
+          assert.ok(art.width > 0 && art.height > 0 && art.x <= 1 && art.y <= 1,
+            name + ': illustration not centered in its left frame: ' + JSON.stringify(art))
+          assert.equal(art.fit, 'contain')
+          assert.equal(art.position, '50% 50%')
+        }
+      }
       for (let i = 0; i < await rarity.count(); i++) {
         // If necessary, scroll each card into view to verify its artwork.
         await rarity.nth(i).scrollIntoViewIfNeeded()
