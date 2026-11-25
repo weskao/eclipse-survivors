@@ -20,7 +20,18 @@ const BASE_HP: Record<MobType, number> = BALANCE.enemies.baseHp
 
 interface OrdinarySpawn { type: MobType; elite: boolean; angle?: number; rewardXpMultiplier?: number }
 
-export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0, planned?: OrdinarySpawn, safePlacement = false): void {
+/** Bounded placement search shared by ordinary and faction waves, including the opening. */
+function clearSpawnPoint(s: GameState, angle: number, radiusX: number, radiusY = radiusX) {
+  const hero = s.hero!
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const theta = angle + attempt * .71
+    const x = hero.x + Math.cos(theta) * radiusX, y = hero.y + Math.sin(theta) * radiusY
+    if (pointIsClear(s.currentScene, { x, y }, 32)) return { x, y }
+  }
+  return null
+}
+
+export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0, planned?: OrdinarySpawn, safePlacement: boolean | 'opening' = false): void {
   const hero = s.hero
   // Boss spawns even when the normal crowd budget is exhausted.
   if (!hero || s.mobs.length + otherLiving >= MAX_MOBS + (type === 'boss' ? 1 : 0)) return
@@ -34,15 +45,11 @@ export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0, planned?:
   const hp = Math.round((BASE_HP[t] + lvl * (t === 'boss' ? BALANCE.enemies.bossHpPerLevel : BALANCE.enemies.hpPerLevel)) * (elite ? BALANCE.enemies.eliteHpMultiplier : 1) * modifiers.enemyHp)
   let x = hero.x + Math.cos(a) * r, y = hero.y + Math.sin(a) * r
   if (planned || safePlacement) {
-    const distance = Math.max(r, Math.min(1600, Math.hypot(s.W / 2 + 32, s.H / 2 + 32)))
-    let safe = false
-    for (let attempt = 0; attempt < 8; attempt++) {
-      const angle = a + attempt * 0.71
-      x = hero.x + Math.cos(angle) * distance
-      y = hero.y + Math.sin(angle) * distance
-      if (pointIsClear(s.currentScene, { x, y }, 32)) { safe = true; break }
-    }
-    if (!safe) return
+    // Keep the existing nearby opening ring; later pulses remain offscreen.
+    const distance = safePlacement === 'opening' ? r : Math.max(r, Math.min(1600, Math.hypot(s.W / 2 + 32, s.H / 2 + 32)))
+    const point = clearSpawnPoint(s, a, distance)
+    if (!point) return
+    x = point.x; y = point.y
   }
   s.mobs.push({
     x,
@@ -89,12 +96,13 @@ function encounterSpawn(encounter: OrdinaryEncounter, index: number, angle: numb
 
 /** The only ordinary spawn scheduler, including initial and faction reinforcements. */
 export function spawnOpeningWave(s: GameState, factions?: FactionBridge): void {
-  for (let i = 0; i < 12; i++) spawnMob(s)
-  if (!factions || !s.hero) return
+  if (!s.hero) return
+  for (let i = 0; i < 12; i++) spawnMob(s, undefined, factions?.runtime.enemies.length ?? 0, undefined, 'opening')
+  if (!factions) return
   for (let i = 0; i < 4 && factions.availableSpawnSlots(s) > 0; i++) {
-    const theta = i * Math.PI / 2
-    factions.spawn(s, FACTION_IDS[s.factionSpawnSequence++ % FACTION_IDS.length]!,
-      s.hero.x + Math.cos(theta) * 320, s.hero.y + Math.sin(theta) * 230)
+    const kind = FACTION_IDS[s.factionSpawnSequence++ % FACTION_IDS.length]!
+    const point = clearSpawnPoint(s, i * Math.PI / 2, 320, 230)
+    if (point) factions.spawn(s, kind, point.x, point.y)
   }
 }
 
@@ -107,14 +115,10 @@ function factionPulse(s: GameState, factions: FactionBridge, encounter: Ordinary
   const roster = FACTION_COMPOSITIONS[encounter] ?? FACTION_IDS
   const sequence = s.factionSpawnSequence++
   const radius = Math.min(1600, Math.max(320, Math.hypot(s.W / 2 + 36, s.H / 2 + 36)))
-  for (let i = 0; i < 8; i++) {
-    const theta = sequence * 2.399963229728653 + i * .71
-    const x = hero.x + Math.cos(theta) * radius, y = hero.y + Math.sin(theta) * radius
-    if (!pointIsClear(s.currentScene, { x, y }, 32)) continue
-    const affix = encounter === 'elite-invasion' || encounter === 'titan-march' ? factions.chooseAffix() : null
-    factions.spawn(s, roster[sequence % roster.length]!, x, y, { ...(affix ? {affix} : {}), ...(encounter === 'treasure-rush' ? {rewardXpMultiplier:BALANCE.combat.treasureRushXpMultiplier} : {}) })
-    break
-  }
+  const point = clearSpawnPoint(s, sequence * 2.399963229728653, radius)
+  if (!point) return
+  const affix = encounter === 'elite-invasion' || encounter === 'titan-march' ? factions.chooseAffix() : null
+  factions.spawn(s, roster[sequence % roster.length]!, point.x, point.y, { ...(affix ? {affix} : {}), ...(encounter === 'treasure-rush' ? {rewardXpMultiplier:BALANCE.combat.treasureRushXpMultiplier} : {}) })
 }
 
 /** Counts down `spawnT`, spawns the wave (plus a 32%+ extra after 38s) and the boss after 92s. */
