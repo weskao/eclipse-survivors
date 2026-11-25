@@ -73,16 +73,22 @@ export function useHoverDetails<T extends string>(selector: string, resolveId: (
   function onScroll(event: Event): void {
     if (anchor.value && !(event.target instanceof Element && event.target.closest('[data-es2-hover-details]'))) clear()
   }
+  function onPointerDown(event: PointerEvent): void {
+    if (!anchor.value || !(event.target instanceof Element)) return
+    if (!anchor.value.contains(event.target) && !event.target.closest('[data-es2-hover-details]')) clear()
+  }
   function closeHover(): void { if (anchor.value) clear() }
   onMounted(() => {
     window.addEventListener('scroll', onScroll, true)
     window.addEventListener('resize', closeHover)
     document.addEventListener('keydown', onEscape, true)
+    document.addEventListener('pointerdown', onPointerDown, true)
   })
   onBeforeUnmount(() => {
     window.removeEventListener('scroll', onScroll, true)
     window.removeEventListener('resize', closeHover)
     document.removeEventListener('keydown', onEscape, true)
+    document.removeEventListener('pointerdown', onPointerDown, true)
     clear()
   })
   return { id, anchor, tooltipId, openModal, clear, hold, leave, events: { pointerover, pointerout, focusin, focusout } }

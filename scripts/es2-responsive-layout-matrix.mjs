@@ -160,8 +160,22 @@ try {
         assert.ok(inside(await tip.evaluate(rect), width, height), name + ': specialization tooltip clips')
         await page.keyboard.press('Escape')
         await tip.waitFor({ state: 'hidden' })
+        // Keyboard users receive the same details without another tab stop.
+        await page.mouse.move(0, 0)
+        await page.keyboard.press('Tab')
+        await card.focus()
+        await tip.waitFor({ state: 'visible' })
+        assert.equal(await card.getAttribute('aria-describedby'), await tip.getAttribute('id'))
+        await page.keyboard.press('Escape')
+        await tip.waitFor({ state: 'hidden' })
       } else {
         assert.equal(await page.locator('[data-es2-hero-details]:visible').count(), 6, name + ': touch details unavailable')
+        await page.locator('[data-es2-hero-details="wizard"]').click()
+        const details = page.locator('.es2-dialog[role="dialog"]')
+        await details.waitFor({ state: 'visible' })
+        assert.match(await details.innerText(), /虛空術士|Void/i)
+        await details.locator('.es2-close').click()
+        await details.waitFor({ state: 'hidden' })
       }
       await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
       await page.locator('[data-es2-expedition-navigation]').click()
