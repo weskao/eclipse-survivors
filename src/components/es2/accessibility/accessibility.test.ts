@@ -77,8 +77,8 @@ describe('accessibility settings', () => {
   it('uses labelled switches for all binary preferences and emits each change once', async () => {
     const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
     const switches = w.findAll('[role="switch"]')
-    expect(switches).toHaveLength(6)
-    const fields = ['reducedMotion', 'reducedFlashing', 'colorblindIndicators', 'showDamageNumbers', 'showFullEnemyHealthBars', 'showHeroLowHealthWarning'] as const
+    expect(switches).toHaveLength(7)
+    const fields = ['reducedMotion', 'haptics', 'reducedFlashing', 'colorblindIndicators', 'showDamageNumbers', 'showFullEnemyHealthBars', 'showHeroLowHealthWarning'] as const
     for (const [index, field] of fields.entries()) {
       const toggle = switches[index]!
       expect(toggle.attributes('aria-label')).toBeTruthy()
@@ -94,7 +94,7 @@ describe('accessibility settings', () => {
     await w.setProps({ disabled: true })
     expect(switches.every(toggle => toggle.attributes('disabled') !== undefined)).toBe(true)
     await switches[1]!.trigger('click')
-    expect(w.emitted('update:modelValue')).toHaveLength(6)
+    expect(w.emitted('update:modelValue')).toHaveLength(7)
     w.unmount()
   })
   it('defaults full-health enemy bars off, toggles them and resets to off', async () => {

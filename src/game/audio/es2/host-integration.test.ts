@@ -6,6 +6,7 @@ import type { ToneFn } from '../music'
 import type { AudioSystem, BgmElement } from '../types'
 import { createEs2AudioAdapter } from './adapter'
 import { createEngine } from '../../engine'
+import { HERO_SPECIALIZATIONS_PACK } from '../../content/heroes'
 import { DURATION } from '../../constants'
 
 class Media implements BgmElement {
@@ -50,8 +51,9 @@ describe('ES2 final host audio wiring', () => {
         return buffer
       },
     })
-    const engine = createEngine({ audio, contentPacks: [] })
+    const engine = createEngine({ audio, contentPacks: [HERO_SPECIALIZATIONS_PACK] })
     engine.selectHero(hero)
+    expect(engine.ui.heroId).toBe(hero)
     engine.selectRunMode('standard')
     engine.start()
     engine.state.mobs = []
@@ -106,8 +108,9 @@ describe('ES2 final host audio wiring', () => {
     ['crimson-paladin', 'crimson-paladin-special'],
   ] as const)('plays the dedicated %s sound via the shared SFX bus and respects mute', (hero, cue) => {
     const { audio, context, created } = setup()
-    const engine = createEngine({ audio, contentPacks: [] })
+    const engine = createEngine({ audio, contentPacks: [HERO_SPECIALIZATIONS_PACK] })
     engine.selectHero(hero)
+    expect(engine.ui.heroId).toBe(hero)
     engine.selectRunMode('standard')
     engine.start()
     engine.state.mobs = []
