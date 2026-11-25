@@ -1,0 +1,30 @@
+name: Copy original Google sign-in icon (one-time)
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths: ['.github/workflows/copy-google-icon-once.yml']
+permissions:
+  contents: write
+jobs:
+  copy:
+    if: github.ref == 'refs/heads/feature/es2-release-readiness-integration'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/es2-release-readiness-integration
+      - name: Vendor byte-identical WebP and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          icon=src/assets/ui/google-sign-in.webp
+          mkdir -p "$(dirname "$icon")"
+          curl --fail --silent --show-error --location --retry 2 --max-time 30 'https://raw.githubusercontent.com/weskao/skyline-rush/b06988f69e5755071148c81bc1d61c878e489160/public/icons/google-sign-in.webp' -o "$icon"
+          test "$(git hash-object "$icon")" = 02c51f38140fb8ae66b30a3b93777ef75c5f2ad1
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$icon"
+          git rm '.github/workflows/copy-google-icon-once.yml'
+          git commit -m 'assets: vendor exact Skyline Rush Google sign-in icon'
+          git push origin HEAD:feature/es2-release-readiness-integration
