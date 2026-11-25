@@ -236,3 +236,13 @@ it('culls lightning wholly outside the viewport but preserves crossing bolts', (
   const f = createFakeCtx(); drawLightning(f.ctx, s, 0, 0)
   expect(f.calls.filter(x => x === 'stroke')).toHaveLength(3)
 })
+
+it('distinguishes elemental, evolution, hero, heavy and actual healing labels', () => {
+  const s=scene()
+  s.numberFx=(['elemental','evolved','hero','heavy','heal'] as const).map((kind,i)=>({x:100+i*20,y:100,life:.6,value:25+i,boss:false,kind}))
+  const {ctx}=createFakeCtx(), colors=new Map<string,string>()
+  ctx.fillText=(label)=>{colors.set(label,String(ctx.fillStyle))}
+  drawNumbers(ctx,s,0,0,true)
+  expect(colors.has('+29')).toBe(true)
+  expect(new Set(colors.values()).size).toBe(5)
+})

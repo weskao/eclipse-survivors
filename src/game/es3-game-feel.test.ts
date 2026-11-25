@@ -4,7 +4,7 @@ import { addXp } from './progression'
 import { attack, hit } from './combat'
 import { flushKillMilestone, recordKill } from './kill-streak'
 import { createFactionBridge } from './content/enemies/integration'
-import { emitHitImpact, pushDamageNumber, zigzag } from './fx'
+import { emitHitImpact, pushDamageNumber, pushParticle, zigzag } from './fx'
 import { seeded, setRandom } from './math'
 import { createHero, createState } from './state'
 import { tickSpawning } from './spawn'
@@ -132,4 +132,23 @@ it('bounds lightning cosmetics during saturated casts and reuses effect arrays a
   expect(s.numberFx).toBe(numbers)
   expect(s.impactWaves).toBe(waves)
   expect(lightning).toHaveLength(0)
+})
+
+it('classifies actual evolved and elemental hits without changing damage or duplicating the contact', () => {
+  const s=session(), a=mob(70), b=mob(80)
+  hit(s,a,20,hooks(),s.hero,'elemental')
+  hit(s,b,20,hooks(),s.hero,'evolved')
+  expect([a.hp,b.hp]).toEqual([980,980])
+  expect(s.numberFx.map(n=>n.kind)).toEqual(['elemental','evolved'])
+  expect(s.impactWaves.map(w=>w.kind)).toEqual(['elemental','evolved'])
+  expect(s.impactWaves).toHaveLength(2)
+})
+it('bounds direct decorative particles and differentiates heavy enemy death duration', () => {
+  const s=session()
+  for(let i=0;i<500;i++) pushParticle(s,{x:0,y:0,life:1,max:1,color:'#fff',r:2})
+  expect(s.fx.length).toBe(240)
+  const a=mob(40), b={...mob(50),type:'golem' as const}, c={...mob(60),elite:true}
+  for(const e of [a,b,c]) hit(s,e,1000,hooks())
+  expect(b.deathVisual!).toBeGreaterThan(a.deathVisual!)
+  expect(c.deathVisual!).toBeGreaterThan(b.deathVisual!)
 })

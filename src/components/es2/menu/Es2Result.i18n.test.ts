@@ -76,3 +76,19 @@ describe('localized expedition results', () => {
     wrapper.unmount()
   })
 })
+
+it('shows measured run XP, first upgrade, DPS and kills per minute in both languages', async () => {
+  setLocale('en',storage)
+  const wrapper=mount(Es2Result,{props:{active:true,ending:'',summary:'',result:{...result,seconds:60,damageDealt:1200,kills:30,xpEarned:75,firstUpgradeSeconds:8}},attachTo:document.body})
+  await nextTick()
+  const stats=document.body.querySelector('.es2-result-stats')!
+  expect(stats.textContent).toContain('75XP earned')
+  expect(stats.textContent).toContain('8.0sFirst upgrade')
+  expect(stats.textContent).toContain('20Average DPS')
+  expect(stats.textContent).toContain('30Kills per minute')
+  setLocale('zh-TW',storage); await nextTick()
+  expect(stats.textContent).toContain('首次升級時間')
+  await wrapper.setProps({result})
+  expect(stats.textContent).not.toContain('首次升級時間')
+  wrapper.unmount()
+})
