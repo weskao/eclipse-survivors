@@ -3,8 +3,12 @@ import shadowblade from '../../assets/es2/production/skills/attack-shadowblade.s
 import paladin from '../../assets/es2/production/skills/attack-crimson-paladin.svg?url'
 import summoner from '../../assets/es2/production/skills/attack-spirit-summoner.svg?url'
 import type { HeroId } from '../types'
+import wolf from '../../assets/es2/production/skills/spectral-wolf.svg?url'
+import blazeAura from '../../assets/es2/production/skills/blaze-aura.svg?url'
+import shieldAura from '../../assets/es2/production/skills/shield-aura.svg?url'
+import sanctuaryAura from '../../assets/es2/production/skills/sanctuary-aura.svg?url'
 
-export const HERO_ATTACK_ART = { knight, shadowblade, 'crimson-paladin': paladin, 'spirit-summoner': summoner } as const
+export const HERO_ATTACK_ART = { knight, shadowblade, 'crimson-paladin': paladin, 'spirit-summoner': summoner, wolf, 'blaze-aura': blazeAura, 'shield-aura': shieldAura, 'sanctuary-aura': sanctuaryAura } as const
 export type HeroAttackArtId = keyof typeof HERO_ATTACK_ART
 export type HeroAttackSprites = Partial<Record<HeroAttackArtId, HTMLImageElement>>
 export const meleeArtId = (id: HeroId): HeroAttackArtId =>

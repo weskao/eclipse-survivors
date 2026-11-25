@@ -91,10 +91,17 @@ export function drawEchoes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 /** Blaze ring, shield aura and level-up burst around the hero. */
-export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false, art?: HeroAttackSprites): void {
   const q = reducedMotion ? 0 : s.worldClock
+  const aura = (id: 'blaze-aura' | 'shield-aura' | 'sanctuary-aura', x: number, y: number, w: number, h: number, alpha: number): boolean => {
+    const image = art?.[id]
+    if (!image?.complete || image.naturalWidth <= 0) return false
+    ctx.save(); ctx.globalAlpha = alpha
+    ctx.drawImage(image, x - w / 2, y - h / 2, w, h); ctx.restore()
+    return true
+  }
   const blaze = hero.skills.blaze
-  if (blaze) {
+  if (blaze && !aura('blaze-aura', hero.x + ox, hero.y + oy - 18, 100 + blaze * 12, 56 + blaze * 6, 0.66 + Math.sin(q * 3) * 0.1)) {
     ctx.save(); ctx.translate(hero.x + ox, hero.y + oy); ctx.globalAlpha = 0.55
     for (let k = 0; k < 3 + blaze; k++) {
       const a = q * 3 + k * TAU / (3 + blaze)
@@ -105,7 +112,7 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.restore()
   }
   const shield = hero.skills.shield
-  if (hero.evolutions['guardian-sanctuary']) {
+  if (hero.evolutions['guardian-sanctuary'] && !aura('sanctuary-aura', hero.x + ox, hero.y + oy - 13, 225, 94, 0.66)) {
     ctx.save()
     ctx.globalAlpha = 0.32 + 0.1 * Math.sin(q * 3)
     ctx.strokeStyle = '#8dffdf'
@@ -117,7 +124,7 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.stroke()
     ctx.restore()
   }
-  if (shield) {
+  if (shield && !aura('shield-aura', hero.x + ox, hero.y + oy - 14, 150 + shield * 9, 59 + shield * 5, 0.48 + Math.sin(q * 3) * 0.07)) {
     ctx.save(); ctx.globalAlpha = 0.24 + 0.09 * Math.sin(q * 4); ctx.strokeStyle = '#9fd4ff'; ctx.lineWidth = 2.6
     ctx.beginPath(); ctx.ellipse(hero.x + ox, hero.y + oy - 14, 62 + shield * 4, 24 + shield * 2, 0, 0, TAU); ctx.stroke()
     ctx.restore()

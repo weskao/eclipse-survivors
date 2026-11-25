@@ -2,7 +2,8 @@ import type { Ctx2D } from '../../render/ctx'
 import type { GameState } from '../../types'
 import { runtimeOf } from './runtime'
 import { drawProjectileSprite, type ProjectileSprites } from '../../render/projectile-art'
-import { drawZoneMotes } from '../../render/energy-art'
+import { drawZoneMotes, drawEnergyTrail } from '../../render/energy-art'
+import { sharedHeroAttackArt } from '../../render/hero-attack-art'
 
 const MISSILE_ART = {
   dagger: 'shadow-dagger', lance: 'holy-lance', bone: 'bone-spear',
@@ -19,6 +20,8 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
   const hero = state.hero
   if (!hero) return
   const r = runtimeOf(state)
+  const art = sharedHeroAttackArt()
+  const reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const inside = (x: number, y: number, margin = 160) =>
     state.W <= 0 || state.H <= 0 ||
     (x >= -margin && y >= -margin && x <= state.W + margin && y <= state.H + margin)
@@ -89,8 +92,7 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
         ctx.beginPath(); ctx.moveTo(20, 0); ctx.lineTo(6, -6); ctx.lineTo(6, 6); ctx.closePath(); ctx.fill()
       }
     }
-    ctx.globalAlpha = 0.32
-    ctx.beginPath(); ctx.moveTo(-15, 0); ctx.lineTo(-30, 0); ctx.stroke()
+    drawEnergyTrail(ctx, p.radius, p.life, MISSILE_COLOR[p.kind], reduced)
     ctx.restore()
   }
 
@@ -98,6 +100,15 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
     const x = wolf.x + ox, y = wolf.y + oy
     if (!inside(x, y, 35)) continue
     ctx.save(); ctx.translate(x, y)
+    const image = art.wolf
+    if (image?.complete && image.naturalWidth > 0) {
+      const facing = wolf.x >= hero.x ? 1 : -1
+      ctx.scale(facing, 1)
+      const bob = reduced ? 0 : Math.sin(state.worldClock * 9 + wolf.x * 0.04) * 2
+      ctx.drawImage(image, -43, -48 + bob, 86, 86)
+      ctx.restore()
+      continue
+    }
     ctx.fillStyle = '#8ac6e1c9'
     ctx.strokeStyle = '#e2efff'
     ctx.lineWidth = 1.6
@@ -132,11 +143,18 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
   if (r.slashLife > 0) {
     ctx.save()
     ctx.globalAlpha = r.slashLife / 0.3
-    ctx.lineWidth = 8; ctx.strokeStyle = '#e97c99'
-    ctx.shadowColor = '#e75b92'; ctx.shadowBlur = 16
-    ctx.beginPath()
-    ctx.arc(hero.x + ox, hero.y + oy, 150, r.slashAngle - 1.35, r.slashAngle + 1.35)
-    ctx.stroke(); ctx.restore()
+    const image = art['crimson-paladin']
+    if (image?.complete && image.naturalWidth > 0) {
+      ctx.translate(hero.x + ox, hero.y + oy)
+      ctx.rotate(r.slashAngle)
+      ctx.drawImage(image, -172, -172, 344, 344)
+    } else {
+      ctx.fillStyle = '#e97c99'
+      ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy, 150, r.slashAngle - 1.35, r.slashAngle + 1.35)
+      ctx.arc(hero.x + ox, hero.y + oy, 126, r.slashAngle + 1.35, r.slashAngle - 1.35, true)
+      ctx.closePath(); ctx.fill()
+    }
+    ctx.restore()
   }
 
   if (r.charge > 0) {

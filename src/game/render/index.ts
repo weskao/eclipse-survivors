@@ -177,7 +177,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     drawBossAttackReference(ctx, deathReference.image, bossSnapshot, BOSS_BASE_DRAW_PX, reduced)
     ctx.restore()
   }
-  drawHeroAuras(ctx, s, hero, ox, oy, reduced)
+  drawHeroAuras(ctx, s, hero, ox, oy, reduced, assets.heroAttackArt)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)
   drawSwipes(ctx, s, ox, oy, assets.heroAttackArt, reduced)
   drawShots(ctx, s, ox, oy, assets.magicGlow, projectiles, reduced, assets.heroAttackArt)

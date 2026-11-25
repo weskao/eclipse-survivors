@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../state'
 import { createFakeCtx } from './fakes'
-import { drawShots, drawSwipes } from './effects'
+import { drawHeroAuras, drawShots, drawSwipes } from './effects'
 import { loadHeroAttackArt } from './hero-attack-art'
 const sprites = loadHeroAttackArt(() => ({ complete: true, naturalWidth: 384 }) as HTMLImageElement)
 describe('hero-specific combat textures', () => {
@@ -20,6 +20,14 @@ describe('hero-specific combat textures', () => {
     const off = createFakeCtx()
     drawSwipes(off.ctx, s, -5000, -5000, sprites)
     expect(off.drawn).toHaveLength(0)
+  })
+  it('replaces repeated fire and shield geometry with two authored textures', () => {
+    const s = createState(); resetRun(s); s.W = 800; s.H = 600
+    s.hero!.skills.blaze = 3; s.hero!.skills.shield = 2; s.hero!.levelAnim = 0
+    const frame = createFakeCtx()
+    drawHeroAuras(frame.ctx, s, s.hero!, 0, 0, false, sprites)
+    expect(frame.drawn).toEqual([sprites['blaze-aura'], sprites['shield-aura']])
+    expect(frame.calls).not.toContain('ellipse')
   })
   it('paints the spirit summoner projectile independently of the wizard fallback', () => {
     const s = createState(); resetRun(s); s.W = 800; s.H = 600; s.heroId = 'spirit-summoner'
