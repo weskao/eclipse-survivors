@@ -698,6 +698,8 @@ const english = new Map<string, string>([
     "魔物擊殺",
     "Monsters Defeated"
   ],
+  ["最高連殺", "Best kill streak"],
+  ["最高瞬間多殺", "Best multikill"],
   [
     "英雄等級",
     "Hero Level"

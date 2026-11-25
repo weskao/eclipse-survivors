@@ -17,6 +17,9 @@ export interface RunStats {
   victory: boolean
   seconds: number
   kills: number
+  /** Optional for compatibility with older run receipts. */
+  bestKillStreak?: number
+  bestMultiKill?: number
   level: number
   damageDealt: number
   damageTaken: number

@@ -66,6 +66,7 @@ export interface HudView {
   /** 0..100 */
   xpPct: number
   kill: number
+  combo?: { readonly count: number }
   /** `mm:ss` */
   timer: string
   /** 0..100 when a live boss exists, else null (hides `#bossWrap`). */

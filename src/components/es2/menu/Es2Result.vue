@@ -30,6 +30,8 @@ const stats = computed(() => props.result ? [
   { title: '造成傷害', value: formatNumber(props.result.damageDealt) },
   { title: '承受傷害', value: formatNumber(props.result.damageTaken) },
   { title: '剩餘生命', value: String(props.result.remainingHp) },
+  ...(props.result.bestKillStreak === undefined ? [] : [{ title: '最高連殺', value: formatNumber(props.result.bestKillStreak) }]),
+  ...(props.result.bestMultiKill === undefined ? [] : [{ title: '最高瞬間多殺', value: formatNumber(props.result.bestMultiKill) }]),
 ] : [])
 </script>
 <template>
