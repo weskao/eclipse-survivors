@@ -26,7 +26,8 @@ jobs:
         run: |
           npm ci --prefix experiments/pixijs-knight
           npm ls --prefix experiments/pixijs-knight pixi.js
-          node --test experiments/pixijs-knight/pose.test.mjs experiments/pixijs-knight/motion.test.mjs experiments/pixijs-knight/rig.test.mjs
+          make test-pixi
+          make -n dev-pixi dev-pixi-unlocked phone-pixi phone-pixi-unlocked
       - run: pnpm test
       - run: pnpm typecheck
         if: ${{ !cancelled() && steps.pixi.outcome == 'success' }}

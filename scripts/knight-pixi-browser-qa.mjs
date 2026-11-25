@@ -8,6 +8,7 @@ const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '
 const directions = [['d'], ['d','s'], ['s'], ['a','s'], ['a'], ['a','w'], ['w'], ['d','w']]
 const viewports = [
   { name:'desktop', width:960, height:540, dpr:1 },
+  { name:'desktop-directional', width:960, height:540, dpr:1, candidate:true },
   { name:'portrait-320', width:320, height:640, dpr:2 },
   { name:'portrait-375', width:375, height:812, dpr:3 },
   { name:'landscape-640', width:640, height:320, dpr:2 },
@@ -15,19 +16,21 @@ const viewports = [
 ]
 try {
   for(const viewport of viewports) {
-    const mobile=viewport.name!=='desktop'
+    const mobile=!viewport.name.startsWith('desktop')
     const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:viewport.dpr,isMobile:mobile,hasTouch:mobile,
       reducedMotion:viewport.name==='portrait-320'?'reduce':'no-preference'})
     const errors=[]
     page.on('pageerror',e=>errors.push(e.message))
     try {
-      await page.goto(new URL('?knightPixi=1&knightPixiQA=1',root).href)
+      await page.goto(new URL('?knightPixi=1&knightPixiQA=1'+(viewport.candidate?'&knightRigCandidates=1':''),root).href)
       await page.locator('.es2-start').waitFor({state:'visible',timeout:30000})
       const knight=page.locator('[data-hero-id="knight"]')
       if(await knight.count() && await knight.first().isVisible()) await knight.first().click()
       await page.locator('.es2-start').click()
       await page.waitForFunction(()=>window.__test?.mode==='play')
       await page.locator('canvas[data-knight-renderer="pixi"]').waitFor({state:'attached',timeout:30000})
+      const surface=page.locator('canvas[data-knight-renderer="pixi"]')
+      assert.equal(await surface.getAttribute('data-knight-rig-assets'),viewport.candidate?'directional':'legacy','actual asset path must not silently fall back')
       await page.screenshot({path:out+'/'+viewport.name+'-idle.png'})
       if(!mobile) {
         for(let i=0;i<8;i++) {
@@ -38,12 +41,14 @@ try {
             const v=window.__test?.velocity
             return v && (Math.abs(x)<.1||v.x*x>2) && (Math.abs(y)<.1||v.y*y>2)
           },{x,y})
-          await page.screenshot({path:out+'/move-'+i+'.png'})
+          if(viewport.candidate)await page.waitForFunction(i=>document.querySelector('canvas[data-knight-renderer="pixi"]')?.dataset.knightRigView===String(i),i)
+          await page.screenshot({path:out+'/'+viewport.name+'-move-'+i+'.png'})
           for(const key of keys)await page.keyboard.up(key)
         }
         for(let i=0;i<8;i++){
           assert.ok(await page.evaluate(i=>window.__test.prepareKnightPixiAttack(i),i),'real attack failed for '+i)
-          await page.screenshot({path:out+'/attack-'+i+'.png'})
+          if(viewport.candidate)await page.waitForFunction(i=>{const d=document.querySelector('canvas[data-knight-renderer="pixi"]')?.dataset;return d?.knightRigView===String(i)&&d.knightRigPose==='attack'},i)
+          await page.screenshot({path:out+'/'+viewport.name+'-attack-'+i+'.png'})
         }
       }
       assert.equal(await page.locator('canvas[data-knight-renderer="pixi"]').count(),1)

@@ -37,3 +37,7 @@ Run 45542992775: dependency installation and the new tests passed. Full suite: 1
 ## Reusable rig follow-up
 
 See [shared humanoid rig contract](hero-skeletal-rig.md). Generic profile/mesh/leg/pose runtime and directional validation are implemented; actual native layered views and physical device evidence remain blocking. CI 45543377998 passed dependency install, typecheck, build and release checks; browser QA reached actual GPU gameplay but failed on attack direction 3. The next run isolates QA target HP/XP; no combat balance change.
+
+## Current candidate and Make targets
+
+HEAD 7e9daec has eight body/weapon pairs. CI 45547122731 passed browser gameplay, 130-mob diagnostic, typecheck/build/release checks, but the existing three-hero review gate failed. That browser run did not enable directional candidates. New QA explicitly asserts actual asset source and rendered movement/attack view. Reduced-motion unchanged views reuse the preserved framebuffer. `make dev-pixi`, `make dev-pixi-unlocked`, `make phone-pixi`, `make phone-pixi-unlocked`, `make setup-pixi`, `make test-pixi` are DEV-only conveniences; production remains unchanged. Software Chromium timing is not physical device evidence: desktop Canvas/Pixi render median 2.9/2.9 ms, mobile-low 2.0/2.6 ms. No speedup claim.

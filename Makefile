@@ -2,8 +2,11 @@
 .DEFAULT_GOAL := dev
 
 PNPM ?= pnpm
+NPM ?= npm
+PIXI_DIR := experiments/pixijs-knight
 PORT ?= 5173
 
+.PHONY: setup-pixi dev-pixi dev-pixi-unlocked phone-pixi phone-pixi-unlocked test-pixi
 .PHONY: setup dev dev-unlocked test-unlocked phone phone-unlocked build preview run test typecheck check-release verify deploy deploy-pages help
 
 # Install the exact locked dependencies on first use or after a manifest/lockfile change.
@@ -12,6 +15,28 @@ node_modules: package.json pnpm-lock.yaml
 	@touch node_modules
 
 setup: node_modules ## Install dependencies from pnpm-lock.yaml
+
+$(PIXI_DIR)/node_modules/.installed: $(PIXI_DIR)/package.json $(PIXI_DIR)/package-lock.json
+	$(NPM) ci --prefix $(PIXI_DIR)
+	@touch $@
+
+setup-pixi: node_modules $(PIXI_DIR)/node_modules/.installed ## Install locked game and PixiJS dependencies
+
+# Candidate directional art is explicitly enabled only for these DEV targets.
+dev-pixi: setup-pixi ## Play Knight with PixiJS and eight-direction candidate art (opens browser)
+	VITE_ES2_KNIGHT_PIXI=directional $(PNPM) dev --host localhost --port $(PORT) --open
+
+dev-pixi-unlocked: export VITE_ES2_UNLOCKED := 1
+dev-pixi-unlocked: dev-pixi ## PixiJS Knight with disposable unlocked progression
+
+phone-pixi: setup-pixi ## Play PixiJS Knight over trusted LAN (open computer IP and PORT)
+	VITE_ES2_KNIGHT_PIXI=directional $(PNPM) dev --host 0.0.0.0 --port $(PORT)
+
+phone-pixi-unlocked: export VITE_ES2_UNLOCKED := 1
+phone-pixi-unlocked: phone-pixi ## Phone PixiJS playtest with disposable unlocked progression
+
+test-pixi: ## Run isolated rig, motion and frame-policy regression tests
+	node --test $(PIXI_DIR)/pose.test.mjs $(PIXI_DIR)/motion.test.mjs $(PIXI_DIR)/rig.test.mjs $(PIXI_DIR)/frame-policy.test.mjs
 
 dev: node_modules ## Start the game at localhost (auto-opens your browser); PORT=5174 to override
 	$(PNPM) dev --host localhost --port $(PORT) --open

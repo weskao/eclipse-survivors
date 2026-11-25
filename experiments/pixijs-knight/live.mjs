@@ -3,6 +3,8 @@ import { getRigidWeaponLayers } from '../../src/game/render/rigid-weapons.ts'
 import { sampleWeaponRig } from '../../src/game/render/weapon-rig.ts'
 import { advanceRigMotion, createRigSkin, deformRig, meshPoint } from './motion.mjs'
 import { loadDirectionalAssets } from './rig-assets.mjs'
+import { needsRigRender } from './frame-policy.mjs'
+import { movementSlot } from './motion.mjs'
 import { KNIGHT_RIG, defineRig, facingFor, validateViews, sampleRigVfx } from './rig.mjs'
 
 
@@ -17,7 +19,8 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
   const app=new Application()
   await app.init({width:WIDTH,height:HEIGHT,resolution:3,backgroundAlpha:0,preference:'webgl',
     autoStart:false,sharedTicker:false,preserveDrawingBuffer:true})
-  let disposed=false,failed=false,reported=false,old=null,owner=null,facing=0,active=null
+  let disposed=false,failed=false,reported=false,old=null,owner=null,facing=0,active=null,previousFrame=null,renderCount=0
+  const diagnostics=new URLSearchParams(location.search).get('knightPixiQA')==='1'
   try {
     const root=new Container()
     root.position.set(FOOT_X,FOOT_Y)
@@ -62,8 +65,10 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
       draw(ctx,hero,anim,clock,frozen,reduceFlashing=false){
         if(disposed||failed||document.hidden)return false
         try {
-          if(owner!==hero){old=null;owner=hero;facing=0}
-          if(!old||(!frozen&&(old.clock!==clock||old.pose!==anim.pose||old.phase!==anim.phase||old.reducedMotion!==anim.reducedMotion||old.reduceFlashing!==reduceFlashing))||old.reducedMotion!==anim.reducedMotion||old.reduceFlashing!==reduceFlashing){
+          if(owner!==hero){old=null;previousFrame=null;owner=hero;facing=0}
+          const desired=facingFor(profile,{pose:anim.pose,slot:movementSlot(hero.vx,hero.vy,hero.moveAmount),heading:Math.atan2(hero.vy,hero.vx),aim:hero.aimAngle},facing)
+          const frame={...anim,clock,reduceFlashing,view:views?desired:0,aim:hero.aimAngle}
+          if(needsRigRender(previousFrame,frame,frozen)){
             // Never mirror the source sword. Reuse the existing arm IK in its unmirrored coordinate system.
             const model={...hero,face:1}
             const rig=sampleWeaponRig(job,model,anim)
@@ -74,7 +79,7 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
               supportX:rig.supportHand.x-idle.supportHand.x,supportY:rig.supportHand.y-idle.supportHand.y,
               supportElbowX:rig.supportElbow.x-idle.supportElbow.x,supportElbowY:rig.supportElbow.y-idle.supportElbow.y}
             const motion=advanceRigMotion(old,input,profile)
-            facing=facingFor(profile,motion,facing)
+            facing=frozen&&previousFrame?facing:anim.reducedMotion?desired:facingFor(profile,motion,facing)
             const selected=views?views[facing]:fallback
             if(active!==selected){if(active)active.group.visible=false;selected.group.visible=true;active=selected}
             const current=advanceRigMotion(old,input,selected.profile)
@@ -102,8 +107,18 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             specialFx.scale.set(.8+effect.special*.3)
             app.render()
             old={...current,reduceFlashing}
+            previousFrame={...frame,view:views?facing:0}
+            renderCount++
           }
           ctx.drawImage(canvas,-FOOT_X,-FOOT_Y,WIDTH,HEIGHT)
+          if(diagnostics&&ctx.canvas?.dataset){
+            const d=ctx.canvas.dataset
+            const view=views?String(facing):'single', count=String(renderCount), pose=previousFrame.pose
+            if(d.knightRigAssets!==(views?'directional':'legacy'))d.knightRigAssets=views?'directional':'legacy'
+            if(d.knightRigView!==view)d.knightRigView=view
+            if(d.knightRigPose!==pose)d.knightRigPose=pose
+            if(d.knightRigRenders!==count)d.knightRigRenders=count
+          }
           if(!reported){reported=true;report('pixi')}
           return true
         } catch(error){console.warn('Knight GPU rendering failed',error);failed=true;report('canvas');return false}
@@ -122,7 +137,8 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
 // invalid art never prevents the original single-view candidate from working.
 export async function createKnightPixi(image,report) {
   let directionalLayers
-  if(new URLSearchParams(location.search).get('knightRigCandidates')==='1'){
+  const candidateQuery=new URLSearchParams(location.search).get('knightRigCandidates')
+  if(candidateQuery==='1'||(candidateQuery===null&&import.meta.env.DEV&&import.meta.env.VITE_ES2_KNIGHT_PIXI==='directional')){
     try{
       const manifests=import.meta.glob('./assets/knight/manifest.json',{eager:true,import:'default'})
       const urls=import.meta.glob('./assets/knight/*.webp',{eager:true,query:'?url',import:'default'})
