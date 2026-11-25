@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { resolveSkillChoiceArt } from './ui-art'
+import { readFileSync } from 'node:fs'
 
 describe('all battle skill choice illustrations', () => {
   it('selects the animated 3x painting for each authored weapon and evolution', () => {
@@ -25,10 +26,22 @@ describe('all battle skill choice illustrations', () => {
     for (const [hero, starting, progression] of owned) {
       for (const id of [starting, progression]) {
         const art = resolveSkillChoiceArt(`heroes:${id}`, undefined, false)
-        expect(art.imageSrc).toContain(`${hero}-special@3x.webp`)
+        expect(art.imageSrc).toContain(`${hero}-${id === starting ? 'special' : 'portrait'}@3x.webp`)
         expect(art.reducedMotionSrc).toBe(art.imageSrc)
       }
     }
+  })
+
+  it('ships distinct 384px detailed vector illustrations for every legacy non-WebP choice', () => {
+    const ids = ['speed', 'haste', 'maxhp', 'magnet', 'bolt', 'frozen-thunderstorm', 'infernal-singularity', 'apocalypse-rain', 'blade-tempest', 'guardian-sanctuary'] as const
+    const art = ids.map(id => {
+      expect(resolveSkillChoiceArt(id).imageSrc).toContain(id + '.svg')
+      const source = readFileSync('assets/skill-icons/' + id + '.svg', 'utf8')
+      expect(source).toContain('width="384"')
+      expect(source).toContain('linearGradient')
+      return source
+    })
+    expect(new Set(art).size).toBe(ids.length)
   })
 
   it('does not replace externally owned illustrations with a generic icon', () => {

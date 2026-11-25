@@ -2,15 +2,18 @@ import type { AbilityId } from './types'
 import shadowSpecialIcon from '../assets/es2/production/heroes/shadowblade-special@3x.webp'
 import summonerSpecialIcon from '../assets/es2/production/heroes/spirit-summoner-special@3x.webp'
 import paladinSpecialIcon from '../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
+import shadowMastery from '../assets/es2/production/heroes/shadowblade-portrait@3x.webp'
+import spiritMastery from '../assets/es2/production/heroes/spirit-summoner-portrait@3x.webp'
+import paladinMastery from '../assets/es2/production/heroes/crimson-paladin-portrait@3x.webp'
 
 /** Hero starting skills and passive rank-ups share their authored identity. */
 const heroChoiceArt: Readonly<Record<string, string>> = {
   'heroes:shadow-daggers': shadowSpecialIcon,
-  'heroes:shadow-precision': shadowSpecialIcon,
+  'heroes:shadow-precision': shadowMastery,
   'heroes:spirit-orb': summonerSpecialIcon,
-  'heroes:spirit-bond': summonerSpecialIcon,
+  'heroes:spirit-bond': spiritMastery,
   'heroes:crimson-guard': paladinSpecialIcon,
-  'heroes:crimson-vow': paladinSpecialIcon,
+  'heroes:crimson-vow': paladinMastery,
 }
 
 

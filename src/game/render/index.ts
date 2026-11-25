@@ -26,6 +26,7 @@ import {
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
 import { sharedProjectileSprites } from './projectile-art'
+import { sharedHeroAttackArt, type HeroAttackSprites } from './hero-attack-art'
 import { buildProps } from './props'
 import { buildSprites, domCanvas, type MakeCanvas } from './sprites'
 import type { MobTintCache } from './tint-cache'
@@ -48,6 +49,7 @@ export interface RenderAssets {
   cameraShakeEnabled: () => boolean
   biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
+  heroAttackArt?: HeroAttackSprites
   magicGlow: HTMLCanvasElement | null
   gems: GemSprites
   particles: ParticleSpriteCache
@@ -69,6 +71,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     cameraShakeEnabled: () => true,
     depthOrder: [],
     biomes: buildBiomeArt(makeCanvas),
+    heroAttackArt: sharedHeroAttackArt(),
     magicGlow: buildMagicGlow(makeCanvas),
     gems: buildGemSprites(makeCanvas),
     particles: createParticleSpriteCache(makeCanvas),
@@ -176,8 +179,8 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   }
   drawHeroAuras(ctx, s, hero, ox, oy, reduced)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)
-  if (!reduced) drawSwipes(ctx, s, ox, oy)
-  drawShots(ctx, s, ox, oy, assets.magicGlow, projectiles, reduced)
+  drawSwipes(ctx, s, ox, oy, assets.heroAttackArt, reduced)
+  drawShots(ctx, s, ox, oy, assets.magicGlow, projectiles, reduced, assets.heroAttackArt)
   drawEnemyProjectiles(ctx, s, ox, oy, projectiles, reduced)
   if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy, projectiles, reduced)
   drawOrbs(ctx, s, hero, ox, oy, projectiles)

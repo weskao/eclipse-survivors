@@ -7,6 +7,7 @@ import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
 import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
 import { drawEnergyMissile, drawEnergyTrail, drawZoneMotes } from './energy-art'
+import { meleeArtId, type HeroAttackSprites } from './hero-attack-art'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -188,30 +189,38 @@ export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number,
 }
 
 // Weapon ribbons: radial gold-to-ivory gradients with trailing sparkle and wave afterglow.
-export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
-  const ribbon = ['#fff4d1', '#f8bb66', '#ff9549']
-  const widths = [7, 4, 1.4]
+export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number, sprites?: HeroAttackSprites, reduced = false): void {
+  const id = meleeArtId(s.heroId)
+  const image = sprites?.[id]
+  const color = id === 'shadowblade' ? '#cba7f6' : id === 'crimson-paladin' ? '#ff7890' : '#f8bb66'
   for (const sw of s.swipes) {
+    if (sw.life <= 0 || sw.max <= 0) continue
     const t = 1 - sw.life / sw.max
-    const x = sw.x + ox
-    const y = sw.y + oy
-    const r = sw.r + easing(t) * 32
-    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 0.75); ctx.lineCap = 'round'; ctx.shadowBlur = 13; ctx.shadowColor = '#ffc56c'
-    for (let k = 0; k < 3; k++) {
-      ctx.strokeStyle = ribbon[k]!; ctx.lineWidth = widths[k]! * (1 - t * 0.55)
-      ctx.beginPath(); ctx.arc(x, y, r - k * 5, sw.a - 1.02 - t * 0.23, sw.a + 1.2 + t * 0.18); ctx.stroke()
-    }
-    for (let j = 0; j < 5; j++) {
-      const a = sw.a - 1 + t * 2 + j * 0.11
-      ctx.fillStyle = '#ffefc8'
-      ctx.fillRect(x + Math.cos(a) * (r + 5 + j * 2), y + Math.sin(a) * (r + 5 + j * 2), 2.5, 2.5)
+    const x = sw.x + ox, y = sw.y + oy
+    const r = sw.r + easing(reduced ? 0.45 : t) * 32
+    const margin = r * 1.3
+    if (x < -margin || x > s.W + margin || y < -margin || y > s.H + margin) continue
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(sw.a)
+    ctx.globalAlpha = Math.pow(1 - t, 0.75) * (reduced ? 0.7 : 1)
+    if (image?.complete && image.naturalWidth > 0) {
+      // One textured draw replaces repeated arcs, shadow blur and five separate sparks.
+      const size = r * 2.25
+      ctx.drawImage(image, -size / 2, -size / 2, size, size)
+    } else {
+      // Tapered crescent fallback, never an opaque round-ended debug line.
+      ctx.fillStyle = color
+      ctx.beginPath(); ctx.arc(0, 0, r, -1.02, 1.2)
+      ctx.arc(0, 0, r * 0.79, 1.2, -1.02, true)
+      ctx.closePath(); ctx.fill()
     }
     ctx.restore()
   }
 }
 
 // Fast arrows leave stretched trails. Arcane bolts cast a soft violet halo.
-export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>, reduced = false): void {
+export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>, reduced = false, heroArt?: HeroAttackSprites): void {
   const { W, H } = s
   for (const b of s.shots) {
     const x = b.x + ox
@@ -250,11 +259,15 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
       ctx.beginPath(); ctx.moveTo(-15, -4); ctx.lineTo(-11, 0); ctx.lineTo(-15, 4); ctx.stroke()
       }
     } else {
-      drawEnergyTrail(ctx, b.r, b.life, '#c3adff', reduced)
-      if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
+      const spirit = s.heroId === 'spirit-summoner'
+      drawEnergyTrail(ctx, b.r, b.life, spirit ? '#a7efdc' : '#c3adff', reduced)
+      const spiritImage = spirit ? heroArt?.['spirit-summoner'] : undefined
+      if (spiritImage?.complete && spiritImage.naturalWidth > 0) {
+        ctx.drawImage(spiritImage, -30, -30, 60, 60)
+      } else if (spirit || !drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
         // Keep the cached halo, but replace the old dot-and-line fallback with a faceted core.
         if (magicGlow) ctx.drawImage(magicGlow, -28, -28, 56, 56)
-        drawEnergyMissile(ctx, undefined, 'arcane-bolt', b.r, b.life, '#a88af0', '#f2eaff', true)
+        drawEnergyMissile(ctx, undefined, 'arcane-bolt', b.r, b.life, spirit ? '#79cfc0' : '#a88af0', spirit ? '#e6fff4' : '#f2eaff', true)
       }
     }
     ctx.restore()
