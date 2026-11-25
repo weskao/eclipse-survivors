@@ -34,11 +34,11 @@ function volume(e: Event): number { return Number((e.target as HTMLInputElement)
         <p class="es2-hint">{{ t('初次使用時依系統語言顯示；手動選擇後將記住此瀏覽器的偏好。') }}</p>
       </section>
       <section :aria-label="t('音訊設定')"><h3>{{ t('音訊') }}</h3>
-        <div class="es2-slider-row"><Es2Switch :checked="musicOn" :label="t('背景音樂')" @toggle="emit('toggleMusic')" />
-          <label>{{ t('背景音樂') }} <output>{{ musicVolume }}%</output><input type="range" min="0" max="100" :value="musicVolume" @input="emit('musicVolume', volume($event))" /></label>
+        <div class="es2-slider-row"><button type="button" :aria-pressed="!musicOn" :aria-label="t(musicOn ? '靜音背景音樂' : '恢復背景音樂')" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
+          <label>{{ t('音樂') }} <output>{{ musicVolume }}%</output><input type="range" min="0" max="100" :value="musicVolume" @input="emit('musicVolume', volume($event))" /></label>
         </div>
-        <div class="es2-slider-row"><Es2Switch :checked="sfxOn" :label="t('戰鬥音效')" @toggle="emit('toggleSfx')" />
-          <label>{{ t('戰鬥音效') }} <output>{{ sfxVolume }}%</output><input type="range" min="0" max="100" :value="sfxVolume" @input="emit('sfxVolume', volume($event))" /></label>
+        <div class="es2-slider-row"><button type="button" :aria-pressed="!sfxOn" :aria-label="t(sfxOn ? '靜音遊戲音效' : '恢復遊戲音效')" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
+          <label>{{ t('音效') }} <output>{{ sfxVolume }}%</output><input type="range" min="0" max="100" :value="sfxVolume" @input="emit('sfxVolume', volume($event))" /></label>
         </div>
       </section>
       <section  :aria-label="t('畫面與動態效果設定')"><h3>{{ t('畫面與動態') }}</h3><p class="es2-hint">{{ t('技能選擇畫面不觸發鏡頭震動；系統減少動態效果設定會優先套用。') }}</p>

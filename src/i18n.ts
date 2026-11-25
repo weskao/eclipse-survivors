@@ -41,6 +41,8 @@ const english = new Map<string, string>([
     "音訊",
     "Audio"
   ],
+  ["音樂", "Music"],
+  ["音效", "Sound effects"],
   [
     "背景音樂",
     "Background music"

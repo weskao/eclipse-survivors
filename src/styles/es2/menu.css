@@ -142,7 +142,7 @@
 .es2-settings section+section{margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-settings h3{font-size:1.1rem;color:#f1dcb8;margin:0 0 12px}
 .es2-slider-row{display:flex;align-items:center;gap:14px;padding:12px 0}
-.es2-slider-row>.es2-setting-switch{order:1}
+.es2-slider-row>button{flex:none;width:44px;height:44px;border:1px solid #8b9fae;border-radius:8px;background:#283c4f;font-size:1.3rem}
 .es2-slider-row label{display:block;flex:1;min-width:0;font-size:.9rem}
 .es2-slider-row output{float:right;color:#e6c48e}
 .es2-slider-row input[type=range]{display:block;width:100%;min-height:25px;margin:12px 0 0;accent-color:#e5c48e;cursor:pointer}
