@@ -19,6 +19,7 @@ import { selectBossNativeKeyframe, isBossNativeKeyframe } from './es2/boss-nativ
 import { drawLiveFactionArt, drawLiveFactionProjectiles, type FactionArtwork } from './es2/production-factions'
 import { drawBossPhaseIndicator, drawEnemyProjectiles, drawEnemyTelegraphs } from './enemy-attacks'
 import type { Ctx2D } from './ctx'
+import type { KnightPixiRenderer } from './knight-pixi-contract'
 import { drawAmbient, drawWorldMarkers, paintEnvironment } from './environment'
 import {
   buildGemSprites, buildMagicGlow, createParticleSpriteCache, type ParticleSpriteCache, type GemSprites, drawEchoes, drawFx, drawHeroAuras, drawHeroStatus, drawImpactWaves, drawLightning, drawNumbers, drawOrbs, drawShots, drawStars,
@@ -39,6 +40,7 @@ export interface RenderAssets {
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   heroSheets: HeroSheets
+  knightPixi?: KnightPixiRenderer
   productionHeroes?: ProductionHeroArtwork
   productionWorld?: WorldRuntimeImages
   factions?: FactionBridge
@@ -159,7 +161,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
       ? { image: bossImage, phase: bossSnapshot.phase,
           motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
-    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars)
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, assets.knightPixi)
   }
   // Dead mobs are excluded from depthOrder. Only explicit DEV review may paint a death reference.
   const deathReference = motionReference

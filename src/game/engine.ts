@@ -963,6 +963,23 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
     assets.productionHeroes = loadProductionHeroes()
+    const knightPixiEnabled = import.meta.env.DEV && new URLSearchParams(window.location.search).get('knightPixi') === '1'
+    let knightPixiStarted = false
+    let mounted = true
+    const reportKnightRenderer = (mode: 'pixi' | 'canvas'): void => {
+      if (mounted) canvas.dataset.knightRenderer = mode
+    }
+    const startKnightPixi = (): void => {
+      if (!knightPixiEnabled || knightPixiStarted || !s.hero || s.heroId !== 'knight') return
+      knightPixiStarted = true
+      canvas.dataset.knightRenderer = 'loading'
+      void import('virtual:knight-pixi').then(module => module.createKnightPixi(assets.art.knight, reportKnightRenderer))
+        .then(renderer => {
+          if (!mounted) { renderer?.dispose(); return }
+          if (renderer) assets.knightPixi = renderer
+          else reportKnightRenderer('canvas')
+        }).catch(error => { console.warn('Knight Pixi unavailable; Canvas retained', error); reportKnightRenderer('canvas') })
+    }
     const bossArtQaId = import.meta.env.DEV && typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('es2BossArtQa') : null
     assets.productionWorld = loadWorldRuntimeImages(
@@ -999,6 +1016,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       last = t
       advance(dt)
       frameDrawn++
+      startKnightPixi()
       drawFrame(ctx, s, dpr, assets)
       if (s.hero && mini && frameDrawn % 7 === 0) drawMiniMap(mini, s, assets)
       if (es2Audio && adaptiveScoreActive) es2Audio.tick(s.mode)
@@ -1013,6 +1031,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
+      mounted = false
+      assets.knightPixi?.dispose()
+      delete canvas.dataset.knightRenderer
       resizeRenderer = () => {}
       removeEventListener('resize', resize)
       unlisten()

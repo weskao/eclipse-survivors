@@ -1,0 +1,27 @@
+# Knight PixiJS migration — QA_PENDING (all seven phases)
+
+Scope: Knight only; eight movement octants + stationary center, independent eight-way attack aim. No combat balance changes, no other hero migration. Pin PixiJS 8.23.0 in the isolated experiment package.
+
+| Roadmap | Evidence / remaining gate |
+|---|---|
+| 1. PixiJS POC | Existing preview; live gameplay candidate now wired through the original depth-sorted actor draw. Dependency install and WebGL validation remain pending. |
+| 2. Layered skeleton | Existing arm IK reused; separate sword and deformable head, torso, elbows, hands, leg and cape regions. These are weighted regions of the original illustration, NOT independently authored or occlusion-repaired limb parts. Need true directional layers, hidden anatomy and grip verification. |
+| 3. Direction and animation | Eight input octants + center, movement independent of attack, shortest-arc heading blend, stride/hand blending, idle/run/attack/cast/dash/hurt/death/victory math; existing game clock and strike. No mirror of equipment. True eight-view art and visual continuity still pending. |
+| 4. GPU VFX | Local sprite shader tint; existing real-world Canvas swipes, projectile, shield and impact feedback remain above actors. Separate shader-based trails, custom GPU VFX, shield/cloth art and visual comparison pending. |
+| 5. Live integration | Opt-in DEV game (?knightPixi=1), no second RAF/ticker, existing Canvas depth order and fallback; production build remains original. WebGL lost, initialization/render failure and dispose paths included. No production approval. |
+| 6. Performance/QA | Six pure motion tests run locally, integration tests authored. Real browser, physical iOS/Android, 130-mob measurements, screenshot/video and full project CI pending. No speedup claim. |
+| 7. Reuse | Candidate can be evaluated with this Knight-specific adapter. Do not migrate other heroes/bosses before acceptance. Generalization with another rig and documented asset schema remains pending. |
+
+## Development / verification
+
+From repo root:
+
+    pnpm install --frozen-lockfile
+    npm install --prefix experiments/pixijs-knight
+    pnpm dev
+
+Open the actual game at http://localhost:5173/?knightPixi=1 and choose Knight. Without the query or dependency, the original renderer remains active. Inspect the main canvas data-knight-renderer attribute: loading / pixi / canvas (actual successful draw). Use ?knightPixi=0 for identical baseline. The isolated preview is still available separately. No generated artwork was added. Do not treat a front-facing mesh as an eight-direction master.
+
+Original source is src/assets/knight.webp (Git blob c0d956cf7d7d02d51879b61aa0986deec7559792). Directional admission: E, SE, S, SW, W, NW, N, NE need actual approved views/layers (or documented safe reuse); no shield is visible on the existing Knight master, do not invent one without a design decision. Require native 3x actual detail, clean transparent WebP via Polytool, canonical identity, stable foot/grip anchors, original sword silhouette, independently correct handedness, verified occluded areas, source hashes and QA_PENDING until visually accepted. Do not remove existing art.
+
+A small 3x actor framebuffer, persistent textures, precomputed joint weights and one engine-owned draw are bounded. GPU-to-Canvas compositing can be costly, and is specifically experimental; profile CPU/GPU/memory/thermals against the existing single Canvas renderer before deciding on a production single-renderer migration. The root lockfile is deliberately unchanged because registry access is unavailable locally; the isolated dependency still needs a generated committed lock and actual install validation. Never merge this branch as production-ready without the full gates in CLAUDE.md.

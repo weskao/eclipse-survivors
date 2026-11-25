@@ -13,6 +13,7 @@ import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
 import { sampleHealthBar, type HealthBarMotion } from './health-bars'
 import type { Ctx2D } from './ctx'
+import type { KnightPixiRenderer } from './knight-pixi-contract'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
 
@@ -226,6 +227,7 @@ export function drawCharacter(
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
   healthBars?: WeakMap<Mob, HealthBarMotion>,
+  knightPixi?: KnightPixiRenderer,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -279,6 +281,13 @@ export function drawCharacter(
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
   if (drawable) {
     if (hero && anim) {
+      // The isolated Knight GPU candidate is composited at the original depth-sorted position.
+      // Loading/failure/other identities continue through the existing Canvas path.
+      if (s.heroId === 'knight' && kind === 'knight' && drawable === im &&
+          knightPixi?.draw(ctx, hero, anim, s.worldClock, s.mode === 'paused' || s.mode === 'level')) {
+        ctx.restore()
+        return
+      }
       // Original three heroes keep their existing rig and equipment animation.
       ctx.save()
       // Eight-direction atlases already contain an authored left-facing frame.
