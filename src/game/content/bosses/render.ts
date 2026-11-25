@@ -51,6 +51,11 @@ export function preloadBossAttackArt(): BossAttackSprites | undefined {
   sharedMissiles ??= loadBossProjectileSprites()
   return sharedArt ??= loadBossAttackSprites()
 }
+/** GPU and Canvas share the existing preloaded HTML image sources; no second asset download. */
+export function bossVfxImages() {
+  preloadBossAttackArt()
+  return { attacks: sharedArt, missiles: sharedMissiles, materials: sharedMaterials }
+}
 function ready(id: string, sprites?: BossAttackSprites): HTMLImageElement | undefined {
   const img = sprites?.[id as BossAttackId]
   return img?.complete && img.naturalWidth > 0 ? img : undefined
@@ -189,7 +194,7 @@ function projectile(ctx: Ctx2D, p: BossProjectile, ox: number, oy: number, palet
   ctx.restore()
 }
 export function drawBossTelegraphs(ctx: Ctx2D, snapshot: BossSnapshot, ox: number, oy: number,
-  reduced = false, w = Infinity, h = Infinity, sprites?: Partial<ProjectileSprites>, art = sharedArt, settings?: Settings, materials = art === sharedArt ? sharedMaterials : undefined): void {
+  reduced = false, w = Infinity, h = Infinity, sprites?: Partial<ProjectileSprites>, art = sharedArt, settings?: Settings, materials = art === sharedArt ? sharedMaterials : undefined, skipProjectiles = false): void {
   if (!snapshot.id) return
   const palette = PALETTES[snapshot.id], budget = particleBudget(reduced, settings)
   ctx.save()
@@ -198,7 +203,7 @@ export function drawBossTelegraphs(ctx: Ctx2D, snapshot: BossSnapshot, ox: numbe
       const releaseOwnsMaterial = t.stage === 'active' && !!snapshot.impacts?.some(i => i.life > 0 && i.attackId === t.attackId && i.x === t.x && i.y === t.y && i.angle === t.angle)
       telegraph(ctx, t, ox, oy, palette, reduced, w, h, art, budget, settings, releaseOwnsMaterial, materials)
     }
-    for (const p of snapshot.projectiles) projectile(ctx, p, ox, oy, palette, reduced, w, h, MISSILE_ART[snapshot.id], sprites, settings)
+    if (!skipProjectiles) for (const p of snapshot.projectiles) projectile(ctx, p, ox, oy, palette, reduced, w, h, MISSILE_ART[snapshot.id], sprites, settings)
   } finally { ctx.restore() }
 }
 function impact(ctx: Ctx2D, t: BossImpact, ox: number, oy: number, palette: Palette, reduced: boolean, w: number, h: number, art: BossAttackSprites | undefined, budget: ParticleBudget, settings?: Settings, materials?: BossMaterialSprites): void {

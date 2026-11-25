@@ -9,6 +9,8 @@ import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import type { PixiVfxBridge, VfxFrame } from './pixi-vfx/bridge'
+import { runVfxPass } from './pixi-vfx/plan'
 import { preloadEnemyReleaseArt } from './enemy-motion'
 import { preloadHitImpactArt } from './hit-impact'
 import type { HealthBarMotion, HealthBarTarget } from './health-bars'
@@ -39,6 +41,7 @@ export interface RenderAssets {
   content?: ContentRegistry
   presentation?: () => VisualPresentationPolicy | null
   bosses?: BossEncounterController
+  pixiVfx?: PixiVfxBridge
   art: Artwork
   sprites: Record<string, HTMLCanvasElement>
   heroSheets: HeroSheets
@@ -145,7 +148,14 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const projectiles = sharedProjectileSprites()
   drawEnemyTelegraphs(ctx, s, ox, oy, reduced)
   const bossSnapshot = assets.bosses?.snapshot(s)
-  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined)
+  const vfxFrame: VfxFrame | undefined = bossSnapshot?.id && assets.pixiVfx ? { ctx, snapshot: bossSnapshot, ox, oy, width: W, height: H, dpr, reduced, policy } : undefined
+  if (bossSnapshot) {
+    // Warning geometry stays in Canvas. GPU composition follows the same under-actor layer.
+    if (vfxFrame && bossSnapshot.projectiles.length) {
+      drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined, undefined, true)
+      runVfxPass(() => assets.pixiVfx!.projectiles(vfxFrame), () => drawBossTelegraphs(ctx, { ...bossSnapshot, telegraphs: [] }, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined))
+    } else drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined)
+  }
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)
     drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy, assets.healthBars, reduced, showFullHealthBars)
@@ -192,7 +202,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawImpactWaves(ctx, s, ox, oy, reduced, policy?.reduceFlashing ?? false, policy?.vfxOpacity ?? 1)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced, assets.particles, projectiles)
-  if (bossSnapshot) drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H, undefined, policy ?? undefined)
+  if (bossSnapshot) runVfxPass(() => !!vfxFrame && assets.pixiVfx!.impacts(vfxFrame), () => drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H, undefined, policy ?? undefined))
   assets.content?.render(ctx, s, ox, oy)
   if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)
   drawVignette(ctx, s)

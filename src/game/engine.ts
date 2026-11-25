@@ -33,6 +33,7 @@ import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from
 import { minmax, random } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
+import { createPixiVfxBridge } from './render/pixi-vfx/bridge'
 import { createFactionBridge } from './content/enemies/integration'
 import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
 import { loadProductionFactionArt } from './render/es2/production-factions'
@@ -972,6 +973,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    assets.pixiVfx = createPixiVfxBridge()
     assets.productionHeroes = loadProductionHeroes()
     const bossArtQaId = import.meta.env.DEV && typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('es2BossArtQa') : null
@@ -1023,6 +1025,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
+      assets.pixiVfx?.dispose()
       resizeRenderer = () => {}
       removeEventListener('resize', resize)
       unlisten()
