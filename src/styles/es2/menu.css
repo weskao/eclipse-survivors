@@ -671,6 +671,7 @@
 [data-es2-reduce-flashing="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
 @media(forced-colors:active){
   .es2-menu .es2-portal-start{border:2px solid ButtonText;color:ButtonText!important;background:ButtonFace}
+  .es2-menu .es2-portal-start:is(:hover,:focus-visible,:active):not(:disabled){background:ButtonFace;text-shadow:none}
   .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after,.es2-menu .es2-portal-sheen{display:none}
   .es2-menu .es2-portal-start:focus-visible:not(:disabled){outline:3px solid Highlight}
 }
