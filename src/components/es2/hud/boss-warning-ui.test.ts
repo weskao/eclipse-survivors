@@ -3,19 +3,30 @@ import { mount } from '@vue/test-utils'
 import { emptyHud } from '../../../game/store'
 import CombatHud from './CombatHud.vue'
 import { t } from '../../../i18n'
+import { BOSS_DEFINITIONS } from '../../../game/content/bosses/definitions'
 
-const mountHud = (seconds: number) => mount(CombatHud, {
+const mountHud = (seconds: number, name = 'Frost Sovereign', color = '#9cddff') => mount(CombatHud, {
   props: {
     active: true, choice: 'knight', hud: emptyHud(),
     actions: { pause: vi.fn(), settings: vi.fn() },
     feed: { bossWarning: {
-      name: 'Frost Sovereign', seconds, progress: (15 - seconds) / 15,
-      urgent: seconds <= 5, color: '#9cddff',
+      name, seconds, progress: (15 - seconds) / 15,
+      urgent: seconds <= 5, color,
     } },
   },
 })
 
 describe('responsive boss arrival warning', () => {
+  it.each(Object.values(BOSS_DEFINITIONS))('uses $title accent in both warning states', ({ title, color }) => {
+    for (const seconds of [12, 4]) {
+      const wrapper = mountHud(seconds, title, color)
+      try {
+        const warning = wrapper.get('[data-es2-boss-warning]')
+        expect(warning.text()).toContain(t(title))
+        expect((warning.element as HTMLElement).style.getPropertyValue('--es2-warning-accent')).toBe(color)
+      } finally { wrapper.unmount() }
+    }
+  })
   it('is informational and accessible, with no gameplay-blocking controls', async () => {
     const wrapper = mountHud(12)
     try {

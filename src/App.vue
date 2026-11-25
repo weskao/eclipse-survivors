@@ -4,7 +4,6 @@ import { createEngine, type Engine } from './game/engine'
 import { ART_URLS } from './game/art'
 import { WORLD_ART } from './game/render/es2/production-world'
 import { BOSS_DEFINITIONS } from './game/content/bosses/definitions'
-import { getBossArrivalWarning } from './game/bosses/countdown'
 import { locateOffscreenBoss } from './components/es2/hud/boss-pointer'
 import { installGameTouchGuard } from './ios-touch-guard'
 import { installCursorAccent } from './cursor-accent'
@@ -107,7 +106,7 @@ const combatFeed = computed<CombatHudFeed>(() => {
   const offscreen = boss && ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
     ? locateOffscreenBoss(state, boss) : null
   const warning = ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
-    ? getBossArrivalWarning(state, ui.objectiveProgress) : null
+    ? engine.bossArrivalWarning : null
   return {
     boss: boss ? {
       name: boss.bossArtId ? BOSS_DEFINITIONS[boss.bossArtId].title : '首領',

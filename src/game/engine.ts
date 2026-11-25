@@ -17,7 +17,7 @@ import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type Her
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
-import { getBossArrivalWarning } from './bosses/countdown'
+import { getBossArrivalWarning, type BossArrivalWarning } from './bosses/countdown'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
@@ -102,6 +102,7 @@ export interface Engine extends GameCommands {
   showcaseEmit(event: ContentEvent): void
   readonly ui: UiState
   readonly state: GameState
+  readonly bossArrivalWarning: BossArrivalWarning | null
   readonly testApi: TestApi
   /** Original `update()` tail run by `frame()`: clock, step, toast, 8 Hz hud. */
   advance(dt: number): void
@@ -284,6 +285,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let art: Artwork | null = null
   let heroSpecialization: HeroSpecializationAdapter | null = null
   let objectiveRuntime: ObjectiveRuntime | null = null
+  const arrivalWarning = () => getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null,
+    bosses ? bossIds[bossSequence % bossIds.length]! : null)
   let worldEvents: LiveWorldEvents | null = null
   let ending = false
   let lastCritical = false
@@ -702,10 +705,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const liveBoss = s.mobs.find(m => m.type === 'boss' && m.hp > 0)
-      const upcoming = getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null)
+      const upcoming = arrivalWarning()
       audio.setBossWarning?.(upcoming?.seconds ?? null)
       if (liveBoss?.bossArtId) audio.prepareBossAttackAudio?.(liveBoss.bossArtId)
-      else if (upcoming && bosses) audio.prepareBossAttackAudio?.(bossIds[bossSequence % bossIds.length]!)
+      else if (upcoming?.bossId && bosses) audio.prepareBossAttackAudio?.(upcoming.bossId)
       audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
       const phase = liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
       audio.setCombatIntensity(phase)
@@ -1085,6 +1088,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     showcaseEmit(event) { if (devShowcase() && s.mode === 'play') hooks.content?.(s, event) },
     ui,
     state: s,
+    get bossArrivalWarning() { return arrivalWarning() },
     testApi,
     advance,
     listen,
