@@ -418,7 +418,7 @@
 .es2-section-heading h2{margin:3px 0;font-size:clamp(1.1rem,2.8dvh,1.9rem)}
 .es2-hero-grid,.es2-menu .es2-hero-section .es2-roster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,.8vw,12px);min-width:0}
 .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{
-  height:clamp(170px,calc(100dvh - 380px),560px);width:100%;padding:8px 4px;object-fit:contain;
+  height:clamp(105px,calc(100dvh - var(--es2-action-bar-height,112px) - 320px),540px);width:100%;padding:8px 4px;object-fit:contain;
 }
 .es2-menu .es2-hero-copy,.es2-menu .es2-hero-section .es2-roster__copy{
   display:flex;flex:1;flex-direction:column;gap:4px;padding:8px 6px;text-align:center;min-width:0
@@ -470,7 +470,7 @@
 }
 @media (max-width: 999px) and (orientation: portrait){
   .es2-hero-section,.es2-mode-section{grid-template-columns:minmax(0,1fr);gap:8px}
-  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(100px,calc((100dvh - 410px) / 2),300px);padding:4px 2px}
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(100px,calc((100dvh - var(--es2-action-bar-height,112px) - 300px) / 2),300px);padding:4px 2px}
 }
 @media (max-width: 700px), (orientation: landscape) and (max-height: 520px){
   .es2-menu{padding:max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) 8px max(8px,env(safe-area-inset-left))}
@@ -501,7 +501,144 @@
   .es2-menu-brand h1{font-size:1.1rem}
   .es2-menu .es2-hall-links button{flex-direction:row;gap:4px}
   .es2-hero-section>.es2-section-heading,.es2-mode-section>.es2-section-heading{display:none}
-  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(60px,calc(100dvh - 250px),180px);padding:3px}
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(60px,calc(100dvh - var(--es2-action-bar-height,90px) - 180px),180px);padding:3px}
   .es2-menu-action-bar{grid-template-columns:minmax(0,.6fr) minmax(0,1.4fr);align-items:center;gap:8px;padding-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right))}
   .es2-menu-actions{gap:5px}
+}
+
+/* Lobby art direction: architectural silhouettes, restrained brass and a single
+   warm portal focal point. The hit areas stay rectangular; only paint is cut. */
+.es2-menu .es2-menu-backdrop:after{
+  background:radial-gradient(ellipse at 50% 40%,#172b3a55,transparent 70%),linear-gradient(180deg,#07101ad9,#0b1422a8 45%,#080f1bf5)
+}
+.es2-menu .es2-menu-header{border-bottom:0;position:relative}
+.es2-menu .es2-menu-brand h1{letter-spacing:.045em;text-shadow:0 2px 18px #080c13,0 0 26px #c6a26c22}
+.es2-menu .es2-hall-navigation{
+  border:0;border-block:1px solid #a18a5e55;border-radius:0;
+  background:linear-gradient(90deg,transparent,#182839b5 18%,#182839b5 82%,transparent)
+}
+.es2-menu .es2-hall-links button{
+  position:relative;border:0;border-radius:0;background:transparent;color:#d8d5ce
+}
+.es2-menu .es2-hall-links button+button{border-inline-start:1px solid #af9d7040}
+.es2-menu .es2-hall-links button:hover,.es2-menu .es2-hall-links button:focus-visible{color:#fff0c8;background:#d3af6e12}
+.es2-menu .es2-hall-links button span{
+  display:grid;place-items:center;width:26px;height:26px;flex:0 0 26px;
+  background:linear-gradient(150deg,#514733,#111d2a);
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);color:#e9cc92
+}
+.es2-menu .es2-hero-select-card{
+  border-radius:30px 30px 10px 10px / 18px 18px 10px 10px;
+  border-color:#6f7c895e;background:linear-gradient(165deg,#1b2c3a,#0a1421 70%);
+}
+.es2-menu .es2-hero-select-card[aria-pressed="true"]{
+  border-color:#ecc98c;box-shadow:inset 0 0 0 1px #e0b77578,0 0 20px #d3ac6133;
+  background:linear-gradient(165deg,#41382c,#152331 72%);
+}
+.es2-menu .es2-hero-select-card>img{background:radial-gradient(ellipse at 50% 54%,#57616a4a,transparent 69%)}
+.es2-menu .es2-hero-select-card[aria-pressed="true"]>img{background:radial-gradient(ellipse at 50% 54%,#e2be7950,transparent 72%)}
+.es2-menu .es2-hero-select-card>:is(.es2-hero-copy,.es2-roster__copy){
+  background:linear-gradient(180deg,#172638,#0b1421);border-top:1px solid #9e8d6859
+}
+.es2-menu .es2-hero-stat-strip .es2-hero-stat{background:transparent;border:0;border-radius:0;box-shadow:none}
+.es2-menu .es2-hero-stat-strip .es2-hero-stat+.es2-hero-stat{border-inline-start:1px solid #8d806740}
+.es2-menu .es2-hero-select-card[aria-pressed="true"] :is(.es2-hero-selection,.es2-roster__selection){color:#ffe5ad}
+.es2-menu .es2-mode-card,.es2-menu .es2-objective-choice{border-radius:4px 16px 4px 16px}
+.es2-menu .es2-menu-action-bar{
+  padding-inline:max(12px,env(safe-area-inset-left),calc((100% - 1120px) / 2)) max(12px,env(safe-area-inset-right),calc((100% - 1120px) / 2));
+  background:linear-gradient(180deg,#0b1521,#080e17);border-top:1px solid #a38b5c75
+}
+.es2-menu .es2-menu-actions{grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:clamp(8px,1.6vw,22px);align-items:stretch}
+.es2-menu .es2-expedition-brief,.es2-menu .es2-portal-start{
+  position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
+  border:0;background:none;box-shadow:none;min-width:0;min-height:64px;
+  padding:10px 13px;gap:10px;text-align:start
+}
+.es2-menu .es2-expedition-brief::before,.es2-menu .es2-expedition-brief::after,
+.es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{
+  content:'';position:absolute;inset:0;z-index:-2;pointer-events:none;
+}
+.es2-menu .es2-expedition-brief::before,.es2-menu .es2-expedition-brief::after{
+  clip-path:polygon(12px 0,100% 0,100% calc(100% - 13px),calc(100% - 13px) 100%,0 100%,0 12px)
+}
+.es2-menu .es2-expedition-brief::before{background:#9d895f}
+.es2-menu .es2-expedition-brief::after{inset:1px;z-index:-1;background:linear-gradient(120deg,#263949,#121f30 58%,#1b2431)}
+.es2-menu .es2-expedition-brief[data-run-mode="boss-rush"]::after,.es2-menu .es2-expedition-brief[data-run-mode="cursed-expedition"]::after{background:linear-gradient(120deg,#462b31,#251d2d 64%,#1b2431)}
+.es2-menu .es2-expedition-brief[data-run-mode="endless-eclipse"]::after,.es2-menu .es2-expedition-brief[data-run-mode="chaos-arena"]::after{background:linear-gradient(120deg,#39304e,#211b38 64%,#1b2431)}
+.es2-menu .es2-expedition-brief:hover::before{background:#f0d197}
+.es2-menu .es2-expedition-sigil{
+  display:grid;place-items:center;flex:0 0 42px;width:42px;height:48px;
+  background:linear-gradient(145deg,#73583a,#302b32 65%,#70573a);
+  clip-path:polygon(50% 0,100% 25%,100% 72%,50% 100%,0 72%,0 25%);
+  color:#ffe3a6;font:700 24px/1 Georgia,serif;text-shadow:0 0 9px #e8b87070
+}
+.es2-menu .es2-expedition-brief .es2-mobile-selected-mode{flex:1;min-width:0;display:grid;gap:2px;text-align:start}
+.es2-menu .es2-expedition-kicker{color:#d6ba84;font:700 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;letter-spacing:.04em}
+.es2-menu .es2-expedition-duration{margin-inline-start:5px;color:#d9c5a4;font-variant-numeric:tabular-nums;white-space:nowrap}
+.es2-menu .es2-expedition-name{color:#fff0cd;font:700 max(.9rem,calc(1.2rem * var(--es2-ui-scale,1)))/1.16 Georgia,'Noto Serif TC',serif;overflow-wrap:anywhere}
+.es2-menu .es2-expedition-description{display:block;min-width:0;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif;overflow-wrap:anywhere}
+.es2-menu .es2-expedition-hero{font:600 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif}
+.es2-menu .es2-expedition-change{color:#e9cc95;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:end;max-width:30%;overflow-wrap:anywhere}
+.es2-menu .es2-portal-start{padding:10px 14px;gap:12px;color:#fff4d5!important;text-align:center}
+.es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{
+  clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%)
+}
+.es2-menu .es2-portal-start::before{background:linear-gradient(105deg,#8b5630,#f2d28e 40%,#ffdf9d 58%,#8b5630)}
+.es2-menu .es2-portal-start::after{inset:2px;z-index:-1;background:radial-gradient(ellipse at 22% 50%,#9b612f88,transparent 50%),linear-gradient(112deg,#583221,#936235 48%,#503022)}
+.es2-menu .es2-portal-start:hover:not(:disabled){background:none}
+.es2-menu .es2-portal-start:hover::after{background:linear-gradient(110deg,#80502c,#b78545,#673b24)}
+.es2-menu .es2-portal-decoration{
+  position:relative;display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;
+  border-radius:50%;margin:0;border:1px solid #f4d29b;
+  background:radial-gradient(circle,#f6cc7944 0,#c8893d22 43%,#231927 65%,#e8c58c55 69%,#261c24 78%);
+  box-shadow:0 0 15px #edb05b44,inset 0 0 12px #e8a74d55;pointer-events:none
+}
+.es2-menu .es2-portal-decoration::before{
+  content:'';position:absolute;inset:4px;border:1px dashed #f9d394b0;border-radius:50%;
+  animation:es2-portal-orbit 18s linear infinite;pointer-events:none
+}
+.es2-menu .es2-portal-decoration::after{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  background:radial-gradient(circle at 12% 35%,#ffe2a6 0 1px,transparent 2px),radial-gradient(circle at 82% 24%,#edbb75 0 1px,transparent 2px),radial-gradient(circle at 78% 84%,#ffe2a6 0 1px,transparent 2px);
+  opacity:.65;animation:es2-portal-embers 6s ease-in-out infinite;pointer-events:none
+}
+.es2-menu .es2-portal-core{margin:0;color:#fff1c4;font-size:29px;text-shadow:0 0 12px #eab86c;line-height:1}
+.es2-menu .es2-portal-label{margin:0;min-width:0;font:800 max(.9rem,calc(1.2rem * var(--es2-ui-scale,1)))/1.2 Georgia,'Noto Serif TC',serif;letter-spacing:.035em;overflow-wrap:anywhere}
+@keyframes es2-portal-orbit{to{transform:rotate(360deg)}}
+@keyframes es2-portal-embers{0%,100%{transform:scale(.9) translateY(1px);opacity:.45}50%{transform:scale(1.05) translateY(-3px);opacity:.8}}
+/* Never flash or animate when either the browser or game accessibility setting opts out. */
+@media(prefers-reduced-motion:reduce){
+  .es2-menu .es2-portal-decoration::before,.es2-menu .es2-portal-decoration::after{animation:none!important}
+}
+[data-es2-reduce-motion="true"] .es2-portal-decoration::before,[data-es2-reduce-motion="true"] .es2-portal-decoration::after,
+[data-es2-reduce-flashing="true"] .es2-portal-decoration::before,[data-es2-reduce-flashing="true"] .es2-portal-decoration::after{animation:none!important}
+@media(max-width:700px){
+  .es2-menu .es2-hall-links button span{width:22px;height:22px;flex:0 0 22px}
+  .es2-menu .es2-menu-action-bar{padding-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right))}
+  .es2-menu .es2-menu-actions{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:7px}
+  .es2-menu .es2-expedition-brief{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;padding:7px 9px 9px}
+  .es2-menu .es2-expedition-sigil{display:none}
+  .es2-menu .es2-expedition-name{font-size:max(.875rem,calc(1rem * var(--es2-ui-scale,1)))}
+  .es2-menu .es2-expedition-description{font-size:max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))}
+  .es2-menu .es2-expedition-change{max-width:100%;text-align:start}
+  .es2-menu .es2-portal-start{flex-direction:column;gap:4px;padding:8px 13px}
+  .es2-menu .es2-portal-decoration{flex:0 0 39px;width:39px;height:39px}
+  .es2-menu .es2-portal-core{font-size:21px}
+  .es2-menu .es2-portal-label{font-size:max(.8rem,calc(.91rem * var(--es2-ui-scale,1)))}
+}
+@media(orientation:landscape) and (max-height:520px){
+  .es2-menu .es2-menu-action-bar{grid-template-columns:minmax(0,1fr);padding-block:4px max(4px,env(safe-area-inset-bottom))}
+  .es2-menu .es2-menu-actions{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:8px}
+  .es2-menu .es2-expedition-brief{display:flex;padding:5px 8px;gap:7px;min-height:58px}
+  .es2-menu .es2-expedition-sigil{display:grid;flex-basis:28px;width:28px;height:32px;font-size:17px}
+  .es2-menu .es2-expedition-brief .es2-mobile-selected-mode{gap:1px}
+  .es2-menu .es2-expedition-name{font-size:max(.8rem,calc(.9rem * var(--es2-ui-scale,1)))}
+  .es2-menu .es2-expedition-description{font-size:max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))}
+  .es2-menu .es2-expedition-change{max-width:25%}
+  .es2-menu .es2-portal-start{flex-direction:row;padding:5px 12px;gap:7px;min-height:58px}
+  .es2-menu .es2-portal-decoration{flex-basis:36px;width:36px;height:36px}
+  .es2-menu .es2-portal-core{font-size:21px}
+}
+@media(horizontal-viewport-segments:2){
+  .es2-menu .es2-menu-action-bar{padding-left:max(calc(env(viewport-segment-left 1 0) + 12px),env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
 }

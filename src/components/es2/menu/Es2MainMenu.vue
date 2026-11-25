@@ -13,7 +13,7 @@ import ModeChooser from '../modes/ModeChooser.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
-import type { MenuView } from './model'
+import { formatDuration, type MenuView } from './model'
 const props = defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
 const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
@@ -51,6 +51,25 @@ const selectedHeroLabel = computed(() => {
     ?? Object.values(HERO_DEFINITIONS).find(hero => hero.id === selected)?.label
     ?? selected
 })
+// Compact UI copy, not a second source of gameplay rules. Classic modes already have short descriptions.
+const objectiveBriefs: Readonly<Record<ObjectiveModeId, string>> = {
+  'boss-rush': '依序挑戰五位首領，敵人逐戰增強。',
+  'endless-eclipse': '無盡求生，迎戰週期性星蝕事件。',
+  'relic-hunt': '回收四件聖物，擊敗守護首領。',
+  'cursed-expedition': '承受輪替詛咒，擊敗兩位守衛。',
+  'chaos-arena': '突破八波遭遇戰，挑戰混沌首領。',
+}
+const modeSigils: Readonly<Record<RunModeId, string>> = {
+  quick: '✦', standard: '♜', endless: '∞', challenge: 'ϟ',
+  'boss-rush': '♛', 'endless-eclipse': '☾', 'relic-hunt': '◇',
+  'cursed-expedition': '✧', 'chaos-arena': '✵',
+}
+const selectedMode = computed(() => MODES[props.runMode])
+const modeTitle = computed(() => t(selectedMode.value.label).split(' · ')[0]!)
+const modeBrief = computed(() => t(objectiveSelection.value
+  ? objectiveBriefs[objectiveSelection.value] : selectedMode.value.description))
+const modeDuration = computed(() => selectedMode.value.duration === null
+  ? '∞' : formatDuration(selectedMode.value.duration))
 const page = ref<'heroes' | 'modes'>('heroes')
 function toggleExpeditionPage(): void {
   page.value = page.value === 'heroes' ? 'modes' : 'heroes'
@@ -99,7 +118,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         <div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" data-ui-sfx="select" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
       </nav>
       <div class="es2-menu-layout">
-        <section v-show="page === 'heroes'" class="es2-hero-section" aria-labelledby="es2HeroTitle">
+        <section v-show="page === 'heroes'" id="es2HeroPage" class="es2-hero-section" aria-labelledby="es2HeroTitle">
           <div class="es2-section-heading"><span>{{ t('01 / 命運繼承者') }}</span><h2 id="es2HeroTitle">{{ t("選擇命運的繼承者") }}</h2><p>{{ t("每位英雄都擁有專屬的戰鬥風格。") }}</p></div>
           <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
             <div v-for="hero in heroes" :key="hero.id" class="es2-hero-card-shell">
@@ -120,7 +139,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           </div>
           <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" @details="detailHero = $event" />
         </section>
-        <section v-show="page === 'modes'" class="es2-mode-section" aria-labelledby="es2ModeTitle">
+        <section v-show="page === 'modes'" id="es2ExpeditionPage" class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
           <div class="es2-mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
             <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" class="es2-mode-card" data-ui-sfx="managed"
@@ -135,15 +154,24 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         </section>
       </div>
       <div ref="actionBar" class="es2-menu-action-bar">
-        <p class="es2-mobile-selected-mode" aria-live="polite">
-          <span :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span> · {{ t(MODES[runMode].label).split(' · ')[0] }}
-        </p>
         <div class="es2-menu-actions">
-          <button class="es2-secondary es2-expedition-navigation" type="button" data-es2-expedition-navigation
-            data-ui-sfx="select" :aria-label="t(page === 'heroes' ? '選擇遠征模式' : '返回英雄選擇')" @click="toggleExpeditionPage">
-            {{ t(page === 'heroes' ? '選擇遠征模式' : '返回英雄選擇') }} <span aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span>
+          <button class="es2-expedition-navigation es2-expedition-brief" type="button"
+            data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"
+            :aria-controls="page === 'heroes' ? 'es2ExpeditionPage' : 'es2HeroPage'"
+            data-ui-sfx="select" @click="toggleExpeditionPage">
+            <span class="es2-expedition-sigil" aria-hidden="true">{{ modeSigils[runMode] }}</span>
+            <span class="es2-mobile-selected-mode" aria-live="polite">
+              <span class="es2-expedition-kicker">{{ t('目前遠征') }} <span class="es2-expedition-duration">{{ modeDuration }}</span></span>
+              <strong class="es2-expedition-name">{{ modeTitle }}</strong>
+              <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
+              <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
+            </span>
+            <span class="es2-expedition-change">{{ t(page === 'heroes' ? '變更遠征' : '返回英雄選擇') }} <span aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span></span>
           </button>
-          <button class="es2-primary es2-start" type="button" data-ui-sfx="managed" @click="emit('start')">{{ t("踏入幽暮之門") }} <span aria-hidden="true">✦</span></button>
+          <button class="es2-primary es2-start es2-portal-start" type="button" data-ui-sfx="managed" @click="emit('start')">
+            <span class="es2-portal-decoration" data-es2-portal-decoration aria-hidden="true"><span class="es2-portal-core">✦</span></span>
+            <span class="es2-portal-label">{{ t("踏入幽暮之門") }}</span>
+          </button>
         </div>
         <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
       </div>
