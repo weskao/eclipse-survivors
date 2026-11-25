@@ -4,11 +4,12 @@ import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
 import type { FactionBridge } from '../content/enemies/integration'
-import { drawBossImpacts, drawBossTelegraphs } from '../content/bosses/render'
+import { drawBossImpacts, drawBossTelegraphs, preloadBossAttackArt } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import { preloadEnemyReleaseArt } from './enemy-motion'
 import type { HealthBarMotion, HealthBarTarget } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
@@ -26,6 +27,7 @@ import {
 } from './effects'
 import { drawMiniMap as paintMiniMap } from './minimap'
 import { sharedProjectileSprites } from './projectile-art'
+import { sharedHeroAttackArt, type HeroAttackSprites } from './hero-attack-art'
 import { buildProps } from './props'
 import { buildSprites, domCanvas, type MakeCanvas } from './sprites'
 import type { MobTintCache } from './tint-cache'
@@ -48,6 +50,7 @@ export interface RenderAssets {
   cameraShakeEnabled: () => boolean
   biomes: BiomeArt[]
   depthOrder: (Hero | Mob)[]
+  heroAttackArt?: HeroAttackSprites
   magicGlow: HTMLCanvasElement | null
   gems: GemSprites
   particles: ParticleSpriteCache
@@ -62,6 +65,8 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
     : null
   preloadHeroSpecialVfx()
+  preloadBossAttackArt()
+  preloadEnemyReleaseArt()
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     heroSheets: createHeroSheets(makeCanvas),
@@ -69,6 +74,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     cameraShakeEnabled: () => true,
     depthOrder: [],
     biomes: buildBiomeArt(makeCanvas),
+    heroAttackArt: sharedHeroAttackArt(),
     magicGlow: buildMagicGlow(makeCanvas),
     gems: buildGemSprites(makeCanvas),
     particles: createParticleSpriteCache(makeCanvas),
@@ -134,9 +140,10 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     return
   }
   drawStars(ctx, s, ox, oy, reduced, assets.gems)
-  drawEnemyTelegraphs(ctx, s, ox, oy)
+  const projectiles = sharedProjectileSprites()
+  drawEnemyTelegraphs(ctx, s, ox, oy, reduced)
   const bossSnapshot = assets.bosses?.snapshot(s)
-  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H)
+  if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)
     drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy, assets.healthBars, reduced, showFullHealthBars)
@@ -173,13 +180,12 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     drawBossAttackReference(ctx, deathReference.image, bossSnapshot, BOSS_BASE_DRAW_PX, reduced)
     ctx.restore()
   }
-  drawHeroAuras(ctx, s, hero, ox, oy, reduced)
+  drawHeroAuras(ctx, s, hero, ox, oy, reduced, assets.heroAttackArt)
   drawHeroStatus(ctx, s, hero, ox, oy, reduced)
-  if (!reduced) drawSwipes(ctx, s, ox, oy)
-  const projectiles = sharedProjectileSprites()
-  drawShots(ctx, s, ox, oy, assets.magicGlow, projectiles)
-  drawEnemyProjectiles(ctx, s, ox, oy, projectiles)
-  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy, projectiles)
+  drawSwipes(ctx, s, ox, oy, assets.heroAttackArt, reduced)
+  drawShots(ctx, s, ox, oy, assets.magicGlow, projectiles, reduced, assets.heroAttackArt)
+  drawEnemyProjectiles(ctx, s, ox, oy, projectiles, reduced)
+  if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy, projectiles, reduced)
   drawOrbs(ctx, s, hero, ox, oy, projectiles)
   drawImpactWaves(ctx, s, ox, oy)
   drawLightning(ctx, s, ox, oy, reduced)

@@ -19,7 +19,7 @@ export const EVOLUTION2_CUES: Readonly<Record<ContentId, Evolution2Cue>> =
     }),
   ] as const)) as Record<ContentId, Evolution2Cue>)
 
-const productionArt = import.meta.glob('../../../assets/es2/production/evolutions/*@3x.webp', {
+const productionArt = import.meta.glob('../../../assets/es2/production/skills/evolution-vfx/*.svg', {
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
 
@@ -47,7 +47,13 @@ function makeEffect(
       const margin = 150
       if (state.W > 0 && state.H > 0 &&
           (x < -margin || y < -margin || x > state.W + margin || y > state.H + margin)) return
+      const image = artwork(cue.effectId)
       ctx.globalAlpha = Math.max(0, (1 - progress) * 0.8)
+      if (image?.complete && image.naturalWidth > 0) {
+        const size = Math.min(168, Math.max(68, radius * 1.65))
+        ctx.drawImage(image, x - size / 2, y - size / 2, size, size)
+        return // Exclusive world-space VFX, never a skill-card illustration or duplicate ring.
+      }
       ctx.strokeStyle = cue.color
       ctx.lineWidth = 2.5
       ctx.beginPath()
@@ -59,26 +65,19 @@ function makeEffect(
         ctx.lineTo(x + direction.x * radius * 1.18, y + direction.y * radius * 1.18)
       }
       ctx.stroke()
-      // Distinct 3x skill paintings make the twelve abilities recognizable in
-      // battle; retain the existing range glyph as the world-space telegraph.
-      const image = artwork(cue.effectId)
-      if (image?.complete && image.naturalWidth > 0) {
-        const size = Math.min(128, Math.max(68, radius * 1.5))
-        ctx.globalAlpha = Math.max(0, (1 - progress) * 0.82)
-        ctx.drawImage(image, x - size / 2, y - size / 2, size, size)
-      }
+
     },
   }
 }
 
-/** Load each of the twelve approved illustrations only when its first visible cast occurs. */
+/** Cache each dedicated world-space texture on its first visible cast, not each frame. */
 export function createEvolutionCueEffects(makeImage: ImageFactory = () => new Image()): ContentEffectDefinition[] {
   const images = new Map<ContentId, HTMLImageElement>()
   const artwork = (id: ContentId): HTMLImageElement | undefined => {
     const existing = images.get(id)
     if (existing) return existing
     const idPart = id.slice('evolution2:'.length, -'-fx'.length)
-    const url = productionArt[`../../../assets/es2/production/evolutions/${idPart}@3x.webp`]
+    const url = productionArt[`../../../assets/es2/production/skills/evolution-vfx/${idPart}.svg`]
     if (!url) return undefined
     const image = makeImage()
     image.src = url

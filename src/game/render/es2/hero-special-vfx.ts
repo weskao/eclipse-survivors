@@ -71,14 +71,14 @@ function shadowblade(ctx: Ctx2D, t: number, bloom: number, count: number, reduce
   ctx.beginPath(); ctx.ellipse(0, 46, 67 + 35 * bloom, 16, 0, 0, TAU); ctx.fill()
   const slashOpacity = reduced ? 0.67 : (1 - ease((t - 0.49) / 0.28)) * 0.93
   const first = sprite(ctx, 'rift', -80 + p1 * 86, -24 - p1 * 6,
-    270 + p1 * 36, 260, slashOpacity, -0.26)
+    270 + p1 * 36, 260, slashOpacity, -0.48 + p1 * 0.48)
   if (!first && slashOpacity > 0.05) {
     ctx.strokeStyle = '#c3b5c6'; ctx.lineWidth = 4
     ctx.beginPath(); ctx.moveTo(-103 + p1 * 45, 49); ctx.bezierCurveTo(-32, 7, 38, -48, 104 + p1 * 12, -94); ctx.stroke()
   }
   if (!reduced && t > 0.22) {
     sprite(ctx, 'rift', 59 - p2 * 102, -5, 260, 250,
-      (1 - ease((t - 0.73) / 0.24)) * 0.75, 1.43)
+      (1 - ease((t - 0.73) / 0.24)) * 0.75, 1.72 - p2 * 0.46)
   }
   ctx.globalAlpha *= 0.62
   dust(ctx, reduced ? 4 : count, 165, bloom, '#93838a')
@@ -94,11 +94,11 @@ function summoner(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: 
   for (let i = 0; i < (reduced ? 2 : 3); i++) {
     const a = i * TAU / 3 - 1.6 + (reduced ? 0 : t * 0.36)
     const x = Math.cos(a) * radius
-    const y = Math.sin(a) * radius * 0.37 - 36 - converge * 17
+    const y = Math.sin(a) * radius * 0.37 - 36 - converge * 17 - (reduced ? 0 : Math.sin(t * Math.PI + i) * 9)
     const image = sprite(ctx, 'flame', x, y, 112 + bloom * 34, 144 + bloom * 46,
       alpha * 0.82, Math.sin(a) * 0.16)
-    sprite(ctx, 'guardian', x, y - 9, 106 + bloom * 22, 152 + bloom * 34, alpha * 0.88, Math.sin(a) * 0.06)
-    if (!image) {
+    const guardian = sprite(ctx, 'guardian', x, y - 9, 106 + bloom * 22, 152 + bloom * 34, alpha * 0.88, Math.sin(a) * 0.06)
+    if (!image && !guardian) {
       ctx.fillStyle = '#a0d9d6'; ctx.beginPath(); ctx.ellipse(x, y, 8, 18, a, 0, TAU); ctx.fill()
     }
   }
@@ -119,7 +119,7 @@ function paladin(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: b
   sprite(ctx, 'rays', 0, -68, 330 + bloom * 75, 345 + bloom * 70,
     (reduced ? 0.28 : 0.4 + 0.35 * bloom) * release)
   const hasWard = sprite(ctx, 'ward', 0, -34 + (1 - raise) * 31,
-    166 + raise * 49, 181 + raise * 57, 0.36 + raise * 0.52, -0.035)
+    166 + raise * 49, 181 + raise * 57, (0.36 + raise * 0.52) * release, reduced ? -0.035 : -0.13 + raise * 0.095)
   if (!hasWard) {
     ctx.strokeStyle = '#d6b580'; ctx.lineWidth = 5
     ctx.beginPath(); ctx.moveTo(0, -122); ctx.bezierCurveTo(56, -98, 83, -89, 81, -35)

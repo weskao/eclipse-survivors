@@ -14,12 +14,13 @@ assert.doesNotMatch(html, /<(?:script|img|audio|source|link)\b[^>]+(?:src|href)\
   'site must work at /eclipse-survivors/, not depend on root-absolute asset paths')
 
 const files = readdirSync(new URL('assets/', dist))
-// C104 originals are immutable source evidence, not public display assets.
-// The WebP derivatives must ship and remain referenced by the real UI.
-for (let i = 1; i <= 10; i++) {
-  assert.ok(!existsSync(new URL(`assets/images/imgs${i}.png`, dist)), `C104 original PNG ${i} must not ship in dist`)
-  assert.ok(files.some(file => file.startsWith(`imgs${i}-`) && file.endsWith('.webp')),
-    `C104 display WebP ${i} must be bundled`)
+// QA evidence stays in Git/DEV; neither root statics nor hashed imports may leak.
+const releaseFiles = readdirSync(dist, { recursive: true }).map(file => file.replaceAll('\\', '/'))
+for (const file of releaseFiles) {
+  assert.ok(!/(?:^|\/)imgs(?:[1-9]|10)(?:-[^/]+)?\.(?:png|webp)$/i.test(file)
+    && !/(?:^|\/)candidates(?:\/|$)/i.test(file)
+    && !/(?:^|\/)(?:run|attack|special)-(?:east|south|se|sw|ne|nw|n)-4frames@3x(?:-[^/]+)?\.webp$/i.test(file),
+    'QA-only asset must not ship: ' + file)
 }
 assert.ok(files.every(file => !file.includes('-QA-PENDING')),
   'Unapproved boss QA candidate images must not ship in the production bundle')
@@ -27,6 +28,12 @@ assert.ok(files.every(file => !/^(?:infernal-titan-keyframe-candidates-3x2|idle-
   'Native boss keyframe candidates must stay out of the production bundle')
 const js = files.filter(f => f.endsWith('.js')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
 const css = files.filter(f => f.endsWith('.css')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
+for (const marker of ['data-es2-c104-gallery', 'data-es2-world-enemy', 'data-es2-world-boss',
+  'data-es2-world-biome', 'data-es2-world-ui', 'Content pack developer showcase']) {
+  assert.ok(!js.includes(marker), 'QA-only UI must not ship: ' + marker)
+}
+assert.ok(!css.includes('.es2-c104-source-gallery') && !css.includes('.es2-world-art-grid') && !css.includes('.content-showcase'),
+  'QA-only styles must not ship')
 const mp3 = files.find(f => /^bgm-.*\.mp3$/.test(f))
 assert.ok(mp3, 'background music must ship as a local mp3 file')
 assert.ok(js.includes(mp3), 'the game bundle must reference the bundled mp3')

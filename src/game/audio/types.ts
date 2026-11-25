@@ -1,6 +1,7 @@
 import type { GameMode, SfxCue } from '../types'
 import type { ToneFn } from './music'
-import type { BossId } from '../content/bosses/definitions'
+import type { BossAttackId, BossId } from '../content/bosses/definitions'
+import type { BossAttackStage } from '../content/bosses/attack-presentation'
 
 /** Minimal `<audio>` surface the engine uses for the MP3 score (testable with a fake). */
 export interface BgmElement {
@@ -45,6 +46,9 @@ export interface AudioSystem {
   setBossTheme?(id: BossId | null, phase?: number): void
   /** Set the real upcoming-boss countdown, or null when none is scheduled. */
   setBossWarning?(seconds: number | null): void
+  prepareBossAttackAudio?(id: BossId | null): void
+  playBossAttack?(id: BossAttackId, stage: BossAttackStage): void
+  cancelBossAttackAudio?(): void
   playSfx(cue: SfxCue): void
   /** Original `music()`, called once per animation frame with the current mode. */
   tick(mode: GameMode): void

@@ -6,7 +6,7 @@ import type { Plugin } from 'vite'
 
 const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string }
 
-// Ship root web statics, but keep immutable C104 PNG masters in the repository only.
+// Ship root web statics, but keep raw art boards and review-only candidates in Git/DEV.
 const copyRootStatics = (): Plugin => {
   let root = ''
   let outDir = ''
@@ -23,7 +23,11 @@ const copyRootStatics = (): Plugin => {
       const sourceAssets = resolve(root, 'assets')
       cpSync(sourceAssets, resolve(outDir, 'assets'), {
         recursive: true,
-        filter: source => !/^images[\\/]imgs(?:[1-9]|10)\.png$/i.test(relative(sourceAssets, source)),
+        filter: source => {
+          const path = relative(sourceAssets, source).replaceAll('\\', '/')
+          return !/^images\/imgs(?:[1-9]|10)\.(?:png|webp)$/i.test(path)
+            && !/(?:^|\/)candidates(?:\/|$)/i.test(path)
+        },
       })
     },
   }

@@ -1,4 +1,6 @@
 import { TAU } from '../constants'
+import { BALANCE } from '../config'
+import { applyEnemyPose, applyEnemyRecoil, enemyWeight } from './enemy-motion'
 import type { Artwork } from '../art'
 import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
@@ -187,7 +189,8 @@ function drawPoseAccents(
   }
 }
 
-export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx: number, sy: number): void {
+export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx: number, sy: number, reduced = false): void {
+  if (reduced) { ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy); return }
   const a = e.phase || s.worldClock
   if (e.type === 'slime') {
     const v = Math.sin(a * 2.2)
@@ -210,7 +213,15 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
     ctx.translate(0, Math.sin(a * 0.65) * 4)
     ctx.rotate(Math.sin(a * 0.43) * 0.018)
   }
-  if ((e.stagger || 0) > 0) ctx.rotate(Math.sin(s.worldClock * 52) * 0.075)
+  if (e.type !== 'boss') {
+    const ai = e.ai
+    if (ai) {
+      const duration = ai.state === 'windup' ? BALANCE.enemies.ai.windup[ai.attack] : ai.state === 'attack' ? (ai.attack === 'dive' ? BALANCE.enemies.ai.attackDuration.dive : BALANCE.enemies.ai.attackDuration.pounce) : 0.32
+      const remaining = ai.state === 'recover' ? (ai.releaseFx ?? 0) : ai.timer
+      applyEnemyPose(ctx, ai.state, duration > 0 ? remaining / duration : 0, ai.dirX, ai.dirY, enemyWeight(e.type), false)
+    }
+    applyEnemyRecoil(ctx, Math.max(0, e.hit) * 1.5, e.kx, e.ky, enemyWeight(e.type), false)
+  }
   ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy)
 }
 
@@ -340,7 +351,7 @@ export function drawCharacter(
       const painted = mob.type === 'boss' && productionBoss
         ? (productionBoss.motion && drawBossAttackReference(ctx, productionBoss.motion.image, productionBoss.motion.snapshot, Math.min(sx, sy), reducedMotion))
           || drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
-      if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy)
+      if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy, reducedMotion)
     }
   }
   ctx.restore()

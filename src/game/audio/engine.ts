@@ -5,6 +5,8 @@ import { createBossScore } from './boss-score'
 import { createCinematicMusic } from './cinematic'
 import { createEs2Score } from './es2/score'
 import type { BossId } from '../content/bosses/definitions'
+import { ATTACK_PRESENTATION } from '../content/bosses/attack-presentation'
+import { createBossAttackAudio } from './boss-attacks'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
 import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
 
@@ -61,6 +63,7 @@ export interface AudioSystemOptions {
   loadMusic?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Testable loader for the short, pre-rendered hero cast samples. */
   loadHeroSfx?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
+  loadBossSfx?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Omit for `localStorage`; `null` disables persistence. */
   storage?: SettingsStorage | null
   /** Omit for `window.AudioContext ?? webkitAudioContext`. */
@@ -111,13 +114,22 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let warningMix = false
   let noiseBuffer: BufferLike | null = null
   const heroCastBuffers = new Map<SfxCue, BufferLike>()
-  let heroCastVoice: BufferSourceLike | null = null
-  const stopHeroCast = (): void => {
-    const source = heroCastVoice
-    heroCastVoice = null
-    if (source && ac) {
-      try { source.stop(ac.currentTime) } catch { /* already ended */ }
+  // A cast belongs to the expedition, not the transient gameplay screen. Track both
+  // decoded one-shots and finite synth fallback notes so Home can cancel either path.
+  const heroCastVoices: { source: Pick<BufferSourceLike, 'stop'>; endsAt: number }[] = []
+  const pruneHeroCasts = (now: number): void => {
+    for (let i = heroCastVoices.length - 1; i >= 0; i--) {
+      if (heroCastVoices[i]!.endsAt <= now) heroCastVoices.splice(i, 1)
     }
+  }
+  const stopHeroCast = (): void => {
+    if (ac) {
+      pruneHeroCasts(ac.currentTime)
+      for (const { source } of heroCastVoices) {
+        try { source.stop(ac.currentTime) } catch { /* already ended */ }
+      }
+    }
+    heroCastVoices.length = 0
   }
   const preloadHeroCasts = (ctx: AudioContextLike): void => {
     heroCastBuffers.clear()
@@ -193,7 +205,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     } catch { /* A restricted audio element must not break game input. */ }
   }
 
-  const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): void => {
+  const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): OscillatorLike | undefined => {
     if (!ac || !master) return
     const o = ac.createOscillator()
     const v = ac.createGain()
@@ -206,7 +218,18 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     v.connect(bus === 'music' && musicBus ? musicBus : master)
     o.start(at)
     o.stop(at + dur + 0.03)
+    return o
   }
+
+  const bossAttacks = createBossAttackAudio(() => ac, () => master,
+    () => !interrupted && sfxOn && sfxVolume > 0 && mode === 'play',
+    (id, stage) => {
+      const p = ATTACK_PRESENTATION[id]
+      const midi = 69 + 12 * Math.log2(p.pitch / 440)
+      return tone(midi + (stage === 'warning' ? 5 : 0), ac!.currentTime,
+        stage === 'warning' ? 0.35 : 0.5, stage === 'warning' ? 0.035 : 0.075,
+        p.boss === 'infernal-titan' ? 'triangle' : 'sine')
+    }, opts.loadBossSfx)
 
   // When the MP3 is playing, keep only subtle rhythmic accents from the synth.
   const combatPercussion = (midi: number, at: number, dur: number, vol: number, wave: OscillatorType, bus: 'sfx' | 'music'): void => {
@@ -278,6 +301,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     menuBgm?.pause()
     cinematic.stop(true)
     stopHeroCast()
+    bossAttacks.cancel()
     resultScore.interrupt()
     if (ac && ac.state === 'running') {
       void ac.suspend().catch(() => { /* Visibility can change during suspension. */ })
@@ -320,7 +344,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     setSfxVolume(value: number) {
       sfxVolume = clampVolume(value, sfxVolume)
       if (sfxVolume > 0) previousSfxVolume = sfxVolume
-      else stopHeroCast()
+      else { stopHeroCast(); bossAttacks.cancel() }
       try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
       if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
     },
@@ -350,6 +374,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       warningMix = seconds !== null && seconds > 0 && seconds <= 15
       cinematic.warning(seconds)
     },
+    prepareBossAttackAudio(id) { bossAttacks.prepare(id) },
+    playBossAttack(id, stage) { bossAttacks.play(id, stage) },
+    cancelBossAttackAudio() { bossAttacks.cancel() },
     playSfx(cue) {
       const ctx = running()
       if (!sfxOn || !sfxVolume || !ctx) return
@@ -359,20 +386,24 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
       recentSfx.push(now)
       sfxLast.set(cue, now)
+      const heroCast = HERO_CAST_CUES.some(special => special === cue)
+      if (heroCast) pruneHeroCasts(now)
       const cast = heroCastBuffers.get(cue)
       if (cast && master) {
-        stopHeroCast()
         try {
           const source = ctx.createBufferSource()
           source.buffer = cast
           source.loop = false
           source.connect(master)
           source.start(now)
-          heroCastVoice = source
+          heroCastVoices.push({ source, endsAt: now + (cast.duration ?? cast.getChannelData(0).length / ctx.sampleRate) })
           return
         } catch { /* fall back to the bounded original cue */ }
       }
-      for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) tone(pitch, now + delay, duration, gain, wave)
+      for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) {
+        const source = tone(pitch, now + delay, duration, gain, wave)
+        if (heroCast && source) heroCastVoices.push({ source, endsAt: now + delay + duration + 0.03 })
+      }
       if (NOISE_CUES.has(cue)) noiseBurst(now)
     },
     tick(mode) {
@@ -405,7 +436,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     onScreen(nextMode: GameMode) {
       const previous = mode
       mode = nextMode
-      if (mode !== 'play') stopHeroCast()
+      // Level-up, treasure, pause/settings and result overlays must never truncate a cast.
+      // Only leaving the expedition for Home cancels it (explicit mute/OS teardown are separate).
+      if (mode === 'menu') { stopHeroCast(); bossAttacks.prepare(null) }
+      else if (mode !== 'play') bossAttacks.cancel()
       if (mode !== 'result') {
         resultScene = null
         resultScore.dispose()
@@ -480,7 +514,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       save('starSfx', sfxOn)
       if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
       if (sfxOn) wake()
-      else stopHeroCast()
+      else { stopHeroCast(); bossAttacks.cancel() }
       return sfxOn
     },
     dispose() {
@@ -489,6 +523,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       menuBgm?.pause()
       cinematic.dispose()
       stopHeroCast()
+      bossAttacks.prepare(null)
       heroCastBuffers.clear()
       ac?.close().catch(() => {})
       ac = null

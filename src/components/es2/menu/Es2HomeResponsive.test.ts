@@ -66,6 +66,23 @@ describe('homepage image alternative text', () => {
 })
 
 describe('phone homepage viewport-first navigation', () => {
+  it.each(['zh-TW', 'en'] as const)('omits decorative hero serial labels in %s while retaining all six hero cards', locale => {
+    const previous = getLocale()
+    try {
+      setLocale(locale)
+      const wrapper = menu()
+      const cards = wrapper.findAll('.es2-hero-select-card')
+      expect(cards).toHaveLength(6)
+      for (const card of cards) {
+        expect(card.find('.es2-hero-number').exists()).toBe(false)
+        expect(card.text()).not.toMatch(/0[1-6]\s*\/\s*HERO/i)
+        expect(card.attributes('aria-label')).toBeTruthy()
+      }
+    } finally {
+      setLocale(previous)
+    }
+  })
+
   it('keeps each classic hero\'s four base stats on its card without a duplicate panel', () => {
     const wrapper = menu()
     for (const id of ['knight', 'ranger', 'wizard'] as const) {
@@ -228,7 +245,7 @@ describe('homepage menu layout across devices', () => {
   })
 
   it.each([
-    '.es2-hero-stat-label', '.es2-hero-stat-value', '.es2-hero-number',
+    '.es2-hero-stat-label', '.es2-hero-stat-value',
     '.es2-mode-time', '#gameVersion', '.es2-hero-selection', '.es2-roster__selection',
     '.es2-mode-copy strong', '.es2-objective-choice strong',
   ])('keeps explicitly sized %s text at least 11 CSS px', selector => {

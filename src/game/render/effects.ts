@@ -6,6 +6,8 @@ import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
 import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
+import { drawEnergyMissile, drawEnergyTrail, drawZoneMotes } from './energy-art'
+import { meleeArtId, type HeroAttackSprites } from './hero-attack-art'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -89,10 +91,17 @@ export function drawEchoes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 /** Blaze ring, shield aura and level-up burst around the hero. */
-export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false, art?: HeroAttackSprites): void {
   const q = reducedMotion ? 0 : s.worldClock
+  const aura = (id: 'blaze-aura' | 'shield-aura' | 'sanctuary-aura', x: number, y: number, w: number, h: number, alpha: number): boolean => {
+    const image = art?.[id]
+    if (!image?.complete || image.naturalWidth <= 0) return false
+    ctx.save(); ctx.globalAlpha = alpha
+    ctx.drawImage(image, x - w / 2, y - h / 2, w, h); ctx.restore()
+    return true
+  }
   const blaze = hero.skills.blaze
-  if (blaze) {
+  if (blaze && !aura('blaze-aura', hero.x + ox, hero.y + oy - 18, 100 + blaze * 12, 56 + blaze * 6, 0.66 + Math.sin(q * 3) * 0.1)) {
     ctx.save(); ctx.translate(hero.x + ox, hero.y + oy); ctx.globalAlpha = 0.55
     for (let k = 0; k < 3 + blaze; k++) {
       const a = q * 3 + k * TAU / (3 + blaze)
@@ -103,7 +112,7 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.restore()
   }
   const shield = hero.skills.shield
-  if (hero.evolutions['guardian-sanctuary']) {
+  if (hero.evolutions['guardian-sanctuary'] && !aura('sanctuary-aura', hero.x + ox, hero.y + oy - 13, 225, 94, 0.66)) {
     ctx.save()
     ctx.globalAlpha = 0.32 + 0.1 * Math.sin(q * 3)
     ctx.strokeStyle = '#8dffdf'
@@ -115,7 +124,7 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.stroke()
     ctx.restore()
   }
-  if (shield) {
+  if (shield && !aura('shield-aura', hero.x + ox, hero.y + oy - 14, 150 + shield * 9, 59 + shield * 5, 0.48 + Math.sin(q * 3) * 0.07)) {
     ctx.save(); ctx.globalAlpha = 0.24 + 0.09 * Math.sin(q * 4); ctx.strokeStyle = '#9fd4ff'; ctx.lineWidth = 2.6
     ctx.beginPath(); ctx.ellipse(hero.x + ox, hero.y + oy - 14, 62 + shield * 4, 24 + shield * 2, 0, 0, TAU); ctx.stroke()
     ctx.restore()
@@ -125,7 +134,9 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.save(); ctx.globalAlpha = t * 0.9
     softGlow(ctx, hero.x + ox, hero.y + oy - 30, 120, '#fff2b4', t * 0.45)
     ctx.strokeStyle = '#ffe3a2'; ctx.lineWidth = 4
-    ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy - 24, 45 + (1 - t) * 24, 0, TAU); ctx.stroke()
+    const radius = 45 + (1 - t) * 24
+    ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy - 24, radius, 0, TAU); ctx.stroke()
+    drawZoneMotes(ctx, hero.x + ox, hero.y + oy - 24, radius, 0, 1 - t, '#fff5d5', reducedMotion)
     ctx.restore()
     ctx.save(); ctx.globalAlpha = t; ctx.textAlign = 'center'; ctx.font = '900 28px system-ui'
     ctx.fillStyle = '#fff5d5'; ctx.strokeStyle = '#5c4722'; ctx.lineWidth = 5
@@ -185,30 +196,40 @@ export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number,
 }
 
 // Weapon ribbons: radial gold-to-ivory gradients with trailing sparkle and wave afterglow.
-export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
-  const ribbon = ['#fff4d1', '#f8bb66', '#ff9549']
-  const widths = [7, 4, 1.4]
+export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number, sprites?: HeroAttackSprites, reduced = false): void {
+  const id = meleeArtId(s.heroId)
+  const image = sprites?.[id]
+  const color = id === 'shadowblade' ? '#cba7f6' : id === 'crimson-paladin' ? '#ff7890' : '#f8bb66'
   for (const sw of s.swipes) {
+    if (sw.life <= 0 || sw.max <= 0) continue
     const t = 1 - sw.life / sw.max
-    const x = sw.x + ox
-    const y = sw.y + oy
-    const r = sw.r + easing(t) * 32
-    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 0.75); ctx.lineCap = 'round'; ctx.shadowBlur = 13; ctx.shadowColor = '#ffc56c'
-    for (let k = 0; k < 3; k++) {
-      ctx.strokeStyle = ribbon[k]!; ctx.lineWidth = widths[k]! * (1 - t * 0.55)
-      ctx.beginPath(); ctx.arc(x, y, r - k * 5, sw.a - 1.02 - t * 0.23, sw.a + 1.2 + t * 0.18); ctx.stroke()
-    }
-    for (let j = 0; j < 5; j++) {
-      const a = sw.a - 1 + t * 2 + j * 0.11
-      ctx.fillStyle = '#ffefc8'
-      ctx.fillRect(x + Math.cos(a) * (r + 5 + j * 2), y + Math.sin(a) * (r + 5 + j * 2), 2.5, 2.5)
+    const x = sw.x + ox, y = sw.y + oy
+    const r = sw.r + easing(reduced ? 0.45 : t) * 32
+    const margin = r * 1.3
+    if (x < -margin || x > s.W + margin || y < -margin || y > s.H + margin) continue
+    ctx.save()
+    ctx.translate(x, y)
+    // A weighted knight follow-through, paired shadow cuts and deliberate paladin sweep.
+    const sweep = reduced ? 0 : (t - 0.5) * (id === 'shadowblade' ? 0.32 : id === 'crimson-paladin' ? 0.48 : 0.68)
+    ctx.rotate(sw.a + sweep)
+    ctx.globalAlpha = Math.pow(1 - t, 0.75) * (reduced ? 0.7 : 1)
+    if (image?.complete && image.naturalWidth > 0) {
+      // One textured draw replaces repeated arcs, shadow blur and five separate sparks.
+      const size = r * 2.25
+      ctx.drawImage(image, -size / 2, -size / 2, size, size)
+    } else {
+      // Tapered crescent fallback, never an opaque round-ended debug line.
+      ctx.fillStyle = color
+      ctx.beginPath(); ctx.arc(0, 0, r, -1.02, 1.2)
+      ctx.arc(0, 0, r * 0.79, 1.2, -1.02, true)
+      ctx.closePath(); ctx.fill()
     }
     ctx.restore()
   }
 }
 
 // Fast arrows leave stretched trails. Arcane bolts cast a soft violet halo.
-export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>): void {
+export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>, reduced = false, heroArt?: HeroAttackSprites): void {
   const { W, H } = s
   for (const b of s.shots) {
     const x = b.x + ox
@@ -224,7 +245,9 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     const extent = Math.min(1, 14 / Math.max(1, history))
     const tx = x - (x - prevX) * extent
     const ty = y - (y - prevY) * extent
-    if (history > 2) {
+    const readyMagic = s.heroId === 'spirit-summoner' ? heroArt?.['spirit-summoner'] : projectiles?.['arcane-bolt']
+    const historicalTrail = history > 2 && !reduced && (b.kind === 'arrow' || !readyMagic?.complete || !readyMagic.naturalWidth)
+    if (historicalTrail) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
       ctx.strokeStyle = b.kind === 'arrow' ? '#f6d6a4' : '#a9a1ff'
@@ -246,18 +269,17 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
       ctx.strokeStyle = '#ddac77'; ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(-15, -4); ctx.lineTo(-11, 0); ctx.lineTo(-15, 4); ctx.stroke()
       }
-    } else if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
-      if (magicGlow) {
-        ctx.drawImage(magicGlow, -28, -28, 56, 56)
-      } else {
-        // Preserve standalone renderer behavior when no prepainted asset is supplied.
-        const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 28)
-        gl.addColorStop(0, '#f2eaff'); gl.addColorStop(0.2, '#a6d8ff'); gl.addColorStop(0.44, '#937af7b9'); gl.addColorStop(1, '#9170ec00')
-        ctx.fillStyle = gl
-        ctx.beginPath(); ctx.arc(0, 0, 28, 0, TAU); ctx.fill()
+    } else {
+      const spirit = s.heroId === 'spirit-summoner'
+      if (!historicalTrail) drawEnergyTrail(ctx, b.r, b.life, spirit ? '#a7efdc' : '#c3adff', reduced)
+      const spiritImage = spirit ? heroArt?.['spirit-summoner'] : undefined
+      if (spiritImage?.complete && spiritImage.naturalWidth > 0) {
+        ctx.drawImage(spiritImage, -30, -30, 60, 60)
+      } else if (spirit || !drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
+        // Keep the cached halo, but replace the old dot-and-line fallback with a faceted core.
+        if (magicGlow) ctx.drawImage(magicGlow, -28, -28, 56, 56)
+        drawEnergyMissile(ctx, undefined, 'arcane-bolt', b.r, b.life, spirit ? '#79cfc0' : '#a88af0', spirit ? '#e6fff4' : '#f2eaff', true)
       }
-      ctx.strokeStyle = '#d6baff80'; ctx.lineWidth = 2
-      ctx.beginPath(); ctx.moveTo(-30, 0); ctx.lineTo(0, 0); ctx.stroke()
     }
     ctx.restore()
   }

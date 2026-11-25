@@ -1,3 +1,5 @@
+import { drawEnergyMissile } from '../energy-art'
+import { applyEnemyPose, applyEnemyRecoil, enemyWeight } from '../enemy-motion'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import assassinMasterUrl from '../../../assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
 import frostWraithMasterUrl from '../../../assets/es2/production/enemies/masters/frost-wraith-6poses-3x2-master-1536x1024.png?url'
@@ -7,7 +9,7 @@ import { WORLD_ART } from './production-world'
 import { drawFactionTelegraphs } from '../../content/enemies/telegraphs'
 import type { Ctx2D } from '../ctx'
 import { drawEnemyHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from '../health-bars'
-import { drawProjectileSprite, type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
+import { type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
 
 export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement; highResBody?: HTMLImageElement }>
 
@@ -68,7 +70,7 @@ export function drawLiveFactionArt(
   healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reducedMotion = false, showFullHealthBars = false,
 ): number {
   // Original warning geometries, tied to true aim/radius, are painted first.
-  drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy)
+  drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy, reducedMotion, state.W, state.H)
   let drawn = 0
   const width = state.W, height = state.H
   for (const enemy of runtime.enemies) {
@@ -88,11 +90,17 @@ export function drawLiveFactionArt(
     const frame = enemy.state === 'phase' ? 5
       : enemy.state === 'windup' ? 2
         : enemy.state === 'attack' ? 3
-          : enemy.state === 'recover' ? 4
+          : enemy.state === 'recover' ? ((enemy.releaseFx ?? 0) > 0.16 ? 3 : 4)
             : (Math.floor(state.worldClock * 6 + enemy.id) & 1)
     const h = size // Preserve square source-cell proportions and the existing feet anchor.
     ctx.save()
     ctx.translate(x, y)
+    const weight = enemyWeight(enemy.kind)
+    const def = ENEMY_DEFINITIONS[enemy.kind]
+    const remaining = enemy.state === 'windup' ? enemy.timer / (def.windup * (enemy.affix === 'swift' ? 0.8 : 1))
+      : enemy.state === 'attack' ? enemy.timer / 0.34 : (enemy.releaseFx ?? 0) / 0.32
+    applyEnemyPose(ctx, enemy.state, remaining, enemy.facingX, enemy.facingY, weight, reducedMotion)
+    applyEnemyRecoil(ctx, enemy.hitTime ?? 0, enemy.hitX ?? 0, enemy.hitY ?? 0, weight, reducedMotion)
     // These 6-frame strips share one artist-authored facing. This mirroring is
     // separate from the 8-direction hero atlas, which must NEVER be mirrored.
     if (enemy.facingX < 0) ctx.scale(-1, 1)
@@ -122,25 +130,19 @@ export function drawLiveFactionArt(
 /** Renderer-only projectiles; no changes to collision, damage or simulation. */
 export function drawLiveFactionProjectiles(
   ctx: Ctx2D, state: GameState, runtime: FactionRuntime, ox: number, oy: number,
-  sprites?: Partial<ProjectileSprites>,
+  sprites?: Partial<ProjectileSprites>, reduced = false,
 ): void {
   for (const shot of runtime.projectiles) {
     const x = shot.x + ox, y = shot.y + oy
-    if (x < -48 || y < -48 || x > state.W + 48 || y > state.H + 48) continue
+    const margin = Math.max(48, shot.radius * 4)
+    if (x < -margin || y < -margin || x > state.W + margin || y > state.H + margin) continue
     const art: ProjectileArtId = shot.kind === 'fire-imp' ? 'enemy-ember'
       : shot.kind === 'dark-archer' ? 'spectral-arrow'
         : shot.kind === 'frost-wraith' || shot.kind === 'crystal-sentinel' ? 'arcane-bolt' : 'enemy-hex'
     ctx.save()
     ctx.translate(x, y)
     ctx.rotate(Math.atan2(shot.vy, shot.vx))
-    const drawn = drawProjectileSprite(ctx, sprites, art, Math.max(34, shot.radius * 3.1))
-    ctx.restore()
-    if (drawn) continue
-    ctx.save()
-    ctx.fillStyle = ENEMY_DEFINITIONS[shot.kind].telegraphColor
-    ctx.beginPath()
-    ctx.arc(x, y, shot.radius, 0, Math.PI * 2)
-    ctx.fill()
+    drawEnergyMissile(ctx, sprites, art, shot.radius, shot.life, ENEMY_DEFINITIONS[shot.kind].telegraphColor, '#fff3dc', reduced)
     ctx.restore()
   }
 }

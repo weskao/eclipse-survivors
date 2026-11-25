@@ -40,7 +40,6 @@
 @media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px);border-color:#e7c896}}
 .es2-menu .es2-hero-select-card:active:not(:disabled){transform:translateY(-1px) scale(.99)}
 .es2-menu .es2-hero-select-card[aria-pressed="true"]{border-color:#e7c896;box-shadow:0 0 0 1px #e7c896,0 0 32px #dfbb7055}
-.es2-hero-number{position:absolute;top:12px;left:12px;z-index:1;font:700 .6875rem system-ui,sans-serif;color:#eddeb9;text-shadow:0 2px 5px #000}
 .es2-hero-card img{width:100%;height:clamp(165px,27vw,360px);object-fit:contain;object-position:center bottom;background:radial-gradient(ellipse,#ac905348,#091421 72%);padding:15px 5px 0}
 .es2-hero-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:13px;background:linear-gradient(#122033,#0a111b);border-top:1px solid var(--es2-line)}
 .es2-hero-copy strong{font-size:clamp(.83rem,1.3vw,1.12rem)}

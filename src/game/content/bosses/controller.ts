@@ -1,4 +1,6 @@
 import { damageHero } from '../../combat'
+import { requestCameraKick } from '../../fx'
+import { ATTACK_PRESENTATION } from './attack-presentation'
 import { BALANCE } from '../../config'
 import { summonBossMinions } from '../../bosses/phases'
 import { MAX_MOBS } from '../../constants'
@@ -60,6 +62,8 @@ export interface BossEncounterObserver {
   emit?(event: BossEncounterEvent): void
   /** Original cue IDs; integration may route them to its asset-backed sound system. */
   cue?(id: BossCueId): void
+  /** Cancel stale windups/tails on phase, death or encounter teardown. */
+  cancelAttackAudio?(): void
 }
 
 /** Presentation state derived from the encounter clock; never used by collision or AI. */
@@ -308,6 +312,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
 
   function notify(event: BossEncounterEvent): void { observer.emit?.(event) }
   function cue(id: BossCueId): void { observer.cue?.(id) }
+  function cancelTransient(e: Encounter): void { clearTransient(e); observer.cancelAttackAudio?.() }
 
   function current(state: GameState): Encounter | null {
     return encounter?.state === state ? encounter : null
@@ -319,8 +324,13 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     for (const telegraph of windup.telegraphs) {
       if (e.impacts.length >= MAX_BOSS_IMPACTS) break
       e.impacts.push({ telegraph, life: 0.56, max: 0.56 })
+      // A volley has one launch accent, not one full overlay per projectile.
+      if (attack.kind === 'projectile') break
     }
     notify({ type: 'attack', boss: e.id, phase: e.phase, attack: windup.attackId })
+    // Exactly one major release nudge, never per projectile or hazard tick.
+    const shake = ATTACK_PRESENTATION[windup.attackId].shake
+    if (shake > 0) requestCameraKick(e.state, shake)
     cue(BOSS_DEFINITIONS[e.id].attackCue)
     if (attack.kind === 'summon') {
       // Reuse the existing six-minion implementation rather than introducing
@@ -373,7 +383,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
   function reset(state: GameState): void {
     const e = current(state)
     if (!e) return
-    clearTransient(e)
+    cancelTransient(e)
     cleanOwnedMinions(e)
     encounter = null
   }
@@ -421,7 +431,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       if (phase > e.phase) {
         e.phase = phase; e.boss.bossPhase = phase
         e.turn = 0
-        clearTransient(e)
+        cancelTransient(e)
         e.recovery = BODY_TRANSFORM_SECONDS
         e.transforming = true
         cue(BOSS_DEFINITIONS[e.id].transitionCue)
@@ -461,7 +471,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       if (!e) return
       if (event.type === 'reset') { reset(state); return }
       if (event.type === 'scene-change' || event.type === 'run-complete') {
-        clearTransient(e)
+        cancelTransient(e)
         cleanOwnedMinions(e)
         e.recovery = 1.4
         return
@@ -469,7 +479,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       if (event.type !== 'kill' || event.mob !== e.boss || e.rewarded || e.boss.hp > 0) return
       e.rewarded = true
       e.deathAt = state.worldClock
-      clearTransient(e)
+      cancelTransient(e)
       cleanOwnedMinions(e)
       cue(BOSS_DEFINITIONS[e.id].deathCue)
       notify({ type: 'death', boss: e.id, phase: e.phase })

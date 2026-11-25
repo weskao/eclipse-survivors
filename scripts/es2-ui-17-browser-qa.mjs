@@ -48,6 +48,7 @@ try {
       await page.locator('[data-es2-archive-page]').waitFor({ state: 'visible' })
       await page.locator('.es2-hall-links button').nth(4).click()
       const gallery = page.locator('[data-es2-world-ui]')
+      await gallery.first().waitFor({ state: 'visible', timeout: 30000 })
       assert.equal(await gallery.count(), 17, name + ': expected 17 distinct gallery entries')
       const record = { name, gallery: [], achievements: [], hud: [], rarity: [] }
       for (const asset of assets) {
@@ -161,7 +162,7 @@ try {
     } finally { await context.close() }
   }
   await writeFile(dir + '/report.json', JSON.stringify({
-    source: 'real Chromium production build', commit: process.env.GITHUB_SHA ?? null,
+    source: 'real Chromium Vite DEV art inspection and live game', commit: process.env.GITHUB_SHA ?? null,
     approval: 'technical QA only; human visual approval required', evidence,
   }, null, 2) + '\n')
 } finally { await browser.close() }

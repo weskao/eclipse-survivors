@@ -23,6 +23,7 @@ function warn(e: Mob, hero: Hero, kind: EnemyBrain['attack']): void {
   ai.aimX = hero.x
   ai.aimY = hero.y
   ai.attack = kind
+  ai.releaseFx = 0
   ai.state = 'windup'
   ai.timer = WINDUP[kind] + (e.type === 'boss' ? AI.bossWindupExtra : 0)
 }
@@ -57,6 +58,7 @@ function fire(s: GameState, e: Mob): void {
 function resolveStrike(s: GameState, e: Mob, hooks: GameHooks): void {
   if (e.hp <= 0 || !s.hero) return
   const ai = brain(e), hero = s.hero
+  ai.releaseFx = 0.32
   if (ai.attack === 'bolt') fire(s, e)
   else if (ai.attack === 'summon') summonBossMinions(s, e)
   else if (ai.attack === 'slam') {
@@ -110,6 +112,7 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
     e.slow = Math.max(0, e.slow - dt)
     if (e.type === 'boss') updateBossPhase(s, e, hooks)
     const ai = brain(e)
+    if (ai.releaseFx) ai.releaseFx = Math.max(0, ai.releaseFx - dt)
     if (ai.state === 'recover') {
       ai.timer -= dt
       if (ai.timer <= 0) ai.state = 'approach'
@@ -129,6 +132,7 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
       if (ai.timer <= 0) {
         if (ai.attack === 'dive' || ai.attack === 'pounce') {
           ai.state = 'attack'; ai.timer = ai.attack === 'dive' ? AI.attackDuration.dive : AI.attackDuration.pounce
+          ai.releaseFx = 0.32
         }
         else resolveStrike(s, e, hooks)
       }

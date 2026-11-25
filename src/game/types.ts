@@ -71,6 +71,8 @@ export interface EnemyBrain {
   aimX: number; aimY: number; dirX: number; dirY: number
   cycle: number
   hitThisAttack?: boolean
+  /** Cosmetic release lifetime, independent of AI recovery. */
+  releaseFx?: number
 }
 export interface EnemyProjectile {
   x: number; y: number; vx: number; vy: number

@@ -7,7 +7,7 @@ import { createEvolutionCueEffects } from './cues'
 const readyImage = () => ({ src: '', complete: true, naturalWidth: 768, naturalHeight: 768 }) as HTMLImageElement
 
 describe('all twelve evolution skill effects use authored game art', () => {
-  it('paints each distinct 3x evolution emblem at the true camera-projected combat position', () => {
+  it('paints each distinct transparent evolution VFX at the true camera-projected combat position', () => {
     const created: HTMLImageElement[] = []
     const effects = createEvolutionCueEffects(() => {
       const image = readyImage()
@@ -20,16 +20,18 @@ describe('all twelve evolution skill effects use authored game art', () => {
     expect(effects).toHaveLength(EVOLUTION2_RECIPES.length)
     for (let i = 0; i < effects.length; i++) {
       const effect = effects[i]!
-      const { ctx } = createFakeCtx()
+      const { ctx, calls } = createFakeCtx()
       const drawn: unknown[][] = []
       ctx.drawImage = ((...args: unknown[]) => { drawn.push(args) }) as typeof ctx.drawImage
       effect.draw(ctx, state, { id: effect.id, x: 90, y: 65, life: 0.5, max: 0.75 }, 110, 40)
       expect(drawn, effect.id).toHaveLength(1)
+      expect(calls).not.toContain('stroke')
+      expect(calls).not.toContain('fill')
       expect(drawn[0]![0]).toBe(created[i])
       expect(drawn[0]![1]).toBeLessThan(200)
       expect(drawn[0]![1]).toBeGreaterThan(90)
       expect(drawn[0]![2]).toBeGreaterThan(0)
-      expect(created[i]!.src).toContain(EVOLUTION2_RECIPES[i]!.id.split(':')[1] + '@3x.webp')
+      expect(created[i]!.src).toContain(EVOLUTION2_RECIPES[i]!.id.split(':')[1] + '.svg')
     }
     expect(new Set(created.map(img => img.src)).size).toBe(12)
   })

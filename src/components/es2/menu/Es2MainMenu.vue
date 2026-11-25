@@ -29,10 +29,10 @@ const objectiveSelection = computed<ObjectiveModeId | null>(() => objectiveModeI
 const emit = defineEmits<{
   select: [hero: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
 }>()
-const heroes: readonly { id: JobId; name: string; role: string; number: string }[] = [
-  { id: 'knight', name: '曙鋼騎士', role: '重甲反擊 · 近戰爆發', number: '01' },
-  { id: 'ranger', name: '夜痕遊俠', role: '精準射擊 · 高機動', number: '02' },
-  { id: 'wizard', name: '虛空術士', role: '奧術魔彈 · 元素毀傷', number: '03' },
+const heroes: readonly { id: JobId; name: string; role: string }[] = [
+  { id: 'knight', name: '曙鋼騎士', role: '重甲反擊 · 近戰爆發' },
+  { id: 'ranger', name: '夜痕遊俠', role: '精準射擊 · 高機動' },
+  { id: 'wizard', name: '虛空術士', role: '奧術魔彈 · 元素毀傷' },
 ]
 const links: readonly { id: MenuView; name: string; icon: string }[] = [
   { id: 'progression', name: '永久強化', icon: '◇' }, { id: 'relics', name: '聖物庫', icon: '✧' },
@@ -141,7 +141,6 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               :aria-label="t(hero.name) + ' · ' + t(hero.role)"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
-              <span class="es2-hero-number">{{ hero.number }} / {{ t('HERO') }}</span>
               <img :src="ART_URLS[hero.id]" :alt="t('{name} 原始角色插畫', { name: t(hero.name) })" decoding="async" draggable="false" />
               <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small>
                 <HeroStats class="es2-roster__stats" data-es2-classic-preview :stats="JOB[hero.id]" />

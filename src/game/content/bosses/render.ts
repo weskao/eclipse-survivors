@@ -1,6 +1,32 @@
 import type { Ctx2D } from '../../render/ctx'
 import type { BossSnapshot, BossTelegraph, BossImpact, BossProjectile } from './controller'
-import type { BossId } from './definitions'
+import { BOSS_ATTACKS, type BossAttackId, type BossId } from './definitions'
+import { ATTACK_PRESENTATION } from './attack-presentation'
+import { drawEnergyMissile, drawZoneMotes } from '../../render/energy-art'
+import type { ProjectileArtId, ProjectileSprites } from '../../render/projectile-art'
+
+const ATTACK_ART = import.meta.glob('../../../assets/es2/production/skills/boss-attacks/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+export type BossAttackSprites = Partial<Record<BossAttackId, HTMLImageElement>>
+let sharedArt: BossAttackSprites | undefined
+export function loadBossAttackSprites(makeImage: () => HTMLImageElement = () => new Image()): BossAttackSprites {
+  const result: BossAttackSprites = {}
+  for (const id of Object.keys(BOSS_ATTACKS) as BossAttackId[]) {
+    const url = ATTACK_ART['../../../assets/es2/production/skills/boss-attacks/' + id + '.svg']
+    if (!url) continue
+    const image = makeImage()
+    image.decoding = 'async'; image.src = url
+    result[id] = image
+  }
+  return result
+}
+export function preloadBossAttackArt(): BossAttackSprites | undefined {
+  if (typeof Image === 'undefined') return undefined
+  return sharedArt ??= loadBossAttackSprites()
+}
+function readyArt(id: string, sprites?: BossAttackSprites): HTMLImageElement | undefined {
+  const image = sprites?.[id as BossAttackId]
+  return image?.complete && image.naturalWidth > 0 ? image : undefined
+}
 
 const TAU = Math.PI * 2
 const SAFE_HALF_ANGLE = Math.PI / 5
@@ -21,6 +47,10 @@ const PALETTES: Record<BossId, { core: string; glow: string; edge: string; muted
 }
 
 type Palette = (typeof PALETTES)[BossId]
+const MISSILE_ART: Record<BossId, ProjectileArtId> = {
+  'abyss-monarch': 'enemy-hex', 'frost-sovereign': 'arcane-bolt',
+  'infernal-titan': 'enemy-ember', 'eclipse-seraph': 'holy-lance',
+}
 
 function isVisible(t: BossTelegraph, ox: number, oy: number, w: number, h: number, padding = 25): boolean {
   const x = t.x + ox, y = t.y + oy
@@ -52,12 +82,14 @@ function drawRunes(ctx: Ctx2D, radius: number, charge: number, count: number): v
 }
 
 function drawTelegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number,
-  palette: Palette, reduced: boolean, w: number, h: number): void {
+  palette: Palette, reduced: boolean, w: number, h: number, art?: BossAttackSprites): void {
   if (!isVisible(t, ox, oy, w, h)) return
   const x = t.x + ox, y = t.y + oy
   const charge = clamp(t.progress ?? 0)
   const active = t.stage === 'active'
   const harmless = t.harmless
+  const image = readyArt(t.attackId, art)
+  const attack = BOSS_ATTACKS[t.attackId as BossAttackId]
   const ink = harmless ? palette.glow : t.color
   // A distinct static 2D warning surface remains legible with reduced motion.
   const wash = harmless ? 0.08 : active ? 0.18 : 0.11 + charge * 0.13
@@ -87,7 +119,11 @@ function drawTelegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number,
       ctx.moveTo(0, -t.width); ctx.lineTo(t.length, -t.width)
       ctx.moveTo(0, t.width); ctx.lineTo(t.length, t.width)
       ctx.stroke()
-      if (!reduced) {
+      if (!reduced && image && attack?.kind !== 'projectile') {
+        ctx.globalAlpha = 0.12 + charge * 0.30
+        const height = t.width * 2
+        ctx.drawImage(image, 0, -height / 2, t.length, height)
+      } else if (!reduced) {
         ctx.globalAlpha = 0.35 + charge * 0.55
         ctx.strokeStyle = palette.core
         ctx.lineWidth = 1.6 + charge * 1.4
@@ -126,7 +162,12 @@ function drawTelegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number,
       ctx.strokeStyle = '#a9ffe1'
       ctx.lineWidth = reduced ? 2 : 3
       ctx.stroke()
-      if (!reduced) {
+      if (image) {
+        ctx.globalAlpha = reduced ? 0.18 : 0.18 + charge * 0.22
+        ctx.translate(x, y); ctx.rotate(t.safeAngle)
+        const size = t.radius * 2
+        ctx.drawImage(image, -size / 2, -size / 2, size, size)
+      } else if (!reduced) {
         ctx.beginPath()
         ctx.arc(x, y, t.radius * 0.93, t.safeAngle - SAFE_HALF_ANGLE, t.safeAngle + SAFE_HALF_ANGLE)
         ctx.lineWidth = 3
@@ -151,6 +192,15 @@ function drawTelegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number,
       ctx.arc(x, y, t.innerRadius, 0, TAU)
       ctx.stroke()
     }
+    if (image) {
+      ctx.globalAlpha = reduced ? 0.18 : active ? 0.25 : 0.12 + charge * 0.30
+      const size = t.radius * 2
+      ctx.translate(x, y)
+      if (!reduced) ctx.rotate(charge * 0.34)
+      ctx.drawImage(image, -size / 2, -size / 2, size, size)
+      return // Authored surface replaces decorative motes, dashes and rune pass.
+    }
+    drawZoneMotes(ctx, x, y, t.radius, t.shape === 'ring' ? t.innerRadius : 0, charge, palette.core, reduced)
     if (reduced) return
     ctx.strokeStyle = harmless ? palette.core : palette.glow
     ctx.globalAlpha = active ? 0.55 : 0.38 + charge * 0.48
@@ -173,50 +223,38 @@ function drawTelegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number,
 }
 
 function drawProjectile(ctx: Ctx2D, p: BossProjectile, ox: number, oy: number,
-  palette: Palette, reduced: boolean, w: number, h: number): void {
+  palette: Palette, reduced: boolean, w: number, h: number,
+  art: ProjectileArtId, sprites?: Partial<ProjectileSprites>): void {
   const x = p.x + ox, y = p.y + oy
-  if (x < -p.radius - 30 || y < -p.radius - 30 || x > w + p.radius + 30 || y > h + p.radius + 30) return
-  const radius = Math.max(2, p.radius)
-  ctx.beginPath()
-  ctx.arc(x, y, radius, 0, TAU)
-  ctx.fillStyle = p.color
-  ctx.globalAlpha = 0.87
-  ctx.fill()
-  ctx.beginPath()
-  ctx.arc(x, y, Math.max(1.5, radius * 0.45), 0, TAU)
-  ctx.fillStyle = palette.core
+  const margin = Math.max(35, p.radius * 4)
+  if (x < -margin || y < -margin || x > w + margin || y > h + margin) return
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(Math.atan2(p.vy, p.vx))
   ctx.globalAlpha = 0.95
-  ctx.fill()
-  if (reduced) return
-  const direction = Math.atan2(p.vy, p.vx)
-  const cs = Math.cos(direction), sn = Math.sin(direction)
-  ctx.beginPath()
-  ctx.moveTo(x - cs * radius * 3.2, y - sn * radius * 3.2)
-  ctx.lineTo(x - cs * radius * 0.4, y - sn * radius * 0.4)
-  ctx.strokeStyle = palette.edge
-  ctx.lineWidth = Math.max(2, radius * 0.7)
-  ctx.globalAlpha = 0.55
-  ctx.stroke()
+  drawEnergyMissile(ctx, sprites, art, Math.max(2, p.radius), p.life, palette.edge, palette.core, reduced)
+  ctx.restore()
 }
 
 /** Under-actor warning pass; fixed hitbox geometry, time-based windup and clear safe zones. */
 export function drawBossTelegraphs(ctx: Ctx2D, snapshot: BossSnapshot, ox: number, oy: number,
-  reducedMotion = false, viewportWidth = Infinity, viewportHeight = Infinity): void {
+  reducedMotion = false, viewportWidth = Infinity, viewportHeight = Infinity,
+  sprites?: Partial<ProjectileSprites>, art = sharedArt): void {
   if (!snapshot.id) return
   const palette = PALETTES[snapshot.id]
   ctx.save()
   try {
     for (const t of snapshot.telegraphs)
-      drawTelegraph(ctx, t, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight)
+      drawTelegraph(ctx, t, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight, art)
     for (const p of snapshot.projectiles)
-      drawProjectile(ctx, p, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight)
+      drawProjectile(ctx, p, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight, MISSILE_ART[snapshot.id], sprites)
   } finally {
     ctx.restore()
   }
 }
 
 function drawImpact(ctx: Ctx2D, impact: BossImpact, ox: number, oy: number,
-  palette: Palette, reduced: boolean, w: number, h: number): void {
+  palette: Palette, reduced: boolean, w: number, h: number, art?: BossAttackSprites): void {
   if (!(impact.max > 0) || impact.life <= 0 || !isVisible(impact, ox, oy, w, h, 55)) return
   const phase = clamp(1 - impact.life / impact.max)
   const fade = (1 - phase) ** 2
@@ -229,6 +267,35 @@ function drawImpact(ctx: Ctx2D, impact: BossImpact, ox: number, oy: number,
     ctx.globalAlpha = Math.min(0.73, fade * 0.7)
     ctx.strokeStyle = palette.core
     ctx.lineWidth = reduced ? 2.2 : 4.8 * (1 - phase * 0.55)
+    const id = impact.attackId as BossAttackId
+    const attack = BOSS_ATTACKS[id], profile = ATTACK_PRESENTATION[id]
+    const image = readyArt(id, art)
+    if (image && attack && profile) {
+      // One precomposed texture per release, not a second pass over procedural art.
+      const progress = reduced ? 0.45 : phase
+      ctx.globalAlpha = (reduced ? 0.40 : 0.72 + profile.weight * 0.12) * (1 - phase) ** 1.35
+      if (attack.kind === 'projectile') {
+        // A launch burst at the caster; never fake an instant hit along the projectile path.
+        ctx.rotate(impact.angle)
+        const size = 62 + 35 * progress
+        ctx.drawImage(image, -size / 2, -size / 2, size, size)
+      } else if (impact.shape === 'beam') {
+        ctx.rotate(impact.angle)
+        const height = impact.width * 2 * (0.85 + 0.15 * (1 - progress))
+        ctx.drawImage(image, 0, -height / 2, impact.length, height)
+      } else {
+        if (impact.shape === 'arena') ctx.rotate(impact.safeAngle)
+        else if (!reduced) ctx.rotate((profile.visual === 'collapse' || profile.visual === 'vortex' ? -1 : 1) * progress * 0.5)
+        // Ring/arena art remains inside the exact configured danger region.
+        const size = impact.radius * 2 * (impact.shape === 'circle' ? 0.75 + progress * 0.25 : 1)
+        ctx.drawImage(image, -size / 2, -size / 2, size, size)
+      }
+      return
+    }
+    if (attack?.kind === 'projectile') {
+      ctx.beginPath(); ctx.arc(0, 0, 12 + phase * 20, 0, TAU); ctx.stroke()
+      return
+    }
     if (impact.shape === 'beam') {
       ctx.rotate(impact.angle)
       ctx.beginPath()
@@ -282,13 +349,13 @@ function drawImpact(ctx: Ctx2D, impact: BossImpact, ox: number, oy: number,
 
 /** Above-actor short-lived release accents; presentation cannot affect collision. */
 export function drawBossImpacts(ctx: Ctx2D, snapshot: BossSnapshot, ox: number, oy: number,
-  reducedMotion = false, viewportWidth = Infinity, viewportHeight = Infinity): void {
+  reducedMotion = false, viewportWidth = Infinity, viewportHeight = Infinity, art = sharedArt): void {
   if (!snapshot.id || !snapshot.impacts?.length) return
   ctx.save()
   try {
     const palette = PALETTES[snapshot.id]
     for (const impact of snapshot.impacts)
-      drawImpact(ctx, impact, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight)
+      drawImpact(ctx, impact, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight, art)
   } finally {
     ctx.restore()
   }

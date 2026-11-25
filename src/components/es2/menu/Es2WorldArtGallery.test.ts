@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { setLocale } from '../../../i18n'
 import { mount } from '@vue/test-utils'
@@ -8,14 +8,18 @@ import Es2Archive from './Es2Archive.vue'
 const storage = { getItem: () => null, setItem: () => {} }
 afterEach(() => setLocale('zh-TW', storage))
 const fakeDialog = { template: '<div><slot /></div>' }
-const render = (view: 'monsters' | 'achievements') => mount(Es2Archive, {
-  props: { active: true, view, profile: emptyProfile(), hero: 'knight' },
-  global: { stubs: { Es2Dialog: fakeDialog } },
-})
+const render = async (view: 'monsters' | 'achievements') => {
+  const wrapper = mount(Es2Archive, {
+    props: { active: true, view, profile: emptyProfile(), hero: 'knight' },
+    global: { stubs: { Es2Dialog: fakeDialog } },
+  })
+  await vi.waitFor(() => expect(wrapper.find(view === 'monsters' ? '[data-es2-world-enemy]' : '[data-es2-world-ui]').exists()).toBe(true))
+  return wrapper
+}
 
 describe('ES2 accessible in-game world-art gallery', () => {
-  it('shows all ten new enemies with attack previews, all four bosses and all four biomes', () => {
-    const wrapper = render('monsters')
+  it('shows all ten new enemies with attack previews, all four bosses and all four biomes', async () => {
+    const wrapper = await render('monsters')
     expect(wrapper.findAll('[data-es2-world-enemy]')).toHaveLength(10)
     expect(wrapper.findAll('[data-es2-world-telegraph]')).toHaveLength(10)
     expect(wrapper.findAll('[data-es2-world-boss]')).toHaveLength(4)
@@ -24,8 +28,8 @@ describe('ES2 accessible in-game world-art gallery', () => {
     wrapper.unmount()
   })
 
-  it('displays all 17 approved UI illustrations without obsolete QA notices', () => {
-    const wrapper = render('achievements')
+  it('displays all 17 approved UI illustrations without obsolete QA notices', async () => {
+    const wrapper = await render('achievements')
     expect(wrapper.findAll('[data-es2-world-ui]')).toHaveLength(17)
     expect(wrapper.text()).not.toContain('已通過人工美術驗收')
     wrapper.unmount()
@@ -52,7 +56,7 @@ describe('ES2 accessible in-game world-art gallery', () => {
       ['achievement-flawless', '完美挑戰徽章', 'Flawless Badge'],
     ]
     setLocale('zh-TW', storage)
-    const wrapper = render('achievements')
+    const wrapper = await render('achievements')
     for (const [id, chinese] of items) {
       const card = wrapper.get(`[data-es2-world-ui="${id}"]`)
       expect(card.get('strong').text(), id).toBe(chinese)
