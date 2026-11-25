@@ -19,21 +19,30 @@ jobs:
         with:
           node-version: '24'
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Resolve pinned experimental PixiJS and preserve lockfile evidence
+      - id: deps
+        run: pnpm install --frozen-lockfile
+      - name: Install exact experimental PixiJS lockfile
+        id: pixi
         run: |
-          npm install --prefix experiments/pixijs-knight --package-lock
+          npm ci --prefix experiments/pixijs-knight
           npm ls --prefix experiments/pixijs-knight pixi.js
           node --test experiments/pixijs-knight/pose.test.mjs experiments/pixijs-knight/motion.test.mjs
       - run: pnpm test
       - run: pnpm typecheck
+        if: ${{ !cancelled() && steps.pixi.outcome == 'success' }}
       - run: pnpm build
+        id: build
+        if: ${{ !cancelled() && steps.pixi.outcome == 'success' }}
       - run: pnpm check-release
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
       - name: Install isolated Chromium
+        id: chromium
+        if: ${{ !cancelled() && steps.pixi.outcome == 'success' }}
         run: |
           npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
           ../node_modules/.bin/playwright install --with-deps chromium
       - name: Real game and matched 130-mob renderer evidence
+        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
         run: |
           pnpm exec vite --host 127.0.0.1 --port 5173 --strictPort > /tmp/knight-pixi.log 2>&1 &
           for i in {1..45}; do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
