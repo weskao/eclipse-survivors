@@ -8,6 +8,29 @@
 - [ ] Connect each cosmetic to the menu preview, HUD and actual animation atlas for every supported direction/pose, with identity-safe load fallback, bounded caching, no per-frame image creation, and unchanged hitboxes, stats, weapons and attack origins.
 - [ ] Add TDD for selection/save/reload, locked states, all six heroes, actual selected asset/render identity, both locales, all devices and reduced-motion. Capture real menu/game screenshots and motion clips; verify native 3× quality, WebP workflow and performance before accepting the costumes as complete.
 
+
+### Six-hero costume runtime audit (2026-11-26)
+
+Verified against `06063349438f5ca5dec848afba938643580df6b4`: `src/meta/cosmetics.ts` defines only three non-default legacy aura palettes; `src/game/engine.ts` persists/equips by legacy JobId and sets the selected aura at run start; `src/game/render/characters.ts` draws that aura but selects character artwork independently of the cosmetic ID. `HeroPortrait.vue` also resolves by HeroId only. The original three lobby cards bind the equipped palette, whereas `HeroRoster.vue` has no equipped-cosmetic binding. All six costume cards have their correct base-hero portrait and unlock text, but none has a distinct equipped costume artwork path. No actual costume variants were found in the inspected repository tree. This is source inspection, not real-browser acceptance.
+
+| Hero | Current advanced aura / ownership | Actual costume portrait + motion |
+|---|---|---|
+| Knight | knight-gilded — 曙光鎏金 | Pending |
+| Ranger | ranger-moonlit — 月影獵裝 | Pending |
+| Wizard | wizard-astral — 星界法衣 | Pending |
+| Shadowblade | shares knight-gilded | Pending; needs own cosmetic ID |
+| Spirit Summoner | shares wizard-astral | Pending; needs own cosmetic ID |
+| Crimson Paladin | shares knight-gilded | Pending; needs own cosmetic ID |
+
+- [ ] Knight: author and integrate the actual 曙光鎏金 costume (distinct gilded armor, preserve knight identity).
+- [ ] Ranger: author and integrate the actual 月影獵裝 costume (distinct lunar hunter garments, preserve ranger identity).
+- [ ] Wizard: author and integrate the actual 星界法衣 costume (distinct astral robes, preserve wizard identity).
+- [ ] Shadowblade: design, author and integrate a distinct specialization-specific costume, localized name, real unlock condition and stable ID.
+- [ ] Spirit Summoner: design, author and integrate a distinct specialization-specific costume, localized name, real unlock condition and stable ID.
+- [ ] Crimson Paladin: design, author and integrate a distinct specialization-specific costume, localized name, real unlock condition and stable ID.
+- [ ] Make the three specialization lobby cards reflect the equipped cosmetic immediately; keep their own canonical portraits and selection state, shared visual component/style and only the selected hero's prominent gold glow. Use the same authoritative equipped-cosmetic resolver for all six heroes.
+- [ ] For each of the six costumes, demonstrate an actual outfit change (not merely aura, whole-character tint, or a different preview thumbnail) in the cosmetic picker, lobby, hero details, loading/result portraits, HUD wherever hero art is displayed, and live battle through idle, movement, dash, attack, active skill, hurt, death and victory; switch back to default and verify save/reload and account changes. Verify correct assets, unchanged combat stats/physics, locked equip denial, and independent hero ownership with no cross-hero bleed. Keep all individual entries unchecked until actual assets, runtime integration and regression/browser QA have passed.
+
 ## Skill level-up choice card artwork (not complete)
 
 - [ ] Audit every item displayed in the in-combat skill level-up selection screen, including weapons, passive skills, hero passive upgrades, evolutions and other eligible upgrade choices. Inventory all items that do not already use actual WebP artwork, including SVG icons, inline SVG, CSS-drawn or Canvas-drawn illustrations, emoji, text-only placeholders and fallback glyphs.

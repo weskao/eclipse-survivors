@@ -55,16 +55,22 @@ export function useCloudWallet(engine: Engine) {
       }
     }
   }
+  // Not part of `busy`: Firebase only rejects a closed popup ~10s later (2s poll + 8s grace),
+  // so the button stays clickable; a new attempt cancels the stale popup inside Firebase.
+  const signingIn = ref(false)
+  let attempt = 0
   async function login(): Promise<void> {
     if (!client.value || !observed.value || busy.value || running || user.value || !safeScreen()) return
-    busy.value = true
+    const id = ++attempt
+    signingIn.value = true
     status.value = 'guest'
     try { await client.value.login() }
     catch (error) {
       const code = (error as { code?: string })?.code
+      if (id !== attempt) return
       console.warn('Google sign-in did not complete:', code ?? 'unknown')
       status.value = code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' ? 'guest' : 'error'
-    } finally { busy.value = false }
+    } finally { if (id === attempt) signingIn.value = false }
   }
   async function logout(): Promise<void> {
     if (!client.value || busy.value || running) return
@@ -100,6 +106,6 @@ export function useCloudWallet(engine: Engine) {
   })
   const confirmed = computed(() => status.value === 'synced' && !!user.value && selected === user.value.uid &&
     engine.ui.metaState?.cloudWallet?.embers === engine.ui.metaState?.embers && !!engine.ui.metaState?.cloudWallet)
-  return { status, user, confirmed, busy: computed(() => busy.value || status.value === 'syncing' || status.value === 'loading'),
+  return { status, user, confirmed, signingIn, busy: computed(() => busy.value || status.value === 'syncing' || status.value === 'loading'),
     available: computed(() => !!client.value && observed.value), login, logout, sync }
 }

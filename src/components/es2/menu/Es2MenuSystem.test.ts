@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 import { emptyProfile } from '../../../meta/profile'
 import { createMetaState } from '../../../game/content/meta/state'
 import { cosmeticAura } from '../../../meta/cosmetics'
+import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
 import Es2MenuSystem from './Es2MenuSystem.vue'
@@ -74,6 +75,18 @@ describe('ES2 main menu integration adapter', () => {
     expect(find('[data-hero="knight"]').getAttribute('data-es2-cosmetic')).toBe('knight-gilded')
     expect(find('[data-hero="knight"]').style.getPropertyValue('--es2-skin-ring')).toBe(cosmeticAura('knight-gilded')[1])
     expect(cosmeticAura('knight-default')).not.toEqual(cosmeticAura('knight-gilded'))
+  })
+
+  it('passes the actual selected specialization into its cosmetic cards', async () => {
+    const profile = emptyProfile()
+    const wrapper = mounted({ profile, choice: 'knight', heroId: 'shadowblade' })
+    click('.es2-hall-links button')
+    await nextTick()
+    expect(find('[data-es2-cosmetic-option="knight-gilded"] img').getAttribute('src')).toBe(HERO_DEFINITIONS.shadowblade.portraitSrc)
+    await wrapper.setProps({ choice: 'wizard', heroId: 'spirit-summoner' })
+    expect(find('[data-es2-cosmetic-option="wizard-astral"] img').getAttribute('src')).toBe(HERO_DEFINITIONS['spirit-summoner'].portraitSrc)
+    await wrapper.setProps({ choice: 'knight', heroId: 'crimson-paladin' })
+    expect(find('[data-es2-cosmetic-option="knight-default"] img').getAttribute('src')).toBe(HERO_DEFINITIONS['crimson-paladin'].portraitSrc)
   })
 
   it('opens progression, spends nothing without funds, and confirms reset safely', async () => {

@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
 import Es2MainMenu from '../menu/Es2MainMenu.vue'
+import { getLocale, setLocale, t } from '../../../i18n'
 
 const instances: Array<{ unmount(): void }> = []
 function render(component: Component, props: Record<string, unknown>) {
@@ -81,6 +82,30 @@ describe('ES2 shared homepage hero selection interaction', () => {
     expect(wrapper.get('[data-hero="knight"]').attributes('aria-pressed')).toBe('false')
   })
 
+  it('uses one localized hero name surface and one typography owner for all six cards', async () => {
+    const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
+    const labels = ['曙鋼騎士', '夜痕遊俠', '虛空術士', '影刃行者', '靈契召喚師', '緋紅聖騎']
+    const previous = getLocale()
+    try {
+      for (const locale of ['zh-TW', 'en'] as const) {
+        setLocale(locale)
+        await nextTick()
+        const cards = wrapper.findAll('.es2-hero-select-card')
+        expect(cards).toHaveLength(labels.length)
+        expect(cards.map(card => card.get('.es2-hero-copy > strong').text())).toEqual(labels.map(label => t(label)))
+        expect(wrapper.findAll('.es2-hero-copy > strong')).toHaveLength(labels.length)
+        expect(wrapper.find('.es2-roster__copy').exists()).toBe(false)
+      }
+    } finally { setLocale(previous) }
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    const roster = readFileSync(resolve('src/components/es2/hero-roster/HeroRoster.vue'), 'utf8')
+    expect(css).not.toContain('.es2-roster__copy')
+    expect(roster).not.toContain('es2-roster__copy')
+    const nameRules = [...css.matchAll(/\.es2-hero-copy\s*>\s*strong\s*\{([^}]+)\}/g)]
+      .filter(([, declarations]) => declarations!.includes('font-size:'))
+    expect(nameRules).toHaveLength(1)
+  })
+
   it('uses one card gradient with a muted hero tint and gold reserved for selection', () => {
     const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
     const panels = [...css.matchAll(/\.es2-menu \.es2-hero-select-card\s*\{([^}]+)\}/g)]
@@ -111,6 +136,51 @@ describe('ES2 shared homepage hero selection interaction', () => {
 })
 
 describe('ES2 dedicated hero special action', () => {
+  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
+    'keeps %s cast content and cooldown decoration in separate stable layout layers', async heroId => {
+      const previous = getLocale()
+      const snapshot = { cooldown: 0, stealth: 0, barrier: 0, companions: [] }
+      const wrapper = render(HeroSpecialAction, { heroId, active: true, snapshot })
+      const button = wrapper.get('[data-hero-special]')
+      const content = button.get('.es2-hero-special__content')
+      const image = content.get('[data-hero-special-icon]').element
+      const name = content.get('.es2-hero-special__name').element
+      const hint = content.get('.es2-hero-special__hint').element
+      const fill = button.get('.es2-hero-special__fill').element
+      expect(content.element.parentElement).toBe(button.element)
+      expect(fill.parentElement).toBe(button.element)
+      expect(content.element.contains(fill)).toBe(false)
+      try {
+        for (const locale of ['zh-TW', 'en'] as const) {
+          setLocale(locale)
+          for (const cooldown of [0, 12.3, 0.6, 0]) {
+            await wrapper.setProps({ snapshot: { ...snapshot, cooldown } })
+            expect(button.get('.es2-hero-special__content').element).toBe(content.element)
+            expect(content.get('[data-hero-special-icon]').element).toBe(image)
+            expect(content.get('.es2-hero-special__name').element).toBe(name)
+            expect(content.get('.es2-hero-special__hint').element).toBe(hint)
+            expect(button.get('.es2-hero-special__fill').element).toBe(fill)
+            expect(hint.textContent).toBe(cooldown ? cooldown.toFixed(1) + 's' : t('Q · 施放'))
+            expect(button.attributes('data-ready')).toBe(String(cooldown === 0))
+          }
+        }
+      } finally { setLocale(previous) }
+    },
+  )
+
+  it('clips decorative overflow without creating a scroll container inside the skill button', () => {
+    const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    expect(source).toMatch(/\.es2-hero-special__button\s*\{[^}]*overflow:\s*clip;/)
+  })
+
+  it('keeps native button geometry independent of the internal grid and cooldown fill', () => {
+    const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    expect(source).toMatch(/\.es2-hero-special__button\s*\{[^}]*appearance:\s*none;[^}]*display:\s*block;/)
+    expect(source).toMatch(/\.es2-hero-special__content\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*44px minmax\(0,\s*1fr\)/)
+    expect(source).toMatch(/\.es2-hero-special__fill\s*\{[^}]*position:\s*absolute;[^}]*bottom:\s*0;/)
+    expect(source).toMatch(/\.es2-hero-special__hint\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
+  })
+
   it('shows live cooldown, triggers one mouse/touch activation, and disables unavailable actions', async () => {
     const wrapper = render(HeroSpecialAction, {
       heroId: 'shadowblade', active: true,
