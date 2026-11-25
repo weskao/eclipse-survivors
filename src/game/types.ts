@@ -125,7 +125,8 @@ export interface LightningFx { pts: Point[]; life: number; max: number }
 export interface MotionEcho { x: number; y: number; kind: JobId; frame: number; angle: number; life: number; max: number }
 
 export type WorldEventKind = 'chest' | 'shrine' | 'invasion' | 'blessing' | 'bargain' | 'challenge' | 'magnet'
-export interface WorldEvent extends Point { id: number; kind: WorldEventKind; expiresAt: number }
+export type TreasureTier = 'common' | 'rare' | 'epic' | 'legendary' | 'cursed'
+export interface WorldEvent extends Point { id: number; kind: WorldEventKind; expiresAt: number; tier?: TreasureTier; spawnedAt?: number }
 
 /** Everything the original kept in IIFE-level `let`s that gameplay and rendering read. */
 export interface GameState {
@@ -206,7 +207,7 @@ export interface GameHooks {
   /** Optional for standalone combat/unit tests and legacy call sites. */
   content?(state: GameState, event: ContentEvent): void
   /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
-  openTreasure?(state: GameState, chestId: number): boolean
+  openTreasure?(state: GameState, chestId: number, tier?: TreasureTier): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
   modifyOutgoingDamage?(amount: number, target?: Mob): number
   /** One-shot metadata from the authoritative outgoing-damage roll. */

@@ -1730,6 +1730,7 @@ const english = new Map<string, string>([
   , ['存活 {seconds} 秒 · 擊敗 {kills} 隻魔物 · 等級 {level}', 'Survived {seconds}s · Defeated {kills} enemies · Lv.{level}']
   , ["普通寶箱", "Common Chest"]
   , ["稀有寶箱", "Rare Chest"]
+  , ["史詩寶箱", "Epic Chest"]
   , ["傳說寶箱", "Legendary Chest"]
   , ["詛咒寶箱", "Cursed Chest"]
   , ["普通品質徽記", "Common Rarity Badge"]

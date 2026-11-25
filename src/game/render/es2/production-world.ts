@@ -122,6 +122,7 @@ export const WORLD_ART = Object.freeze({
 export interface WorldRuntimeImages {
   /** Reuse authored treasure art in live world events. */
   chest: HTMLImageElement
+  chests?: Partial<Record<import('../../types').TreasureTier, HTMLImageElement>>
   magnet?: HTMLImageElement
   bosses: Record<BossId, HTMLImageElement>
   bossMotionReference?: { id: BossId; image: HTMLImageElement }
@@ -184,10 +185,14 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
       void loadSource().then(url => { image.src = url }).catch(() => { /* static fallback */ })
     }
   }
+  const chest = load(WORLD_ART.ui['treasure-common'])
+  const rare = load(WORLD_ART.ui['treasure-rare'])
+  const legendary = load(WORLD_ART.ui['treasure-legendary'])
+  const cursed = load(WORLD_ART.ui['treasure-cursed'])
   return {
     bossMotionReference,
     bossNativeKeyframes,
-    chest: load(WORLD_ART.ui['treasure-common']),
+    chest, chests: { common: chest, rare, epic: rare, legendary, cursed },
     magnet: load(WORLD_ART.ui['hud-xp']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
       [id, loadBoss(id)])) as Record<BossId, HTMLImageElement>,

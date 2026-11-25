@@ -394,12 +394,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         }
       }
       : undefined,
-    openTreasure: relicsEnabled ? (state, chestId) => {
-      const offer = openTreasure(state, chestId, random)
+    openTreasure: relicsEnabled ? (state, chestId, tier) => {
+      const offer = openTreasure(state, chestId, random, undefined, tier)
       if (!offer) return false
       ui.specialChoice = { kind: 'treasure', items: offer.options.map(id => {
         const relic = RELIC_BY_ID.get(id)!
-        return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity }
+        return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity, cursed: relic.cursed }
       }) }
       ui.upgrades = []
       screen('level')

@@ -129,7 +129,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillStyle = assets.weatherCache!.gradient
   ctx.fillRect(0, 0, W, H)
   if (!reduced && (policy?.ambientDensity ?? 1) >= 0.5) drawAmbient(ctx, s, ox, oy)
-  drawWorldMarkers(ctx, s, ox, oy, assets.productionWorld)
+  drawWorldMarkers(ctx, s, ox, oy, assets.productionWorld, reduced, !!policy?.reduceFlashing)
   // These match the compact title breakpoints in hud.css.
   const compactHud = W <= H ? W <= 700 : W <= 1100 && H <= 520
   if (!hero || !compactHud) {

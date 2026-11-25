@@ -15,6 +15,7 @@
   "maxActive": 3,
   "placementRetries": 12,
   "chestXp": 12,
+  "chestRarityWeights": { "common": 0.70, "rare": 0.18, "epic": 0.08, "legendary": 0.025, "cursed": 0.015 },
   "shrineHealing": 36,
   "blessingSeconds": 12,
   "magnetSeconds": 5,

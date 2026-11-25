@@ -3,7 +3,7 @@ import { MAX_MOBS } from './constants'
 import { damageHero } from './combat'
 import { random } from './math'
 import { addXp } from './progression'
-import type { GameHooks, GameState, WorldEventKind } from './types'
+import type { GameHooks, GameState, TreasureTier, WorldEventKind } from './types'
 import { clearApproach, hazardPhase, nearbyHazards, pointIsClear, radialPoint } from './world'
 
 const WEIGHTS: readonly [WorldEventKind, number][] = Object.entries(BALANCE.events.weights) as [WorldEventKind, number][]
@@ -18,6 +18,13 @@ export function rollEventKind(rng: () => number = random): WorldEventKind {
   return 'challenge'
 }
 
+const CHEST_TIERS = Object.entries(BALANCE.events.chestRarityWeights) as [TreasureTier, number][]
+export function rollChestTier(rng: () => number = random): TreasureTier {
+  let sample = rng()
+  for (const [tier, weight] of CHEST_TIERS) { sample -= weight; if (sample < 0) return tier }
+  return 'cursed'
+}
+
 /** Bounded placement retries with terrain and occupancy checks. */
 export function trySpawnEvent(s: GameState, kind: WorldEventKind, rng: () => number = random): boolean {
   const hero = s.hero
@@ -30,18 +37,19 @@ export function trySpawnEvent(s: GameState, kind: WorldEventKind, rng: () => num
     if (!pointIsClear(s.currentScene, point, placement.terrainClearance) || !clearApproach(s.currentScene, hero, point)) continue
     if (s.events.some(e => Math.hypot(e.x - point.x, e.y - point.y) < placement.minSeparation)) continue
     if (s.mobs.some(e => e.hp > 0 && Math.hypot(e.x - point.x, e.y - point.y) < e.r + placement.mobClearance)) continue
-    s.events.push({ id: ++s.eventSerial, kind, ...point, expiresAt: s.time + BALANCE.events.lifetime })
+    s.events.push({ id: ++s.eventSerial, kind, ...point, expiresAt: s.time + BALANCE.events.lifetime,
+      ...(kind === 'chest' ? { tier: rollChestTier(rng), spawnedAt: s.time } : {}) })
     return true
   }
   return false
 }
 
-function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eventId?: number): boolean {
+function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eventId?: number, tier?: TreasureTier): boolean {
   const hero = s.hero
   if (!hero) return false
   switch (kind) {
     case 'chest':
-      if (eventId !== undefined && hooks.openTreasure?.(s, eventId)) {
+      if (eventId !== undefined && (tier ? hooks.openTreasure?.(s, eventId, tier) : hooks.openTreasure?.(s, eventId))) {
         hooks.message('✦ 古代寶箱 · 選擇一件聖物')
       } else {
         addXp(s, BALANCE.events.chestXp, hooks)
@@ -107,7 +115,7 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
   }
   for (const event of s.events) {
     if (Math.hypot(event.x - hero.x, event.y - hero.y) > 39) continue
-    if (activateEvent(s, event.kind, hooks, event.id)) event.expiresAt = -1
+    if (activateEvent(s, event.kind, hooks, event.id, event.tier)) event.expiresAt = -1
     if (s.mode !== 'play') break
   }
   s.events = s.events.filter(e => e.expiresAt > s.time)
