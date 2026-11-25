@@ -54,7 +54,9 @@ export function upgradeStatPreview(id: string, level?: number, maxLevel?: number
     case 'chain':
       damage(P.chainDamageBase, P.chainDamagePerRank)
       count('目標數量', rank => BALANCE.combat.chainTargetsByRank[Math.min(rank, BALANCE.combat.chainTargetsByRank.length) - 1] ?? 0)
-      cooldown(P.chainCooldownBase, P.chainCooldownPerRank, BALANCE.combat.chainMinCooldown); break
+      cooldown(P.chainCooldownBase, P.chainCooldownPerRank, BALANCE.combat.chainMinCooldown)
+      row('感電減速時間', rank => rank >= BALANCE.combat.chainShockRank ? BALANCE.combat.chainShockSeconds : 0, seconds)
+      count('擊殺額外放電目標', rank => rank >= BALANCE.combat.chainDischargeRank ? 1 : 0); break
   }
   if (rows.length) return rows
 

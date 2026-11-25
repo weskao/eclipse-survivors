@@ -1,6 +1,6 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { BALANCE } from './config'
-import { expireKillStreak } from './kill-streak'
+import { expireKillStreak, flushKillMilestone } from './kill-streak'
 import { compactXpGems } from './xp-gems'
 import { attack, hit, victoryConditionMet } from './combat'
 import type { ContentRegistry } from './content/registry'
@@ -207,6 +207,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   if (hero.hp <= 0 || s.mode !== 'play') return
   tickSkills(s, dt, hooks)
   moveShots(s, hero, dt, hooks, factions)
+  flushKillMilestone(s, hooks)
   collectStars(s, hero, dt, hooks)
   tickWorld(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return

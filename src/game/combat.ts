@@ -27,6 +27,12 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   if (!Number.isFinite(applied) || applied <= 0) return
   const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
+  const heavy = boss || e.type === 'golem' || !!e.elite
+  if ((critical || heavy) && s.time - (e.lastVisualHoldAt ?? -Infinity) >= BALANCE.combat.hitStopCooldownSeconds) {
+    e.visualPhase ??= e.phase
+    e.visualHold = critical ? BALANCE.combat.hitStopCriticalSeconds : BALANCE.combat.hitStopHeavySeconds
+    e.lastVisualHoldAt = s.time
+  }
   const dealt = Math.min(e.hp, applied)
   s.damageDealt += dealt
   e.hp = Math.max(0, e.hp - applied)
@@ -36,7 +42,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
   const impactAngle = Math.atan2(e.ky, e.kx)
-  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, boss || e.type === 'golem' || !!e.elite)
+  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy)
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
@@ -44,7 +50,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
     recordKill(s)
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
     const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
-    s.stars.push({ x: e.x, y: e.y, value, t: rand(0, 6) })
+    s.stars.push({ x: e.x, y: e.y, value: Math.round(value * (e.rewardXpMultiplier ?? 1)), t: rand(0, 6) })
     burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
     if (boss) {
@@ -132,12 +138,37 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
     hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank)
-    const chainTargets = close.slice(0, BALANCE.combat.chainTargetsByRank[Math.min(chain, BALANCE.combat.chainTargetsByRank.length) - 1]!)
-    for (let i = 0; i < chainTargets.length; i++) {
-      const from: Hero | Mob = i ? chainTargets[i - 1]! : hero
-      const to = chainTargets[i]!
-      zigzag(s, from.x || hero.x, (from.y || hero.y) - 25, to.x, to.y)
-      hit(s, to, hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain), hooks)
+    const limit = BALANCE.combat.chainTargetsByRank[Math.min(chain, BALANCE.combat.chainTargetsByRank.length) - 1]!
+    const damage = hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain)
+    const shock = chain >= BALANCE.combat.chainShockRank
+    let from: Hero | Mob = hero
+    let killed: Mob | undefined
+    let count = 0, next = 0
+    for (; next < close.length && count < limit; next++) {
+      const to = close[next]!
+      if (to.hp <= 0) continue
+      zigzag(s, from.x, from.y - 25, to.x, to.y)
+      hit(s, to, damage, hooks)
+      if (to.hp > 0 && shock) to.slow = Math.max(to.slow, BALANCE.combat.chainShockSeconds)
+      if (to.hp === 0) killed ??= to
+      from = to
+      count++
+    }
+    // One non-recursive discharge per cast. Only unvisited targets qualify.
+    if (killed && chain >= BALANCE.combat.chainDischargeRank) {
+      let extra: Mob | undefined
+      let nearest = BALANCE.combat.chainDischargeRadius ** 2
+      for (; next < close.length; next++) {
+        const to = close[next]!
+        if (to.hp <= 0) continue
+        const d2 = (to.x - killed.x) ** 2 + (to.y - killed.y) ** 2
+        if (d2 < nearest) { nearest = d2; extra = to }
+      }
+      if (extra) {
+        zigzag(s, killed.x, killed.y - 25, extra.x, extra.y)
+        hit(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, hooks)
+        if (extra.hp > 0) extra.slow = Math.max(extra.slow, BALANCE.combat.chainShockSeconds)
+      }
     }
     hooks.sfx('chain')
   }

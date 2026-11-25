@@ -108,6 +108,11 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
     if (e.hp <= 0) continue
     e.hit -= dt
     e.phase += dt * 5
+    if (e.visualPhase !== undefined) {
+      const held = Math.min(dt, e.visualHold ?? 0)
+      e.visualHold = Math.max(0, (e.visualHold ?? 0) - dt)
+      e.visualPhase += (dt - held) * 5
+    }
     e.stagger = Math.max(0, e.stagger - dt)
     e.slow = Math.max(0, e.slow - dt)
     if (e.type === 'boss') updateBossPhase(s, e, hooks)

@@ -1,5 +1,5 @@
 import { BALANCE } from './config'
-import type { GameState } from './types'
+import type { GameHooks, GameState } from './types'
 
 export interface KillStreak {
   current: number
@@ -8,16 +8,18 @@ export interface KillStreak {
   bestBurst: number
   lastKillAt: number
   burstStartedAt: number
+  milestone: number
+  pendingMilestone: number
 }
 
 export function emptyKillStreak(): KillStreak {
-  return { current: 0, best: 0, burst: 0, bestBurst: 0, lastKillAt: -Infinity, burstStartedAt: -Infinity }
+  return { current: 0, best: 0, burst: 0, bestBurst: 0, lastKillAt: -Infinity, burstStartedAt: -Infinity, milestone: 0, pendingMilestone: 0 }
 }
 
 /** Game time, not the ambient/render clock, freezes during every gameplay overlay. */
 export function expireKillStreak(state: GameState): void {
   const streak = state.killStreak
-  if (state.time - streak.lastKillAt > BALANCE.combat.killStreakWindow) streak.current = 0
+  if (state.time - streak.lastKillAt > BALANCE.combat.killStreakWindow) { streak.current = 0; streak.milestone = 0; streak.pendingMilestone = 0 }
   if (state.time - streak.burstStartedAt > BALANCE.combat.multiKillWindow) streak.burst = 0
 }
 
@@ -30,6 +32,21 @@ export function recordKill(state: GameState): void {
   streak.current++
   if (streak.burst === 0) streak.burstStartedAt = state.time
   streak.burst++
+  if (BALANCE.combat.killStreakMilestones.includes(streak.current)) streak.pendingMilestone = streak.current
   streak.best = Math.max(streak.best, streak.current)
   streak.bestBurst = Math.max(streak.bestBurst, streak.burst)
+}
+
+const MILESTONE_LABELS: Readonly<Record<number, string>> = {
+  10: '殺戮序曲', 25: '狂暴殺戮', 50: '無情屠戮', 100: '戰場主宰', 200: '暮光浩劫', 500: '不朽傳奇',
+}
+
+/** One announcement and one layered cue for the highest milestone crossed in a tick. */
+export function flushKillMilestone(state: GameState, hooks: GameHooks): void {
+  const streak = state.killStreak
+  if (!streak.pendingMilestone) return
+  streak.milestone = streak.pendingMilestone
+  streak.pendingMilestone = 0
+  hooks.message(MILESTONE_LABELS[streak.milestone]!)
+  hooks.sfx('killStreak')
 }

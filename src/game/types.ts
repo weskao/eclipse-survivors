@@ -20,7 +20,7 @@ export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard
 /** Shared gameplay and UI SFX cues, including hero-specific active skills. */
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
-  | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup'
+  | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 
@@ -55,6 +55,11 @@ export interface Mob {
   bossArtId?: import('./content/bosses/definitions').BossId
   x: number; y: number; type: MobType; hp: number; max: number; r: number; speed: number; dmg: number
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
+  /** Cosmetic animation clock; authoritative phase and AI always advance. */
+  visualPhase?: number
+  visualHold?: number
+  lastVisualHoldAt?: number
+  rewardXpMultiplier?: number
   ai?: EnemyBrain
   elite?: boolean
   bossPhase?: 1 | 2 | 3

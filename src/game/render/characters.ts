@@ -192,7 +192,7 @@ function drawPoseAccents(
 
 export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx: number, sy: number, reduced = false): void {
   if (reduced) { ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy); return }
-  const a = e.phase || s.worldClock
+  const a = e.visualPhase ?? (e.phase || s.worldClock)
   if (e.type === 'slime') {
     const v = Math.sin(a * 2.2)
     const jumping = e.ai?.state === 'attack' && e.ai.attack === 'pounce'
@@ -330,7 +330,7 @@ export function drawCharacter(
       // Reuse each authored phase illustration, with one cheap motion transform
       // per visible boss and no added textures or per-frame bitmap allocations.
       if (mob.type === 'boss' && mob.bossMoving && !reducedMotion) {
-        const rhythm = Math.sin(mob.phase * 1.8)
+        const rhythm = Math.sin((mob.visualPhase ?? mob.phase) * 1.8)
         if (mob.bossArtId === 'infernal-titan') {
           ctx.translate(0, -Math.abs(rhythm) * 3) // Heavy footsteps.
           ctx.rotate(rhythm * 0.009)
