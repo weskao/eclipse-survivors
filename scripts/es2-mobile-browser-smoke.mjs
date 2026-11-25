@@ -29,6 +29,9 @@ try {
         width: rect.width, height: rect.height, x: rect.x, y: rect.y,
         sweep: getComputedStyle(el.querySelector('.es2-portal-sheen'), '::before').animationName,
         menu: !!el.closest('.es2-menu'),
+        core: getComputedStyle(el.querySelector('.es2-portal-core')).transform,
+        glow: getComputedStyle(el.querySelector('.es2-portal-decoration')).boxShadow,
+        outline: getComputedStyle(el).outlineStyle,
       }
     })
     await page.mouse.move(0, 0)
@@ -36,8 +39,11 @@ try {
     await portal.screenshot({ path: directory + '/portal-start-idle.png', animations: 'disabled' })
     await portal.hover()
     const hover = await paint()
-    assert.notEqual(hover.frame, idle.frame, 'Portal hover must illuminate its metal rim')
-    assert.notEqual(hover.fill, idle.fill, 'Portal hover must change its illuminated interior')
+    assert.equal(idle.sweep, 'none', 'Idle must not shimmer')
+    assert.equal(hover.frame, idle.frame, 'The metallic rim is already illuminated at rest')
+    assert.equal(hover.fill, idle.fill, 'The dimensional interior is already illuminated at rest')
+    assert.equal(hover.core, idle.core, 'Hover must not resize or rotate the core')
+    assert.equal(hover.glow, idle.glow, 'The magical glow is already visible at rest')
     assert.equal(hover.sweep, 'es2-portal-sweep')
     assert.deepEqual([hover.x, hover.y, hover.width, hover.height], [idle.x, idle.y, idle.width, idle.height], 'Hover must not move the hit area')
     assert.equal(hover.menu, true)
@@ -48,7 +54,8 @@ try {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await portal.hover()
     assert.equal((await paint()).sweep, 'none', 'Reduced motion disables the sweep')
-    assert.notEqual((await paint()).frame, idle.frame, 'Reduced motion retains static hover feedback')
+    assert.equal((await paint()).frame, idle.frame, 'Reduced motion preserves the metallic rim')
+    assert.equal((await paint()).outline, 'solid', 'Reduced motion retains a static hover indicator')
     await page.mouse.move(0, 0)
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await page.evaluate(() => document.documentElement.dataset.es2ReduceFlashing = 'true')
@@ -58,7 +65,8 @@ try {
     await page.keyboard.press('Tab')
     await portal.focus()
     assert.equal(await portal.evaluate(el => el.matches(':focus-visible')), true, 'Expected keyboard focus')
-    assert.notEqual((await paint()).frame, idle.frame, 'Keyboard focus retains illuminated feedback')
+    assert.equal((await paint()).frame, idle.frame, 'Keyboard focus preserves the metallic rim')
+    assert.equal((await paint()).outline, 'solid', 'Keyboard focus retains a visible outline')
     await page.screenshot({ path: directory + '/portal-start-focus.png', animations: 'disabled' })
     console.log('PASS desktop: portal hover, leave, focus, stable hit area and accessibility')
   } finally { await desktop.close() }
