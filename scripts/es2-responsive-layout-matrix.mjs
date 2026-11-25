@@ -96,6 +96,18 @@ try {
         assert.ok(bounds.hit && !bounds.overlap && bounds.startHeight >= 44 && bounds.briefHeight >= 44,
           name + ': inaccessible dock ' + JSON.stringify(bounds))
       }
+      const wallet = page.locator('[data-es2-ember-wallet]')
+      const walletLayout = await wallet.evaluate(el => {
+        const value = el.querySelector('[data-es2-ember-value]'), label = el.querySelector('.es2-embers-label')
+        const w = el.getBoundingClientRect(), h = el.closest('.es2-hall-heading').getBoundingClientRect()
+        return { left:w.left, right:w.right, top:w.top, bottom:w.bottom, headingRight:h.right,
+          font:parseFloat(getComputedStyle(value).fontSize), labelFont:parseFloat(getComputedStyle(label).fontSize),
+          overflow:el.scrollWidth-el.clientWidth }
+      })
+      assert.ok(walletLayout.left >= 0 && walletLayout.right <= Math.min(width, walletLayout.headingRight) + 2 &&
+        walletLayout.top >= 0 && walletLayout.bottom <= height && walletLayout.overflow <= 2 &&
+        walletLayout.font >= 18 && walletLayout.font > walletLayout.labelFont,
+        name + ': wallet prominence or bounds ' + JSON.stringify(walletLayout))
       await verifyDock()
       if (name === 'portrait-320') {
         const decoration = page.locator('[data-es2-portal-decoration]')

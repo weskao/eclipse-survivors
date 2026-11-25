@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { nextTick } from 'vue'
 import Es2MainMenu from './Es2MainMenu.vue'
 import { JOB } from '../../../game/constants'
+import { emptyProfile } from '../../../meta/profile'
 import { setLocale, getLocale } from '../../../i18n'
 import AudioControl from '../../AudioControl.vue'
 
@@ -183,6 +184,26 @@ describe('phone homepage viewport-first navigation', () => {
       expect(wrapper.get('[data-es2-portal-decoration]').attributes('aria-hidden')).toBe('true')
       await wrapper.get('.es2-start').trigger('click')
       expect(wrapper.emitted('start')).toHaveLength(1)
+    } finally { setLocale(locale) }
+  })
+
+  it('shows the actual ember balance as a distinct localized resource on both lobby pages', async () => {
+    const locale = getLocale()
+    try {
+      setLocale('zh-TW')
+      const wrapper = menu({ profile: { ...emptyProfile(), embers: 175 } })
+      const wallet = wrapper.get('[data-es2-ember-wallet]')
+      expect(wallet.get('[data-es2-ember-value]').text()).toBe('175')
+      expect(wallet.get('.es2-embers-label').text()).toBe('暮光餘燼')
+      expect(wallet.get('.es2-embers-icon').attributes('aria-hidden')).toBe('true')
+      await wrapper.setProps({ profile: { ...emptyProfile(), embers: 1234567 } })
+      expect(wallet.get('[data-es2-ember-value]').text()).toBe('1,234,567')
+      await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+      expect(wallet.get('[data-es2-ember-value]').text()).toBe('1,234,567')
+      setLocale('en')
+      await nextTick()
+      expect(wallet.get('.es2-embers-label').text()).toBe('Twilight Embers')
+      expect(wrapper.findAll('[data-es2-ember-wallet]')).toHaveLength(1)
     } finally { setLocale(locale) }
   })
 
