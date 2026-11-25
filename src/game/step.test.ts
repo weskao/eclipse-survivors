@@ -226,6 +226,31 @@ describe('projectile collision precision', () => {
 })
 
 describe('ES3 reward feedback', () => {
+
+  it('accelerates a magnetized XP gem during consecutive simulation ticks', () => {
+    const { s } = setup()
+    const star = { x: 120, y: 0, value: 3, t: 0 }
+    s.stars.push(star)
+    step(s, 0.05, still, spyHooks())
+    const first = 120 - star.x
+    const previous = star.x
+    step(s, 0.05, still, spyHooks())
+    expect(previous - star.x).toBeGreaterThan(first)
+  })
+
+  it('collects a gem that crosses the pickup radius during the current tick exactly once', () => {
+    const { s, hero } = setup()
+    const content = vi.fn()
+    const hooks = { ...spyHooks(), content }
+    s.stars.push({ x: 30, y: 0, value: 3, t: 0 })
+    step(s, 0.05, still, hooks)
+    expect(hero.xp).toBe(3)
+    expect(s.stars).toHaveLength(0)
+    step(s, 0.05, still, hooks)
+    expect(hero.xp).toBe(3)
+    expect(content.mock.calls.filter(([, event]) => event.type === 'pickup')).toHaveLength(1)
+    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickup')).toHaveLength(1)
+  })
   it('aggregates same-tick pickup audio without losing individual XP or pickup receipts', () => {
     const { s, hero } = setup()
     const content = vi.fn()
