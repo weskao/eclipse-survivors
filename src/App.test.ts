@@ -11,17 +11,17 @@ describe('App', () => {
     const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
     const first = mount(App, { props: { engine }, attachTo: document.body })
     try {
-      await first.get('[data-es2-mobile-hero-tab="new"]').trigger('click')
       await first.get('[data-hero-id="spirit-summoner"]').trigger('click')
-      await first.get('[data-es2-mobile-mode-tab="objective"]').trigger('click')
+      await first.get('[data-es2-expedition-navigation]').trigger('click')
       await first.get('[data-objective-mode="relic-hunt"]').trigger('click')
     } finally { first.unmount() }
 
     const reopened = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
     const second = mount(App, { props: { engine: reopened }, attachTo: document.body })
     try {
-      expect(second.get('.es2-menu').attributes('data-mobile-heroes')).toBe('new')
-      expect(second.get('.es2-menu').attributes('data-mobile-modes')).toBe('objective')
+      expect(second.get('.es2-menu').attributes('data-es2-menu-page')).toBe('heroes')
+      expect(second.get('[data-es2-expedition-summary]').attributes('data-run-mode')).toBe('relic-hunt')
+      expect(second.get('[data-es2-mode-summary]').text()).toBeTruthy()
       expect(second.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('true')
       expect(second.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
       expect(second.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('spirit-summoner')
