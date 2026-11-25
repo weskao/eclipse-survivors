@@ -46,6 +46,12 @@ The project currently uses **B. GitHub Actions** as its only deployment path. Op
 - The upload-to-deploy handoff waits until the Pages artifact is visible to GitHub Actions. Avoid rerunning an old failed Pages workflow attempt: reruns can create duplicate `github-pages` artifacts. Use a fresh `main` run instead.
 - To redeploy manually: select **Actions → Verify and publish Eclipse Survivors → Run workflow**, and choose the `main` branch.
 
+## Development-only QA surfaces
+
+- `pnpm dev` / `make dev` keep C104 reference boards, enemy/boss/biome and UI art inspection galleries, content showcase and explicitly enabled candidate previews available for review.
+- `pnpm build` / `make build` exclude QA-only UI components, styles, original PNG/WebP contact sheets, and isolated review-only assets from `dist/`. Real compendium, achievements, canonical gameplay art, music and platform icons remain.
+- QA galleries are tested against Vite DEV, not production preview. `pnpm check-release` rejects both copied and hashed review-only assets and QA UI code/styles before deployment. Never use query strings or CSS hiding as a substitute for excluding development modules from the release artifact.
+
 ## Versioned release
 
 1. Confirm that the game features being announced are actually implemented in `src/`.

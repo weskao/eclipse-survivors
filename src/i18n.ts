@@ -966,14 +966,16 @@ const english = new Map<string, string>([
 , [" / 3 階"," / 3 ranks"]
 , ["/ 3 階","/ 3 ranks"]
 , ["只影響外觀 · 不影響戰鬥數值","Appearance only · no change to combat stats"]
-, ["暗蝕敵軍 · 美術圖鑑","Eclipse Factions · Art Compendium"]
-, ["以下為實際入庫的 WebP 動畫及攻擊預警示意，尚待美術驗收；命中判定仍以遊戲規則為準。","These in-project WebP animations and telegraphs await final art review; hit detection always follows gameplay rules."]
-, ["四位首領 · 三階段視覺預覽","Four Bosses · Three-Phase Preview"]
-, ["暗蝕之地 · 地板與場景裝飾","Eclipsed Lands · Terrain & Decorations"]
-, ["c104 原始美術圖集（10 張 PNG · 待逐格驗收）","c104 source art atlas (10 PNGs · pending frame review)"]
-, ["原圖已存入專案並由本介面直接引用；尚未通過精靈邊界審核的接觸圖不得當成遊戲動作影格。","Source art is stored in this project. Unverified contact sheets cannot be used as live animation frames."]
-, ["寶箱、稀有度、HUD 與成就裝飾 · 美術預覽","Chest, Rarity, HUD & Achievement Art Preview"]
-, ["以下 17 張圖尚待美術驗收，展示不會增加成就或變更存檔。","These 17 images await art review. Viewing them does not award achievements or change save data."]
+, ...(import.meta.env.DEV ? [
+  ["暗蝕敵軍 · 美術圖鑑","Eclipse Factions · Art Compendium"],
+  ["以下為實際入庫的 WebP 動畫及攻擊預警示意，尚待美術驗收；命中判定仍以遊戲規則為準。","These in-project WebP animations and telegraphs await final art review; hit detection always follows gameplay rules."],
+  ["四位首領 · 三階段視覺預覽","Four Bosses · Three-Phase Preview"],
+  ["暗蝕之地 · 地板與場景裝飾","Eclipsed Lands · Terrain & Decorations"],
+  ["c104 原始美術圖集（10 張 PNG · 待逐格驗收）","c104 source art atlas (10 PNGs · pending frame review)"],
+  ["原圖已存入專案並由本介面直接引用；尚未通過精靈邊界審核的接觸圖不得當成遊戲動作影格。","Source art is stored in this project. Unverified contact sheets cannot be used as live animation frames."],
+  ["寶箱、稀有度、HUD 與成就裝飾 · 美術預覽","Chest, Rarity, HUD & Achievement Art Preview"],
+  ["以下 17 張圖尚待美術驗收，展示不會增加成就或變更存檔。","These 17 images await art review. Viewing them does not award achievements or change save data."]
+] as [string, string][] : [])
 , ["新成就：","New Achievement:"]
 , ["新造型：","New Cosmetic:"]
 , ["再次挑戰 ✦","Try Again ✦"]

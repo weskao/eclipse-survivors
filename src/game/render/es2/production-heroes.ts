@@ -26,9 +26,9 @@ import summonerSpecial from '../../../assets/es2/production/heroes/spirit-summon
 import paladinDirection from '../../../assets/es2/production/heroes/crimson-paladin/idle-ready@3x.webp'
 import paladinRunAttack from '../../../assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp'
 import paladinSpecial from '../../../assets/es2/production/heroes/crimson-paladin/special@3x.webp'
-import shadowSouthRun from '../../../assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp'
-import summonerSouthRun from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/run-south-4frames@3x.webp'
-import paladinSouthRun from '../../../assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp'
+const shadowSouthRun = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2/production/heroes/shadowblade/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp' : ''
+const summonerSouthRun = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/run-south-4frames@3x.webp' : ''
+const paladinSouthRun = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2/production/heroes/crimson-paladin/candidates/south-2026-11-24-batch-2/run-south-4frames@3x.webp' : ''
 
 /** Full 900×900 3x character illustrations, matching the homepage and HUD. */
 export const PRODUCTION_HERO_SOURCES: Readonly<Record<SpecializationId, string>> = Object.freeze({
@@ -109,7 +109,7 @@ export function loadProductionHeroes(
     image.poseAtlasSources = PRODUCTION_HERO_POSE_SOURCES[id]
     image.poseAtlases = {}
     image.motionAtlasFactory = makeImage
-    if (enableSouthRunQA) {
+    if (import.meta.env.DEV && enableSouthRunQA) {
       image.qaSouthRunUrl = PRODUCTION_HERO_SOUTH_RUN_SOURCES[id]
       image.qaDiagonalSources = {}
       const facingIndex = { SE: 1, SW: 3, NW: 5, N: 6, NE: 7 } as const

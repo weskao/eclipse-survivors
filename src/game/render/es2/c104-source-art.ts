@@ -3,16 +3,16 @@ import type { Ctx2D } from '../ctx'
 // Source art was committed to the repository BEFORE its UI/Canvas consumer.
 // These large originals are reference atlases, not certified runtime animation cells.
 // Render only as complete, opt-in art sheets until individual cells pass alpha QA.
-import imgs1 from '../../../../assets/images/imgs1.webp?url'
-import imgs2 from '../../../../assets/images/imgs2.webp?url'
-import imgs3 from '../../../../assets/images/imgs3.webp?url'
-import imgs4 from '../../../../assets/images/imgs4.webp?url'
-import imgs5 from '../../../../assets/images/imgs5.webp?url'
-import imgs6 from '../../../../assets/images/imgs6.webp?url'
-import imgs7 from '../../../../assets/images/imgs7.webp?url'
-import imgs8 from '../../../../assets/images/imgs8.webp?url'
-import imgs9 from '../../../../assets/images/imgs9.webp?url'
-import imgs10 from '../../../../assets/images/imgs10.webp?url'
+const imgs1 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs1.webp' : ''
+const imgs2 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs2.webp' : ''
+const imgs3 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs3.webp' : ''
+const imgs4 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs4.webp' : ''
+const imgs5 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs5.webp' : ''
+const imgs6 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs6.webp' : ''
+const imgs7 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs7.webp' : ''
+const imgs8 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs8.webp' : ''
+const imgs9 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs9.webp' : ''
+const imgs10 = import.meta.env.DEV ? import.meta.env.BASE_URL + 'assets/images/imgs10.webp' : ''
 
 export const C104_SOURCES = Object.freeze({
   imgs1, imgs2, imgs3, imgs4, imgs5, imgs6, imgs7, imgs8, imgs9, imgs10,
@@ -20,7 +20,7 @@ export const C104_SOURCES = Object.freeze({
 
 export type C104SourceId = keyof typeof C104_SOURCES
 
-/** Every source file is referenced by a real UI surface; no orphaned art. */
+/** Reference sheets belong only to the development art-inspection surface. */
 export const C104_SURFACES = {
   heroes: { sources: ['imgs2', 'imgs3', 'imgs4'] },
   enemies: { sources: ['imgs5', 'imgs6'] },

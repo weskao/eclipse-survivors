@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { createEngine, type Engine } from './game/engine'
 import { ART_URLS } from './game/art'
 import { WORLD_ART } from './game/render/es2/production-world'
@@ -26,7 +26,6 @@ import {
   type AccessibilityPreferences,
 } from './game/content/accessibility/preferences'
 import PauseOverlay from './components/PauseOverlay.vue'
-import ContentShowcase from './components/ContentShowcase.vue'
 import './meta/ui.css'
 import './visual-polish.css'
 import './settings.css'
@@ -36,6 +35,7 @@ const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
 const ui = engine.ui
 const version = __APP_VERSION__
+const ContentShowcase = import.meta.env.DEV ? defineAsyncComponent(() => import('./components/ContentShowcase.vue')) : null
 const devShowcase = import.meta.env.DEV && typeof location !== 'undefined' &&
   new URLSearchParams(location.search).get('content-showcase') === '1'
 
@@ -261,7 +261,7 @@ onBeforeUnmount(() => {
       <button type="button" data-es2-home-accept data-ui-sfx="managed" class="es2-secondary es2-home-exit" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
     </template>
   </Es2Dialog>
-  <ContentShowcase v-if="devShowcase" :engine="engine" />
+  <component v-if="devShowcase && ContentShowcase" :is="ContentShowcase" :engine="engine" />
 </template>
 
 <style scoped>
