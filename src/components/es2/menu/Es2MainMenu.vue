@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { formatNumber, t } from '../../../i18n'
+import { t } from '../../../i18n'
+import Es2EmberWallet from './Es2EmberWallet.vue'
+import { cosmeticStyle } from '../../../meta/cosmetics'
 import { computed, nextTick, ref, useTemplateRef, watch, watchPostEffect } from 'vue'
 import { JOB } from '../../../game/constants'
 import { ART_URLS } from '../../../game/art'
@@ -123,13 +125,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         </div>
       </header>
       <nav class="es2-hall-navigation" data-es2-hall-navigation :aria-label="t('冒險者殿堂')">
-        <div class="es2-hall-heading"><div class="es2-hall-heading__title"><button v-if="archiveView !== 'main'" type="button" class="es2-return-lobby" data-es2-return-lobby data-ui-sfx="select" @click="emit('navigate', 'main')"><span aria-hidden="true">‹</span> {{ t('返回主選單') }}</button><strong v-else>{{ t('冒險者殿堂') }}</strong></div><span class="es2-embers" data-es2-ember-wallet>
-          <span class="es2-embers-icon" aria-hidden="true">✧</span>
-          <span class="es2-embers-copy">
-            <strong class="es2-embers-value" data-es2-ember-value>{{ formatNumber(profile?.embers ?? 0) }}</strong>
-            <span class="es2-embers-label">{{ t("暮光餘燼") }}</span>
-          </span>
-        </span></div>
+        <div class="es2-hall-heading"><div class="es2-hall-heading__title"><button v-if="archiveView !== 'main'" type="button" class="es2-return-lobby" data-es2-return-lobby data-ui-sfx="select" @click="emit('navigate', 'main')"><span aria-hidden="true">‹</span> {{ t('返回主選單') }}</button><strong v-else>{{ t('冒險者殿堂') }}</strong></div><Es2EmberWallet :embers="profile?.embers ?? 0" /></div>
         <div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" data-ui-sfx="select" :aria-current="archiveView === link.id ? 'page' : undefined" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
       </nav>
       <div class="es2-menu-layout" data-es2-lobby-content :hidden="archiveView !== 'main'">
@@ -138,6 +134,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
             <div v-for="hero in heroes" :key="hero.id" class="es2-hero-card-shell">
               <button type="button" :data-hero="hero.id" class="es2-hero-card es2-hero-select-card" data-ui-sfx="managed"
+              :data-es2-cosmetic="profile?.equippedCosmetics[hero.id] ?? (hero.id + '-default')" :style="cosmeticStyle(profile?.equippedCosmetics[hero.id])"
               :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               :aria-label="t(hero.name) + ' · ' + t(hero.role)"
               @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">

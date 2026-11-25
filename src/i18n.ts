@@ -13,6 +13,7 @@ const english = new Map<string, string>([
   ['生命危急', 'Critical health'],
   ['瀕死', 'Near death'],
   ["查看英雄詳情", "View hero details"],
+  ["目前為光環造型 · 不影響戰鬥數值", "Aura cosmetics for now · no combat stat changes"],
   ["查看詳情：{name}", "View details: {name}"],
   ["返回英雄選擇", "Back to heroes"],
   ["目前遠征", "Current expedition"],

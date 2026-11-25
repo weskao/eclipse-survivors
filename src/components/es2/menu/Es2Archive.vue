@@ -4,7 +4,7 @@ import { computed, defineAsyncComponent } from 'vue'
 import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
 import { ACHIEVEMENTS } from '../../../meta/achievements'
-import { COSMETICS } from '../../../meta/cosmetics'
+import { COSMETICS, cosmeticStyle } from '../../../meta/cosmetics'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { encyclopedia } from '../../../meta/compendium'
 import type { Profile, PermanentUpgrade, CosmeticId } from '../../../meta/types'
@@ -73,14 +73,15 @@ const achievementArt: Record<string, string> = {
     <header class="es2-archive-page-heading">
       <span class="es2-eyebrow">{{ t('冒險者殿堂') }} · ✦</span>
       <h2 id="es2ArchiveHeading">{{ t(title[view]) }}</h2>
+      <p v-if="view === 'progression' && metaStatus" class="es2-archive-page-caption">{{ t('研究、裝備與祝福只在下一場遠征開始時生效。') }}</p>
     </header>
     <Es2CardDetails :entries="cardDetails" :scope="view" v-slot="{ open }">
     <section v-if="view === 'progression'" class="es2-archive-section" :aria-label="t('永久強化')">
-      <ProgressionPanel v-if="metaStatus" :state="metaState ?? emptyMeta" :hero="hero"
+      <ProgressionPanel v-if="metaStatus" embedded :state="metaState ?? emptyMeta" :hero="hero"
         :status="metaStatus" @research="emit('research', $event)"
         @equipment="emit('equipment', $event)" @bonus="emit('bonus', $event)" />
       <div v-else>
-      <div class="es2-stat-strip"><div><b>{{ profile.runs }}</b><small>{{ t("遠征次數") }}</small></div><div><b>{{ profile.wins }}</b><small>{{ t("勝利") }}</small></div><div><b>{{ profile.embers }}</b><small>{{ t("暮光餘燼") }}</small></div></div>
+      <div class="es2-stat-strip"><div><b>{{ profile.runs }}</b><small>{{ t("遠征次數") }}</small></div><div><b>{{ profile.wins }}</b><small>{{ t("勝利") }}</small></div></div>
       <p class="es2-hint">{{ t("目前職業：") }}{{ t(hero) }} {{ t("· 永久能力於下一次遠征生效。") }}</p>
       <div class="es2-archive-grid"><article v-for="entry in upgrades" :key="entry.id" class="es2-archive-card">
         <div class="es2-archive-glyph" aria-hidden="true">{{ entry.icon }}</div><strong>{{ t(entry.title) }}</strong><p>{{ t(entry.bonus) }}</p><small>{{ t("第") }} {{ profile.upgrades[entry.id] }} {{ t("/ 3 階") }}</small>
@@ -88,11 +89,13 @@ const achievementArt: Record<string, string> = {
           @click="emit('purchase', entry.id)">{{ t(profile.upgrades[entry.id] >= 3 ? '已滿階' : `升級 · ${upgradeCost(profile.upgrades[entry.id])} ✧`) }}</button>
       </article></div>
       </div>
-      <h3>{{ t("英雄造型") }} <small>{{ t("只影響外觀 · 不影響戰鬥數值") }}</small></h3>
+      <h3>{{ t("英雄造型") }} <small>{{ t("目前為光環造型 · 不影響戰鬥數值") }}</small></h3>
       <div class="es2-skins" role="group" :aria-label="t('英雄造型')">
         <button v-for="skin in skins.filter(item => item.hero === hero)" :key="skin.id" type="button" data-ui-sfx="managed"
+          :data-es2-cosmetic-option="skin.id" :style="cosmeticStyle(skin.id)"
           :disabled="!profile.unlockedCosmetics.includes(skin.id)"
           :aria-pressed="profile.equippedCosmetics[hero] === skin.id" @click="emit('cosmetic', hero, skin.id)">
+          <span class="es2-skin-preview" aria-hidden="true"><img :src="ART_URLS[skin.hero]" alt="" loading="lazy" draggable="false" /><span class="es2-skin-ring"></span></span>
           <strong>{{ t(skin.name) }}</strong><small>{{ t(profile.equippedCosmetics[hero] === skin.id ? '✓ 使用中' : profile.unlockedCosmetics.includes(skin.id) ? '套用造型' : '🔒 未解鎖') }}</small>
         </button>
       </div>

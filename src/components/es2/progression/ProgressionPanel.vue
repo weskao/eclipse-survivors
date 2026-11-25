@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { computed } from 'vue'
+import Es2EmberWallet from '../menu/Es2EmberWallet.vue'
 import type { MetaState } from '../../../game/content/meta/state'
 import {
   getAchievementStates, getBonusStates, getEquipmentStates, getResearchStates,
@@ -10,9 +11,10 @@ const props = withDefaults(defineProps<{
   state: MetaState
   hero: string
   status: 'ready' | 'blocked'
+  embedded?: boolean
   busy?: boolean
   error?: string
-}>(), { busy: false, error: '' })
+}>(), { embedded: false, busy: false, error: '' })
 
 const emit = defineEmits<{
   research: [id: string]
@@ -31,13 +33,13 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 </script>
 
 <template>
-  <article class="es2-progression-panel" :aria-label="t('永久成長 v3')">
-    <header class="es2-progression-header">
+  <article class="es2-progression-panel" :class="{ 'es2-progression-panel--embedded': embedded }" :aria-label="t('永久成長 v3')">
+    <header v-if="!embedded" class="es2-progression-header">
       <div><p class="es2-progression-overline">{{ t("✦ CELESTIAL LEGACY ✦") }}</p>
         <h2>{{ t("永久成長 · 英雄傳承") }}</h2>
         <p>{{ t("研究、裝備與祝福只在下一場遠征開始時生效。") }}</p>
       </div>
-      <div class="es2-progression-wallet"><strong>{{ state.embers.toLocaleString() }}</strong><span>{{ t("✧ 暮光餘燼") }}</span></div>
+      <Es2EmberWallet :embers="state.embers" />
     </header>
     <p v-if="status !== 'ready' || error" role="alert" class="es2-progression-error">
       {{ t(error || '儲存狀態無法驗證，目前已停用永久獎勵與消費，避免遺失進度。') }}
@@ -105,13 +107,12 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 
 <style scoped>
 .es2-progression-panel{color:#f3e9d2;padding:clamp(12px,2.5vw,28px);font:inherit;min-width:0}
+.es2-progression-panel--embedded{padding:0}
+.es2-progression-panel--embedded>.es2-progression-section:first-of-type{margin-top:0}
 .es2-progression-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid #a588524f}
 .es2-progression-header h2{font-size:clamp(1.35rem,3vw,2rem);margin:4px 0 8px}
 .es2-progression-header p,.es2-progression-caption{color:#c8bda8;margin:5px 0}
 .es2-progression-overline{letter-spacing:.15em;font-size:.75rem;color:#d5b675}
-.es2-progression-wallet{padding:12px 18px;border:1px solid #b99a55a6;border-radius:12px;background:#261f22;display:flex;flex-direction:column;align-items:center;gap:4px}
-.es2-progression-wallet strong{font-variant-numeric:tabular-nums;font-size:1.7rem}
-.es2-progression-wallet span{color:#edcb82;font-size:.85rem}
 .es2-progression-error{border:1px solid #dd8875;padding:12px;border-radius:8px;color:#ffdbd3}
 .es2-progression-section{margin-top:24px}
 .es2-progression-section h3{color:#f8d998;letter-spacing:.03em;margin:0 0 12px;font-size:1.15rem}
@@ -132,6 +133,6 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 .es2-progression-achievements article.locked{opacity:.62}
 .es2-progression-achievements article strong{font-size:.84rem;flex:1}
 .es2-progression-achievements small{font-size:.75rem}
-@media(max-width:540px){.es2-progression-grid{grid-template-columns:1fr}.es2-progression-wallet{width:100%}}
+@media(max-width:540px){.es2-progression-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.es2-progression-panel *{scroll-behavior:auto;transition:none!important;animation:none!important}}
 </style>

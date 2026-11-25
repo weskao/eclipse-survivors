@@ -410,7 +410,7 @@
 .es2-hall-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--es2-gold);font:700 .8rem/1.2 system-ui,sans-serif}
 /* A compact resource emblem, subordinate only to the primary expedition action. */
 .es2-hall-heading>strong{min-width:0;overflow-wrap:anywhere}
-.es2-hall-heading .es2-embers{
+.es2-embers[data-es2-ember-wallet]{
   display:inline-flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0;max-width:76%;
   padding:4px 12px 4px 6px;border:1px solid #b08b516b;border-radius:24px 5px 5px 24px;
   background:linear-gradient(100deg,#3b3026,#1c242d 70%);
@@ -434,7 +434,7 @@
   overflow-wrap:anywhere;min-width:0;
 }
 @media(max-width:700px),(orientation:landscape) and (max-height:520px){
-  .es2-hall-heading .es2-embers{gap:5px;padding:3px 7px 3px 4px}
+  .es2-embers[data-es2-ember-wallet]{gap:5px;padding:3px 7px 3px 4px}
   .es2-embers-icon{flex-basis:24px;width:24px;height:24px;font-size:19px}
   .es2-embers-copy{gap:1px 5px}
   .es2-embers-value{font-size:calc(1.125rem * var(--es2-ui-scale,1))}
@@ -762,4 +762,38 @@
 }
 @media (hover:none),(pointer:coarse){
   .es2-context-card>.es2-archive-glyph,.es2-context-card>strong{padding-inline-end:25px}
+}
+
+/* One wallet surface, one balance; embedded progression uses the hall wallet. */
+.es2-embers[data-es2-ember-wallet]{
+  border-radius:30px 6px 16px 30px;border-color:#bda16a9c;
+  background:linear-gradient(110deg,#473624,#27313a 54%,#14212d);
+  box-shadow:inset 0 1px 0 #e9c98c44,0 2px 8px #070d164d;
+}
+.es2-menu--archive .es2-embers[data-es2-ember-wallet]{padding-inline-end:13px}
+.es2-archive-page-caption{color:#bfc9d4;font:400 calc(.82rem * var(--es2-ui-scale,1))/1.5 system-ui,sans-serif;margin:6px 0 0;overflow-wrap:anywhere}
+.es2-menu .es2-hero-card[data-es2-cosmetic]>img{
+  background:radial-gradient(ellipse at 50% 79%,var(--es2-skin-glow),transparent 67%)
+}
+.es2-menu .es2-hero-card[data-es2-cosmetic][aria-pressed="true"]>img{
+  background:radial-gradient(ellipse at 50% 79%,var(--es2-skin-glow),transparent 72%)
+}
+.es2-menu .es2-skins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),220px));gap:12px}
+.es2-menu .es2-skins button{min-width:0;overflow:hidden;padding:8px;gap:6px;border-radius:20px 6px 16px 6px;text-align:center;align-items:center}
+.es2-skin-preview{position:relative;display:grid;place-items:center;width:100%;height:clamp(100px,16vw,164px);isolation:isolate;background:radial-gradient(ellipse at 50% 72%,var(--es2-skin-glow),transparent 70%);overflow:hidden}
+.es2-skin-preview img{height:100%;max-width:100%;width:auto;object-fit:contain;z-index:1;min-height:0}
+.es2-skin-ring{position:absolute;width:67%;height:17%;bottom:5%;border:2px solid var(--es2-skin-ring);border-radius:50%;box-shadow:0 0 9px var(--es2-skin-glow);pointer-events:none}
+.es2-menu .es2-skins button[aria-pressed=true]{border-color:var(--es2-skin-ring);box-shadow:inset 0 0 0 1px var(--es2-skin-ring)}
+@media(max-width:540px){.es2-menu .es2-skins{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+/* Native cursor images preserve real OS hit testing; no Pixi/canvas loop. */
+@media (hover:hover) and (pointer:fine){
+  body{cursor:url('../../assets/ui/cursor-bronze.svg') 3 2,auto}
+  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),input[type="range"]){
+    cursor:url('../../assets/ui/cursor-action.svg') 12 3,pointer!important
+  }
+  body :is(button:disabled,[aria-disabled="true"]){cursor:not-allowed!important}
+}
+@media (forced-colors:active){
+  body{cursor:auto!important}
+  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),input[type="range"]){cursor:pointer!important}
 }
