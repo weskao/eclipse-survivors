@@ -29,6 +29,11 @@ export interface FactionEnemy {
   facingX: number
   facingY: number
   hitThisAttack: boolean
+  /** Pure presentation: never changes position, range or the FSM. */
+  hitTime?: number
+  hitX?: number
+  hitY?: number
+  releaseFx?: number
 }
 
 export interface FactionProjectile {
@@ -177,6 +182,11 @@ export function damageFactionEnemy(
   }
   const actual = Math.min(e.hp, damage * multiplier)
   e.hp = Math.max(0, e.hp - actual)
+  const dx = e.x - sourceX, dy = e.y - sourceY
+  const distance = Math.hypot(dx, dy)
+  e.hitTime = 0.24
+  e.hitX = distance > 0.001 ? dx / distance : 0
+  e.hitY = distance > 0.001 ? dy / distance : 0
   if (e.hp === 0) {
     const def = ENEMY_DEFINITIONS[e.kind]
     onReward?.({ kind: e.kind, x: e.x, y: e.y,
@@ -214,6 +224,7 @@ function telegraph(a: FactionArena, e: FactionEnemy): void {
   e.facingY = dy / length
   e.aimX = a.hero.x; e.aimY = a.hero.y
   e.state = 'windup'
+  e.releaseFx = 0
   e.timer = def.windup * (e.affix === 'swift' ? 0.8 : 1)
   e.cycle++
   a.onTelegraph?.(e)
@@ -350,6 +361,8 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
     const e = r.enemies[i]!
     if (!e || e.hp <= 0) continue
     e.phaseCooldown = Math.max(0, e.phaseCooldown - dt)
+    if (e.hitTime) e.hitTime = Math.max(0, e.hitTime - dt)
+    if (e.releaseFx) e.releaseFx = Math.max(0, e.releaseFx - dt)
     if (e.state === 'phase') {
       e.timer -= dt
       if (e.timer <= 0) e.state = 'approach'
@@ -367,6 +380,7 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
       }
       e.timer -= dt
       if (e.timer <= 0) {
+        e.releaseFx = 0.32
         if (e.kind === 'shadow-assassin') {
           e.state = 'attack'; e.timer = 0.34; e.hitThisAttack = false
         } else {

@@ -1,6 +1,7 @@
 import { ENEMY_DEFINITIONS } from './definitions'
 import type { FactionRuntime } from './runtime'
 import { drawZoneMotes } from '../../render/energy-art'
+import { drawEnemyRelease, drawEnemyZone } from '../../render/enemy-motion'
 
 /**
  * Read-only Canvas 2D warning overlay for the integration-owned renderer.
@@ -16,7 +17,13 @@ export function drawFactionTelegraphs(
   ctx.lineWidth = 3
   ctx.globalAlpha = 0.7
   for (const enemy of runtime.enemies) {
-    if (enemy.hp <= 0 || (enemy.state !== 'windup' && enemy.state !== 'attack')) continue
+    if (enemy.hp <= 0) continue
+    if ((enemy.releaseFx ?? 0) > 0 && enemy.kind !== 'fire-imp' && enemy.kind !== 'plague-carrier') {
+      const beam = enemy.kind === 'crystal-sentinel'
+      const size = beam ? 400 : enemy.kind === 'necromancer' ? 220 : enemy.kind === 'dark-archer' || enemy.kind === 'frost-wraith' ? 64 : (enemy.radius + 50) * 2
+      drawEnemyRelease(ctx, enemy.kind, enemy.x + ox, enemy.y + oy, Math.atan2(enemy.facingY, enemy.facingX), size, beam ? 68 : size, enemy.releaseFx!, reduced, width, height)
+    }
+    if (enemy.state !== 'windup' && enemy.state !== 'attack') continue
     ctx.strokeStyle = ENEMY_DEFINITIONS[enemy.kind].telegraphColor
     ctx.beginPath()
     if (enemy.kind === 'crystal-sentinel') {
@@ -50,7 +57,8 @@ export function drawFactionTelegraphs(
     ctx.beginPath()
     ctx.arc(zone.x + ox, zone.y + oy, zone.radius, 0, Math.PI * 2)
     ctx.stroke()
-    drawZoneMotes(ctx, zone.x + ox, zone.y + oy, zone.radius, 0, zone.life, String(ctx.strokeStyle), reduced)
+    if (zone.delay > 0 || !drawEnemyZone(ctx, zone.kind, zone.x + ox, zone.y + oy, zone.radius, zone.life, reduced))
+      drawZoneMotes(ctx, zone.x + ox, zone.y + oy, zone.radius, 0, zone.life, String(ctx.strokeStyle), reduced)
   }
   ctx.restore()
 }

@@ -1,4 +1,6 @@
 import { TAU } from '../constants'
+import { BALANCE } from '../config'
+import { drawEnemyRelease, preloadEnemyReleaseArt } from './enemy-motion'
 import type { GameState, Mob } from '../types'
 import type { Ctx2D } from './ctx'
 import type { ProjectileSprites } from './projectile-art'
@@ -7,7 +9,7 @@ import { drawEnergyMissile, drawZoneMotes } from './energy-art'
 function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number, reduced: boolean): void {
   const ai = mob.ai
   if (!ai || ai.state !== 'windup') return
-  const time = Math.min(1, ai.timer / (mob.type === 'boss' ? 1.3 : 1.05))
+  const time = Math.min(1, ai.timer / (BALANCE.enemies.ai.windup[ai.attack] + (mob.type === 'boss' ? BALANCE.enemies.ai.bossWindupExtra : 0)))
   const boss = mob.type === 'boss'
   const color = mob.elite ? '#dc9cff' : boss ? '#ff7758' : '#ffbf76'
   ctx.save()
@@ -53,7 +55,20 @@ function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number, reduced: boolean)
 }
 
 export function drawEnemyTelegraphs(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced = false): void {
-  for (const enemy of s.mobs) if (enemy.hp > 0 && enemy.ai?.state === 'windup') warning(ctx, enemy, ox, oy, reduced)
+  preloadEnemyReleaseArt()
+  for (const enemy of s.mobs) {
+    if (enemy.hp <= 0 || !enemy.ai) continue
+    const ai = enemy.ai
+    // ES2 encounter owns its own warnings and release textures.
+    if (enemy.type === 'boss' && enemy.bossArtId) continue
+    if (ai.state === 'windup') warning(ctx, enemy, ox, oy, reduced)
+    else if (enemy.type !== 'boss' && (ai.releaseFx ?? 0) > 0) {
+      const ground = ai.attack === 'slam'
+      const size = ground ? 2 * ((enemy.elite ? BALANCE.enemies.ai.slamRadius.elite : BALANCE.enemies.ai.slamRadius.default) + BALANCE.enemies.ai.slamContactMargin) : ai.attack === 'bolt' ? 68 : enemy.r * 3.2
+      drawEnemyRelease(ctx, ai.attack, (ground ? ai.aimX : enemy.x) + ox, (ground ? ai.aimY : enemy.y) + oy,
+        Math.atan2(ai.dirY, ai.dirX), size, size, ai.releaseFx!, reduced, s.W, s.H)
+    }
+  }
 }
 
 export function drawEnemyProjectiles(ctx: Ctx2D, s: GameState, ox: number, oy: number, sprites?: Partial<ProjectileSprites>, reduced = false): void {
