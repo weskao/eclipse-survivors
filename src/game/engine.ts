@@ -117,7 +117,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const s = createState()
   const requestedPacks = opts.contentPacks ?? CONTENT_PACKS
   const relicsEnabled = requestedPacks.some(pack => pack.id === 'relics')
-  const bosses = requestedPacks.some(pack => pack.id === 'bosses') ? createBossEncounterController() : null
+  const bosses = requestedPacks.some(pack => pack.id === 'bosses') ? createBossEncounterController({
+    emit(event) {
+      if (event.type === 'intro') audio.prepareBossAttackAudio?.(event.boss)
+      else if (event.type === 'warning' || event.type === 'attack')
+        audio.playBossAttack?.(event.attack, event.type === 'warning' ? 'warning' : 'release')
+    },
+    cancelAttackAudio: () => audio.cancelBossAttackAudio?.(),
+  }) : null
   const contentRegistry = createContentRegistry(
     bosses ? requestedPacks.map(pack => pack.id === 'bosses' ? createBossEncounterPack(bosses) : pack) : requestedPacks,
     random,
@@ -546,6 +553,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     audio.setBossWarning?.(null)
     setAdaptiveScore(true) // before wake: never restart the overture
     wakeAudio()
+    if (bosses) audio.prepareBossAttackAudio?.(bossIds[bossSequence % bossIds.length]!)
     screen('play')
     hooks.content?.(s, { type: 'start' })
     audio.playSfx('start')
@@ -684,6 +692,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const liveBoss = s.mobs.find(m => m.type === 'boss' && m.hp > 0)
       const upcoming = getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null)
       audio.setBossWarning?.(upcoming?.seconds ?? null)
+      if (liveBoss?.bossArtId) audio.prepareBossAttackAudio?.(liveBoss.bossArtId)
+      else if (upcoming && bosses) audio.prepareBossAttackAudio?.(bossIds[bossSequence % bossIds.length]!)
       audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
       const phase = liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
       audio.setCombatIntensity(phase)
