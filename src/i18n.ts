@@ -1057,6 +1057,8 @@ const english = new Map<string, string>([
 , ["以符號及文字區分狀態，不只靠顏色","Use symbols and text, not color alone, to distinguish states"]
 , ["傷害數字","Damage Numbers"]
 , ["顯示或隱藏戰鬥傷害浮字","Show or hide floating combat damage numbers"]
+, ["滿血時顯示怪物血條","Show full-health enemy bars"]
+, ["關閉時僅隱藏滿血怪物頭頂的血條；首領 HUD 保持顯示","When off, hide overhead bars for full-health enemies only; the boss HUD stays visible."]
 , ["即時預覽 ·","Live Preview ·"]
 , ["預覽左右控制鈕位置","Preview left and right controls"]
 , ["● 狀態正常","● Status Normal"]

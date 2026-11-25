@@ -74,6 +74,21 @@ describe('isolated mobile controls', () => {
 })
 
 describe('accessibility settings', () => {
+  it('defaults full-health enemy bars off, toggles them and resets to off', async () => {
+    const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
+    const toggle = w.get('[data-testid="es2-full-enemy-health-bars"]')
+    expect(toggle.attributes('aria-pressed')).toBe('false')
+    await toggle.trigger('click')
+    const next = w.emitted('update:modelValue')?.at(-1)?.[0] as typeof DEFAULT_ACCESSIBILITY_PREFERENCES
+    expect(next.showFullEnemyHealthBars).toBe(true)
+    await w.setProps({ modelValue: next })
+    expect(toggle.attributes('aria-pressed')).toBe('true')
+    await toggle.trigger('click')
+    expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showFullEnemyHealthBars: false })
+    await w.get('.es2-reset').trigger('click')
+    expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showFullEnemyHealthBars: false })
+    w.unmount()
+  })
   it('previews options immediately using accessible game controls', async () => {
     const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
     expect(w.get('[data-testid="es2-preview"]').attributes('aria-live')).toBe('polite')

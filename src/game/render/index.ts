@@ -97,6 +97,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const hero = s.hero
   const policy = assets.presentation?.()
   const reduced = policy?.reduceMotion ?? assets.prefersReducedMotion()
+  const showFullHealthBars = policy?.showFullEnemyHealthBars ?? false
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   ctx.fillStyle = '#27352d'
   ctx.fillRect(0, 0, W, H)
@@ -138,7 +139,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)
-    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy, assets.healthBars, reduced)
+    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy, assets.healthBars, reduced, showFullHealthBars)
   const objects = assets.depthOrder
   objects.length = 0
   // Reject offscreen and dead mobs before sorting, not after the sort in drawCharacter.
@@ -159,7 +160,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
       ? { image: bossImage, phase: bossSnapshot.phase,
           motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
-    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars)
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, showFullHealthBars)
   }
   // Dead mobs are excluded from depthOrder. Only explicit DEV review may paint a death reference.
   const deathReference = motionReference

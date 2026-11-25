@@ -109,6 +109,10 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
         <div><strong>{{ t("傷害數字") }}</strong><small>{{ t("顯示或隱藏戰鬥傷害浮字") }}</small></div>
         <button type="button" :aria-label="t('傷害數字')" :disabled="disabled" :aria-pressed="modelValue.showDamageNumbers" @click="update({ showDamageNumbers: !modelValue.showDamageNumbers })">{{ t(modelValue.showDamageNumbers ? '顯示' : '隱藏') }}</button>
       </div>
+      <div class="es2-switch-row">
+        <div><strong>{{ t("滿血時顯示怪物血條") }}</strong><small>{{ t("關閉時僅隱藏滿血怪物頭頂的血條；首領 HUD 保持顯示") }}</small></div>
+        <button data-testid="es2-full-enemy-health-bars" type="button" :aria-label="t('滿血時顯示怪物血條')" :disabled="disabled" :aria-pressed="modelValue.showFullEnemyHealthBars" @click="update({ showFullEnemyHealthBars: !modelValue.showFullEnemyHealthBars })">{{ t(modelValue.showFullEnemyHealthBars ? '開啟' : '關閉') }}</button>
+      </div>
     </div>
 
     <div data-testid="es2-preview" class="es2-preview" aria-live="polite" aria-atomic="true">

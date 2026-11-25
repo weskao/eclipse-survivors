@@ -17,6 +17,7 @@ export interface VisualPresentationPolicy {
   reduceFlashing: boolean
   statusSymbols: boolean
   showDamageNumbers: boolean
+  showFullEnemyHealthBars?: boolean
 }
 
 export function resolvePresentationPolicy(
@@ -44,6 +45,7 @@ export function resolvePresentationPolicy(
     reduceFlashing: p.reducedFlashing,
     statusSymbols: p.colorblindIndicators,
     showDamageNumbers: p.showDamageNumbers,
+    showFullEnemyHealthBars: p.showFullEnemyHealthBars,
   }
 }
 

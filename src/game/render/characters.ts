@@ -11,7 +11,7 @@ import { isSpecializationId } from '../content/heroes'
 import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
-import { drawEnemyHealthBar, healthBarColor, sampleHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
+import { drawEnemyHealthBar, healthBarColor, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -225,7 +225,7 @@ export function drawCharacter(
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
-  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>,
+  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, showFullHealthBars = false,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -348,6 +348,7 @@ export function drawCharacter(
     // The cache is renderer-owned and weakly keyed. Full-health enemies only seed one entry;
     // no gradients, timers or extra frame loops are needed in dense combat.
     const motion = sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
+    if (!shouldShowHealthBar(motion, showFullHealthBars)) return
     if (mob.type === 'boss') {
       const bar = 190, left = x - bar / 2
       const growth = productionBoss ? Math.min(sx, sy) * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0

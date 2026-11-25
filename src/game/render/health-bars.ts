@@ -51,6 +51,11 @@ export function sampleHealthBar(
   return old
 }
 
+/** Keep healing visible until the existing fill and trail finish settling. */
+export function shouldShowHealthBar(motion: HealthBarFrame, showFull = false): boolean {
+  return showFull || motion.target < 1 || motion.front < 1 || motion.trail < 1
+}
+
 /** Shared overhead UI for all non-boss enemies, regardless of their simulation pool. */
 export function drawEnemyHealthBar(
   ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number, spriteWidth: number, elite = false,

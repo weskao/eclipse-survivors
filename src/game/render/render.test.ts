@@ -7,6 +7,8 @@ import { createFactionBridge } from '../content/enemies/integration'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../content/enemies/definitions'
 import { spawnFactionEnemy } from '../content/enemies/runtime'
 import { FACTION_VISUAL_SIZE, type FactionArtwork } from './es2/production-factions'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../content/accessibility/preferences'
+import { resolvePresentationPolicy } from '../content/accessibility/presentation'
 
 const mob = (type: MobType, x: number, y: number, over: Partial<Mob> = {}): Mob => ({
   x, y, type, hp: 5, max: 10, r: 20, speed: 50, dmg: 1, phase: 1.3, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0, ...over,
@@ -53,7 +55,7 @@ function busyState(): GameState {
 }
 
 describe('smooth Canvas enemy and boss health bars', () => {
-  it('paints full-health bars for every live legacy and faction kind, including elites and boss summons', () => {
+  it('hides full-health overhead bars by default and shows every live enemy kind when enabled', () => {
     const s = busyState()
     s.cameraKick = 0
     const kinds: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'warlock']
@@ -79,9 +81,24 @@ describe('smooth Canvas enemy and boss health bars', () => {
     const borders: string[] = []
     ctx.strokeRect = () => { borders.push(String(ctx.strokeStyle)) }
     drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(0)
+    expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(0)
+    let showFullEnemyHealthBars = true
+    assets.presentation = () => resolvePresentationPolicy({ ...DEFAULT_ACCESSIBILITY_PREFERENCES, showFullEnemyHealthBars })
+    fills.length = 0
+    borders.length = 0
+    drawFrame(ctx, s, 1, assets)
     expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(kinds.length + factionKinds.length + 3)
     expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(2)
     expect(fills.filter(f => f.color === '#78d8a0' && f.width === 186)).toHaveLength(1)
+    showFullEnemyHealthBars = false
+    fills.length = 0
+    s.mobs[0]!.hp = 5
+    factions.runtime.enemies[0]!.hp /= 2
+    s.worldClock += .05
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(0)
+    expect(fills.filter(f => f.color === '#eac95f')).toHaveLength(2)
   })
 
   it('shares faction damage trails, healing and reduced motion with legacy bars', () => {
@@ -101,7 +118,7 @@ describe('smooth Canvas enemy and boss health bars', () => {
     const frame = () => { fills.length = 0; drawFrame(ctx, s, 1, assets) }
     const width = FACTION_VISUAL_SIZE[kind] * 0.58 - 2
     frame()
-    expect(fills.find(f => f.color === '#78d8a0')?.width).toBeCloseTo(width)
+    expect(fills.some(f => f.color === '#78d8a0')).toBe(false)
     enemy.hp = enemy.max / 4
     s.worldClock += 0.05
     frame()
@@ -120,6 +137,9 @@ describe('smooth Canvas enemy and boss health bars', () => {
     expect(fills.find(f => f.color === '#eac95f')?.width).toBeCloseTo(width / 2)
     expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
     expect(enemy.hp).toBe(enemy.max / 2)
+    enemy.hp = enemy.max
+    frame()
+    expect(fills.some(f => f.color === '#78d8a0')).toBe(false)
   })
 
   it('retains a short damage trail and eases the front fill without changing actual HP', () => {
