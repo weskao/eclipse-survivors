@@ -5,6 +5,7 @@ import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
 import { t } from '../../../i18n'
 import { LOW_HP_PCT } from '../../../game/constants'
+import { healthBarColor } from '../../../game/render/health-bars'
 import { lowHealthTier } from './low-health'
 import '../../../styles/es2/low-health.css'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
@@ -184,7 +185,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             </div>
             <div class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
               :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100"
-              :style="{ '--es2-progress': view.boss.percent / 100 }">
+              :style="{ '--es2-progress': view.boss.percent / 100, '--es2-boss-hp-color': healthBarColor(view.boss.percent / 100) }">
               <span class="es2-hud__track-trail" aria-hidden="true"></span>
               <span class="es2-hud__track-fill" aria-hidden="true"></span>
             </div>

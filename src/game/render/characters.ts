@@ -11,7 +11,7 @@ import { isSpecializationId } from '../content/heroes'
 import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
-import { drawEnemyHealthBar, sampleHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
+import { drawEnemyHealthBar, healthBarColor, sampleHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -357,8 +357,8 @@ export function drawCharacter(
       if (motion.trail > motion.front + 0.002) {
         ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.trail, 8)
       }
-      ctx.fillStyle = '#ce63a5'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
-      ctx.fillStyle = '#f9c0d8'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
+      ctx.fillStyle = healthBarColor(motion.target); ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
+      ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
     } else {
       drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite)
     }

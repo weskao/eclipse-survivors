@@ -76,10 +76,12 @@ describe('smooth Canvas enemy and boss health bars', () => {
     const { ctx } = createFakeCtx()
     const fills: { color: string; width: number }[] = []
     ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
+    const borders: string[] = []
+    ctx.strokeRect = () => { borders.push(String(ctx.strokeStyle)) }
     drawFrame(ctx, s, 1, assets)
-    expect(fills.filter(f => f.color === '#e98275')).toHaveLength(kinds.length + factionKinds.length)
-    expect(fills.filter(f => f.color === '#d6a4f3')).toHaveLength(2)
-    expect(fills.filter(f => f.color === '#ce63a5')).toEqual([{ color: '#ce63a5', width: 186 }])
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(kinds.length + factionKinds.length + 3)
+    expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(2)
+    expect(fills.filter(f => f.color === '#78d8a0' && f.width === 186)).toHaveLength(1)
   })
 
   it('shares faction damage trails, healing and reduced motion with legacy bars', () => {
@@ -99,23 +101,23 @@ describe('smooth Canvas enemy and boss health bars', () => {
     const frame = () => { fills.length = 0; drawFrame(ctx, s, 1, assets) }
     const width = FACTION_VISUAL_SIZE[kind] * 0.58 - 2
     frame()
-    expect(fills.find(f => f.color === '#e98275')?.width).toBeCloseTo(width)
+    expect(fills.find(f => f.color === '#78d8a0')?.width).toBeCloseTo(width)
     enemy.hp = enemy.max / 4
     s.worldClock += 0.05
     frame()
-    const front = fills.find(f => f.color === '#e98275')!.width
+    const front = fills.find(f => f.color === '#ed9851')!.width
     expect(front).toBeGreaterThan(width / 4)
     expect(front).toBeLessThan(width)
     expect(fills.find(f => f.color === '#f2c37e')!.width).toBeGreaterThan(front)
     enemy.hp = enemy.max
     s.worldClock += 0.05
     frame()
-    expect(fills.find(f => f.color === '#e98275')!.width).toBeLessThan(width)
+    expect(fills.find(f => f.color === '#78d8a0')!.width).toBeLessThan(width)
     expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
     assets.prefersReducedMotion = () => true
     enemy.hp = enemy.max / 2
     frame()
-    expect(fills.find(f => f.color === '#e98275')?.width).toBeCloseTo(width / 2)
+    expect(fills.find(f => f.color === '#eac95f')?.width).toBeCloseTo(width / 2)
     expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
     expect(enemy.hp).toBe(enemy.max / 2)
   })
@@ -139,8 +141,8 @@ describe('smooth Canvas enemy and boss health bars', () => {
     boss.hp = 25
     s.worldClock += 0.05
     drawFrame(ctx, s, 1, assets)
-    const enemyFill = fills.find(item => item.color === '#e98275')
-    const bossFill = fills.find(item => item.color === '#ce63a5')
+    const enemyFill = fills.find(item => item.color === '#ed9851' && item.width < 100)
+    const bossFill = fills.find(item => item.color === '#ed9851' && item.width > 100)
     expect(enemyFill).toBeDefined()
     expect(bossFill).toBeDefined()
     expect(fills.some(item => item.color === '#f2c37e')).toBe(true)
@@ -153,7 +155,7 @@ describe('smooth Canvas enemy and boss health bars', () => {
     s.worldClock += 0.05
     fills.length = 0
     drawFrame(ctx, s, 1, assets)
-    expect(fills.some(item => item.color === '#e98275')).toBe(true)
+    expect(fills.some(item => item.color === '#78d8a0')).toBe(true)
   })
 })
 

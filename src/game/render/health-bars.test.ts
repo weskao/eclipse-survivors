@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Mob } from '../types'
-import { sampleHealthBar } from './health-bars'
+import { drawEnemyHealthBar, healthBarColor, sampleHealthBar } from './health-bars'
+import { createFakeCtx } from './fakes'
 
 const enemy = (): Mob => ({
   x: 0, y: 0, type: 'goblin', hp: 100, max: 100,
@@ -47,5 +48,35 @@ describe('renderer-owned health bar interpolation', () => {
     const reduced = sampleHealthBar(mob, .21, cache, true)
     expect(reduced.front).toBe(.9)
     expect(reduced.trail).toBe(.9)
+  })
+})
+
+describe('enemy health color tiers', () => {
+  it.each([
+    [1, '#78d8a0'], [.75, '#78d8a0'], [.749, '#eac95f'], [.5, '#eac95f'],
+    [.499, '#ed9851'], [.25, '#ed9851'], [.249, '#e66b73'], [0, '#e66b73'],
+  ])('colors health fraction %s as %s', (fraction, color) => {
+    expect(healthBarColor(fraction)).toBe(color)
+  })
+  it('normalizes high max HP, marks elites independently, and signals actual HP while the fill eases', () => {
+    const ordinary = { hp: 20, max: 100 }, elite = { hp: 200, max: 1000 }
+    const cache = new WeakMap()
+    const { ctx } = createFakeCtx()
+    const fills: string[] = [], borders: string[] = []
+    ctx.fillRect = (_x, _y, _w, h) => { if (h === 4) fills.push(String(ctx.fillStyle)) }
+    ctx.strokeRect = () => { borders.push(String(ctx.strokeStyle)) }
+    drawEnemyHealthBar(ctx, sampleHealthBar(ordinary, 0), 0, 0, 100)
+    drawEnemyHealthBar(ctx, sampleHealthBar(elite, 0), 0, 0, 100, true)
+    expect(fills).toEqual(['#e66b73', '#e66b73'])
+    expect(borders).toEqual(['#d6a4f3'])
+    elite.hp = 1000
+    sampleHealthBar(elite, 0, cache)
+    elite.hp = 200
+    const motion = sampleHealthBar(elite, .01, cache)
+    expect(motion.front).toBeGreaterThan(.75)
+    fills.length = 0
+    drawEnemyHealthBar(ctx, motion, 0, 0, 100, true)
+    expect(fills).toEqual(['#f2c37e', '#e66b73'])
+    expect(elite.hp).toBe(200)
   })
 })

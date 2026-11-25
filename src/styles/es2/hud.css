@@ -173,11 +173,12 @@
 .es2-hud__boss-phase { font: 750 10px system-ui; color: #f2c586; letter-spacing: .08em; white-space: nowrap; }
 .es2-hud__track--boss { height: 12px; border-color: #b16c73; }
 .es2-hud__track--boss > .es2-hud__track-fill {
-  color: #dc6dae; background: linear-gradient(180deg, #ffd0e7, #c4529a 54%, #69244e);
+  color: var(--es2-boss-hp-color, #78d8a0);
+  background: linear-gradient(180deg, #ffffff44, #00000033), currentColor;
   transition-duration: .42s;
 }
 .es2-hud__track--boss > .es2-hud__track-trail {
-  background: linear-gradient(90deg, #c86da9, #ffd1c9); opacity: .65;
+  background: #f2c37e; opacity: .65;
 }
 .es2-hud__wave {
   align-self: center; width: max-content; max-width: 100%; min-width: 0;
