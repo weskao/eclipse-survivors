@@ -75,6 +75,8 @@
 .es2-dialog-header p{font-size:.88rem;line-height:1.5;color:var(--es2-muted);margin:0}
 .es2-close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--es2-line);border-radius:8px;background:#162437;font-size:1.8rem!important}
 .es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-padding-block:8px;touch-action:pan-y}
+.es2-dialog-choice{overflow:clip}
+.es2-dialog-choice .es2-dialog-body{overflow-x:hidden;overflow-y:auto;overscroll-behavior:none}
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}
@@ -190,6 +192,8 @@
   .es2-choice-grid{grid-template-columns:1fr;gap:8px}
   .es2-choice{display:grid;grid-template-columns:clamp(74px,24vw,104px) minmax(0,1fr);grid-auto-rows:min-content;align-content:center;min-height:0;padding:5px 5px 5px 0}
   .es2-choice>.es2-card-art{grid-column:1;grid-row:1/span 7;width:100%;height:100%;min-height:94px;align-self:stretch;border-bottom:0;border-right:1px solid var(--es2-card-border)}
+  .es2-dialog-choice .es2-choice>.es2-card-art{contain:size}
+  .es2-dialog-choice .es2-choice .es2-card-meta{min-height:0}
   .es2-choice>:not(.es2-card-art){grid-column:2;min-width:0}
   .es2-choice .es2-card-meta{padding:3px 8px 0}
   .es2-choice .es2-rarity-label{font-size:calc(.91rem * var(--es2-ui-scale,1))}
@@ -221,8 +225,8 @@
   .es2-dialog-choice{height:calc(100dvh - max(5px,env(safe-area-inset-top)) - max(5px,env(safe-area-inset-bottom)))}
   .es2-dialog-choice .es2-dialog-header p{display:none}
   .es2-dialog-choice .es2-dialog-body{display:flex;flex-direction:column}
-  .es2-dialog-choice .es2-selection-scene{flex:1 0 auto;display:flex;flex-direction:column}
-  .es2-dialog-choice .es2-choice-grid{flex:1 0 auto;grid-template-rows:minmax(clamp(64px,22dvh,96px),1fr) repeat(6,auto);row-gap:0}
+  .es2-dialog-choice .es2-selection-scene{flex:1 1 auto;min-height:min-content;display:flex;flex-direction:column}
+  .es2-dialog-choice .es2-choice-grid{flex:1 1 auto;min-height:min-content;grid-template-rows:minmax(clamp(64px,22dvh,96px),1fr) repeat(6,auto);row-gap:0}
   .es2-dialog-choice .es2-choice{display:grid;grid-row:span 7;grid-template-rows:subgrid;align-content:start;background:linear-gradient(180deg,transparent 42%,#050b18e6 100%),var(--es2-card-art-bg)}
   .es2-dialog-choice .es2-choice .es2-card-art{grid-row:1;height:auto;min-height:clamp(64px,22dvh,96px);contain:size;padding-top:26px;border-bottom:0;box-shadow:none;background:radial-gradient(ellipse 46% 50% at 50% 58%,var(--es2-skill-aura,#d6ac5d40),transparent 100%)}
   .es2-dialog-choice .es2-choice .es2-card-name{grid-row:2}

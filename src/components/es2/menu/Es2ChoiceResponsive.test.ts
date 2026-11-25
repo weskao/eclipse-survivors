@@ -54,6 +54,13 @@ describe('ES2 choice card responsive illustrations', () => {
       for (const [, rem] of block.matchAll(/font-size:(?:clamp\()?\.(\d+)rem/g)) expect(Number(`0.${rem}`) * 16).toBeGreaterThanOrEqual(11)
     }
   })
+  it('uses only conditional vertical scrolling and lets compact cards fit before overflowing', () => {
+    expect(css).toMatch(/\.es2-dialog-choice\{overflow:clip\}/)
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-dialog-body\{[^}]*overflow-x:hidden;overflow-y:auto;overscroll-behavior:none/)
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-selection-scene\{flex:1 1 auto;min-height:min-content/)
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-choice-grid\{flex:1 1 auto;min-height:min-content/)
+    expect(css).toContain('.es2-dialog-choice .es2-choice>.es2-card-art{contain:size}')
+  })
   it('keeps long choices scrollable within the dialog body and notch-safe viewport', () => {
     expect(css).toMatch(/\.es2-dialog\{[^}]*display:flex;flex-direction:column;overflow:hidden/)
     expect(css).toMatch(/\.es2-dialog-body\{[^}]*min-height:0;overflow-y:auto/)

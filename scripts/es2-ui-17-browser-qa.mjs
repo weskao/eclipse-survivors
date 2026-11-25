@@ -87,8 +87,35 @@ try {
       await page.evaluate(() => { if (!window.__test) throw new Error('Game test API unavailable'); window.__test.level() })
       const rarity = page.locator('img[data-es2-rarity-icon]')
       await rarity.first().waitFor({ state: 'visible', timeout: 30000 })
+      const choice = page.locator('.es2-dialog-choice')
+      await choice.evaluate(e => Promise.all(e.getAnimations().map(a => a.finished)))
+      const scroll = await choice.evaluate(element => {
+        const body = element.querySelector('.es2-dialog-body')
+        const scene = body.querySelector('.es2-selection-scene')
+        const bodyRect = body.getBoundingClientRect()
+        const sceneRect = scene.getBoundingClientRect()
+        const styles = getComputedStyle(body)
+        const required = Math.max(0, sceneRect.bottom - bodyRect.top + body.scrollTop - body.clientHeight)
+        element.scrollTop = element.scrollHeight
+        body.scrollTop = body.scrollHeight
+        const result = { outer: element.scrollTop, inner: body.scrollTop, required,
+          range: body.scrollHeight - body.clientHeight, horizontal: body.scrollWidth - body.clientWidth,
+          overflowY: styles.overflowY, overscroll: styles.overscrollBehaviorY }
+        body.scrollTop = 0
+        return result
+      })
+      assert.equal(scroll.outer, 0, name + ': outer choice dialog must never scroll')
+      assert.equal(scroll.overflowY, 'auto', name + ': scrolling must be conditional')
+      assert.equal(scroll.overscroll, 'none', name + ': no scroll bounce or chaining')
+      assert.ok(scroll.horizontal <= 1, name + ': choice content horizontally overflows')
+      if (scroll.required <= 1 || name === 'desktop-1440')
+        assert.ok(scroll.inner <= 1, name + ': unnecessary scrolling: ' + JSON.stringify(scroll))
+      else
+        assert.ok(scroll.inner > 0 && Math.abs(scroll.inner - scroll.range) <= 1,
+          name + ': overflowing content is not reachable: ' + JSON.stringify(scroll))
+      record.choiceScroll = scroll
       for (let i = 0; i < await rarity.count(); i++) {
-        // Every card is vertically scrollable on small phones; check its visible position after scrolling.
+        // If necessary, scroll each card into view to verify its artwork.
         await rarity.nth(i).scrollIntoViewIfNeeded()
         record.rarity.push(await measure(rarity.nth(i), name + '/rarity/' + i, width, height))
       }
