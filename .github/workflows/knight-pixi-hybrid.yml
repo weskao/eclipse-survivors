@@ -49,6 +49,13 @@ jobs:
           for i in {1..45}; do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:5173/ >/dev/null
           node scripts/knight-pixi-browser-qa.mjs
+      - name: Verify normal production entry without QA flags
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.chromium.outcome == 'success' }}
+        run: |
+          pnpm exec vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/knight-pixi-preview.log 2>&1 &
+          for i in {1..45}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          PREVIEW_URL=http://127.0.0.1:4173/ KNIGHT_DEFAULT_ONLY=1 node scripts/knight-pixi-browser-qa.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

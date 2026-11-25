@@ -15,6 +15,21 @@ const viewports = [
   { name:'landscape-812', width:812, height:375, dpr:3, candidate:true },
 ]
 try {
+  // The actual default entry must use the approved visual reference without QA flags.
+  for (const viewport of [viewports[0], viewports[5]]) {
+    const mobile = !viewport.name.startsWith('desktop')
+    const page = await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:viewport.dpr,isMobile:mobile,hasTouch:mobile})
+    try {
+      await page.goto(root)
+      await page.locator('.es2-start').waitFor({state:'visible',timeout:30000})
+      const knight = page.locator('[data-hero-id="knight"]')
+      if(await knight.count() && await knight.first().isVisible()) await knight.first().click()
+      await page.locator('.es2-start').click()
+      await page.locator('canvas[data-knight-renderer="pixi"][data-knight-rig-assets="directional"][data-knight-rig-skin="articulated"]').waitFor({state:'attached',timeout:30000})
+      await page.screenshot({path:out+'/default-'+viewport.name+'.png'})
+    } finally { await page.close() }
+  }
+  if (process.env.KNIGHT_DEFAULT_ONLY !== '1') {
   for(const viewport of viewports) {
     const mobile=!viewport.name.startsWith('desktop')
     const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:viewport.dpr,isMobile:mobile,hasTouch:mobile,
@@ -22,7 +37,7 @@ try {
     const errors=[]
     page.on('pageerror',e=>errors.push(e.message))
     try {
-      await page.goto(new URL('?knightPixi=1&knightPixiQA=1'+(viewport.candidate?'&knightRigCandidates=1':''),root).href)
+      await page.goto(new URL('?knightPixi=1&knightPixiQA=1'+(viewport.candidate?'&knightRigCandidates=1':'&knightRigCandidates=0'),root).href)
       await page.locator('.es2-start').waitFor({state:'visible',timeout:30000})
       const knight=page.locator('[data-hero-id="knight"]')
       if(await knight.count() && await knight.first().isVisible()) await knight.first().click()
@@ -71,5 +86,6 @@ try {
       await page.screenshot({path:out+'/'+preset+'-'+mode+'-crowd.png'})
       console.log(preset+' '+mode+' '+JSON.stringify(result))
     }finally{await page.close()}
+  }
   }
 }finally{await browser.close()}

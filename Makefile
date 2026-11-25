@@ -22,15 +22,14 @@ $(PIXI_DIR)/node_modules/.installed: $(PIXI_DIR)/package.json $(PIXI_DIR)/packag
 
 setup-pixi: node_modules $(PIXI_DIR)/node_modules/.installed ## Install locked game and PixiJS dependencies
 
-# Candidate directional art is explicitly enabled only for these DEV targets.
-dev-pixi: setup-pixi ## Play Knight with PixiJS and eight-direction candidate art (opens browser)
-	VITE_ES2_KNIGHT_PIXI=directional $(PNPM) dev --host localhost --port $(PORT) --open
+# Compatibility aliases; the actual game enables the reviewed rig by default.
+dev-pixi: dev ## Alias for the normal desktop game
 
 dev-pixi-unlocked: export VITE_ES2_UNLOCKED := 1
 dev-pixi-unlocked: dev-pixi ## PixiJS Knight with disposable unlocked progression
 
-phone-pixi: setup-pixi ## Play PixiJS Knight over trusted LAN (open computer IP and PORT)
-	VITE_ES2_KNIGHT_PIXI=directional $(PNPM) dev --host 0.0.0.0 --port $(PORT)
+phone-pixi: node_modules ## Play the normal game over trusted LAN without the optional phone helper
+	$(PNPM) dev --host 0.0.0.0 --port $(PORT)
 
 phone-pixi-unlocked: export VITE_ES2_UNLOCKED := 1
 phone-pixi-unlocked: phone-pixi ## Phone PixiJS playtest with disposable unlocked progression

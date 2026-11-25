@@ -8,8 +8,7 @@ import { needsRigRender } from './frame-policy.mjs'
 import { KNIGHT_RIG, defineRig, facingFor, validateViews, sampleRigVfx } from './rig.mjs'
 
 
-// DEV actor-only GPU compositing, NOT a second game loop. Actual texture quality
-// and Canvas/GPU copy cost must be measured before promoting this architecture.
+// Actor-only GPU compositing, NOT a second game loop. Keep Canvas as a fallback.
 export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job = 'knight', directionalLayers } = {}) {
   profile=defineRig(profile)
   const W=profile.width,H=profile.height,WIDTH=Math.ceil(W*2.5),HEIGHT=Math.ceil(H*1.85),FOOT_X=WIDTH/2,FOOT_Y=HEIGHT-H*.4
@@ -59,7 +58,7 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
       return {group,body,buffer,vertices,skin,human,weapon,layer,profile:viewProfile}
     }
     // A second hero supplies its own validated rig profile and same-handed native layers.
-    // Directional textures are opt-in and loaded once, never created per frame.
+    // Directional textures are loaded once, never created per frame.
     const views=directionalLayers ? validateViews(directionalLayers.map(v=>v.meta),profile.weaponHand).map(meta=>{
       const v=directionalLayers.find(x=>x.meta.direction===meta.direction)
       return createView(v.layers,defineRig({...profile,...v.profile,id:profile.id,sourceAngle:meta.sourceAngle}),meta.footAnchor,meta.weaponDepth)
@@ -145,7 +144,13 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             if(d.knightRigPose!==pose)d.knightRigPose=pose
             if(d.knightRigRenders!==count)d.knightRigRenders=count
           }
-          if(!reported){reported=true;report('pixi')}
+          if(!reported){
+             if(ctx.canvas?.dataset){
+               ctx.canvas.dataset.knightRigSkin=active.human?'articulated':'legacy'
+               ctx.canvas.dataset.knightRigAssets=views?'directional':'legacy'
+             }
+             reported=true;report('pixi')
+           }
           return true
         } catch(error){console.warn('Knight GPU rendering failed',error);failed=true;report('canvas');return false}
       },
@@ -159,12 +164,12 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
   }catch(error){app.destroy(true,{children:true,texture:true,textureSource:true});throw error}
 }
 
-// The optional imported candidate remains outside the production build. Missing or
-// invalid art never prevents the original single-view candidate from working.
+// Knight's reviewed directional visuals are the default. Missing or invalid art
+// still permits the original single-view fallback; other heroes need their own rig.
 export async function createKnightPixi(image,report) {
   let directionalLayers
   const candidateQuery=new URLSearchParams(location.search).get('knightRigCandidates')
-  if(candidateQuery==='1'||(candidateQuery===null&&import.meta.env.DEV&&import.meta.env.VITE_ES2_KNIGHT_PIXI==='directional')){
+  if(candidateQuery!=='0'){
     try{
       const manifests=import.meta.glob('./assets/knight/manifest.json',{eager:true,import:'default'})
       const urls=import.meta.glob('./assets/knight/*.webp',{eager:true,query:'?url',import:'default'})

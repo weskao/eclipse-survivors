@@ -1,4 +1,4 @@
-import { cpSync, readFileSync, existsSync } from 'node:fs'
+import { cpSync, readFileSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
@@ -29,18 +29,17 @@ const copyRootStatics = (): Plugin => {
   }
 }
 
-// Keep the candidate package isolated until the measured release gate passes.
-// The stub preserves frozen-lockfile installs and production builds without PixiJS.
+// Real game renderer in both serve and build; jsdom tests use the existing stub.
 const knightPixi = (): Plugin => {
   const virtualId = String.fromCharCode(0) + 'virtual:knight-pixi'
-  let dev = false
+  let test = false
   return {
     name: 'knight-pixi-candidate',
-    configResolved(config) { dev = config.command === 'serve' && config.mode !== 'test' },
+    configResolved(config) { test = config.mode === 'test' },
     resolveId(id) { if (id === 'virtual:knight-pixi') return virtualId },
     load(id) {
       if (id !== virtualId) return
-      if (!dev || !existsSync(new URL('./experiments/pixijs-knight/node_modules/pixi.js/package.json', import.meta.url)))
+      if (test)
         return 'export async function createKnightPixi() { return null }'
       return 'export { createKnightPixi } from "/experiments/pixijs-knight/live.mjs"'
     },

@@ -999,8 +999,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const assets: RenderAssets = createRenderAssets(art)
     assets.productionHeroes = loadProductionHeroes()
     const knightPixiQuery = new URLSearchParams(window.location.search).get('knightPixi')
-    const knightPixiEnabled = import.meta.env.DEV && (knightPixiQuery === '1' ||
-      (knightPixiQuery === null && import.meta.env.VITE_ES2_KNIGHT_PIXI === 'directional'))
+    const knightPixiEnabled = knightPixiQuery !== '0'
     let knightPixiStarted = false
     let mounted = true
     const reportKnightRenderer = (mode: 'pixi' | 'canvas'): void => {
