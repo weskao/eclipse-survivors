@@ -290,11 +290,11 @@ export function drawCharacter(
         || (productionImage?.complete
           && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512)
       // Follow the same octant/facing contract as the original three heroes.
-      // A 900px portrait has only one authored view, so mirror it for westward
-      // aim without pretending to have eight different camera perspectives.
+      // Keep legacy rig mirroring only for the original classes. Specialization
+      // portraits contain baked equipment and have no approved portrait mirror.
       const facing = anim.direction === 2 || anim.direction === 6 ? hero.face
         : anim.direction > 2 && anim.direction < 6 ? -1 : 1
-      if (facing < 0 && !directionalReady) ctx.scale(-1, 1)
+      if (facing < 0 && !directionalReady && !isSpecializationId(s.heroId)) ctx.scale(-1, 1)
       let productionDrawn = productionImage
         ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock) : false
       if (!productionDrawn && isSpecializationId(s.heroId)) {

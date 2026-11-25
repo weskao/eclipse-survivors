@@ -394,13 +394,9 @@ function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: 
       -paintedWidth / 2, 4 - paintedHeight * footBottom / cell, paintedWidth, paintedHeight)
     ctx.restore()
   } else {
-    // Canonical portraits only face right. During a pending west-facing sheet,
-    // mirror the portrait here, not in the outer scene, so the blend does not
-    // flip the same hero twice when the directional WebP finishes loading.
-    ctx.save()
-    if (frame.anim.direction > 2 && frame.anim.direction < 6) ctx.scale(-1, 1)
+    // The canonical portrait is a temporary same-character fallback, not
+    // directional art. Never reflect its baked weapons or costume details.
     drawPortraitMotion(ctx, frame.atlas, frame.anim, width, height)
-    ctx.restore()
   }
 }
 

@@ -53,6 +53,24 @@ describe('ES2 new heroes share the original three heroes\' source-illustration +
     drawHero(id, portrait, true)
   })
 
+  it.each(ids)('%s never reflects the canonical fallback when facing west in the scene', id => {
+    const s = createState()
+    resetRun(s)
+    s.mode = 'play'
+    s.heroId = id
+    s.choice = HERO_DEFINITIONS[id].legacyArtJob
+    s.W = 800; s.H = 600
+    s.hero!.face = -1
+    const portrait = source()
+    const result = createFakeCtx()
+    const flips: number[] = []
+    result.ctx.scale = (x: number) => { if (x < 0) flips.push(x) }
+    drawCharacter(result.ctx, s, fakeArtwork(true), {}, s.hero!, 100, 100,
+      false, undefined, undefined, { [id]: portrait } as unknown as ProductionHeroArtwork)
+    expect(result.drawn).toContain(portrait)
+    expect(flips).toEqual([])
+  })
+
   it.each(ids)('%s generates a 3x cached run/attack/cast sequence from the same source', () => {
     const factory = fakeCanvasFactory()
     const sheets = createHeroSheets(factory.make)

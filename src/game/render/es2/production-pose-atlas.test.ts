@@ -229,6 +229,23 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     expect(calls).toHaveLength(1)
   })
 
+  it.each(ids)('preserves %s baked equipment when a westward directional sheet is pending', heroId => {
+    const portrait = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      heroId, poseAtlases: {} } as unknown as HTMLImageElement
+    for (const direction of [3, 4, 5]) {
+      for (const reducedMotion of [false, true]) {
+        const flips: number[] = []
+        const { ctx, calls } = capture()
+        ctx.scale = (x: number) => { if (x < 0) flips.push(x) }
+        expect(drawProductionHeroFrame(ctx, portrait,
+          anim({ pose: 'run', direction, reducedMotion }), 117, 147, undefined, 0)).toBe(true)
+        expect(calls.length).toBeGreaterThan(0)
+        expect(calls.every(call => call[0] === portrait)).toBe(true)
+        expect(flips).toEqual([])
+      }
+    }
+  })
+
   it('falls back to its own portrait when split sheets are not decoded yet', () => {
     const { ctx, calls } = capture()
     const portrait = { complete: true, naturalWidth: 900, naturalHeight: 900 } as HTMLImageElement
