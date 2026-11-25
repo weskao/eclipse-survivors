@@ -13,6 +13,7 @@ const english = new Map<string, string>([
   ['生命危急', 'Critical health'],
   ['瀕死', 'Near death'],
   ["查看英雄詳情", "View hero details"],
+  ["查看詳情：{name}", "View details: {name}"],
   ["返回英雄選擇", "Back to heroes"],
   ["目前遠征", "Current expedition"],
   ["變更遠征", "Change expedition"],
