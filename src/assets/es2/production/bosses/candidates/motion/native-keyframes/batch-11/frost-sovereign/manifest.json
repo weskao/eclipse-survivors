@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "63b273f04f0d87b6f630b44e20ba6763414fe493",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "staff-lower-key-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/staff-lower-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "10589b69-8230-4077-9ff4-b6792376d4ca",
+        "originalPngSha256": "071f2906060fe15c8494a6f72a0b34c57991ae1ffa6b6e3988ab87bd488ad9a7",
+        "canonicalReferenceHead": "63b273f04f0d87b6f630b44e20ba6763414fe493"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1315,
+      "cellHeight": 1196,
+      "frameRects": [
+        [
+          0,
+          0,
+          1315,
+          1196
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        657.5,
+        598.0
+      ],
+      "alphaBounds": [
+        167,
+        76,
+        1141,
+        1147
+      ],
+      "alphaAnyBounds": [
+        0,
+        19,
+        1315,
+        1196
+      ],
+      "alphaExtent": [
+        974,
+        1071
+      ],
+      "actualSourceResolution": [
+        1315,
+        1196
+      ],
+      "sourceEdgeMargins": [
+        167,
+        76,
+        174,
+        49
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "ca8e4cb7f70387b70f321eacc386d829cbe287a797025d3bd7f0f169e79ac7e1",
+      "webpCompressedBytes": 558740,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Bowed body and low staff; possible early recovery. No approved anchor, phase or timing. Source alpha may touch edge; visual QA remains pending."
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "recoil-key-a",
+      "pose": "hurt",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/recoil-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "475d6610-d0af-4eeb-bc5e-7c6a6a6340ee",
+        "originalPngSha256": "1f9381e55380a881dfade1dd011866366e2542517d9d27d100d1ac1795a0b3db",
+        "canonicalReferenceHead": "63b273f04f0d87b6f630b44e20ba6763414fe493"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1313,
+      "cellHeight": 1198,
+      "frameRects": [
+        [
+          0,
+          0,
+          1313,
+          1198
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.5,
+        599.0
+      ],
+      "alphaBounds": [
+        93,
+        43,
+        1208,
+        1151
+      ],
+      "alphaAnyBounds": [
+        0,
+        9,
+        1299,
+        1198
+      ],
+      "alphaExtent": [
+        1115,
+        1108
+      ],
+      "actualSourceResolution": [
+        1313,
+        1198
+      ],
+      "sourceEdgeMargins": [
+        93,
+        43,
+        105,
+        47
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "fd5eb1994b755c93eefa825ca756015b4d9d8d03cd0d79036511c690ce907b8c",
+      "webpCompressedBytes": 614932,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Backward torso arc with staff held; isolated hit reaction candidate. Source alpha may touch edge; visual QA remains pending."
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "staff-lower-key-b",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/staff-lower-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "5c8027d8-a47b-433a-ab6a-8e4953e68d84",
+        "originalPngSha256": "c02d8f47aa7dcbfa3e1f333363876de6f879768921f2edcda16a6178f8dbc971",
+        "canonicalReferenceHead": "63b273f04f0d87b6f630b44e20ba6763414fe493"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        95,
+        32,
+        1212,
+        1162
+      ],
+      "alphaAnyBounds": [
+        0,
+        9,
+        1298,
+        1199
+      ],
+      "alphaExtent": [
+        1117,
+        1130
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        95,
+        32,
+        100,
+        37
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "8ef144dd89a31fa320c8d5b8c33f94dc6bf9076602d1fe39a6f10a03920b9e33",
+      "webpCompressedBytes": 645768,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Lowered staff and leaning body; alternative recovery, not a verified next frame. Source alpha may touch edge; visual QA remains pending."
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "staff-lower-key-c",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/staff-lower-key-c.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "d7e6363f-6570-43a7-a3d8-237ae9c23c30",
+        "originalPngSha256": "b733cef2252dd395a9438c19dc1466cb486089ca74699ec5a9380d8de6d962e2",
+        "canonicalReferenceHead": "63b273f04f0d87b6f630b44e20ba6763414fe493"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        51,
+        68,
+        1267,
+        1140
+      ],
+      "alphaAnyBounds": [
+        0,
+        17,
+        1300,
+        1199
+      ],
+      "alphaExtent": [
+        1216,
+        1072
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        51,
+        68,
+        45,
+        59
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "365ebfeec8cfe962adf863fe0eb1a3b8cff185b1fb8c1281b924484a0ab5b4a7",
+      "webpCompressedBytes": 758886,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Forward lean and lowered staff; alternative recovery, not a verified next frame. Source alpha may touch edge; visual QA remains pending."
+    }
+  ],
+  "missing": [
+    "idle and locomotion",
+    "verified attack-specific release sequence and recovery",
+    "hurt and phase-specific transformations",
+    "death sequence",
+    "direction, hover anchor, visual and runtime QA"
+  ]
+}
