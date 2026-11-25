@@ -141,6 +141,17 @@ try {
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
       await verifyPage('[data-hero], [data-hero-id]', 6, width >= 1000 && height >= 700)
       const hoverCapable = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
+      const cursor = await page.evaluate(() => ({
+        body: getComputedStyle(document.body).cursor,
+        action: getComputedStyle(document.querySelector('.es2-start')).cursor
+      }))
+      if (hoverCapable) {
+        assert.match(cursor.body, /url\(/, name + ': desktop themed cursor missing')
+        assert.match(cursor.action, /url\(/, name + ': desktop themed action cursor missing')
+        assert.notEqual(cursor.body, cursor.action, name + ': actionable cursor must differ')
+      } else {
+        assert.ok(!cursor.body.includes('url(') && !cursor.action.includes('url('), name + ': custom cursor on touch')
+      }
       if (hoverCapable) {
         assert.equal(await page.locator('[data-es2-hero-details]:visible').count(), 0, name + ': desktop detail buttons')
         const card = page.locator('[data-hero="wizard"]')

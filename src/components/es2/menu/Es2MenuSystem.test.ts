@@ -4,6 +4,8 @@ import { nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { emptyProfile } from '../../../meta/profile'
+import { createMetaState } from '../../../game/content/meta/state'
+import { cosmeticAura } from '../../../meta/cosmetics'
 import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
 import Es2MenuSystem from './Es2MenuSystem.vue'
@@ -37,6 +39,41 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('mode')).toEqual([['challenge']])
     expect(wrapper.emitted('start')).toHaveLength(1)
     expect(find('[data-hero="knight"] img').getAttribute('src')).toBeTruthy()
+  })
+
+  it('uses a single progression heading and authoritative hall wallet without redundant inner chrome', async () => {
+    const profile = emptyProfile()
+    profile.embers = 184
+    const state = createMetaState()
+    state.embers = 184
+    mounted({ profile, metaState: state, metaStatus: 'ready' })
+    click('.es2-hall-links button')
+    await nextTick()
+    const archive = find('[data-es2-archive-page]')
+    expect(archive.querySelectorAll('h2')).toHaveLength(1)
+    expect(archive.querySelector('.es2-progression-wallet')).toBeNull()
+    expect(document.querySelectorAll('[data-es2-ember-wallet]')).toHaveLength(1)
+    expect(find('[data-es2-ember-value]').textContent).toBe('184')
+    expect(archive.querySelector('[data-research="power"]')).not.toBeNull()
+  })
+
+  it('previews the actual equipped cosmetic palette and forwards unlocked selection without mutating the profile', async () => {
+    const profile = emptyProfile()
+    profile.unlockedCosmetics.push('knight-gilded')
+    const wrapper = mounted({ profile })
+    click('.es2-hall-links button')
+    await nextTick()
+    const skin = find('[data-es2-cosmetic-option="knight-gilded"]')
+    expect(skin.querySelector('img')?.getAttribute('src')).toBeTruthy()
+    expect(skin.style.getPropertyValue('--es2-skin-ring')).toBe(cosmeticAura('knight-gilded')[1])
+    skin.click()
+    expect(wrapper.emitted('cosmetic')).toEqual([['knight', 'knight-gilded']])
+    expect(profile.equippedCosmetics.knight).toBe('knight-default')
+    await wrapper.setProps({ profile: { ...profile, equippedCosmetics: { ...profile.equippedCosmetics, knight: 'knight-gilded' } } })
+    expect(skin.getAttribute('aria-pressed')).toBe('true')
+    expect(find('[data-hero="knight"]').getAttribute('data-es2-cosmetic')).toBe('knight-gilded')
+    expect(find('[data-hero="knight"]').style.getPropertyValue('--es2-skin-ring')).toBe(cosmeticAura('knight-gilded')[1])
+    expect(cosmeticAura('knight-default')).not.toEqual(cosmeticAura('knight-gilded'))
   })
 
   it('opens progression, spends nothing without funds, and confirms reset safely', async () => {
