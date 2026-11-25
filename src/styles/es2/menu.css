@@ -930,5 +930,12 @@
   .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-grid,.es2-roster){min-height:0;grid-template-rows:minmax(0,1fr)}
   .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-card,.es2-roster__card){min-height:0}
   .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-card > img,.es2-roster__portrait){flex:1 1 0;min-height:0;height:0;max-height:none;object-fit:contain;padding:4px 2px}
-  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-copy,.es2-roster__copy){flex:0 0 auto}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-hero-copy{flex:0 0 auto}
+}
+
+/* Keep the nine expedition choices above the fixed dock on compact wide screens. */
+@media (min-width:1000px) and (min-height:700px) and (max-height:800px) {
+  .es2-menu[data-es2-menu-page="modes"] .es2-menu-shell{gap:6px}
+  .es2-menu[data-es2-menu-page="modes"] .es2-objective-grid{gap:6px}
+  .es2-menu[data-es2-menu-page="modes"] .es2-objective-choice{min-height:64px;padding-block:4px}
 }
