@@ -9,6 +9,7 @@ import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
+import { preloadEnemyReleaseArt } from './enemy-motion'
 import type { HealthBarMotion, HealthBarTarget } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
@@ -65,6 +66,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     : null
   preloadHeroSpecialVfx()
   preloadBossAttackArt()
+  preloadEnemyReleaseArt()
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     heroSheets: createHeroSheets(makeCanvas),

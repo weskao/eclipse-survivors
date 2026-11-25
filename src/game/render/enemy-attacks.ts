@@ -1,6 +1,6 @@
 import { TAU } from '../constants'
 import { BALANCE } from '../config'
-import { drawEnemyRelease, preloadEnemyReleaseArt } from './enemy-motion'
+import { drawEnemyRelease } from './enemy-motion'
 import type { GameState, Mob } from '../types'
 import type { Ctx2D } from './ctx'
 import type { ProjectileSprites } from './projectile-art'
@@ -55,7 +55,6 @@ function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number, reduced: boolean)
 }
 
 export function drawEnemyTelegraphs(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced = false): void {
-  preloadEnemyReleaseArt()
   for (const enemy of s.mobs) {
     if (enemy.hp <= 0 || !enemy.ai) continue
     const ai = enemy.ai

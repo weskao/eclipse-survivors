@@ -1,5 +1,5 @@
 import { drawEnergyMissile } from '../energy-art'
-import { applyEnemyPose, applyEnemyRecoil, enemyWeight, preloadEnemyReleaseArt } from '../enemy-motion'
+import { applyEnemyPose, applyEnemyRecoil, enemyWeight } from '../enemy-motion'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import assassinMasterUrl from '../../../assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
 import frostWraithMasterUrl from '../../../assets/es2/production/enemies/masters/frost-wraith-6poses-3x2-master-1536x1024.png?url'
@@ -69,7 +69,6 @@ export function drawLiveFactionArt(
   ox: number, oy: number,
   healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reducedMotion = false, showFullHealthBars = false,
 ): number {
-  preloadEnemyReleaseArt()
   // Original warning geometries, tied to true aim/radius, are painted first.
   drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy, reducedMotion, state.W, state.H)
   let drawn = 0

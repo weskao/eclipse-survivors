@@ -30,13 +30,20 @@ export function drawFactionTelegraphs(
       // The beam uses the direction locked at windup, never the live hero position.
       ctx.moveTo(enemy.x + ox, enemy.y + oy)
       ctx.lineTo(enemy.x + enemy.facingX * 400 + ox, enemy.y + enemy.facingY * 400 + oy)
-    } else if (enemy.kind === 'shadow-assassin') {
-      ctx.moveTo(enemy.x + ox, enemy.y + oy)
-      ctx.lineTo(enemy.aimX + ox, enemy.aimY + oy)
+    } else if (enemy.kind === 'shadow-assassin' || enemy.kind === 'dark-archer' || enemy.kind === 'frost-wraith') {
+      // Aimed missile and dash warnings follow their locked direction instead of an unrelated circle.
+      const x = enemy.x + ox, y = enemy.y + oy
+      const tx = enemy.aimX + ox, ty = enemy.aimY + oy
+      if (Math.max(x, tx) < -30 || Math.min(x, tx) > width + 30 || Math.max(y, ty) < -30 || Math.min(y, ty) > height + 30) continue
+      ctx.moveTo(x, y)
+      ctx.lineTo(tx, ty)
     } else {
       const radius = enemy.kind === 'fire-imp' ? 82
         : enemy.kind === 'plague-carrier' ? 75
-          : enemy.radius + 45
+          : enemy.kind === 'shield-guardian' ? enemy.radius + 50
+            : enemy.kind === 'berserker' ? enemy.radius + 47
+              : enemy.kind === 'phantom' ? enemy.radius + 48
+                : enemy.kind === 'necromancer' ? 110 : enemy.radius + 45
       const aimed = enemy.kind === 'fire-imp' || enemy.kind === 'plague-carrier'
       const x = (aimed ? enemy.aimX : enemy.x) + ox
       const y = (aimed ? enemy.aimY : enemy.y) + oy
