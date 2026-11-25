@@ -1,0 +1,2 @@
+# Optional DEV rig art
+Place the imported candidate manifest.json and sixteen 3× WebPs here. File names must match manifest. Candidate PNG masters stay outside runtime. Convert copies using weskao/polytool `towebp -c -q 95`. Use ?knightPixi=1&knightRigCandidates=1 for explicit QA. No candidate is production approved. The default remains the canonical source. A source atlas is not a fully repaired layered skeleton.

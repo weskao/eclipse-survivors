@@ -21,7 +21,7 @@ export function facingFor(_profile, motion, previous = 0) {
 }
 /** All eight independently authored, same-handed views; no inferred mirror. */
 export function validateViews(views, weaponHand) {
-  if (!['left','right'].includes(weaponHand) || !Array.isArray(views) || views.length !== 8 || new Set(views.map(v=>v.direction)).size !== 8 || views.some(v=>!Number.isInteger(v.direction)||v.direction<0||v.direction>7||!pair(v.grip)||!finite(v.sourceAngle)||v.weaponHand!==weaponHand||typeof v.body!=='string'||!v.body||typeof v.weapon!=='string'||!v.weapon||v.body===v.weapon)) throw new RangeError('Invalid directional layers')
+  if (!['left','right'].includes(weaponHand) || !Array.isArray(views) || views.length !== 8 || new Set(views.map(v=>v.direction)).size !== 8 || views.some(v=>!Number.isInteger(v.direction)||v.direction<0||v.direction>7||!pair(v.grip)||(v.footAnchor!==undefined&&!pair(v.footAnchor))||!finite(v.sourceAngle)||v.weaponHand!==weaponHand||typeof v.body!=='string'||!v.body||typeof v.weapon!=='string'||!v.weapon||v.body===v.weapon)) throw new RangeError('Invalid directional layers')
   return immutable(structuredClone(views).sort((a,b)=>a.direction-b.direction))
 }
 /** Visual clock only: no particle allocations or changes to combat. */

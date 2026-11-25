@@ -1,8 +1,8 @@
-import { Application, Container, MeshPlane, Sprite, Texture } from 'pixi.js'
+import { Application, Container, Graphics, MeshPlane, Sprite, Texture } from 'pixi.js'
 import { getRigidWeaponLayers } from '../../src/game/render/rigid-weapons.ts'
 import { sampleWeaponRig } from '../../src/game/render/weapon-rig.ts'
 import { advanceRigMotion, createRigSkin, deformRig, meshPoint } from './motion.mjs'
-import { rigidSword } from './pose.mjs'
+import { loadDirectionalAssets } from './rig-assets.mjs'
 import { KNIGHT_RIG, defineRig, facingFor, validateViews, sampleRigVfx } from './rig.mjs'
 
 
@@ -22,11 +22,17 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
     const root=new Container()
     root.position.set(FOOT_X,FOOT_Y)
     app.stage.addChild(root)
-    function createView(layer, viewProfile) {
+    // Static local VFX geometry is created once; only transform/alpha changes per draw.
+    const dashFx=new Graphics().ellipse(0,0,38,10).stroke({color:0x99d7ff,width:2,alpha:.55})
+    const slashFx=new Graphics().arc(0,0,34,-.9,.75).stroke({color:0xffd17b,width:4,alpha:.8}).arc(0,0,34,-.8,.65).stroke({color:0xfff5cf,width:1.5})
+    const specialFx=new Graphics().circle(0,0,42).stroke({color:0xe8c06a,width:2,alpha:.7}).circle(0,0,35).stroke({color:0xffdf9e,width:1})
+    root.addChild(dashFx)
+    dashFx.visible=slashFx.visible=specialFx.visible=false
+    function createView(layer, viewProfile, anchor=[.5,1]) {
       const group=new Container()
       const body=new MeshPlane({texture:Texture.from(layer.body),verticesX:11,verticesY:13})
       body.autoResize=false
-      body.position.set(-W/2,-H+4)
+      body.position.set(-W*anchor[0],-H*anchor[1]+4)
       const buffer=body.geometry.getBuffer('aPosition'), vertices=buffer.data
       const rest=new Float32Array(vertices.length)
       for(let i=0;i<vertices.length;i+=2){
@@ -34,21 +40,21 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
         rest[i+1]=vertices[i+1]*H/layer.body.height
       }
       const skin=createRigSkin(rest,W,H,layer.grip,viewProfile)
-      const restGrip=meshPoint(rest,11,13,...layer.grip)
       const weapon=new Sprite(Texture.from(layer.weapon))
       weapon.anchor.set(...layer.grip)
       group.addChild(body,weapon)
       group.visible=false
       root.addChild(group)
-      return {group,buffer,vertices,skin,restGrip,weapon,layer,profile:viewProfile}
+      return {group,body,buffer,vertices,skin,weapon,layer,profile:viewProfile}
     }
     // A second hero supplies its own validated rig profile and same-handed native layers.
     // Directional textures are opt-in and loaded once, never created per frame.
     const views=directionalLayers ? validateViews(directionalLayers.map(v=>v.meta),profile.weaponHand).map(meta=>{
       const v=directionalLayers.find(x=>x.meta.direction===meta.direction)
-      return createView(v.layers,defineRig({...profile,...v.profile,id:profile.id,sourceAngle:meta.sourceAngle}))
+      return createView(v.layers,defineRig({...profile,...v.profile,id:profile.id,sourceAngle:meta.sourceAngle}),meta.footAnchor)
     }) : null
     const fallback=views?null:createView(layers,profile)
+    root.addChild(slashFx,specialFx)
     const canvas=app.canvas
     const onLost=event=>{event.preventDefault();failed=true;report('canvas')}
     canvas.addEventListener('webglcontextlost',onLost)
@@ -72,17 +78,28 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             const selected=views?views[facing]:fallback
             if(active!==selected){if(active)active.group.visible=false;selected.group.visible=true;active=selected}
             const current=advanceRigMotion(old,input,selected.profile)
-            const {vertices,skin,buffer,restGrip,weapon:sword,layer}=selected
+            const {body,vertices,skin,buffer,weapon:sword,layer}=selected
             deformRig(skin,vertices,current)
             buffer.update()
             const grip=meshPoint(vertices,11,13,...layer.grip)
-            const transform=rigidSword(layer.weapon.width,layer.weapon.height,H,layer.grip,W,grip.x-restGrip.x,grip.y-restGrip.y,current.blade)
-            sword.position.set(transform.x,transform.y)
-            sword.scale.set(transform.scale)
-            sword.rotation=transform.rotation
+            sword.position.set(body.position.x+grip.x,body.position.y+grip.y)
+            sword.scale.set(H/layer.weapon.height)
+            sword.rotation=current.blade
             // GPU sprite tint is a local feedback effect, no full-screen flashing or extra filter pass.
             const effect=sampleRigVfx(anim,reduceFlashing)
             sword.tint=effect.flash>0?0xffdfa7:0xffffff
+            slashFx.visible=effect.slash>0
+            slashFx.alpha=effect.slash
+            slashFx.position.copyFrom(sword.position)
+            slashFx.rotation=hero.aimAngle
+            dashFx.visible=effect.dash>0
+            dashFx.alpha=effect.dash
+            dashFx.rotation=current.heading
+            dashFx.scale.set(1+(1-effect.dash)*.3,1)
+            specialFx.visible=effect.special>0
+            specialFx.alpha=effect.special
+            specialFx.position.set(0,-H*.45)
+            specialFx.scale.set(.8+effect.special*.3)
             app.render()
             old={...current,reduceFlashing}
           }
@@ -101,4 +118,25 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
   }catch(error){app.destroy(true,{children:true,texture:true,textureSource:true});throw error}
 }
 
-export const createKnightPixi = (image,report) => createHeroPixi(image,report)
+// The optional imported candidate remains outside the production build. Missing or
+// invalid art never prevents the original single-view candidate from working.
+export async function createKnightPixi(image,report) {
+  let directionalLayers
+  if(new URLSearchParams(location.search).get('knightRigCandidates')==='1'){
+    try{
+      const manifests=import.meta.glob('./assets/knight/manifest.json',{eager:true,import:'default'})
+      const urls=import.meta.glob('./assets/knight/*.webp',{eager:true,query:'?url',import:'default'})
+      const manifest=manifests['./assets/knight/manifest.json']
+      if(!manifest)throw new Error('Knight candidate asset manifest missing')
+      directionalLayers=await loadDirectionalAssets(manifest,KNIGHT_RIG,async name=>{
+        const url=urls['./assets/knight/'+name]
+        if(typeof url!=='string')throw new Error('Missing rig layer '+name)
+        const layer=new Image()
+        layer.src=url
+        await layer.decode()
+        return layer
+      },{allowCandidate:true})
+    }catch(error){console.warn('Knight directional candidate rejected; original source retained',error)}
+  }
+  return createHeroPixi(image,report,{directionalLayers})
+}
