@@ -30,3 +30,11 @@ describe('level-up stat comparisons', () => {
     }
   })
 })
+
+it('shows distinct non-damage capstone improvements for every arsenal weapon',()=>{
+  const labels=['彈跳次數','穿透數量','技能作用範圍','技能作用範圍','穿透數量','效果持續時間','彈跳次數','技能冷卻時間','光束寬度','技能作用範圍','穿透數量','效果持續時間']
+  WEAPON_SPECS.forEach((weapon,i)=>{
+    const rows=upgradeStatPreview('weapons:'+weapon.key,4,5)!
+    expect(rows.some(row=>row.label===labels[i]),weapon.key).toBe(true)
+  })
+})

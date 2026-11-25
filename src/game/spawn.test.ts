@@ -182,3 +182,22 @@ it('drives all seven assault compositions and recovery through the production sp
   }
   const s = setup(); s.runMode = 'endless'; s.time = 42; s.spawnT = 0; tickSpawning(s,.016,spyHooks()); expect(s.mobs).toHaveLength(0)
 })
+
+it('uses seeded live encounter selection rather than always using seed zero',()=>{
+  const s=setup(); s.runMode='endless'; s.directorSeed=4; s.time=20; s.bossSpawned=true
+  setRandom(seeded(9)); tickSpawning(s,.016,spyHooks())
+  expect(s.mobs.length).toBeGreaterThan(0)
+  expect(s.mobs.every(m=>m.type==='golem')).toBe(true)
+})
+it('gives treasure-rush faction enemies the same advertised reward multiplier',()=>{
+  const s=setup(), bridge=createFactionBridge({random:seeded(1)})
+  s.runMode='endless';s.bossSpawned=true;s.time=5*48+20
+  setRandom(seeded(8))
+  tickSpawning(s,.016,spyHooks(),undefined,0,bridge)
+  const e=bridge.runtime.enemies[0]!
+  expect(e.rewardXpMultiplier).toBe(1.5)
+  const before=s.stars.length
+  bridge.hitFaction(s,e,10000,s.hero!.x,s.hero!.y,spyHooks())
+  expect(s.stars.length).toBe(before+1)
+  expect(s.stars.at(-1)!.value).toBeGreaterThan(0)
+})
