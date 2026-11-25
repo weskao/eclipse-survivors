@@ -1,0 +1,118 @@
+/* All ES2 weapon, passive, and evolution skill choices share one art-first treatment.
+   Existing rarity colors, native 3x WebP, accessibility, and dialog scrolling stay authoritative. */
+.es2-skill-card.es2-rarity-common{--es2-skill-aura:#a8cfde55;--es2-skill-rim:#b9cde5}
+.es2-skill-card.es2-rarity-rare{--es2-skill-aura:#70d7ff66;--es2-skill-rim:#afeaff}
+.es2-skill-card.es2-rarity-epic{--es2-skill-aura:#e59dff73;--es2-skill-rim:#f4c5ff}
+.es2-skill-card.es2-rarity-legendary{--es2-skill-aura:#ffc97980;--es2-skill-rim:#ffe7b2}
+.es2-skill-card{
+  isolation:isolate;
+  border-radius:16px;
+  border-width:1.5px;
+  background:
+    radial-gradient(ellipse 120% 65% at 50% -15%,var(--es2-skill-aura),transparent 70%),
+    var(--es2-card-bg);
+  box-shadow:0 12px 27px #000a,inset 0 1px 0 #fff3,inset 0 0 0 1px #ffe6b012;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease,filter .18s ease;
+}
+.es2-skill-card::before{height:4px;background:linear-gradient(90deg,transparent,var(--es2-skill-rim) 24%,var(--es2-skill-rim) 76%,transparent)}
+.es2-skill-card::after{
+  content:'';position:absolute;inset:6px;z-index:0;pointer-events:none;
+  border:1px solid #fff2;clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+  border-radius:11px;
+}
+.es2-skill-card .es2-card-art{
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse 48% 65% at 50% 49%,var(--es2-skill-aura),transparent 100%),
+    repeating-linear-gradient(140deg,transparent 0 23px,#ffffff05 24px 25px,transparent 26px 49px),
+    var(--es2-card-art-bg);
+  box-shadow:inset 0 -15px 28px #050b1980;
+}
+.es2-skill-card .es2-card-art::before{
+  content:'';position:absolute;inset:9px 17%;pointer-events:none;
+  border:1px solid var(--es2-skill-aura);border-radius:50%;
+  box-shadow:0 0 20px var(--es2-skill-aura),inset 0 0 15px var(--es2-skill-aura);
+  transform:scaleY(.78);
+}
+.es2-skill-card .es2-card-art picture{
+  position:relative;z-index:1;
+  display:grid;place-items:center;
+  width:100%;height:100%;
+}
+.es2-skill-card .es2-card-art img{
+  display:block;position:relative;z-index:1;width:100%;height:100%;
+  object-fit:contain;object-position:center;padding:8px;
+  filter:drop-shadow(0 5px 9px #0009);
+}
+.es2-skill-card .es2-card-glyph{position:relative;z-index:1;text-shadow:0 0 17px var(--es2-skill-aura)}
+.es2-skill-card .es2-card-meta{
+  position:relative;z-index:1;
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:35px;
+}
+.es2-skill-card .es2-rarity-label{
+  font-weight:900;letter-spacing:.06em;color:var(--es2-skill-rim);
+  text-shadow:0 1px 2px #000c,0 0 10px var(--es2-skill-aura);
+}
+.es2-skill-card .es2-card-name{
+  position:relative;z-index:1;color:var(--es2-card-title);
+  font-weight:900;font-size:clamp(1rem,1.33vw,1.16rem);
+  letter-spacing:.015em;line-height:1.35;
+  text-shadow:0 2px 6px #000b;
+}
+.es2-skill-card .es2-card-level{
+  position:relative;z-index:1;align-self:flex-start;
+  margin:5px 12px 0;padding:5px 10px;
+  background:#07111fc9;border:1px solid var(--es2-card-border);border-radius:7px;
+  color:var(--es2-skill-rim);font:800 .77rem/1.3 system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+.es2-skill-card .es2-card-description{
+  position:relative;z-index:1;color:var(--es2-card-description);
+  font-weight:550;line-height:1.55;text-shadow:0 1px 3px #0008;
+}
+.es2-skill-card .es2-card-requirements{position:relative;z-index:1}
+.es2-skill-card .es2-key-hint{
+  border-color:var(--es2-skill-rim);background:#091420e8;
+  color:var(--es2-skill-rim);font-weight:900;
+}
+.es2-skill-card:hover:not(:disabled),.es2-skill-card.es2-choice-focused{
+  border-color:var(--es2-skill-rim);
+  box-shadow:0 15px 32px #000c,0 0 0 1px var(--es2-skill-rim),0 0 29px var(--es2-skill-aura);
+}
+.es2-skill-card:focus-visible{
+  outline:3px solid var(--es2-skill-rim);outline-offset:3px;
+}
+.es2-skill-card.es2-choice-selected{
+  border-color:var(--es2-skill-rim);
+  box-shadow:0 0 0 2px var(--es2-skill-rim),0 0 32px var(--es2-skill-aura);
+}
+.es2-skill-card:disabled{filter:saturate(.75);transform:none}
+@media(max-width:610px){
+  .es2-skill-card{border-radius:12px}
+  .es2-skill-card .es2-card-name{font-size:clamp(.85rem,2.7vw,1.02rem)}
+  .es2-skill-card .es2-card-level{margin:4px 8px 0;padding:4px 7px;font-size:.72rem}
+  .es2-skill-card .es2-card-art::before{inset:7px 13%}
+}
+@media(max-width:380px){
+  .es2-skill-card .es2-card-name{font-size:1rem}
+}
+@media(max-height:570px) and (orientation:landscape){
+  .es2-skill-card{border-radius:9px}
+  .es2-skill-card .es2-card-level{margin:3px 6px 0;padding:2px 5px;font-size:.6875rem}
+  .es2-skill-card .es2-card-name{font-size:clamp(.8rem,1.6vw,.95rem)}
+  .es2-skill-card .es2-card-art::before{inset:4px 20%}
+}
+.es2-system-still .es2-skill-card,.es2-system-still .es2-skill-card *{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){
+  .es2-skill-card,.es2-skill-card *{animation:none!important;transition:none!important}
+  .es2-skill-card:hover:not(:disabled),.es2-skill-card.es2-choice-focused{transform:none}
+}
+
+/* Compact rank comparisons: keep rarity colors and authored art independent. */
+.es2-mastery-stats{position:relative;z-index:1;display:grid;gap:3px;margin:8px 13px 0;padding:6px 0 0;border-top:1px solid var(--es2-card-border);min-width:0}
+.es2-mastery-stat{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:1px 6px;color:var(--es2-card-description);font:500 max(11px,calc(.75rem * var(--es2-ui-scale,1)))/1.35 system-ui,sans-serif;overflow-wrap:anywhere}
+.es2-mastery-values{white-space:nowrap;font-variant-numeric:tabular-nums;margin-left:auto}
+.es2-mastery-values strong{color:#a8efbd;font-weight:800}
+@media(max-width:610px),(orientation:landscape) and (max-height:520px){
+  .es2-mastery-stats{margin:4px 8px 0;padding-top:3px;gap:2px}
+}

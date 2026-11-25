@@ -1,0 +1,150 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "pose": "run",
+  "direction": "NE",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "sourceFile": "source.webp",
+  "sourceSHA256": "4fd220addf7b4a6f9ccf7f6443882f7f89565ad5e17ecc0e7016021fd1a98293",
+  "originalPNGSHA256": "fb5a9e798fbc2a19e6dcd75071c57f78f2f24dfbcd70221f2fcc3a417b0db0d5",
+  "sourceDecodedRGBASHA256": "b2fa9608bc5bc85eb5f6087dc614196340d2f718d52bc761f6728fd6609aada7",
+  "sourceEncoding": "lossless-webp-exact-rgba",
+  "atlasFile": "run-ne-4frames@3x.webp",
+  "webpSHA256": "b53f834b842e704374f25b1ba347fe6ccfde4664cd82bc0ed7179aa0e270bd2a",
+  "bytes": 1236804,
+  "frameCount": 4,
+  "footBottoms": [
+    665,
+    660,
+    648,
+    658
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        31,
+        17,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        83,
+        31,
+        568,
+        595
+      ],
+      "outputAlphaBounds": [
+        101,
+        87,
+        689,
+        689
+      ],
+      "rgbaSHA256": "fc4d7009fad901b59804648abfed488774d8cef3aa7f476a5631a89e49d225f9",
+      "outputRGBA256": "c5a9f4c5d9dc8620a1662c53f8b83e021f7a833f4e381a682155ddadf79dcf92",
+      "clearedMarginPixels": 156
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        1,
+        17,
+        613,
+        627
+      ],
+      "coreAlphaBounds": [
+        71,
+        24,
+        575,
+        590
+      ],
+      "outputAlphaBounds": [
+        78,
+        87,
+        683,
+        689
+      ],
+      "rgbaSHA256": "40299d00a1663c3dc88e0b3eb63c3a3b58846f895d473bec074c8a6efc75dd54",
+      "outputRGBA256": "c08d83402cdac10e178305c3e46f43327a88cb3debedc324b0a76a8cb94834b5",
+      "clearedMarginPixels": 111
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        0,
+        1,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        84,
+        20,
+        566,
+        578
+      ],
+      "outputAlphaBounds": [
+        95,
+        79,
+        689,
+        673
+      ],
+      "rgbaSHA256": "56fc123685f55cf5cd107976c6c5adfa5d3ec895e65985ba6dc1e87284320ca8",
+      "outputRGBA256": "ded9f87fdf5e0808d20da41161a04c86ef4305d85a8e6be5c94fb774a45a7519",
+      "clearedMarginPixels": 70
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        1,
+        0,
+        611,
+        627
+      ],
+      "coreAlphaBounds": [
+        96,
+        19,
+        574,
+        588
+      ],
+      "outputAlphaBounds": [
+        79,
+        79,
+        681,
+        673
+      ],
+      "rgbaSHA256": "455d1677e81b804dc326745e9aa883c4acf43b3c24b9c7dd8310e71a7beb49c2",
+      "outputRGBA256": "16550d73e0f312bd456fd31aa6ba9a6749b1947d57236c6a99f11b95a0003caf",
+      "clearedMarginPixels": 46
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "reviewNotes": [
+    "Independent NE candidate; copper-red long hair, sword and shield. Verify identity, equipment handedness, alpha fringes and animation continuity at game size before admission.",
+    "Only alpha=1 pixels in the outer 8px of original cells cleared in runtime derivative. No resampling. Source master retains exact RGBA.",
+    "Candidate only; no claim of native 3x approval or full ten-frame run."
+  ]
+}

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+<linearGradient id="mantle" x1=".15" y1="0" x2=".9" y2="1"><stop stop-color="#b6d7c9" stop-opacity=".66"/><stop offset=".26" stop-color="#4c868e" stop-opacity=".83"/><stop offset=".68" stop-color="#243c51" stop-opacity=".48"/><stop offset="1" stop-color="#16404b" stop-opacity="0"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2=".9"><stop stop-color="#d4e6d7"/><stop offset=".25" stop-color="#637d82"/><stop offset=".57" stop-color="#254553"/><stop offset=".82" stop-color="#89b2ad"/><stop offset="1" stop-color="#24414d"/></linearGradient>
+<radialGradient id="aura"><stop stop-color="#72c7be" stop-opacity=".56"/><stop offset=".44" stop-color="#4d9ba0" stop-opacity=".26"/><stop offset="1" stop-color="#5ab6b9" stop-opacity="0"/></radialGradient>
+<filter id="ghost"><feGaussianBlur stdDeviation="19"/></filter>
+<filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="3" seed="19" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="12" xChannelSelector="R" yChannelSelector="G"/></filter>
+</defs>
+<ellipse cx="251" cy="284" rx="170" ry="210" fill="url(#aura)" filter="url(#ghost)"/>
+<path d="M141 165c-35 47-43 125-41 196 13-22 24-37 27-28-15 64 5 98 18 151 21-42 32-39 52-16 23-56 43-57 71-18 18-67 55-43 91-13-16-53 14-89 16-134 9 4 20 20 30 34-5-79-39-134-58-172L288 103 208 106Z" fill="url(#mantle)" opacity=".82" filter="url(#rough)"/>
+<path d="m173 169 42-49 80-5 51 55-16 115-40 41-69-17-54-57Z" fill="url(#steel)" opacity=".78"/>
+<path d="m189 150 31-54 33-22 37 19 29 57-26 43-70-3Z" fill="#2e4650" stroke="#8aaca6" stroke-opacity=".64" stroke-width="5"/>
+<path d="M218 152c14-39 59-44 77-3l-19 53-38 0Z" fill="#122632" opacity=".86"/>
+<path d="m225 157 20-7 8 5-10 7-18-1Zm37 1 19-8 3 10-19 4-6-5Z" fill="#ddf9e9" opacity=".96"/>
+<path d="m180 199-61 38-28 74 54-34 40 23 38-64m104-33 60 49 29 58-56-38-42 20-40-55" fill="url(#steel)" stroke="#88b2ac" stroke-opacity=".45" stroke-width="4"/>
+<path d="m219 206 35 21 37-21-5 133-33 45-37-46Z" fill="#416e76" opacity=".75" stroke="#a3c5b9" stroke-opacity=".59" stroke-width="3"/>
+<path d="m244 239 9 44 10-44m-44 74 34 40 33-40" fill="none" stroke="#c2dac5" stroke-opacity=".54" stroke-width="4"/>
+<path d="M187 330c-10 43 14 80 21 119m105-122c15 35-1 73-10 120" fill="none" stroke="#8bd0cb" stroke-opacity=".23" stroke-width="18" filter="url(#ghost)"/>
+</svg>

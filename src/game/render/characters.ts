@@ -1,4 +1,7 @@
 import { TAU } from '../constants'
+import { cosmeticAura } from '../../meta/cosmetics'
+import { BALANCE } from '../config'
+import { applyEnemyPose, applyEnemyRecoil, enemyWeight } from './enemy-motion'
 import type { Artwork } from '../art'
 import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
@@ -6,8 +9,13 @@ import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
-import { drawProductionHeroFrame, isDirectionalHeroAtlas, type ProductionHeroArtwork } from './es2/production-heroes'
-import { drawProductionBossFrame } from './es2/production-world'
+import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
+import { isSpecializationId } from '../content/heroes'
+import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, bossFrameLayout, drawProductionBossFrame } from './es2/production-world'
+import { BOSS_DRAW_CULL_MARGIN } from './es2/boss-phase-layout'
+import { drawBossAttackReference } from './es2/boss-motion-reference'
+import type { BossSnapshot } from '../content/bosses/controller'
+import { drawBossHealthBar, drawEnemyHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -183,7 +191,8 @@ function drawPoseAccents(
   }
 }
 
-export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx: number, sy: number): void {
+export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx: number, sy: number, reduced = false): void {
+  if (reduced) { ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy); return }
   const a = e.phase || s.worldClock
   if (e.type === 'slime') {
     const v = Math.sin(a * 2.2)
@@ -206,13 +215,27 @@ export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx:
     ctx.translate(0, Math.sin(a * 0.65) * 4)
     ctx.rotate(Math.sin(a * 0.43) * 0.018)
   }
-  if ((e.stagger || 0) > 0) ctx.rotate(Math.sin(s.worldClock * 52) * 0.075)
+  if (e.type !== 'boss') {
+    const ai = e.ai
+    if (ai) {
+      const duration = ai.state === 'windup' ? BALANCE.enemies.ai.windup[ai.attack] : ai.state === 'attack' ? (ai.attack === 'dive' ? BALANCE.enemies.ai.attackDuration.dive : BALANCE.enemies.ai.attackDuration.pounce) : 0.32
+      const remaining = ai.state === 'recover' ? (ai.releaseFx ?? 0) : ai.timer
+      applyEnemyPose(ctx, ai.state, duration > 0 ? remaining / duration : 0, ai.dirX, ai.dirY, enemyWeight(e.type), false)
+    }
+    applyEnemyRecoil(ctx, Math.max(0, e.hit) * 1.5, e.kx, e.ky, enemyWeight(e.type), false)
+  }
   ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy)
 }
 
 const DIMS: Record<string, [number, number]> = {
   knight: [108, 134], ranger: [111, 144], wizard: [117, 147], slime: [87, 75],
-  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [236, 246],
+  bat: [114, 92], goblin: [92, 108], golem: [139, 134], warlock: [105, 127], boss: [BOSS_BASE_DRAW_PX, 266],
+}
+
+/** Identical culling for the depth sort and body painter, including enlarged boss silhouettes. */
+export function characterOutsideViewport(x: number, y: number, W: number, H: number, boss: boolean): boolean {
+  const horizontal = boss ? BOSS_DRAW_CULL_MARGIN : 180
+  return x < -horizontal || x > W + horizontal || y < -(boss ? BOSS_DRAW_CULL_MARGIN : 240) || y > H + (boss ? BOSS_DRAW_CULL_MARGIN : 220)
 }
 
 export function drawCharacter(
@@ -220,7 +243,8 @@ export function drawCharacter(
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
-  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3 },
+  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
+  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, showFullHealthBars = false,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -228,7 +252,7 @@ export function drawCharacter(
   const x = e.x + ox
   const y = e.y + oy
   const kind = mob ? mob.type : s.choice
-  if (x < -180 || x > W + 180 || y < -240 || y > H + 220) return
+  if (characterOutsideViewport(x, y, W, H, mob?.type === 'boss')) return
   const dims = DIMS[kind] || [86, 100]
   const sx = dims[0]!
   const sy = dims[1]!
@@ -247,10 +271,7 @@ export function drawCharacter(
   ctx.restore()
   const anim = hero ? sampleHeroAnimation(s, hero, reducedMotion) : null
   if (hero) {
-    const aura = s.cosmetic === 'knight-gilded' ? ['#edc66b55', '#ffe2a7c8']
-      : s.cosmetic === 'ranger-moonlit' ? ['#86abf555', '#c7ddffca']
-      : s.cosmetic === 'wizard-astral' ? ['#bc92fc66', '#e2c5ffca']
-      : ['#efd69d30', '#f4de9d9f']
+    const aura = cosmeticAura(s.cosmetic)
     softGlow(ctx, x, y, 72, aura[0]!, reducedMotion ? 0.4 : 0.8)
     ctx.strokeStyle = aura[1]!; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(x, y + 2, 35, 11, 0, 0, TAU); ctx.stroke()
     if (hero.dash > 0 && !reducedMotion) {
@@ -272,19 +293,36 @@ export function drawCharacter(
   const productionImage = hero && productionHeroes && Object.prototype.hasOwnProperty.call(productionHeroes, s.heroId)
     ? productionHeroes[s.heroId as keyof ProductionHeroArtwork] : undefined
   if (tint && source === drawable) ctx.filter = tint // Canvas fallback when tint caching is unavailable.
+  let bossMotionPainted = false
   if (drawable) {
     if (hero && anim) {
       // Original three heroes keep their existing rig and equipment animation.
       ctx.save()
       // Eight-direction atlases already contain an authored left-facing frame.
       // Mirroring them produces the wrong direction and artwork. Keep the
-      // original fallback mirror for unloaded art and unsupported poses.
-      const directionalReady = !!productionImage && isDirectionalHeroAtlas(productionImage)
-      if (hero.face < 0 && !directionalReady) ctx.scale(-1, 1)
-      const productionDrawn = productionImage
-        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy) : false
+      // original fallback mirror for unloaded art.
+      const directionalReady = productionHeroUsesPoseSheets(productionImage)
+        || productionHeroPoseReady(productionImage, anim)
+        || productionHeroMotionReady(productionImage)
+        || (productionImage?.complete
+          && productionImage.naturalWidth === 1024 && productionImage.naturalHeight === 512)
+      // Follow the same octant/facing contract as the original three heroes.
+      // Keep legacy rig mirroring only for the original classes. Specialization
+      // portraits contain baked equipment and have no approved portrait mirror.
+      const facing = anim.direction === 2 || anim.direction === 6 ? hero.face
+        : anim.direction > 2 && anim.direction < 6 ? -1 : 1
+      if (facing < 0 && !directionalReady && !isSpecializationId(s.heroId)) ctx.scale(-1, 1)
+      let productionDrawn = productionImage
+        ? drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock) : false
+      if (!productionDrawn && isSpecializationId(s.heroId)) {
+        // s.choice is the legacy base class: a specialization hero must never fall back to
+        // that rig. Unauthored poses (hurt/death/victory) hold the authored idle cell; while
+        // the atlas is not decoded nothing is drawn rather than showing another class.
+        anim.pose = 'idle' // anim is a throwaway per-call sample; no extra allocation
+        if (productionImage) drawProductionHeroFrame(ctx, productionImage, anim, sx, sy, heroSheets, s.worldClock)
+        productionDrawn = true
+      }
       if (!productionDrawn) {
-        if (hero.face < 0 && directionalReady) ctx.scale(-1, 1)
         // Preserve existing animation while the new WebP decodes or if it fails.
         const layers = im && drawable === im ? getRigidWeaponLayers(drawable, s.choice) : null
         const prebaked = !!(heroSheets && im && drawable === im
@@ -297,22 +335,44 @@ export function drawCharacter(
       }
       ctx.restore()
     } else if (mob) {
+      // Reuse each authored phase illustration, with one cheap motion transform
+      // per visible boss and no added textures or per-frame bitmap allocations.
+      if (mob.type === 'boss' && mob.bossMoving && !reducedMotion) {
+        const rhythm = Math.sin(mob.phase * 1.8)
+        if (mob.bossArtId === 'infernal-titan') {
+          ctx.translate(0, -Math.abs(rhythm) * 3) // Heavy footsteps.
+          ctx.rotate(rhythm * 0.009)
+        } else if (mob.bossArtId === 'frost-sovereign') {
+          ctx.translate(rhythm * 2, -5 - rhythm * 3) // Ice levitation.
+          ctx.rotate(rhythm * 0.013)
+        } else if (mob.bossArtId === 'eclipse-seraph') {
+          ctx.translate(rhythm * 2.5, -7 - rhythm * 4) // Celestial glide.
+          ctx.rotate(rhythm * 0.023)
+        } else {
+          ctx.translate(rhythm * 2, -3 - rhythm * 2) // Shadow glide.
+          ctx.rotate(rhythm * 0.018)
+        }
+      }
       // Use the controller's real phase; the original boss sprite remains the decode fallback.
       const painted = mob.type === 'boss' && productionBoss
-        ? drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
-      if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy)
+        ? (bossMotionPainted = !!(productionBoss.motion && drawBossAttackReference(ctx, productionBoss.motion.image, productionBoss.motion.snapshot, Math.min(sx, sy), reducedMotion)))
+          || drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
+      if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy, reducedMotion)
     }
   }
   ctx.restore()
-  if (mob && mob.hp < mob.max && mob.type !== 'boss') {
-    const bar = Math.max(34, sx * 0.58)
-    ctx.fillStyle = '#020608e6'; ctx.fillRect(x - bar / 2, y - sy - 8, bar, 5)
-    ctx.fillStyle = '#d56b56'; ctx.fillRect(x - bar / 2 + 1, y - sy - 7, (bar - 2) * Math.max(0, mob.hp / mob.max), 3)
-  }
-  if (mob && mob.type === 'boss') {
-    const bar = 190
-    ctx.fillStyle = '#05090dec'; ctx.fillRect(x - bar / 2, y - sy - 25, bar, 12)
-    ctx.strokeStyle = '#dcc391aa'; ctx.strokeRect(x - bar / 2, y - sy - 25, bar, 12)
-    ctx.fillStyle = '#f09663'; ctx.fillRect(x - bar / 2 + 2, y - sy - 23, (bar - 4) * Math.max(0, mob.hp / mob.max), 8)
+  if (mob && mob.hp > 0) {
+    // The cache is renderer-owned and weakly keyed. Full-health enemies only seed one entry;
+    // no gradients, timers or extra frame loops are needed in dense combat.
+    const motion = sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
+    if (!shouldShowHealthBar(motion, showFullHealthBars)) return
+    if (mob.type === 'boss') {
+      const base = Math.min(sx, sy)
+      const layout = productionBoss && !bossMotionPainted ? bossFrameLayout(productionBoss.image, productionBoss.phase) : undefined
+      const growth = productionBoss ? base * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
+      drawBossHealthBar(ctx, motion, x, layout ? y + 4 + base * layout.bodyTop - 25 : y - sy - 25 - growth)
+    } else {
+      drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite)
+    }
   }
 }

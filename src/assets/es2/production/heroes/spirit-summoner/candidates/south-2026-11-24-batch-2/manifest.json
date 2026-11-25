@@ -1,0 +1,22 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "S",
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "sourceSHA256": "24b43f51c7487b208871926e4cb1f762a6692a005d3ff4631f5d051372ab9d6b",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePoseCount": 4,
+  "frameCount": 0,
+  "reason": "frame 0: insufficient original alpha margin",
+  "note": "Original preserved for repaint; no playable atlas generated."
+}

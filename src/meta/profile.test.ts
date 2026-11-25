@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createProfileStore, migrateProfile, SAVE_KEY } from './profile'
+import { BALANCE, researchCost } from '../game/config'
+import { createProfileStore, emptyProfile, migrateProfile, SAVE_KEY } from './profile'
 import type { RunStats } from './types'
 
 const run = (id = 'run-1', overrides: Partial<RunStats> = {}): RunStats => ({
@@ -9,6 +10,19 @@ const run = (id = 'run-1', overrides: Partial<RunStats> = {}): RunStats => ({
   abilities: ['frost', 'orb'], ...overrides,
 })
 beforeEach(() => localStorage.clear())
+
+describe('permanent upgrade balance compatibility', () => {
+  it('allows six legacy purchase tiers, prevents exceeding the cap and restores them', () => {
+    const store = createProfileStore(localStorage)
+    for (let i = 0; i < 10; i++)
+      store.recordRun(run('farm-' + i, { seconds: 800, kills: 600 }))
+    expect(store.get().embers).toBeGreaterThan(1000)
+    for (let n = 0; n < BALANCE.meta.research.power.maxRank; n++) expect(store.buyUpgrade('power')).toBe(true)
+    expect(store.get().upgrades.power).toBe(BALANCE.meta.research.power.maxRank)
+    expect(store.buyUpgrade('power')).toBe(false)
+    expect(createProfileStore(localStorage).get().upgrades.power).toBe(BALANCE.meta.research.power.maxRank)
+  })
+})
 
 describe('versioned local progress', () => {
   it('saves, loads and maintains personal best per mode', () => {
@@ -56,6 +70,24 @@ describe('versioned local progress', () => {
     expect(store.buyUpgrade('power')).toBe(true)
     expect(store.get().upgrades.power).toBe(1)
     expect(store.get().equippedCosmetics.knight).toBe('knight-gilded')
+  })
+  it('retains purchased v2 research at the new cap and follows v3 prices', () => {
+    const legacy = emptyProfile()
+    legacy.embers = 5000
+    legacy.upgrades.power = 3
+    legacy.upgrades.vitality = 3
+    localStorage.setItem(SAVE_KEY, JSON.stringify(legacy))
+    const restored = createProfileStore(localStorage)
+    let expectedWallet = legacy.embers
+    for (let rank = 3; rank < BALANCE.meta.research.power.maxRank; rank++) {
+      expect(restored.buyUpgrade('power')).toBe(true)
+      expectedWallet -= researchCost('power', rank)
+      expect(restored.get().embers).toBe(expectedWallet)
+      expect(restored.get().upgrades.power).toBe(rank + 1)
+    }
+    expect(restored.buyUpgrade('power')).toBe(false)
+    expect(createProfileStore(localStorage).get().upgrades.power).toBe(BALANCE.meta.research.power.maxRank)
+    expect(migrateProfile({ ...legacy, upgrades: { power: BALANCE.meta.research.power.maxRank + 1, vitality: 0 } })).toBeNull()
   })
   it('falls back to an in-memory profile when storage throws', () => {
     const broken = { getItem() { throw new Error('blocked') }, setItem() { throw new Error('blocked') }, removeItem() { throw new Error('blocked') } }

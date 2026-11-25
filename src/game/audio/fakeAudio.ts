@@ -35,14 +35,17 @@ export class FakeFilter extends FakeNode {
 export class FakeBuffer {
   readonly data: Float32Array
   constructor(readonly length: number, readonly sampleRate: number) { this.data = new Float32Array(length) }
+  get duration(): number { return this.length / this.sampleRate }
   getChannelData(_channel: number): Float32Array { return this.data }
 }
 
 export class FakeBufferSource extends FakeNode {
   buffer: FakeBuffer | null = null
+  loop = false
+  offset = 0
   startedAt: number | null = null
   stoppedAt: number | null = null
-  start(t: number): void { this.startedAt = t }
+  start(t: number, offset = 0): void { this.startedAt = t; this.offset = offset }
   stop(t: number): void { this.stoppedAt = t }
 }
 

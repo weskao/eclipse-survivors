@@ -1,0 +1,427 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "c3638169d43a8f108ccbad3d9353e28f0d52dccb",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "stride-key-b",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/stride-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "c5e3cd3a-5d19-493e-8bac-6ed6300d7a42",
+        "originalPngSha256": "406e63f55410a33fe77e626db97bde2a9a3ee6c8a3e77d13db3e6fca5c5b1d71",
+        "canonicalReferenceHead": "c3638169d43a8f108ccbad3d9353e28f0d52dccb"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        31,
+        5,
+        1291,
+        1182
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1298,
+        1199
+      ],
+      "alphaExtent": [
+        1260,
+        1177
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        31,
+        5,
+        21,
+        17
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "57aa3c4863dd7d6e0fa6da1955f8e6be5fb895d4754abce03c45a2236fb9b905",
+      "webpCompressedBytes": 825688,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Additional stride candidate; confirm alternating foot and facing against batch 02."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "ground-slam-key-b",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/ground-slam-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "e6e060fd-46d4-40b3-a591-a9ab174d1aef",
+        "originalPngSha256": "a5e34b4a385c31af816d403979bdf7eee08302a381b1a072d5a5205dbb91325a",
+        "canonicalReferenceHead": "c3638169d43a8f108ccbad3d9353e28f0d52dccb"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        15,
+        9,
+        1301,
+        1193
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1311,
+        1199
+      ],
+      "alphaExtent": [
+        1286,
+        1184
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        15,
+        9,
+        11,
+        6
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "8c9caf5dc5056dd8a5ab6e41db228f63c0970ef775fbdec98f894bb12b8cf6af",
+      "webpCompressedBytes": 898344,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Alternate impact pose; not automatically consecutive with batch 02."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "ground-slam-retract-key-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/ground-slam-retract-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "736ad612-2428-4b80-8c70-5c428fba8eae",
+        "originalPngSha256": "5c506c0b88dbbabf574b0c0fb33fa67441a1abc9b5e90e1d41fead1eddaa1cf6",
+        "canonicalReferenceHead": "c3638169d43a8f108ccbad3d9353e28f0d52dccb"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        7,
+        35,
+        1302,
+        1149
+      ],
+      "alphaAnyBounds": [
+        0,
+        29,
+        1311,
+        1153
+      ],
+      "alphaExtent": [
+        1295,
+        1114
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        7,
+        35,
+        10,
+        50
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "48437e7fefc657e1a66a8ca1c848d4154f3223a64c90ff69b96d79bbeca20d4a",
+      "webpCompressedBytes": 819604,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Ground-slam arm retraction candidate; review continuity and embedded effects."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "core-dimming-key-b",
+      "pose": "death",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "death/core-dimming-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "04e1a644-8945-4239-a8af-609c5c234f35",
+        "originalPngSha256": "f3344812e86bb2dd20cb4b492272aab9445c9252398ab594d2ad15280edf7dca",
+        "canonicalReferenceHead": "c3638169d43a8f108ccbad3d9353e28f0d52dccb"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        16,
+        94,
+        1302,
+        1154
+      ],
+      "alphaAnyBounds": [
+        0,
+        3,
+        1312,
+        1185
+      ],
+      "alphaExtent": [
+        1286,
+        1060
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        16,
+        94,
+        10,
+        45
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "2b25b15c0fbad9c39a016d33e0f853079ec263502acc256d026af9efb76ff9b1",
+      "webpCompressedBytes": 741426,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Kneeling with dimming core after collapse; review phase continuity."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "crouch-key-b",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/crouch-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "0a29fe0e-be3b-4f6e-8ecc-099a60563328",
+        "originalPngSha256": "f8a824bfbc53b7df6b2f9a612c2f527d5c897dca2048a5f6ee91f2b60cc66a22",
+        "canonicalReferenceHead": "c3638169d43a8f108ccbad3d9353e28f0d52dccb"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        10,
+        12,
+        1296,
+        1186
+      ],
+      "alphaAnyBounds": [
+        0,
+        3,
+        1299,
+        1199
+      ],
+      "alphaExtent": [
+        1286,
+        1174
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        10,
+        12,
+        16,
+        13
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "956061d498b3422167d2a6c3b19ffe67a902f65a70eb6b57b7a2d23f0fde70f0",
+      "webpCompressedBytes": 883982,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Crouched anticipation candidate; not a certified next frame."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "rubble-key-c",
+      "pose": "death",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "death/rubble-key-c.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "9eb8b300-a44a-4cec-8448-58279ce0a285",
+        "originalPngSha256": "fc5e80765405fb6341cec76e3272c40a3612545d92111d7fbe42cee36e98c9ba",
+        "canonicalReferenceHead": "c3638169d43a8f108ccbad3d9353e28f0d52dccb"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1448,
+      "cellHeight": 1086,
+      "frameRects": [
+        [
+          0,
+          0,
+          1448,
+          1086
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        724.0,
+        543.0
+      ],
+      "alphaBounds": [
+        25,
+        277,
+        1419,
+        889
+      ],
+      "alphaAnyBounds": [
+        21,
+        33,
+        1425,
+        1086
+      ],
+      "alphaExtent": [
+        1394,
+        612
+      ],
+      "actualSourceResolution": [
+        1448,
+        1086
+      ],
+      "sourceEdgeMargins": [
+        25,
+        277,
+        29,
+        197
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "c8515c3f20910d9a97c327e40bc836488475bf86056da5dc2608372819bc160f",
+      "webpCompressedBytes": 507438,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Terminal collapsed rubble; low silhouette is intentional. Native detail and scale remain pending."
+    }
+  ],
+  "missing": [
+    "coherent idle and alternating locomotion loop",
+    "continuous windup, attack and recovery",
+    "phase-specific transformations",
+    "terminal debris fade and death timing",
+    "direction, anchor, visual and runtime QA",
+    "three other bosses"
+  ]
+}

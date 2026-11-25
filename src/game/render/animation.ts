@@ -11,6 +11,8 @@ export interface HeroAnimation {
   /** Screen-space octant: E, SE, S, SW, W, NW, N, NE. */
   direction: number
   reducedMotion: boolean
+  /** True while the selected new hero's active skill is visually playing. */
+  special?: boolean
   /** Projectile is created at attack start; subsequent strike frames are release/recovery. */
   actionStage?: 'windup' | 'hold' | 'release' | 'recover' | 'none'
 }
@@ -22,6 +24,10 @@ const FRAMES: Record<HeroPose, number> = {
 // Rendering-only history. Weak keys let old runs/characters be collected without
 // touching combat state or requiring a parallel animation update loop.
 const entered = new WeakMap<Hero, { pose: HeroPose; clock: number; reduced: boolean; direction: number }>()
+const lastSpecialActivation = new WeakMap<Hero, number>()
+export function markHeroSpecialAnimation(hero: Hero, worldClock: number): void {
+  if (Number.isFinite(worldClock)) lastSpecialActivation.set(hero, worldClock)
+}
 
 function octant(angle: number): number {
   return ((Math.round(angle / (TAU / 8)) % 8) + 8) % 8
@@ -41,11 +47,17 @@ const clamp = (v: number): number => Math.max(0, Math.min(1, v))
 
 /** A deterministic visual sample; no changes to damage, movement, AI or timers. */
 export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = false): HeroAnimation {
-  const pose = poseFor(s, hero)
+  const triggered = lastSpecialActivation.get(hero)
+  const special = s.mode === 'play' && hero.hp > 0 && triggered !== undefined
+    && s.worldClock >= triggered && s.worldClock - triggered < 0.56
+  const pose = special ? 'cast' : poseFor(s, hero)
   const count = FRAMES[pose]
   const old = entered.get(hero)
   const attacking = pose === 'attack' || pose === 'cast'
-  const running = pose === 'run' && (hero.vx * hero.vx + hero.vy * hero.vy > 1)
+  // Shadowblade uses authored locomotion clips in every octant. A dash can
+  // start before a new run sample; use actual travel rather than stale facing.
+  const running = (pose === 'run' || (s.heroId === 'shadowblade' && pose === 'dash')) &&
+    (hero.vx * hero.vx + hero.vy * hero.vy > 1)
   const direction = attacking ? octant(hero.aimAngle)
     : running ? octant(Math.atan2(hero.vy, hero.vx))
       : old?.direction ?? (hero.face < 0 ? 4 : 0)
@@ -55,11 +67,12 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
   const start = entered.get(hero)!
   if (reducedMotion || s.mode === 'paused' || s.mode === 'level') {
     const actionStage = attacking ? 'release' : 'none'
-    return { pose, frame: 0, count, phase: 0, direction, reducedMotion, actionStage }
+    return { pose, frame: 0, count, phase: 0, direction, reducedMotion, actionStage, special }
   }
   const elapsed = Math.max(0, s.worldClock - start.clock)
   let progress = 0
-  switch (pose) {
+  if (special && triggered !== undefined) progress = clamp((s.worldClock - triggered) / 0.56)
+  else switch (pose) {
     case 'run':
       progress = ((hero.step % TAU) + TAU) % TAU / TAU
       break
@@ -92,5 +105,5 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
     : hero.attack <= Math.max(0.08, hero.delay * 0.24)
       ? hero.attack > Math.max(0.03, hero.delay * 0.08) ? 'windup' : 'hold'
       : 'none'
-  return { pose, frame, count, phase: progress, direction, reducedMotion, actionStage }
+  return { pose, frame, count, phase: progress, direction, reducedMotion, actionStage, special }
 }

@@ -5,7 +5,7 @@ import { drawFactionTelegraphs } from './telegraphs'
 function mockCanvas() {
   const ctx = {
     save: vi.fn(), restore: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(),
-    lineTo: vi.fn(), arc: vi.fn(), stroke: vi.fn(), fill: vi.fn(),
+    lineTo: vi.fn(), arc: vi.fn(), stroke: vi.fn(), fill: vi.fn(), closePath: vi.fn(),
     lineWidth: 0, strokeStyle: '', fillStyle: '', globalAlpha: 1,
   }
   return ctx
@@ -39,7 +39,11 @@ describe('faction Canvas 2D telegraph adapter', () => {
     drawFactionTelegraphs(canvas as unknown as CanvasRenderingContext2D, runtime, 10, 5)
     expect(canvas.arc).toHaveBeenCalled()
     expect(canvas.stroke.mock.calls.length).toBeGreaterThanOrEqual(5)
-    expect(canvas.save).toHaveBeenCalledTimes(1)
-    expect(canvas.restore).toHaveBeenCalledTimes(1)
+    expect(canvas.fill).toHaveBeenCalled()
+    expect(canvas.save.mock.calls.length).toBe(canvas.restore.mock.calls.length)
+    const reduced = mockCanvas()
+    drawFactionTelegraphs(reduced as unknown as CanvasRenderingContext2D, runtime, 10, 5, true)
+    expect(reduced.fill).not.toHaveBeenCalled()
+    expect(reduced.arc).toHaveBeenCalled()
   })
 })

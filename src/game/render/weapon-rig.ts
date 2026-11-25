@@ -52,27 +52,23 @@ export function sampleWeaponRig(job: JobId, hero: Hero, anim: HeroAnimation): We
   let hand: Point = restHand
   let bladeAngle = aim
 
+  // Crossfade anticipation into contact, then ease out of the follow-through.
+  const load = action ? ease(phase / 0.32) * (1 - ease((phase - 0.32) / 0.24)) : 0
+  const release = action ? ease((phase - 0.32) / 0.24) * (1 - ease((phase - 0.62) / 0.38)) : 0
+
   if (job === 'knight' && action) {
-    // A cross-body cut around the LEFT shoulder; continuity at start and end
-    // avoids teleporting the sword between consecutive combat cycles.
-    const restAngle = Math.atan2(restHand.y + 80, restHand.x + 15)
-    const stroke = phase < 0.6 ? ease(phase / 0.6) : 1 - ease((phase - 0.6) / 0.4)
-    const turn = restAngle - stroke * (1.8 - aim * 0.20)
-    const reach = Math.hypot(restHand.x + 15, restHand.y + 80)
-    hand = { x: shoulder.x + Math.cos(turn) * reach, y: shoulder.y + Math.sin(turn) * reach }
-    bladeAngle += turn - restAngle
+    hand = { x: restHand.x - 7 * load + 18 * release, y: restHand.y - 17 * load - 4 * release }
+    bladeAngle += -0.7 * load + 0.9 * release
   } else if (job === 'wizard' && action) {
-    // The staff rises and thrusts; the OTHER hand keeps the spell origin fixed.
-    hand = { x: restHand.x + pulse * 13, y: restHand.y - pulse * 15 }
-    bladeAngle -= (1 - ease(phase)) * 0.35
+    hand = { x: restHand.x - 4 * load + 10 * release, y: restHand.y - 10 * load - 5 * release }
+    bladeAngle += -0.32 * load + 0.48 * release
   } else if (job === 'ranger' && action) {
-    // The bow hand is fixed; recoil and string tension change the arm joints.
-    shoulder.y -= Math.sin(phase * Math.PI * 1.5) * 3
+    shoulder.x += load * 2 - release * 2
   }
 
   const supportShoulder: Point = { x: rightHandWeapon ? -13 : 12, y: -82 + pulse * 2 }
   const supportHand: Point = job === 'ranger'
-    ? { x: -18 + pulse * 13, y: -60 - pulse * 4 }
+    ? { x: -18 - load * 7 + release * 3, y: -60 - load * 13 - release * 8 }
     : job === 'wizard'
       ? getFiringOrigin('wizard', 1)
       : { x: 29 - pulse * 5, y: -63 - pulse * 7 }

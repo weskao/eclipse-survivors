@@ -1,0 +1,424 @@
+{
+  "status": "REVIEW_ONLY_NOT_FOR_REPOSITORY_UPLOAD",
+  "items": [
+    {
+      "file": "crimson-paladin-run-w-4frames-review.webp",
+      "heroId": "crimson-paladin",
+      "pose": "run",
+      "direction": "W",
+      "sourceDirection": "W",
+      "mirrorAllowed": false,
+      "columns": 2,
+      "rows": 2,
+      "frameCount": 4,
+      "cellWidth": 627,
+      "cellHeight": 627,
+      "atlasPixels": [
+        1254,
+        1254
+      ],
+      "sourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceCrop": null,
+      "frameRects": [
+        [
+          0,
+          0,
+          627,
+          627
+        ],
+        [
+          627,
+          0,
+          627,
+          627
+        ],
+        [
+          0,
+          627,
+          627,
+          627
+        ],
+        [
+          627,
+          627,
+          627,
+          627
+        ]
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "originalCellPixels": [
+            627,
+            627
+          ],
+          "coreAlphaBounds": [
+            17,
+            8,
+            614,
+            585
+          ],
+          "coreExtent": [
+            597,
+            577
+          ],
+          "alphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 1,
+          "rect": [
+            627,
+            0,
+            627,
+            627
+          ],
+          "originalCellPixels": [
+            627,
+            627
+          ],
+          "coreAlphaBounds": [
+            9,
+            9,
+            616,
+            589
+          ],
+          "coreExtent": [
+            607,
+            580
+          ],
+          "alphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 2,
+          "rect": [
+            0,
+            627,
+            627,
+            627
+          ],
+          "originalCellPixels": [
+            627,
+            627
+          ],
+          "coreAlphaBounds": [
+            19,
+            8,
+            614,
+            609
+          ],
+          "coreExtent": [
+            595,
+            601
+          ],
+          "alphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ]
+        },
+        {
+          "index": 3,
+          "rect": [
+            627,
+            627,
+            627,
+            627
+          ],
+          "originalCellPixels": [
+            627,
+            627
+          ],
+          "coreAlphaBounds": [
+            15,
+            17,
+            608,
+            599
+          ],
+          "coreExtent": [
+            593,
+            582
+          ],
+          "alphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            0,
+            0,
+            627,
+            627
+          ]
+        }
+      ],
+      "frameDuration": null,
+      "native3x": "unverified",
+      "sha256": "24228f843d3aee37468a43e97dd410385f5b9f2ecda7e4d16f2b74fb5c0558a2",
+      "sourceSHA256": "d00c1852ec0be42fb0baf866d7e7a4a63b32379c60b74fd5f13d2e736df83a48",
+      "sourceProvenance": {
+        "generationId": "3c69ed26-b4b6-451d-8557-8420f9461eea",
+        "reference": "user uploaded original portrait image(20261124-200120).png"
+      },
+      "encoding": "Pillow WebP quality 100 (review ONLY; not Polytool)",
+      "visualQA": "QA_PENDING",
+      "runtimeIntegrationStatus": "NOT_APPLIED",
+      "eligibleForDevWiring": false,
+      "notes": "Alpha touches original cell boundaries; actual feet/anchors require verification. No upscaling. NW source is a crop from mixed direction sheet and fails native detail threshold."
+    },
+    {
+      "file": "crimson-paladin-run-nw-4frames-review.webp",
+      "heroId": "crimson-paladin",
+      "pose": "run",
+      "direction": "NW",
+      "sourceDirection": "NW",
+      "mirrorAllowed": false,
+      "columns": 2,
+      "rows": 2,
+      "frameCount": 4,
+      "cellWidth": 444,
+      "cellHeight": 444,
+      "atlasPixels": [
+        888,
+        888
+      ],
+      "sourceResolution": [
+        1774,
+        887
+      ],
+      "sourceCrop": [
+        887,
+        0,
+        1774,
+        887
+      ],
+      "frameRects": [
+        [
+          0,
+          0,
+          444,
+          444
+        ],
+        [
+          444,
+          0,
+          444,
+          444
+        ],
+        [
+          0,
+          444,
+          444,
+          444
+        ],
+        [
+          444,
+          444,
+          444,
+          444
+        ]
+      ],
+      "frames": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            444,
+            444
+          ],
+          "originalCellPixels": [
+            443,
+            443
+          ],
+          "coreAlphaBounds": [
+            84,
+            18,
+            416,
+            425
+          ],
+          "coreExtent": [
+            332,
+            407
+          ],
+          "alphaBounds": [
+            0,
+            8,
+            443,
+            443
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            0,
+            8,
+            443,
+            443
+          ]
+        },
+        {
+          "index": 1,
+          "rect": [
+            444,
+            0,
+            444,
+            444
+          ],
+          "originalCellPixels": [
+            444,
+            443
+          ],
+          "coreAlphaBounds": [
+            68,
+            17,
+            425,
+            413
+          ],
+          "coreExtent": [
+            357,
+            396
+          ],
+          "alphaBounds": [
+            0,
+            6,
+            430,
+            443
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            0,
+            6,
+            430,
+            443
+          ]
+        },
+        {
+          "index": 2,
+          "rect": [
+            0,
+            444,
+            444,
+            444
+          ],
+          "originalCellPixels": [
+            443,
+            444
+          ],
+          "coreAlphaBounds": [
+            47,
+            14,
+            385,
+            431
+          ],
+          "coreExtent": [
+            338,
+            417
+          ],
+          "alphaBounds": [
+            1,
+            0,
+            443,
+            444
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            1,
+            0,
+            443,
+            444
+          ]
+        },
+        {
+          "index": 3,
+          "rect": [
+            444,
+            444,
+            444,
+            444
+          ],
+          "originalCellPixels": [
+            444,
+            444
+          ],
+          "coreAlphaBounds": [
+            39,
+            14,
+            399,
+            430
+          ],
+          "coreExtent": [
+            360,
+            416
+          ],
+          "alphaBounds": [
+            0,
+            0,
+            430,
+            444
+          ],
+          "footAnchor": null,
+          "encodedAlphaBounds": [
+            0,
+            0,
+            430,
+            444
+          ]
+        }
+      ],
+      "frameDuration": null,
+      "native3x": "insufficient",
+      "sha256": "0bf190be774aa434eb58e5d73d149e82fdb877fb1b2c7cdd12157e083183ae65",
+      "sourceSHA256": "179a30cea4644c1579554e08c0c8cb21d162a8e50f5de7df68f576ba817e879b",
+      "sourceProvenance": {
+        "generationId": "6b301e8c-dfba-434a-bc1f-f3bf7cf44775",
+        "reference": "user uploaded original portrait image(20261124-200120).png"
+      },
+      "encoding": "Pillow WebP quality 100 (review ONLY; not Polytool)",
+      "visualQA": "QA_PENDING",
+      "runtimeIntegrationStatus": "NOT_APPLIED",
+      "eligibleForDevWiring": false,
+      "notes": "Alpha touches original cell boundaries; actual feet/anchors require verification. No upscaling. NW source is a crop from mixed direction sheet and fails native detail threshold."
+    }
+  ]
+}

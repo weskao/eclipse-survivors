@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
+import Es2Select from '../menu/Es2Select.vue'
+import Es2Switch from '../menu/Es2Switch.vue'
 import { computed } from 'vue'
 import {
   DEFAULT_ACCESSIBILITY_PREFERENCES,
@@ -22,9 +25,20 @@ const policy = computed(() => resolvePresentationPolicy(props.modelValue, {
 function update(changes: Partial<AccessibilityPreferences>): void {
   if (!props.disabled) emit('update:modelValue', updateAccessibilityPreferences(props.modelValue as AccessibilityPreferences, changes))
 }
-function selectQuality(event: Event): void { update({ quality: (event.target as HTMLSelectElement).value as QualitySetting }) }
-function selectVfx(event: Event): void { update({ vfxIntensity: (event.target as HTMLSelectElement).value as VfxIntensity }) }
-function selectSide(event: Event): void { update({ joystickSide: (event.target as HTMLSelectElement).value as 'left' | 'right' }) }
+const sideOptions = computed(() => [
+  { value: 'left', label: t('左側') }, { value: 'right', label: t('右側') },
+])
+const qualityOptions = computed(() => [
+  { value: 'auto', label: t('自動') }, { value: 'low', label: t('低') },
+  { value: 'medium', label: t('中') }, { value: 'high', label: t('高') },
+])
+const vfxOptions = computed(() => [
+  { value: 'full', label: t('完整') }, { value: 'medium', label: t('中等') },
+  { value: 'low', label: t('低') }, { value: 'off', label: t('關閉非必要特效') },
+])
+function selectQuality(value: string): void { update({ quality: value as QualitySetting }) }
+function selectVfx(value: string): void { update({ vfxIntensity: value as VfxIntensity }) }
+function selectSide(value: string): void { update({ joystickSide: value as 'left' | 'right' }) }
 function updateNumber(field: 'touchScale' | 'interfaceScale' | 'joystickBottom', event: Event): void {
   const value = Number((event.target as HTMLInputElement).value)
   if (field === 'touchScale') update({ touchScale: value })
@@ -35,87 +49,89 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 </script>
 
 <template>
-  <section class="es2-settings" aria-label="手機操控與無障礙設定" :aria-disabled="disabled">
+  <section class="es2-settings" :aria-label="t('手機操控與無障礙設定')" :aria-disabled="disabled">
     <header class="es2-settings-head">
       <div>
-        <p class="es2-eyebrow">MOBILE · ACCESSIBILITY</p>
-        <h3>操控與畫面輔助</h3>
-        <p>立即預覽變更；儲存由遊戲設定整合層處理。</p>
+        <p class="es2-eyebrow">{{ t("MOBILE · ACCESSIBILITY") }}</p>
+        <h3>{{ t("操控與畫面輔助") }}</h3>
+        <p>{{ t("立即預覽變更；儲存由遊戲設定整合層處理。") }}</p>
       </div>
-      <button type="button" class="es2-reset" :disabled="disabled" @click="reset">回復預設</button>
+      <button type="button" class="es2-reset" :disabled="disabled" @click="reset">{{ t("回復預設") }}</button>
     </header>
 
     <div class="es2-options">
       <div class="es2-field">
-        <label for="es2-side">搖桿位置</label>
-        <select id="es2-side" :value="modelValue.joystickSide" :disabled="disabled" @change="selectSide">
-          <option value="left">左側</option><option value="right">右側</option>
-        </select>
+        <label for="es2-side">{{ t("搖桿位置") }}</label>
+        <Es2Select id="es2-side" :label="t('搖桿位置')" :model-value="modelValue.joystickSide"
+          :options="sideOptions" :disabled="disabled" @update:model-value="selectSide" />
       </div>
       <div class="es2-field">
-        <label for="es2-bottom">離底部距離 <output>{{ modelValue.joystickBottom }}px</output></label>
+        <label for="es2-bottom">{{ t("離底部距離") }} <output>{{ modelValue.joystickBottom }}px</output></label>
         <input id="es2-bottom" type="range" min="0" max="120" step="2" :value="modelValue.joystickBottom" :disabled="disabled" @input="updateNumber('joystickBottom', $event)" />
       </div>
       <div class="es2-field">
-        <label for="es2-touch-size">觸控尺寸 <output>{{ Math.round(modelValue.touchScale * 100) }}%</output></label>
+        <label for="es2-touch-size">{{ t("觸控尺寸") }} <output>{{ Math.round(modelValue.touchScale * 100) }}%</output></label>
         <input id="es2-touch-size" type="range" min="0.85" max="1.35" step="0.05" :value="modelValue.touchScale" :disabled="disabled" @input="updateNumber('touchScale', $event)" />
       </div>
       <div class="es2-field">
-        <label for="es2-interface-scale">介面縮放 <output>{{ Math.round(modelValue.interfaceScale * 100) }}%</output></label>
+        <label for="es2-interface-scale">{{ t("介面縮放") }} <output>{{ Math.round(modelValue.interfaceScale * 100) }}%</output></label>
         <input id="es2-interface-scale" data-testid="es2-ui-scale" type="range" min="0.85" max="1.25" step="0.05" :value="modelValue.interfaceScale" :disabled="disabled" @input="updateNumber('interfaceScale', $event)" />
       </div>
       <div class="es2-field">
-        <label for="es2-quality">畫質</label>
-        <select id="es2-quality" data-testid="es2-quality" :value="modelValue.quality" :disabled="disabled" @change="selectQuality">
-          <option value="auto">自動</option>
-          <option value="low">低</option>
-          <option value="medium">中</option>
-          <option value="high">高</option>
-        </select>
+        <label for="es2-quality">{{ t("畫質") }}</label>
+        <Es2Select id="es2-quality" test-id="es2-quality" :label="t('畫質')"
+          :model-value="modelValue.quality" :options="qualityOptions" :disabled="disabled"
+          @update:model-value="selectQuality" />
       </div>
       <div class="es2-field">
-        <label for="es2-vfx">戰鬥特效強度</label>
-        <select id="es2-vfx" :value="modelValue.vfxIntensity" :disabled="disabled" @change="selectVfx">
-          <option value="full">完整</option><option value="medium">中等</option>
-          <option value="low">低</option><option value="off">關閉非必要特效</option>
-        </select>
+        <label for="es2-vfx">{{ t("戰鬥特效強度") }}</label>
+        <Es2Select id="es2-vfx" :label="t('戰鬥特效強度')" :model-value="modelValue.vfxIntensity"
+          :options="vfxOptions" :disabled="disabled" @update:model-value="selectVfx" />
       </div>
     </div>
 
     <div class="es2-switches">
       <div class="es2-switch-row">
-        <div><strong>減少動態</strong><small>減少 UI 移動與過渡動畫</small></div>
-        <div class="es2-switch-group" role="group" aria-label="減少動態">
-          <button data-testid="es2-motion" type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'on'" @click="update({ reducedMotion: modelValue.reducedMotion === 'on' ? 'off' : 'on' })">{{ modelValue.reducedMotion === 'on' ? '開啟' : '關閉' }}</button>
-          <button type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'system'" @click="update({ reducedMotion: 'system' })">依系統</button>
+        <div><strong>{{ t("減少動態") }}</strong><small>{{ t("減少 UI 移動與過渡動畫") }}</small></div>
+        <div class="es2-switch-group" role="group" :aria-label="t('減少動態')">
+          <Es2Switch data-testid="es2-motion" :disabled="disabled" :checked="policy.reduceMotion" :label="t('減少動態')" @toggle="update({ reducedMotion: policy.reduceMotion ? 'off' : 'on' })" />
+          <button type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'system'" @click="update({ reducedMotion: 'system' })">{{ t("依系統") }}</button>
         </div>
       </div>
       <div class="es2-switch-row">
-        <div><strong>降低閃光</strong><small>避免頻繁閃爍；保留必要攻擊警示</small></div>
-        <button type="button" aria-label="降低閃光" :disabled="disabled" :aria-pressed="modelValue.reducedFlashing" @click="update({ reducedFlashing: !modelValue.reducedFlashing })">{{ modelValue.reducedFlashing ? '開啟' : '關閉' }}</button>
+        <div><strong>{{ t("降低閃光") }}</strong><small>{{ t("避免頻繁閃爍；保留必要攻擊警示") }}</small></div>
+        <Es2Switch :label="t('降低閃光')" :disabled="disabled" :checked="modelValue.reducedFlashing" @toggle="update({ reducedFlashing: !modelValue.reducedFlashing })" />
       </div>
       <div class="es2-switch-row">
-        <div><strong>色覺輔助</strong><small>以符號及文字區分狀態，不只靠顏色</small></div>
-        <button type="button" aria-label="色覺輔助" :disabled="disabled" :aria-pressed="modelValue.colorblindIndicators" @click="update({ colorblindIndicators: !modelValue.colorblindIndicators })">{{ modelValue.colorblindIndicators ? '開啟' : '關閉' }}</button>
+        <div><strong>{{ t("色覺輔助") }}</strong><small>{{ t("以符號及文字區分狀態，不只靠顏色") }}</small></div>
+        <Es2Switch :label="t('色覺輔助')" :disabled="disabled" :checked="modelValue.colorblindIndicators" @toggle="update({ colorblindIndicators: !modelValue.colorblindIndicators })" />
       </div>
       <div class="es2-switch-row">
-        <div><strong>傷害數字</strong><small>顯示或隱藏戰鬥傷害浮字</small></div>
-        <button type="button" aria-label="傷害數字" :disabled="disabled" :aria-pressed="modelValue.showDamageNumbers" @click="update({ showDamageNumbers: !modelValue.showDamageNumbers })">{{ modelValue.showDamageNumbers ? '顯示' : '隱藏' }}</button>
+        <div><strong>{{ t("傷害數字") }}</strong><small>{{ t("顯示或隱藏戰鬥傷害浮字") }}</small></div>
+        <Es2Switch :label="t('傷害數字')" :disabled="disabled" :checked="modelValue.showDamageNumbers" @toggle="update({ showDamageNumbers: !modelValue.showDamageNumbers })" />
+      </div>
+      <div class="es2-switch-row">
+        <div><strong>{{ t("滿血時顯示怪物血條") }}</strong><small>{{ t("關閉時僅隱藏滿血怪物頭頂的血條；首領 HUD 保持顯示") }}</small></div>
+        <Es2Switch data-testid="es2-full-enemy-health-bars" :label="t('滿血時顯示怪物血條')" :disabled="disabled" :checked="modelValue.showFullEnemyHealthBars" @toggle="update({ showFullEnemyHealthBars: !modelValue.showFullEnemyHealthBars })" />
+      </div>
+      <div class="es2-switch-row">
+        <div><strong>{{ t("英雄低血量警示") }}</strong><small>{{ t("血量偏低時顯示畫面邊緣、英雄資訊框及危急警示") }}</small></div>
+        <Es2Switch data-testid="es2-hero-low-health-warning" :label="t('英雄低血量警示')" :disabled="disabled" :checked="modelValue.showHeroLowHealthWarning" @toggle="update({ showHeroLowHealthWarning: !modelValue.showHeroLowHealthWarning })" />
       </div>
     </div>
 
     <div data-testid="es2-preview" class="es2-preview" aria-live="polite" aria-atomic="true">
-      <strong>即時預覽 · {{ policy.quality.toUpperCase() }}</strong>
-      <div class="es2-mobile-preview" :data-side="modelValue.joystickSide" :style="{ '--es2-mini-scale': modelValue.touchScale }" aria-label="預覽左右控制鈕位置">
+      <strong>{{ t("即時預覽 ·") }} {{ policy.quality.toUpperCase() }}</strong>
+      <div class="es2-mobile-preview" :data-side="modelValue.joystickSide" :style="{ '--es2-mini-scale': modelValue.touchScale }" :aria-label="t('預覽左右控制鈕位置')">
         <span class="es2-mini-stick" aria-hidden="true">◎</span>
         <span class="es2-mini-dash" aria-hidden="true">✧</span>
       </div>
       <div class="es2-preview-demo" :style="{ fontSize: 'calc(14px * ' + modelValue.interfaceScale + ')' }">
         <span>♥ HP</span><span>✦ XP</span>
         <span v-if="modelValue.showDamageNumbers" class="es2-preview-damage">−24</span>
-        <span v-if="modelValue.colorblindIndicators">● 狀態正常</span>
+        <span v-if="modelValue.colorblindIndicators">{{ t("● 狀態正常") }}</span>
       </div>
-      <small>搖桿：{{ modelValue.joystickSide === 'left' ? '左' : '右' }}側 · {{ Math.round(modelValue.touchScale * 100) }}%｜畫面動態：{{ policy.reduceMotion ? '已減少' : '一般' }}</small>
+      <small>{{ t("搖桿：") }}{{ t(modelValue.joystickSide === 'left' ? '左' : '右') }}{{ t("側 ·") }} {{ Math.round(modelValue.touchScale * 100) }}{{ t("%｜畫面動態：") }}{{ t(policy.reduceMotion ? '已減少' : '一般') }}</small>
     </div>
   </section>
 </template>
@@ -129,16 +145,16 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
   text-align: left;
   font-family: system-ui, sans-serif;
 }
-.es2-settings-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.es2-settings-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 12px; }
+.es2-settings-head > div { flex: 1 1 175px; min-width: 0; overflow-wrap: anywhere; }
 .es2-eyebrow { color: #d6b777; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; }
 .es2-settings h3 { margin: 4px 0 8px; font: 700 18px/1.4 Georgia, serif; color: #ffe4ad; }
 .es2-settings p, .es2-settings small { color: #b7c5cf; font-size: 12px; line-height: 1.5; }
-.es2-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; margin: 17px 0; }
+.es2-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr)); gap: 14px 18px; margin: 17px 0; }
 .es2-field { display: flex; flex-direction: column; min-width: 0; gap: 7px; }
 .es2-field label { color: #f1dfc0; font-size: 13px; font-weight: 650; }
 .es2-field output { float: right; color: #ffdb97; font-variant-numeric: tabular-nums; }
-.es2-field :is(select, input[type="range"]) { width: 100%; min-width: 0; color: #f9ebd3; accent-color: #e4bf7d; }
-.es2-field select { min-height: 44px; border: 1px solid #ad986f; border-radius: 8px; padding: 8px 10px; background: #233042; }
+.es2-field input[type="range"] { width: 100%; min-width: 0; color: #f9ebd3; accent-color: #e4bf7d; }
 .es2-field input[type="range"] { min-height: 40px; cursor: pointer; touch-action: pan-x; }
 .es2-switches { border-block: 1px solid #b7a17955; }
 .es2-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; }
@@ -146,16 +162,17 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 .es2-switch-row strong, .es2-switch-row small { display: block; }
 .es2-switch-row strong { font-size: 13px; margin-bottom: 4px; }
 .es2-switch-row small { max-width: 260px; }
-.es2-switch-group { display: flex; flex: none; gap: 6px; }
+.es2-switch-group { display: flex; flex: 0 1 auto; min-width: 0; max-width: 100%; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; }
+.es2-switch-row > div:first-child { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
 .es2-settings button { min-height: 44px; border: 1px solid #a9997d; border-radius: 8px; padding: 8px 12px; background: #243345; color: #e5e6e7; font: 700 12px/1.3 system-ui, sans-serif; cursor: pointer; }
 .es2-settings button[aria-pressed="true"] { border-color: #e9c98e; background: #534936; color: #fff0cc; box-shadow: inset 0 0 0 1px #f4c37c44; }
-.es2-settings :is(button, select, input):focus-visible { outline: 3px solid #ffe3a6; outline-offset: 2px; }
-.es2-settings :is(button, select, input):disabled { opacity: .5; cursor: not-allowed; }
-.es2-reset { white-space: nowrap; }
+.es2-settings :is(button, input):focus-visible { outline: 3px solid #ffe3a6; outline-offset: 2px; }
+.es2-settings :is(button, input):disabled { opacity: .5; cursor: not-allowed; }
+.es2-reset { white-space: normal; max-width: 100%; }
 .es2-preview { margin-top: 16px; padding: 12px 14px; border: 1px solid #d4b57a80; border-radius: 10px; background: linear-gradient(150deg, #28384b, #151d29); }
 .es2-preview > strong { font-size: 12px; color: #ffe1ac; letter-spacing: .5px; }
-.es2-mobile-preview { display: grid; grid-template-columns: 1fr 1fr; align-items: end; margin-top: 10px; gap: 20px; }
-.es2-mobile-preview span { display: grid; place-items: center; border: 2px solid #dec28c; border-radius: 50%; background: #30475c; color: #f7e7c3; font-size: 21px; }
+.es2-mobile-preview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; margin-top: 10px; gap: 20px; }
+.es2-mobile-preview span { min-width: 0; max-width: 100%; display: grid; place-items: center; border: 2px solid #dec28c; border-radius: 50%; background: #30475c; color: #f7e7c3; font-size: 21px; }
 .es2-mini-stick { justify-self: start; grid-column: 1; grid-row: 1; width: calc(54px * var(--es2-mini-scale)); aspect-ratio: 1; }
 .es2-mini-dash { justify-self: end; grid-column: 2; grid-row: 1; width: calc(40px * var(--es2-mini-scale)); aspect-ratio: 1; }
 .es2-mobile-preview[data-side="right"] .es2-mini-stick { grid-column: 2; justify-self: end; }
@@ -167,8 +184,8 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 @media (max-width: 420px) {
   .es2-settings-head { flex-wrap: wrap; }
   .es2-options { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .es2-switch-row { align-items: flex-start; flex-direction: column; }
-  .es2-switch-group { flex-wrap: wrap; }
+  .es2-switch-row { gap: 8px; }
+  .es2-switch-group { flex-direction: column; align-items: flex-end; }
 }
 @media (prefers-reduced-motion: reduce) {
   .es2-settings * { animation: none !important; transition: none !important; }

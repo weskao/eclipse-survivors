@@ -24,11 +24,16 @@ it('spawns each of the four new bosses in the real game loop across runs', () =>
     engine.start()
     engine.state.mobs = []
     engine.state.spawnT = 999
-    engine.state.time = getMode(engine.state.runMode).bossAt + 0.1
+    const arrival = getMode(engine.state.runMode).bossAt
+    engine.state.time = arrival - 12
+    expect(engine.bossArrivalWarning, id).toMatchObject({ bossId: id, seconds: 12, urgent: false })
+    engine.state.time = arrival + 0.1
     engine.state.hero!.attack = 999
     engine.advance(1 / 60)
     const livingBosses = engine.state.mobs.filter(mob => mob.type === 'boss' && mob.hp > 0)
     expect(livingBosses, id).toHaveLength(1)
+    expect(livingBosses[0]!.bossArtId, id).toBe(id)
+    expect(engine.bossArrivalWarning, id).toBeNull()
     const expectedHp = Math.round(BOSS_DEFINITIONS[id].health * getMode(engine.state.runMode).modifiers.enemyHp)
     expect(livingBosses[0]!.max, id).toBe(expectedHp)
     expect(livingBosses[0]!.ai?.state, id).toBe('recover')

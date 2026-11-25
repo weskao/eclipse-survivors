@@ -1,0 +1,150 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "W",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "sourceFile": "source.webp",
+  "sourceSHA256": "7bfc24d8163071381ba89ce64f28fa7693d24415ca384fdd5806c3a4ae54d0f4",
+  "originalPNGSHA256": "391c92a174719ec9d0d83350aae9f6eb6ec902db744f24a3ca44641cea6e74db",
+  "sourceDecodedRGBASHA256": "b4b69f825884e2485510685ac3bedffe65dfd95d40b5caefaa8a122fc0e2fdc9",
+  "sourceEncoding": "lossless-webp-exact-rgba",
+  "atlasFile": "run-w-4frames@3x.webp",
+  "webpSHA256": "0e8e7138f4517aeb59c208849b576677a66116986e920be721e65cd234ef8568",
+  "bytes": 1123672,
+  "frameCount": 4,
+  "footBottoms": [
+    624,
+    609,
+    603,
+    613
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        0,
+        7,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        18,
+        31,
+        588,
+        554
+      ],
+      "outputAlphaBounds": [
+        85,
+        79,
+        689,
+        689
+      ],
+      "rgbaSHA256": "580108de9201f027332f98642b2d3b64afe454fe809347571abefe9502bf1209",
+      "outputRGBA256": "26a0c24397aca636d94baf405bbef031fd6281db850ae2ba223a0042f0505e35",
+      "clearedMarginPixels": 191
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        0,
+        17,
+        613,
+        627
+      ],
+      "coreAlphaBounds": [
+        21,
+        36,
+        602,
+        539
+      ],
+      "outputAlphaBounds": [
+        79,
+        87,
+        683,
+        689
+      ],
+      "rgbaSHA256": "413990e255ea535cf74cb145c4ab66a6073cf847ada931c1b645484318a26ab2",
+      "outputRGBA256": "a10d96e1a6ad45418640e161825b2e539c7c34e6d1fe3cc7cbf8fbbd1a2aa2dc",
+      "clearedMarginPixels": 328
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        29,
+        37,
+        598,
+        533
+      ],
+      "outputAlphaBounds": [
+        79,
+        78,
+        689,
+        679
+      ],
+      "rgbaSHA256": "2c2b3c1c69df5b3bd83bb077bb927c96e244c0a2d17948c3a5397d13611e152d",
+      "outputRGBA256": "dd3b1f7d3c2a34f7c994bac22c7427f008d76645ff09ce89b96427a9e6141586",
+      "clearedMarginPixels": 307
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        1,
+        0,
+        613,
+        619
+      ],
+      "coreAlphaBounds": [
+        26,
+        38,
+        609,
+        543
+      ],
+      "outputAlphaBounds": [
+        79,
+        78,
+        683,
+        689
+      ],
+      "rgbaSHA256": "6f8b573685874a2aa33196216c09b8f1b297e5f4d01db73c153f20657b38ef96",
+      "outputRGBA256": "9dec7dad559611226e2a6f1cd8fa71fd543d69fad091a1cbdca89bddeda5cc8e",
+      "clearedMarginPixels": 188
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "reviewNotes": [
+    "Independent W candidate, silver hair and blue-white-gold fox motif, staff shown in far arm; confirm actual handedness and canonical identity at 1x before gameplay admission.",
+    "Only alpha=1 in outer 8px of source cells cleared in padded derivative; source master retained exactly; no resampling.",
+    "Four-frame candidate, native 3x visual approval and full ten-frame run still pending."
+  ]
+}

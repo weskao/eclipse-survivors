@@ -17,11 +17,12 @@ export type SkillRarity = 'common' | 'rare' | 'legendary'
 export type Weather = 'sunshower' | 'storm' | 'snow' | 'embers'
 export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard'
 
-/** Every SFX cue name in the original `sfxCues` / `sfxCooldown` tables. */
+/** Shared gameplay and UI SFX cues, including hero-specific active skills. */
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup'
-  | 'scene' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
+  | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
+  | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 
 export interface JobDef { label: string; hp: number; speed: number; damage: number; delay: number; range: number }
 /** Original tuple `[id, icon, title, desc]` as a named record. */
@@ -50,11 +51,15 @@ export interface Hero {
 }
 
 export interface Mob {
+  /** Authored production identity for controller-owned bosses; absent on the legacy boss. */
+  bossArtId?: import('./content/bosses/definitions').BossId
   x: number; y: number; type: MobType; hp: number; max: number; r: number; speed: number; dmg: number
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
   ai?: EnemyBrain
   elite?: boolean
   bossPhase?: 1 | 2 | 3
+  /** One-bit controller cue; renderer animates without changing combat hitboxes. */
+  bossMoving?: boolean
   summonedByBoss?: boolean
 }
 
@@ -66,6 +71,8 @@ export interface EnemyBrain {
   aimX: number; aimY: number; dirX: number; dirY: number
   cycle: number
   hitThisAttack?: boolean
+  /** Cosmetic release lifetime, independent of AI recovery. */
+  releaseFx?: number
 }
 export interface EnemyProjectile {
   x: number; y: number; vx: number; vy: number
@@ -95,6 +102,7 @@ export interface ContentRuntime {
 
 export type ContentEvent =
   | { type: 'hit' | 'kill'; mob: Mob; damage: number }
+  | { type: 'critical-hit'; x: number; y: number; angle?: number; contactOwned?: boolean }
   | { type: 'damage'; amount: number }
   | { type: 'pickup'; kind: 'xp' | 'world'; amount?: number }
   | { type: 'start' | 'reset' }
@@ -102,8 +110,8 @@ export type ContentEvent =
   | { type: 'run-complete'; win: boolean }
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
-export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean }
-export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number }
+export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean }
+export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number; contact?: 'normal' | 'critical'; angle?: number }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
 export interface MotionEcho { x: number; y: number; kind: JobId; frame: number; angle: number; life: number; max: number }
@@ -131,6 +139,8 @@ export interface GameState {
   lightningFx: LightningFx[]
   motionEchoes: MotionEcho[]
   cameraKick: number
+  /** Game-clock time of the last accepted screen recoil; prevents crowd-hit shake loops. */
+  lastCameraKickAt: number
   time: number
   kill: number
   spawnT: number
@@ -140,6 +150,9 @@ export interface GameState {
   cosmetic: CosmeticId
   damageDealt: number
   damageTaken: number
+  /** Applied once when starting a run; no in-combat config reads. */
+  xpGainMultiplier: number
+  pickupGainMultiplier: number
   defeatedTypes: Partial<Record<MobType, number>>
   worldClock: number
   sceneFxClock: number
@@ -178,8 +191,10 @@ export interface GameHooks {
   /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
   openTreasure?(state: GameState, chestId: number): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
-  modifyOutgoingDamage?(amount: number): number
+  modifyOutgoingDamage?(amount: number, target?: Mob): number
+  /** One-shot metadata from the authoritative outgoing-damage roll. */
+  consumeCriticalHit?(): boolean
   mitigateIncomingDamage?(amount: number): number
-  afterDamage?(amount: number): void
+  afterDamage?(amount: number, source?: Mob): void
   canTargetHero?(): boolean
 }

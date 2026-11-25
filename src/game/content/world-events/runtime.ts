@@ -263,7 +263,9 @@ export function createLiveWorldEvents(
     }
     try {
       hooks.sfx(tx.audioCue)
-      hooks.message('✦ ' + tx.kind.slice('events:'.length).replaceAll('-', ' ') + ' · ' + tx.choiceId)
+      const event = WORLD_EVENT_DEFINITIONS.find(def => def.id === tx.kind)
+      const action = event?.choices.find(choice => choice.id === tx.choiceId)
+      hooks.message('✦ ' + (event?.title ?? 'World Event') + ' · ' + (action?.title ?? 'Reward Claimed'))
       hooks.content?.(state, { type: 'pickup', kind: 'world' })
     } catch {
       // Presentation hooks cannot invalidate a committed gameplay transaction.

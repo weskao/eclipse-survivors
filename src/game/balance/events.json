@@ -1,0 +1,58 @@
+{
+  "weights": {
+    "chest": 0.27,
+    "shrine": 0.21,
+    "invasion": 0.12,
+    "blessing": 0.19,
+    "bargain": 0.11,
+    "challenge": 0.1
+  },
+  "spawnChance": 0.95,
+  "spawnIntervalBase": 5,
+  "spawnIntervalVariation": 3,
+  "lifetime": 30,
+  "maxActive": 3,
+  "placementRetries": 12,
+  "chestXp": 12,
+  "shrineHealing": 36,
+  "blessingSeconds": 12,
+  "blessingHealPerSecond": 2.4,
+  "bargainMinHp": 24,
+  "bargainHpCost": 14,
+  "bargainXp": 24,
+  "challengeSeconds": 9,
+  "challengeXp": 28,
+  "invasionCount": 3,
+  "invasionHp": 250,
+  "firstSpawnAt": 3,
+  "hazards": {
+    "sceneGraceSeconds": 1.2,
+    "hitCooldownSeconds": 1.4,
+    "baseDamage": 7,
+    "damagePerScene": 2
+  },
+  "sceneSpawnDelay": 3,
+  "interactive": {
+    "spawnIntervalBase": 5,
+    "spawnIntervalVariation": 2,
+    "lifetime": 32,
+    "maxActive": 4,
+    "minRadius": 180,
+    "maxRadius": 380,
+    "expiryRetryDelay": 2,
+    "minSeparation": 150,
+    "terrainClearance": 42,
+    "mobClearance": 52,
+    "approachClearance": 28,
+    "legacyMarkerClearance": 48
+  },
+  "legacyPlacement": {
+    "minRadius": 220,
+    "minExtraRadius": 190,
+    "maxExtraRadius": 280,
+    "viewportWidthFactor": 0.55,
+    "terrainClearance": 35,
+    "minSeparation": 120,
+    "mobClearance": 42
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "pose": "run",
+  "direction": "S",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "frameCount": 4,
+  "sourceSHA256": "094fbb5102685a3279b099d10c94d604ca2cc91d32f589ae43e75f5474763569",
+  "webpSHA256": "a75969214d6c4789412dd74852d650f099229d445f7fe317bfdf59bbdbbde88d",
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        57,
+        11,
+        579,
+        591
+      ],
+      "rgbaSHA256": "e7b23d1ef4fac8386dbce2b56559ee5aca20def1c3d3e3ce8b7b971d6ef1deb3",
+      "clearedMarginPixels": 900,
+      "outputRGBA256": "c8b8e757dcbbe08a2af62c7f8169e6ff3796d92439a972cb15930b65498bc172"
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        73,
+        16,
+        579,
+        552
+      ],
+      "rgbaSHA256": "ea42f20b55522c01a4e0afe1a250a2e0ef5d7245438f96152f96f6626eb3d1c6",
+      "clearedMarginPixels": 283,
+      "outputRGBA256": "f609abb8f118c7508306d5eec0b9b56b3040f15347a2026d7927ef66f200a164"
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        41,
+        11,
+        567,
+        596
+      ],
+      "rgbaSHA256": "0a92937e284c995f607935b63b20a0e896ae67aeab4ca79349f429ae37d7be2e",
+      "clearedMarginPixels": 1724,
+      "outputRGBA256": "c6df1dfe00853ce018d74f7b8a0397c9e25ca9b89f4427e7fdea182c5d725b67"
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        49,
+        11,
+        565,
+        577
+      ],
+      "rgbaSHA256": "482d346d94b10de817f500b38530716ce4d17ca702238d73e36b9029857385d0",
+      "clearedMarginPixels": 378,
+      "outputRGBA256": "3db5fb5d7374018138d48757f36d35899ab62149b6aa9f7dc714731c10386a27"
+    }
+  ]
+}

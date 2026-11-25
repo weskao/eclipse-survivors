@@ -1,4 +1,5 @@
 // XP, level-ups, weighted blessings and evolution upgrades.
+import { BALANCE } from './config'
 import { MAX_LEVEL, UP } from './constants'
 import type { ContentRegistry } from './content/registry'
 import { EVOLUTIONS, eligibleEvolutions } from './evolutions'
@@ -9,11 +10,11 @@ import type { AbilityId, ContentId, GameHooks, GameState, Hero, SkillRarity, Upg
 export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero) return
-  hero.xp += n
+  hero.xp += n * s.xpGainMultiplier
   while (hero.xp >= hero.need) {
     hero.xp -= hero.need
     hero.level++
-    hero.need = Math.round(hero.need * 1.28 + 7)
+    hero.need = Math.round(hero.need * BALANCE.progression.growthMultiplier + BALANCE.progression.growthFlat)
     s.levelQueue++
     hero.levelAnim = 1.1
     impact(s, hero.x, hero.y, 88, '#ffe1a8', 1.8)
@@ -23,7 +24,19 @@ export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   if (s.levelQueue && s.mode === 'play') hooks.offerUpgrades()
 }
 
-const WEIGHT: Record<SkillRarity, number> = { common: 14, rare: 5, legendary: 1 }
+const WEIGHT: Record<SkillRarity, number> = BALANCE.progression.rarityWeights
+
+const AREA_SKILLS = new Set<string>(BALANCE.progression.groups.area)
+const SUPPORT_SKILLS = new Set<string>(BALANCE.progression.groups.support)
+const MOBILITY_SKILLS = new Set<string>(BALANCE.progression.groups.mobility)
+
+function skillGroup(id: AbilityId): 'area' | 'support' | 'mobility' | 'attack' | null {
+  if (AREA_SKILLS.has(id)) return 'area'
+  if (SUPPORT_SKILLS.has(id)) return 'support'
+  if (MOBILITY_SKILLS.has(id)) return 'mobility'
+  if (BALANCE.progression.groups.attack.includes(id as UpgradeId) || id.startsWith('weapons:')) return 'attack'
+  return null
+}
 
 /** Seedable weighted sampling without replacement. Unlocked evolutions get one guaranteed slot. */
 export function pickUpgrades(hero?: Hero, rng: () => number = random, registry?: ContentRegistry, state?: GameState): UpgradeDef[] {
@@ -33,16 +46,37 @@ export function pickUpgrades(hero?: Hero, rng: () => number = random, registry?:
   if (hero && registry && state) {
     candidates.push(...registry.eligible(state).map(a => ({ ...a, level: state.content.levels[a.id] ?? 0 })))
   }
+  // Existing investments guide this run's build without removing random choices.
+  // Capped skills still inform the type preference, but cannot be offered again.
+  const invested = new Set<string>()
+  if (hero) for (const [id, level] of Object.entries(hero.skills)) {
+    if ((level ?? 0) > 0) {
+      const group = skillGroup(id as UpgradeId)
+      if (group) invested.add(group)
+    }
+  }
+  if (state) for (const [id, level] of Object.entries(state.content.levels)) {
+    if ((level ?? 0) > 0) {
+      const group = skillGroup(id as ContentId)
+      if (group) invested.add(group)
+    }
+  }
+  const weightOf = (upgrade: UpgradeDef): number => {
+    const level = upgrade.level ?? 0
+    const group = skillGroup(upgrade.id)
+    return WEIGHT[upgrade.rarity] * (1 + Math.min(BALANCE.progression.focusMaxBonus, level * BALANCE.progression.focusPerRank)
+      + (level === 0 && group && invested.has(group) ? BALANCE.progression.sameGroupBonus : 0))
+  }
   const available = hero ? eligibleEvolutions(hero) : []
   const selected: UpgradeDef[] = []
   if (available.length) {
     const index = Math.min(available.length - 1, Math.floor(rng() * available.length))
     selected.push({ ...available[index]!, level: 0 })
   }
-  while (selected.length < 3 && candidates.length) {
-    const total = candidates.reduce((sum, u) => sum + WEIGHT[u.rarity], 0)
+  while (selected.length < BALANCE.progression.choiceCount && candidates.length) {
+    const total = candidates.reduce((sum, u) => sum + weightOf(u), 0)
     let roll = Math.min(1 - Number.EPSILON, Math.max(0, rng())) * total
-    const index = candidates.findIndex(u => (roll -= WEIGHT[u.rarity]) < 0)
+    const index = candidates.findIndex(u => (roll -= weightOf(u)) < 0)
     selected.push(candidates.splice(index < 0 ? candidates.length - 1 : index, 1)[0]!)
   }
   return selected
@@ -78,14 +112,15 @@ export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks, regi
       const up = UP.find(u => u.id === id)
       if (!up || (hero.skills[up.id] ?? 0) >= MAX_LEVEL[up.id]) return false
       hero.skills[up.id] = (hero.skills[up.id] ?? 0) + 1
-      if (id === 'damage') hero.damage *= 1.25
-      if (id === 'speed') hero.speed *= 1.12
-      if (id === 'haste') hero.delay *= 0.85
+      if (id === 'damage') hero.damage *= BALANCE.skills.statUpgrades.damageMultiplier
+      if (id === 'speed') hero.speed *= BALANCE.skills.statUpgrades.speedMultiplier
+      if (id === 'haste') hero.delay *= BALANCE.skills.statUpgrades.attackDelayMultiplier
+      if (id === 'multi') hero.range *= BALANCE.skills.statUpgrades.multiRangeMultiplier
       if (id === 'maxhp') {
-        hero.max += 35
-        hero.hp = Math.min(hero.max, hero.hp + 55)
+        hero.max += BALANCE.skills.statUpgrades.maxHpAdded
+        hero.hp = Math.min(hero.max, hero.hp + BALANCE.skills.statUpgrades.maxHpHealing)
       }
-      if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + 25)
+      if (id === 'shield') hero.hp = Math.min(hero.max, hero.hp + BALANCE.skills.statUpgrades.shieldHealing)
       const msg = MESSAGES[up.id]
       if (msg) hooks.message(msg)
     }

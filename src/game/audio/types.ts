@@ -1,4 +1,7 @@
 import type { GameMode, SfxCue } from '../types'
+import type { ToneFn } from './music'
+import type { BossAttackId, BossId } from '../content/bosses/definitions'
+import type { BossAttackStage } from '../content/bosses/attack-presentation'
 
 /** Minimal `<audio>` surface the engine uses for the MP3 score (testable with a fake). */
 export interface BgmElement {
@@ -20,6 +23,10 @@ export type CombatIntensity = 'calm' | 'combat' | 'boss'
 export interface AudioSystem {
   /** true once an AudioContext exists (`window.__test.audio`). */
   readonly unlocked: boolean
+  /** One shared context/oscillator port for authored ES2 music; no extra AudioContext. */
+  createEs2Port?(): { now: () => number; isRunning: () => boolean; tone: ToneFn }
+  /** Suppress legacy media and synth only when the ES2 host score is enabled. */
+  setExternalScoreActive?(active: boolean): void
   readonly musicOn: boolean
   readonly sfxOn: boolean
   /** User volume preferences from 0 to 100; mute switches remain independent. */
@@ -33,6 +40,15 @@ export interface AudioSystem {
   interrupt(): void
   /** Adapt the score without modifying gameplay rules. */
   setCombatIntensity(intensity: CombatIntensity): void
+  /** An actual completed run selects a finite, authored results score; no additional media load. */
+  setResultTheme?(theme: 'victory' | 'defeat' | null): void
+  /** Sets the authored theme for the actual live boss; optional for test adapters. */
+  setBossTheme?(id: BossId | null, phase?: number): void
+  /** Set the real upcoming-boss countdown, or null when none is scheduled. */
+  setBossWarning?(seconds: number | null): void
+  prepareBossAttackAudio?(id: BossId | null): void
+  playBossAttack?(id: BossAttackId, stage: BossAttackStage): void
+  cancelBossAttackAudio?(): void
   playSfx(cue: SfxCue): void
   /** Original `music()`, called once per animation frame with the current mode. */
   tick(mode: GameMode): void

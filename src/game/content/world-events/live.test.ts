@@ -294,4 +294,11 @@ describe('world-event live integration', () => {
     expect(state.hero!.xp).toBe(oldXp)
     expect(live.director.objectives).toHaveLength(0)
   })
+
+  it('announces meaningful event and choice titles rather than leaking internal IDs', () => {
+    const { actions, live, spawn } = setup()
+    const marker = spawn('events:healing-fountain')
+    expect(live.choose(marker.id, 'drink')).toBe('applied')
+    expect(actions.message).toHaveBeenCalledWith('✦ Healing Fountain · Drink restorative water')
+  })
 })

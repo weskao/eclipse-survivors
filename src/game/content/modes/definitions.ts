@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 /**
  * Isolated expansion data. Deliberately not added to src/meta/modes.ts or RunModeId:
  * the integration owner must extend the shared selection, save and victory contracts.
@@ -44,10 +45,8 @@ export const OBJECTIVE_MODES: Readonly<Record<ObjectiveModeId, ObjectiveModeDefi
     victoryDescription: '於 480 秒內，依序擊敗五位已正式登場的首領才算勝利。',
     defeatDescription: '角色死亡、放棄挑戰或 480 秒截止仍未擊敗五名首領即失敗。',
     preRunModifiers: ['首領於 25／70／125／185／250 秒後逐一開放', '首領生命與攻擊逐階增強', '五連勝可獲得專屬徽章'],
-    timeLimitSeconds: 480, surviveSeconds: null,
-    bossReadySeconds: [25, 70, 125, 185, 250], relicReadySeconds: [], waveReadySeconds: [],
-    majorEventIntervalSeconds: null, rewardEmbers: 300, achievementId: 'objectives:boss-rush-clear',
-    enemyHp: 1.18, enemyDamage: 1.12, spawnFrequency: 1.05,
+    ...BALANCE.modes.objectives['boss-rush'],
+    achievementId: 'objectives:boss-rush-clear',
   },
   'endless-eclipse': {
     id: 'endless-eclipse',
@@ -56,10 +55,8 @@ export const OBJECTIVE_MODES: Readonly<Record<ObjectiveModeId, ObjectiveModeDefi
     victoryDescription: '不會因時間或首領擊倒而自動勝利；只有持續存活、死亡或主動結束。',
     defeatDescription: '角色死亡或主動放棄即結束本次無盡求生，不設隱藏終止時間。',
     preRunModifiers: ['每 180 秒可完成一場星蝕事件', '難度按生存時間與事件進度提升', '按實際生存里程碑計算獎勵，最高 1500 餘燼'],
-    timeLimitSeconds: null, surviveSeconds: null,
-    bossReadySeconds: [], relicReadySeconds: [], waveReadySeconds: [],
-    majorEventIntervalSeconds: 180, rewardEmbers: 28, achievementId: 'objectives:endless-eclipse-veteran',
-    enemyHp: 1.32, enemyDamage: 1.18, spawnFrequency: 1.21,
+    ...BALANCE.modes.objectives['endless-eclipse'],
+    achievementId: 'objectives:endless-eclipse-veteran',
   },
   'relic-hunt': {
     id: 'relic-hunt',
@@ -68,10 +65,8 @@ export const OBJECTIVE_MODES: Readonly<Record<ObjectiveModeId, ObjectiveModeDefi
     victoryDescription: '480 秒內集齊四件聖物、保持完整度大於零，並擊敗最後守護首領。',
     defeatDescription: '角色死亡、聖物完整度歸零、放棄或超過 480 秒即失敗。',
     preRunModifiers: ['聖物最早於 25／65／110／155 秒可收集', '收集後受到聖物破壞會降低共同完整度', '守護首領最早於 220 秒可迎戰'],
-    timeLimitSeconds: 480, surviveSeconds: null,
-    bossReadySeconds: [220], relicReadySeconds: [25, 65, 110, 155], waveReadySeconds: [],
-    majorEventIntervalSeconds: null, rewardEmbers: 240, achievementId: 'objectives:relic-hunt-guardian',
-    enemyHp: 1.1, enemyDamage: 1.15, spawnFrequency: 1.13,
+    ...BALANCE.modes.objectives['relic-hunt'],
+    achievementId: 'objectives:relic-hunt-guardian',
   },
   'cursed-expedition': {
     id: 'cursed-expedition',
@@ -80,10 +75,8 @@ export const OBJECTIVE_MODES: Readonly<Record<ObjectiveModeId, ObjectiveModeDefi
     victoryDescription: '擊敗兩名於 100／240 秒後可迎戰的守衛，且至少存活 360 秒。',
     defeatDescription: '角色死亡、放棄或 420 秒硬性截止仍未完成目標即失敗。',
     preRunModifiers: ['每 60 秒輪替血價、夜幕、狂潮三種詛咒', '強敵傷害與數量高於普通遠征', '360 秒生存與雙守衛擊殺缺一不可'],
-    timeLimitSeconds: 420, surviveSeconds: 360,
-    bossReadySeconds: [100, 240], relicReadySeconds: [], waveReadySeconds: [],
-    majorEventIntervalSeconds: null, rewardEmbers: 280, achievementId: 'objectives:cursed-expedition-survivor',
-    enemyHp: 1.42, enemyDamage: 1.34, spawnFrequency: 1.29,
+    ...BALANCE.modes.objectives['cursed-expedition'],
+    achievementId: 'objectives:cursed-expedition-survivor',
   },
   'chaos-arena': {
     id: 'chaos-arena',
@@ -92,11 +85,8 @@ export const OBJECTIVE_MODES: Readonly<Record<ObjectiveModeId, ObjectiveModeDefi
     victoryDescription: '330 秒內依序清除八波遭遇戰並擊敗最後登場的競技場首領。',
     defeatDescription: '角色死亡、放棄或 330 秒截止仍未完成全部八波與首領即失敗。',
     preRunModifiers: ['八波遭遇戰依次於 15 秒起逐段開放', '每波切換蜂擁、鐵甲、狂暴規則', '第八波後於 170 秒開放最後首領'],
-    timeLimitSeconds: 330, surviveSeconds: null,
-    bossReadySeconds: [170], relicReadySeconds: [],
-    waveReadySeconds: [15, 33, 51, 69, 87, 105, 123, 141],
-    majorEventIntervalSeconds: null, rewardEmbers: 260, achievementId: 'objectives:chaos-arena-champion',
-    enemyHp: 1.26, enemyDamage: 1.24, spawnFrequency: 1.38,
+    ...BALANCE.modes.objectives['chaos-arena'],
+    achievementId: 'objectives:chaos-arena-champion',
   },
 })
 

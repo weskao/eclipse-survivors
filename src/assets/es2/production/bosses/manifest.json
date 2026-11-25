@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "category": "bosses",
-  "status": "visual-review-required",
+  "status": "approved",
   "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
   "assets": [
     {
@@ -17,9 +17,32 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
-      "qaNote": "Explicit c104 source region(s): bosses-abyss-monarch-frost-sovereign-sheet.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): bosses-abyss-monarch-frost-sovereign-sheet.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
+      "qa": {
+        "maxCanvasDrawPx": 632.4,
+        "requiredNativeFramePx": 1898,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 1898px native 3x runtime requirement; authentic master detail not verified.",
+          "Compared against original bosses-abyss-monarch-frost-sovereign-sheet.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥1898px original authored frame detail needed at 632.4px conservative maximum normalized phase-three draw budget.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 1898px conservative normalized draw-budget requirement. Do not upscale these to claim native 3x.",
+          "The maximum normalized draw budget is a conservative 2x source-body correction ceiling, not a measured actual draw size. Verify the real alpha-derived P1/P2/P3 silhouettes and native detail on mobile and desktop."
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "inspected",
+        "visualReview": "approved"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "frost-sovereign",
@@ -34,9 +57,33 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
-      "qaNote": "Explicit c104 source region(s): bosses-abyss-monarch-frost-sovereign-sheet.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): bosses-abyss-monarch-frost-sovereign-sheet.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
+      "qa": {
+        "maxCanvasDrawPx": 632.4,
+        "requiredNativeFramePx": 1898,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 1898px native 3x runtime requirement; authentic master detail not verified.",
+          "Potential detached upper-edge fragments in phases 1-2: compare to bosses-abyss-monarch-frost-sovereign-sheet.png original.",
+          "Compared against original bosses-abyss-monarch-frost-sovereign-sheet.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥1898px original authored frame detail needed at 632.4px conservative maximum normalized phase-three draw budget.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 1898px conservative normalized draw-budget requirement. Do not upscale these to claim native 3x.",
+          "The maximum normalized draw budget is a conservative 2x source-body correction ceiling, not a measured actual draw size. Verify the real alpha-derived P1/P2/P3 silhouettes and native detail on mobile and desktop."
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "inspected",
+        "visualReview": "approved"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "infernal-titan",
@@ -51,9 +98,33 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
-      "qaNote": "Explicit c104 source region(s): bosses-infernal-titan-eclipse-seraph-sheet.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): bosses-infernal-titan-eclipse-seraph-sheet.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
+      "qa": {
+        "maxCanvasDrawPx": 632.4,
+        "requiredNativeFramePx": 1898,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 1898px native 3x runtime requirement; authentic master detail not verified.",
+          "Potential disconnected pixels at left edge of phase 3: compare to bosses-infernal-titan-eclipse-seraph-sheet.png original.",
+          "Compared against original bosses-infernal-titan-eclipse-seraph-sheet.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥1898px original authored frame detail needed at 632.4px conservative maximum normalized phase-three draw budget.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 1898px conservative normalized draw-budget requirement. Do not upscale these to claim native 3x.",
+          "The maximum normalized draw budget is a conservative 2x source-body correction ceiling, not a measured actual draw size. Verify the real alpha-derived P1/P2/P3 silhouettes and native detail on mobile and desktop."
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "inspected",
+        "visualReview": "approved"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "eclipse-seraph",
@@ -68,9 +139,33 @@
       "rows": 1,
       "frameWidth": 192,
       "frameHeight": 192,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
-      "qaNote": "Explicit c104 source region(s): bosses-infernal-titan-eclipse-seraph-sheet.png; visually review animation continuity and alpha."
+      "qaNote": "Explicit c104 source region(s): bosses-infernal-titan-eclipse-seraph-sheet.png; visually review animation continuity and alpha. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
+      "qa": {
+        "maxCanvasDrawPx": 632.4,
+        "requiredNativeFramePx": 1898,
+        "verifiedOriginalMasterFramePx": null,
+        "native3x": false,
+        "realGameplayReview": "pending",
+        "issues": [
+          "Current 192px cells cannot satisfy the 1898px native 3x runtime requirement; authentic master detail not verified.",
+          "Potential horizontal detached strips above phase 3 and at atlas edges: compare to bosses-infernal-titan-eclipse-seraph-sheet.png original.",
+          "Compared against original bosses-infernal-titan-eclipse-seraph-sheet.png (1448×1086 composite PNG): separate phase illustrations do not provide the ≥1898px original authored frame detail needed at 632.4px conservative maximum normalized phase-three draw budget.",
+          "Current native candidate interiors contain 724px of source detail; they do not meet the 1898px conservative normalized draw-budget requirement. Do not upscale these to claim native 3x.",
+          "The maximum normalized draw budget is a conservative 2x source-body correction ceiling, not a measured actual draw size. Verify the real alpha-derived P1/P2/P3 silhouettes and native detail on mobile and desktop."
+        ],
+        "existingAtlasPreviewReview": "inspected",
+        "originalContactSheetReview": "inspected",
+        "visualReview": "approved"
+      },
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     }
   ]
 }

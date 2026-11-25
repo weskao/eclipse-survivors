@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "E",
+  "frameCount": 4,
+  "framePixels": [
+    512,
+    512
+  ],
+  "atlasPixels": [
+    2048,
+    512
+  ],
+  "native3x": false,
+  "qa": "QA_PENDING",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "identityReview": "QA_PENDING",
+  "sourceImage": "ChatGPT-generated art candidate, not canonical production portrait",
+  "sourceSHA256": "5acb08f0a093494946ca0cb769b4a43b2d6c72d8af20aacaec7ecbe46ce72fd4",
+  "sourcePixels": [
+    1261,
+    1247
+  ],
+  "notes": "Visually inspect identity and frame continuity; not certified native 3x; four E run frames only.",
+  "frames": [
+    {
+      "index": 0,
+      "path": "spirit-summoner-run-east-frame-01-QA-PENDING.png",
+      "pixelBounds": [
+        24,
+        110,
+        488,
+        488
+      ],
+      "minTransparentMargin": 24,
+      "sha256": "39a2d0b167c74f38a0f1e8db655b6480d10ae3e3df56d4c6d6ef718bb13fd1e0",
+      "native3x": false,
+      "status": "QA_PENDING"
+    },
+    {
+      "index": 1,
+      "path": "spirit-summoner-run-east-frame-02-QA-PENDING.png",
+      "pixelBounds": [
+        24,
+        101,
+        488,
+        488
+      ],
+      "minTransparentMargin": 24,
+      "sha256": "ae673bd9a7a5984c5b1a523ca0a91ed7fe1f827c102be9ea30503b4387d4d800",
+      "native3x": false,
+      "status": "QA_PENDING"
+    },
+    {
+      "index": 2,
+      "path": "spirit-summoner-run-east-frame-03-QA-PENDING.png",
+      "pixelBounds": [
+        24,
+        100,
+        488,
+        488
+      ],
+      "minTransparentMargin": 24,
+      "sha256": "e99c1849cf80471ee2ac8ee72df17160672a384e350d4e43265ea4eefbbefe96",
+      "native3x": false,
+      "status": "QA_PENDING"
+    },
+    {
+      "index": 3,
+      "path": "spirit-summoner-run-east-frame-04-QA-PENDING.png",
+      "pixelBounds": [
+        24,
+        94,
+        488,
+        488
+      ],
+      "minTransparentMargin": 24,
+      "sha256": "2620f2b2131ae163a531794c025d2a1724848059f69164b4e54131604eecd5be",
+      "native3x": false,
+      "status": "QA_PENDING"
+    }
+  ],
+  "atlas": "spirit-summoner-run-east-4frame-QA-PENDING.webp",
+  "atlasSHA256": "2aeb6ffba3143056700746d8223f699742baa9ee0e59c902c92651f573cad4b1"
+}

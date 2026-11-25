@@ -23,5 +23,8 @@ export function stickVector(dx: number, dy: number): MoveInput & { knobX: number
   return { x: dx / Math.max(STICK_RADIUS, d), y: dy / Math.max(STICK_RADIUS, d), knobX: dx * factor, knobY: dy * factor }
 }
 
-/** `Digit1..3` → upgrade choice index, otherwise -1. */
-export const upgradeKeyIndex = (code: string): number => ['Digit1', 'Digit2', 'Digit3'].indexOf(code)
+/** Match physical 1–9 positions on the top row or numpad, independent of keyboard layout/IME. */
+export function upgradeKeyIndex(code: string): number {
+  const match = /^(?:Digit|Numpad)([1-9])$/.exec(code)
+  return match ? Number(match[1]) - 1 : -1
+}

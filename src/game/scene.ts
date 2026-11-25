@@ -1,4 +1,5 @@
 // Scene (weather/location) progression, original setScene + the scene check in update().
+import { BALANCE } from './config'
 import { SCENES, SCENE_SECONDS } from './constants'
 import { impact } from './fx'
 import { rand, random } from './math'
@@ -14,7 +15,7 @@ export function setScene(s: GameState, index: number, announce: boolean, hooks: 
   if (index === s.currentScene && announce) return
   s.currentScene = index
   s.events = []
-  s.nextEventAt = s.time + 6
+  s.nextEventAt = s.time + BALANCE.events.sceneSpawnDelay
   s.sceneEnteredAt = s.time
   s.challengeUntil = 0
   s.challengePoint = null

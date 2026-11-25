@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { SCENE, TAU } from '../constants'
 import type { Artwork } from '../art'
 import { hash } from '../math'
@@ -30,10 +31,10 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
   const biome = biomes[s.currentScene] ?? biomes[0]!
   const biomeId = BIOME_IDS[s.currentScene]
   const ground = biomeId && world?.ground[biomeId]
-  const authoredGround = !!ground && ground.complete && ground.naturalWidth === 768 && ground.naturalHeight === 768
+  const authoredGround = !!ground && ground.complete && ground.naturalWidth >= 768 && ground.naturalWidth === ground.naturalHeight
   const tile = authoredGround ? ground : biome.tile
   const decor = biomeId && world?.decor[biomeId]
-  const authoredDecor = !!decor && decor.complete && decor.naturalWidth === 384 && decor.naturalHeight === 96
+  const authoredDecor = !!decor && decor.complete && decor.naturalHeight >= 96 && decor.naturalWidth === decor.naturalHeight * 4
   const size = 384
   const px = ((ox % size) + size) % size
   const py = ((oy % size) + size) % size
@@ -74,7 +75,8 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
       // Decoration is visual only: authoritative collision still uses the original obstacle.
       ctx.save()
       ctx.globalAlpha = 0.76
-      ctx.drawImage(decor, (o.variant % 4) * 96, 0, 96, 96, x - 55, y - 125, 110, 130)
+      const sourceSide = decor.naturalHeight
+      ctx.drawImage(decor, (o.variant % 4) * sourceSide, 0, sourceSide, sourceSide, x - 55, y - 105, 110, 110)
       ctx.restore()
     } else if (s.currentScene === 0 && o.variant === 0) ctx.drawImage(props.tree, x - 90, y - 207, 181, 216)
     else if (s.currentScene === 0 && o.variant === 1) ctx.drawImage(props.ruin, x - 46, y - 114, 92, 121)
@@ -84,7 +86,7 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
   }
 }
 
-export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number, world?: WorldRuntimeImages): void {
   const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎' }
   const titles = { chest: '古代寶箱', shrine: '魔法祭壇', invasion: '菁英入侵',
     blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉' }
@@ -100,10 +102,13 @@ export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: numbe
     ctx.strokeStyle = glow; ctx.lineWidth = 3
     ctx.beginPath(); ctx.ellipse(x, y, 27 + Math.sin(s.worldClock * 3) * 3, 10, 0, 0, TAU); ctx.stroke()
     ctx.textAlign = 'center'; ctx.font = 'bold 25px Georgia'; ctx.fillStyle = '#fff6e2'
-    ctx.fillText(symbols[e.kind], x, y - 14)
+    if (e.kind === 'chest' && world?.chest && ready(world.chest)) {
+      // 192px authored WebP at 48px: 4x source detail, no new bitmap.
+      ctx.drawImage(world.chest, x - 24, y - 40, 48, 48)
+    } else ctx.fillText(symbols[e.kind], x, y - 14)
     ctx.fillStyle = '#101a23db'; ctx.fillRect(x - 49, y + 11, 98, 20)
     ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = glow
-    ctx.fillText(titles[e.kind], x, y + 25)
+    ctx.fillText(t(titles[e.kind]), x, y + 25)
     ctx.restore()
   }
   if (!s.challengePoint) return

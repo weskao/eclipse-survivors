@@ -17,6 +17,8 @@ export interface AccessibilityPreferences {
   colorblindIndicators: boolean
   vfxIntensity: VfxIntensity
   showDamageNumbers: boolean
+  showFullEnemyHealthBars: boolean
+  showHeroLowHealthWarning: boolean
 }
 
 export const DEFAULT_ACCESSIBILITY_PREFERENCES: Readonly<AccessibilityPreferences> = Object.freeze({
@@ -30,6 +32,8 @@ export const DEFAULT_ACCESSIBILITY_PREFERENCES: Readonly<AccessibilityPreference
   colorblindIndicators: false,
   vfxIntensity: 'full',
   showDamageNumbers: true,
+  showFullEnemyHealthBars: false,
+  showHeroLowHealthWarning: true,
 })
 
 export interface PreferencesStorage {
@@ -63,6 +67,8 @@ export function normalizeAccessibilityPreferences(value: unknown): Accessibility
     colorblindIndicators: typeof p.colorblindIndicators === 'boolean' ? p.colorblindIndicators : d.colorblindIndicators,
     vfxIntensity: choice(p.vfxIntensity, ['off', 'low', 'medium', 'full'], d.vfxIntensity),
     showDamageNumbers: typeof p.showDamageNumbers === 'boolean' ? p.showDamageNumbers : d.showDamageNumbers,
+    showFullEnemyHealthBars: typeof p.showFullEnemyHealthBars === 'boolean' ? p.showFullEnemyHealthBars : d.showFullEnemyHealthBars,
+    showHeroLowHealthWarning: typeof p.showHeroLowHealthWarning === 'boolean' ? p.showHeroLowHealthWarning : d.showHeroLowHealthWarning,
   }
 }
 

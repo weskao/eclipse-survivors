@@ -1,4 +1,5 @@
 import type { HudSkill, HudView } from '../../../game/store'
+import type { BossPointer } from './boss-pointer'
 import type { JobId, SkillRarity } from '../../../game/types'
 
 export type CombatHudRarity = SkillRarity | 'epic'
@@ -16,7 +17,8 @@ export interface CombatHudSnapshot {
  */
 export interface CombatHudFeed {
   readonly snapshot?: CombatHudSnapshot
-  readonly boss?: { readonly name: string; readonly phase?: number; readonly totalPhases?: number }
+  readonly boss?: { readonly name: string; readonly phase?: number; readonly totalPhases?: number; readonly offscreen?: BossPointer }
+  readonly bossWarning?: { readonly name: string; readonly seconds: number; readonly progress: number; readonly urgent: boolean; readonly color: string }
   readonly wave?: { readonly number: number; readonly announcement?: string; readonly progressPct?: number }
   readonly combo?: { readonly count: number }
   readonly relics?: readonly {
@@ -40,6 +42,7 @@ export interface CombatHudFeed {
 export interface CombatHudActions {
   readonly pause: () => void
   readonly settings: () => void
+  readonly home?: () => void
   readonly toggleMusic?: () => void
   readonly toggleSfx?: () => void
   readonly setMusicVolume?: (value: number) => void
@@ -54,7 +57,8 @@ export interface CombatHudView {
   readonly kills: number
   readonly timer: string
   readonly objective: string
-  readonly boss: { readonly percent: number; readonly name: string; readonly phase?: number; readonly totalPhases?: number } | null
+  readonly boss: { readonly percent: number; readonly name: string; readonly phase?: number; readonly totalPhases?: number; readonly offscreen?: BossPointer } | null
+  readonly bossWarning?: { readonly name: string; readonly seconds: number; readonly progress: number; readonly urgent: boolean; readonly color: string }
   readonly skills: readonly HudSkill[]
   readonly wave?: CombatHudFeed['wave']
   readonly combo?: CombatHudFeed['combo']
@@ -107,7 +111,12 @@ export function projectCombatHud(
       name: live.boss?.name?.trim() || '首領',
       phase,
       totalPhases,
+      ...(live.boss?.offscreen ? { offscreen: live.boss.offscreen } : {}),
     },
+    bossWarning: hud.bossPct === null && live.bossWarning && Number.isInteger(live.bossWarning.seconds)
+      && live.bossWarning.seconds >= 0 && live.bossWarning.seconds <= 15
+      ? { ...live.bossWarning, progress: Math.max(0, Math.min(1, live.bossWarning.progress)) }
+      : undefined,
     skills: hud.skills.map(skill => ({
       ...skill,
       cooldown: Number.isFinite(skill.cooldown) ? Math.max(0, skill.cooldown) : 0,

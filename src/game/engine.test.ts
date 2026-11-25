@@ -20,6 +20,8 @@ class SpyAudio implements AudioSystem {
   setSfxVolume(value: number): void { this.sfxVolume = value }
   wake(): void { this.unlocked = true; this.wakeCalls++ }
   interrupt(): void { this.interruptions++ }
+  resultThemes: Array<'victory' | 'defeat' | null> = []
+  setResultTheme(theme: 'victory' | 'defeat' | null): void { this.resultThemes.push(theme) }
   setCombatIntensity(): void {}
   playSfx(cue: SfxCue): void { this.cues.push(cue) }
   tick(): void {}
@@ -48,6 +50,162 @@ afterEach(() => {
 
 const key = (code: string): void => { window.dispatchEvent(new KeyboardEvent('keydown', { code })) }
 
+describe('home selection persistence', () => {
+  it.each([
+    ['knight', 'knight', 'quick'],
+    ['ranger', 'ranger', 'standard'],
+    ['wizard', 'wizard', 'endless'],
+    ['shadowblade', 'knight', 'challenge'],
+    ['spirit-summoner', 'wizard', 'boss-rush'],
+    ['crimson-paladin', 'knight', 'endless-eclipse'],
+    ['shadowblade', 'knight', 'relic-hunt'],
+    ['spirit-summoner', 'wizard', 'cursed-expedition'],
+    ['crimson-paladin', 'knight', 'chaos-arena'],
+  ] as const)('restores %s with %s legacy job in %s mode before starting a run', (hero, job, mode) => {
+    engine.selectHero(hero)
+    engine.selectRunMode(mode)
+    const freshAudio = new SpyAudio()
+    const reopened = createEngine({ audio: freshAudio })
+    expect(reopened.ui.heroId).toBe(hero)
+    expect(reopened.ui.choice).toBe(job)
+    expect(reopened.ui.runMode).toBe(mode)
+    expect(reopened.state.heroId).toBe(hero)
+    expect(reopened.state.choice).toBe(job)
+    expect(freshAudio.cues).toEqual([])
+    expect(freshAudio.wakeCalls).toBe(0)
+    reopened.start()
+    expect(reopened.state.heroId).toBe(hero)
+    expect(reopened.state.runMode).toBe(mode)
+  })
+
+  it('reads the latest stored selection on returning from combat without a select cue', () => {
+    engine.selectJob('ranger')
+    engine.selectRunMode('standard')
+    engine.start()
+    localStorage.setItem('eclipseSelectedHero', 'spirit-summoner')
+    localStorage.setItem('eclipseSelectedRunMode', 'relic-hunt')
+    audio.cues.length = 0
+    engine.goMenu()
+    expect(engine.ui.mode).toBe('menu')
+    expect(engine.ui.heroId).toBe('spirit-summoner')
+    expect(engine.ui.choice).toBe('wizard')
+    expect(engine.ui.runMode).toBe('relic-hunt')
+    expect(audio.cues).toEqual(['scene'])
+    engine.start()
+    expect(engine.state.heroId).toBe('spirit-summoner')
+    expect(engine.state.runMode).toBe('relic-hunt')
+  })
+
+  it('stores an explicitly selected default mode without replaying selection audio', () => {
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBeNull()
+    engine.selectRunMode('quick')
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBe('quick')
+    expect(audio.cues).toEqual([])
+  })
+
+  it('replaces both stored selections immediately, even without starting combat', () => {
+    engine.selectHero('shadowblade')
+    engine.selectRunMode('boss-rush')
+    engine.selectJob('wizard')
+    engine.selectRunMode('quick')
+    expect(localStorage.getItem('eclipseSelectedHero')).toBe('wizard')
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBe('quick')
+    expect(createEngine({ audio }).ui).toMatchObject({ heroId: 'wizard', choice: 'wizard', runMode: 'quick' })
+  })
+
+  it.each(['removed-id', 'constructor', '__proto__', ''])('ignores invalid saved IDs (%s) independently', invalid => {
+    localStorage.setItem('eclipseSelectedHero', invalid)
+    localStorage.setItem('eclipseSelectedRunMode', 'challenge')
+    expect(createEngine({ audio }).ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'challenge' })
+    localStorage.setItem('eclipseSelectedHero', 'ranger')
+    localStorage.setItem('eclipseSelectedRunMode', invalid)
+    expect(createEngine({ audio }).ui).toMatchObject({ heroId: 'ranger', choice: 'ranger', runMode: 'quick' })
+  })
+
+  it('keeps the active selection usable when storage writes are unavailable', () => {
+    const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked') })
+    try {
+      engine.selectHero('shadowblade')
+      engine.selectRunMode('challenge')
+      engine.start()
+      engine.goMenu()
+      expect(engine.ui).toMatchObject({ heroId: 'shadowblade', choice: 'knight', runMode: 'challenge' })
+    } finally { write.mockRestore() }
+  })
+
+  it('falls back independently on returning home when a previously stored choice is no longer available', () => {
+    engine.selectHero('shadowblade')
+    engine.selectRunMode('boss-rush')
+    engine.start()
+    localStorage.setItem('eclipseSelectedHero', 'removed-hero')
+    engine.goMenu()
+    expect(engine.ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'boss-rush' })
+    engine.selectHero('ranger')
+    engine.start()
+    localStorage.setItem('eclipseSelectedRunMode', 'removed-mode')
+    engine.goMenu()
+    expect(engine.ui).toMatchObject({ heroId: 'ranger', choice: 'ranger', runMode: 'quick' })
+    expect(engine.state.runMode).toBe('quick')
+  })
+
+  it('revalidates each browser preference when the active account changes without playing a selection cue', () => {
+    engine.selectHero('spirit-summoner')
+    engine.selectRunMode('relic-hunt')
+    audio.cues.length = 0
+    const account = engine.cloudWallet!
+    expect(account.select('selection-qa-a')).toBe(true)
+    expect(engine.ui).toMatchObject({ heroId: 'spirit-summoner', choice: 'wizard', runMode: 'relic-hunt' })
+    localStorage.setItem('eclipseSelectedHero', 'removed-hero')
+    expect(account.select('selection-qa-b')).toBe(true)
+    expect(engine.ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'relic-hunt' })
+    localStorage.setItem('eclipseSelectedHero', 'ranger')
+    localStorage.setItem('eclipseSelectedRunMode', 'removed-mode')
+    expect(account.select(null)).toBe(true)
+    expect(engine.ui).toMatchObject({ heroId: 'ranger', choice: 'ranger', runMode: 'quick' })
+    expect(audio.cues).toEqual([])
+  })
+
+  it('rejects specializations whose starting ability is no longer registered', () => {
+    localStorage.setItem('eclipseSelectedHero', 'shadowblade')
+    localStorage.setItem('eclipseSelectedRunMode', 'standard')
+    const limited = createEngine({ audio, contentPacks: [] })
+    expect(limited.ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'standard' })
+    limited.selectHero('shadowblade')
+    expect(limited.ui.heroId).toBe('knight')
+    expect(localStorage.getItem('eclipseSelectedHero')).toBe('shadowblade')
+  })
+
+  it('does not restore an older saved choice when the latest write fails', () => {
+    engine.selectJob('ranger')
+    engine.selectRunMode('standard')
+    const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked') })
+    try {
+      engine.selectHero('crimson-paladin')
+      engine.selectRunMode('challenge')
+      engine.start()
+      engine.goMenu()
+      expect(engine.ui).toMatchObject({ heroId: 'crimson-paladin', choice: 'knight', runMode: 'challenge' })
+      expect(engine.state.runMode).toBe('challenge')
+    } finally { write.mockRestore() }
+  })
+
+  it('keeps the displayed and engine mode aligned before starting a run', () => {
+    engine.selectRunMode('chaos-arena')
+    expect(engine.ui.runMode).toBe('chaos-arena')
+    expect(engine.state.runMode).toBe('chaos-arena')
+  })
+
+  it('ignores mode changes during combat and rejects invalid mode IDs', () => {
+    engine.selectRunMode('constructor' as never)
+    expect(engine.ui.runMode).toBe('quick')
+    engine.selectRunMode('challenge')
+    engine.start()
+    engine.selectRunMode('endless')
+    expect(engine.ui.runMode).toBe('challenge')
+    expect(localStorage.getItem('eclipseSelectedRunMode')).toBe('challenge')
+  })
+})
+
 describe('engine commands fire the original cues', () => {
   it('select → spotlight choice + select cue', () => {
     engine.selectJob('ranger')
@@ -62,6 +220,18 @@ describe('engine commands fire the original cues', () => {
     expect(audio.cues).toContain('start')
     expect(engine.ui.hud.who).toBe('曙鋼騎士 · LV.1')
     expect(engine.ui.toastText).toBe('幽暮之門已開啟')
+  })
+
+  it('starts every new specialization at level one without a fabricated initial upgrade queue', () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+      engine.selectHero(id)
+      engine.start()
+      expect(engine.ui.mode, id).toBe('play')
+      expect(engine.state.hero?.level, id).toBe(1)
+      expect(engine.state.levelQueue, id).toBe(0)
+      expect(engine.ui.heroId, id).toBe(id)
+      engine.goMenu()
+    }
   })
 
   it('opens settings from gameplay safely and restores play after closing', () => {
@@ -92,7 +262,7 @@ describe('engine commands fire the original cues', () => {
 
   it('persists still/soft upgrade effects and combat camera motion preferences', () => {
     expect(engine.ui.upgradeEffect).toBe('soft')
-    expect(engine.ui.cameraShake).toBe(true)
+    expect(engine.ui.cameraShake).toBe(false)
     engine.setUpgradeEffect('still')
     engine.setCameraShake(false)
     expect(engine.ui.upgradeEffect).toBe('still')
@@ -102,6 +272,16 @@ describe('engine commands fire the original cues', () => {
     const reloaded = createEngine({ audio })
     expect(reloaded.ui.upgradeEffect).toBe('still')
     expect(reloaded.ui.cameraShake).toBe(false)
+  })
+
+  it('starts stable for new players and restores explicitly enabled camera shake', () => {
+    expect(localStorage.getItem('eclipseCameraShake')).toBeNull()
+    expect(engine.ui.cameraShake).toBe(false)
+    engine.setCameraShake(true)
+    expect(localStorage.getItem('eclipseCameraShake')).toBe('on')
+    expect(createEngine({ audio }).ui.cameraShake).toBe(true)
+    engine.setCameraShake(false)
+    expect(createEngine({ audio }).ui.cameraShake).toBe(false)
   })
 
   it('freezes upgrade-scene ambient motion only in still mode', () => {
@@ -187,6 +367,7 @@ describe('engine commands fire the original cues', () => {
     engine.advance(0.033)
     expect(engine.ui.mode).toBe('result')
     expect(audio.cues).toContain('victory')
+    expect(audio.resultThemes).toContain('victory')
     expect(engine.ui.ending).toBe('🏆 遠征勝利！')
   })
 
@@ -283,6 +464,15 @@ describe('keyboard and focus', () => {
     expect(engine.state.hero!.skills[first as UpgradeId]).toBe(1)
   })
 
+  it('selects upgrades using numpad positions even with a non-English IME', () => {
+    engine.start()
+    engine.testApi.level()
+    expect(engine.ui.upgrades).toHaveLength(3)
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Numpad2', key: 'Process', isComposing: true }))
+    expect(engine.ui.mode).toBe('play')
+    expect(audio.cues.at(-1)).toBe('upgrade')
+  })
+
   it('window blur does not pause a run or leave movement stuck', () => {
     engine.start()
     key('KeyD')
@@ -296,13 +486,59 @@ describe('keyboard and focus', () => {
     expect(engine.state.hero!.vx).toBeLessThan(movingSpeed)
   })
 
-  it('pointerdown on a button wakes audio and plays the ui cue', () => {
+  it('wakes on pointerdown but plays a single generic cue on completed click', () => {
     const b = document.createElement('button')
     document.body.append(b)
     b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
     expect(audio.unlocked).toBe(true)
-    expect(audio.cues).toContain('ui')
+    expect(audio.cues).not.toContain('ui')
+    b.click()
+    expect(audio.cues).toEqual(['ui'])
     b.remove()
+  })
+
+  it('shares select feedback across mouse, keyboard activation and listbox options', () => {
+    const b = document.createElement('button')
+    b.dataset.uiSfx = 'select'
+    document.body.append(b)
+    audio.unlocked = false
+    b.click() // Keyboard activation dispatches click without an earlier pointerdown.
+    expect(audio.unlocked).toBe(true)
+    expect(audio.cues).toEqual(['select'])
+    const li = document.createElement('li')
+    li.setAttribute('role', 'option')
+    li.dataset.uiSfx = 'select'
+    document.body.append(li)
+    li.click()
+    expect(audio.cues).toEqual(['select', 'select'])
+    b.remove()
+    li.remove()
+  })
+
+  it('skips disabled or handled clicks and never doubles an engine-owned action', () => {
+    const b = document.createElement('button')
+    document.body.append(b)
+    b.disabled = true
+    b.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    expect(audio.cues).toEqual([])
+    b.disabled = false
+    b.dataset.uiSfx = 'managed'
+    b.addEventListener('click', () => engine.selectJob('ranger'))
+    b.click()
+    expect(audio.cues).toEqual(['select'])
+    b.remove()
+  })
+
+  it('only sounds an actual mode change and gives accepted/denied purchase feedback', () => {
+    engine.selectRunMode('challenge')
+    expect(audio.cues).toEqual(['select'])
+    engine.selectRunMode('challenge')
+    expect(audio.cues).toEqual(['select'])
+    engine.buyPermanentUpgrade('power')
+    expect(audio.cues.at(-1)).toBe('upgrade')
+    // Permanent research has a bounded rank; further transactions must be denied.
+    for (let attempt = 0; attempt < 100; attempt++) engine.buyPermanentUpgrade('power')
+    expect(audio.cues.at(-1)).toBe('deny')
   })
 })
 
@@ -366,5 +602,59 @@ describe('interruption and input lifecycle', () => {
     expect(engine.state.hero!.x).toBe(0)
     expect(audio.wakeCalls).toBeGreaterThan(1)
     stop()
+  })
+})
+
+describe('hero art capture East encounter', () => {
+  it('cannot alter a normal game without the explicit dev QA flag', () => {
+    engine.selectHero('shadowblade')
+    engine.start()
+    const mobs = [...engine.state.mobs]
+    const aim = engine.state.hero!.aimAngle
+    expect(engine.testApi.prepareHeroArtEastAttack()).toBe(false)
+    expect(engine.state.mobs).toEqual(mobs)
+    expect(engine.state.hero!.aimAngle).toBe(aim)
+  })
+
+  it('uses real attack against an East target only in explicit dev QA', () => {
+    const old = window.location.href
+    try {
+      window.history.replaceState(null, '', '?es2HeroArtQA=1')
+      for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+        engine.selectHero(id)
+        engine.start()
+        expect(engine.testApi.prepareHeroArtEastAttack(), id).toBe(true)
+        const hero = engine.state.hero!
+        expect(hero.strike, id).toBeGreaterThan(0)
+        expect(Math.abs(hero.aimAngle), id).toBeLessThan(Math.PI / 8)
+        expect(hero.face, id).toBe(1)
+        expect(engine.activateHeroSpecial(), id).toBe(true)
+        engine.goMenu()
+      }
+    } finally {
+      window.history.replaceState(null, '', old)
+    }
+  })
+})
+
+describe('hero active skill audio', () => {
+  it.each([
+    ['shadowblade', 'shadowblade-special'],
+    ['spirit-summoner', 'spirit-summoner-special'],
+    ['crimson-paladin', 'crimson-paladin-special'],
+  ] as const)('plays only the dedicated cast cue for %s on success', (hero, cue) => {
+    engine.selectHero(hero)
+    engine.selectRunMode('standard')
+    engine.start()
+    engine.state.mobs = []
+    engine.togglePause()
+    audio.cues.length = 0
+    expect(engine.activateHeroSpecial()).toBe(false)
+    expect(audio.cues).toEqual([])
+    engine.togglePause()
+    audio.cues.length = 0
+    expect(engine.activateHeroSpecial()).toBe(true)
+    expect(engine.activateHeroSpecial()).toBe(false)
+    expect(audio.cues).toEqual([cue])
   })
 })

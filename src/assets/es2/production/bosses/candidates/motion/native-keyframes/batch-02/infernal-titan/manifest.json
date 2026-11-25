@@ -1,0 +1,391 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "02943603459c048602a22bdfaffd0e7d1d4a4edc",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "ground-slam-key-a",
+      "phase": null,
+      "pose": "attack",
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/ground-slam-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "1c1075db-7794-4123-9ee5-02a450e96098",
+        "originalPngSha256": "1c753bce10fd396930a10c679cb8c33758acefec641ab437e0cd5ed23006db5a",
+        "canonicalReferenceHead": "02943603459c048602a22bdfaffd0e7d1d4a4edc"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1437,
+      "cellHeight": 1095,
+      "frameRects": [
+        [
+          0,
+          0,
+          1437,
+          1095
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        718.5,
+        547.5
+      ],
+      "alphaBounds": [
+        17,
+        7,
+        1432,
+        1087
+      ],
+      "alphaExtent": [
+        1415,
+        1080
+      ],
+      "actualSourceResolution": [
+        1437,
+        1095
+      ],
+      "sourceEdgeMargins": [
+        17,
+        7,
+        5,
+        8
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "384b3f6557a74223b83751f3145e4c1c9d0a9577e28fcd560b3d915b43556990",
+      "webpCompressedBytes": 816322,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Single candidate key pose; phase, facing, foot anchor, edge clipping and identity require review. Not a continuous animation."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "forward-punch-key-a",
+      "phase": null,
+      "pose": "attack",
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/forward-punch-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "cb7a86ae-639e-4f3e-be5b-6eb8fc4d006d",
+        "originalPngSha256": "02cf232dcc434696f58fc4f31b83e2333f007a8ec68b86178d27ac40a6172803",
+        "canonicalReferenceHead": "02943603459c048602a22bdfaffd0e7d1d4a4edc"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        2,
+        4,
+        1311,
+        1195
+      ],
+      "alphaExtent": [
+        1309,
+        1191
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        2,
+        4,
+        1,
+        4
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "284c4e0415ed63e5158f0650097b0d6a5c0b5800bd7e6b396efec8b47ee90826",
+      "webpCompressedBytes": 675018,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Single candidate key pose; phase, facing, foot anchor, edge clipping and identity require review. Not a continuous animation."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "recoil-key-a",
+      "phase": null,
+      "pose": "hurt",
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/recoil-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "278cd23b-521e-4f24-a981-19867c450aeb",
+        "originalPngSha256": "dad46252083be1036286794d4c30f7e2e255790f553d8b8495596d54e1aedda3",
+        "canonicalReferenceHead": "02943603459c048602a22bdfaffd0e7d1d4a4edc"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        24,
+        15,
+        1143,
+        1239
+      ],
+      "alphaExtent": [
+        1119,
+        1224
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        24,
+        15,
+        111,
+        15
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "ba5311a11d700e859fbcbe616af1a19af26b472b30cb94936a3e6ea5c2bfbdbe",
+      "webpCompressedBytes": 686158,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Single candidate key pose; phase, facing, foot anchor, edge clipping and identity require review. Not a continuous animation."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "recoil-key-b",
+      "phase": null,
+      "pose": "hurt",
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/recoil-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "cf854db5-7c38-489b-8786-a3b0ba707c2d",
+        "originalPngSha256": "cc6381697da10d94be66f1fa525909399cb309eb98118c1372c236f08f0548bb",
+        "canonicalReferenceHead": "02943603459c048602a22bdfaffd0e7d1d4a4edc"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        21,
+        19,
+        1294,
+        1178
+      ],
+      "alphaExtent": [
+        1273,
+        1159
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        21,
+        19,
+        18,
+        21
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "9e9fe3e2c70482a21e22f67770adbe2f42415dceedba300ef9b02ff22635b047",
+      "webpCompressedBytes": 698304,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Single candidate key pose; phase, facing, foot anchor, edge clipping and identity require review. Not a continuous animation."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "overload-key-a",
+      "phase": null,
+      "pose": "transform",
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/overload-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "43b6f3c3-9d80-4bc4-a635-b862dcb2ddba",
+        "originalPngSha256": "2efe2eed361d5e877807c5383a958b5c728a00d79cfad313c2d7e2891fd59bab",
+        "canonicalReferenceHead": "02943603459c048602a22bdfaffd0e7d1d4a4edc"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        1,
+        3,
+        1311,
+        1195
+      ],
+      "alphaExtent": [
+        1310,
+        1192
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        1,
+        3,
+        1,
+        4
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "de02832bd62610daaee99dcbf3246462572a037177ed2310eb939faa98cb3c4c",
+      "webpCompressedBytes": 761498,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Single candidate key pose; phase, facing, foot anchor, edge clipping and identity require review. Not a continuous animation."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "stride-key-a",
+      "phase": null,
+      "pose": "move",
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/stride-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "76f81a22-3cb0-4b3c-82f6-67d8c29e845d",
+        "originalPngSha256": "d55d36797a6f28a04255483c48bbef3c567855ea8b1c4dc87894ad70216b4a87",
+        "canonicalReferenceHead": "02943603459c048602a22bdfaffd0e7d1d4a4edc"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        15,
+        6,
+        1297,
+        1175
+      ],
+      "alphaExtent": [
+        1282,
+        1169
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        15,
+        6,
+        15,
+        24
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "d3dce6ccaea5fc10b861c730f089bfb0fcf9c81bc126cbb88d56a0f6b9a582e2",
+      "webpCompressedBytes": 758204,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Single candidate key pose; phase, facing, foot anchor, edge clipping and identity require review. Not a continuous animation."
+    }
+  ],
+  "missing": [
+    "coherent idle loop",
+    "alternating locomotion cycle",
+    "verified continuous windup/attack/recovery",
+    "phase-specific transform sequence",
+    "native-resolution death sequence",
+    "all required directional and runtime QA"
+  ]
+}

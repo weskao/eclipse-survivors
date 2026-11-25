@@ -52,12 +52,65 @@ describe('ES2 combat HUD', () => {
   })
 
 
+
+  it('smoothly presents damage and healing without delaying authoritative HP, XP, boss or wave values', async () => {
+    const { wrapper } = render({
+      hud: { ...equipped, bossPct: 40 },
+      feed: { wave: { number: 2, progressPct: 22 } },
+    })
+    const meter = (label: string) => wrapper.get(`[role="progressbar"][aria-label="${label}"]`)
+    const fraction = (label: string) => (meter(label).element as HTMLElement).style.getPropertyValue('--es2-progress')
+    expect(fraction('生命值')).toBe('0.75')
+    expect(fraction('經驗值')).toBe('0.42')
+    expect(fraction('首領生命值')).toBe('0.4')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d35048')
+    expect(fraction('波次進度')).toBe('0.22')
+    expect(meter('生命值').findAll('span')).toHaveLength(2)
+    expect(meter('生命值').get('.es2-hud__track-trail').attributes('aria-hidden')).toBe('true')
+    await wrapper.setProps({
+      hud: { ...equipped, hpPct: 12, xpPct: 80, bossPct: 18 },
+      feed: { wave: { number: 2, progressPct: 63 } },
+    })
+    expect(meter('生命值').attributes('aria-valuenow')).toBe('12')
+    expect(fraction('生命值')).toBe('0.12')
+    expect(meter('生命值').classes()).toContain('es2-hud__track--critical')
+    expect(fraction('經驗值')).toBe('0.8')
+    expect(fraction('首領生命值')).toBe('0.18')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#eb674d')
+    expect(fraction('波次進度')).toBe('0.63')
+    await wrapper.setProps({ hud: { ...equipped, hpPct: 94, xpPct: 15, bossPct: 48 } })
+    expect(meter('生命值').attributes('aria-valuenow')).toBe('94')
+    expect(fraction('生命值')).toBe('0.94')
+    expect(meter('生命值').classes()).not.toContain('es2-hud__track--critical')
+    expect(fraction('經驗值')).toBe('0.15')
+    expect(fraction('首領生命值')).toBe('0.48')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d35048')
+  })
+
+  it('tracks an offscreen boss with actual distance, direction and artwork, then hides when visible', async () => {
+    const offscreen = { left: 184, top: 278, angle: 47, distance: 524, artSrc: '/boss-phases@3x.webp', atlas: true }
+    const { wrapper } = render({
+      hud: { ...equipped, bossPct: 65 },
+      feed: { boss: { name: 'Abyss Monarch', phase: 2, offscreen } },
+    })
+    const pointer = wrapper.get('[data-es2-boss-pointer]')
+    expect(pointer.attributes('role')).toBe('img')
+    expect(pointer.attributes('aria-label')).toContain('524')
+    expect((pointer.element as HTMLElement).style.left).toBe('184px')
+    expect((pointer.element as HTMLElement).style.top).toBe('278px')
+    expect((pointer.element as HTMLElement).style.getPropertyValue('--es2-bearing')).toBe('47deg')
+    expect(pointer.get('[data-es2-boss-icon]').attributes('style')).toContain('/boss-phases@3x.webp')
+    await wrapper.setProps({ feed: { boss: { name: 'Abyss Monarch', phase: 2 } } })
+    expect(wrapper.find('[data-es2-boss-pointer]').exists()).toBe(false)
+    await wrapper.setProps({ hud: { ...equipped, bossPct: null }, feed: { boss: { name: 'Abyss Monarch', offscreen } } })
+    expect(wrapper.find('[data-es2-boss-pointer]').exists()).toBe(false)
+  })
+
   it('updates the top-left portrait to each live specialization\'s true Canvas artwork', () => {
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
       const { wrapper } = render({ heroId: id, choice: id === 'spirit-summoner' ? 'wizard' : 'knight' })
-      const portrait = wrapper.get('.es2-hud__portrait svg')
-      expect(portrait.get('image').attributes('href')).toContain(id + '-c104-atlas@3x.webp')
-      expect(portrait.attributes('viewBox')).toBeTruthy()
+      const portrait = wrapper.get('.es2-hud__portrait img')
+      expect(portrait.attributes('src')).toContain(id + '-portrait@3x.webp')
     }
   })
 
@@ -99,7 +152,10 @@ describe('ES2 combat HUD', () => {
       },
       hud: { ...equipped, bossPct: 44 },
     })
-    expect(wrapper.get('[data-es2-boss]').text()).toContain('霜之王')
+    expect(wrapper.get('[data-es2-encounter] [data-es2-boss]').text()).toContain('霜之王')
+    expect(wrapper.get('[data-es2-encounter] [data-es2-wave]').text()).toContain('霜潮來襲')
+    expect(wrapper.find('[data-es2-information-rail] .es2-hud__objectives').exists()).toBe(true)
+    expect(wrapper.find('[data-es2-information-rail] .es2-hud__notices').exists()).toBe(true)
     expect(wrapper.get('[data-es2-boss]').text()).toContain('2 / 3')
     expect(wrapper.get('[data-es2-wave]').text()).toContain('霜潮來襲')
     expect(wrapper.get('[data-es2-combo]').text()).toContain('19')
@@ -136,5 +192,55 @@ describe('ES2 combat HUD', () => {
     wrapper.unmount()
     instances.splice(instances.indexOf(wrapper), 1)
     expect(document.querySelector('.es2-hud')).toBeNull()
+  })
+
+  it('offers an accessible home control only during an active run', async () => {
+    const home = vi.fn()
+    const { wrapper } = render({ canReturnHome: true, actions: { pause: vi.fn(), settings: vi.fn(), home } })
+    const button = wrapper.get('[data-es2-home]')
+    expect(button.attributes('aria-label')).toBeTruthy()
+    expect(button.find('svg[aria-hidden="true"]').exists()).toBe(true)
+    await button.trigger('click')
+    expect(home).toHaveBeenCalledOnce()
+    await wrapper.setProps({ canReturnHome: false })
+    expect(wrapper.find('[data-es2-home]').exists()).toBe(false)
+  })
+
+
+  it('updates battle counters and live gameplay messages when the locale switches', async () => {
+    const storage = { getItem: () => null, setItem: () => {} }
+    const { setLocale } = await import('../../../i18n')
+    setLocale('zh-TW', storage)
+    const { wrapper } = render()
+    expect(wrapper.text()).toContain('時間')
+    expect(wrapper.get('[data-es2-settings]').attributes('aria-label')).toBe('開啟設定')
+    setLocale('en', storage)
+    await nextTick()
+    expect(wrapper.text()).toContain('Time')
+    expect(wrapper.get('[data-es2-settings]').attributes('aria-label')).toBe('Open settings')
+    setLocale('zh-TW', storage)
+  })
+
+  it('collapses the mobile battle-information drawer on outside pointer, Escape and viewport changes', async () => {
+    const { wrapper } = render({ canReturnHome: true })
+    const toggle = wrapper.get('[data-es2-info-toggle]')
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    await toggle.trigger('click')
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect(wrapper.get('.es2-hud').classes()).toContain('es2-hud--details-open')
+    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    await nextTick()
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+
+    await toggle.trigger('click')
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await nextTick()
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    await toggle.trigger('click')
+    window.dispatchEvent(new Event('orientationchange'))
+    await nextTick()
+    expect(toggle.attributes('aria-expanded')).toBe('false')
+    await wrapper.setProps({ canReturnHome: false })
+    expect(wrapper.find('[data-es2-info-toggle]').exists()).toBe(false)
   })
 })

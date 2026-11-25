@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 2,
+  "status": "QA_PENDING",
+  "rendering": {
+    "sourceFramePixels": 448,
+    "cssMaxDisplayedPixels": 147,
+    "atlasCellLayout": "4-column grid with 8px internal gutters",
+    "directionOrder": [
+      "E",
+      "SE",
+      "S",
+      "SW",
+      "W",
+      "NW",
+      "N",
+      "NE"
+    ],
+    "directionFrames": "idle:0-7, guard:8-15; run:0-7,attack:8-15; special:0-7",
+    "directionLimits": "Only east and mirrored west run/attack/special are separately authored; other six facings use direction-correct guard",
+    "native3xRequirements": "Native source detail must be >=3x largest 1x game display size; interpolated 313px source is NOT native3x",
+    "mobile": "Lazy-load selected hero/pose, no new Image in render loop once pose initialized"
+  },
+  "heroes": {
+    "crimson-paladin": {
+      "idle-ready": {
+        "path": "crimson-paladin/idle-ready@3x.webp",
+        "sourceCellPixels": [
+          313,
+          313
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          1792
+        ],
+        "frames": 16,
+        "bytes": 615128,
+        "sha256": "cadbe2a37e42ab4f24fd8e43511f4992244528ca19ed7cc485f8bca204600588",
+        "native3x": false,
+        "qa": "QA_PENDING"
+      },
+      "run-attack": {
+        "path": "crimson-paladin/run-attack@3x.webp",
+        "sourceCellPixels": [
+          313,
+          313
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          1792
+        ],
+        "frames": 16,
+        "bytes": 606512,
+        "sha256": "5a06640a3a6557895b57829f2ce18ea9083b4191902dec7b3ec1eb3d80732eb8",
+        "native3x": false,
+        "qa": "QA_PENDING"
+      },
+      "special": {
+        "path": "crimson-paladin/special@3x.webp",
+        "sourceCellPixels": [
+          443,
+          443
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          896
+        ],
+        "frames": 8,
+        "bytes": 735732,
+        "sha256": "27bceefb146af51755fa4ea7f8610ad1f6af7744481b37bfd7b2b6df4f0ac7c1",
+        "native3x": true,
+        "qa": "QA_PENDING"
+      }
+    },
+    "shadowblade": {
+      "idle-ready": {
+        "path": "shadowblade/idle-ready@3x.webp",
+        "sourceCellPixels": [
+          313,
+          313
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          1792
+        ],
+        "frames": 16,
+        "bytes": 756264,
+        "sha256": "31d59cd698560cda6a3913b58b8ae6e0ffb9cf99043028b77a7d8b68cca94a45",
+        "native3x": false,
+        "qa": "QA_PENDING"
+      },
+      "run-attack": {
+        "path": "shadowblade/run-attack@3x.webp",
+        "sourceCellPixels": [
+          313,
+          313
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          1792
+        ],
+        "frames": 16,
+        "bytes": 849622,
+        "sha256": "2f879453e47c5d2d2904f79f0973b8f9c05615060f14388045604a2b09784c51",
+        "native3x": false,
+        "qa": "QA_PENDING"
+      },
+      "special": {
+        "path": "shadowblade/special@3x.webp",
+        "sourceCellPixels": [
+          443,
+          443
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          896
+        ],
+        "frames": 8,
+        "bytes": 469540,
+        "sha256": "c88faf2c8e1df9d841f4a704524cbba2c1322110003af0412d2af4609d2269e7",
+        "native3x": true,
+        "qa": "QA_PENDING"
+      }
+    },
+    "spirit-summoner": {
+      "idle-ready": {
+        "path": "spirit-summoner/idle-ready@3x.webp",
+        "sourceCellPixels": [
+          313,
+          313
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          1792
+        ],
+        "frames": 16,
+        "bytes": 1301268,
+        "sha256": "97fc013924c35f5a7157f0cf1cf3b6ecf6f0340fa4e2063e63de4354a7727e7c",
+        "native3x": false,
+        "qa": "QA_PENDING"
+      },
+      "run-attack": {
+        "path": "spirit-summoner/run-attack@3x.webp",
+        "sourceCellPixels": [
+          313,
+          313
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          1792
+        ],
+        "frames": 16,
+        "bytes": 1464484,
+        "sha256": "e6c94f42631391633cebc25a83691db8dda41ef58dece9e44748dc0e4622e386",
+        "native3x": false,
+        "qa": "QA_PENDING"
+      },
+      "special": {
+        "path": "spirit-summoner/special@3x.webp",
+        "sourceCellPixels": [
+          443,
+          443
+        ],
+        "outputCellPixels": [
+          448,
+          448
+        ],
+        "atlasPixels": [
+          1792,
+          896
+        ],
+        "frames": 8,
+        "bytes": 698616,
+        "sha256": "6f4f730e167a3c29cc68962aa624bbcf03a229fe8a4c807df2a4c178e51eb005",
+        "native3x": true,
+        "qa": "QA_PENDING"
+      }
+    }
+  }
+}

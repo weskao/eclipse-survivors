@@ -32,7 +32,7 @@ describe('isolated hero specializations', () => {
     expect(new Set(records.map(hero => hero.startingAbility))).toHaveProperty('size', 3)
     expect(new Set(records.map(hero => hero.portraitSrc))).toHaveProperty('size', 3)
     for (const def of records) {
-      expect(def.portraitSrc).toMatch(/\.svg/)
+      expect(def.portraitSrc).toContain(def.id + '-portrait@3x.webp')
       expect(def.specialCooldown).toBeGreaterThan(1)
       expect(def.strengths.length).toBeGreaterThan(0)
       expect(def.weaknesses.length).toBeGreaterThan(0)
@@ -68,6 +68,16 @@ describe('isolated hero specializations', () => {
     expect(registry.acquire(state, def.progressionAbility, hooks)).toBe(true)
     expect(adapter.modifyOutgoingDamage(20)).toBeGreaterThan(base)
     expect(registry.acquire(state, 'heroes:spirit-bond', hooks)).toBe(false)
+  })
+
+  it('raises Shadowblade critical chance while retaining the original damage multiplier', () => {
+    const { adapter } = setup('shadowblade', () => 0.26)
+    expect(adapter.modifyOutgoingDamage(20)).toBe(34)
+    expect(adapter.consumeCriticalHit()).toBe(true)
+    expect(adapter.consumeCriticalHit()).toBe(false)
+    const normal = setup('shadowblade', () => 0.29).adapter
+    expect(normal.modifyOutgoingDamage(20)).toBe(20)
+    expect(normal.consumeCriticalHit()).toBe(false)
   })
 
   it('shadowblade has deterministic crits, short stealth, shadow strikes, and cooldown gating', () => {
@@ -127,6 +137,27 @@ describe('isolated hero specializations', () => {
     expect(adapter.modifyOutgoingDamage(20)).toBeGreaterThan(20)
   })
 
+  it('strengthens all three specialization rank benefits without lifting their max rank', () => {
+    const shadow = setup('shadowblade', () => 0.1)
+    for (let i = 0; i < 3; i++) expect(shadow.registry.acquire(shadow.state, 'heroes:shadow-precision', hooks)).toBe(true)
+    expect(shadow.adapter.modifyOutgoingDamage(20)).toBeCloseTo(44.8)
+    expect(shadow.registry.acquire(shadow.state, 'heroes:shadow-precision', hooks)).toBe(false)
+
+    const spirit = setup('spirit-summoner')
+    spirit.state.hero!.level = 3
+    spirit.state.hero!.hp = 50
+    for (let i = 0; i < 3; i++) expect(spirit.registry.acquire(spirit.state, 'heroes:spirit-bond', hooks)).toBe(true)
+    spirit.adapter.tick(1.8)
+    expect(spirit.state.hero!.hp).toBeGreaterThan(55)
+
+    const paladin = setup('crimson-paladin')
+    for (let i = 0; i < 3; i++) expect(paladin.registry.acquire(paladin.state, 'heroes:crimson-vow', hooks)).toBe(true)
+    expect(paladin.adapter.mitigateIncomingDamage(100)).toBeCloseTo(78.5)
+    paladin.state.hero!.hp = 20
+    expect(paladin.adapter.modifyOutgoingDamage(20)).toBeCloseTo(31.2)
+    paladin.adapter.activate()
+    expect(paladin.adapter.snapshot().barrier).toBeGreaterThanOrEqual(90)
+  })
   it('does not consume a barrier for damage ignored by legacy invulnerability', () => {
     const { state, adapter } = setup('crimson-paladin')
     adapter.activate()

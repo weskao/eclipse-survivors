@@ -70,6 +70,7 @@ export interface HudView {
   timer: string
   /** 0..100 when a live boss exists, else null (hides `#bossWrap`). */
   bossPct: number | null
+  sceneTitle: string
   quest: string
   /** All currently owned skills and evolutions, refreshed at the normal 8 Hz HUD cadence. */
   skills: HudSkill[]
@@ -155,5 +156,6 @@ export interface GameCommands {
 }
 
 export const emptyHud = (): HudView => ({
-  who: '', hpPct: 100, hpLabel: '生命', xpPct: 0, kill: 0, timer: '00:00', bossPct: null, quest: '', skills: [],
+  who: '', hpPct: 100, hpLabel: '生命', xpPct: 0, kill: 0, timer: '00:00', bossPct: null,
+  sceneTitle: '', quest: '', skills: [],
 })

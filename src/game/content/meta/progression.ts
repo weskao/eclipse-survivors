@@ -1,3 +1,4 @@
+import { BALANCE, researchCost, type ResearchId } from '../../config'
 import type { RunStats } from '../../../meta/types'
 import {
   ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT,
@@ -98,7 +99,8 @@ export function getRewardMetadata(reward: GrantedReward): Presentation {
     : reward.type === 'milestone' ? MILESTONES.find(x => x.id === reward.id) : undefined
   return entry ?? { icon: '✦', title: '遠征結算', description: '本次遠征獲得的餘燼', rarity: 'common' }
 }
-export const masteryLevelForXp = (xp: number): number => Math.min(20, 1 + Math.floor(Math.sqrt(xp / 150)))
+export const masteryLevelForXp = (xp: number): number => Math.min(BALANCE.meta.runRewards.masteryMaxLevel,
+  1 + Math.floor(Math.sqrt(xp / BALANCE.meta.runRewards.masteryLevelDivisor)))
 function modeRecord(previous: ModeRecord | undefined, run: RunStats): ModeRecord {
   return {
     runs: (previous?.runs ?? 0) + 1, wins: (previous?.wins ?? 0) + Number(run.victory),
@@ -122,8 +124,10 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   next.wins += Number(stats.victory)
   next.bossWins += Number(stats.bossDefeated)
   const previous = next.mastery[hero] ?? { xp: 0, level: 1 }
-  const xp = previous.xp + 10 + Math.floor(stats.kills / 10) + (stats.victory ? 20 : 0)
-  if (xp > 10_000_000) return rejected('invalid')
+  const xp = previous.xp + BALANCE.meta.runRewards.masteryBaseXp
+    + Math.floor(stats.kills / BALANCE.meta.runRewards.masteryKillsDivisor)
+    + (stats.victory ? BALANCE.meta.runRewards.masteryVictoryXp : 0)
+  if (xp > BALANCE.meta.runRewards.masteryXpMax) return rejected('invalid')
   next.mastery[hero] = { xp, level: masteryLevelForXp(xp) }
   next.modeRecords[mode] = modeRecord(next.modeRecords[mode], stats)
   const fromAbilities = stats.abilities.filter(id => isDiscoverableId(id))
@@ -134,7 +138,10 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   dedupe(next.cosmetics, receipt.cosmeticIds ?? [])
   if (Object.values(next.discoveries).some(ids => ids.length > MAX_DISCOVERIES)
     || next.cosmetics.length > 1024 || Object.keys(next.modeRecords).length > 256) return rejected('invalid')
-  const base = Math.floor(stats.kills / 10) + Math.floor(stats.seconds / 30) + (stats.victory ? 30 : 0)
+  const rawBase = Math.floor(stats.kills / BALANCE.meta.runRewards.killDivisor)
+    + Math.floor(stats.seconds / BALANCE.meta.runRewards.secondsDivisor)
+    + (stats.victory ? BALANCE.meta.runRewards.victoryEmbers : 0)
+  const base = Math.floor(rawBase * BALANCE.meta.runRewards.baseMultiplier)
   const research = RESEARCH.find(x => x.id === 'ember-study')
   const bonus = Math.floor(base * ((research?.benefitPerRank ?? 0) * (next.research['ember-study'] ?? 0)))
   const rewards: GrantedReward[] = [{ type: 'run', id: stats.id, embers: base + bonus }]
@@ -165,7 +172,7 @@ const researchReady = (state: MetaState, def: ResearchDef): boolean =>
 export function getResearchStates(state: MetaState) {
   return RESEARCH.map(def => {
     const rank = state.research[def.id] ?? 0
-    const nextCost = rank >= def.maxRank ? null : def.firstCost + rank * def.costStep
+    const nextCost = rank >= def.maxRank ? null : researchCost(def.id as ResearchId, rank)
     const locked = !researchReady(state, def)
     return { ...def, rank, nextCost, locked, unlocked: rank > 0, canBuy: !locked && nextCost !== null && state.embers >= nextCost }
   })
@@ -175,7 +182,7 @@ export function buyResearch(state: MetaState, id: string): PurchaseResult {
   const def = RESEARCH.find(x => x.id === id)
   if (!def || !validateMetaState(state)) return { ok: false, state }
   const rank = state.research[id]
-  const cost = def.firstCost + rank * def.costStep
+  const cost = researchCost(def.id as ResearchId, rank)
   if (!researchReady(state, def) || rank >= def.maxRank || state.embers < cost) return { ok: false, state }
   const next = cloneMetaState(state)
   next.embers -= cost

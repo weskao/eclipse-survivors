@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "category": "bosses",
+  "candidateFor": "frost-sovereign",
+  "status": "QA_PENDING",
+  "path": "frost-sovereign-phases-native3x-QA-PENDING.webp",
+  "assetSha256": "60bcb8c7a0a240d571bce0f2f58c848f0097792b34af72c0210aabdee1398ba2",
+  "assetBytes": 296610,
+  "maxBytes": 300000,
+  "atlas": {
+    "width": 2268,
+    "height": 756,
+    "frames": 3,
+    "columns": 3,
+    "rows": 1,
+    "cellWidth": 756,
+    "cellHeight": 756,
+    "transparentGutterPx": 16,
+    "sourceRect": {
+      "insetX": 16,
+      "insetY": 16,
+      "width": 724,
+      "height": 724
+    }
+  },
+  "source": {
+    "kind": "newly-generated-2172x724-hooded-frost-illustration",
+    "originalGeneratedFramePixels": 724,
+    "upscaledFromExisting192px": false,
+    "masterCommittedToRepo": true,
+    "originalSourceStillNeedsImport": false,
+    "sourceExport": "sources/frost-sovereign-master@source.webp",
+    "masterFile": "sources/frost-sovereign-master@source.webp",
+    "masterBytes": 1950928,
+    "masterSha256": "59278f38fa34dff431c6b6bc911d3ae2c218132f448b8a871668ee60a99e5ac1",
+    "visualIdentity": "hooded-silver-armored-frost-sovereign",
+    "processing": {
+      "sourceFramePixels": 724,
+      "edgeFadePx": 32,
+      "retainedMainComponent": true,
+      "upscaledFromLegacy": false,
+      "alphaQuantizationLevels": 16,
+      "webpQuality": 82,
+      "alphaQuality": 70
+    },
+    "notes": "Lossless 2172x724 generated master with individual-frame alpha isolation and 32px side feather. No 192px legacy upscaling. In-game visual identity and three-phase art approval remain pending."
+  },
+  "runtimeTarget": {
+    "maxDrawPx": 236,
+    "requiredNativeSourceDetailPx": 708,
+    "consumer": "src/game/render/es2/production-world.ts",
+    "active": false
+  },
+  "technicalChecks": {
+    "riffWebp": true,
+    "dimensions": true,
+    "sha256Matches": true,
+    "sourceRectsWithinSingleFrames": true,
+    "alphaGutterClear": true
+  },
+  "acceptance": {
+    "originalArtIdentityReview": "pending",
+    "phaseVisualContinuityReview": "pending",
+    "inGame1xScreenshot": "pending",
+    "desktopAndMobilePortraitLandscape": "pending",
+    "humanArtApproval": "pending",
+    "notes": "Hooded silver-armored king restores the original hooded silhouette more faithfully than prior ice queen; seam-faded isolated frames still require browser and human visual review."
+  }
+}

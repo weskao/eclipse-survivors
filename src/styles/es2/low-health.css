@@ -1,0 +1,184 @@
+/* Layered health warning driven only by the authoritative HUD HP snapshot.
+   Four prepainted gradients protect the central battlefield; only opacity animates.
+   No Canvas work, filter, blend mode, input interception or per-frame Vue updates. */
+.es2-hud__life-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  --es2-life-edge-x: clamp(24px, 12vw, 160px);
+  --es2-life-edge-y: clamp(20px, 14dvh, 120px);
+  --es2-life-edge: rgb(224 39 61 / 88%);
+  --es2-life-mid: rgb(126 13 33 / 48%);
+  --es2-life-faint: .72;
+  --es2-life-strong: .96;
+  --es2-life-echo: .86;
+  --es2-life-static: .84;
+  background:
+    linear-gradient(to right, var(--es2-life-edge), var(--es2-life-mid) calc(var(--es2-life-edge-x) * .32), transparent var(--es2-life-edge-x)),
+    linear-gradient(to left, var(--es2-life-edge), var(--es2-life-mid) calc(var(--es2-life-edge-x) * .32), transparent var(--es2-life-edge-x)),
+    linear-gradient(to bottom, var(--es2-life-edge), var(--es2-life-mid) calc(var(--es2-life-edge-y) * .32), transparent var(--es2-life-edge-y)),
+    linear-gradient(to top, var(--es2-life-edge), var(--es2-life-mid) calc(var(--es2-life-edge-y) * .32), transparent var(--es2-life-edge-y));
+  box-shadow: inset 0 0 0 1px rgb(255 135 123 / 76%);
+  opacity: var(--es2-life-static);
+  animation: es2-life-vignette var(--es2-life-period) ease-in-out infinite;
+}
+.es2-hud[data-es2-life-tier="emergency"] .es2-hud__life-vignette {
+  --es2-life-edge-x: clamp(28px, 15vw, 190px);
+  --es2-life-edge-y: clamp(24px, 17dvh, 145px);
+  --es2-life-edge: rgb(248 45 63 / 94%);
+  --es2-life-mid: rgb(159 12 33 / 64%);
+  --es2-life-faint: .83;
+  --es2-life-strong: 1;
+  --es2-life-echo: .94;
+  --es2-life-static: .92;
+}
+/* Stable panel geometry: a painted ring pulses via opacity only, not layout or Canvas. */
+.es2-hud__hero::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none; opacity: 0;
+}
+.es2-hud[data-es2-life-tier="warning"] { --es2-life-rim: #ffc080; --es2-life-halo: #e9a45280; --es2-life-period: 3s; }
+.es2-hud[data-es2-life-tier="critical"] { --es2-life-rim: #ff8176; --es2-life-halo: #f33d56ad; --es2-life-period: 2.4s; }
+.es2-hud[data-es2-life-tier="emergency"] { --es2-life-rim: #ff978f; --es2-life-halo: #ff3c5bdd; --es2-life-period: 1.8s; }
+.es2-hud:is([data-es2-life-tier="warning"], [data-es2-life-tier="critical"], [data-es2-life-tier="emergency"]) .es2-hud__hero {
+  border-color: var(--es2-life-rim);
+}
+.es2-hud:is([data-es2-life-tier="warning"], [data-es2-life-tier="critical"], [data-es2-life-tier="emergency"]) .es2-hud__hero::after {
+  box-shadow: inset 0 0 0 2px var(--es2-life-rim), inset 0 0 15px var(--es2-life-halo), 0 0 13px var(--es2-life-halo);
+  opacity: .82;
+  animation: es2-life-panel-pulse var(--es2-life-period) ease-in-out infinite;
+}
+.es2-hud:is([data-es2-life-tier="critical"], [data-es2-life-tier="emergency"]) .es2-hud__hero::after {
+  box-shadow: inset 0 0 0 3px var(--es2-life-rim), inset 0 0 18px var(--es2-life-halo), 0 0 22px var(--es2-life-halo);
+}
+.es2-hud:is([data-es2-life-tier="critical"], [data-es2-life-tier="emergency"]) .es2-hud__life-message {
+  align-self: flex-start;
+  max-width: 100%;
+  padding-inline: 4px;
+  border-radius: 4px;
+  color: #fff2e7;
+  background: linear-gradient(105deg, #761d32, #351321);
+  box-shadow: inset 0 0 0 1px var(--es2-life-rim);
+  text-shadow: 0 1px 3px #000;
+  font-weight: 900;
+}
+.es2-hud .es2-hud__life-message {
+  color: var(--es2-life-rim); font-size: max(11px, calc(11px * var(--es2-ui-scale, 1)));
+  font-weight: 850; letter-spacing: .03em; overflow-wrap: anywhere;
+}
+.es2-hud:is([data-es2-life-tier="warning"], [data-es2-life-tier="critical"], [data-es2-life-tier="emergency"]) .es2-hud__health-head:not(.es2-hud__health-head--xp) {
+  color: var(--es2-life-rim); font-weight: 750;
+}
+.es2-hud:is([data-es2-life-tier="warning"], [data-es2-life-tier="critical"], [data-es2-life-tier="emergency"]) .es2-hud__track--health {
+  border-color: var(--es2-life-rim);
+  box-shadow: inset 0 2px 5px #0009, 0 0 7px var(--es2-life-halo);
+}
+@keyframes es2-life-panel-pulse {
+  0%, 100% { opacity: .68; }
+  18% { opacity: 1; }
+  32% { opacity: .76; }
+  48% { opacity: .94; }
+}
+/* The center of the battlefield stays transparent and the original artwork is untouched. */
+.es2-hud[data-es2-life-tier="warning"] .es2-hud__portrait,
+.es2-hud[data-es2-life-tier="critical"] .es2-hud__portrait,
+.es2-hud[data-es2-life-tier="emergency"] .es2-hud__portrait {
+  border-color: #ffc080;
+}
+.es2-hud[data-es2-life-tier="critical"] .es2-hud__portrait,
+.es2-hud[data-es2-life-tier="emergency"] .es2-hud__portrait {
+  border-color: #ff8176;
+}
+.es2-hud__portrait::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 2px #ffe7b3a8, inset 0 0 12px #f3b35e9c;
+  opacity: 0;
+  pointer-events: none;
+}
+.es2-hud[data-es2-life-tier="warning"] .es2-hud__portrait::after { opacity: .75; }
+.es2-hud[data-es2-life-tier="critical"] .es2-hud__portrait::after,
+.es2-hud[data-es2-life-tier="emergency"] .es2-hud__portrait::after {
+  box-shadow: inset 0 0 0 2px #ffb2a2, inset 0 0 15px #e93859ad;
+  opacity: .85;
+  animation: es2-life-portrait-glow var(--es2-life-period) ease-in-out infinite;
+}
+.es2-hud__life-alert {
+  position: absolute;
+  z-index: 2;
+  left: 3px;
+  bottom: 3px;
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #fff0b9;
+  border-radius: 50% 50% 45% 45%;
+  background: linear-gradient(145deg, #705021, #241922);
+  color: #ffe4ad;
+  font: 800 16px/1 system-ui, sans-serif;
+  text-shadow: 0 1px 2px #000d;
+  box-shadow: 0 1px 5px #000d, 0 0 7px #f3ba5670;
+  pointer-events: none;
+}
+.es2-hud[data-es2-life-tier="critical"] .es2-hud__life-alert,
+.es2-hud[data-es2-life-tier="emergency"] .es2-hud__life-alert {
+  background: linear-gradient(145deg, #cf5255, #4a1527);
+  color: #fff0e7;
+  border-color: #ffd9c0;
+  animation: es2-life-heartbeat var(--es2-life-period) ease-in-out infinite;
+}
+.es2-hud[data-es2-life-tier="emergency"] .es2-hud__life-alert {
+  background: linear-gradient(145deg, #fa5d63, #651023);
+}
+.es2-hud[data-es2-life-tier="warning"] .es2-hud__track--health {
+  border-color: #f3bd7b;
+}
+.es2-hud[data-es2-life-tier="emergency"] .es2-hud__track--health {
+  border-color: #ffc5b0;
+  box-shadow: inset 0 2px 5px #0009, 0 0 8px #ff625983;
+}
+@keyframes es2-life-vignette {
+  0%, 100% { opacity: var(--es2-life-faint); }
+  18% { opacity: var(--es2-life-strong); }
+  32% { opacity: var(--es2-life-faint); }
+  48% { opacity: var(--es2-life-echo); }
+}
+@keyframes es2-life-portrait-glow {
+  0%, 100% { opacity: .58; }
+  50% { opacity: 1; }
+}
+@keyframes es2-life-heartbeat {
+  0%, 100% { transform: scale(1); opacity: .88; }
+  13% { transform: scale(1.13); opacity: 1; }
+  25% { transform: scale(1); opacity: .9; }
+  37% { transform: scale(1.09); opacity: 1; }
+  52% { transform: scale(1); opacity: .88; }
+}
+/* Compact mobile HUD keeps the critical badge inside the existing portrait. */
+@media (max-width: 400px) {
+  .es2-hud__life-alert { left: 1px; bottom: 1px; width: 19px; height: 19px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .es2-hud__life-vignette,
+  .es2-hud__hero::after,
+  .es2-hud__portrait::after,
+  .es2-hud__life-alert { animation: none !important; }
+  .es2-hud__life-vignette { opacity: var(--es2-life-static); }
+  .es2-hud[data-es2-life-tier="critical"] .es2-hud__portrait::after,
+  .es2-hud[data-es2-life-tier="emergency"] .es2-hud__portrait::after { opacity: .9; }
+}
+
+/* In-game accessibility choices also suppress all low-health pulses, not just OS preferences.
+   Keep the colored rim, readable message and static peripheral warning. */
+:is([data-es2-reduce-motion="true"], [data-es2-reduce-flashing="true"]) .es2-hud :is(.es2-hud__life-vignette, .es2-hud__life-alert),
+:is([data-es2-reduce-motion="true"], [data-es2-reduce-flashing="true"]) .es2-hud :is(.es2-hud__hero, .es2-hud__portrait)::after {
+  animation: none !important;
+}
+
+:is([data-es2-reduce-motion="true"], [data-es2-reduce-flashing="true"]) .es2-hud .es2-hud__life-vignette {
+  opacity: var(--es2-life-static);
+}

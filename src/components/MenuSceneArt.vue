@@ -1,5 +1,8 @@
+<script setup lang="ts">
+import { t } from '../i18n'
+</script>
 <template>
-  <svg class="menu-scene-art" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A radiant eclipse hangs over an ancient ruined battlefield">
+  <svg class="menu-scene-art" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" role="img" :aria-label="t('日蝕高懸於古老的廢墟戰場上')">
     <defs>
       <linearGradient id="menuSky" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#142c3b"/><stop offset=".5" stop-color="#102331"/><stop offset="1" stop-color="#090f1c"/></linearGradient>
       <radialGradient id="menuCorona"><stop stop-color="#fff3c4" stop-opacity=".85"/><stop offset=".2" stop-color="#edbe7a" stop-opacity=".5"/><stop offset=".51" stop-color="#9b9ed3" stop-opacity=".16"/><stop offset="1" stop-color="#6d8da6" stop-opacity="0"/></radialGradient>

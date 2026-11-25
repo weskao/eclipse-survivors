@@ -1,0 +1,59 @@
+name: ES2 enemies 3x Chromium source QA
+on:
+  push:
+    branches:
+      - feature/es2-release-readiness-integration
+    paths:
+      - 'src/assets/es2/production/enemies/**'
+      - 'src/game/render/es2/production-factions.ts'
+      - 'src/game/render/es2/production-factions.test.ts'
+      - '.github/workflows/es2-enemy-art-browser-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es2-enemies-source-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-enemy-atlases:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Validate native 3x provenance and atlas integrity
+        run: |
+          pnpm exec vitest run \
+            src/assets/es2/production/enemies/qa-report.test.ts \
+            src/assets/es2/production/enemies/frame-qa.test.ts \
+            src/assets/es2/production/enemies/native-3x.test.ts \
+            src/assets/es2/production/enemies/native-3x-batch.test.ts \
+            src/assets/es2/production/enemies/berserker-native-source.test.ts \
+            src/assets/es2/production/enemies/shadow-assassin-native-source.test.ts \
+            src/assets/es2/production/enemies/frost-wraith-native-source.test.ts \
+            src/assets/es2/production/enemies/crystal-sentinel-native-source.test.ts \
+            src/assets/es2/production/enemies/telegraph-native-sources.test.ts \
+            src/game/render/es2/production-factions.test.ts \
+            src/assets/es2/production/world-art-candidates.test.ts
+      - name: Install isolated Chromium for actual decoded-pixel QA
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Capture 10 atlases and 10 telegraphs at 3 real browser viewports
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-enemies-qa.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/ >/dev/null
+          ES2_ENEMY_QA_URL=http://127.0.0.1:4174 node src/assets/es2/production/enemies/capture-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-enemies-3x-decoded-pixel-qa
+          path: artifacts/es2-enemy-qa/
+          retention-days: 7
+          if-no-files-found: warn

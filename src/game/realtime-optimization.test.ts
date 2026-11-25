@@ -38,7 +38,7 @@ describe('realtime computation budgets', () => {
     const hypot = vi.spyOn(Math, 'hypot')
     try {
       tickSkills(s, 1 / 60, hooks)
-      expect(target.hp).toBe(82)
+      expect(target.hp).toBeCloseTo(100 - (12 + 32 * 0.28))
       expect(s.mobs.slice(1).every(e => e.hp === 100)).toBe(true)
       expect(hypot.mock.calls.length).toBeLessThan(30)
     } finally {

@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import type { ContentContext } from '../contracts'
 import type { ContentRuntime, ContentVisualFx, GameState, Mob } from '../../types'
 import { hit } from '../../combat'
@@ -50,8 +51,8 @@ export interface ArsenalRuntime {
 /** Weak per-run ownership: resetRun replaces GameState.content, releasing all old objects. */
 const runs = new WeakMap<ContentRuntime, ArsenalRuntime>()
 
-export const MAX_ARSENAL_PROJECTILES = 64
-export const MAX_ARSENAL_ZONES = 12
+export const MAX_ARSENAL_PROJECTILES = BALANCE.weapons.limits.maxProjectiles
+export const MAX_ARSENAL_ZONES = BALANCE.weapons.limits.maxZones
 
 export function runtimeOf(state: GameState): ArsenalRuntime {
   let r = runs.get(state.content)

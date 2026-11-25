@@ -1,6 +1,6 @@
 // Visual-effect emitters (original burst / impact / zigzag / pushEcho).
 import { rand } from './math'
-import type { GameState, JobId, Point } from './types'
+import type { GameState, JobId, NumberFx, Point } from './types'
 
 export function burst(s: GameState, x: number, y: number, color: string, n = 7): void {
   for (let i = 0; i < n && s.fx.length < 240; i++) {
@@ -11,7 +11,23 @@ export function burst(s: GameState, x: number, y: number, color: string, n = 7):
 export function impact(s: GameState, x: number, y: number, size = 36, color = '#ffd59a', strength = 1): void {
   if (s.impactWaves.length > 36) s.impactWaves.shift()
   s.impactWaves.push({ x, y, size, color, life: 0.38, max: 0.38 })
-  s.cameraKick = Math.min(9, s.cameraKick + strength * 1.9)
+  // Routine hits and crowd AoE must never keep the whole battlefield oscillating.
+  if (strength >= 2.5) requestCameraKick(s, strength * 0.6)
+}
+
+/** Single-owner local hit cue: independent of damage text, no secondary particle pool. */
+export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean): void {
+  if (s.impactWaves.length > 36) s.impactWaves.shift()
+  const duration = critical ? 0.34 : 0.24
+  s.impactWaves.push({ x, y, angle, size: Math.max(44, Math.min(124, radius * (critical ? 2.5 : 1.85))),
+    color: critical ? '#ffc577' : '#f4d9b0', life: duration, max: duration, contact: critical ? 'critical' : 'normal' })
+}
+
+/** At most one brief camera nudge per 0.6 game-seconds, regardless of hit count. */
+export function requestCameraKick(s: GameState, strength: number): void {
+  if (s.worldClock - s.lastCameraKickAt < 0.6) return
+  s.lastCameraKickAt = s.worldClock
+  s.cameraKick = Math.max(s.cameraKick, Math.min(1.6, strength))
 }
 
 export function zigzag(s: GameState, x1: number, y1: number, x2: number, y2: number): void {
@@ -28,4 +44,13 @@ export function zigzag(s: GameState, x1: number, y1: number, x2: number, y2: num
 export function pushEcho(s: GameState, x: number, y: number, kind: JobId, frame: number, angle = 0): void {
   if (s.motionEchoes.length > 16) s.motionEchoes.shift()
   s.motionEchoes.push({ x, y, kind, frame, angle, life: 0.23, max: 0.23 })
+}
+
+/** Bounded damage labels; ordinary hit spam must not evict a readable critical popup. */
+export function pushDamageNumber(s: GameState, number: NumberFx): void {
+  s.numberFx.push(number)
+  if (s.numberFx.length > 80) {
+    const regular = s.numberFx.findIndex(hit => !hit.critical)
+    s.numberFx.splice(regular === -1 ? 0 : regular, 1)
+  }
 }

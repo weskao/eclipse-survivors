@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick, type Component } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
 import Es2MainMenu from '../menu/Es2MainMenu.vue'
@@ -24,18 +26,20 @@ describe('ES2 three-hero selection UI', () => {
     expect(wrapper.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('false')
     expect(wrapper.findAll('img[data-hero-skill-icon]')).toHaveLength(3)
     expect(wrapper.text()).toContain('影刃')
-    expect(wrapper.text()).toContain('生命')
+    expect(wrapper.text()).toContain('HP')
+    expect(wrapper.text()).toContain('ATK')
+    expect(wrapper.text()).toContain('SPD')
     expect(wrapper.text()).toContain('起始武器')
     expect(wrapper.text()).toContain('冷卻')
   })
 
 
-  it('shows the selected hero\'s real 8-direction game illustration instead of the legacy SVG portraits', () => {
+  it('uses each selected hero\'s full-resolution 3x portrait, not a cropped 128px gameplay cell', () => {
     const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
-      const portrait = wrapper.get(`[data-hero-id="${id}"] svg.es2-roster__portrait`)
-      expect(portrait.attributes('viewBox')).toBeTruthy()
-      expect(portrait.get('image').attributes('href')).toContain(id + '-c104-atlas@3x.webp')
+      const portrait = wrapper.get(`[data-hero-id="${id}"] img.es2-roster__portrait`)
+      expect(portrait.attributes('src')).toContain(id + '-portrait@3x.webp')
+      expect(wrapper.find(`[data-hero-id="${id}"] svg.es2-roster__portrait`).exists()).toBe(false)
     }
   })
 
@@ -60,6 +64,49 @@ describe('ES2 three-hero selection UI', () => {
     await wrapper.setProps({ disabled: true })
     await wrapper.get('[data-hero-id="crimson-paladin"]').trigger('click')
     expect(wrapper.emitted('select')).toHaveLength(2)
+  })
+})
+
+describe('ES2 shared homepage hero selection interaction', () => {
+  it('uses the same animated selection surface for the classic and specialization heroes', async () => {
+    const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
+    const cards = [...wrapper.findAll('.es2-hero-card'), ...wrapper.findAll('.es2-roster__card')]
+    expect(cards).toHaveLength(6)
+    for (const card of cards) {
+      expect(card.classes()).toContain('es2-hero-select-card')
+      expect(card.find('img').exists()).toBe(true)
+    }
+    await wrapper.setProps({ heroId: 'crimson-paladin' })
+    expect(wrapper.get('[data-hero-id="crimson-paladin"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-hero="knight"]').attributes('aria-pressed')).toBe('false')
+  })
+
+  it('uses one card gradient with a muted hero tint and gold reserved for selection', () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    const panels = [...css.matchAll(/\.es2-menu \.es2-hero-select-card\s*\{([^}]+)\}/g)]
+    const backgrounds = panels.filter(([, rules]) => rules.includes('background:'))
+    expect(backgrounds).toHaveLength(1)
+    expect(backgrounds[0]![1]).toContain('var(--es2-hero-glow)')
+    expect(css).toContain('--es2-hero-glow:var(--es2-hero-idle-glow)')
+    const selected = css.match(/\.es2-menu \.es2-hero-select-card\[aria-pressed="true"\]\s*\{([^}]+)\}/)
+    expect(selected?.[1]).toContain('--es2-hero-glow:#ffd16b80')
+    for (const id of ['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      expect(css).toMatch(new RegExp('\\[data-hero(?:-id)?="' + id + '"\\]\\s*\\{--es2-hero-idle-glow:#[0-9a-f]{6}28\\}'))
+    }
+    expect(css).not.toMatch(/\.es2-hero-card\[data-es2-cosmetic\][^{]*>img\s*\{/)
+    expect(css).not.toMatch(/\.es2-hero-select-card(?:\[aria-pressed="true"\])?>img\s*\{background:/)
+  })
+
+  it('shares hover, press, selection glow and portrait lift with a reduced-motion fallback', () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    expect(css).toContain('.es2-menu .es2-hero-select-card{')
+    expect(css).toContain('.es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px)')
+    expect(css).toContain('.es2-hero-select-card:active:not(:disabled){transform:translateY(-1px) scale(.99)}')
+    expect(css).toMatch(/\.es2-hero-select-card\[aria-pressed="true"\]\s*\{[^}]*border-color:#ffe3a3;[^}]*box-shadow:/)
+    expect(css).toContain('.es2-hero-select-card > img{transition:transform')
+    expect(css).toContain('.es2-hero-select-card[aria-pressed="true"] > img{transform:translateY(-6px)}')
+    expect(css).toContain('.es2-menu .es2-hero-select-card:is(:hover,:active):not(:disabled){transform:none}')
+    expect(css).toContain('.es2-hero-select-card[aria-pressed="true"] > img{transform:none}')
   })
 })
 
@@ -91,6 +138,24 @@ describe('ES2 dedicated hero special action', () => {
       expect(image.attributes('alt')).toBe('')
       expect(wrapper.get('[data-hero-special]').attributes('aria-label')).toContain('可施放')
     }
+  })
+
+  it('themes the Q cast button per hero and exposes a non-animated cooldown state', async () => {
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+      const wrapper = render(HeroSpecialAction, {
+        heroId: id, active: true,
+        snapshot: { cooldown: 0, stealth: 0, barrier: 0, companions: [] },
+      })
+      expect(wrapper.get('.es2-hero-special').attributes('data-hero')).toBe(id)
+      const button = wrapper.get('[data-hero-special]')
+      expect(button.attributes('data-ready')).toBe('true')
+      await wrapper.setProps({ snapshot: { cooldown: 4, stealth: 0, barrier: 0, companions: [] } })
+      expect(button.attributes('data-ready')).toBe('false')
+    }
+    const css = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    expect(css).toContain('es2-special-sheen')
+    expect(css).not.toContain('es2-special-orbit')
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)')
   })
 
   it('supports Q, skips typing/repeats and removes the global listener on unmount', async () => {

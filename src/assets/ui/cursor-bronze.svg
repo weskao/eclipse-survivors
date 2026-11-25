@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff5d8"/><stop offset=".24" stop-color="#d9b77e"/><stop offset=".53" stop-color="#8e6239"/><stop offset=".73" stop-color="#efce91"/><stop offset="1" stop-color="#513524"/></linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fff2ca"/><stop offset=".30" stop-color="#b49a72"/><stop offset=".47" stop-color="#634a38"/><stop offset=".65" stop-color="#ad8652"/><stop offset="1" stop-color="#31272a"/></linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2=".85"><stop stop-color="#f9e3b5"/><stop offset=".45" stop-color="#d9bb83"/><stop offset="1" stop-color="#71503a"/></linearGradient>
+    <radialGradient id="gem" cx=".30" cy=".24" r=".85"><stop stop-color="#fff8dc"/><stop offset=".21" stop-color="#ffe3a0"/><stop offset=".53" stop-color="#b37535"/><stop offset="1" stop-color="#43272e"/></radialGradient>
+  </defs>
+  <!-- Narrow silhouette, exact tip hotspot at (4,3). -->
+  <path d="M5 5 32 24 22 25 17 37 10 34 14 23 5 28Z" fill="#070c14" opacity=".9"/>
+  <path d="M4 3 31 22 21 23 16 35 10 32 14 21 4 26Z" fill="url(#rim)" stroke="#080d16" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M6 7 27 21 19 21 14.7 32 12.4 31 16.3 17.7 6 22Z" fill="url(#face)" stroke="#3b2a26" stroke-width=".65" stroke-linejoin="round"/>
+  <path d="M4 3 18 17.8 14 21 4 26Z" fill="url(#edge)"/>
+  <path d="M4.5 4 6.3 21.8 14.2 18.4" fill="none" stroke="#fff4d3" stroke-width=".8" stroke-linecap="round"/>
+  <path d="M7 7 18 17.8 27.7 21.5M17.5 25.5l-3 6.4" fill="none" stroke="#392729" stroke-width="1.05" stroke-linecap="round"/>
+  <path d="m17 13.8 4.2 4.5-4.8 3.2-3.1-4.6Z" fill="#30232a" stroke="#d5ad70" stroke-width=".9"/>
+  <path d="m17 15.1 2.9 3.1-3.2 2.2-2.1-3.2Z" fill="url(#gem)"/>
+  <path d="m16.1 16.2 1.4-.7 1 1.3-1.4.4Z" fill="#fff6dc" opacity=".85"/>
+  <path d="M4 3 31 22 21 23 16 35 10 32 14 21 4 26Z" fill="none" stroke="#e9c58b" stroke-width=".85" stroke-linejoin="round"/>
+</svg>

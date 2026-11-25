@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed } from 'vue'
+import Es2EmberWallet from '../menu/Es2EmberWallet.vue'
 import type { MetaState } from '../../../game/content/meta/state'
 import {
   getAchievementStates, getBonusStates, getEquipmentStates, getResearchStates,
@@ -9,9 +11,10 @@ const props = withDefaults(defineProps<{
   state: MetaState
   hero: string
   status: 'ready' | 'blocked'
+  embedded?: boolean
   busy?: boolean
   error?: string
-}>(), { busy: false, error: '' })
+}>(), { embedded: false, busy: false, error: '' })
 
 const emit = defineEmits<{
   research: [id: string]
@@ -30,72 +33,72 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 </script>
 
 <template>
-  <article class="es2-progression-panel" aria-label="永久成長 v3">
-    <header class="es2-progression-header">
-      <div><p class="es2-progression-overline">✦ CELESTIAL LEGACY ✦</p>
-        <h2>永久成長 · 英雄傳承</h2>
-        <p>研究、裝備與祝福只在下一場遠征開始時生效。</p>
+  <article class="es2-progression-panel" :class="{ 'es2-progression-panel--embedded': embedded }" :aria-label="t('永久成長 v3')">
+    <header v-if="!embedded" class="es2-progression-header">
+      <div><p class="es2-progression-overline">{{ t("✦ CELESTIAL LEGACY ✦") }}</p>
+        <h2>{{ t("永久成長 · 英雄傳承") }}</h2>
+        <p>{{ t("研究、裝備與祝福只在下一場遠征開始時生效。") }}</p>
       </div>
-      <div class="es2-progression-wallet"><strong>{{ state.embers.toLocaleString() }}</strong><span>✧ 暮光餘燼</span></div>
+      <Es2EmberWallet :embers="state.embers" />
     </header>
     <p v-if="status !== 'ready' || error" role="alert" class="es2-progression-error">
-      {{ error || '儲存狀態無法驗證，目前已停用永久獎勵與消費，避免遺失進度。' }}
+      {{ t(error || '儲存狀態無法驗證，目前已停用永久獎勵與消費，避免遺失進度。') }}
     </p>
 
-    <section aria-label="永久研究" class="es2-progression-section">
-      <h3>研究之樹</h3>
+    <section :aria-label="t('永久研究')" class="es2-progression-section">
+      <h3>{{ t("研究之樹") }}</h3>
       <div class="es2-progression-grid">
         <article v-for="node in research" :key="node.id" class="es2-progression-item" :class="{ locked: node.locked }">
           <span class="es2-progression-icon" aria-hidden="true">{{ node.icon }}</span>
-          <strong>{{ node.title }}</strong><p>{{ node.description }}</p>
-          <small>等級 {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> · 前置研究未解鎖</span></small>
-          <button type="button" :data-research="node.id" :disabled="!writable || !node.canBuy"
+          <strong>{{ t(node.title) }}</strong><p>{{ t(node.description, { value: node.benefit === 'hpFlat' ? node.benefitPerRank : Number((node.benefitPerRank * 100).toFixed(2)) }) }}</p>
+          <small>{{ t("等級") }} {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> {{ t("· 前置研究未解鎖") }}</span></small>
+          <button type="button" data-ui-sfx="managed" :data-research="node.id" :disabled="!writable || !node.canBuy"
             @click="emit('research', node.id)">
-            {{ node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · ' + node.nextCost + ' ✧' }}
+            {{ t(node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · ' + node.nextCost + ' ✧') }}
           </button>
         </article>
       </div>
     </section>
 
-    <section aria-label="英雄專精" class="es2-progression-section">
-      <h3>英雄專精</h3>
+    <section :aria-label="t('英雄專精')" class="es2-progression-section">
+      <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
-        <span>{{ heroName }}</span><strong>Lv. {{ mastery.level }}</strong><small>累積熟練度 {{ mastery.xp.toLocaleString() }} XP</small>
+        <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
       </div>
     </section>
 
-    <section aria-label="起始裝備與祝福" class="es2-progression-section">
-      <h3>起始裝備與祝福</h3>
-      <p class="es2-progression-caption">已解鎖的效果由遊戲整合層在開局時套用，不會改變進行中的戰鬥。</p>
+    <section :aria-label="t('起始裝備與祝福')" class="es2-progression-section">
+      <h3>{{ t("起始裝備與祝福") }}</h3>
+      <p class="es2-progression-caption">{{ t("已解鎖的效果由遊戲整合層在開局時套用，不會改變進行中的戰鬥。") }}</p>
       <div class="es2-progression-grid">
         <article v-for="item in equipment" :key="item.id" class="es2-progression-item">
           <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
-          <strong>{{ item.title }}</strong><p>{{ item.description }}</p>
-          <button type="button" :data-equipment="item.id"
+          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description) }}</p>
+          <button type="button" data-ui-sfx="managed" :data-equipment="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('equipment', item.id)">
-            {{ item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · ' + item.cost + ' ✧' }}
+            {{ t(item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · ' + item.cost + ' ✧') }}
           </button>
         </article>
         <article v-for="item in bonuses" :key="item.id" class="es2-progression-item">
           <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
-          <strong>{{ item.title }}</strong><p>{{ item.description }}</p>
-          <button type="button" :data-bonus="item.id"
+          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description, { value: Number(((item.bonus ?? 0) * 100).toFixed(2)) }) }}</p>
+          <button type="button" data-ui-sfx="managed" :data-bonus="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('bonus', item.id)">
-            {{ item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · ' + item.cost + ' ✧' }}
+            {{ t(item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · ' + item.cost + ' ✧') }}
           </button>
         </article>
       </div>
     </section>
 
-    <section aria-label="永久成就" class="es2-progression-section">
-      <h3>永久成就 · {{ state.achievements.length }} / {{ achievements.length }}</h3>
+    <section :aria-label="t('永久成就')" class="es2-progression-section">
+      <h3>{{ t("永久成就 ·") }} {{ state.achievements.length }} / {{ achievements.length }}</h3>
       <div class="es2-progression-achievements">
         <article v-for="entry in achievements" :key="entry.id" :data-achievement="entry.id"
           :class="{ locked: !entry.unlocked }">
-          <span aria-hidden="true">{{ entry.icon }}</span><strong>{{ entry.title }}</strong>
-          <small>{{ entry.unlocked ? '✓ 已達成' : '未達成' }}</small>
+          <span aria-hidden="true">{{ entry.icon }}</span><strong>{{ t(entry.title) }}</strong>
+          <small>{{ t(entry.unlocked ? '✓ 已達成' : '未達成') }}</small>
         </article>
       </div>
     </section>
@@ -104,13 +107,12 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 
 <style scoped>
 .es2-progression-panel{color:#f3e9d2;padding:clamp(12px,2.5vw,28px);font:inherit;min-width:0}
+.es2-progression-panel--embedded{padding:0}
+.es2-progression-panel--embedded>.es2-progression-section:first-of-type{margin-top:0}
 .es2-progression-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid #a588524f}
 .es2-progression-header h2{font-size:clamp(1.35rem,3vw,2rem);margin:4px 0 8px}
 .es2-progression-header p,.es2-progression-caption{color:#c8bda8;margin:5px 0}
 .es2-progression-overline{letter-spacing:.15em;font-size:.75rem;color:#d5b675}
-.es2-progression-wallet{padding:12px 18px;border:1px solid #b99a55a6;border-radius:12px;background:#261f22;display:flex;flex-direction:column;align-items:center;gap:4px}
-.es2-progression-wallet strong{font-variant-numeric:tabular-nums;font-size:1.7rem}
-.es2-progression-wallet span{color:#edcb82;font-size:.85rem}
 .es2-progression-error{border:1px solid #dd8875;padding:12px;border-radius:8px;color:#ffdbd3}
 .es2-progression-section{margin-top:24px}
 .es2-progression-section h3{color:#f8d998;letter-spacing:.03em;margin:0 0 12px;font-size:1.15rem}
@@ -131,6 +133,6 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 .es2-progression-achievements article.locked{opacity:.62}
 .es2-progression-achievements article strong{font-size:.84rem;flex:1}
 .es2-progression-achievements small{font-size:.75rem}
-@media(max-width:540px){.es2-progression-grid{grid-template-columns:1fr}.es2-progression-wallet{width:100%}}
+@media(max-width:540px){.es2-progression-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.es2-progression-panel *{scroll-behavior:auto;transition:none!important;animation:none!important}}
 </style>

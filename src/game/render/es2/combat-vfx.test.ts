@@ -39,14 +39,14 @@ const queue = (kind: Parameters<typeof emitCombatVfx>[1], angle = 0) => {
 }
 
 describe('ES2 combat VFX contract', () => {
-  it('registers 18 distinct namespaced effects with bounded durations', () => {
-    expect(COMBAT_FX_SPECS).toHaveLength(18)
+  it('registers 21 distinct namespaced effects with bounded durations', () => {
+    expect(COMBAT_FX_SPECS).toHaveLength(21)
     const ids = COMBAT_FX_SPECS.map(fx => fx.id)
-    expect(new Set(ids).size).toBe(18)
+    expect(new Set(ids).size).toBe(COMBAT_FX_SPECS.length)
     expect(ids.every(id => id.startsWith('combat-vfx:'))).toBe(true)
     expect(COMBAT_FX_SPECS.every(fx => fx.duration > 0 && fx.duration <= 4)).toBe(true)
     const registry = createContentRegistry([COMBAT_VFX_PACK])
-    expect(registry.packs[0]?.effects).toHaveLength(18)
+    expect(registry.packs?.[0]?.effects?.map(fx => fx.id)).toEqual(ids)
   })
 
   it('keeps directional metadata and animation lifecycle without leaking objects', () => {
@@ -108,7 +108,7 @@ describe('ES2 combat VFX contract', () => {
   it('restores Canvas state even when a draw operation fails', () => {
     const { registry, s } = queue('critical-hit')
     const { ctx, calls } = fakeCanvas()
-    ctx.stroke = () => { throw new Error('context unavailable') }
+    ctx.fill = () => { throw new Error('context unavailable') }
     expect(() => registry.render(ctx, s, 0, 0)).toThrow('context unavailable')
     expect(calls.filter(c => c.startsWith('save:'))).toHaveLength(2)
     expect(calls.filter(c => c.startsWith('restore:'))).toHaveLength(2)

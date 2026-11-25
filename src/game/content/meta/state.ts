@@ -1,3 +1,4 @@
+import { validWallet, type CloudWallet } from '../../../cloud/wallet-policy'
 import type { JobId } from '../../types'
 import { ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT, isCosmeticId, isDiscoverableId } from './catalog'
 
@@ -7,6 +8,8 @@ export interface ModeRecord { runs: number; wins: number; bestKills: number; bes
 export interface MetaState {
   version: 3
   embers: number
+  /** Local-only acknowledged cloud balance; never part of the uploaded document beyond its two fields. */
+  cloudWallet?: CloudWallet
   runs: number
   wins: number
   bossWins: number
@@ -50,7 +53,7 @@ export function createMetaState(): MetaState {
 }
 export const resetMetaState = createMetaState
 export const cloneMetaState = (state: MetaState): MetaState => ({
-  ...state, achievements: [...state.achievements], claimedMilestones: [...state.claimedMilestones],
+  ...state, ...(state.cloudWallet ? { cloudWallet: { ...state.cloudWallet } } : {}), achievements: [...state.achievements], claimedMilestones: [...state.claimedMilestones],
   research: { ...state.research },
   mastery: Object.fromEntries(Object.entries(state.mastery).map(([k, v]) => [k, { ...v }])),
   equipment: [...state.equipment], bonuses: [...state.bonuses], cosmetics: [...state.cosmetics],
@@ -65,7 +68,7 @@ export const cloneMetaState = (state: MetaState): MetaState => ({
 
 /** Strict trust-boundary check. Nothing is coerced and unknown schema versions are refused. */
 export function validateMetaState(raw: unknown): raw is MetaState {
-  if (!isObj(raw) || raw.version !== 3 || !whole(raw.embers) || !whole(raw.runs) || !whole(raw.wins) || !whole(raw.bossWins)
+  if (!isObj(raw) || (raw.cloudWallet !== undefined && !validWallet(raw.cloudWallet)) || raw.version !== 3 || !whole(raw.embers) || !whole(raw.runs) || !whole(raw.wins) || !whole(raw.bossWins)
     || raw.wins > raw.runs || !isObj(raw.research) || !isObj(raw.mastery)
     || !isObj(raw.discoveries) || !isObj(raw.modeRecords)
     || !uniqueStrings(raw.runIds, MAX_RUN_IDS, isRunId)) return false

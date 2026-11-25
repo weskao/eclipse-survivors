@@ -1,5 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
-import { burst, impact, pushEcho, zigzag } from './fx'
+import { BALANCE } from './config'
+import { burst, impact, emitHitImpact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
@@ -21,8 +22,9 @@ export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
-  const applied = hooks.modifyOutgoingDamage?.(d) ?? d
+  const applied = hooks.modifyOutgoingDamage?.(d, e) ?? d
   if (!Number.isFinite(applied) || applied <= 0) return
+  const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
   const dealt = Math.min(e.hp, applied)
   s.damageDealt += dealt
@@ -32,15 +34,15 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const knock = dist(e.x - hero.x, e.y - hero.y) || 1
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
-  impact(s, e.x, e.y, boss ? 68 : 30, boss ? '#ffab79' : '#ffe6ab', boss ? 1.5 : 0.3)
-  s.numberFx.push({ x: e.x + rand(-13, 13), y: e.y - 38, life: 0.62, value: Math.round(applied), boss })
-  if (s.numberFx.length > 80) s.numberFx.shift()
-  burst(s, e.x, e.y, '#fff3c4', 2)
+  const impactAngle = Math.atan2(e.ky, e.kx)
+  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical)
+  pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
+  if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     s.kill++
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
-    const value = boss ? 45 : e.type === 'golem' ? 9 : e.type === 'goblin' ? 5 : 3
+    const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
     s.stars.push({ x: e.x, y: e.y, value, t: rand(0, 6) })
     burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
@@ -57,9 +59,9 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
 export function dash(s: GameState, hooks: GameHooks): void {
   const hero = s.hero
   if (s.mode !== 'play' || !hero || hero.dashCd > 0) return
-  hero.dash = 0.22
+  hero.dash = BALANCE.combat.dashDuration
   hero.dashCd = DASH_COOLDOWN
-  hero.inv = Math.max(hero.inv, 0.35)
+  hero.inv = Math.max(hero.inv, BALANCE.combat.dashInvulnerability)
   burst(s, hero.x, hero.y, '#d8f8ff', 15)
   impact(s, hero.x, hero.y, 55, '#c6f7ff', 0.4)
   pushEcho(s, hero.x, hero.y, s.choice, 0)
@@ -85,7 +87,8 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
   hero.aimAngle = angle
   hero.strike = 0.29
-  impact(s, hero.x, hero.y, choice === 'knight' ? 56 : 21, choice === 'wizard' ? '#b49cff' : '#f8dba8', 0.35)
+  // The weapon ribbon owns melee release; ranged casts retain one local muzzle accent.
+  if (choice === 'ranger') impact(s, hero.x, hero.y, 21, '#f8dba8', 0.35)
   if (choice === 'knight') {
     for (let j = 0; j < multi; j++) {
       const a = angle + (j - (multi - 1) / 2) * 0.43
@@ -101,8 +104,7 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
         const r = dist(e.x - hero.x, e.y - hero.y)
         const d = Math.atan2(e.y - hero.y, e.x - hero.x)
         if (r < hero.range + e.radius && Math.cos(d - a) > 0.71) {
-          const damage = hooks.modifyOutgoingDamage?.(hero.damage) ?? hero.damage
-          factions!.hitFaction(s, e, damage, hero.x, hero.y, hooks)
+          factions!.hitFaction(s, e, hero.damage, hero.x, hero.y, hooks)
         }
       }
     }
@@ -123,18 +125,18 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
         life: ranger ? 1.2 : 1.7, d: hero.damage, kind: ranger ? 'arrow' : 'magic', r: ranger ? 5 : 9,
       })
     }
-    if (choice === 'wizard') impact(s, hero.x, hero.y, 42, '#aa91ff', 0.45)
+    if (choice === 'wizard') impact(s, originX, originY, 42, s.heroId === 'spirit-summoner' ? '#a5e8d7' : '#aa91ff', 0.45)
     hooks.sfx(ranger ? 'ranger' : 'wizard')
   }
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
-    hero.chainCd = Math.max(0.5, 2.8 - chain * 0.23)
-    const chainTargets = close.slice(0, Math.min(2 + chain, 7))
+    hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank)
+    const chainTargets = close.slice(0, Math.min(BALANCE.combat.chainTargetBase + chain, BALANCE.combat.chainMaxTargets))
     for (let i = 0; i < chainTargets.length; i++) {
       const from: Hero | Mob = i ? chainTargets[i - 1]! : hero
       const to = chainTargets[i]!
       zigzag(s, from.x || hero.x, (from.y || hero.y) - 25, to.x, to.y)
-      hit(s, to, hero.damage * (0.62 + 0.16 * chain), hooks)
+      hit(s, to, hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain), hooks)
     }
     hooks.sfx('chain')
   }
@@ -154,20 +156,25 @@ export function victoryConditionMet(
   return survived && bossDefeated
 }
 
-export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
+export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: Mob): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play' || hero.hp <= 0 || hero.inv > 0 || hero.dash > 0 || !Number.isFinite(n) || n <= 0) return
   const mitigated = hooks.mitigateIncomingDamage?.(n) ?? n
   // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
   if (!Number.isFinite(mitigated) || mitigated <= 0) return
   const shield = hero.skills.shield ?? 0
-  const reduce = 1 - Math.min(0.52, shield * 0.12)
+  const reduce = 1 - Math.min(BALANCE.skills.passive.shieldReductionCap, shield * BALANCE.skills.passive.shieldReductionPerRank)
   const taken = mitigated * reduce
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
   hero.hp = Math.max(0, hero.hp - taken)
+  if (actuallyTaken > 0) {
+    pushDamageNumber(s, { x: hero.x, y: hero.y - 56, life: 0.7,
+      value: Math.round(actuallyTaken), boss: false, received: true })
+  }
   hero.inv = 1
-  s.cameraKick = Math.min(12, s.cameraKick + 4)
+  // Routine chip damage uses local hit feedback; only major HP loss nudges the camera.
+  if (actuallyTaken >= hero.max * 0.22) requestCameraKick(s, 1.6)
   impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
   if (shield) {
     impact(s, hero.x, hero.y, 58, '#9ad3ff', 0.4)
@@ -195,6 +202,6 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks): void {
   }
   hooks.sfx('hurt')
   hooks.content?.(s, { type: 'damage', amount: actuallyTaken })
-  hooks.afterDamage?.(actuallyTaken)
+  hooks.afterDamage?.(actuallyTaken, source)
   if (hero.hp === 0) hooks.end(false)
 }

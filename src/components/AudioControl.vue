@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { t } from '../i18n'
+import AudioMuteIcon from './AudioMuteIcon.vue'
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
@@ -84,11 +86,11 @@ onBeforeUnmount(detach)
       ref="trigger"
       type="button"
       class="audio-trigger"
-      :class="{ compact }"
+      :class="{ compact, 'es2-hud__control-button': context === 'hud' }"
       :aria-expanded="opened"
       :aria-controls="id('AudioPopover')"
-      aria-label="音量與音效調整"
-      title="音量與音效調整"
+      :aria-label="t('音量與音效調整')"
+      :title="t('音量與音效調整')"
       @click="toggle"
     >
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -96,26 +98,26 @@ onBeforeUnmount(detach)
         <path v-if="musicOn || sfxOn" d="M16 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12" />
         <path v-else d="m17 9 5 6m0-6-5 6" />
       </svg>
-      <span v-if="!compact">音量</span>
+      <span v-if="!compact">{{ t("音量") }}</span>
     </button>
     <Teleport to="body">
-      <div v-if="opened && active" :id="id('AudioPopover')" ref="popover" class="audio-popover" :style="position" role="group" aria-label="即時音量控制">
-        <div class="audio-popover-heading"><strong>音訊控制</strong><button type="button" class="audio-popover-close" aria-label="關閉音訊控制" @click="close(true)">×</button></div>
+      <div v-if="opened && active" :id="id('AudioPopover')" ref="popover" class="audio-popover" :style="position" role="group" :aria-label="t('即時音量控制')">
+        <div class="audio-popover-heading"><strong>{{ t("音訊控制") }}</strong><button type="button" class="audio-popover-close" :aria-label="t('關閉音訊控制')" @click="close(true)">×</button></div>
         <div class="audio-popover-row">
-          <button :id="id('MusicMute')" type="button" class="audio-mute" :aria-pressed="!musicOn" :aria-label="musicOn ? '靜音背景音樂' : '恢復背景音樂'" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
+          <button :id="id('MusicMute')" type="button" class="audio-mute" :aria-pressed="!musicOn" :aria-label="t(musicOn ? '靜音背景音樂' : '恢復背景音樂')" @click="emit('toggleMusic')"><AudioMuteIcon channel="music" :muted="!musicOn" /></button>
           <div class="audio-volume">
-            <label :for="id('MusicVolume')">背景音樂 <output>{{ musicVolume }}%</output></label>
+            <label :for="id('MusicVolume')">{{ t("背景音樂") }} <output>{{ musicVolume }}%</output></label>
             <input :id="id('MusicVolume')" type="range" min="0" max="100" step="1" :value="musicVolume" :style="{ '--audio-fill': musicVolume + '%' }" @input="emit('musicVolume', volume($event))" />
           </div>
         </div>
         <div class="audio-popover-row">
-          <button :id="id('SfxMute')" type="button" class="audio-mute" :aria-pressed="!sfxOn" :aria-label="sfxOn ? '靜音遊戲音效' : '恢復遊戲音效'" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
+          <button :id="id('SfxMute')" type="button" class="audio-mute" :aria-pressed="!sfxOn" :aria-label="t(sfxOn ? '靜音遊戲音效' : '恢復遊戲音效')" @click="emit('toggleSfx')"><AudioMuteIcon channel="sfx" :muted="!sfxOn" /></button>
           <div class="audio-volume">
-            <label :for="id('SfxVolume')">遊戲音效 <output>{{ sfxVolume }}%</output></label>
+            <label :for="id('SfxVolume')">{{ t("遊戲音效") }} <output>{{ sfxVolume }}%</output></label>
             <input :id="id('SfxVolume')" type="range" min="0" max="100" step="1" :value="sfxVolume" :style="{ '--audio-fill': sfxVolume + '%' }" @input="emit('sfxVolume', volume($event))" />
           </div>
         </div>
-        <p class="audio-popover-hint">拖曳即時生效 · 點擊音符即可靜音</p>
+        <p class="audio-popover-hint">{{ t("拖曳即時生效 · 點擊音符即可靜音") }}</p>
       </div>
     </Teleport>
   </span>

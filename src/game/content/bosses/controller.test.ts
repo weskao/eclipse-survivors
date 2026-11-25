@@ -5,7 +5,7 @@ import { createContentRegistry } from '../registry'
 import { createHero, createState } from '../../state'
 import type { ContentEvent, GameHooks, GameState } from '../../types'
 import { BOSS_PACK } from '../packs/bosses'
-import { BOSS_DEFINITIONS, type BossId } from './definitions'
+import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossId } from './definitions'
 import { createBossEncounterController, intersectsTelegraph, MAX_BOSS_PROJECTILES } from './controller'
 
 function setup() {
@@ -136,6 +136,49 @@ describe('independent premium boss content', () => {
     expect(state.mobs.some(m => m.summonedByBoss)).toBe(false)
   })
 
+  it.each(Object.keys(BOSS_DEFINITIONS) as BossId[])('%s: continuously tracks the hero during attack recovery', id => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, id, { x: 520, y: 0 }, hooks)!
+    controller.tick(state, 0.01, hooks)
+    const warning = controller.snapshot(state).telegraphs[0]!
+    const originalX = boss.x
+    controller.tick(state, 0.3, hooks)
+    expect(boss.x).toBe(originalX) // Warning hitboxes stay locked while the boss telegraphs.
+    controller.tick(state, BOSS_ATTACKS[warning.attackId as keyof typeof BOSS_ATTACKS].windup, hooks)
+    controller.tick(state, 0.3, hooks)
+    expect(boss.x).toBeLessThan(originalX - 8)
+    expect(boss.bossMoving).toBe(true)
+  })
+
+  it('respects a safe stop distance and freezes pursuit while paused', () => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, 'infernal-titan', { x: 220, y: 0 }, hooks)!
+    controller.tick(state, 0.01, hooks)
+    controller.tick(state, 1.71, hooks)
+    controller.tick(state, 1.1, hooks)
+    expect(boss.x).toBeGreaterThanOrEqual(118)
+    const x = boss.x, y = boss.y
+    state.mode = 'level'
+    controller.tick(state, 2, hooks)
+    expect({ x: boss.x, y: boss.y }).toEqual({ x, y })
+  })
+
+  it('increases pursuit speed as the boss reaches its third phase', () => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, 'eclipse-seraph', { x: 900, y: 0 }, hooks)!
+    controller.tick(state, 0.01, hooks)
+    controller.tick(state, 1.5, hooks)
+    let before = boss.x
+    controller.tick(state, 0.25, hooks)
+    const phaseOneMove = before - boss.x
+    boss.hp = boss.max * 0.25
+    controller.tick(state, 0.01, hooks)
+    expect(controller.hud(state)?.phase).toBe(3)
+    before = boss.x
+    controller.tick(state, 0.25, hooks)
+    expect(before - boss.x).toBeGreaterThan(phaseOneMove)
+  })
+
   it('awards no duplicate XP or boss death event, and keeps original boss-gated victory', () => {
     const { state, hooks, controller, notices } = setup()
     const boss = controller.spawn(state, 'eclipse-seraph', { x: 110, y: 0 }, hooks)!
@@ -185,4 +228,38 @@ describe('independent premium boss content', () => {
     }
     expect(run()).toEqual(run())
   })
+  it.each(Object.keys(BOSS_DEFINITIONS) as BossId[])('%s: exposes actual body-pose timing without changing attack or reward logic', id => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, id, { x: 520, y: 0 }, hooks)!
+    state.hero!.inv = 100
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'idle', phase: 1 })
+    controller.tick(state, 0.01, hooks)
+    const warning = controller.snapshot(state).telegraphs[0]!
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'windup', progress: 0, phase: 1 })
+    const windup = BOSS_ATTACKS[warning.attackId as keyof typeof BOSS_ATTACKS].windup
+    controller.tick(state, windup / 2, hooks)
+    expect(controller.snapshot(state).bodyMotion?.progress).toBeCloseTo(0.5)
+    controller.tick(state, windup, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'attack', phase: 1 })
+    controller.tick(state, 0.3, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'recover', phase: 1 })
+    boss.hp = boss.max * 0.6
+    controller.tick(state, 0.01, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'transform', progress: 0, phase: 2 })
+    controller.tick(state, 0.2, hooks)
+    expect(controller.snapshot(state).bodyMotion?.progress).toBeCloseTo(0.2 / 0.85)
+    state.mode = 'level'
+    const paused = controller.snapshot(state).bodyMotion
+    controller.tick(state, 0.1, hooks)
+    expect(controller.snapshot(state).bodyMotion).toEqual(paused)
+    state.mode = 'play'
+    hit(state, boss, boss.hp, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'death', phase: 2, progress: 0 })
+    expect(controller.snapshot(state).bodyMotion?.x).toBe(boss.x)
+    expect(state.kill).toBe(1)
+    expect(state.stars).toHaveLength(1)
+    controller.reset(state)
+    expect(controller.snapshot(state).bodyMotion).toBeUndefined()
+  })
+
 })

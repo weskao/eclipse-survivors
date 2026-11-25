@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { abilityChoiceId, formatDuration, nextIndex, shortcutIndex, upgradeCost } from './model'
 
 describe('ES2 menu state helpers', () => {
-  const key = (value: string, flags = {}) => ({ key: value, repeat: false, ctrlKey: false, altKey: false, metaKey: false, isComposing: false, ...flags })
+  const key = (value: string, flags = {}) => ({
+    key: value, code: /^[0-9]$/.test(value) ? `Digit${value}` : 'KeyA',
+    repeat: false, ctrlKey: false, altKey: false, metaKey: false, isComposing: false, ...flags,
+  })
 
   it('accepts only one-time, unmodified 1–9 shortcuts within the active choices', () => {
     expect(shortcutIndex(key('1'), 3)).toBe(0)
@@ -11,7 +14,12 @@ describe('ES2 menu state helpers', () => {
     expect(shortcutIndex(key('0'), 3)).toBe(-1)
     expect(shortcutIndex(key('1', { repeat: true }), 3)).toBe(-1)
     expect(shortcutIndex(key('1', { ctrlKey: true }), 3)).toBe(-1)
-    expect(shortcutIndex(key('1', { isComposing: true }), 3)).toBe(-1)
+    expect(shortcutIndex(key('Process', { code: 'Digit1', isComposing: true }), 3)).toBe(0)
+    expect(shortcutIndex(key('ㄅ', { code: 'Numpad3', isComposing: true }), 3)).toBe(2)
+    expect(shortcutIndex(key('2', { code: 'KeyQ' }), 3)).toBe(-1)
+    expect(shortcutIndex(key('9', { code: 'Digit9' }), 9)).toBe(8)
+    expect(shortcutIndex(key('9', { code: 'Numpad9' }), 9)).toBe(8)
+    expect(shortcutIndex(key('3', { altKey: true }), 3)).toBe(-1)
   })
 
   it('wraps roving keyboard focus and handles empty lists safely', () => {

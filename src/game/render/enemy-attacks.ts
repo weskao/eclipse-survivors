@@ -1,11 +1,15 @@
 import { TAU } from '../constants'
+import { BALANCE } from '../config'
+import { drawEnemyRelease } from './enemy-motion'
 import type { GameState, Mob } from '../types'
 import type { Ctx2D } from './ctx'
+import type { ProjectileSprites } from './projectile-art'
+import { drawEnergyMissile, drawZoneMotes } from './energy-art'
 
-function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number): void {
+function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number, reduced: boolean): void {
   const ai = mob.ai
   if (!ai || ai.state !== 'windup') return
-  const time = Math.min(1, ai.timer / (mob.type === 'boss' ? 1.3 : 1.05))
+  const time = Math.min(1, ai.timer / (BALANCE.enemies.ai.windup[ai.attack] + (mob.type === 'boss' ? BALANCE.enemies.ai.bossWindupExtra : 0)))
   const boss = mob.type === 'boss'
   const color = mob.elite ? '#dc9cff' : boss ? '#ff7758' : '#ffbf76'
   ctx.save()
@@ -20,9 +24,12 @@ function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number): void {
     ctx.beginPath(); ctx.arc(x, y, radius, 0, TAU); ctx.stroke()
     ctx.globalAlpha = 0.1 + (1 - time) * 0.17
     ctx.beginPath(); ctx.arc(x, y, radius, 0, TAU); ctx.fill()
+    ctx.globalAlpha = 0.65
+    drawZoneMotes(ctx, x, y, radius, 0, 1 - time, color, reduced)
   } else if (ai.attack === 'summon') {
     const x = mob.x + ox, y = mob.y + oy
     ctx.beginPath(); ctx.arc(x, y, 145, 0, TAU); ctx.stroke()
+    drawZoneMotes(ctx, x, y, 145, 0, 1 - time, color, reduced)
     ctx.font = '700 15px system-ui'; ctx.textAlign = 'center'
     ctx.fillText('召喚', x, y - 158)
   } else {
@@ -47,20 +54,31 @@ function warning(ctx: Ctx2D, mob: Mob, ox: number, oy: number): void {
   ctx.restore()
 }
 
-export function drawEnemyTelegraphs(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
-  for (const enemy of s.mobs) if (enemy.hp > 0 && enemy.ai?.state === 'windup') warning(ctx, enemy, ox, oy)
+export function drawEnemyTelegraphs(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced = false): void {
+  for (const enemy of s.mobs) {
+    if (enemy.hp <= 0 || !enemy.ai) continue
+    const ai = enemy.ai
+    // ES2 encounter owns its own warnings and release textures.
+    if (enemy.type === 'boss' && enemy.bossArtId) continue
+    if (ai.state === 'windup') warning(ctx, enemy, ox, oy, reduced)
+    else if (enemy.type !== 'boss' && (ai.releaseFx ?? 0) > 0) {
+      const ground = ai.attack === 'slam'
+      const size = ground ? 2 * ((enemy.elite ? BALANCE.enemies.ai.slamRadius.elite : BALANCE.enemies.ai.slamRadius.default) + BALANCE.enemies.ai.slamContactMargin) : ai.attack === 'bolt' ? 68 : enemy.r * 3.2
+      drawEnemyRelease(ctx, ai.attack, (ground ? ai.aimX : enemy.x) + ox, (ground ? ai.aimY : enemy.y) + oy,
+        Math.atan2(ai.dirY, ai.dirX), size, size, ai.releaseFx!, reduced, s.W, s.H)
+    }
+  }
 }
 
-export function drawEnemyProjectiles(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawEnemyProjectiles(ctx: Ctx2D, s: GameState, ox: number, oy: number, sprites?: Partial<ProjectileSprites>, reduced = false): void {
   for (const p of s.enemyShots) {
     const x = p.x + ox, y = p.y + oy
-    if (x < -30 || x > s.W + 30 || y < -30 || y > s.H + 30) continue
+    const margin = Math.max(50, p.radius * 4)
+    if (x < -margin || x > s.W + margin || y < -margin || y > s.H + margin) continue
     ctx.save()
-    ctx.shadowColor = '#bb81ff'; ctx.shadowBlur = 19
-    ctx.fillStyle = '#c99cff'
-    ctx.beginPath(); ctx.arc(x, y, p.radius, 0, TAU); ctx.fill()
-    ctx.strokeStyle = '#f2d8ff'; ctx.lineWidth = 2
-    ctx.beginPath(); ctx.moveTo(x - p.vx * 0.065, y - p.vy * 0.065); ctx.lineTo(x, y); ctx.stroke()
+    ctx.translate(x, y)
+    ctx.rotate(Math.atan2(p.vy, p.vx))
+    drawEnergyMissile(ctx, sprites, 'enemy-hex', p.radius, p.life, '#c99cff', '#f2d8ff', reduced)
     ctx.restore()
   }
 }

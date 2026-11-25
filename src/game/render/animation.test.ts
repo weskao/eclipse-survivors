@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createHero, createState } from '../state'
 import type { GameState, JobId } from '../types'
 import { createFakeCtx, fakeImage } from './fakes'
-import { sampleHeroAnimation } from './animation'
+import { markHeroSpecialAnimation, sampleHeroAnimation } from './animation'
 import { drawRigSprite } from './characters'
 import { createRigidWeaponLayers } from './rigid-weapons'
 import { fakeCanvasFactory } from './fakes'
@@ -69,6 +69,22 @@ describe('hero render animation sampling', () => {
     hero.strike = 0
     hero.step = 0
     expect(sampleHeroAnimation(s, hero).frame).toBe(first.frame)
+  })
+
+  it('plays the 8-frame skill animation on a successful activation without changing combat', () => {
+    const s = setup('wizard')
+    s.heroId = 'spirit-summoner'
+    const hero = s.hero!
+    const hp = hero.hp
+    markHeroSpecialAnimation(hero, s.worldClock)
+    expect(sampleHeroAnimation(s, hero)).toMatchObject({ pose: 'cast', special: true, frame: 0 })
+    s.worldClock += 0.28
+    const mid = sampleHeroAnimation(s, hero)
+    expect(mid.special).toBe(true)
+    expect(mid.frame).toBeGreaterThan(0)
+    expect(hero.hp).toBe(hp)
+    s.worldClock += 0.4
+    expect(sampleHeroAnimation(s, hero).special).toBe(false)
   })
 
   it('freezes at a stable representative frame in reduced-motion and paused modes', () => {

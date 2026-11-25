@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+ <linearGradient id="cut" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#211b30" stop-opacity="0"/><stop offset=".22" stop-color="#382e4a" stop-opacity=".7"/><stop offset=".49" stop-color="#d4c9d5"/><stop offset=".57" stop-color="#fff2df"/><stop offset=".7" stop-color="#b7aabb" stop-opacity=".9"/><stop offset="1" stop-color="#392b4a" stop-opacity="0"/></linearGradient>
+ <linearGradient id="smear" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#0c0c13" stop-opacity="0"/><stop offset=".5" stop-color="#2c2636" stop-opacity=".72"/><stop offset=".8" stop-color="#5f5164" stop-opacity=".22"/><stop offset="1" stop-color="#0b0d14" stop-opacity="0"/></linearGradient>
+ <filter id="fog" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency=".028" numOctaves="4" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="34" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="14"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
+</defs>
+<g transform="rotate(-18 256 256)">
+<path d="M32 367Q133 335 207 270Q340 160 487 64Q358 210 263 309Q156 410 28 415Z" fill="url(#smear)" filter="url(#fog)" opacity=".82"/>
+<path d="M38 376Q156 347 245 278Q372 170 478 93Q363 218 256 315Q159 389 39 402Z" fill="url(#smear)" opacity=".83" filter="url(#soft)"/>
+<path d="M27 384Q144 356 241 285Q362 182 489 86Q378 201 260 297Q149 384 27 389Z" fill="url(#cut)" opacity=".89"/>
+<path d="M33 384Q180 340 272 270Q385 170 484 87" fill="none" stroke="#f8efdf" stroke-width="2.3" opacity=".87"/>
+<path d="M53 405Q167 378 258 307Q359 224 451 123" fill="none" stroke="#746476" stroke-width="2" opacity=".35"/>
+<g fill="#d7c8d2" opacity=".65"><path d="m176 330 12-28 5 18z"/><path d="m342 207 9-25 4 17z"/><path d="m410 159 17-20-7 17z"/></g>
+</g>
+</svg>

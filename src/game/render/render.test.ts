@@ -3,6 +3,12 @@ import { createState, resetRun } from '../state'
 import type { GameState, Mob, MobType } from '../types'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from './fakes'
 import { createRenderAssets, drawFrame, drawMiniMap } from './index'
+import { createFactionBridge } from '../content/enemies/integration'
+import { ENEMY_DEFINITIONS, type FactionKind } from '../content/enemies/definitions'
+import { spawnFactionEnemy } from '../content/enemies/runtime'
+import { FACTION_VISUAL_SIZE, type FactionArtwork } from './es2/production-factions'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../content/accessibility/preferences'
+import { resolvePresentationPolicy } from '../content/accessibility/presentation'
 
 const mob = (type: MobType, x: number, y: number, over: Partial<Mob> = {}): Mob => ({
   x, y, type, hp: 5, max: 10, r: 20, speed: 50, dmg: 1, phase: 1.3, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0, ...over,
@@ -47,6 +53,133 @@ function busyState(): GameState {
   ))
   return s
 }
+
+describe('smooth Canvas enemy and boss health bars', () => {
+  it('hides full-health overhead bars by default and shows every live enemy kind when enabled', () => {
+    const s = busyState()
+    s.cameraKick = 0
+    const kinds: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'warlock']
+    s.mobs = kinds.map((type, i) => mob(type, i * 30, 50, { hp: 10, max: 10, summonedByBoss: i === 0 }))
+    s.mobs.push(mob('goblin', 0, 80, { hp: 20, max: 20, elite: true }),
+      mob('boss', 100, 100, { hp: 100, max: 100 }),
+      mob('slime', 0, 50, { hp: 0 }), mob('slime', 5000, 5000))
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const factions = createFactionBridge({ random: () => 0 })
+    assets.factions = factions
+    const body = { complete: true, naturalWidth: 576, naturalHeight: 96 } as HTMLImageElement
+    const warning = { complete: true, naturalWidth: 96, naturalHeight: 96 } as HTMLImageElement
+    const factionKinds = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
+    assets.factionArtwork = Object.fromEntries(factionKinds.map(kind => [kind, { body, telegraph: warning }])) as FactionArtwork
+    for (const [i, kind] of factionKinds.entries())
+      spawnFactionEnemy(factions.runtime, kind, i * 20 - 100, 100, i === 0 ? { affix: 'armored' } : {})
+    spawnFactionEnemy(factions.runtime, 'phantom', 0, 100, { summonedBy: 1 })
+    spawnFactionEnemy(factions.runtime, 'fire-imp', 0, 100)!.hp = 0
+    spawnFactionEnemy(factions.runtime, 'fire-imp', 5000, 5000)
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number }[] = []
+    ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
+    const borders: string[] = []
+    ctx.strokeRect = () => { borders.push(String(ctx.strokeStyle)) }
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(0)
+    expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(0)
+    let showFullEnemyHealthBars = true
+    assets.presentation = () => resolvePresentationPolicy({ ...DEFAULT_ACCESSIBILITY_PREFERENCES, showFullEnemyHealthBars })
+    fills.length = 0
+    borders.length = 0
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(kinds.length + factionKinds.length)
+    expect(fills.filter(f => f.color === '#b697fa')).toHaveLength(2)
+    expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(2)
+    expect(fills.filter(f => f.color === '#a94463' && f.width === 202)).toHaveLength(1)
+    showFullEnemyHealthBars = false
+    fills.length = 0
+    s.mobs[0]!.hp = 5
+    factions.runtime.enemies[0]!.hp /= 2
+    s.worldClock += .05
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(0)
+    expect(fills.filter(f => f.color === '#eac95f')).toHaveLength(1)
+    expect(fills.filter(f => f.color === '#d78ee9')).toHaveLength(1)
+  })
+
+  it('shares faction damage trails, healing and reduced motion with legacy bars', () => {
+    const s = busyState()
+    s.mobs = []
+    s.cameraKick = 0
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const factions = createFactionBridge({ random: () => 0 })
+    assets.factions = factions
+    const kind = 'shadow-assassin'
+    const body = { complete: true, naturalWidth: 576, naturalHeight: 96 } as HTMLImageElement
+    assets.factionArtwork = { [kind]: { body, telegraph: body } } as FactionArtwork
+    const enemy = spawnFactionEnemy(factions.runtime, kind, 0, 100)!
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number }[] = []
+    ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
+    const frame = () => { fills.length = 0; drawFrame(ctx, s, 1, assets) }
+    const width = FACTION_VISUAL_SIZE[kind] * 0.58 - 2
+    frame()
+    expect(fills.some(f => f.color === '#78d8a0')).toBe(false)
+    enemy.hp = enemy.max / 4
+    s.worldClock += 0.05
+    frame()
+    const front = fills.find(f => f.color === '#ed9851')!.width
+    expect(front).toBeGreaterThan(width / 4)
+    expect(front).toBeLessThan(width)
+    expect(fills.find(f => f.color === '#f2c37e')!.width).toBeGreaterThan(front)
+    enemy.hp = enemy.max
+    s.worldClock += 0.05
+    frame()
+    expect(fills.find(f => f.color === '#78d8a0')!.width).toBeLessThan(width)
+    expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
+    assets.prefersReducedMotion = () => true
+    enemy.hp = enemy.max / 2
+    frame()
+    expect(fills.find(f => f.color === '#eac95f')?.width).toBeCloseTo(width / 2)
+    expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
+    expect(enemy.hp).toBe(enemy.max / 2)
+    enemy.hp = enemy.max
+    frame()
+    expect(fills.some(f => f.color === '#78d8a0')).toBe(false)
+  })
+
+  it('retains a short damage trail and eases the front fill without changing actual HP', () => {
+    const s = busyState()
+    const enemy = mob('goblin', 0, 50, { hp: 10, max: 10 })
+    const boss = mob('boss', 100, 50, { hp: 100, max: 100 })
+    s.mobs = [enemy, boss]
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number }[] = []
+    const originalFill = ctx.fillRect
+    ctx.fillRect = (x, y, w, h) => {
+      fills.push({ color: String(ctx.fillStyle), width: w })
+      originalFill(x, y, w, h)
+    }
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    drawFrame(ctx, s, 1, assets)
+    fills.length = 0
+    enemy.hp = 4
+    boss.hp = 25
+    s.worldClock += 0.05
+    drawFrame(ctx, s, 1, assets)
+    const enemyFill = fills.find(item => item.color === '#ed9851' && item.width < 100)
+    const bossFill = fills.find(item => item.color === '#d35048' && item.width > 100)
+    expect(enemyFill).toBeDefined()
+    expect(bossFill).toBeDefined()
+    expect(fills.some(item => item.color === '#f2c37e')).toBe(true)
+    expect(enemyFill!.width).toBeGreaterThan(30 * 0.4)
+    expect(bossFill!.width).toBeGreaterThan(202 * 0.25)
+    expect(enemy.hp).toBe(4)
+    expect(boss.hp).toBe(25)
+    // A fully restored normal enemy keeps its bar until the visual fill reaches 100%.
+    enemy.hp = 10
+    s.worldClock += 0.05
+    fills.length = 0
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.some(item => item.color === '#78d8a0')).toBe(true)
+  })
+})
 
 describe('createRenderAssets', () => {
   it('paints fallback sprites and the three props via the injected canvas factory', () => {
@@ -219,6 +352,32 @@ describe('drawMiniMap', () => {
 })
 
 describe('biome renderer contracts', () => {
+  it('draws the scene title at the original height except during compact phone combat', () => {
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const titlePositions = (s: GameState, width: number, height: number): number[] => {
+      s.W = width
+      s.H = height
+      const { ctx } = createFakeCtx()
+      const baselines: number[] = []
+      ctx.fillText = (text, _x, y) => {
+        if (text === '黎明遺庭 · 晨光薄霧' || text === 'Dawnfall Courtyard · Dawn Mist') baselines.push(y)
+      }
+      drawFrame(ctx, s, 1, assets)
+      return baselines
+    }
+    const run = busyState()
+    expect(titlePositions(run, 320, 640)).toEqual([])
+    expect(titlePositions(run, 700, 700)).toEqual([])
+    expect(titlePositions(run, 640, 320)).toEqual([])
+    expect(titlePositions(run, 812, 375)).toEqual([])
+    expect(titlePositions(run, 701, 900)).toEqual([34])
+    expect(titlePositions(run, 901, 520)).toEqual([])
+    expect(titlePositions(run, 924, 412)).toEqual([])
+    expect(titlePositions(run, 1100, 520)).toEqual([])
+    expect(titlePositions(run, 1101, 520)).toEqual([34])
+    expect(titlePositions(menuState(), 375, 812)).toEqual([34])
+  })
+
   it('uses different cached world tiles and landmarks across scenes', () => {
     const { make } = fakeCanvasFactory()
     const assets = createRenderAssets(fakeArtwork(true), make)

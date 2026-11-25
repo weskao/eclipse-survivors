@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../../../i18n'
 import { computed, nextTick, ref, watch } from 'vue'
 import Es2Dialog from '../menu/Es2Dialog.vue'
 import { WORLD_EVENT_DEFINITIONS } from '../../../game/content/world-events/definitions'
@@ -40,32 +41,32 @@ function shortcut(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <Es2Dialog :active="event !== null" :title="title"
-    subtitle="Inspect the cost and danger before making your choice"
+  <Es2Dialog :active="event !== null" :title="t(title)"
+    :subtitle="t('進行選擇前請先查看代價與風險。')"
     wide :dismissible="true" @cancel="emit('close')" @shortcut="shortcut">
     <div class="world-event-panel" :class="{ 'world-event-still': still }">
-      <p class="world-event-eyebrow">✧ CELESTIAL ENCOUNTER ✧</p>
-      <div class="world-event-options" role="group" aria-label="World event choices">
+      <p class="world-event-eyebrow">{{ t('✧ 天穹奇遇 ✧') }}</p>
+      <div class="world-event-options" role="group" :aria-label="t('世界事件選項')">
         <button v-for="(option, index) in options" :key="option.id" type="button"
-          class="world-event-choice" :class="{ 'world-event-choice-disabled': !option.available }"
+          class="world-event-choice" data-ui-sfx="managed" :class="{ 'world-event-choice-disabled': !option.available }"
           :data-world-choice="option.id" :disabled="!option.available || submitting"
-          :aria-label="option.title + '. Risk: ' + option.risk + '. Reward: ' + option.reward +
-            (option.reason ? '. Unavailable: ' + option.reason : '')"
+           :aria-label="[t(option.title), t('風險') + ': ' + t(option.risk), t('獎勵') + ': ' + t(option.reward),
+            option.reason ? t('不可選擇') + ': ' + t(option.reason) : ''].filter(Boolean).join(' · ')"
           @click="choose(option)">
           <span class="world-event-number" aria-hidden="true">{{ index + 1 }}</span>
           <span class="world-event-choice-body">
-            <strong>{{ option.title }}</strong>
+            <strong>{{ t(option.title) }}</strong>
             <span v-if="option.costs.length" class="world-event-cost">
-              Cost: {{ option.costs.join(' · ') }}
+              {{ t('花費') }}: {{ option.costs.map(cost => t(cost)).join(' · ') }}
             </span>
-            <span class="world-event-risk"><b>Risk</b> {{ option.risk }}</span>
-            <span class="world-event-reward"><b>Reward</b> {{ option.reward }}</span>
-            <span v-if="option.reason" class="world-event-reason">{{ option.reason }}</span>
+            <span class="world-event-risk"><b>{{ t('風險') }}</b> {{ t(option.risk) }}</span>
+            <span class="world-event-reward"><b>{{ t('獎勵') }}</b> {{ t(option.reward) }}</span>
+            <span v-if="option.reason" class="world-event-reason">{{ t(option.reason) }}</span>
           </span>
         </button>
       </div>
-      <p v-if="feedback" role="alert" class="world-event-feedback">{{ feedback }}</p>
-      <p class="world-event-hint">Choose by touch, click or number keys 1–9 · Tab to navigate · Esc to close</p>
+      <p v-if="feedback" role="alert" class="world-event-feedback">{{ t(feedback) }}</p>
+      <p class="world-event-hint">{{ t('透過觸控、滑鼠或數字鍵 1–9 選擇 · Tab 切換焦點 · Esc 關閉') }}</p>
     </div>
   </Es2Dialog>
 </template>
@@ -148,5 +149,15 @@ function shortcut(event: KeyboardEvent): void {
   .world-event-choice { min-height: 52px; padding: .8rem; }
   .world-event-number { width: 1.7rem; height: 1.7rem; }
   .world-event-choice-body span { font-size: .8rem; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .world-event-eyebrow { margin-bottom:.25rem; }
+  .world-event-options { gap:.4rem; }
+  .world-event-choice { min-height:44px;padding:.5rem .7rem;gap:.6rem; }
+  .world-event-choice-body { gap:.12rem; }
+  .world-event-choice-body strong { font-size:.85rem; }
+  .world-event-choice-body span { font-size:.72rem;line-height:1.25; }
+  .world-event-number { width:1.6rem;height:1.6rem; }
+  .world-event-hint { margin:.4rem 0 0; }
 }
 </style>

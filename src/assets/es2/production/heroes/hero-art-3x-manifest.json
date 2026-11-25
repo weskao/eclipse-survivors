@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "visualStatus": "QA_PENDING: nine new local split WebPs are selected in Canvas at <=147px 1x size; 313px source frames are interpolated, not native 3x; six non-lateral run/attack/special directions are not authored.",
+  "heroes": [
+    {
+      "id": "shadowblade",
+      "portrait": {
+        "path": "shadowblade-portrait@3x.webp",
+        "pixels": [
+          900,
+          900
+        ],
+        "displayMaxCSS": [
+          300,
+          300
+        ]
+      },
+      "action": {
+        "path": "shadowblade-run-attack@3x.webp",
+        "pixels": [
+          3584,
+          448
+        ],
+        "frameSize": [
+          448,
+          448
+        ],
+        "count": 8,
+        "order": "run:0-2; attack/cast/recovery:3-7",
+        "directions": [
+          "right"
+        ]
+      },
+      "skill": {
+        "path": "shadowblade-special@3x.webp",
+        "pixels": [
+          192,
+          192
+        ]
+      }
+    },
+    {
+      "id": "spirit-summoner",
+      "portrait": {
+        "path": "spirit-summoner-portrait@3x.webp",
+        "pixels": [
+          900,
+          900
+        ],
+        "displayMaxCSS": [
+          300,
+          300
+        ]
+      },
+      "action": {
+        "path": "spirit-summoner-run-attack@3x.webp",
+        "pixels": [
+          3584,
+          448
+        ],
+        "frameSize": [
+          448,
+          448
+        ],
+        "count": 8,
+        "order": "run:0-2; attack/cast/recovery:3-7",
+        "directions": [
+          "right"
+        ]
+      },
+      "skill": {
+        "path": "spirit-summoner-special@3x.webp",
+        "pixels": [
+          192,
+          192
+        ]
+      }
+    },
+    {
+      "id": "crimson-paladin",
+      "portrait": {
+        "path": "crimson-paladin-portrait@3x.webp",
+        "pixels": [
+          900,
+          900
+        ],
+        "displayMaxCSS": [
+          300,
+          300
+        ]
+      },
+      "action": {
+        "path": "crimson-paladin-run-attack@3x.webp",
+        "pixels": [
+          3584,
+          448
+        ],
+        "frameSize": [
+          448,
+          448
+        ],
+        "count": 8,
+        "order": "run:0-2; attack/cast/recovery:3-7",
+        "directions": [
+          "right"
+        ]
+      },
+      "skill": {
+        "path": "crimson-paladin-special@3x.webp",
+        "pixels": [
+          192,
+          192
+        ]
+      }
+    }
+  ],
+  "hairAlignment": {
+    "hero": "crimson-paladin",
+    "source": "original realistic portrait; gold hair recolored to copper-red to match existing red-haired motion strip",
+    "sha256": "0659af3278ad58edeb3a03cc61c05b9a72374361fed6a54f24280120f5be2135",
+    "status": "manual-review-required"
+  },
+  "runtime": {
+    "source": "per-hero split pose sheets (idle-ready@3x.webp, run-attack@3x.webp, special@3x.webp)",
+    "atlasManifest": "character-3x-candidates.json",
+    "sourceGeometry": "4x4 directions and run/attack sheets, 4x2 special, 448px cells with 8px transparent gutters",
+    "renderer": "src/game/render/es2/production-heroes.ts",
+    "selection": "PRODUCTION_HERO_POSE_SOURCES with on-demand image decoding per hero/pose",
+    "onScreen": "Canvas paints 448px source cells at <=147px design size (1x), independent of device DPR",
+    "fallback": "matching hero 900x900 portrait while new motion sheet is decoding",
+    "facing": "8 independent idle/guard facings (E,SE,S,SW,W,NW,N,NE); only East and mirrored West have eight sequential run/attack/special frames",
+    "states": [
+      "idle",
+      "run",
+      "dash",
+      "attack",
+      "cast",
+      "special",
+      "hurt",
+      "death",
+      "victory",
+      "reduced-motion"
+    ],
+    "legacy": "Older 128px and 384px cell atlases remain archived; current nine split pose sheets have priority",
+    "qa": "Pending actual visual identity, paladin alpha matte, six missing nonlateral motion sequences and mobile device performance review"
+  }
+}

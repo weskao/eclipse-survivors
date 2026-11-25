@@ -1,3 +1,4 @@
+import { BALANCE, researchCost } from '../game/config'
 import type { AbilityId, JobId, MobType } from '../game/types'
 import { EVOLUTIONS } from '../game/evolutions'
 import { isContentId } from '../game/content/registry'
@@ -46,7 +47,7 @@ export function migrateProfile(raw: unknown): Profile | null {
   if (!isObj(raw.best) || !isObj(raw.upgrades) || !isObj(raw.discoveredMonsters) || !isObj(raw.equippedCosmetics)) return null
   if (!nonNegative(raw.upgrades.power) || !nonNegative(raw.upgrades.vitality)
     || !Number.isInteger(raw.upgrades.power) || !Number.isInteger(raw.upgrades.vitality)
-    || raw.upgrades.power > 3 || raw.upgrades.vitality > 3) return null
+    || raw.upgrades.power > BALANCE.meta.research.power.maxRank || raw.upgrades.vitality > BALANCE.meta.research.vitality.maxRank) return null
   const names = ACHIEVEMENTS.map(a => a.id)
   if (!listOf(raw.achievements, names) || !Array.isArray(raw.discoveredAbilities) || raw.discoveredAbilities.length > 1024
     || !raw.discoveredAbilities.every(validAbility)
@@ -131,16 +132,19 @@ export function createProfileStore(storage: Store | null = defaultStorage()): Pr
           newCosmetics.push(achievement.cosmetic)
         }
       }
-      const earned = Math.floor(stats.kills / 10) + Math.floor(stats.seconds / 30)
-        + (stats.victory ? 30 : 0) + awarded.length * 10
+      const base = Math.floor(stats.kills / BALANCE.meta.runRewards.killDivisor)
+        + Math.floor(stats.seconds / BALANCE.meta.runRewards.secondsDivisor)
+        + (stats.victory ? BALANCE.meta.runRewards.victoryEmbers : 0)
+      const earned = Math.floor(base * BALANCE.meta.runRewards.baseMultiplier)
+        + awarded.reduce((sum, achievement) => sum + (BALANCE.meta.achievementEmbers[achievement.id as keyof typeof BALANCE.meta.achievementEmbers] ?? 0), 0)
       profile.embers += earned
       persist()
       return { embers: earned, newAchievements: awarded.map(a => a.id), newCosmetics }
     },
     buyUpgrade(id) {
       const tier = profile.upgrades[id]
-      if (tier === undefined || tier >= 3 || profile.embers < 25 * (tier + 1)) return false
-      profile.embers -= 25 * (tier + 1)
+      if (tier === undefined || tier >= BALANCE.meta.research[id].maxRank || profile.embers < researchCost(id, tier)) return false
+      profile.embers -= researchCost(id, tier)
       profile.upgrades[id]++
       persist()
       return true
