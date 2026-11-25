@@ -1033,6 +1033,8 @@ const english = new Map<string, string>([
 , ["避免頻繁閃爍；保留必要攻擊警示","Avoid frequent flashes while preserving essential attack warnings"]
 , ["色覺輔助","Color Vision Support"]
 , ["以符號及文字區分狀態，不只靠顏色","Use symbols and text, not color alone, to distinguish states"]
+, ["英雄低血量警示","Low Health Warning"]
+, ["血量偏低時顯示畫面邊緣、英雄資訊框及危急警示","Highlight screen edges and the hero HUD when health is low"]
 , ["傷害數字","Damage Numbers"]
 , ["顯示或隱藏戰鬥傷害浮字","Show or hide floating combat damage numbers"]
 , ["滿血時顯示怪物血條","Show full-health enemy bars"]

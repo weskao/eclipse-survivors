@@ -28,10 +28,11 @@ const props = withDefaults(defineProps<{
   sfxVolume?: number
   audioActive?: boolean
   canReturnHome?: boolean
-}>(), { audioActive: true })
+  showHeroLowHealthWarning?: boolean
+}>(), { audioActive: true, showHeroLowHealthWarning: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
-const lifeTier = computed(() => props.active ? lowHealthTier(view.value.health.percent) : 'normal')
+const lifeTier = computed(() => props.active && props.showHeroLowHealthWarning ? lowHealthTier(view.value.health.percent) : 'normal')
 const lifeMessage = computed(() => lifeTier.value === 'warning' ? '血量偏低' : lifeTier.value === 'critical' ? '生命危急' : '瀕死')
 const selectedId = ref<string | null>(null)
 const hudRoot = shallowRef<HTMLElement | null>(null)
@@ -117,7 +118,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
             <strong>{{ t(view.identity) }}</strong>
           </div>
           <div class="es2-hud__health-head"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-health']" alt="" />{{ t("生命值") }}</span><span>{{ t(view.health.label) }}</span></div>
-          <div class="es2-hud__track es2-hud__track--health" :class="{ 'es2-hud__track--critical': view.health.percent <= LOW_HP_PCT }"
+          <div class="es2-hud__track es2-hud__track--health" :class="{ 'es2-hud__track--critical': showHeroLowHealthWarning && view.health.percent <= LOW_HP_PCT }"
             role="progressbar" :aria-label="t('生命值')" :aria-valuenow="view.health.percent"
             aria-valuemin="0" aria-valuemax="100" :style="{ '--es2-progress': view.health.percent / 100 }">
             <span class="es2-hud__track-trail" aria-hidden="true"></span>

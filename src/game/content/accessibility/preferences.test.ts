@@ -6,6 +6,9 @@ describe('accessibility preferences', () => {
   it('keeps legacy behavior by default and safely ignores corrupt storage', () => {
     expect(DEFAULT_ACCESSIBILITY_PREFERENCES.quality).toBe('auto')
     expect(DEFAULT_ACCESSIBILITY_PREFERENCES.showDamageNumbers).toBe(true)
+    expect(DEFAULT_ACCESSIBILITY_PREFERENCES.showHeroLowHealthWarning).toBe(true)
+    expect(loadAccessibilityPreferences({ getItem: () => '{}', setItem: vi.fn() }).showHeroLowHealthWarning).toBe(true)
+    expect(loadAccessibilityPreferences({ getItem: () => '{"showHeroLowHealthWarning":"false"}', setItem: vi.fn() }).showHeroLowHealthWarning).toBe(true)
     expect(DEFAULT_ACCESSIBILITY_PREFERENCES.showFullEnemyHealthBars).toBe(false)
     expect(loadAccessibilityPreferences({ getItem: () => '{}', setItem: vi.fn() }).showFullEnemyHealthBars).toBe(false)
     expect(loadAccessibilityPreferences({ getItem: () => '{"showFullEnemyHealthBars":"true"}', setItem: vi.fn() }).showFullEnemyHealthBars).toBe(false)
@@ -38,6 +41,10 @@ describe('accessibility preferences', () => {
       joystickSide: 'right', showDamageNumbers: false, showFullEnemyHealthBars: true,
     })
     expect(resolvePresentationPolicy(controller.current).showFullEnemyHealthBars).toBe(true)
+    controller.update({ showHeroLowHealthWarning: false })
+    expect(createAccessibilityPreferencesController(storage).current.showHeroLowHealthWarning).toBe(false)
+    controller.update({ showHeroLowHealthWarning: true })
+    expect(createAccessibilityPreferencesController(storage).current.showHeroLowHealthWarning).toBe(true)
     controller.update({ showFullEnemyHealthBars: false })
     expect(createAccessibilityPreferencesController(storage).current.showFullEnemyHealthBars).toBe(false)
     expect([...values.keys()]).toEqual([ACCESSIBILITY_STORAGE_KEY])

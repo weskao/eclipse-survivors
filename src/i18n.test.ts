@@ -48,6 +48,14 @@ describe('language preference', () => {
 })
 
 describe('live language switching', () => {
+  it('localizes the hero low-health setting and description', () => {
+    setLocale('en', storage())
+    expect(t('英雄低血量警示')).toBe('Low Health Warning')
+    expect(t('血量偏低時顯示畫面邊緣、英雄資訊框及危急警示')).toBe('Highlight screen edges and the hero HUD when health is low')
+    setLocale('zh-TW', storage())
+    expect(t('英雄低血量警示')).toBe('英雄低血量警示')
+    expect(t('血量偏低時顯示畫面邊緣、英雄資訊框及危急警示')).toBe('血量偏低時顯示畫面邊緣、英雄資訊框及危急警示')
+  })
   it('switches settings without page reload and persists the selected language', async () => {
     const s = storage()
     setLocale('zh-TW', s)

@@ -13,6 +13,8 @@ const devices = [
   { name: 'tablet-768', width: 768, height: 1024, touch: true },
   { name: 'portrait-320-reduced', width: 320, height: 640, touch: true, reduced: true },
   { name: 'portrait-390-reduced-flashing', width: 390, height: 844, touch: true, flashing: true },
+  { name: 'portrait-390-warning-off', width: 390, height: 844, touch: true, warningOff: true },
+  { name: 'landscape-932-warning-off', width: 932, height: 430, touch: true, warningOff: true },
 ]
 const stages = [
   { percent: 40, tier: 'warning' },
@@ -35,7 +37,7 @@ try {
       ...(!device.reduced ? { recordVideo: { dir: directory,
         size: { width: device.width, height: device.height } } } : {}),
     })
-    if (device.flashing) await context.addInitScript(() => localStorage.setItem('eclipse-survivors.accessibility.v1', JSON.stringify({ reducedFlashing: true })))
+    if (device.flashing || device.warningOff) await context.addInitScript(prefs => localStorage.setItem('eclipse-survivors.accessibility.v1', JSON.stringify(prefs)), { reducedFlashing: !!device.flashing, showHeroLowHealthWarning: !device.warningOff })
     const page = await context.newPage()
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
@@ -53,8 +55,10 @@ try {
           if (!window.__test) throw new Error('Missing live engine browser QA API')
           window.__test.previewLowHealth(percent)
         }, stage.percent)
-        await page.locator('.es2-hud[data-es2-life-tier="' + stage.tier + '"]')
+        const tier = device.warningOff ? 'normal' : stage.tier
+        await page.locator('.es2-hud[data-es2-life-tier="' + tier + '"]')
           .waitFor({ timeout: 10000 })
+        await page.waitForFunction(percent => Math.abs(Number(document.querySelector('.es2-hud__track--health[role="progressbar"]')?.getAttribute('aria-valuenow')) - percent) < .01, stage.percent, { timeout: 10000 })
         const metrics = await page.evaluate(() => {
           const hero = document.querySelector('.es2-hud__portrait')
           const canvas = document.querySelector('#game')
@@ -72,6 +76,7 @@ try {
             hpLabel: document.querySelector('.es2-hud__track--health[role="progressbar"]')?.getAttribute('aria-label'),
             locale: document.documentElement.lang,
             badge: !!document.querySelector('[data-es2-life-alert]'),
+            criticalTrack: !!document.querySelector('.es2-hud__track--critical'),
             label: label?.textContent?.trim() ?? '',
             panelBorder: getComputedStyle(panel).borderTopColor,
             ringAnimation: ring.animationName,
@@ -93,8 +98,9 @@ try {
           device.name + ': missing or untranslated health label ' + metrics.hpLabel)
         assert.ok(metrics.hp != null && Math.abs(Number(metrics.hp) - stage.percent) < .01,
           device.name + ': non-authoritative HUD value ' + metrics.hp)
-        assert.equal(metrics.badge, stage.tier !== 'normal')
-        assert.equal(metrics.vignette, stage.percent <= 25)
+        assert.equal(metrics.badge, tier !== 'normal')
+        assert.equal(metrics.vignette, !device.warningOff && stage.percent <= 25)
+        if (device.warningOff) assert.equal(metrics.criticalTrack, false)
         assert.equal(metrics.touchBlock, 'none')
         if (metrics.vignette) {
           assert.equal((metrics.vignetteBackground.match(/linear-gradient\(/g) ?? []).length, 4,
@@ -107,7 +113,7 @@ try {
             assert.equal(metrics.vignetteDuration, stage.tier === 'emergency' ? '1.8s' : '2.4s')
           }
         }
-        if (stage.tier === 'normal') {
+        if (tier === 'normal') {
           assert.equal(metrics.label, '')
           assert.equal(metrics.ringAnimation, 'none')
           assert.equal(metrics.ringOpacity, 0)
@@ -145,7 +151,7 @@ try {
     sha: process.env.GITHUB_SHA ?? null,
     evidence,
   }, null, 2) + '\n')
-  console.log('Low-health real-game QA PASS: 7 configurations × 4 HP states; genuine PNG + WebM captures')
+  console.log('Low-health real-game QA PASS: 9 configurations × 4 HP states; genuine PNG + WebM captures')
 } finally {
   await browser.close()
 }

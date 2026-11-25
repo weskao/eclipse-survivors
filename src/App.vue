@@ -170,6 +170,7 @@ onBeforeUnmount(() => {
     :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :actions="combatActions"
     :feed="combatFeed"
+    :show-hero-low-health-warning="accessibilityPreferences.showHeroLowHealthWarning"
   >
     <template v-if="ui.mode === 'play' && ui.objectiveProgress" #mode-progress>
       <ModeProgress :state="ui.objectiveProgress" />

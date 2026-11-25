@@ -37,6 +37,28 @@ describe('live low-health danger feedback', () => {
     expect(lowHealthTier(0)).toBe('dead')
   })
 
+  it('suppresses all additional warnings without changing actual HP and restores immediately', async () => {
+    const hud = { ...emptyHud(), hpPct: 12, hpLabel: '生命 12 / 100' }
+    const wrapper = mount(CombatHud, { attachTo: document.body, props: {
+      active: true, choice: 'wizard' as const, hud, showHeroLowHealthWarning: false,
+      actions: { pause: vi.fn(), settings: vi.fn() },
+    } })
+    wrappers.push(wrapper)
+    for (const hpPct of [40, 25, 12]) {
+      await wrapper.setProps({ hud: { ...hud, hpPct } })
+      expect(wrapper.get('.es2-hud').attributes('data-es2-life-tier')).toBe('normal')
+      for (const selector of ['[data-es2-life-alert]', '[data-es2-life-message]', '[data-es2-life-vignette]', '.es2-hud__track--critical'])
+        expect(wrapper.find(selector).exists()).toBe(false)
+      expect(wrapper.get('.es2-hud__track--health').attributes('aria-valuenow')).toBe(String(hpPct))
+    }
+    await wrapper.setProps({ showHeroLowHealthWarning: true })
+    expect(wrapper.get('.es2-hud').attributes('data-es2-life-tier')).toBe('emergency')
+    expect(wrapper.find('[data-es2-life-vignette]').exists()).toBe(true)
+    await wrapper.setProps({ showHeroLowHealthWarning: false })
+    expect(wrapper.find('[data-es2-life-vignette]').exists()).toBe(false)
+    expect(wrapper.get('.es2-hud__track--health').attributes('aria-valuenow')).toBe('12')
+  })
+
   it('keeps warning on the actual hero portrait, escalates at critical HP, and clears on healing', async () => {
     const hud = { ...emptyHud(), who: '虛空術士', hpPct: 80, hpLabel: '生命 80 / 100' }
     const wrapper = mount(CombatHud, { attachTo: document.body, props: {

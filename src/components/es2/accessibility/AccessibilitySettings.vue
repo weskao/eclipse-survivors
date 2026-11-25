@@ -114,6 +114,10 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
         <div><strong>{{ t("滿血時顯示怪物血條") }}</strong><small>{{ t("關閉時僅隱藏滿血怪物頭頂的血條；首領 HUD 保持顯示") }}</small></div>
         <Es2Switch data-testid="es2-full-enemy-health-bars" :label="t('滿血時顯示怪物血條')" :disabled="disabled" :checked="modelValue.showFullEnemyHealthBars" @toggle="update({ showFullEnemyHealthBars: !modelValue.showFullEnemyHealthBars })" />
       </div>
+      <div class="es2-switch-row">
+        <div><strong>{{ t("英雄低血量警示") }}</strong><small>{{ t("血量偏低時顯示畫面邊緣、英雄資訊框及危急警示") }}</small></div>
+        <Es2Switch data-testid="es2-hero-low-health-warning" :label="t('英雄低血量警示')" :disabled="disabled" :checked="modelValue.showHeroLowHealthWarning" @toggle="update({ showHeroLowHealthWarning: !modelValue.showHeroLowHealthWarning })" />
+      </div>
     </div>
 
     <div data-testid="es2-preview" class="es2-preview" aria-live="polite" aria-atomic="true">

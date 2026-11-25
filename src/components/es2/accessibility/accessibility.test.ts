@@ -77,8 +77,8 @@ describe('accessibility settings', () => {
   it('uses labelled switches for all binary preferences and emits each change once', async () => {
     const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
     const switches = w.findAll('[role="switch"]')
-    expect(switches).toHaveLength(5)
-    const fields = ['reducedMotion', 'reducedFlashing', 'colorblindIndicators', 'showDamageNumbers', 'showFullEnemyHealthBars'] as const
+    expect(switches).toHaveLength(6)
+    const fields = ['reducedMotion', 'reducedFlashing', 'colorblindIndicators', 'showDamageNumbers', 'showFullEnemyHealthBars', 'showHeroLowHealthWarning'] as const
     for (const [index, field] of fields.entries()) {
       const toggle = switches[index]!
       expect(toggle.attributes('aria-label')).toBeTruthy()
@@ -94,7 +94,7 @@ describe('accessibility settings', () => {
     await w.setProps({ disabled: true })
     expect(switches.every(toggle => toggle.attributes('disabled') !== undefined)).toBe(true)
     await switches[1]!.trigger('click')
-    expect(w.emitted('update:modelValue')).toHaveLength(5)
+    expect(w.emitted('update:modelValue')).toHaveLength(6)
     w.unmount()
   })
   it('defaults full-health enemy bars off, toggles them and resets to off', async () => {
@@ -110,6 +110,19 @@ describe('accessibility settings', () => {
     expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showFullEnemyHealthBars: false })
     await w.get('.es2-reset').trigger('click')
     expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showFullEnemyHealthBars: false })
+    w.unmount()
+  })
+  it('defaults hero low-health warnings on, toggles off and restores on reset', async () => {
+    const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
+    const toggle = w.get('[data-testid="es2-hero-low-health-warning"]')
+    expect(toggle.attributes('aria-checked')).toBe('true')
+    await toggle.trigger('click')
+    const next = w.emitted('update:modelValue')?.at(-1)?.[0] as typeof DEFAULT_ACCESSIBILITY_PREFERENCES
+    expect(next.showHeroLowHealthWarning).toBe(false)
+    await w.setProps({ modelValue: next })
+    expect(toggle.attributes('aria-checked')).toBe('false')
+    await w.get('.es2-reset').trigger('click')
+    expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showHeroLowHealthWarning: true })
     w.unmount()
   })
   it('previews options immediately using accessible game controls', async () => {
