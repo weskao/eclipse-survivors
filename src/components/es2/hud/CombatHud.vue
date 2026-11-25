@@ -221,7 +221,10 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
       data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
       :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
-      <span aria-hidden="true">☷</span> {{ t('戰鬥資訊') }}
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <path d="M4 6h2m4 0h10M4 12h2m4 0h10M4 18h2m4 0h10" />
+      </svg>
     </button>
     <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" aria-hidden="true">
       {{ t(view.notices.find(notice => notice.kind === 'critical')?.text ?? '') }}
