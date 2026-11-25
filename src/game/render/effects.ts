@@ -6,6 +6,7 @@ import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
 import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
+import { drawEnergyTrail, drawZoneMotes } from './energy-art'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -125,7 +126,9 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.save(); ctx.globalAlpha = t * 0.9
     softGlow(ctx, hero.x + ox, hero.y + oy - 30, 120, '#fff2b4', t * 0.45)
     ctx.strokeStyle = '#ffe3a2'; ctx.lineWidth = 4
-    ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy - 24, 45 + (1 - t) * 24, 0, TAU); ctx.stroke()
+    const radius = 45 + (1 - t) * 24
+    ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy - 24, radius, 0, TAU); ctx.stroke()
+    drawZoneMotes(ctx, hero.x + ox, hero.y + oy - 24, radius, 0, 1 - t, '#fff5d5', reducedMotion)
     ctx.restore()
     ctx.save(); ctx.globalAlpha = t; ctx.textAlign = 'center'; ctx.font = '900 28px system-ui'
     ctx.fillStyle = '#fff5d5'; ctx.strokeStyle = '#5c4722'; ctx.lineWidth = 5
@@ -208,7 +211,7 @@ export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 // Fast arrows leave stretched trails. Arcane bolts cast a soft violet halo.
-export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>): void {
+export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>, reduced = false): void {
   const { W, H } = s
   for (const b of s.shots) {
     const x = b.x + ox
@@ -246,7 +249,9 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
       ctx.strokeStyle = '#ddac77'; ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(-15, -4); ctx.lineTo(-11, 0); ctx.lineTo(-15, 4); ctx.stroke()
       }
-    } else if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
+    } else {
+      drawEnergyTrail(ctx, b.r, b.life, '#c3adff', reduced)
+      if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
       if (magicGlow) {
         ctx.drawImage(magicGlow, -28, -28, 56, 56)
       } else {
@@ -258,6 +263,7 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
       }
       ctx.strokeStyle = '#d6baff80'; ctx.lineWidth = 2
       ctx.beginPath(); ctx.moveTo(-30, 0); ctx.lineTo(0, 0); ctx.stroke()
+      }
     }
     ctx.restore()
   }

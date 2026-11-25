@@ -2,6 +2,7 @@ import type { Ctx2D } from '../../render/ctx'
 import type { GameState } from '../../types'
 import { runtimeOf } from './runtime'
 import { drawProjectileSprite, type ProjectileSprites } from '../../render/projectile-art'
+import { drawZoneMotes } from '../../render/energy-art'
 
 const MISSILE_ART = {
   dagger: 'shadow-dagger', lance: 'holy-lance', bone: 'bone-spear',
@@ -31,6 +32,8 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
     ctx.fillStyle = z.kind === 'mine' ? '#9e61ce55' : '#44bd7780'
     ctx.lineWidth = z.kind === 'mine' ? 3 : 2
     ctx.beginPath(); ctx.arc(x, y, z.radius, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
+    // Static embers distinguish the spell surface without adding a motion dependency.
+    drawZoneMotes(ctx, x, y, z.radius, 0, 0, z.kind === 'mine' ? '#f5b7fa' : '#c5f5bd')
     if (z.kind === 'mine') {
       const fuse = Math.max(0.12, z.fuse / 0.85)
       ctx.beginPath(); ctx.arc(x, y, 9 + 16 * (1 - fuse), 0, Math.PI * 2); ctx.stroke()

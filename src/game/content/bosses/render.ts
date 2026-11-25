@@ -1,6 +1,8 @@
 import type { Ctx2D } from '../../render/ctx'
 import type { BossSnapshot, BossTelegraph, BossImpact, BossProjectile } from './controller'
 import type { BossId } from './definitions'
+import { drawEnergyMissile, drawZoneMotes } from '../../render/energy-art'
+import type { ProjectileArtId, ProjectileSprites } from '../../render/projectile-art'
 
 const TAU = Math.PI * 2
 const SAFE_HALF_ANGLE = Math.PI / 5
@@ -21,6 +23,10 @@ const PALETTES: Record<BossId, { core: string; glow: string; edge: string; muted
 }
 
 type Palette = (typeof PALETTES)[BossId]
+const MISSILE_ART: Record<BossId, ProjectileArtId> = {
+  'abyss-monarch': 'enemy-hex', 'frost-sovereign': 'arcane-bolt',
+  'infernal-titan': 'enemy-ember', 'eclipse-seraph': 'holy-lance',
+}
 
 function isVisible(t: BossTelegraph, ox: number, oy: number, w: number, h: number, padding = 25): boolean {
   const x = t.x + ox, y = t.y + oy
@@ -151,6 +157,7 @@ function drawTelegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number,
       ctx.arc(x, y, t.innerRadius, 0, TAU)
       ctx.stroke()
     }
+    drawZoneMotes(ctx, x, y, t.radius, t.shape === 'ring' ? t.innerRadius : 0, charge, palette.core, reduced)
     if (reduced) return
     ctx.strokeStyle = harmless ? palette.core : palette.glow
     ctx.globalAlpha = active ? 0.55 : 0.38 + charge * 0.48
@@ -173,35 +180,23 @@ function drawTelegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number,
 }
 
 function drawProjectile(ctx: Ctx2D, p: BossProjectile, ox: number, oy: number,
-  palette: Palette, reduced: boolean, w: number, h: number): void {
+  palette: Palette, reduced: boolean, w: number, h: number,
+  art: ProjectileArtId, sprites?: Partial<ProjectileSprites>): void {
   const x = p.x + ox, y = p.y + oy
-  if (x < -p.radius - 30 || y < -p.radius - 30 || x > w + p.radius + 30 || y > h + p.radius + 30) return
-  const radius = Math.max(2, p.radius)
-  ctx.beginPath()
-  ctx.arc(x, y, radius, 0, TAU)
-  ctx.fillStyle = p.color
-  ctx.globalAlpha = 0.87
-  ctx.fill()
-  ctx.beginPath()
-  ctx.arc(x, y, Math.max(1.5, radius * 0.45), 0, TAU)
-  ctx.fillStyle = palette.core
+  const margin = Math.max(35, p.radius * 4)
+  if (x < -margin || y < -margin || x > w + margin || y > h + margin) return
+  ctx.save()
+  ctx.translate(x, y)
+  ctx.rotate(Math.atan2(p.vy, p.vx))
   ctx.globalAlpha = 0.95
-  ctx.fill()
-  if (reduced) return
-  const direction = Math.atan2(p.vy, p.vx)
-  const cs = Math.cos(direction), sn = Math.sin(direction)
-  ctx.beginPath()
-  ctx.moveTo(x - cs * radius * 3.2, y - sn * radius * 3.2)
-  ctx.lineTo(x - cs * radius * 0.4, y - sn * radius * 0.4)
-  ctx.strokeStyle = palette.edge
-  ctx.lineWidth = Math.max(2, radius * 0.7)
-  ctx.globalAlpha = 0.55
-  ctx.stroke()
+  drawEnergyMissile(ctx, sprites, art, Math.max(2, p.radius), p.life, palette.edge, palette.core, reduced)
+  ctx.restore()
 }
 
 /** Under-actor warning pass; fixed hitbox geometry, time-based windup and clear safe zones. */
 export function drawBossTelegraphs(ctx: Ctx2D, snapshot: BossSnapshot, ox: number, oy: number,
-  reducedMotion = false, viewportWidth = Infinity, viewportHeight = Infinity): void {
+  reducedMotion = false, viewportWidth = Infinity, viewportHeight = Infinity,
+  sprites?: Partial<ProjectileSprites>): void {
   if (!snapshot.id) return
   const palette = PALETTES[snapshot.id]
   ctx.save()
@@ -209,7 +204,7 @@ export function drawBossTelegraphs(ctx: Ctx2D, snapshot: BossSnapshot, ox: numbe
     for (const t of snapshot.telegraphs)
       drawTelegraph(ctx, t, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight)
     for (const p of snapshot.projectiles)
-      drawProjectile(ctx, p, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight)
+      drawProjectile(ctx, p, ox, oy, palette, reducedMotion, viewportWidth, viewportHeight, MISSILE_ART[snapshot.id], sprites)
   } finally {
     ctx.restore()
   }
