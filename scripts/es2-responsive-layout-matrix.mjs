@@ -77,11 +77,29 @@ try {
         assert.equal(layout.count, count, name + ': missing choices')
         assert.deepEqual(layout.offenders, [], name + ': choices outside visible menu')
       }
+      const verifyDock = async () => {
+        for (const selector of ['[data-es2-expedition-summary]', '[data-es2-mode-summary]', '.es2-start']) {
+          const el = page.locator(selector)
+          assert.ok(inside(await el.evaluate(rect), width, height), name + ': dock clips ' + selector)
+          assert.ok(await el.evaluate(node => node.scrollWidth <= node.clientWidth + 2), name + ': dock text overflow ' + selector)
+        }
+        const bounds = await page.evaluate(() => {
+          const start = document.querySelector('.es2-start'), brief = document.querySelector('[data-es2-expedition-summary]')
+          const a = start.getBoundingClientRect(), b = brief.getBoundingClientRect()
+          const hit = document.elementFromPoint(a.x + a.width / 2, a.y + a.height / 2)
+          return { hit: start.contains(hit), overlap: a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top,
+            startHeight: a.height, briefHeight: b.height }
+        })
+        assert.ok(bounds.hit && !bounds.overlap && bounds.startHeight >= 44 && bounds.briefHeight >= 44,
+          name + ': inaccessible dock ' + JSON.stringify(bounds))
+      }
+      await verifyDock()
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
       await verifyPage('[data-hero], [data-hero-id]', 6, width >= 1000 && height >= 700)
       await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
       await page.locator('[data-es2-expedition-navigation]').click()
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
+      await verifyDock()
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
       await page.screenshot({ path: destination + '/' + name + '-expeditions.png', animations: 'disabled' })
       await page.locator('[data-es2-expedition-navigation]').click()

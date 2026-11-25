@@ -152,6 +152,40 @@ describe('phone homepage viewport-first navigation', () => {
     expect(wrapper.emitted('start')).toHaveLength(1)
   })
 
+  it('keeps a short localized expedition brief visible on the hero page and updates it from the selected mode', async () => {
+    const locale = getLocale()
+    try {
+      setLocale('zh-TW')
+      const wrapper = menu({ runMode: 'quick' })
+      const brief = wrapper.get('[data-es2-expedition-summary]')
+      expect(brief.text()).toContain('迅捷遠征')
+      expect(brief.get('[data-es2-mode-summary]').text()).toContain('150 秒決戰')
+      const cases = [
+        ['boss-rush', '五位首領', 'Boss Rush'],
+        ['endless-eclipse', '星蝕事件', 'Endless Eclipse'],
+        ['relic-hunt', '四件聖物', 'Relic Hunt'],
+        ['cursed-expedition', '兩位守衛', 'Cursed Expedition'],
+        ['chaos-arena', '八波', 'Chaos Arena'],
+      ] as const
+      for (const [mode, summary, title] of cases) {
+        await wrapper.setProps({ runMode: mode })
+        expect(brief.get('[data-es2-mode-summary]').text()).toContain(summary)
+        setLocale('en')
+        await nextTick()
+        expect(brief.text()).toContain(title)
+        expect(brief.get('[data-es2-mode-summary]').text()).not.toMatch(/[\u3400-\u9fff]/)
+        setLocale('zh-TW')
+        await nextTick()
+      }
+      await brief.trigger('click')
+      expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe('modes')
+      expect(wrapper.emitted('start')).toBeUndefined()
+      expect(wrapper.get('[data-es2-portal-decoration]').attributes('aria-hidden')).toBe('true')
+      await wrapper.get('.es2-start').trigger('click')
+      expect(wrapper.emitted('start')).toHaveLength(1)
+    } finally { setLocale(locale) }
+  })
+
   it('makes every archive entry a direct top navigation action on both pages', async () => {
     const wrapper = menu()
     const nav = wrapper.get('[data-es2-hall-navigation]')
