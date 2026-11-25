@@ -145,7 +145,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
       if (key !== s.geometryKey) { setMask(s.mask, g); s.geometryKey = key }
       const alpha = strength * Math.min(f.reduced || f.policy?.reduceFlashing ? .43 : .84, lower ? (stage==='active'?.46:.14+p*.38) : (.65 + profile.weight * .21) * releaseEnvelope(choreo,p))
       const collapse = kind === 'abyss' && (profile.visual === 'collapse' || profile.visual === 'vortex')
-      const scale = g.shape !== 'circle' ? 1 : collapse ? 1.06 - motion * .18 : .88 + motion * .12
+      const scale = g.shape !== 'circle' ? 1 : stage === 'warning' ? .72 + motion * .28 : collapse ? 1.06 - motion * .18 : .88 + motion * .12
       for (const [sprite, tex, isDetail] of [[s.material, surface, false], [s.detail, accent, true]] as const) {
         sprite.texture = tex; sprite.visible = true; sprite.alpha = alpha * (isDetail ? .62 : 1)
         if (g.shape === 'beam') {
@@ -167,7 +167,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
         spark.texture = motes[pose.kind]
         spark.position.set(pose.x,pose.y);spark.rotation=pose.rotation
         spark.width=pose.width;spark.height=pose.height
-        spark.tint=palette[kind];spark.alpha=alpha*pose.alpha*(f.policy?.reduceFlashing?.55:1)
+        spark.tint=palette[kind];spark.alpha=alpha*pose.alpha*(f.policy?.reduceFlashing ? .55 : 1)
         spark.blendMode=pose.kind==='mist'?'normal':'add'
       }
     }

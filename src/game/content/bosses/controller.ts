@@ -162,8 +162,9 @@ function bodyMotion(e: Encounter): BossBodyMotion | undefined {
   if (e.windup)
     return frame('windup', 1 - e.windup.remaining / BOSS_ATTACKS[e.windup.attackId].windup)
   const impact = e.impacts[e.impacts.length - 1]
-  if (impact && impact.max > 0) {
-    const progress = clampBodyProgress(1 - impact.life / impact.max)
+  // Longer cosmetic tails must not hold the actor in its old attack pose.
+  if (impact && impact.max > 0 && impact.max - impact.life < 0.56) {
+    const progress = clampBodyProgress((impact.max - impact.life) / 0.56)
     return progress < 0.5 ? frame('attack', progress * 2) : frame('recover', (progress - 0.5) * 2)
   }
   if (e.boss.hit > 0) return frame('hurt', 1 - e.boss.hit / 0.16)
