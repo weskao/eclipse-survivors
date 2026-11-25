@@ -73,7 +73,7 @@
 .es2-dialog-header h2{font-size:clamp(1.45rem,3vw,2.1rem);line-height:1.25;margin:8px 0 9px}
 .es2-dialog-header p{font-size:.88rem;line-height:1.5;color:var(--es2-muted);margin:0}
 .es2-close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--es2-line);border-radius:8px;background:#162437;font-size:1.8rem!important}
-.es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-padding-block:8px;touch-action:pan-y}
+.es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:8px;touch-action:pan-y}
 .es2-dialog-choice{overflow:clip}
 .es2-dialog-choice .es2-dialog-body{overflow-x:hidden;overflow-y:auto;overscroll-behavior:none}
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
@@ -105,7 +105,7 @@
 .es2-card-requirements{color:var(--es2-card-accent)}
 .es2-card-selected-text{font-size:.75rem;color:var(--es2-card-accent);padding:10px 13px 0;margin-top:auto}
 .es2-selection-scene.es2-still *{animation:none!important;transition:none!important}
-.es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;margin-bottom:12px;padding:5px 0 12px;touch-action:pan-x;border-bottom:1px solid var(--es2-line);background:#142538}
+.es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;margin-bottom:12px;padding:5px 0 12px;touch-action:pan-x;border-bottom:1px solid var(--es2-line);background:#142538}
 .es2-archive-tabs button{flex-shrink:0;min-height:44px;padding:9px 13px;font-size:.84rem;background:#1b2d40;border:1px solid #96a6b56e;border-radius:8px}
 .es2-archive-tabs .es2-tab-current{border-color:#e9c48d;background:#55402c}
 .es2-archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(195px,100%),1fr));gap:13px}
@@ -788,14 +788,14 @@
 /* Native cursor images preserve real OS hit testing; no Pixi/canvas loop. */
 @media (hover:hover) and (pointer:fine){
   body{cursor:url('../../assets/ui/cursor-bronze.svg') 4 3,auto}
-  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),input[type="range"]){
+  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),[role="option"]:not([aria-disabled="true"]),input[type="range"]){
     cursor:url('../../assets/ui/cursor-action.svg') 13 3,pointer!important
   }
   body :is(button:disabled,[aria-disabled="true"]){cursor:not-allowed!important}
 }
 @media (forced-colors:active){
   body{cursor:auto!important}
-  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),input[type="range"]){cursor:pointer!important}
+  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),[role="option"]:not([aria-disabled="true"]),input[type="range"]){cursor:pointer!important}
 }
 
 /* A single brief star glint beside the OS cursor, never a cursor replacement.

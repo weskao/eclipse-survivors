@@ -7,6 +7,7 @@
 - Do not clone UI projections, notices, timers or simulation systems. Reuse authoritative HUD content and modal components.
 - Respect the configured joystick side and touch scale. Touch targets should reach at least 44 CSS px; the special action stays clear of dash/joystick.
 - Use existing ES2 accessible dialogs and custom dropdowns rather than browser-native picker popups. Modal layering must exceed combat HUD and protect keyboard focus.
+- Hide scrollbar chrome globally in `src/style.css` (both axes, standard and WebKit); keep wheel, touch, keyboard and programmatic scrolling. Do not add component-level scrollbar styles or use `overflow:hidden` merely to hide the scrollbar.
 - Use flex/grid, safe-area insets and 100dvh. Keep panels internally scrollable, translated strings wrap and art remains fully visible.
 - Honor interfaceScale, reduced-motion and reduced-flashing settings. Avoid extra per-frame UI computations.
 - Avoid touching character identity, character assets or combat engine for HUD-only layout changes.

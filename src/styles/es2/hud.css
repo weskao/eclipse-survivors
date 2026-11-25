@@ -216,7 +216,7 @@
   position: absolute; top: var(--es2-side-top); bottom: var(--es2-footer-clear);
   right: max(16px, env(safe-area-inset-right)); width: min(320px, 27vw);
   display: flex; flex-direction: column; align-items: stretch; gap: 8px;
-  min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   pointer-events: auto;
 }
 .es2-hud__mode-progress, .es2-hud__mode-progress > * { min-width: 0; width: 100%; }
@@ -231,7 +231,7 @@
   max-width: min(300px, 40vw);
   max-height: max(0px, calc(100dvh - var(--es2-status-top) - var(--es2-footer-clear)));
   display: flex; flex-wrap: wrap; gap: 5px; padding: 8px; overflow-y: auto;
-  overscroll-behavior: contain; scrollbar-width: thin; pointer-events: auto;
+  overscroll-behavior: contain; pointer-events: auto;
 }
 .es2-hud__status { display: inline-flex; gap: 5px; align-items: center; padding: 3px 6px; border-radius: 5px; border: 1px solid #8ab7cb; background: #21425bc4; font-size: 11px; }
 .es2-hud__status--debuff { border-color: #d98795; background: #5a293fc4; }
@@ -249,7 +249,7 @@
 .es2-hud__equipment { padding: 10px; width: min(675px, 62vw); }
 .es2-hud__equipment-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; gap: 10px; }
 .es2-hud__equipment-head small { color: #abb6c2; letter-spacing: .1em; font-size: 10px; }
-.es2-hud__skills { display: flex; align-items: center; justify-content: center; gap: 7px; overflow-x: auto; padding: 4px 3px 7px; scrollbar-width: thin; scrollbar-color: #aa9167 transparent; }
+.es2-hud__skills { display: flex; align-items: center; justify-content: center; gap: 7px; overflow-x: auto; padding: 4px 3px 7px; }
 .es2-hud__skill {
   position: relative; flex: 0 0 58px; width: 58px; height: 62px; overflow: hidden;
   color: var(--es2-gold); border: 2px solid currentColor; border-radius: 9px; padding: 0;
@@ -424,7 +424,7 @@
     right: max(8px, env(safe-area-inset-right)); z-index: 3;
     display: none; flex-direction: column; align-items: stretch; gap: 8px;
     width: min(292px, calc(100vw - 16px)); min-width: 0; padding: 10px;
-    overflow: auto; overscroll-behavior: contain; scrollbar-width: thin;
+    overflow: auto; overscroll-behavior: contain;
     border: 1px solid #d1b27b; border-radius: 12px;
     background: linear-gradient(160deg, #1a2939f7, #0c1421f7);
     box-shadow: 0 8px 28px #000b; pointer-events: auto;
