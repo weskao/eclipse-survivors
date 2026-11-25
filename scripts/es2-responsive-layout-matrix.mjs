@@ -152,6 +152,38 @@ try {
       } else {
         assert.ok(!cursor.body.includes('url(') && !cursor.action.includes('url('), name + ': custom cursor on touch')
       }
+      // A real native cursor remains in place; a bounded, non-interactive accent
+      // is triggered by mouse actions only, with reduced-motion/flashing opt-outs.
+      const accent = page.locator('[data-es2-cursor-accent]')
+      assert.equal(await accent.count(), 1, name + ': expected one reusable cursor accent')
+      const exerciseCursor = () => page.locator('[data-hero="knight"]').dispatchEvent('pointerdown', {
+        pointerType: 'mouse', button: 0, isPrimary: true, clientX: 100, clientY: 100
+      })
+      const motionAllowed = await page.evaluate(() => !matchMedia('(prefers-reduced-motion: reduce)').matches &&
+        document.documentElement.dataset.es2ReduceMotion !== 'true' &&
+        document.documentElement.dataset.es2ReduceFlashing !== 'true')
+      await exerciseCursor()
+      if (hoverCapable && motionAllowed) {
+        assert.ok(await accent.evaluate(el => el.getAnimations().some(a => a.playState === 'running')),
+          name + ': cursor accent did not animate')
+        assert.equal(await accent.evaluate(el => getComputedStyle(el).pointerEvents), 'none')
+      } else {
+        assert.equal(await accent.evaluate(el => el.getAnimations().length), 0)
+      }
+      await page.evaluate(() => {
+        const el = document.documentElement
+        el.dataset.cursorTestPreviousMotion = el.getAttribute('data-es2-reduce-motion') ?? ''
+        el.setAttribute('data-es2-reduce-motion', 'true')
+      })
+      await exerciseCursor()
+      assert.equal(await accent.evaluate(el => getComputedStyle(el).display), 'none', name + ': reduced motion')
+      await page.evaluate(() => {
+        const el = document.documentElement
+        const previous = el.dataset.cursorTestPreviousMotion
+        if (previous) el.setAttribute('data-es2-reduce-motion', previous)
+        else el.removeAttribute('data-es2-reduce-motion')
+        delete el.dataset.cursorTestPreviousMotion
+      })
       if (hoverCapable) {
         assert.equal(await page.locator('[data-es2-hero-details]:visible').count(), 0, name + ': desktop detail buttons')
         const card = page.locator('[data-hero="wizard"]')
