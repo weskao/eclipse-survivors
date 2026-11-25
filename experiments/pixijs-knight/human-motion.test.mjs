@@ -48,3 +48,20 @@ test('foot bone rotates around a real ankle, keeps its own length, and does not 
  deformHumanSkin(skin,out,rest);assert.deepEqual(out,v)
  deformHumanSkin(skin,out,moving);assert.ok(out.every(Number.isFinite));assert.notDeepEqual(out,v)
 })
+
+test('projected sagittal knee bends forward in side views and into depth in front/back views',async()=>{
+ const {solveProjectedLeg}=await import('./human-motion.mjs')
+ const rest=[[0,0],[0,10],[0,20]],target=[0,16]
+ for(let i=0;i<8;i++){
+  const a=i*Math.PI/4,r=solveProjectedLeg(rest,target,a,1,{minFlex:0,maxFlex:Math.PI/2})
+  const len3=(j,k)=>Math.hypot(r.points[j][0]-r.points[k][0],r.points[j][1]-r.points[k][1],r.depth[j]-r.depth[k])
+  close(len3(0,1),10);close(len3(1,2),10)
+  close(r.points[1][0],6*Math.cos(a));close(r.depth[1],6*Math.sin(a))
+ }
+})
+test('projected shin can foreshorten without moving the ankle attachment away from its solved joint',async()=>{
+ const {mapProjectedSegment}=await import('./human-motion.mjs')
+ const a=[0,0],b=[0,10],c=[3,4],d=[6,10]
+ const p=mapProjectedSegment(b,a,b,c,d);close(p[0],d[0]);close(p[1],d[1])
+ const q=mapProjectedSegment([2,0],a,b,c,d);close(len(q,c),2)
+})

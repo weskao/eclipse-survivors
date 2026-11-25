@@ -17,8 +17,29 @@ export function solveChain(rest,target,limits){
  const h=Math.sqrt(Math.max(0,upper*upper-along*along))*bend
  return [a.slice(),[a[0]+q[0]*along+q[1]*h,a[1]+q[1]*along-q[0]*h],[a[0]+q[0]*d,a[1]+q[1]*d]]
 }
+// A projected sagittal hinge: depth absorbs forward flexion in north/south views.
+// Bone lengths are fixed in the local three-dimensional chain, not its projection.
+export function solveProjectedLeg(rest,target,viewAngle,activity,limits){
+ const [a,b,c]=rest,upper=distance(a,b),lower=distance(b,c)
+ if(activity===0&&distance(c,target)<1e-7)return {points:rest.map(p=>p.slice()),depth:[0,0,0]}
+ const v=sub(target,a),l=Math.hypot(...v),reach=flex=>Math.sqrt(Math.max(0,upper*upper+lower*lower+2*upper*lower*Math.cos(flex)))
+ const d=Math.max(1e-6,reach(limits.maxFlex),Math.min(reach(limits.minFlex),l))
+ const q=l>1e-7?[v[0]/l,v[1]/l]:[Math.cos(angle(a,c)),Math.sin(angle(a,c))]
+ const along=(upper*upper+d*d-lower*lower)/(2*d),h=Math.sqrt(Math.max(0,upper*upper-along*along))
+ const ab=sub(b,a),bc=sub(c,b),bend=Math.sign(ab[0]*bc[1]-ab[1]*bc[0])
+ const start=bend<0?Math.PI:bend>0?0:viewAngle,turn=Math.atan2(Math.sin(viewAngle-start),Math.cos(viewAngle-start))
+ const pole=start+turn*ease(activity),side=h*Math.cos(pole),depth=h*Math.sin(pole)
+ return {points:[a.slice(),[a[0]+q[0]*along+q[1]*side,a[1]+q[1]*along-q[0]*side],[a[0]+q[0]*d,a[1]+q[1]*d]],depth:[0,depth,0]}
+}
+function projectedTransform(a,b,c,d){
+ const source=distance(a,b),target=distance(c,d),u=[(b[0]-a[0])/source,(b[1]-a[1])/source]
+ const v=target>1e-7?[(d[0]-c[0])/target,(d[1]-c[1])/target]:u,s=target/source
+ const m00=s*v[0]*u[0]+v[1]*u[1],m01=s*v[0]*u[1]-v[1]*u[0],m10=s*v[1]*u[0]-v[0]*u[1],m11=s*v[1]*u[1]+v[0]*u[0]
+ return [m00,m10,c[0]-m00*a[0]-m01*a[1],c[1]-m10*a[0]-m11*a[1],m01,m11]
+}
+export function mapProjectedSegment(p,a,b,c,d){return apply(projectedTransform(a,b,c,d),p)}
 function segmentTransform(a,b,c,d){const r=angle(c,d)-angle(a,b),cos=Math.cos(r),sin=Math.sin(r);return [cos,sin,c[0]-a[0]*cos+a[1]*sin,c[1]-a[0]*sin-a[1]*cos]}
-function apply(t,p){return [t[0]*p[0]-t[1]*p[1]+t[2],t[1]*p[0]+t[0]*p[1]+t[3]]}
+function apply(t,p){return [t[0]*p[0]+(t[4]??-t[1])*p[1]+t[2],t[1]*p[0]+(t[5]??t[0])*p[1]+t[3]]}
 export function mapSegment(p,a,b,c,d){return apply(segmentTransform(a,b,c,d),p)}
 function restChains(profile){return Object.fromEntries(keys.map(k=>[k,(profile.armJoints?.[k]??profile.legJoints[k]).map(([x,y])=>[x*profile.width,y*profile.height])]))}
 // Distance-driven contact curve: stance cancels root displacement at full gait.
@@ -77,7 +98,9 @@ export function sampleHumanPose(profile,p,rest=restChains(profile)){
    const swingAim=rotateVector(aim,arc.angle*side)
    target=add(apply(root,chain[2]),[dir[0]*swing.travel*.20+swingAim[0]*extension,dir[1]*swing.travel*.13+swingAim[1]*extension-strike*h*.025])
   }
-  result[k]=solveChain(chain,sub(target,delta),limitsFor(chain,leg)).map(p=>add(p,delta))
+  const limits=limitsFor(chain,leg),localTarget=sub(target,delta)
+  const solved=leg&&Number.isFinite(profile.viewAngle)?solveProjectedLeg(chain,localTarget,profile.viewAngle,Math.max(stride,strike*.25),limits).points:solveChain(chain,localTarget,limits)
+  result[k]=solved.map(p=>add(p,delta))
   if(leg)result.feet[k]=bootPose(foot,chain[2],result[k][2],pitch)
  }
  return result
@@ -101,11 +124,11 @@ export function deformHumanSkin(skin,out,pose){
  const {rest,chains,weights}=skin
  if(pose.reducedMotion||pose.neutral){out.set(rest);return}
  const transforms=[]
- for(const k of keys)for(let i=0;i<2;i++)transforms.push(segmentTransform(chains[k][i],chains[k][i+1],pose[k][i],pose[k][i+1]))
+ for(const k of keys)for(let i=0;i<2;i++){const transform=Number.isFinite(skin.profile.viewAngle)&&(k==='left'||k==='right')?projectedTransform:segmentTransform;transforms.push(transform(chains[k][i],chains[k][i+1],pose[k][i],pose[k][i+1]))}
  transforms.push([pose.root[0],pose.root[1],pose.root[2]+pose.cape,pose.root[3]],pose.root)
  for(const k of ['left','right']){const f=footRest(skin.profile,k,chains[k][2]);transforms.push(segmentTransform(f.heel,f.toe,pose.feet[k].heel,pose.feet[k].toe))}
  for(let i=0;i<rest.length;i+=2){const x=rest[i],y=rest[i+1],j=i/2*12;let ox=0,oy=0
-  for(let k=0;k<12;k++){const t=transforms[k],w=weights[j+k];ox+=(t[0]*x-t[1]*y+t[2])*w;oy+=(t[1]*x+t[0]*y+t[3])*w}
+  for(let k=0;k<12;k++){const t=transforms[k],w=weights[j+k];ox+=(t[0]*x+(t[4]??-t[1])*y+t[2])*w;oy+=(t[1]*x+(t[5]??t[0])*y+t[3])*w}
   out[i]=ox;out[i+1]=oy
  }
 }
