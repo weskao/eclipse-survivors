@@ -148,7 +148,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
           <div ref="actionBar" class="es2-menu-action-bar">
             <p class="es2-mobile-selected-mode" aria-live="polite">
-              <span :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span> · {{ t(MODES[runMode].label) }}
+              <span :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span> · {{ t(MODES[runMode].label).split(' · ')[0] }}
               <span class="es2-mobile-mode-desc"> · {{ t(MODES[runMode].description) }}</span>
             </p>
             <button class="es2-primary es2-start" type="button" data-ui-sfx="managed" @click="emit('start')">{{ t("踏入幽暮之門") }} <span aria-hidden="true">✦</span></button>

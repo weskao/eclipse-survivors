@@ -49,6 +49,7 @@ try {
     const context = await browser.newContext({
       viewport: { width, height }, deviceScaleFactor: mobile ? 2 : 1,
       isMobile: mobile, hasTouch: mobile,
+      locale: name === 'desktop-1440' || name === 'tablet-landscape-1024' ? 'zh-TW' : 'en-US',
     })
     const page = await context.newPage()
     const errors = []
@@ -150,6 +151,8 @@ try {
       await page.locator('#es2-language-listbox [data-es2-value="en"]').click()
       await page.screenshot({ path: destination + '/' + name + '-settings.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
+      const archiveToggle = page.locator('[data-es2-mobile-archive-toggle]')
+      if (await archiveToggle.isVisible()) await archiveToggle.click()
       await page.locator('.es2-hall-links button').first().click()
       const tabs = page.locator('.es2-archive-tabs button')
       await tabs.first().waitFor({ state: 'visible' })
@@ -231,12 +234,15 @@ try {
         // Stress the actual rendered HUD with a long health/status value, independent of combat RNG.
         const healthLayout = await page.locator('.es2-hud__health-head').first().evaluate(row => {
           const value = row.lastElementChild
+          const original = value.textContent
           value.textContent = 'HP 89 / 204 | 3/3 Charges ready'
           const r = row.getBoundingClientRect(), v = value.getBoundingClientRect()
           const hero = row.closest('.es2-hud__hero').getBoundingClientRect()
           const controls = document.querySelector('.es2-hud__controls').getBoundingClientRect()
-          return { rowRight:r.right, valueRight:v.right, heroRight:hero.right, controlsLeft:controls.left,
+          const result = { rowRight:r.right, valueRight:v.right, heroRight:hero.right, controlsLeft:controls.left,
             valueOverflow:value.scrollWidth-value.clientWidth }
+          value.textContent = original
+          return result
         })
         assert.ok(healthLayout.valueRight <= healthLayout.rowRight + 1 &&
           healthLayout.valueRight <= healthLayout.heroRight + 1 &&

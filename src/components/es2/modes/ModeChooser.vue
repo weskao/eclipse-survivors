@@ -8,6 +8,8 @@ withDefaults(defineProps<{ value: ObjectiveModeId | null; disabled?: boolean }>(
 const emit = defineEmits<{ select: [mode: ObjectiveModeId] }>()
 const detailId = ref<ObjectiveModeId | null>(null)
 const detail = computed(() => detailId.value ? getObjectiveMode(detailId.value) : null)
+// The authored title contains both languages; display only the current one.
+const modeTitle = (id: ObjectiveModeId) => t(getObjectiveMode(id).title).split(' · ')[0]!
 const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
   ? '每 3 分鐘 +' + getObjectiveMode(id).rewardEmbers + ' 餘燼（最高 1500）'
   : '勝利獎勵 ' + getObjectiveMode(id).rewardEmbers + ' 餘燼')
@@ -22,22 +24,22 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
         type="button" role="radio" class="es2-objective-choice" data-ui-sfx="managed"
         :data-objective-mode="id" :disabled="disabled"
         :aria-checked="value === id"
-        :aria-label="[t(getObjectiveMode(id).title), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"
+        :aria-label="[modeTitle(id), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"
         :class="{ selected: value === id }"
         @click="emit('select', id)"
       >
-        <strong>{{ t(getObjectiveMode(id).title) }}</strong>
+        <strong>{{ modeTitle(id) }}</strong>
         <span>{{ t(getObjectiveMode(id).description) }}</span>
         <small>{{ t(getObjectiveMode(id).victoryDescription) }}</small>
         <small v-for="modifier in getObjectiveMode(id).preRunModifiers" :key="modifier" class="modifier">◈ {{ t(modifier) }}</small>
         <small class="reward">✦ {{ rewardText(id) }}</small>
       </button>
       <button type="button" class="es2-mode-detail-trigger" :disabled="disabled"
-        :data-es2-mode-details="id" :aria-label="t('查看模式詳情：{name}', { name: t(getObjectiveMode(id).title) })"
+        :data-es2-mode-details="id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(id) })"
         aria-haspopup="dialog" data-ui-sfx="select" @click="detailId = id"><span aria-hidden="true">i</span></button>
       </div>
     </div>
-    <Es2Dialog :active="detail !== null" :title="detail ? t(detail.title) : ''"
+    <Es2Dialog :active="detail !== null" :title="detailId ? modeTitle(detailId) : ''"
       @cancel="detailId = null">
       <div v-if="detail && detailId" class="es2-hero-detail-content">
         <p>{{ t(detail.description) }}</p>
