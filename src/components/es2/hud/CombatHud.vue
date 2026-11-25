@@ -112,7 +112,8 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
         <div class="es2-hud__vitals">
           <div class="es2-hud__identity">
-            <span class="es2-hud__eyebrow">{{ t('ECLIPSE · 英雄') }}</span>
+            <span v-if="lifeTier === 'warning' || lifeTier === 'critical' || lifeTier === 'emergency'" class="es2-hud__eyebrow es2-hud__life-message" data-es2-life-message>{{ t(lifeMessage) }}</span>
+            <span v-else class="es2-hud__eyebrow">{{ t('ECLIPSE · 英雄') }}</span>
             <strong>{{ t(view.identity) }}</strong>
           </div>
           <div class="es2-hud__health-head"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-health']" alt="" />{{ t("生命值") }}</span><span>{{ t(view.health.label) }}</span></div>
