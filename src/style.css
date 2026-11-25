@@ -171,8 +171,27 @@ h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(29px,4vw,48px);lett
 #level .upgrade .portrait.skill-sigil{overflow:hidden}
 #level .upgrade .portrait .skill-art{border-radius:50%;transform:scale(1.04)}
 
-/* WebKit long-press loupe/callout and highlight must not steal game interactions.
-   Keep native menu inputs, link activation and scrollable dialogs selectable/scrollable. */
+/* The entire game document, including dialogs teleported to body, is an
+   interaction surface rather than selectable document text. Explicit descendants
+   also cover native buttons and their icon/text children in WebKit and Chromium. */
+html, body, body * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Keep genuine text-entry controls editable/selectable without disabling
+   keyboard navigation, focus, clicks, sliders or scrolling elsewhere. */
+body :is(input:not([type]), input[type="text"], input[type="search"], input[type="email"],
+  input[type="url"], input[type="tel"], input[type="password"], input[type="number"],
+  textarea, [contenteditable]:not([contenteditable="false"])),
+body [contenteditable]:not([contenteditable="false"]) * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* WebKit tap highlight must not steal game interactions. */
 #game,
 #app button,
 #app [role="button"],

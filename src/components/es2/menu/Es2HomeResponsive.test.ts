@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { nextTick } from 'vue'
 import Es2MainMenu from './Es2MainMenu.vue'
 import { JOB } from '../../../game/constants'
+import { emptyProfile } from '../../../meta/profile'
 import { setLocale, getLocale } from '../../../i18n'
 import AudioControl from '../../AudioControl.vue'
 
@@ -133,98 +134,111 @@ describe('phone homepage viewport-first navigation', () => {
     }
   })
 
-  it('only shows the accessible per-hero details action on compact devices', () => {
+  it('provides the accessible per-hero details action', () => {
     expect(css).toContain('.es2-hero-detail-trigger{display:none}')
     expect(css).toContain('.es2-menu .es2-hero-detail-trigger')
     expect(css).toContain('.es2-hero-detail-content .es2-hero-stat-strip')
     expect(css).toContain('minmax(0,1fr)')
   })
 
-  it('switches hero categories without duplicating cards or changing the selected hero', async () => {
+  it('shows all six heroes on the initial page and preserves selection across expedition navigation', async () => {
     const wrapper = menu()
+    expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe('heroes')
     expect(wrapper.findAll('[data-hero]')).toHaveLength(3)
     expect(wrapper.findAll('[data-hero-id]')).toHaveLength(3)
-    const classic = wrapper.get('[data-es2-mobile-hero-tab="classic"]')
-    const newHeroes = wrapper.get('[data-es2-mobile-hero-tab="new"]')
-    expect(classic.attributes('aria-pressed')).toBe('true')
-    await newHeroes.trigger('click')
-    expect(wrapper.get('.es2-menu').attributes('data-mobile-heroes')).toBe('new')
-    expect(newHeroes.attributes('aria-pressed')).toBe('true')
-    expect(wrapper.get('[data-hero="knight"]').attributes('aria-pressed')).toBe('true')
+    expect((wrapper.get('.es2-hero-section').element as HTMLElement).style.display).not.toBe('none')
+    expect((wrapper.get('.es2-mode-section').element as HTMLElement).style.display).toBe('none')
     await wrapper.get('[data-hero-id="shadowblade"]').trigger('click')
     expect(wrapper.emitted('selectHero')).toEqual([['shadowblade']])
     await wrapper.setProps({ heroId: 'shadowblade' })
-    await nextTick()
-    expect(wrapper.get('.es2-menu').attributes('data-mobile-heroes')).toBe('new')
-    await wrapper.setProps({ heroId: undefined, choice: 'ranger' })
-    await nextTick()
-    expect(wrapper.get('.es2-menu').attributes('data-mobile-heroes')).toBe('classic')
-  })
-
-  it('keeps the actual selected hero readable even when the other hero category is shown', async () => {
-    const wrapper = menu()
-    await wrapper.get('[data-es2-mobile-hero-tab="new"]').trigger('click')
-    expect(wrapper.get('[data-es2-selected-hero]').text().length).toBeGreaterThan(0)
-    await wrapper.setProps({ heroId: 'shadowblade' })
-    await nextTick()
-    expect(wrapper.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('shadowblade')
-  })
-
-  it('allows switching between the existing four modes and all five objective modes', async () => {
-    const wrapper = menu()
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe('modes')
+    expect((wrapper.get('.es2-hero-section').element as HTMLElement).style.display).toBe('none')
+    expect((wrapper.get('.es2-mode-section').element as HTMLElement).style.display).not.toBe('none')
     expect(wrapper.findAll('[data-mode]')).toHaveLength(4)
     expect(wrapper.findAll('[data-objective-mode]')).toHaveLength(5)
-    await wrapper.get('[data-es2-mobile-mode-tab="objective"]').trigger('click')
-    expect(wrapper.get('.es2-menu').attributes('data-mobile-modes')).toBe('objective')
     await wrapper.get('[data-objective-mode="boss-rush"]').trigger('click')
     expect(wrapper.emitted('mode')).toEqual([['boss-rush']])
     await wrapper.setProps({ runMode: 'boss-rush' })
-    await nextTick()
-    expect(wrapper.get('.es2-menu').attributes('data-mobile-modes')).toBe('objective')
-    await wrapper.setProps({ runMode: 'quick' })
-    await nextTick()
-    expect(wrapper.get('.es2-menu').attributes('data-mobile-modes')).toBe('classic')
-    const actionBar = wrapper.get('.es2-menu-action-bar')
-    expect(actionBar.get('.es2-mobile-selected-mode').attributes('aria-live')).toBe('polite')
-    expect(actionBar.get('.es2-hint').text()).toContain('WASD')
-    await actionBar.get('.es2-start').trigger('click')
+    expect(wrapper.emitted('start')).toBeUndefined()
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    expect((wrapper.get('.es2-hero-section').element as HTMLElement).style.display).not.toBe('none')
+    expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('shadowblade')
+    expect(wrapper.get('.es2-mobile-selected-mode').text()).toContain('首領連戰')
+    await wrapper.get('.es2-start').trigger('click')
     expect(wrapper.emitted('start')).toHaveLength(1)
   })
 
-  it('keeps archive actions available through a compact disclosure without losing original links', async () => {
-    const wrapper = menu()
-    expect(wrapper.findAll('.es2-hall-links button')).toHaveLength(5)
-    expect(wrapper.get('[data-es2-mobile-archive-toggle]').attributes('aria-expanded')).toBe('false')
-    await wrapper.get('[data-es2-mobile-archive-toggle]').trigger('click')
-    expect(wrapper.get('[data-es2-mobile-archive-toggle]').attributes('aria-expanded')).toBe('true')
-    expect(wrapper.get('.es2-menu').classes()).toContain('es2-mobile-archive-open')
-    await wrapper.get('.es2-hall-links button').trigger('click')
-    expect(wrapper.emitted('navigate')).toBeDefined()
+  it('keeps a short localized expedition brief visible on the hero page and updates it from the selected mode', async () => {
+    const locale = getLocale()
+    try {
+      setLocale('zh-TW')
+      const wrapper = menu({ runMode: 'quick' })
+      const brief = wrapper.get('[data-es2-expedition-summary]')
+      expect(brief.text()).toContain('迅捷遠征')
+      expect(brief.get('[data-es2-mode-summary]').text()).toContain('150 秒決戰')
+      const cases = [
+        ['boss-rush', '五位首領', 'Boss Rush'],
+        ['endless-eclipse', '星蝕事件', 'Endless Eclipse'],
+        ['relic-hunt', '四件聖物', 'Relic Hunt'],
+        ['cursed-expedition', '兩位守衛', 'Cursed Expedition'],
+        ['chaos-arena', '八波', 'Chaos Arena'],
+      ] as const
+      for (const [mode, summary, title] of cases) {
+        await wrapper.setProps({ runMode: mode })
+        expect(brief.get('[data-es2-mode-summary]').text()).toContain(summary)
+        setLocale('en')
+        await nextTick()
+        expect(brief.text()).toContain(title)
+        expect(brief.get('[data-es2-mode-summary]').text()).not.toMatch(/[\u3400-\u9fff]/)
+        setLocale('zh-TW')
+        await nextTick()
+      }
+      await brief.trigger('click')
+      expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe('modes')
+      expect(wrapper.emitted('start')).toBeUndefined()
+      expect(wrapper.get('[data-es2-portal-decoration]').attributes('aria-hidden')).toBe('true')
+      await wrapper.get('.es2-start').trigger('click')
+      expect(wrapper.emitted('start')).toHaveLength(1)
+    } finally { setLocale(locale) }
   })
 
-  it('uses two-column short-landscape layout and compact portrait artwork without hiding the start button', () => {
-    expect(css).toContain('@media (orientation: portrait) and (max-width: 700px)')
-    expect(css).toContain('@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px)')
-    expect(css).toMatch(/\.es2-menu-layout\s*\{\s*grid-template-columns:\s*repeat\(2,minmax\(0,1fr\)\)/)
-    expect(css).toContain('.es2-menu[data-mobile-heroes="new"] .es2-hero-grid')
-    expect(css).toContain('.es2-menu[data-mobile-modes="objective"] .es2-mode-grid')
-    expect(css).toContain('.es2-menu .es2-hero-section .es2-roster__portrait')
-    expect(css).toContain('env(safe-area-inset-bottom)')
-    expect(css).toContain('100dvh')
-    expect(css).not.toContain('-webkit-line-clamp')
+  it('shows the actual ember balance as a distinct localized resource on both lobby pages', async () => {
+    const locale = getLocale()
+    try {
+      setLocale('zh-TW')
+      const wrapper = menu({ profile: { ...emptyProfile(), embers: 175 } })
+      const wallet = wrapper.get('[data-es2-ember-wallet]')
+      expect(wallet.get('[data-es2-ember-value]').text()).toBe('175')
+      expect(wallet.get('.es2-embers-label').text()).toBe('暮光餘燼')
+      expect(wallet.get('.es2-embers-icon').attributes('aria-hidden')).toBe('true')
+      await wrapper.setProps({ profile: { ...emptyProfile(), embers: 1234567 } })
+      expect(wallet.get('[data-es2-ember-value]').text()).toBe('1,234,567')
+      await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+      expect(wallet.get('[data-es2-ember-value]').text()).toBe('1,234,567')
+      setLocale('en')
+      await nextTick()
+      expect(wallet.get('.es2-embers-label').text()).toBe('Twilight Embers')
+      expect(wrapper.findAll('[data-es2-ember-wallet]')).toHaveLength(1)
+    } finally { setLocale(locale) }
+  })
+
+  it('makes every archive entry a direct top navigation action on both pages', async () => {
+    const wrapper = menu()
+    const nav = wrapper.get('[data-es2-hall-navigation]')
+    expect(nav.findAll('button')).toHaveLength(5)
+    expect(wrapper.find('[data-es2-mobile-archive-toggle]').exists()).toBe(false)
+    await nav.findAll('button')[0]!.trigger('click')
+    expect(wrapper.emitted('navigate')).toEqual([['progression']])
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    await nav.findAll('button')[4]!.trigger('click')
+    expect(wrapper.emitted('navigate')).toEqual([['progression'], ['achievements']])
   })
 })
 
 describe('homepage menu layout across devices', () => {
-  it('keeps the short-landscape start dock and natural selection height, including wider touch phones', () => {
-    expect(css).toContain('(orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse)')
-    expect(css).toMatch(/\.es2-menu-action-bar\{position:fixed;display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/)
-    expect(css).toContain('.es2-menu{bottom:var(--es2-action-bar-height,0px);height:auto;overflow-x:hidden}')
-    expect(css).toContain('.es2-menu-shell{height:auto;min-height:100%}')
-    expect(css).toContain('.es2-menu-layout{flex:1 0 auto;min-height:0;align-items:stretch}')
-  })
-
-  it('keeps the wide-layout start action in view and reserves room below the scrolling controls', () => {
+  it('keeps the start dock separate from the scrollable hero or mode page', () => {
     expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*position:fixed;[^}]*bottom:0/)
     expect(css).toMatch(/\.es2-menu\s*\{[^}]*bottom:var\(--es2-action-bar-height/)
     expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*env\(safe-area-inset-bottom\)/)

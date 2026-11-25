@@ -475,10 +475,10 @@
 }
 @media (orientation: portrait) and (max-width: 700px) {
   .es2-hud__top {
-    display: grid; grid-template-columns: minmax(0, 205px) var(--es2-hud-controls-width);
+    display: grid; grid-template-columns: minmax(0, 300px) var(--es2-hud-controls-width);
     grid-template-rows: max-content auto; row-gap: 5px;
   }
-  .es2-hud__hero { grid-area: 1 / 1; width: 100%; }
+  .es2-hud__hero { grid-area: 1 / 1; width: 100%; min-width: 0; }
   .es2-hud__top-right { grid-area: 1 / 2 / span 2; }
   .es2-hud__counters { padding-block: 2px; }
   .es2-hud__identity strong { white-space: normal; overflow-wrap: anywhere; }
@@ -605,7 +605,9 @@
     font-size: max(11px, calc(11px * var(--es2-ui-scale, 1)));
   }
   .es2-hud__health-head { align-items: center; line-height: 1.2; }
-  .es2-hud__health-head > :last-child { white-space: nowrap; }
+  .es2-hud__health-head { flex-wrap: wrap; gap: 2px 4px; }
+  .es2-hud__health-head > span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .es2-hud__health-head > :last-child { white-space: normal; margin-inline-start: auto; text-align: end; font-variant-numeric: tabular-nums; }
   .es2-hud__counter { grid-template-rows: auto auto; line-height: 1.2; }
 }
 @media (prefers-reduced-motion: reduce) {

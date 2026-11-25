@@ -28,7 +28,7 @@ try {
   await page.goto(base, { waitUntil: 'domcontentloaded' })
   await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
   await page.locator('.es2-hall-links button').first().click()
-  const tabs = page.locator('.es2-archive-tabs button')
+  const tabs = page.locator('.es2-hall-links button')
   await tabs.nth(2).click()
   await page.locator('[data-es2-world-enemy]').first().waitFor({ state: 'visible' })
   const worldEntries = await page.evaluate(() => {
@@ -195,7 +195,7 @@ try {
     JSON.stringify({ source: 'real Chromium Vite DEV art inspection',
       note: 'Technical inspection only. All images require separate human visual/native-3x review.',
       assets: audits }, null, 2) + '\n')
-  await page.locator('.es2-close').click()
+  await page.locator('[data-es2-return-lobby]').click()
   await page.locator('.es2-start').click()
   await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
   await page.screenshot({ path: output + '/gameplay-current-encounter-real-browser.png', animations: 'disabled' })

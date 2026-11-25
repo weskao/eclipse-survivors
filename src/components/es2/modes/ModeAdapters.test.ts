@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import ModeChooser from './ModeChooser.vue'
+import { getLocale, setLocale } from '../../../i18n'
+import { nextTick } from 'vue'
 import ModeProgress from './ModeProgress.vue'
 import { advanceObjective, createObjectiveState } from '../../../game/content/objectives/evaluator'
 
@@ -21,6 +23,32 @@ describe('ES2 objective mode chooser adapter', () => {
     await wrapper.find('[data-objective-mode="chaos-arena"]').trigger('click')
     expect(wrapper.emitted('select')).toEqual([['chaos-arena']])
     expect(wrapper.find('[data-objective-mode="boss-rush"]').attributes('aria-checked')).toBe('true')
+  })
+
+  it('shows one localized title and opens full mode details without changing selection', async () => {
+    const locale = getLocale()
+    const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' }, attachTo: document.body })
+    wrappers.push(wrapper)
+    try {
+      setLocale('zh-TW')
+      await nextTick()
+      expect(wrapper.get('[data-objective-mode="boss-rush"] strong').text()).toBe('首領連戰')
+      await wrapper.get('[data-es2-mode-details="endless-eclipse"]').trigger('click')
+      const dialog = document.body.querySelector('[role="dialog"]')!
+      expect(dialog.querySelector('h2')?.textContent).toBe('永恆星蝕')
+      expect(dialog.textContent).toContain('每 180 秒')
+      expect(wrapper.emitted('select')).toBeUndefined()
+      setLocale('en')
+      await nextTick()
+      expect(dialog.querySelector('h2')?.textContent).toBe('Endless Eclipse')
+      expect(dialog.textContent).toContain('Complete an eclipse event every 180 seconds')
+      expect(wrapper.get('[data-es2-mode-details="endless-eclipse"]').attributes('aria-label')).toBe('View mode details: Endless Eclipse')
+      ;(dialog.querySelector('.es2-close') as HTMLButtonElement).click()
+      await nextTick()
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+    } finally {
+      setLocale(locale)
+    }
   })
 
   it('disables every mode control when the host cannot start a new run', () => {

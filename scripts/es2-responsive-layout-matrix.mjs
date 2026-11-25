@@ -7,6 +7,8 @@ const destination = 'artifacts/es2-mobile-browser'
 const cases = [
   ['portrait-320', 320, 640, true],
   ['portrait-390', 390, 844, true],
+  ['folded-360', 360, 800, true],
+  ['unfolded-720', 720, 850, true],
   ['portrait-430', 430, 932, true],
   ['landscape-844', 844, 390, true],
   ['tablet-portrait-768', 768, 1024, true],
@@ -49,6 +51,8 @@ try {
     const context = await browser.newContext({
       viewport: { width, height }, deviceScaleFactor: mobile ? 2 : 1,
       isMobile: mobile, hasTouch: mobile,
+      reducedMotion: name === 'portrait-320' ? 'reduce' : 'no-preference',
+      locale: name === 'desktop-1440' || name === 'tablet-landscape-1024' ? 'zh-TW' : 'en-US',
     })
     const page = await context.newPage()
     const errors = []
@@ -56,14 +60,149 @@ try {
     try {
       await page.goto(base, { waitUntil: 'domcontentloaded' })
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
+      // Non-editable UI must never enter native text selection, including teleported overlays.
+      const verifySelectionPolicy = async (stage) => {
+        const offenders = await page.evaluate(() => [...document.body.querySelectorAll('*')]
+          .filter(el => !el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'))
+          .filter(el => el.getClientRects().length && getComputedStyle(el).userSelect !== 'none')
+          .map(el => el.tagName + ' ' + (el.getAttribute('class') || '')).slice(0, 20))
+        assert.deepEqual(offenders, [], name + ': selectable UI at ' + stage)
+      }
+      await verifySelectionPolicy('home')
+      if (!mobile) {
+        await page.locator('.es2-menu-brand h1').dblclick()
+        assert.equal(await page.evaluate(() => window.getSelection()?.toString()), '', name + ': title text selected')
+      }
+      const editablePolicy = await page.evaluate(() => {
+        const input = document.createElement('input')
+        const textarea = document.createElement('textarea')
+        const editable = document.createElement('div')
+        editable.contentEditable = 'true'
+        document.body.append(input, textarea, editable)
+        try { return [input, textarea, editable].map(el => getComputedStyle(el).userSelect) }
+        finally { input.remove(); textarea.remove(); editable.remove() }
+      })
+      assert.deepEqual(editablePolicy, ['text', 'text', 'text'], name + ': editable fields must remain selectable')
       const bounds = await page.evaluate(() => ({
         documentWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth,
       }))
       assert.ok(bounds.documentWidth <= bounds.viewportWidth + inset,
         name + ': horizontal overflow: ' + JSON.stringify(bounds))
+      // All devices expose the hall in the first viewport; wide devices also fit all six heroes.
+      const verifyPage = async (selector, count, requireFit) => {
+        const layout = await page.evaluate(({selector, requireFit}) => {
+          const menu = document.querySelector('.es2-menu')
+          const bar = menu.querySelector('.es2-menu-action-bar').getBoundingClientRect()
+          const choices = [...menu.querySelectorAll(selector)]
+          return { count: choices.length, offenders: choices.filter(el => {
+            const r = el.getBoundingClientRect()
+            return r.width === 0 || r.height === 0 || r.left < 0 || r.right > innerWidth + 2 ||
+              (requireFit && (r.top < 0 || r.bottom > bar.top + 2))
+          }).map(el => el.textContent.trim().slice(0, 80)) }
+        }, {selector, requireFit})
+        assert.equal(layout.count, count, name + ': missing choices')
+        assert.deepEqual(layout.offenders, [], name + ': choices outside visible menu')
+      }
+      const verifyDock = async () => {
+        for (const selector of ['[data-es2-expedition-summary]', '[data-es2-mode-summary]', '.es2-start']) {
+          const el = page.locator(selector)
+          assert.ok(inside(await el.evaluate(rect), width, height), name + ': dock clips ' + selector)
+          assert.ok(await el.evaluate(node => node.scrollWidth <= node.clientWidth + 2), name + ': dock text overflow ' + selector)
+        }
+        const bounds = await page.evaluate(() => {
+          const start = document.querySelector('.es2-start'), brief = document.querySelector('[data-es2-expedition-summary]')
+          const a = start.getBoundingClientRect(), b = brief.getBoundingClientRect()
+          const hit = document.elementFromPoint(a.x + a.width / 2, a.y + a.height / 2)
+          return { hit: start.contains(hit), overlap: a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top,
+            startHeight: a.height, briefHeight: b.height }
+        })
+        assert.ok(bounds.hit && !bounds.overlap && bounds.startHeight >= 44 && bounds.briefHeight >= 44,
+          name + ': inaccessible dock ' + JSON.stringify(bounds))
+      }
+      const wallet = page.locator('[data-es2-ember-wallet]')
+      const walletLayout = await wallet.evaluate(el => {
+        const value = el.querySelector('[data-es2-ember-value]'), label = el.querySelector('.es2-embers-label')
+        const w = el.getBoundingClientRect(), h = el.closest('.es2-hall-heading').getBoundingClientRect()
+        return { left:w.left, right:w.right, top:w.top, bottom:w.bottom, headingRight:h.right,
+          font:parseFloat(getComputedStyle(value).fontSize), labelFont:parseFloat(getComputedStyle(label).fontSize),
+          overflow:el.scrollWidth-el.clientWidth }
+      })
+      assert.ok(walletLayout.left >= 0 && walletLayout.right <= Math.min(width, walletLayout.headingRight) + 2 &&
+        walletLayout.top >= 0 && walletLayout.bottom <= height && walletLayout.overflow <= 2 &&
+        walletLayout.font >= 18 && walletLayout.font > walletLayout.labelFont,
+        name + ': wallet prominence or bounds ' + JSON.stringify(walletLayout))
+      await verifyDock()
+      if (name === 'portrait-320') {
+        const decoration = page.locator('[data-es2-portal-decoration]')
+        for (const pseudo of ['::before', '::after']) {
+          assert.equal(await decoration.evaluate((el, p) => getComputedStyle(el, p).animationName, pseudo), 'none')
+        }
+      }
+      await verifyPage('[data-es2-hall-navigation] button', 5, true)
+      await verifyPage('[data-hero], [data-hero-id]', 6, width >= 1000 && height >= 700)
+      const hoverCapable = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
+      if (hoverCapable) {
+        assert.equal(await page.locator('[data-es2-hero-details]:visible').count(), 0, name + ': desktop detail buttons')
+        const card = page.locator('[data-hero="wizard"]')
+        const selectedBefore = await page.locator('[data-es2-selected-hero]').getAttribute('data-es2-selected-hero')
+        await card.hover()
+        const tip = page.locator('[data-es2-hover-details]')
+        await tip.waitFor({ state: 'visible' })
+        assert.match(await tip.innerText(), /虛空術士|Void/i)
+        assert.ok(inside(await tip.evaluate(rect), width, height), name + ': hero tooltip clips')
+        assert.equal(await page.locator('[data-es2-hover-details]').count(), 1)
+        assert.equal(await page.locator('[data-es2-selected-hero]').getAttribute('data-es2-selected-hero'), selectedBefore)
+        await page.keyboard.press('Escape')
+        await tip.waitFor({ state: 'hidden' })
+        await page.locator('[data-hero-id="spirit-summoner"]').hover()
+        await tip.waitFor({ state: 'visible' })
+        assert.match(await tip.innerText(), /靈契召喚師|Spirit Summoner/i)
+        assert.ok(inside(await tip.evaluate(rect), width, height), name + ': specialization tooltip clips')
+        await page.keyboard.press('Escape')
+        await tip.waitFor({ state: 'hidden' })
+        // Keyboard users receive the same details without another tab stop.
+        await page.mouse.move(0, 0)
+        await page.keyboard.press('Tab')
+        await card.focus()
+        await tip.waitFor({ state: 'visible' })
+        assert.equal(await card.getAttribute('aria-describedby'), await tip.getAttribute('id'))
+        await page.keyboard.press('Escape')
+        await tip.waitFor({ state: 'hidden' })
+      } else {
+        assert.equal(await page.locator('[data-es2-hero-details]:visible').count(), 6, name + ': touch details unavailable')
+        await page.locator('[data-es2-hero-details="wizard"]').click()
+        const details = page.locator('.es2-dialog[role="dialog"]')
+        await details.waitFor({ state: 'visible' })
+        assert.match(await details.innerText(), /虛空術士|Void/i)
+        await details.locator('.es2-close').click()
+        await details.waitFor({ state: 'hidden' })
+      }
+      await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
+      if (hoverCapable) {
+        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 0)
+        const card = page.locator('[data-objective-mode="boss-rush"]')
+        const before = await card.getAttribute('aria-checked')
+        await card.hover()
+        const tip = page.locator('[data-es2-hover-details]')
+        await tip.waitFor({ state: 'visible' })
+        assert.match(await tip.innerText(), /首領連戰|Boss Rush/i)
+        assert.ok(inside(await tip.evaluate(rect), width, height), name + ': mode tooltip clips')
+        assert.equal(await card.getAttribute('aria-checked'), before)
+        await page.keyboard.press('Escape')
+        await tip.waitFor({ state: 'hidden' })
+      } else {
+        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
+      }
+      await verifyDock()
+      await verifyPage('[data-es2-hall-navigation] button', 5, true)
+      await page.screenshot({ path: destination + '/' + name + '-expeditions.png', animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
       await page.locator('.es2-top-actions [data-es2-settings]').click()
       const dialog = page.locator('.es2-dialog[role="dialog"]')
       await dialog.waitFor({ state: 'visible' })
+      await verifySelectionPolicy('settings dialog and close button')
       await dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))
       const initialDialog = await dialog.evaluate(rect)
       assert.ok(inside(initialDialog, width, height),
@@ -135,23 +274,39 @@ try {
       await page.locator('#es2-language-listbox [data-es2-value="en"]').click()
       await page.screenshot({ path: destination + '/' + name + '-settings.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
+      await verifyDock()
+      // The actual selection, not an authored mock, must update the visible brief on returning to the hero page.
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await page.locator('[data-objective-mode="boss-rush"]').click()
+      await page.locator('[data-es2-expedition-navigation]').click()
+      assert.equal(await page.locator('[data-es2-expedition-summary]').getAttribute('data-run-mode'), 'boss-rush')
+      assert.match(await page.locator('[data-es2-mode-summary]').innerText(), /five increasingly powerful bosses/i)
+      await verifyDock()
+      await page.screenshot({ path: destination + '/' + name + '-portal-boss-rush-125.png', animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await page.locator('[data-mode="quick"]').click()
+      await page.locator('[data-es2-expedition-navigation]').click()
       await page.locator('.es2-hall-links button').first().click()
-      const tabs = page.locator('.es2-archive-tabs button')
-      await tabs.first().waitFor({ state: 'visible' })
-      // A new Es2Dialog mounts after Settings; measure its settled bounds, not the 12px enter translation.
-      await dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))
-      assert.equal(await tabs.count(), 5, name + ': missing archive tabs')
-      await verifyDialogChrome('archive')
+      const tabs = page.locator('.es2-hall-links button')
+      const archivePage = page.locator('[data-es2-archive-page]')
+      await archivePage.waitFor({ state: 'visible' })
+      assert.equal(await tabs.count(), 5, name + ': missing archive categories')
+      assert.equal(await page.locator('.es2-archive-tabs').count(), 0, name + ': duplicated archive navigation')
+      assert.equal(await page.locator('[role="dialog"]').count(), 0, name + ': archive must not be modal')
+      assert.equal(await page.locator('.es2-start').isVisible(), false)
       for (let index = 0; index < 5; index++) {
         await tabs.nth(index).click()
         assert.equal(await tabs.nth(index).getAttribute('aria-current'), 'page',
           name + ': archive selection is inaccessible')
-        assert.ok(inside(await dialog.evaluate(rect), width, height),
-          name + ': archive modal clips viewport')
+        assert.ok(inside(await page.locator('[data-es2-return-lobby]').evaluate(rect), width, height),
+          name + ': return navigation clips viewport')
+        await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
       }
       await page.screenshot({ path: destination + '/' + name + '-archive.png', animations: 'disabled' })
-      await page.locator('.es2-close').click()
+      await page.locator('[data-es2-return-lobby]').click()
+      await page.locator('.es2-start').waitFor({ state: 'visible' })
+      await verifyDock()
       let startedGame = false
       if (mobile && name.startsWith('tablet-')) {
         // Touch tablets must not render a permanent desktop equipment bar over
@@ -207,6 +362,28 @@ try {
         await page.screenshot({ path: destination + '/' + name + '-home-confirm.png', animations: 'disabled' })
         await page.locator('[data-es2-home-cancel]').click()
         await page.locator('.es2-hud--active').waitFor({ state: 'visible' })
+      }
+      if (mobile && width <= 430 && height > width) {
+        await page.locator('[data-hero-id="spirit-summoner"]').click()
+        await page.locator('.es2-start').click()
+        await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
+        // Stress the actual rendered HUD with a long health/status value, independent of combat RNG.
+        const healthLayout = await page.locator('.es2-hud__health-head').first().evaluate(row => {
+          const value = row.lastElementChild
+          const original = value.textContent
+          value.textContent = 'HP 89 / 204 | 3/3 Charges ready'
+          const r = row.getBoundingClientRect(), v = value.getBoundingClientRect()
+          const hero = row.closest('.es2-hud__hero').getBoundingClientRect()
+          const controls = document.querySelector('.es2-hud__controls').getBoundingClientRect()
+          const result = { rowRight:r.right, valueRight:v.right, heroRight:hero.right, controlsLeft:controls.left,
+            valueOverflow:value.scrollWidth-value.clientWidth }
+          value.textContent = original
+          return result
+        })
+        assert.ok(healthLayout.valueRight <= healthLayout.rowRight + 1 &&
+          healthLayout.valueRight <= healthLayout.heroRight + 1 &&
+          healthLayout.heroRight <= healthLayout.controlsLeft + 1 && healthLayout.valueOverflow <= 1,
+          name + ': health/status overflows player panel ' + JSON.stringify(healthLayout))
       }
       assert.deepEqual(errors, [], name + ': uncaught browser exceptions')
       console.log('PASS ' + name + ': settings, scale, language, archive tabs and viewport bounds')

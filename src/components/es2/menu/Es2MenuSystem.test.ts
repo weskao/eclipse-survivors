@@ -29,6 +29,8 @@ describe('ES2 main menu integration adapter', () => {
   it('keeps legacy hero, mode and start action names with original artwork', async () => {
     const wrapper = mounted()
     click('[data-hero="ranger"]')
+    click('[data-es2-expedition-navigation]')
+    await nextTick()
     click('[data-mode="challenge"]')
     click('.es2-start')
     expect(wrapper.emitted('select')).toEqual([['ranger']])
@@ -41,7 +43,8 @@ describe('ES2 main menu integration adapter', () => {
     const wrapper = mounted()
     click('.es2-hall-links button')
     await nextTick()
-    expect(find('.es2-dialog')?.textContent).toContain('永久強化')
+    expect(find('[data-es2-archive-page]')?.textContent).toContain('永久強化')
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
     const buy = find('.es2-archive-card .es2-secondary') as HTMLButtonElement
     expect(buy.disabled).toBe(true)
     click('.es2-danger')
@@ -188,10 +191,33 @@ describe('ES2 main menu integration adapter', () => {
     await nextTick()
     expect(find('.es2-empty').textContent).toContain('尚無聖物資料')
     for (const index of [3, 4, 5]) {
-      click(`.es2-archive-tabs button:nth-child(${index})`)
+      click(`.es2-hall-links button:nth-child(${index})`)
       await nextTick()
       expect(find('.es2-archive-section')).not.toBeNull()
+      expect(find(`.es2-hall-links button:nth-child(${index})`).getAttribute('aria-current')).toBe('page')
+      expect(document.querySelector('[role="dialog"]')).toBeNull()
     }
+  })
+
+  it('uses a single hall navigation, preserves lobby selection and restores the expedition page when returning', async () => {
+    const wrapper = mounted({ heroId: 'shadowblade', runMode: 'boss-rush' })
+    click('[data-es2-expedition-navigation]')
+    await nextTick()
+    click('.es2-hall-links button')
+    await nextTick()
+    expect(document.querySelectorAll('[data-es2-hall-navigation]')).toHaveLength(1)
+    expect(document.querySelector('.es2-archive-tabs')).toBeNull()
+    expect(find('[data-es2-archive-page]').getAttribute('data-es2-archive-page')).toBe('progression')
+    expect(find('[data-es2-lobby-content]').getAttribute('hidden')).not.toBeNull()
+    expect(find('.es2-menu-action-bar').style.display).toBe('none')
+    expect(wrapper.emitted('start')).toBeUndefined()
+    click('[data-es2-return-lobby]')
+    await nextTick()
+    expect(document.querySelector('[data-es2-archive-page]')).toBeNull()
+    expect(find('.es2-menu').getAttribute('data-es2-menu-page')).toBe('modes')
+    expect(find('[data-es2-expedition-summary]').getAttribute('data-run-mode')).toBe('boss-rush')
+    expect(find('[data-es2-selected-hero]').getAttribute('data-es2-selected-hero')).toBe('shadowblade')
+    expect(find('.es2-menu-action-bar').style.display).not.toBe('none')
   })
 })
 
