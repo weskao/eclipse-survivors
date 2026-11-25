@@ -57,7 +57,7 @@ const currentProfile = computed(() => props.profile ?? fallbackProfile)
 const archive = ref<MenuView>('main')
 const resetOpen = ref(false)
 watch(() => props.screen, screen => { if (screen !== 'menu') { archive.value = 'main'; resetOpen.value = false } })
-const archiveActive = computed(() => props.screen === 'menu' && archive.value !== 'main' && !resetOpen.value && !props.settingsOpen && !props.notification && !props.loading)
+const archiveActive = computed(() => props.screen === 'menu' && archive.value !== 'main' && !props.loading)
 const levelActive = computed(() => props.screen === 'level' && !props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const specialActive = computed(() => !!props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
@@ -93,15 +93,17 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
 <template>
   <div class="es2-system" :class="{ 'es2-system-still': upgradeEffect === 'still' }">
     <Es2MainMenu v-if="screen === 'menu' && !loading" :choice="choice" :hero-id="heroId" :run-mode="runMode" :version="version"
-      :profile="currentProfile" :needs-audio-unlock="musicOn && !audioUnlocked"
+      :profile="currentProfile" :needs-audio-unlock="musicOn && !audioUnlocked" :archive-view="archive"
       @select="emit('select', $event)" @select-hero="emit('selectHero', $event)" @mode="emit('mode', $event)" @start="emit('start')"
-      @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')" />
-    <Es2Archive :active="archiveActive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
-      :hero="choice" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"
-      @close="archive = 'main'" @navigate="navigate"
-      @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)"
-      @research="emit('research', $event)" @equipment="emit('equipment', $event)"
-      @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
+      @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')">
+      <template #archive>
+        <Es2Archive v-if="archiveActive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
+          :hero="choice" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"
+          @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)"
+          @research="emit('research', $event)" @equipment="emit('equipment', $event)"
+          @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
+      </template>
+    </Es2MainMenu>
     <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still'"
       @choose="chooseUpgrade" @settings="emit('settings')" />
     <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :items="specialCards.items"

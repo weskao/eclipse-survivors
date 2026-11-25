@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatNumber, t } from '../../../i18n'
-import { computed, nextTick, ref, useTemplateRef, watchPostEffect } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch, watchPostEffect } from 'vue'
 import { JOB } from '../../../game/constants'
 import { ART_URLS } from '../../../game/art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
@@ -15,7 +15,7 @@ import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/mo
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
 import { formatDuration, type MenuView } from './model'
-const props = defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean }>()
+const props = withDefaults(defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean; archiveView?: MenuView }>(), { archiveView: 'main' })
 const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
   'blood-moon-cathedral', 'cursed-forest', 'abyssal-necropolis', 'celestial-rift',
@@ -80,6 +80,11 @@ function toggleExpeditionPage(): void {
   void nextTick(() => { if (menu.value) menu.value.scrollTop = 0 })
 }
 const menu = useTemplateRef('menu')
+watch(() => props.archiveView, async () => {
+  heroDetails.clear()
+  await nextTick()
+  if (menu.value) menu.value.scrollTop = 0
+})
 const actionBar = useTemplateRef('actionBar')
 watchPostEffect(onCleanup => {
   const scrollArea = menu.value
@@ -106,7 +111,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveChoice(ev
 const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoice(event, id, modeIds, '.es2-mode-card', next => emit('mode', next as RunModeId)) }
 </script>
 <template>
-  <main ref="menu" class="es2-menu" :data-es2-menu-page="page"
+  <main ref="menu" class="es2-menu" :class="{ 'es2-menu--archive': archiveView !== 'main' }" :data-es2-menu-page="page"
     :aria-label="t('Eclipse Survivors 主選單')">
     <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div class="es2-menu-shell">
@@ -118,16 +123,16 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         </div>
       </header>
       <nav class="es2-hall-navigation" data-es2-hall-navigation :aria-label="t('冒險者殿堂')">
-        <div class="es2-hall-heading"><strong>{{ t('冒險者殿堂') }}</strong><span class="es2-embers" data-es2-ember-wallet>
+        <div class="es2-hall-heading"><div class="es2-hall-heading__title"><button v-if="archiveView !== 'main'" type="button" class="es2-return-lobby" data-es2-return-lobby data-ui-sfx="select" @click="emit('navigate', 'main')"><span aria-hidden="true">‹</span> {{ t('返回主選單') }}</button><strong v-else>{{ t('冒險者殿堂') }}</strong></div><span class="es2-embers" data-es2-ember-wallet>
           <span class="es2-embers-icon" aria-hidden="true">✧</span>
           <span class="es2-embers-copy">
             <strong class="es2-embers-value" data-es2-ember-value>{{ formatNumber(profile?.embers ?? 0) }}</strong>
             <span class="es2-embers-label">{{ t("暮光餘燼") }}</span>
           </span>
         </span></div>
-        <div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" data-ui-sfx="select" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
+        <div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" data-ui-sfx="select" :aria-current="archiveView === link.id ? 'page' : undefined" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
       </nav>
-      <div class="es2-menu-layout">
+      <div class="es2-menu-layout" data-es2-lobby-content :hidden="archiveView !== 'main'">
         <section v-show="page === 'heroes'" id="es2HeroPage" class="es2-hero-section" aria-labelledby="es2HeroTitle" v-on="heroHoverEvents">
           <div class="es2-section-heading"><span>{{ t('01 / 命運繼承者') }}</span><h2 id="es2HeroTitle">{{ t("選擇命運的繼承者") }}</h2><p>{{ t("每位英雄都擁有專屬的戰鬥風格。") }}</p></div>
           <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
@@ -163,7 +168,8 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
         </section>
       </div>
-      <div ref="actionBar" class="es2-menu-action-bar">
+      <slot v-if="archiveView !== 'main'" name="archive" />
+      <div v-show="archiveView === 'main'" ref="actionBar" class="es2-menu-action-bar">
         <div class="es2-menu-actions">
           <button class="es2-expedition-navigation es2-expedition-brief" type="button"
             data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"

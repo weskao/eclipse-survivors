@@ -13,17 +13,16 @@ import { BIOMES } from '../../../game/content/biomes'
 import { encyclopedia } from '../../../meta/compendium'
 import type { Profile, PermanentUpgrade, CosmeticId } from '../../../meta/types'
 import type { JobId, MobType } from '../../../game/types'
-import Es2Dialog from './Es2Dialog.vue'
 import ProgressionPanel from '../progression/ProgressionPanel.vue'
 import { createMetaState, type MetaState } from '../../../game/content/meta/state'
 import type { MenuView, RelicEntry } from './model'
 import { upgradeCost } from './model'
 const props = defineProps<{
-  active: boolean; view: Exclude<MenuView, 'main'>; profile: Profile; hero: JobId; relics?: readonly RelicEntry[]
+  view: Exclude<MenuView, 'main'>; profile: Profile; hero: JobId; relics?: readonly RelicEntry[]
   metaState?: MetaState | null; metaStatus?: 'ready' | 'blocked' | null
 }>()
 const emit = defineEmits<{
-  close: []; navigate: [view: Exclude<MenuView, 'main'>]; purchase: [id: PermanentUpgrade]
+  purchase: [id: PermanentUpgrade]
   reset: []; cosmetic: [hero: JobId, skin: CosmeticId]
   research: [id: string]; equipment: [id: string]; bonus: [id: string]
 }>()
@@ -33,10 +32,6 @@ const title: Record<Exclude<MenuView, 'main'>, string> = {
   relics: '聖物收藏庫', progression: '永久強化 · 英雄傳承',
   monsters: '魔物圖鑑', skills: '覺醒能力圖鑑', achievements: '遠征成就殿堂',
 }
-const tabs: readonly { id: Exclude<MenuView, 'main'>; title: string }[] = [
-  { id: 'progression', title: '永久強化' }, { id: 'relics', title: '聖物' },
-  { id: 'monsters', title: '魔物' }, { id: 'skills', title: '能力' }, { id: 'achievements', title: '成就' },
-]
 const skins = COSMETICS
 const upgrades: readonly { id: PermanentUpgrade; title: string; icon: string; bonus: string }[] = [
   { id: 'power', title: '破曉之刃', icon: '⚔', bonus: '永久傷害 +4% / 階' },
@@ -66,11 +61,11 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
   C104_SURFACES[category].sources.map(id => ({ id, category, src: C104_SOURCES[id] })))
 </script>
 <template>
-  <Es2Dialog :active="active" :title="t(title[view])" :subtitle="t('冒險者殿堂 · 記錄每一場遠征留下的印記')" wide @cancel="emit('close')">
-    <nav class="es2-archive-tabs" :aria-label="t('殿堂分類')">
-      <button v-for="tab in tabs" :key="tab.id" type="button" data-ui-sfx="select" :aria-current="view === tab.id ? 'page' : undefined"
-        :class="{ 'es2-tab-current': view === tab.id }" @click="emit('navigate', tab.id)">{{ t(tab.title) }}</button>
-    </nav>
+  <section class="es2-archive-page" :data-es2-archive-page="view" aria-labelledby="es2ArchiveHeading">
+    <header class="es2-archive-page-heading">
+      <span class="es2-eyebrow">{{ t('冒險者殿堂') }} · ✦</span>
+      <h2 id="es2ArchiveHeading">{{ t(title[view]) }}</h2>
+    </header>
     <section v-if="view === 'progression'" class="es2-archive-section" :aria-label="t('永久強化')">
       <ProgressionPanel v-if="metaStatus" :state="metaState ?? emptyMeta" :hero="hero"
         :status="metaStatus" @research="emit('research', $event)"
@@ -167,7 +162,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
         </article>
       </div>
     </section>
-  </Es2Dialog>
+  </section>
 </template>
 
 <style scoped>
