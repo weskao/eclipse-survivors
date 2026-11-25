@@ -345,3 +345,12 @@ describe('ES3 chain lightning breakthroughs', () => {
     expect(s.lightningFx).toHaveLength(8)
   })
 })
+
+it('uses the actual impact origin and bounded directional recoil on heavy contact',()=>{
+  const {s}=setup(); const e=mob(50,0,{type:'golem'})
+  hit(s,e,10,spyHooks(),{x:100,y:0})
+  expect(e.kx).toBe(-1)
+  expect(s.cameraKick).toBeGreaterThan(0)
+  expect(s.cameraKickAngle).toBeCloseTo(Math.PI)
+  expect(s.hero!.x).toBe(0)
+})

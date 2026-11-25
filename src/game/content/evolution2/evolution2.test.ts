@@ -1,3 +1,5 @@
+import { createFactionBridge } from '../enemies/integration'
+import { executeEvolution } from './combat'
 import { describe, expect, it, vi } from 'vitest'
 import { createContentRegistry, MAX_CONTENT_EFFECTS } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
@@ -282,4 +284,15 @@ describe('Evolution2 mechanic-specific behavior', () => {
     expect(state.content.effects).toHaveLength(0)
     expect(vi.mocked(hooks.sfx)).not.toHaveBeenCalled()
   })
+})
+
+it.each(EVOLUTION2_RECIPES)('casts $title against authored faction targets without legacy proxies', recipe=>{
+  const state=game()
+  const factions=createFactionBridge({random:()=>.5})
+  const target=factions.spawn(state,'berserker',75,0)!
+  target.hp=target.max=10000
+  executeEvolution({state,hooks:{...hooks,factions:()=>factions},random:()=>.5,addEffect:()=>true},recipe)
+  if(recipe.id==='evolution2:spectral-volley') expect(state.shots.length).toBeGreaterThan(0)
+  else expect(target.hp).toBeLessThan(10000)
+  expect(state.mobs).toHaveLength(0)
 })

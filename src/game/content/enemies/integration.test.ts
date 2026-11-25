@@ -211,3 +211,19 @@ it('holds only the faction visual frame on heavy contact and keeps its gameplay 
   bridge.tick(s, .1, hooks)
   expect(e.visualHold).toBe(0)
 })
+
+it('does not roll outgoing modifiers on phased actors and forwards real health for valid faction targets',()=>{
+  const s=game(), bridge=createFactionBridge({random:()=>0})
+  const e=bridge.spawn(s,'phantom',100,0)!
+  let calls=0
+  const h={...hooks,modifyOutgoingDamage:(amount:number,target?:{hp:number;max:number})=>{calls++;expect(target).toBe(e);return amount}}
+  e.state='phase'
+  expect(bridge.hitFaction(s,e,10,0,0,h)).toBe(0)
+  expect(calls).toBe(0)
+  e.state='recover'
+  bridge.hitFaction(s,e,10,0,0,h)
+  expect(calls).toBe(1)
+  const before=e.x; e.speed=0; e.timer=.3
+  bridge.tick(s,.05,h)
+  expect(e.x).toBeGreaterThan(before)
+})

@@ -26,7 +26,7 @@ const AMBIENT_SAMPLES = Array.from({ length: 37 }, (_, i) => [hash(i, 7), hash(i
 // retaining canvases or unlimited color/radius variants.
 const glowGradients = new WeakMap<Ctx2D, Map<string, CanvasGradient>>()
 
-export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number, world?: WorldRuntimeImages, reduced = false, flashing = false): void {
+export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: Props, biomes: BiomeArt[], ox: number, oy: number, world?: WorldRuntimeImages): void {
   const { W, H } = s
   const biome = biomes[s.currentScene] ?? biomes[0]!
   const biomeId = BIOME_IDS[s.currentScene]
@@ -86,7 +86,7 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
   }
 }
 
-export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number, world?: WorldRuntimeImages): void {
+export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number, world?: WorldRuntimeImages, reduced = false, flashing = false): void {
   const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎', magnet: '✦' }
   const titles = { chest: '古代寶箱', shrine: '魔法祭壇', invasion: '菁英入侵',
     blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉', magnet: '全場磁吸' }

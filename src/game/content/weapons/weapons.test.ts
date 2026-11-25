@@ -1,3 +1,4 @@
+import { createFactionBridge } from '../enemies/integration'
 import { describe, expect, it, vi } from 'vitest'
 import { createContentRegistry } from '../registry'
 import { CONTENT_PACKS } from '../packs'
@@ -247,4 +248,18 @@ describe('density, simultaneity, lifecycle and determinism', () => {
     }
     expect(play()).toEqual(play())
   })
+})
+
+it.each(['shadow-daggers','holy-lance','blood-scythe','arcane-mines','bone-spears','poison-cloud','ricochet-blades','spirit-wolves','solar-beam','gravity-orbs','spectral-bow','thorn-chain'])('rank-five %s can damage real faction-only targets', id => {
+  const s = createState(); s.mode='play'; s.hero=createHero('knight')
+  const factions=createFactionBridge({random:seeded(3)})
+  const target=factions.spawn(s,'berserker',75,0)!
+  target.hp=target.max=10000; target.speed=0
+  const registry=createContentRegistry([WEAPONS_PACK],seeded(12))
+  const h={...hooks,factions:()=>factions}
+  for(let rank=0;rank<5;rank++) expect(registry.acquire(s,`weapons:${id}`,h)).toBe(true)
+  for(let i=0;i<420;i++){s.time+=1/60;s.worldClock+=1/60;registry.tick(s,1/60,h)}
+  expect(target.hp).toBeLessThan(10000)
+  expect(s.mobs).toHaveLength(0)
+  expect(s.damageDealt).toBeGreaterThan(0)
 })

@@ -287,3 +287,9 @@ it('renders a real chest seal for treasure reveal and removes it when skipped wi
   expect(dialog().querySelector('[data-es3-chest-reveal]')).toBeNull()
   expect(wrapper.emitted('choose')).toBeUndefined()
 })
+
+it('preserves the advertised chest tier even when another reward card is cursed',async()=>{
+  mounted(Es2ChoiceDialog,{active:true,kind:'treasure',tier:'legendary',items:[{id:'a',title:'Safe',rarity:'legendary'},{id:'b',title:'Risk',rarity:'epic',cursed:true}]})
+  await nextTick()
+  expect(dialog().querySelector('.es3-chest-seal')?.getAttribute('data-tier')).toBe('legendary')
+})

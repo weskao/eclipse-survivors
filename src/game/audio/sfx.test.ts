@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { SfxCue } from '../types'
-import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones } from './sfx'
+import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones, treasureTones } from './sfx'
 
 // Copied from the original game.js `sfxCooldown` table.
-const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill' | 'bossStagger' | 'pickupBurst' | 'evolution' | 'killStreak' | 'massKill' | 'deny' | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'>, number> = {
+const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'treasureReveal' | 'treasureClaim' | 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill' | 'bossStagger' | 'pickupBurst' | 'evolution' | 'killStreak' | 'massKill' | 'deny' | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'>, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, boss: 0.8, bossDefeat: 0.8,
   hurt: 0.28, pickup: 0.16, scene: 0.45, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
@@ -11,10 +11,12 @@ const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'hitNormal' | 'hitHeavy' | 'hitC
 
 describe('sfx tables', () => {
   it('cooldowns match game.js', () => {
-    const { hitNormal, hitHeavy, hitCritical, eliteKill, deny, killStreak, massKill, pickupBurst, evolution, bossStagger, 'shadowblade-special': shadow, 'spirit-summoner-special': spirit, 'crimson-paladin-special': paladin, ...legacy } = SFX_COOLDOWN
+    const { treasureReveal, treasureClaim, hitNormal, hitHeavy, hitCritical, eliteKill, deny, killStreak, massKill, pickupBurst, evolution, bossStagger, 'shadowblade-special': shadow, 'spirit-summoner-special': spirit, 'crimson-paladin-special': paladin, ...legacy } = SFX_COOLDOWN
     expect([shadow, spirit, paladin]).toEqual([0.55, 0.9, 0.75])
     expect(legacy).toEqual(ORIGINAL_COOLDOWN)
     expect(deny).toBe(0.22)
+    expect(treasureReveal).toBeGreaterThan(0)
+    expect(treasureClaim).toBeGreaterThan(0)
     expect([hitNormal,hitHeavy,hitCritical,eliteKill].every(n=>n>=.1)).toBe(true)
     expect(killStreak).toBeGreaterThan(0.5)
     expect(massKill).toBeGreaterThan(0.5)
@@ -67,4 +69,10 @@ it('has six distinct bounded layered streak signatures and three distinct hit si
   expect(new Set(signatures.map(t=>JSON.stringify(t))).size).toBe(6)
   expect(signatures.every(tones=>tones.length<=6 && tones.every(([,delay,duration,gain])=>delay+duration<=1.5 && gain<=.085))).toBe(true)
   expect(new Set([SFX_CUES.hitNormal,SFX_CUES.hitHeavy,SFX_CUES.hitCritical].map(t=>JSON.stringify(t))).size).toBe(3)
+})
+
+it('gives five advertised chest tiers distinct bounded reveal sounds',()=>{
+  const tones=[0,1,2,3,4].map(treasureTones)
+  expect(new Set(tones.map(t=>JSON.stringify(t))).size).toBe(5)
+  expect(tones.every(t=>t.length<=6&&t.every(([,d,l,g])=>d+l<=1.5&&g<=.085))).toBe(true)
 })
