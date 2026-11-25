@@ -278,3 +278,17 @@ describe('elite affixes, rewards and high-density safety', () => {
     expect(scenario()).toEqual(scenario())
   })
 })
+
+it('preserves faction corpse identity and uses a longer elite dissolve without counting it as a live actor', () => {
+  const r = createFactionRuntime()
+  const normal = spawnFactionEnemy(r, 'fire-imp', 100, 0)!
+  const elite = spawnFactionEnemy(r, 'fire-imp', 130, 0, {affix:'armored'})!
+  damageFactionEnemy(r, normal, 1e6, 0, 0)
+  damageFactionEnemy(r, elite, 1e6, 0, 0)
+  expect(elite.deathVisual!).toBeGreaterThan(normal.deathVisual!)
+  cleanupFactionEnemies(r)
+  expect(r.enemies).toHaveLength(0)
+  expect(r.fallen).toEqual([normal,elite])
+  tickFactionEnemies(arena(r), .31)
+  expect(r.fallen).toEqual([elite])
+})
