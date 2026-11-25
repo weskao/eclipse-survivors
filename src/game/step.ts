@@ -90,6 +90,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
 }
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
+  let playedPickup = false
   for (const star of s.stars) {
     star.t += dt
     const dx = hero.x - star.x
@@ -105,7 +106,10 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
     if (squared < BALANCE.combat.starPickupDistance * BALANCE.combat.starPickupDistance) {
       star.dead = true
       addXp(s, star.value * s.pickupGainMultiplier, hooks)
-      hooks.sfx('pickup')
+      if (!playedPickup) {
+        hooks.sfx('pickup')
+        playedPickup = true
+      }
       hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
     }
   }
