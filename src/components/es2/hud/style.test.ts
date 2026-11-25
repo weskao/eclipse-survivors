@@ -76,3 +76,17 @@ describe('responsive ES2 encounter and information rail', () => {
     )
   })
 })
+
+describe('gothic boss meter skin', () => {
+  it('keeps the ornament frame outside the clipped accessible progress track', () => {
+    const legacy = readFileSync(resolve(process.cwd(), 'src/components/GameHud.vue'), 'utf8')
+    const shared = readFileSync(resolve(process.cwd(), 'src/style.css'), 'utf8')
+    expect(component).toContain('class="boss-meter-frame"')
+    expect(legacy).toContain('class="boss-meter-frame"')
+    expect(shared).toContain('.boss-meter-frame::before')
+    expect(shared).toContain('.boss-meter-frame::after')
+    expect(shared).toContain('clip-path:polygon')
+    expect(css).toContain('var(--es2-boss-hp-color, #a94463)')
+    expect(css).toContain('.es2-hud__boss.es2-hud__plate')
+  })
+})

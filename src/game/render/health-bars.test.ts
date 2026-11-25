@@ -83,10 +83,10 @@ describe('enemy health color tiers', () => {
 
 describe('ranked enemy health presentation', () => {
   it.each([
-    [1, '#b697fa', '#efc46c'], [.75, '#b697fa', '#efc46c'],
-    [.749, '#d78ee9', '#eaa34f'], [.5, '#d78ee9', '#eaa34f'],
-    [.499, '#e97ba1', '#e46a48'], [.25, '#e97ba1', '#e46a48'],
-    [.249, '#ef526f', '#d93859'], [0, '#ef526f', '#d93859'],
+    [1, '#b697fa', '#a94463'], [.75, '#b697fa', '#a94463'],
+    [.749, '#d78ee9', '#be4258'], [.5, '#d78ee9', '#be4258'],
+    [.499, '#e97ba1', '#d35048'], [.25, '#e97ba1', '#d35048'],
+    [.249, '#ef526f', '#eb674d'], [0, '#ef526f', '#eb674d'],
   ] as const)('uses distinct elite and boss palettes at %s HP', (fraction, elite, boss) => {
     expect(healthBarColor(fraction, 'elite')).toBe(elite)
     expect(healthBarColor(fraction, 'boss')).toBe(boss)
@@ -101,8 +101,8 @@ describe('ranked enemy health presentation', () => {
     drawEnemyHealthBar(ctx, hit, 0, 0, 100, true)
     drawBossHealthBar(ctx, hit, 0, 0)
     expect(fills.find(f => f.color === '#e97ba1' && f.height === 5)?.width).toBeCloseTo(31)
-    expect(fills).toContainEqual({ color: '#e46a48', width: 93, height: 10 })
-    expect(borders).toEqual(['#d6a4f3', '#e9c078'])
+    expect(fills).toContainEqual({ color: '#d35048', width: 93, height: 10 })
+    expect(borders).toEqual(['#d6a4f3', '#98765e'])
     expect(fills.filter(f => f.color === '#fff3cf' && f.width === 2)).toHaveLength(2)
     fills.length = 0
     drawBossHealthBar(ctx, { target: .25, front: .25, trail: .25 }, 0, 0)
@@ -124,5 +124,46 @@ describe('ranked enemy health presentation', () => {
     mob.hp = 10
     const reduced = sampleHealthBar(mob, .23, cache, true)
     expect(reduced).toMatchObject({ front: .1, trail: .1, target: .1 })
+  })
+})
+
+describe('forged health bar materials', () => {
+  it('keeps the gemstone fill readable, with static bevels and no per-enemy gradients', () => {
+    const { ctx, calls } = createFakeCtx()
+    const fills: { color: string; x: number; width: number; height: number }[] = []
+    ctx.fillRect = (x, _y, width, height) => { fills.push({ color: String(ctx.fillStyle), x, width, height }) }
+    ctx.createLinearGradient = () => { throw Error('must not allocate a gradient per actor') }
+    const frame = { target: .4, front: .4, trail: .4 }
+    drawEnemyHealthBar(ctx, frame, 0, 0, 100)
+    expect(fills.some(f => f.color === '#635b4e')).toBe(true)
+    expect(fills.some(f => f.color === '#ffffff26' && f.width > 0)).toBe(true)
+    expect(fills.some(f => f.color === '#00000055' && f.width > 0)).toBe(true)
+    expect(calls).not.toContain('beginPath')
+    fills.length = 0
+    drawEnemyHealthBar(ctx, frame, 0, 0, 100, true)
+    expect(fills.some(f => f.color === '#74648e')).toBe(true)
+    expect(fills.some(f => f.color === '#e97ba1' && f.height === 5)).toBe(true)
+  })
+  it('draws mirrored gothic end ornaments without altering the authoritative fill width', () => {
+    const { ctx, calls } = createFakeCtx()
+    const points: number[] = []
+    ctx.moveTo = (x) => { points.push(x) }
+    const fills: { color: string; width: number }[] = []
+    ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
+    const frame = { target: .25, front: .25, trail: .25 }
+    drawBossHealthBar(ctx, frame, 100, 20)
+    expect(points).toContain(-3)
+    expect(points).toContain(203)
+    expect(calls.filter(c => c === 'beginPath')).toHaveLength(4)
+    expect(fills).toContainEqual({ color: '#d35048', width: 46.5 })
+    expect(frame.target).toBe(.25)
+  })
+  it('does not paint a highlight or fill into empty or nearly empty tracks', () => {
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number }[] = []
+    ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
+    drawBossHealthBar(ctx, { target: 0, front: 0, trail: 0 }, 0, 0)
+    expect(fills.some(f => f.color === '#eb674d' || f.color === '#ffffff26' || f.color === '#fff3cf')).toBe(false)
+    expect(fills.every(f => f.width >= 0)).toBe(true)
   })
 })

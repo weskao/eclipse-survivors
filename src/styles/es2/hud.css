@@ -168,21 +168,37 @@
   width: min(500px, calc(100vw - 32px)); min-width: 0;
 }
 .es2-hud__boss { width: 100%; min-width: 0; padding: 10px 15px 12px; }
+.es2-hud__boss.es2-hud__plate {
+  border-color: #98765e; border-radius: 6px 6px 10px 10px;
+  background: radial-gradient(ellipse at 50% 0%, #66283f80, transparent 68%),
+    linear-gradient(160deg, #302532, #15111c 56%, #080a10);
+  box-shadow: inset 0 0 0 2px #130e18, inset 0 3px #d4a98533, 0 5px 14px #000b;
+}
+.es2-hud__boss.es2-hud__plate::before {
+  content: ''; top: -4px; left: calc(50% - 5px); width: 10px; height: 8px;
+  background: linear-gradient(135deg, #d8aa88, #6d4b51 45%, #c76c73 52%, #4a172d);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
 .es2-hud__boss-heading > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .es2-hud__boss-heading { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 8px; font: 750 14px/1.3 Georgia, serif; color: #ffdbc2; }
 .es2-hud__boss-phase { font: 750 10px system-ui; color: #f2c586; letter-spacing: .08em; white-space: nowrap; }
 .es2-hud__track--boss {
-  height: 14px; border-color: #e9c078; border-radius: 4px;
-  box-shadow: inset 0 1px 4px #000d, 0 1px 3px #0009;
+  height: 14px; border-color: #765a53; border-radius: 2px;
+  background: linear-gradient(180deg, #09090f, #261722 54%, #100b15);
+  box-shadow: inset 0 1px 4px #000d;
 }
 .es2-hud__track--boss > .es2-hud__track-fill {
-  color: var(--es2-boss-hp-color, #efc46c);
-  background: linear-gradient(180deg, #ffffff33, transparent 45%, #0005), currentColor;
-  box-shadow: inset 0 1px #fff9, inset 0 -1px #0008;
+  color: var(--es2-boss-hp-color, #a94463);
+  background: linear-gradient(180deg, #ffd1bc3d 0%, #ffffff08 39%, #240b2066 70%, #240b20a6 100%), currentColor;
+  box-shadow: inset 0 1px #ffd7bf80, inset 0 -1px #310a19;
+
   transition: transform .24s cubic-bezier(.22, .72, .25, 1), color .18s ease-out;
 }
+.es2-hud__track--boss > .es2-hud__track-fill::after {
+  background: linear-gradient(to bottom, #ffd1bc33, transparent 42%, #0002);
+}
 .es2-hud__track--boss > .es2-hud__track-trail {
-  background: #f2c37e; opacity: .85;
+  background: linear-gradient(180deg, #ffcfaa, #c78058 50%, #895043); opacity: .9;
   transition: transform .58s cubic-bezier(.22, .68, .25, 1) .08s;
 }
 .es2-hud__wave {

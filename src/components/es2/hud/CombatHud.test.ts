@@ -63,7 +63,7 @@ describe('ES2 combat HUD', () => {
     expect(fraction('生命值')).toBe('0.75')
     expect(fraction('經驗值')).toBe('0.42')
     expect(fraction('首領生命值')).toBe('0.4')
-    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#e46a48')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d35048')
     expect(fraction('波次進度')).toBe('0.22')
     expect(meter('生命值').findAll('span')).toHaveLength(2)
     expect(meter('生命值').get('.es2-hud__track-trail').attributes('aria-hidden')).toBe('true')
@@ -76,7 +76,7 @@ describe('ES2 combat HUD', () => {
     expect(meter('生命值').classes()).toContain('es2-hud__track--critical')
     expect(fraction('經驗值')).toBe('0.8')
     expect(fraction('首領生命值')).toBe('0.18')
-    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d93859')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#eb674d')
     expect(fraction('波次進度')).toBe('0.63')
     await wrapper.setProps({ hud: { ...equipped, hpPct: 94, xpPct: 15, bossPct: 48 } })
     expect(meter('生命值').attributes('aria-valuenow')).toBe('94')
@@ -84,7 +84,7 @@ describe('ES2 combat HUD', () => {
     expect(meter('生命值').classes()).not.toContain('es2-hud__track--critical')
     expect(fraction('經驗值')).toBe('0.15')
     expect(fraction('首領生命值')).toBe('0.48')
-    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#e46a48')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d35048')
   })
 
   it('tracks an offscreen boss with actual distance, direction and artwork, then hides when visible', async () => {

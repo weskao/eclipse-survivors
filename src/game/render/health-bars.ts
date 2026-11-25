@@ -16,7 +16,7 @@ export type HealthBarRank = 'ordinary' | 'elite' | 'boss'
 const HEALTH_PALETTES = {
   ordinary: ['#78d8a0', '#eac95f', '#ed9851', '#e66b73'],
   elite: ['#b697fa', '#d78ee9', '#e97ba1', '#ef526f'],
-  boss: ['#efc46c', '#eaa34f', '#e46a48', '#d93859'],
+  boss: ['#a94463', '#be4258', '#d35048', '#eb674d'],
 } as const
 
 /** Remaining HP fraction, not raw HP; rank changes the palette, never the thresholds. */
@@ -73,8 +73,29 @@ export function shouldShowHealthBar(motion: HealthBarFrame, showFull = false): b
   return showFull || motion.target < 1 || motion.front < 1 || motion.trail < 1
 }
 
-/** One painter for ordinary, elite and boss bars. Only special ranks add bevel/caps.
- * Flat rectangles avoid per-actor gradients, extra textures and Canvas state allocations.
+/** Static mirrored forged-metal caps, only for the boss. No per-frame gradients or images. */
+function drawBossEnd(ctx: Ctx2D, x: number, y: number, direction: -1 | 1): void {
+  ctx.beginPath()
+  ctx.moveTo(x + direction * 8, y)
+  ctx.lineTo(x, y - 8)
+  ctx.lineTo(x, y - 4)
+  ctx.lineTo(x, y + 4)
+  ctx.lineTo(x, y + 8)
+  ctx.closePath()
+  ctx.fillStyle = '#2b242c'; ctx.fill()
+  ctx.strokeStyle = '#bd9775'; ctx.lineWidth = 1; ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(x + direction * 6, y)
+  ctx.lineTo(x + direction * 3, y - 4)
+  ctx.lineTo(x + direction, y)
+  ctx.lineTo(x + direction * 3, y + 4)
+  ctx.closePath()
+  ctx.fillStyle = '#96374e'; ctx.fill()
+  ctx.strokeStyle = '#d1a38b'; ctx.stroke()
+}
+
+/** One painter for all ranks. Small preselected color bands mimic metal and enamel
+ * without allocating gradients, textures or animation objects for each enemy.
  */
 function drawHealthBar(
   ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number, width: number, rank: HealthBarRank,
@@ -85,24 +106,39 @@ function drawHealthBar(
   const inner = width - inset * 2, innerHeight = height - inset * 2
   const left = x - width / 2, fillLeft = left + inset, fillTop = top + inset
   const front = inner * motion.front, trail = inner * motion.trail
-  ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, width, height)
+  // The recessed dark track and narrow bevels are static, independent of HP.
+  ctx.fillStyle = boss ? '#170e19' : elite ? '#171322' : '#101720'
+  ctx.fillRect(left, top, width, height)
+  ctx.fillStyle = boss ? '#98765e' : elite ? '#74648e' : '#635b4e'
+  ctx.fillRect(left, top, width, 1)
+  ctx.fillStyle = '#07090d'; ctx.fillRect(left, top + height - 1, width, 1)
   if (boss || elite) {
-    ctx.strokeStyle = boss ? '#e9c078' : '#d6a4f3'
+    ctx.strokeStyle = boss ? '#98765e' : '#d6a4f3'
     ctx.lineWidth = 1
     ctx.strokeRect(left, top, width, height)
+    ctx.fillStyle = boss ? '#423039' : '#332941'
+    ctx.fillRect(left + 1, top + 1, width - 2, 1)
+    ctx.fillRect(left + 1, top + height - 2, width - 2, 1)
   }
   if (motion.trail > motion.front + .002) {
     ctx.fillStyle = '#f2c37e'; ctx.fillRect(fillLeft, fillTop, trail, innerHeight)
   }
-  ctx.fillStyle = healthBarColor(motion.target, rank)
-  ctx.fillRect(fillLeft, fillTop, front, innerHeight)
-  ctx.fillStyle = '#fff1de88'; ctx.fillRect(fillLeft, fillTop, front, 1)
-  if (boss || elite) {
-    ctx.fillStyle = '#00000044'; ctx.fillRect(fillLeft, fillTop + innerHeight - 1, front, 1)
-    if (motion.trail > motion.front + .002 && front >= 2) {
+  if (front > 0) {
+    ctx.fillStyle = healthBarColor(motion.target, rank)
+    ctx.fillRect(fillLeft, fillTop, front, innerHeight)
+    // Enamel/gemstone ridge and dark lower bevel. Never extend past the fill.
+    ctx.fillStyle = '#ffffff26'
+    ctx.fillRect(fillLeft, fillTop, front, Math.max(1, Math.floor(innerHeight * .35)))
+    ctx.fillStyle = '#00000055'
+    ctx.fillRect(fillLeft, fillTop + innerHeight - 1, front, 1)
+    if ((boss || elite) && motion.trail > motion.front + .002 && front >= 2) {
       // Local moving edge (no flash or pulse). Reduced motion has no trail/edge.
       ctx.fillStyle = '#fff3cf'; ctx.fillRect(fillLeft + front - 2, fillTop, 2, innerHeight)
     }
+  }
+  if (boss) {
+    drawBossEnd(ctx, left, top + height / 2, -1)
+    drawBossEnd(ctx, left + width, top + height / 2, 1)
   }
 }
 
