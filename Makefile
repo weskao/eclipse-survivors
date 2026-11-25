@@ -19,11 +19,11 @@ node_modules: package.json pnpm-lock.yaml
 setup: node_modules ## Install dependencies from pnpm-lock.yaml
 
 dev: node_modules ## Start the game at localhost (auto-opens your browser); PORT=5174 to override
-	$(WITH_EMULATORS) --project demo-eclipse-survivors '$(PNPM) dev --host 127.0.0.1 --port $(PORT) --open'
+	$(WITH_EMULATORS) --project demo-eclipse-survivors '$(PNPM) dev --host localhost --port $(PORT) --open'
 
 # Never use the unlocked flag for a production build. Engine guards it with import.meta.env.DEV.
 dev-unlocked: node_modules ## Local playtest with unlocked progression, cosmetics and discoveries (disposable save)
-	VITE_ES2_UNLOCKED=1 $(WITH_EMULATORS) --project demo-eclipse-survivors-unlocked '$(PNPM) dev --host 127.0.0.1 --port $(PORT) --open'
+	VITE_ES2_UNLOCKED=1 $(WITH_EMULATORS) --project demo-eclipse-survivors-unlocked '$(PNPM) dev --host localhost --port $(PORT) --open'
 
 test-unlocked: dev-unlocked ## Alias for the unlocked local playtest
 
