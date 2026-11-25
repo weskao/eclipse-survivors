@@ -444,9 +444,15 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
 }
 
 export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
-  for (const z of s.numberFx) {
-    const x = z.x + ox, y = z.y + oy
+  // Three bounded passes: normal, important outgoing, incoming. No sort or temporary list.
+  for (let tier = 0; tier < 3; tier++) {
+    let budget = tier === 0 ? 32 : tier === 1 ? 12 : 4
+    for (let i = s.numberFx.length - 1; i >= 0 && budget > 0; i--) {
+      const z = s.numberFx[i]!
+      if ((z.received ? 2 : z.critical || z.boss ? 1 : 0) !== tier) continue
+      const x = z.x + ox, y = z.y + oy
     if (x < -80 || x > s.W + 80 || y < -80 || y > s.H + 80) continue
+    budget--
     const critical = z.critical === true
     const received = z.received === true
     const life = critical ? 0.82 : received ? 0.7 : 0.62
@@ -476,6 +482,7 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
     ctx.fillText(label, 0, 0)
     ctx.restore()
+    }
   }
 }
 

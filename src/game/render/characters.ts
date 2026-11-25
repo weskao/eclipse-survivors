@@ -256,7 +256,7 @@ export function drawCharacter(
   ctx.beginPath()
   ctx.ellipse(x + 5, y + 5, sx * 0.32 * (1 + 0.12 * move), sy * 0.095, 0, 0, TAU)
   ctx.fill()
-  if (mob?.type === 'boss') {
+  if (mob?.type === 'boss' && mob.hp > 0) {
     // The persistent boss footprint complements the timed, dodgeable AI telegraphs.
     ctx.strokeStyle = '#ed9e7155'; ctx.lineWidth = 2
     ctx.beginPath(); ctx.ellipse(x, y + 5, mob.r + 15, (mob.r + 15) * 0.48, 0, 0, TAU); ctx.stroke()

@@ -42,7 +42,7 @@ import { loadProductionHeroes } from './render/es2/production-heroes'
 import { markHeroSpecialAnimation } from './render/animation'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
-import { spawnOpeningWave } from './spawn'
+import { spawnOpeningWave, spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
@@ -341,6 +341,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ? (state, event) => {
         contentRegistry.emit(state, event, hooks)
         if (state === s) worldEvents?.onContentEvent(event)
+        if (state === s && event.type === 'kill' && event.mob.type === 'boss' && factions) {
+          factions.runtime.projectiles.length = 0
+          factions.runtime.zones.length = 0
+        }
         // Only an actual finalized kill can advance an objective. The existing
         // boss controller gets first chance to account for its original XP/reward.
         if (state === s && event.type === 'kill' && objectiveRuntime) {
@@ -364,7 +368,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   // All 12 world events use the existing HP/XP, relic and combat writers.
   // The adapter owns the per-run transaction ledger, never another game loop.
-  worldEvents = createLiveWorldEvents(s, hooks, { random })
+  worldEvents = createLiveWorldEvents(s, hooks, { random, otherActors: () => factions?.runtime.enemies.length ?? 0 })
 
   // Special attacks and companion hits already own their damage; do not apply the normal
   // attack critical/modifier hook a second time when they call legacy hit().

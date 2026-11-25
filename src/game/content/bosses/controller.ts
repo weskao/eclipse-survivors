@@ -1,5 +1,5 @@
 import { damageHero } from '../../combat'
-import { requestCameraKick } from '../../fx'
+import { impact, requestCameraKick } from '../../fx'
 import { ATTACK_PRESENTATION } from './attack-presentation'
 import choreographyProfiles from './choreography.json'
 import { BALANCE } from '../../config'
@@ -122,6 +122,10 @@ interface Encounter {
   impacts: MutableImpact[]
   readonly summoned: Set<Mob>
   rewarded: boolean
+  poiseDamage: number
+  staggeredPhase: number
+  bodyHold: number
+  heldBody?: BossBodyMotion
 }
 
 /** Entire damaging geometry uses world coordinates and the same predicate as rendering. */
@@ -159,6 +163,8 @@ function bodyMotion(e: Encounter): BossBodyMotion | undefined {
   }
   if (e.transforming && e.recovery > 0)
     return frame('transform', 1 - e.recovery / BODY_TRANSFORM_SECONDS)
+  if ((e.boss.weaknessRemaining ?? 0) > 0) return frame('hurt', 1 - e.boss.weaknessRemaining! / BALANCE.bosses.weaknessSeconds)
+  if (e.bodyHold > 0 && e.heldBody) return frame(e.heldBody.pose, e.heldBody.progress)
   if (e.windup)
     return frame('windup', 1 - e.windup.remaining / BOSS_ATTACKS[e.windup.attackId].windup)
   const impact = e.impacts[e.impacts.length - 1]
@@ -249,6 +255,8 @@ function cleanOwnedMinions(e: Encounter): void {
 
 function clearTransient(e: Encounter): void {
   e.transforming = false
+  e.bodyHold = 0; e.heldBody = undefined; e.poiseDamage = 0
+  e.boss.weaknessRemaining = 0
   e.windup = null
   e.hazards.length = 0
   e.projectiles.length = 0
@@ -376,6 +384,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     const attacks = definition.phases[e.phase - 1]
     const attackId = attacks[e.turn % attacks.length]!
     e.turn++
+    e.poiseDamage = 0
     const hero = e.state.hero!
     const attack: BossAttack = BOSS_ATTACKS[attackId]
     e.windup = {
@@ -416,7 +425,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         state, boss, id, phase: 1, turn: 0, safeTurn: 0, recovery: 0,
         recoveryDuration: 0, transforming: false, deathAt: null,
         windup: null, hazards: [], projectiles: [], impacts: [], summoned: new Set<Mob>(),
-        rewarded: false,
+        rewarded: false, poiseDamage: 0, staggeredPhase: 0, bodyHold: 0,
       }
       hooks.sfx('boss')
       cue(definition.introCue)
@@ -432,6 +441,9 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       // point. The integration adapter owns only this one boss's AI.
       lockLegacyBrain(e.boss)
       e.boss.bossMoving = false
+      e.bodyHold = Math.max(0, e.bodyHold - dt)
+      if (e.bodyHold === 0) e.heldBody = undefined
+      e.boss.weaknessRemaining = Math.max(0, (e.boss.weaknessRemaining ?? 0) - dt)
       const phase = phaseFor(e.boss)
       if (phase > e.phase) {
         e.phase = phase; e.boss.bossPhase = phase
@@ -464,14 +476,14 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         return
       }
       if (e.recovery > 0) {
-        pursueHero(e, Math.min(dt, e.recovery))
+        if (!(e.boss.weaknessRemaining! > 0)) pursueHero(e, Math.min(dt, e.recovery))
         e.recovery = Math.max(0, e.recovery - dt)
         if (e.recovery > 0) return
       }
       e.transforming = false
       warn(e)
     },
-    onContentEvent(state, event, _hooks) {
+    onContentEvent(state, event, hooks) {
       const e = current(state)
       if (!e) return
       if (event.type === 'reset') { reset(state); return }
@@ -479,6 +491,26 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         cancelTransient(e)
         cleanOwnedMinions(e)
         e.recovery = 1.4
+        return
+      }
+      if (event.type === 'hit' && event.mob === e.boss && e.boss.hp > 0) {
+        if (e.bodyHold <= 0 && e.boss.lastVisualHoldAt === state.time && e.boss.visualHold) {
+          e.heldBody = bodyMotion(e)
+          e.bodyHold = e.boss.visualHold
+        }
+        // One break per phase. A telegraphed attack is never cancelled by routine hits.
+        if (!e.windup && !e.transforming && e.recovery > 0 && e.staggeredPhase !== e.phase && phaseFor(e.boss) === e.phase) {
+          e.poiseDamage += event.damage
+          if (e.poiseDamage >= e.boss.max * BALANCE.bosses.poiseDamageFraction) {
+            e.staggeredPhase = e.phase
+            e.boss.weaknessRemaining = BALANCE.bosses.weaknessSeconds
+            e.recovery = Math.max(e.recovery, BALANCE.bosses.weaknessSeconds)
+            e.recoveryDuration = e.recovery
+            impact(state, e.boss.x, e.boss.y, 135, '#e3c3ff', 2.5)
+            hooks.message('首領破防 · 傷害提升')
+            hooks.sfx('bossStagger')
+          }
+        }
         return
       }
       if (event.type !== 'kill' || event.mob !== e.boss || e.rewarded || e.boss.hp > 0) return

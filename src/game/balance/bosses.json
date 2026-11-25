@@ -27,6 +27,9 @@
       "orbitSpeed": 44
     }
   },
+  "poiseDamageFraction": 0.08,
+  "weaknessSeconds": 1.25,
+  "weaknessDamageMultiplier": 1.25,
   "phaseMovementMultipliers": [
     1,
     1.16,

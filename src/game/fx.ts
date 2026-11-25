@@ -64,9 +64,17 @@ export function pushEcho(s: GameState, x: number, y: number, kind: JobId, frame:
 
 /** Bounded damage labels; ordinary hit spam must not evict a readable critical popup. */
 export function pushDamageNumber(s: GameState, number: NumberFx): void {
-  s.numberFx.push(number)
-  if (s.numberFx.length > 80) {
-    const regular = s.numberFx.findIndex(hit => !hit.critical)
-    s.numberFx.splice(regular === -1 ? 0 : regular, 1)
+  // Incoming harm and criticals remain readable when a horde fills the queue.
+  const priority = (n: NumberFx) => n.received ? 3 : n.critical ? 2 : n.boss ? 1 : 0
+  if (s.numberFx.length >= 80) {
+    let index = -1, lowest = priority(number)
+    for (let i = 0; i < s.numberFx.length; i++) {
+      const p = priority(s.numberFx[i]!)
+      if (p < lowest || (p === lowest && index === -1)) { lowest = p; index = i }
+      if (lowest === 0 && index !== -1) break
+    }
+    if (index === -1) return
+    s.numberFx.splice(index, 1)
   }
+  s.numberFx.push(number)
 }

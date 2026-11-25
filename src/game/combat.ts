@@ -23,7 +23,8 @@ export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
-  const applied = hooks.modifyOutgoingDamage?.(d, e) ?? d
+  const modified = hooks.modifyOutgoingDamage?.(d, e) ?? d
+  const applied = modified * (e.type === 'boss' && (e.weaknessRemaining ?? 0) > 0 ? BALANCE.bosses.weaknessDamageMultiplier : 1)
   if (!Number.isFinite(applied) || applied <= 0) return
   const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
@@ -58,6 +59,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
     if (boss) {
       s.bossDefeated = true
+      s.enemyShots.length = 0
       hooks.message('🏆 擊敗森林魔王！')
       impact(s, e.x, e.y, 210, '#ffdca4', 3)
     }
