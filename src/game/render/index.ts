@@ -205,7 +205,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy, projectiles, reduced)
   drawOrbs(ctx, s, hero, ox, oy, projectiles)
   drawImpactWaves(ctx, s, ox, oy, reduced, policy?.reduceFlashing ?? false, policy?.vfxOpacity ?? 1)
-  drawLightning(ctx, s, ox, oy, reduced)
+  drawLightning(ctx, s, ox, oy, reduced || !!policy?.reduceFlashing)
   drawFx(ctx, s, ox, oy, reduced, assets.particles, projectiles)
   if (bossSnapshot) runVfxPass(() => !!vfxFrame && assets.pixiVfx!.impacts(vfxFrame), () => drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H, undefined, policy ?? undefined))
   assets.content?.render(ctx, s, ox, oy)

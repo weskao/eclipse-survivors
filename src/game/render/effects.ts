@@ -348,8 +348,12 @@ export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number
 // Branching lightning, layered core + glow, short lived to avoid clutter.
 export function drawLightning(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   for (const l of s.lightningFx) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    for (const p of l.pts) { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y) }
+    if (maxX + ox < -20 || minX + ox > s.W + 20 || maxY + oy < -20 || minY + oy > s.H + 20) continue
     ctx.save(); ctx.globalAlpha = l.life / l.max
-    for (const [w, col, blur] of reducedMotion ? [LIGHTNING_LAYERS[2]!] : LIGHTNING_LAYERS) {
+    for (let i = reducedMotion ? 2 : 0; i < LIGHTNING_LAYERS.length; i++) {
+      const [w, col, blur] = LIGHTNING_LAYERS[i]!;
       ctx.strokeStyle = col; ctx.lineWidth = w; ctx.shadowColor = col; ctx.shadowBlur = reducedMotion ? 0 : blur
       ctx.beginPath()
       l.pts.forEach((p, i) => (i ? ctx.lineTo(p.x + ox, p.y + oy) : ctx.moveTo(p.x + ox, p.y + oy)))

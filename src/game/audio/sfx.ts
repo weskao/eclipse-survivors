@@ -6,7 +6,7 @@ export type SfxTone = readonly [number, number, number, number, OscillatorType]
 /** Minimum seconds between two plays of the same cue (original `sfxCooldown`). */
 export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
-  dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
+  dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
   hurt: 0.28, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
   'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75,
 }
@@ -26,6 +26,7 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   wizard: [[71, 0, 0.2, 0.056, 'sine'], [83, 0.08, 0.27, 0.036, 'triangle']],
   chain: [[79, 0, 0.12, 0.053, 'sawtooth'], [91, 0.07, 0.24, 0.04, 'triangle']],
   kill: [[47, 0, 0.13, 0.042, 'triangle'], [35, 0.05, 0.18, 0.023, 'sine']],
+  massKill: [[43, 0, 0.12, 0.055, 'triangle'], [62, 0.035, 0.2, 0.045, 'sawtooth'], [74, 0.09, 0.25, 0.035, 'sine']],
   killStreak: [[48, 0, 0.18, 0.055, 'triangle'], [60, 0.04, 0.27, 0.05, 'sawtooth'], [67, 0.12, 0.3, 0.04, 'triangle'], [76, 0.23, 0.4, 0.035, 'sine']],
   boss: [[38, 0, 0.65, 0.075, 'sawtooth'], [45, 0.13, 0.79, 0.04, 'triangle']],
   bossStagger: [[36, 0, 0.23, 0.07, 'triangle'], [55, 0.025, 0.24, 0.05, 'sawtooth'], [67, 0.12, 0.38, 0.035, 'sine'], [79, 0.2, 0.4, 0.025, 'triangle']],

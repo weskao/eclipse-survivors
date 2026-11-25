@@ -13,6 +13,7 @@ export interface AccessibilityPreferences {
   interfaceScale: number
   quality: QualitySetting
   reducedMotion: MotionSetting
+  haptics: boolean
   reducedFlashing: boolean
   colorblindIndicators: boolean
   vfxIntensity: VfxIntensity
@@ -28,6 +29,7 @@ export const DEFAULT_ACCESSIBILITY_PREFERENCES: Readonly<AccessibilityPreference
   interfaceScale: 1,
   quality: 'auto',
   reducedMotion: 'system',
+  haptics: false,
   reducedFlashing: false,
   colorblindIndicators: false,
   vfxIntensity: 'full',
@@ -63,6 +65,7 @@ export function normalizeAccessibilityPreferences(value: unknown): Accessibility
     interfaceScale: bounded(p.interfaceScale, d.interfaceScale, 0.85, 1.25),
     quality: choice(p.quality, ['auto', 'low', 'medium', 'high'], d.quality),
     reducedMotion: choice(p.reducedMotion, ['system', 'on', 'off'], d.reducedMotion),
+    haptics: typeof p.haptics === 'boolean' ? p.haptics : d.haptics,
     reducedFlashing: typeof p.reducedFlashing === 'boolean' ? p.reducedFlashing : d.reducedFlashing,
     colorblindIndicators: typeof p.colorblindIndicators === 'boolean' ? p.colorblindIndicators : d.colorblindIndicators,
     vfxIntensity: choice(p.vfxIntensity, ['off', 'low', 'medium', 'full'], d.vfxIntensity),

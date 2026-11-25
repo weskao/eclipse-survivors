@@ -19,6 +19,7 @@
   "xpBurstParticles": 10,
   "killStreakWindow": 3,
   "multiKillWindow": 0.5,
+  "multiKillMilestones": [3, 5, 10, 20],
   "hitImpact": {
     "normal": {
       "duration": 0.24,

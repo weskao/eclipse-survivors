@@ -14,6 +14,7 @@ export interface VisualPresentationPolicy {
   ambientDensity: number
   vfxOpacity: number
   reduceMotion: boolean
+  haptics?: boolean
   reduceFlashing: boolean
   statusSymbols: boolean
   showDamageNumbers: boolean
@@ -37,11 +38,13 @@ export function resolvePresentationPolicy(
     medium: { pixelRatioCap: 1.5, ambientDensity: 0.65 },
     high: { pixelRatioCap: 2, ambientDensity: 1 },
   } as const
+  const reduceMotion = p.reducedMotion === 'on' || (p.reducedMotion === 'system' && !!hints.prefersReducedMotion)
   return {
     quality,
     ...parameters[quality],
     vfxOpacity: { off: 0, low: 0.35, medium: 0.7, full: 1 }[p.vfxIntensity],
-    reduceMotion: p.reducedMotion === 'on' || (p.reducedMotion === 'system' && !!hints.prefersReducedMotion),
+    reduceMotion,
+    haptics: p.haptics && !!hints.coarsePointer && !reduceMotion,
     reduceFlashing: p.reducedFlashing,
     statusSymbols: p.colorblindIndicators,
     showDamageNumbers: p.showDamageNumbers,

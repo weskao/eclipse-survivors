@@ -99,6 +99,10 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
         </div>
       </div>
       <div class="es2-switch-row">
+        <div><strong>{{ t("戰鬥震動") }}</strong><small>{{ t("僅支援震動的觸控裝置，減少動態時停用") }}</small></div>
+        <Es2Switch :label="t('戰鬥震動')" :disabled="disabled" :checked="modelValue.haptics" @toggle="update({ haptics: !modelValue.haptics })" />
+      </div>
+      <div class="es2-switch-row">
         <div><strong>{{ t("降低閃光") }}</strong><small>{{ t("避免頻繁閃爍；保留必要攻擊警示") }}</small></div>
         <Es2Switch :label="t('降低閃光')" :disabled="disabled" :checked="modelValue.reducedFlashing" @toggle="update({ reducedFlashing: !modelValue.reducedFlashing })" />
       </div>

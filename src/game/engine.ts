@@ -277,6 +277,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let frameDrawn = 0
   let pixiVfx: PixiVfxBridge | undefined
   let presentationPolicy: VisualPresentationPolicy | null = null
+  let lastHapticAt = -Infinity
   let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
   let heroSpecialization: HeroSpecializationAdapter | null = null
@@ -294,7 +295,14 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   const hooks: GameHooks = {
-    sfx: cue => audio.playSfx(cue),
+    sfx: cue => {
+      audio.playSfx(cue)
+      if (s.mode !== 'play' || !presentationPolicy?.haptics || !ui.coarsePointer || s.time - lastHapticAt < 0.65) return
+      const duration = cue === 'bossDefeat' ? 45 : cue === 'bossStagger' || cue === 'killStreak' ? 30 : cue === 'massKill' || cue.endsWith('-special') ? 18 : 0
+      if (!duration || typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return
+      lastHapticAt = s.time
+      try { navigator.vibrate(duration) } catch { /* unsupported or blocked by browser */ }
+    },
     message,
     offerUpgrades,
     end,
@@ -523,6 +531,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.worldEventChoice = null
     ui.worldEventMarkers = []
     resetRun(s)
+    lastHapticAt = -Infinity
     factions?.reset()
     objectiveRuntime = isObjectiveModeId(ui.runMode)
       ? createObjectiveRuntime(ui.runMode, (_state, evaluation) => {
