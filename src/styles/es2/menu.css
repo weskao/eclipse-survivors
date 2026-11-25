@@ -544,3 +544,60 @@
   .es2-menu .es2-hero-select-card:is(:hover,:active):not(:disabled){transform:none}
   .es2-menu .es2-hero-select-card[aria-pressed="true"] > img{transform:none}
 }
+
+/* Wide selection board: spend the horizontal space on six heroes and nine modes,
+   and bound artwork by available height rather than desktop width alone. Full
+   descriptions remain reachable in the existing detail dialogs. */
+@media (min-width: 1000px) and (min-height: 600px) and (orientation: landscape) {
+  .es2-menu {padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));overflow-x:hidden}
+  .es2-menu-shell {max-width:1640px;gap:clamp(9px,1.4dvh,18px)}
+  .es2-menu-header {padding-bottom:8px;align-items:center}
+  .es2-menu-brand h1 {font-size:clamp(1.8rem,4.3dvh,3.4rem);margin:2px 0 4px}
+  .es2-menu-layout {grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);gap:clamp(12px,2vw,28px)}
+  .es2-menu-layout>section {min-width:0}
+  .es2-section-heading {margin-bottom:7px}
+  .es2-section-heading h2 {font-size:clamp(1.1rem,2.5dvh,1.7rem);margin:3px 0}
+  .es2-section-heading p {font-size:.75rem}
+  .es2-hero-section>h3.es2-section-heading {margin:8px 0 6px;font-size:.9rem}
+  .es2-hero-grid,.es2-menu .es2-hero-section .es2-roster {grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait {
+    height:clamp(92px,calc((100dvh - 500px) / 2),260px);padding:4px;object-fit:contain
+  }
+  .es2-menu .es2-hero-copy,.es2-menu .es2-hero-section .es2-roster__copy {
+    display:flex;flex:1;flex-direction:column;gap:2px;padding:7px 6px;text-align:center;min-width:0
+  }
+  .es2-menu .es2-hero-copy strong,.es2-menu .es2-roster__copy strong {font-size:clamp(.82rem,1.2vw,1.05rem);line-height:1.2;overflow-wrap:anywhere}
+  .es2-menu .es2-hero-copy small,.es2-menu .es2-roster__subtitle {font-size:.75rem;line-height:1.25;overflow-wrap:anywhere}
+  .es2-menu .es2-roster__copy :is(.es2-roster__description,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits) {display:none}
+  .es2-menu :is(.es2-hero-selection,.es2-roster__selection) {margin-top:auto;padding-top:3px;font-size:.75rem}
+  .es2-menu .es2-hero-stat-strip {gap:3px;margin-top:2px}
+  .es2-menu .es2-hero-stat-strip .es2-hero-stat {padding:2px 1px}
+  .es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger {
+    position:absolute;top:0;right:0;z-index:2;display:grid;place-items:start end;
+    width:44px;height:44px;padding:5px;border:0;background:transparent;cursor:pointer
+  }
+  .es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger) span {
+    display:grid;place-items:center;width:22px;height:22px;border:1px solid #bda473;border-radius:50%;
+    background:#111d29;color:#ffe5b2;font:italic bold 15px/1 Georgia,serif
+  }
+  .es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger):focus-visible span {outline:2px solid #ffe5b2;outline-offset:2px}
+  .es2-menu .es2-hero-section .es2-hero-action-preview {top:5px;left:5px;right:auto;width:42px;height:42px}
+  .es2-menu .es2-mode-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .es2-menu .es2-mode-card {min-height:55px;gap:5px;padding:7px}
+  .es2-menu .es2-mode-mark {width:22px;font-size:1.2rem}
+  .es2-menu .es2-mode-copy strong {font-size:.85rem;line-height:1.2}
+  .es2-menu .es2-mode-copy small {font-size:max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)));line-height:1.25}
+  .es2-menu .es2-objective-chooser {margin-top:9px}
+  .es2-menu .es2-objective-chooser header {margin-bottom:5px}
+  .es2-menu .es2-objective-chooser h2 {font-size:1.05rem;margin:2px 0}
+  .es2-menu .es2-objective-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .es2-menu .es2-objective-choice {min-height:54px;padding:7px 40px 7px 9px;gap:3px;justify-content:center;overflow-wrap:anywhere}
+  .es2-menu .es2-objective-choice strong {font-size:.86rem;line-height:1.2}
+  .es2-menu .es2-objective-choice .reward {font-size:.7rem;line-height:1.25}
+  .es2-menu .es2-objective-choice>:not(strong):not(.reward) {display:none}
+  .es2-menu-footer {gap:8px;padding-top:7px}
+  .es2-menu .es2-hall-links {gap:6px}
+  .es2-menu .es2-hall-links button {padding:5px 9px}
+  .es2-menu-action-bar {gap:3px;padding-block:6px max(6px,env(safe-area-inset-bottom))}
+  .es2-menu-action-bar .es2-start {min-height:44px}
+}
