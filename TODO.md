@@ -89,4 +89,4 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Actual gameplay screenshots and MP4 clips, not mockups.
 - [ ] Long-run FPS, p95/p99 frame time, memory, draw operations/overdraw, and physical-device thermals.
 - [ ] All required CI checks pass at exact HEAD before completion.
-- [ ] Document game-feel design rules (meaningful upgrades, hero identity, build diversity, fair difficulty, risk/reward, visual clarity, performance, accessibility, real evidence).
+- [x] Document game-feel design rules (meaningful upgrades, hero identity, build diversity, fair difficulty, risk/reward, visual clarity, performance, accessibility, real evidence); see `.claude/rules/game-feel.md` and CLAUDE.md.

@@ -62,14 +62,31 @@ export function buildMagicGlow(makeCanvas: MakeCanvas): HTMLCanvasElement | null
 // Magical gems have faceted highlights and small animated coronae.
 export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, gems?: GemSprites): void {
   const { W, H } = s
+  let trailBudget = 48 // Two cached fragments per visible moving gem; bounded independently of the gem cap.
   for (const star of s.stars) {
     const x = star.x + ox
     const y = star.y + oy
     if (x < -25 || x > W + 25 || y < -25 || y > H + 25) continue
     const bob = reducedMotion ? 0 : Math.sin(star.t * 4) * 3
+    const sprite = gems && (star.value > 10 ? gems.rare : gems.common)
+    if (sprite && s.hero && !reducedMotion && star.attractionSpeed && trailBudget > 0) {
+      const dx = s.hero.x - star.x, dy = s.hero.y - star.y
+      const distance = Math.hypot(dx, dy)
+      if (distance > 0) {
+        const nx = dx / distance, ny = dy / distance
+        ctx.save()
+        const alpha = ctx.globalAlpha
+        ctx.globalAlpha = alpha * 0.20
+        ctx.drawImage(sprite, x - nx * 27 - 4, y + bob - 7 - ny * 27 - 4, 8, 8)
+        ctx.globalAlpha = alpha * 0.45
+        ctx.drawImage(sprite, x - nx * 15 - 6, y + bob - 7 - ny * 15 - 6, 12, 12)
+        ctx.restore()
+        trailBudget--
+      }
+    }
     ctx.save(); ctx.translate(x, y + bob - 7); if (!reducedMotion) ctx.rotate(Math.sin(star.t * 2) * 0.11)
-    if (gems) {
-      ctx.drawImage(star.value > 10 ? gems.rare : gems.common, -16, -16, 32, 32)
+    if (sprite) {
+      ctx.drawImage(sprite, -16, -16, 32, 32)
     } else {
       // Standalone callers retain the procedural renderer without asset setup.
       ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'

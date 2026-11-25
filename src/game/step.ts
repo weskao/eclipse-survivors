@@ -1,5 +1,6 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { BALANCE } from './config'
+import { expireKillStreak } from './kill-streak'
 import { attack, hit, victoryConditionMet } from './combat'
 import type { ContentRegistry } from './content/registry'
 import type { FactionBridge } from './content/enemies/integration'
@@ -17,6 +18,7 @@ import type { GameHooks, GameState, Hero, MoveInput } from './types'
 
 function tickTimers(s: GameState, hero: Hero, dt: number): void {
   s.time += dt
+  expireKillStreak(s)
   s.worldClock += dt
   hero.attack -= dt
   hero.inv -= dt

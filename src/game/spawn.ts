@@ -52,8 +52,12 @@ export function ordinarySpawnsAllowed(s: GameState): boolean {
 export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void, otherLiving = 0): void {
   s.spawnT -= dt
   if (s.spawnT <= 0) {
-    s.spawnT = spawnInterval(s.time, s.currentScene, getMode(s.runMode).modifiers.spawnFrequency)
-    if (ordinarySpawnsAllowed(s)) {
+    const stage = describeWave(s.runMode, 0, s.time).stage
+    const frequency = getMode(s.runMode).modifiers.spawnFrequency
+    const multiplier = stage === 'assault' ? BALANCE.enemies.assaultIntervalMultiplier
+      : stage === 'reward' ? BALANCE.enemies.rewardIntervalMultiplier : 1
+    s.spawnT = Math.max(BALANCE.enemies.intervalFloor / frequency, spawnInterval(s.time, s.currentScene, frequency) * multiplier)
+    if (stage !== 'recovery') {
       spawnMob(s, undefined, otherLiving)
       if (s.time > BALANCE.enemies.extraSpawnAfterSeconds && random() < BALANCE.enemies.extraSpawnChance + sceneBonus(s.currentScene)) spawnMob(s, undefined, otherLiving)
     }

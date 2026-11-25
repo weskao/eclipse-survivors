@@ -1,4 +1,5 @@
 import { damageHero, hit } from '../../combat'
+import { recordKill } from '../../kill-streak'
 import { emitHitImpact, pushDamageNumber } from '../../fx'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
@@ -104,7 +105,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     if (!Number.isFinite(modified) || modified <= 0) return 0
     const critical = hooks.consumeCriticalHit?.() ?? false
     const applied = damageFactionEnemy(runtime, enemy, modified, sourceX, sourceY, reward => {
-      state.kill++
+      recordKill(state)
       defeated[reward.kind] = (defeated[reward.kind] ?? 0) + 1
       // The legacy XP collection path owns level progression; never award XP twice.
       state.stars.push({ x: reward.x, y: reward.y, value: reward.xp, t: 0 })

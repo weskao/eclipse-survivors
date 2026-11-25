@@ -143,6 +143,7 @@ export interface GameState {
   lastCameraKickAt: number
   time: number
   kill: number
+  killStreak: import('./kill-streak').KillStreak
   spawnT: number
   bossSpawned: boolean
   bossDefeated: boolean

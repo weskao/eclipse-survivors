@@ -13,6 +13,7 @@ Each requirement lives in exactly one file below. Files under `.claude/rules/` w
 | Any visible text, ARIA/`alt` label, reward name (`en` / `zh-TW`) | [`.claude/rules/bilingual-copy.md`](.claude/rules/bilingual-copy.md) |
 | Any UI interaction, flow, music transition, or hero active skill (mandatory cinematic cast SFX, Q/touch parity) | [`.claude/rules/ui-audio.md`](.claude/rules/ui-audio.md) |
 | Any gameplay number: heroes, XP, skills, weapons, enemies, events, bosses, relics, 「永久強化」/暮光餘燼 | [`.claude/rules/game-balance-config.md`](.claude/rules/game-balance-config.md) |
+| Combat feedback, skill growth, encounters, reward experience and game-feel acceptance | [`.claude/rules/game-feel.md`](.claude/rules/game-feel.md) |
 | Game logic, AI, combat, collisions, world, rendering, VFX, perf-critical UI | [`.claude/rules/realtime-performance.md`](.claude/rules/realtime-performance.md) (§8 = VFX performance gate; §9 = single-owner rendering, duplicate-work and draw-operation budget) |
 | Any character CRUD: heroes, enemies, bosses, NPCs, summons, portraits, animations (native 3× art at 1×; five authored facings first; independent asymmetric facings when required; verified mirror reuse, no redundant sheets) | [`.claude/rules/character-art-3x.md`](.claude/rules/character-art-3x.md) (§5 = CRUD gate) |
 | Knight/ranger/wizard sprites, rigid weapons, held projectiles, body atlas | [`.claude/rules/hero-weapon-rendering.md`](.claude/rules/hero-weapon-rendering.md) |
