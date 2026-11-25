@@ -471,9 +471,22 @@ try {
           fill: rect(button.querySelector('.es2-hero-special__fill')),
           border: parseFloat(getComputedStyle(button).borderBottomWidth) }
       })
+      const assertUnscrollable = async () => {
+        const result = await action.evaluate(button => {
+          const css = getComputedStyle(button)
+          // Hidden scrollbars alone are insufficient: attempt both axes.
+          button.scrollLeft = 100
+          button.scrollTop = 100
+          return { x: button.scrollLeft, y: button.scrollTop, overflowX: css.overflowX, overflowY: css.overflowY }
+        })
+        assert.deepEqual(result, { x: 0, y: 0, overflowX: 'clip', overflowY: 'clip' },
+          `${heroId}: skill button must not be a scroll container`)
+      }
+      await assertUnscrollable()
       const readyGeometry = await geometry()
       await page.keyboard.press('KeyQ')
       await page.waitForFunction(() => document.querySelector('[data-hero-special]')?.dataset.ready === 'false')
+      await assertUnscrollable()
       const cooldownGeometry = await geometry()
       for (const key of ['button', 'icon', 'name', 'hint']) {
         const before = readyGeometry[key], after = cooldownGeometry[key]

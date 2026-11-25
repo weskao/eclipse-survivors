@@ -168,6 +168,11 @@ describe('ES2 dedicated hero special action', () => {
     },
   )
 
+  it('clips decorative overflow without creating a scroll container inside the skill button', () => {
+    const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    expect(source).toMatch(/\.es2-hero-special__button\s*\{[^}]*overflow:\s*clip;/)
+  })
+
   it('keeps native button geometry independent of the internal grid and cooldown fill', () => {
     const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
     expect(source).toMatch(/\.es2-hero-special__button\s*\{[^}]*appearance:\s*none;[^}]*display:\s*block;/)

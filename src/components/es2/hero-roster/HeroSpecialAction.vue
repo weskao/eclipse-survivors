@@ -55,7 +55,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special { position: fixed; right: max(112px, calc(18px + env(safe-area-inset-right))); bottom: calc(26px + env(safe-area-inset-bottom)); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; color: #f7dfb9; }
 @media (max-width: 760px) { .es2-hero-special { right: max(104px, calc(12px + env(safe-area-inset-right))); bottom: calc(24px + env(safe-area-inset-bottom)); } }
 @media (max-height: 440px) { .es2-hero-special { bottom: max(5px, env(safe-area-inset-bottom)); } }
-.es2-hero-special__button { appearance: none; position: relative; overflow: hidden; width: 180px; min-height: 66px; border: 2px solid #daa676; border-radius: 12px; background: #2c1831; color: #fff2d8; font: inherit; font-weight: 700; cursor: pointer; touch-action: manipulation; padding: 6px 10px 10px; display: block; text-align: center; }
+.es2-hero-special__button { appearance: none; position: relative; overflow: clip; width: 180px; min-height: 66px; border: 2px solid #daa676; border-radius: 12px; background: #2c1831; color: #fff2d8; font: inherit; font-weight: 700; cursor: pointer; touch-action: manipulation; padding: 6px 10px 10px; display: block; text-align: center; }
 /* A non-native grid owns the content; button chrome and cooldown fill never participate in layout. */
 .es2-hero-special__content { position: relative; z-index: 1; display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: .5rem; align-items: center; min-height: 44px; }
 .es2-hero-special__button:focus-visible { outline: 3px solid #ffe4a9; outline-offset: 3px; }
