@@ -665,3 +665,90 @@ describe('cinematic sampled boss music', () => {
     expect(ctx.sources.at(-1)?.stoppedAt).not.toBeNull()
   })
 })
+
+describe('hero active skill audio lifetime', () => {
+  const cue = 'shadowblade-special' as const
+  const sampled = async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      loadHeroSfx: async () => ctx.createBuffer(1, 96000, 48000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+    return audio
+  }
+
+  it.each(['level', 'paused', 'result'] as const)('lets the cast finish on %s without replaying it', async mode => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const source = ctx.sources.at(-1)!
+    ctx.currentTime = .1
+    audio.onScreen(mode)
+    expect(source.stoppedAt).toBeNull()
+    expect(ctx.suspendCalls).toBe(0)
+    audio.onScreen('play')
+    expect(ctx.sources).toHaveLength(1)
+    expect(source.stoppedAt).toBeNull()
+    audio.onScreen('menu')
+    expect(source.stoppedAt).toBe(.1)
+    audio.dispose()
+  })
+
+  it('does not truncate a prior cast even if another valid cue starts before it ends', async () => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const first = ctx.sources.at(-1)!
+    ctx.currentTime = .1
+    audio.playSfx('spirit-summoner-special')
+    const second = ctx.sources.at(-1)!
+    expect(first.stoppedAt).toBeNull()
+    expect(second).not.toBe(first)
+    ctx.currentTime = .2
+    audio.onScreen('menu')
+    expect(first.stoppedAt).toBe(.2)
+    expect(second.stoppedAt).toBe(.2)
+    audio.dispose()
+  })
+
+  it('does not stop already completed samples on returning home', async () => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const source = ctx.sources.at(-1)!
+    ctx.currentTime = 3
+    audio.onScreen('menu')
+    expect(source.stoppedAt).toBeNull()
+    audio.dispose()
+  })
+
+  it('keeps the synth fallback through overlays but cancels every remaining note on Home', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.playSfx('spirit-summoner-special')
+    const notes = [...ctx.oscillators]
+    expect(notes.length).toBeGreaterThan(1)
+    const planned = notes.map(note => note.stoppedAt)
+    ctx.currentTime = .1
+    audio.onScreen('level')
+    audio.onScreen('paused')
+    audio.onScreen('result')
+    expect(notes.map(note => note.stoppedAt)).toEqual(planned)
+    expect(ctx.oscillators).toHaveLength(notes.length)
+    audio.onScreen('menu')
+    expect(notes.every(note => note.stoppedAt === .1)).toBe(true)
+    audio.dispose()
+  })
+
+  it.each(['mute', 'volume', 'interrupt', 'dispose'] as const)('preserves the explicit %s stop policy', async action => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const source = ctx.sources.at(-1)!
+    ctx.currentTime = .1
+    if (action === 'mute') audio.toggleSfx()
+    else if (action === 'volume') audio.setSfxVolume(0)
+    else if (action === 'interrupt') audio.interrupt()
+    else audio.dispose()
+    expect(source.stoppedAt).toBe(.1)
+    if (action !== 'dispose') audio.dispose()
+  })
+})

@@ -111,13 +111,22 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let warningMix = false
   let noiseBuffer: BufferLike | null = null
   const heroCastBuffers = new Map<SfxCue, BufferLike>()
-  let heroCastVoice: BufferSourceLike | null = null
-  const stopHeroCast = (): void => {
-    const source = heroCastVoice
-    heroCastVoice = null
-    if (source && ac) {
-      try { source.stop(ac.currentTime) } catch { /* already ended */ }
+  // A cast belongs to the expedition, not the transient gameplay screen. Track both
+  // decoded one-shots and finite synth fallback notes so Home can cancel either path.
+  const heroCastVoices: { source: Pick<BufferSourceLike, 'stop'>; endsAt: number }[] = []
+  const pruneHeroCasts = (now: number): void => {
+    for (let i = heroCastVoices.length - 1; i >= 0; i--) {
+      if (heroCastVoices[i]!.endsAt <= now) heroCastVoices.splice(i, 1)
     }
+  }
+  const stopHeroCast = (): void => {
+    if (ac) {
+      pruneHeroCasts(ac.currentTime)
+      for (const { source } of heroCastVoices) {
+        try { source.stop(ac.currentTime) } catch { /* already ended */ }
+      }
+    }
+    heroCastVoices.length = 0
   }
   const preloadHeroCasts = (ctx: AudioContextLike): void => {
     heroCastBuffers.clear()
@@ -193,7 +202,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     } catch { /* A restricted audio element must not break game input. */ }
   }
 
-  const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): void => {
+  const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): OscillatorLike | undefined => {
     if (!ac || !master) return
     const o = ac.createOscillator()
     const v = ac.createGain()
@@ -206,6 +215,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     v.connect(bus === 'music' && musicBus ? musicBus : master)
     o.start(at)
     o.stop(at + dur + 0.03)
+    return o
   }
 
   // When the MP3 is playing, keep only subtle rhythmic accents from the synth.
@@ -359,20 +369,24 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
       recentSfx.push(now)
       sfxLast.set(cue, now)
+      const heroCast = HERO_CAST_CUES.some(special => special === cue)
+      if (heroCast) pruneHeroCasts(now)
       const cast = heroCastBuffers.get(cue)
       if (cast && master) {
-        stopHeroCast()
         try {
           const source = ctx.createBufferSource()
           source.buffer = cast
           source.loop = false
           source.connect(master)
           source.start(now)
-          heroCastVoice = source
+          heroCastVoices.push({ source, endsAt: now + (cast.duration ?? cast.getChannelData(0).length / ctx.sampleRate) })
           return
         } catch { /* fall back to the bounded original cue */ }
       }
-      for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) tone(pitch, now + delay, duration, gain, wave)
+      for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) {
+        const source = tone(pitch, now + delay, duration, gain, wave)
+        if (heroCast && source) heroCastVoices.push({ source, endsAt: now + delay + duration + 0.03 })
+      }
       if (NOISE_CUES.has(cue)) noiseBurst(now)
     },
     tick(mode) {
@@ -405,7 +419,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     onScreen(nextMode: GameMode) {
       const previous = mode
       mode = nextMode
-      if (mode !== 'play') stopHeroCast()
+      // Level-up, treasure, pause/settings and result overlays must never truncate a cast.
+      // Only leaving the expedition for Home cancels it (explicit mute/OS teardown are separate).
+      if (mode === 'menu') stopHeroCast()
       if (mode !== 'result') {
         resultScene = null
         resultScore.dispose()
