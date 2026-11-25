@@ -43,12 +43,12 @@ History audit: commit `2c17c81eb27d1621e57b0be443cf3228276e3e4b` redrew these te
 Design reference: https://chatgpt.com/s/t_6b072b23233c8191b99e375f1b41e17d
 
 Approved direction: C — hybrid: large-scale horde-clearing power fantasy, dark-fantasy RPG build depth, long-term progression. Initial design emphasis 50% combat, 30% strategy, 20% meta; not a fixed resource allocation or version bump.
-Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First delivery: discussion sections 4, 5, 8, 9; all other items remain tracked. Check off only after observed RED/GREEN and actual player-path acceptance; retain existing TODO sections. Preserve input, audio lifecycle, hitboxes, saves, bilingual UI, and mobile accessibility. Prefer existing renderer; PixiJS allowed only with measured benefits, single-owner drawing, bounded particles, batching, draw-call/overdraw budgets and comparable mobile visual quality.
+Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First delivery: discussion sections 4, 5, 8, 9; all other items remain tracked. Check off implemented behavior after observed RED/GREEN and automated player-path acceptance; retain existing TODO sections. For this ES3 branch only, the owner explicitly waives manual visual/audio/device review, physical thermals, screenshots/MP4 delivery and other manual-only gates (2026-11-26). Record these as WAIVED (not measured or performed); do not let them block this delivery. Automated regressions, build and release checks remain required; the existing three-hero manual art acceptance failure is an acknowledged exception, not an approval or a reason to change the gate. Preserve input, audio lifecycle, hitboxes, saves, bilingual UI, and mobile accessibility. Prefer existing renderer; PixiJS allowed only with measured benefits, single-owner drawing, bounded particles, batching, draw-call/overdraw budgets and comparable mobile visual quality.
 
 ### Wave 0 — Baseline [P0]
 - [ ] Deterministic seed scenarios and per-run combat statistics.
 - [ ] Measure XP, DPS, kill speed, and encounter pressure curves.
-- [ ] Establish desktop/mobile frame-time, memory, draw-operation and thermal baselines.
+- [ ] Establish automated frame-time, memory and draw-operation baselines using comparable workloads; physical-device thermal and manual hardware sign-off WAIVED for ES3.
 
 ### Wave 1 — Combat Juice [P0; first delivery]
 - [ ] Tiered impact feedback: normal, heavy, critical, evolved, mass kill, boss stagger, hero active and boss death.
@@ -56,7 +56,8 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Authored enemy hit, death and dissolve animations; preserve art identity.
 - [ ] Critical and damage-number hierarchy; preserve danger readability.
 - [x] Authoritative kill streak and burst multikill counts, expiry/reset, legacy and faction kill ownership; no damage bonus (RED: 45680983083; GREEN test log: 45681389783, combat.test.ts; later workflow steps cancelled by newer HEAD).
-- [ ] Kill streak and burst multikill feedback, records and bilingual HUD; milestones 10/25/50/100/200/500.
+- [x] Live combo HUD, game-clock expiry and bilingual highest streak/multikill run results (RED 45681795019; GREEN 45682705645, engine/HUD/result tests).
+- [ ] Kill streak and burst multikill presentation and milestone feedback 10/25/50/100/200/500.
 - [ ] Layered combat/kill SFX, rate limiting, preserve complete active-skill playback.
 - [ ] Camera impact and accessibility controls; reduced motion/flashing, supported mobile haptics.
 
@@ -66,7 +67,7 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Improve first-upgrade timing with mode-specific balance tests.
 - [x] Coalesce same-tick XP gem pickup audio while preserving exact per-gem XP and pickup receipts (RED: run 45677562464; GREEN: run 45678439675, step.test.ts).
 - [x] XP gem acceleration and same-tick collection, preserving exact XP and pickup receipts (RED: run 45680019938; GREEN: run 45680367799, step.test.ts; player simulation path verified).
-- [ ] XP gem trails and optional magnet pickups; preserve exact reward totals. Cached bounded trails and reduced-motion/offscreen rules implemented; automated rendering contract RED 45680983083 / GREEN 45681389783; actual browser visual acceptance and magnet pending.
+- [ ] XP gem trails and optional magnet pickups; preserve exact reward totals. Cached bounded trails and reduced-motion/offscreen rules implemented; automated rendering contract RED 45680983083 / GREEN 45681389783; manual visual acceptance WAIVED; magnet and exact overflow XP conservation pending.
 - [ ] Rare/epic/legendary chest reveal animations with skip, single claim and uninterrupted essential audio.
 - [ ] Distinct evolution reveal and actual gameplay transformation.
 
@@ -108,9 +109,9 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 ### Wave 7 — Integration & QA [P0; continuous]
 - [ ] Observed RED → GREEN → REFACTOR and full regression suite.
 - [ ] Gameplay parity across all quality settings.
-- [ ] Real desktop, phone portrait/landscape, tablet and foldable QA in both locales.
+- [ ] Automated responsive and localization regression coverage for desktop, phone portrait/landscape, tablet and foldable; manual device review WAIVED.
 - [ ] Reduced Motion and Reduced Flashing; no HUD or telegraph occlusion.
-- [ ] Actual gameplay screenshots and MP4 clips, not mockups.
-- [ ] Long-run FPS, p95/p99 frame time, memory, draw operations/overdraw, and physical-device thermals.
-- [ ] All required CI checks pass at exact HEAD before completion.
+- [x] Actual gameplay screenshots and MP4 clips — WAIVED by owner for this ES3 delivery; no capture or review claimed.
+- [ ] Automated long-run diagnostics: p95/p99 timing, memory and comparable draw operations/overdraw; manual FPS and physical-device thermals WAIVED, do not invent metrics.
+- [ ] All required automated checks pass at exact HEAD, except the explicitly acknowledged three-hero manual art acceptance failure. Preserve original gate; never claim a red workflow is green.
 - [x] Document game-feel design rules (meaningful upgrades, hero identity, build diversity, fair difficulty, risk/reward, visual clarity, performance, accessibility, real evidence); see `.claude/rules/game-feel.md` and CLAUDE.md.

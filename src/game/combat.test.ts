@@ -309,3 +309,16 @@ describe('ES3 per-run kill feedback', () => {
     expect(s).toMatchObject({ kill: 0, killStreak: { current: 0, best: 0, burst: 0, bestBurst: 0 } })
   })
 })
+
+describe('ES3 tiered contact feedback', () => {
+  it('distinguishes a heavy hit on a high-mass target from an ordinary hit without duplicating impact ownership', () => {
+    const { s } = setup()
+    const hooks = spyHooks()
+    hit(s, mob(60, 0), 10, hooks)
+    hit(s, mob(70, 0, { type: 'golem', r: 30, hp: 200 }), 10, hooks)
+    expect(s.impactWaves).toHaveLength(2)
+    expect(s.impactWaves[0]?.contact).toBe('normal')
+    expect(s.impactWaves[1]?.contact).toBe('heavy')
+    expect(s.impactWaves[1]!.max).toBeGreaterThan(s.impactWaves[0]!.max)
+  })
+})

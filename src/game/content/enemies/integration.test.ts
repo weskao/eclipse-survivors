@@ -172,3 +172,13 @@ describe('faction runtime integration boundary', () => {
     expect(bridge.runtime.zones.length).toBeLessThanOrEqual(64)
   })
 })
+
+it('keeps previously dropped XP when a faction death crosses the gem budget', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => 0 })
+  s.stars = Array.from({ length: 220 }, (_, i) => ({ x: 500 + i, y: 0, value: 3, t: 0 }))
+  const enemy = bridge.spawn(s, 'berserker', 250, 0)!
+  bridge.hitFaction(s, enemy, 10000, 0, 0, hooks)
+  expect(s.kill).toBe(1)
+  expect(s.stars.length).toBeLessThanOrEqual(220)
+  expect(s.stars.reduce((sum, star) => sum + star.value, 0)).toBe(660 + ENEMY_DEFINITIONS.berserker.xp)
+})

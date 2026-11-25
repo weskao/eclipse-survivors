@@ -31,6 +31,8 @@ Each requirement lives in exactly one file below. Files under `.claude/rules/` w
 
 Verify new behavior from the real player entry point through the engine to the resulting state and visible feedback. Generated mockups and mocked Canvas timings are not runtime evidence; never claim QA/CI success without actual outputs.
 
+For the ES3 combat/juice/pacing/rewards branch only, follow the owner-approved manual-acceptance exception in [game-feel.md](.claude/rules/game-feel.md#es3-owner-approved-acceptance-exception). It does not waive implementation, automated correctness, accessibility or performance work, or change other branches' release requirements.
+
 ## Mandatory TDD and measurable verification
 
 Every gameplay or performance change follows **RED → GREEN → REFACTOR**: reproduce with a deterministic test that fails for the expected reason, make the smallest fix, rerun. Keep regression tests for boundaries, the boss, hitboxes, skills, offscreen objects, viewport resize, biome changes and long-running cache bounds. Benchmark and device-profiling rules: [`realtime-performance.md` §6](.claude/rules/realtime-performance.md#6-required-test-driven-workflow-and-performance-evidence).
