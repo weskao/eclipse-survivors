@@ -7,6 +7,8 @@ const destination = 'artifacts/es2-mobile-browser'
 const cases = [
   ['portrait-320', 320, 640, true],
   ['portrait-390', 390, 844, true],
+  ['folded-360', 360, 800, true],
+  ['unfolded-720', 720, 850, true],
   ['portrait-430', 430, 932, true],
   ['landscape-844', 844, 390, true],
   ['tablet-portrait-768', 768, 1024, true],
@@ -49,6 +51,7 @@ try {
     const context = await browser.newContext({
       viewport: { width, height }, deviceScaleFactor: mobile ? 2 : 1,
       isMobile: mobile, hasTouch: mobile,
+      reducedMotion: name === 'portrait-320' ? 'reduce' : 'no-preference',
       locale: name === 'desktop-1440' || name === 'tablet-landscape-1024' ? 'zh-TW' : 'en-US',
     })
     const page = await context.newPage()
@@ -94,6 +97,12 @@ try {
           name + ': inaccessible dock ' + JSON.stringify(bounds))
       }
       await verifyDock()
+      if (name === 'portrait-320') {
+        const decoration = page.locator('[data-es2-portal-decoration]')
+        for (const pseudo of ['::before', '::after']) {
+          assert.equal(await decoration.evaluate((el, p) => getComputedStyle(el, p).animationName, pseudo), 'none')
+        }
+      }
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
       await verifyPage('[data-hero], [data-hero-id]', 6, width >= 1000 && height >= 700)
       await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
@@ -177,6 +186,18 @@ try {
       await page.locator('#es2-language-listbox [data-es2-value="en"]').click()
       await page.screenshot({ path: destination + '/' + name + '-settings.png', animations: 'disabled' })
       await page.locator('.es2-close').click()
+      await verifyDock()
+      // The actual selection, not an authored mock, must update the visible brief on returning to the hero page.
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await page.locator('[data-objective-mode="boss-rush"]').click()
+      await page.locator('[data-es2-expedition-navigation]').click()
+      assert.equal(await page.locator('[data-es2-expedition-summary]').getAttribute('data-run-mode'), 'boss-rush')
+      assert.match(await page.locator('[data-es2-mode-summary]').innerText(), /five increasingly powerful bosses/i)
+      await verifyDock()
+      await page.screenshot({ path: destination + '/' + name + '-portal-boss-rush-125.png', animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await page.locator('[data-mode="quick"]').click()
+      await page.locator('[data-es2-expedition-navigation]').click()
       await page.locator('.es2-hall-links button').first().click()
       const tabs = page.locator('.es2-archive-tabs button')
       await tabs.first().waitFor({ state: 'visible' })
