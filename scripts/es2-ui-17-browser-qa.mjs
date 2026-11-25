@@ -45,10 +45,8 @@ try {
       await page.goto(url, { waitUntil: 'domcontentloaded' })
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
       await page.locator('.es2-hall-links button').first().click()
-      const modal = page.locator('.es2-dialog[role="dialog"]')
-      await modal.waitFor({ state: 'visible' })
-      await modal.evaluate(e => Promise.all(e.getAnimations().map(a => a.finished)))
-      await page.locator('.es2-archive-tabs button').nth(4).click()
+      await page.locator('[data-es2-archive-page]').waitFor({ state: 'visible' })
+      await page.locator('.es2-hall-links button').nth(4).click()
       const gallery = page.locator('[data-es2-world-ui]')
       assert.equal(await gallery.count(), 17, name + ': expected 17 distinct gallery entries')
       const record = { name, gallery: [], achievements: [], hud: [], rarity: [] }
@@ -75,7 +73,7 @@ try {
       }
       await achievements.first().scrollIntoViewIfNeeded()
       await page.screenshot({ path: dir + '/' + name + '-achievements.png', animations: 'disabled' })
-      await page.locator('.es2-close').click()
+      await page.locator('[data-es2-return-lobby]').click()
       await page.locator('.es2-start').click()
       await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
       const hud = page.locator('.es2-hud__health-head img.es2-world-hud-icon')

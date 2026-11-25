@@ -287,22 +287,26 @@ try {
       await page.locator('[data-mode="quick"]').click()
       await page.locator('[data-es2-expedition-navigation]').click()
       await page.locator('.es2-hall-links button').first().click()
-      const tabs = page.locator('.es2-archive-tabs button')
-      await tabs.first().waitFor({ state: 'visible' })
-      // A new Es2Dialog mounts after Settings; measure its settled bounds, not the 12px enter translation.
-      await dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))
-      assert.equal(await tabs.count(), 5, name + ': missing archive tabs')
-      await verifyDialogChrome('archive')
+      const tabs = page.locator('.es2-hall-links button')
+      const archivePage = page.locator('[data-es2-archive-page]')
+      await archivePage.waitFor({ state: 'visible' })
+      assert.equal(await tabs.count(), 5, name + ': missing archive categories')
+      assert.equal(await page.locator('.es2-archive-tabs').count(), 0, name + ': duplicated archive navigation')
+      assert.equal(await page.locator('[role="dialog"]').count(), 0, name + ': archive must not be modal')
+      assert.equal(await page.locator('.es2-start').isVisible(), false)
       for (let index = 0; index < 5; index++) {
         await tabs.nth(index).click()
         assert.equal(await tabs.nth(index).getAttribute('aria-current'), 'page',
           name + ': archive selection is inaccessible')
-        assert.ok(inside(await dialog.evaluate(rect), width, height),
-          name + ': archive modal clips viewport')
+        assert.ok(inside(await page.locator('[data-es2-return-lobby]').evaluate(rect), width, height),
+          name + ': return navigation clips viewport')
+        await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
       }
       await page.screenshot({ path: destination + '/' + name + '-archive.png', animations: 'disabled' })
-      await page.locator('.es2-close').click()
+      await page.locator('[data-es2-return-lobby]').click()
+      await page.locator('.es2-start').waitFor({ state: 'visible' })
+      await verifyDock()
       let startedGame = false
       if (mobile && name.startsWith('tablet-')) {
         // Touch tablets must not render a permanent desktop equipment bar over
