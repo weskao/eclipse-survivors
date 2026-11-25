@@ -258,6 +258,7 @@ onBeforeUnmount(() => {
     @accessibility="changeAccessibility"
   >
     <template #account><Es2CloudAccount :cloud="cloud" :embers="ui.profile.embers" /></template>
+    <template #result-cloud><Es2CloudAccount :cloud="cloud" :embers="ui.profile.embers" result /></template>
   </Es2MenuSystem>
   <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen && !ui.settingsOpen" @resume="engine.togglePause" @leave="requestHome" @settings="engine.openSettings" />
   <Es2Dialog :active="homeConfirmOpen" :title="t('返回主選單？')"

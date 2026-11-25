@@ -10,11 +10,12 @@ export function useCloudWallet(engine: Engine) {
   const client = shallowRef<ReturnType<typeof createCloudClient> | null>(null)
   const busy = ref(false)
   let unsubscribe: (() => void) | undefined
-  let disposed = false, observed = false, selected: string | null = null, running = false, queued = false
+  const observed = ref(false)
+  let disposed = false, selected: string | null = null, running = false, queued = false
   const safeScreen = () => engine.ui.mode === 'menu' || engine.ui.mode === 'result'
 
   async function sync(restoreOnly = false): Promise<void> {
-    if (disposed || !observed || !client.value || !engine.cloudWallet || !safeScreen()) return
+    if (disposed || !observed.value || !client.value || !engine.cloudWallet || !safeScreen()) return
     if (running) { queued = true; return }
     const account = user.value
     const uid = account?.uid ?? null
@@ -45,13 +46,14 @@ export function useCloudWallet(engine: Engine) {
       running = false
       if (queued || (user.value?.uid ?? null) !== selected) {
         queued = false
-        if (!disposed && status.value !== 'conflict') void sync()
+        if (!disposed && (status.value !== 'conflict' || (user.value?.uid ?? null) !== selected)) void sync()
       }
     }
   }
   async function login(): Promise<void> {
-    if (!client.value || busy.value || running) return
+    if (!client.value || !observed.value || busy.value || running || user.value || !safeScreen()) return
     busy.value = true
+    status.value = 'guest'
     try { await client.value.login() }
     catch (error) {
       const code = (error as { code?: string })?.code
@@ -74,7 +76,7 @@ export function useCloudWallet(engine: Engine) {
       const instance = create(config)
       client.value = instance
       unsubscribe = instance.watch(account => {
-        observed = true
+        observed.value = true
         user.value = account
         void sync()
       }, () => { status.value = 'error' })
@@ -90,6 +92,8 @@ export function useCloudWallet(engine: Engine) {
     unsubscribe?.()
     if (typeof window !== 'undefined') window.removeEventListener('online', online)
   })
-  return { status, user, busy: computed(() => busy.value || status.value === 'syncing' || status.value === 'loading'),
-    available: computed(() => !!client.value && observed), login, logout, sync }
+  const confirmed = computed(() => status.value === 'synced' && !!user.value && selected === user.value.uid &&
+    engine.ui.metaState?.cloudWallet?.embers === engine.ui.metaState?.embers && !!engine.ui.metaState?.cloudWallet)
+  return { status, user, confirmed, busy: computed(() => busy.value || status.value === 'syncing' || status.value === 'loading'),
+    available: computed(() => !!client.value && observed.value), login, logout, sync }
 }

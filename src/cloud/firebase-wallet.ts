@@ -1,6 +1,6 @@
 import { getApps, initializeApp, type FirebaseOptions } from 'firebase/app'
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
-import { doc, getFirestore, runTransaction } from 'firebase/firestore'
+import { connectAuthEmulator, getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, type User } from 'firebase/auth'
+import { connectFirestoreEmulator, doc, getFirestore, runTransaction } from 'firebase/firestore'
 import { validWallet, walletPlan, type CloudWallet } from './wallet-policy'
 
 export type { User }
@@ -10,6 +10,12 @@ export function createCloudClient(raw: string) {
     throw Error('Missing or incorrect Eclipse Survivors Firebase configuration')
   const app = getApps().find(item => item.name === 'eclipse-survivors') ?? initializeApp(config, 'eclipse-survivors')
   const auth = getAuth(app), db = getFirestore(app)
+  if (import.meta.env.DEV && import.meta.env.VITE_ES2_FIREBASE_EMULATOR === '1' && location.hostname === '127.0.0.1') {
+    if (!auth.emulatorConfig) {
+      connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
+      connectFirestoreEmulator(db, '127.0.0.1', 8080)
+    }
+  }
   return {
     watch: (listener: (user: User | null) => void, error: () => void) => onAuthStateChanged(auth, listener, error),
     login: () => signInWithPopup(auth, new GoogleAuthProvider()),
