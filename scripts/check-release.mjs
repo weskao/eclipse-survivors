@@ -23,8 +23,8 @@ for (let i = 1; i <= 10; i++) {
 }
 assert.ok(files.every(file => !file.includes('-QA-PENDING')),
   'Unapproved boss QA candidate images must not ship in the production bundle')
-assert.ok(files.every(file => !/^(?:infernal-titan-keyframe-candidates-3x2|idle-stance-[a-d]|windup-key-a|stride-key-[a-d]|ground-slam-key-[ab]|ground-slam-retract-key-a|crouch-key-b|core-dimming-key-b|rubble-key-c|forward-punch-key-a|recoil-key-[ab]|overload-key-a|phase-2-awakening-key-a|collapse-key-a)-.*\.webp$/.test(file)),
-  'Native Infernal Titan keyframe candidates must stay out of the production bundle')
+assert.ok(files.every(file => !/^(?:infernal-titan-keyframe-candidates-3x2|idle-stance-[a-d]|windup-key-a|stride-key-[a-d]|ground-slam-key-[ab]|ground-slam-retract-key-a|crouch-key-b|core-dimming-key-b|rubble-key-c|forward-punch-key-a|recoil-key-[ab]|overload-key-a|phase-2-awakening-key-a|collapse-key-a|shadow-orb-windup-key-a)-.*\.webp$/.test(file)),
+  'Native boss keyframe candidates must stay out of the production bundle')
 const js = files.filter(f => f.endsWith('.js')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
 const css = files.filter(f => f.endsWith('.css')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
 const mp3 = files.find(f => /^bgm-.*\.mp3$/.test(f))

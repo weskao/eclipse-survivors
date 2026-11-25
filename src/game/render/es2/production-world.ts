@@ -28,7 +28,7 @@ const bossSheetQaLoaders = import.meta.env.DEV
 
 // Native source candidates are opt-in DEV diagnostics, never release assets.
 const bossNativeQaLoaders = import.meta.env.DEV
-  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-*/infernal-titan/**/*.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
+  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-*/*/**/*.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
   : {}
 
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
@@ -123,10 +123,11 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   let bossMotionReference: WorldRuntimeImages['bossMotionReference']
   let bossNativeKeyframes: WorldRuntimeImages['bossNativeKeyframes']
-  if (import.meta.env.DEV && reviewMotion === 'native' && reviewBossId === 'infernal-titan') {
+  if (import.meta.env.DEV && reviewMotion === 'native' && reviewBossId && (reviewBossId === 'infernal-titan' || reviewBossId === 'abyss-monarch')) {
     bossNativeKeyframes = {}
     for (const key of Object.keys(BOSS_NATIVE_KEYFRAMES) as NativeBossKeyframe[]) {
       const [path] = BOSS_NATIVE_KEYFRAMES[key]
+      if (!path.includes(`/${reviewBossId}/`)) continue
       const loadSource = bossNativeQaLoaders['../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path]
       if (!loadSource) continue
       const image = makeImage()

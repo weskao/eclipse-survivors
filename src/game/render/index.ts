@@ -152,7 +152,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const nativeKey = import.meta.env.DEV && bossSnapshot && assets.productionWorld?.bossNativeKeyframes
     ? selectBossNativeKeyframe(bossSnapshot) : null
   const nativeImage = nativeKey ? assets.productionWorld?.bossNativeKeyframes?.[nativeKey] : undefined
-  const motionReference = nativeImage ? { id: 'infernal-titan' as const, image: nativeImage } : assets.productionWorld?.bossMotionReference
+  const motionReference = nativeImage && bossSnapshot?.id ? { id: bossSnapshot.id, image: nativeImage } : assets.productionWorld?.bossMotionReference
   for (const obj of objects) {
     const bossImage = bossSnapshot?.id && bossSnapshot.phase && assets.productionWorld?.bosses[bossSnapshot.id]
     const liveBossArt = obj !== hero && 'type' in obj && obj.type === 'boss' && bossImage && bossSnapshot?.phase

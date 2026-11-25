@@ -82,14 +82,37 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(drawBossNativeKeyframe(ctx, failed, snapshot('death'), 316.2)).toBe(false)
     expect(calls).toHaveLength(1)
   })
+  it('reviews Abyss phase 1 shadow-fan windup without affecting other attacks or bosses', () => {
+    const base = snapshot('windup', 'shadow-fan', 'abyss-monarch')
+    const state: BossSnapshot = { ...base, phase: 1, bodyMotion: { ...base.bodyMotion!, phase: 1 } }
+    expect(selectBossNativeKeyframe(state)).toBe('abyssWindup')
+    expect(selectBossNativeKeyframe(base)).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, telegraphs: [] })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, id: 'frost-sovereign' })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, telegraphs: [{ ...cue, attackId: 'darkness-field', stage: 'warning' }] })).toBeNull()
+    const image = { complete: true, naturalWidth: 1303, naturalHeight: 1207 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'abyssWindup')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1303, 1207, -163, -294.5, 325.75, 301.75])
+    expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, base, 300)).toBe(false)
+    expect(calls).toHaveLength(1)
+  })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
     const makeImage = () => ({ complete: false, src: '' }) as HTMLImageElement
     expect(loadWorldRuntimeImages(makeImage).bossNativeKeyframes).toBeUndefined()
-    expect(loadWorldRuntimeImages(makeImage, 'abyss-monarch', 'native').bossNativeKeyframes).toBeUndefined()
+    expect(loadWorldRuntimeImages(makeImage, 'frost-sovereign', 'native').bossNativeKeyframes).toBeUndefined()
+    const abyss = loadWorldRuntimeImages(makeImage, 'abyss-monarch', 'native')
+    expect(Object.keys(abyss.bossNativeKeyframes ?? {})).toEqual(['abyssWindup'])
+    await vi.waitFor(() => expect(abyss.bossNativeKeyframes?.abyssWindup?.src).toContain('shadow-orb-windup-key-a.webp'))
+    expect(abyss.bosses['abyss-monarch'].src).toBe(WORLD_ART.bosses['abyss-monarch'])
     const review = loadWorldRuntimeImages(makeImage, 'infernal-titan', 'native')
-    expect(Object.keys(review.bossNativeKeyframes ?? {})).toEqual(Object.keys(BOSS_NATIVE_KEYFRAMES))
+    const titanKeys = (Object.keys(BOSS_NATIVE_KEYFRAMES) as (keyof typeof BOSS_NATIVE_KEYFRAMES)[]).filter(key => BOSS_NATIVE_KEYFRAMES[key][0].includes('/infernal-titan/'))
+    expect(Object.keys(review.bossNativeKeyframes ?? {})).toEqual(titanKeys)
     await vi.waitFor(() => {
-      for (const key of Object.keys(BOSS_NATIVE_KEYFRAMES) as (keyof typeof BOSS_NATIVE_KEYFRAMES)[]) {
+      for (const key of titanKeys) {
         expect(review.bossNativeKeyframes?.[key]?.src).toContain(BOSS_NATIVE_KEYFRAMES[key][0].split('/').at(-1)!)
       }
     })

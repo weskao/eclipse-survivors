@@ -17,6 +17,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   recover: ['batch-04/infernal-titan/recover/ground-slam-retract-key-a.webp', 1312, 1199, 654.5, 1149],
   deathDim: ['batch-04/infernal-titan/death/core-dimming-key-b.webp', 1312, 1199, 659, 1154],
   deathRubble: ['batch-04/infernal-titan/death/rubble-key-c.webp', 1448, 1086, 722, 889],
+  abyssWindup: ['batch-07/abyss-monarch/windup/shadow-orb-windup-key-a.webp', 1303, 1207, 652, 1194],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -30,8 +31,11 @@ export function isBossNativeKeyframe(image: HTMLImageElement): boolean {
 
 export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyframe | null {
   const motion = snapshot.bodyMotion
-  if (snapshot.id !== 'infernal-titan' || !snapshot.phase || !motion || motion.phase !== snapshot.phase
+  if (!snapshot.phase || !motion || motion.phase !== snapshot.phase
       || !Number.isFinite(motion.progress) || motion.progress < 0 || motion.progress > 1) return null
+  if (snapshot.id === 'abyss-monarch') return motion.phase === 1 && motion.pose === 'windup'
+    && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'shadow-fan') ? 'abyssWindup' : null
+  if (snapshot.id !== 'infernal-titan') return null
   switch (motion.pose) {
     case 'windup': return snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'titan-slam') ? (motion.progress < .5 ? 'windup' : 'windupB') : null
     case 'attack': return snapshot.impacts?.at(-1)?.attackId === 'titan-slam' ? (motion.progress < .5 ? 'slam' : 'slamB') : null
