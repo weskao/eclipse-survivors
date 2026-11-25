@@ -276,3 +276,14 @@ it('reveals treasure rarity without delaying or duplicating the claim, and suppo
   button('epic').click()
   expect(wrapper.emitted('choose')).toEqual([['epic']])
 })
+
+it('renders a real chest seal for treasure reveal and removes it when skipped without claiming', async () => {
+  const wrapper=mounted(Es2ChoiceDialog,{active:true,kind:'treasure',items:[{id:'gold',title:'Gold',rarity:'legendary'}]})
+  await nextTick()
+  const art=dialog().querySelector<HTMLImageElement>('[data-es3-chest-reveal]')
+  expect(art?.getAttribute('src')).toMatch(/treasure-legendary/)
+  dialog().querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!.click()
+  await nextTick()
+  expect(dialog().querySelector('[data-es3-chest-reveal]')).toBeNull()
+  expect(wrapper.emitted('choose')).toBeUndefined()
+})

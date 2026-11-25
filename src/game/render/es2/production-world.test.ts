@@ -37,7 +37,9 @@ describe('ES2 world art live asset mapping', () => {
     expect(assigned).toContain(WORLD_ART.ui['treasure-common'])
     expect(assigned).toContain(WORLD_ART.ui['hud-xp'])
     expect(runtime.magnet).toBeDefined()
-    expect(assigned).toHaveLength(14)
+    for(const tier of ['rare','legendary','cursed'] as const) expect(assigned).toContain(WORLD_ART.ui['treasure-'+tier as keyof typeof WORLD_ART.ui])
+    expect(runtime.chests?.epic).toBe(runtime.chests?.rare)
+    expect(assigned).toHaveLength(17)
   })
 
   it('loads only live world image categories once at mount, not all 49 UI resources', () => {
@@ -50,7 +52,7 @@ describe('ES2 world art live asset mapping', () => {
     expect(Object.keys(runtime.bosses)).toHaveLength(4)
     expect(Object.keys(runtime.ground)).toHaveLength(4)
     expect(Object.keys(runtime.decor)).toHaveLength(4)
-    expect(assigned).toHaveLength(14)
+    expect(assigned).toHaveLength(17)
   })
 
   it('crops the real phase and enemy atlas cells without redrawing a blank image', () => {

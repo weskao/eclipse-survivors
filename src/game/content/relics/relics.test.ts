@@ -223,3 +223,14 @@ it('honors exact 10% and 30% attack interval reductions in relic descriptions', 
   expect(acquireRelic(cursed, 'relics:hollow-idol')).toBe(true)
   expect(cursed.hero!.delay).toBeCloseTo(originalDelay * 0.7)
 })
+
+it.each(['rare','epic','legendary','cursed'] as const)('offers the advertised %s tier without forcing a cursed claim', tier => {
+  const s=setup()
+  const offer=openTreasure(s,1,seeded(71),undefined,tier)!
+  expect(offer.options).toHaveLength(3)
+  expect(offer.options.some(id=>tier==='cursed' ? RELIC_BY_ID.get(id)!.cursed : RELIC_BY_ID.get(id)!.rarity===tier && !RELIC_BY_ID.get(id)!.cursed)).toBe(true)
+  expect(offer.options.some(id=>!RELIC_BY_ID.get(id)!.cursed)).toBe(true)
+  const safe=offer.options.find(id=>!RELIC_BY_ID.get(id)!.cursed)!
+  expect(claimTreasure(s,1,safe)).toBe(true)
+  expect(claimTreasure(s,1,safe)).toBe(false)
+})

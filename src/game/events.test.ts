@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seeded, setRandom } from './math'
 import { BALANCE } from './config'
 import { createHero, createState } from './state'
-import { rollEventKind, trySpawnEvent, tickWorld } from './events'
+import { rollChestTier, rollEventKind, trySpawnEvent, tickWorld } from './events'
 import { nearbyHazards, nearbyObstacles } from './world'
 import type { GameHooks, GameState } from './types'
 
@@ -162,4 +162,14 @@ describe('visible danger bounds', () => {
     expect(s.events).toHaveLength(0)
     expect(s.nextEventAt).toBe(0)
   })
+})
+
+it('uses deterministic chest rarity buckets and passes the advertised tier to the actual pickup transaction', () => {
+  expect([.1,.75,.9,.98,.999].map(x=>rollChestTier(()=>x))).toEqual(['common','rare','epic','legendary','cursed'])
+  const s=make()
+  const openTreasure=vi.fn(()=>true)
+  s.events.push({id:1,kind:'chest',tier:'legendary',x:0,y:0,expiresAt:30})
+  tickWorld(s,.016,{...hooks(),openTreasure})
+  expect(openTreasure).toHaveBeenCalledWith(s,1,'legendary')
+  expect(s.events).toHaveLength(0)
 })
