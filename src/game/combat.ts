@@ -36,7 +36,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
   const impactAngle = Math.atan2(e.ky, e.kx)
-  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical)
+  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, boss || e.type === 'golem' || !!e.elite)
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })

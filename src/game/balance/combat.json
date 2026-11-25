@@ -17,6 +17,11 @@
   "starKeepLimit": 220,
   "killStreakWindow": 3,
   "multiKillWindow": 0.5,
+  "hitImpact": {
+    "normal": { "duration": 0.24, "scale": 1.85 },
+    "heavy": { "duration": 0.30, "scale": 2.25 },
+    "critical": { "duration": 0.34, "scale": 2.5 }
+  },
   "chainTargetBase": 2,
   "chainTargetsByRank": [1, 4, 5, 6, 7],
   "chainMaxTargets": 7,

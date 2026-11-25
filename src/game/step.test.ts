@@ -271,7 +271,8 @@ describe('ES3 bounded XP conservation', () => {
     hero.need = 1000000
     s.stars = Array.from({ length: 250 }, (_, i) => ({ x: 500 + i, y: 0, value: i + 1, t: 0 }))
     const total = s.stars.reduce((sum, star) => sum + star.value, 0)
-    const hooks = spyHooks()
+    const content = vi.fn()
+    const hooks = { ...spyHooks(), content }
     step(s, 0.016, still, hooks)
     expect(s.stars.length).toBeLessThanOrEqual(220)
     expect(s.stars.reduce((sum, star) => sum + star.value, 0)).toBe(total)
@@ -279,6 +280,9 @@ describe('ES3 bounded XP conservation', () => {
     step(s, 0.016, still, hooks)
     expect(hero.xp).toBe(total)
     expect(s.stars).toHaveLength(0)
+    const receipts = content.mock.calls.filter(([, event]) => event.type === 'pickup').map(([, event]) => event.amount)
+    expect(receipts.sort((a, b) => a - b)).toEqual(Array.from({ length: 250 }, (_, i) => i + 1))
+    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickup')).toHaveLength(1)
     step(s, 0.016, still, hooks)
     expect(hero.xp).toBe(total)
   })

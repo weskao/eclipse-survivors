@@ -1,6 +1,7 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
 import { BALANCE } from './config'
 import { expireKillStreak } from './kill-streak'
+import { compactXpGems } from './xp-gems'
 import { attack, hit, victoryConditionMet } from './combat'
 import type { ContentRegistry } from './content/registry'
 import type { FactionBridge } from './content/enemies/integration'
@@ -96,6 +97,7 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
   const reach = BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
   const pickupSquared = BALANCE.combat.starPickupDistance ** 2
   for (const star of s.stars) {
+    if (star.dead) continue
     star.t += dt
     const dx = hero.x - star.x
     const dy = hero.y - star.y
@@ -116,15 +118,25 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
     }
     if (squared < pickupSquared) {
       star.dead = true
-      addXp(s, star.value * s.pickupGainMultiplier, hooks)
+      // Keep one receipt per original drop, including pickup-triggered relic effects.
+      if (star.mergedReceipts) {
+        for (const [amount, count] of star.mergedReceipts) {
+          for (let i = 0; i < count; i++) {
+            addXp(s, amount * s.pickupGainMultiplier, hooks)
+            hooks.content?.(s, { type: 'pickup', kind: 'xp', amount })
+          }
+        }
+      } else {
+        addXp(s, star.value * s.pickupGainMultiplier, hooks)
+        hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
+      }
       if (!playedPickup) {
         hooks.sfx('pickup')
         playedPickup = true
       }
-      hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
     }
   }
-  s.stars = s.stars.filter((star) => !star.dead).slice(-BALANCE.combat.starKeepLimit)
+  compactXpGems(s.stars)
 }
 
 function ageEffects(s: GameState, hero: Hero, dt: number): void {

@@ -1,5 +1,6 @@
 import { damageHero, hit } from '../../combat'
 import { recordKill } from '../../kill-streak'
+import { compactXpGems } from '../../xp-gems'
 import { emitHitImpact, pushDamageNumber } from '../../fx'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
@@ -109,7 +110,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       defeated[reward.kind] = (defeated[reward.kind] ?? 0) + 1
       // The legacy XP collection path owns level progression; never award XP twice.
       state.stars.push({ x: reward.x, y: reward.y, value: reward.xp, t: 0 })
-      if (state.stars.length > 220) state.stars.splice(0, state.stars.length - 220)
+      compactXpGems(state.stars)
       hooks.sfx('kill')
       options.onReward?.(reward)
     })
@@ -118,7 +119,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
         value: Math.round(applied), boss: false, critical })
       const angle = Math.atan2(enemy.y - sourceY, enemy.x - sourceX)
-      emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical)
+      emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical, enemy.radius >= 24 || !!enemy.affix)
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)
     }

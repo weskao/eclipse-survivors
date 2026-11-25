@@ -1,5 +1,6 @@
 // Visual-effect emitters (original burst / impact / zigzag / pushEcho).
 import { rand } from './math'
+import { BALANCE } from './config'
 import type { GameState, ImpactWave, JobId, NumberFx, Point } from './types'
 
 export function burst(s: GameState, x: number, y: number, color: string, n = 7): void {
@@ -14,7 +15,12 @@ function enqueueImpact(s: GameState, wave: ImpactWave): void {
     const normal = queue.findIndex(w => w.contact === 'normal')
     if (normal !== -1) queue.splice(normal, 1)
     else if (wave.contact === 'normal') return
-    else queue.shift()
+    else {
+      const heavy = queue.findIndex(w => w.contact === 'heavy')
+      if (heavy !== -1) queue.splice(heavy, 1)
+      else if (wave.contact === 'heavy') return
+      else queue.shift()
+    }
   }
   queue.push(wave)
 }
@@ -26,10 +32,11 @@ export function impact(s: GameState, x: number, y: number, size = 36, color = '#
 }
 
 /** Single-owner local hit cue: independent of damage text, no secondary particle pool. */
-export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean): void {
-  const duration = critical ? 0.34 : 0.24
-  enqueueImpact(s, { x, y, angle, size: Math.max(44, Math.min(124, radius * (critical ? 2.5 : 1.85))),
-    color: critical ? '#ffc577' : '#f4d9b0', life: duration, max: duration, contact: critical ? 'critical' : 'normal' })
+export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean, heavy = false): void {
+  const contact = critical ? 'critical' : heavy ? 'heavy' : 'normal'
+  const { duration, scale } = BALANCE.combat.hitImpact[contact]
+  enqueueImpact(s, { x, y, angle, size: Math.max(44, Math.min(124, radius * scale)),
+    color: critical ? '#ffc577' : heavy ? '#eeb78c' : '#f4d9b0', life: duration, max: duration, contact })
 }
 
 /** At most one brief camera nudge per 0.6 game-seconds, regardless of hit count. */
