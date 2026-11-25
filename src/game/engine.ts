@@ -78,6 +78,7 @@ export interface TestApi {
   prepareHeroArtEastAttack(): boolean
   /** Explicit DEV QA: place a real target in one of the eight aiming octants. */
   prepareKnightPixiAttack(direction: number): boolean
+  prepareKnightPixiLocomotion(): boolean
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
   /** Capture-only biome preview; requires ?showcase=1. */
@@ -835,6 +836,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       attack(s, hooks, factions ?? undefined)
       return hero.strike > 0 && Math.abs(hero.aimAngle) < Math.PI / 8
     },
+    prepareKnightPixiLocomotion() {
+      const hero=s.hero
+      if (!import.meta.env.DEV || typeof window === 'undefined' ||
+          new URLSearchParams(window.location.search).get('knightPixiQA') !== '1' ||
+          s.mode !== 'play' || !hero || s.heroId !== 'knight') return false
+      s.mobs=[];s.shots=[];s.enemyShots=[];s.stars=[];s.fx=[];factions?.reset()
+      s.spawnT=999;s.bossSpawned=true;s.nextEventAt=Infinity
+      hero.hp=hero.max;hero.need=999999;hero.attack=999;hero.strike=0;hero.inv=0;hero.dash=0
+      return true
+    },
     prepareKnightPixiAttack(direction) {
       const hero = s.hero
       if (!import.meta.env.DEV || typeof window === 'undefined' ||
@@ -847,13 +858,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const target = s.mobs[0]
       if (!target) return false
       const aim = direction * Math.PI / 4
-      const radius = Math.min(140, Math.max(64, hero.range * .75))
+      const radius = Math.max(1, Math.min(140, hero.range * .75))
       target.x = hero.x + Math.cos(aim) * radius
       target.y = hero.y + Math.sin(aim) * radius
       target.speed = 0; target.dmg = 0; target.hp = target.max = Math.max(100000, hero.damage * 100)
       // Isolate visual QA from XP/level dialogs and old projectile or hazard residue.
       s.stars = []; s.shots = []; s.fx = []; hero.need = 999999
-      hero.attack = 2; hero.inv = 0; hero.dash = 0
+      hero.attack = 999; hero.inv = 0; hero.dash = 0; hero.strike = 0
       attack(s, hooks, factions ?? undefined)
       return hero.strike > 0 && Math.cos(hero.aimAngle - aim) > Math.cos(Math.PI / 8)
     },

@@ -1,10 +1,9 @@
 import { Application, Container, Graphics, MeshPlane, Sprite, Texture } from 'pixi.js'
 import { getRigidWeaponLayers } from '../../src/game/render/rigid-weapons.ts'
 import { sampleWeaponRig } from '../../src/game/render/weapon-rig.ts'
-import { advanceRigMotion, createRigSkin, deformRig, meshPoint } from './motion.mjs'
+import { advanceRigMotion, createRigSkin, deformRig, meshPoint, movementSlot } from './motion.mjs'
 import { loadDirectionalAssets } from './rig-assets.mjs'
 import { needsRigRender } from './frame-policy.mjs'
-import { movementSlot } from './motion.mjs'
 import { KNIGHT_RIG, defineRig, facingFor, validateViews, sampleRigVfx } from './rig.mjs'
 
 
@@ -13,11 +12,15 @@ import { KNIGHT_RIG, defineRig, facingFor, validateViews, sampleRigVfx } from '.
 export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job = 'knight', directionalLayers } = {}) {
   profile=defineRig(profile)
   const W=profile.width,H=profile.height,WIDTH=Math.ceil(W*2.5),HEIGHT=Math.ceil(H*1.85),FOOT_X=WIDTH/2,FOOT_Y=HEIGHT-H*.4
-  await image.decode()
-  const layers=getRigidWeaponLayers(image,job)
-  if(!layers) return null
+  // Directional art does not require decoding/cutting the legacy master.
+  const layers=directionalLayers?null:await image.decode().then(()=>getRigidWeaponLayers(image,job))
+  if(!directionalLayers&&!layers)return null
   const app=new Application()
-  await app.init({width:WIDTH,height:HEIGHT,resolution:3,backgroundAlpha:0,preference:'webgl',
+  // Match the effective presentation density; retain 3x source textures unchanged.
+  // Explicit fixed density 3 is available for visual comparison, not the default.
+  const requested=new URLSearchParams(location.search).get('knightRigResolution')
+  const resolution=requested==='3'?3:Math.max(1,Math.min(3,window.devicePixelRatio||1))
+  await app.init({width:WIDTH,height:HEIGHT,resolution,backgroundAlpha:0,preference:'webgl',
     autoStart:false,sharedTicker:false,preserveDrawingBuffer:true})
   let disposed=false,failed=false,reported=false,old=null,owner=null,facing=0,active=null,previousFrame=null,renderCount=0
   const diagnostics=new URLSearchParams(location.search).get('knightPixiQA')==='1'
@@ -78,8 +81,9 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
               elbowX:rig.elbow.x-idle.elbow.x,elbowY:rig.elbow.y-idle.elbow.y,
               supportX:rig.supportHand.x-idle.supportHand.x,supportY:rig.supportHand.y-idle.supportHand.y,
               supportElbowX:rig.supportElbow.x-idle.supportElbow.x,supportElbowY:rig.supportElbow.y-idle.supportElbow.y}
-            const motion=advanceRigMotion(old,input,profile)
-            facing=frozen&&previousFrame?facing:anim.reducedMotion?desired:facingFor(profile,motion,facing)
+            // Facing follows travel input rather than lingering in a previous octant.
+            // Bone motion itself is blended across direction and action transitions.
+            facing=frozen&&previousFrame?facing:desired
             const selected=views?views[facing]:fallback
             if(active!==selected){if(active)active.group.visible=false;selected.group.visible=true;active=selected}
             const current=advanceRigMotion(old,input,selected.profile)
@@ -113,6 +117,7 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
           ctx.drawImage(canvas,-FOOT_X,-FOOT_Y,WIDTH,HEIGHT)
           if(diagnostics&&ctx.canvas?.dataset){
             const d=ctx.canvas.dataset
+            if(d.knightRigResolution!==String(resolution))d.knightRigResolution=String(resolution)
             const view=views?String(facing):'single', count=String(renderCount), pose=previousFrame.pose
             if(d.knightRigAssets!==(views?'directional':'legacy'))d.knightRigAssets=views?'directional':'legacy'
             if(d.knightRigView!==view)d.knightRigView=view

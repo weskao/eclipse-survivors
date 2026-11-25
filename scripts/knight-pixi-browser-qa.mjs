@@ -10,9 +10,9 @@ const viewports = [
   { name:'desktop', width:960, height:540, dpr:1 },
   { name:'desktop-directional', width:960, height:540, dpr:1, candidate:true },
   { name:'portrait-320', width:320, height:640, dpr:2 },
-  { name:'portrait-375', width:375, height:812, dpr:3 },
+  { name:'portrait-375', width:375, height:812, dpr:3, candidate:true },
   { name:'landscape-640', width:640, height:320, dpr:2 },
-  { name:'landscape-812', width:812, height:375, dpr:3 },
+  { name:'landscape-812', width:812, height:375, dpr:3, candidate:true },
 ]
 try {
   for(const viewport of viewports) {
@@ -28,6 +28,7 @@ try {
       if(await knight.count() && await knight.first().isVisible()) await knight.first().click()
       await page.locator('.es2-start').click()
       await page.waitForFunction(()=>window.__test?.mode==='play')
+      assert.ok(await page.evaluate(()=>window.__test.prepareKnightPixiLocomotion()),'cannot initialize isolated locomotion scenario')
       await page.locator('canvas[data-knight-renderer="pixi"]').waitFor({state:'attached',timeout:30000})
       const surface=page.locator('canvas[data-knight-renderer="pixi"]')
       assert.equal(await surface.getAttribute('data-knight-rig-assets'),viewport.candidate?'directional':'legacy','actual asset path must not silently fall back')
@@ -46,9 +47,11 @@ try {
           for(const key of keys)await page.keyboard.up(key)
         }
         for(let i=0;i<8;i++){
-          assert.ok(await page.evaluate(i=>window.__test.prepareKnightPixiAttack(i),i),'real attack failed for '+i)
+          const result=await page.evaluate(i=>({ok:window.__test.prepareKnightPixiAttack(i),mode:window.__test.mode,pose:window.__test.pose,hp:window.__test.hp}),i)
+          assert.ok(result.ok,'real attack failed for '+i+' '+JSON.stringify(result))
           if(viewport.candidate)await page.waitForFunction(i=>{const d=document.querySelector('canvas[data-knight-renderer="pixi"]')?.dataset;return d?.knightRigView===String(i)&&d.knightRigPose==='attack'},i)
           await page.screenshot({path:out+'/'+viewport.name+'-attack-'+i+'.png'})
+          await page.waitForFunction(()=>!window.__test.attackAnimation)
         }
       }
       assert.equal(await page.locator('canvas[data-knight-renderer="pixi"]').count(),1)

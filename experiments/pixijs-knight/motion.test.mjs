@@ -63,3 +63,42 @@ test('all eight independent attack aims align at contact',()=>{
     close(Math.sin(p.blade+motion.SOURCE_BLADE_ANGLE),Math.sin(aim))
   }
 })
+
+test('stance foot moves backwards at constant speed and swing foot clears the ground',()=>{
+ const a=motion.sampleGait(0,0,1), b=motion.sampleGait(.2,0,1), c=motion.sampleGait(.4,0,1)
+ assert.equal(a.lift,0);assert.equal(b.lift,0);assert.equal(c.lift,0)
+ close(b.travel-a.travel,c.travel-b.travel)
+ assert.ok(b.travel<a.travel)
+ assert.ok(motion.sampleGait(.8,0,1).lift>0)
+ close(motion.sampleGait(0,0,0).travel,0)
+ close(motion.sampleGait(.8,0,0).lift,0)
+ close(motion.sampleGait(0,1,1).travel,motion.sampleGait(.5,0,1).travel)
+})
+test('gait loops without ankle jumps and attack does not reset the gait',()=>{
+ const a=motion.sampleGait(0,0,1), b=motion.sampleGait(1-1e-8,0,1)
+ assert.ok(Math.abs(a.travel-b.travel)<1e-4);assert.ok(b.lift<1e-4)
+ const run=motion.advanceKnightMotion(null,{...base,pose:'run',step:3,move:1,vx:90})
+ const hit=motion.advanceKnightMotion(run,{...base,pose:'attack',step:3.1,move:1,vx:90,clock:.016})
+ assert.equal(hit.step,3.1);close(hit.stride,1)
+})
+test('weapon anticipates only during real windup, aligns at contact and eases back',()=>{
+ const input={...base,aim:2.8}
+ const idle=motion.advanceKnightMotion(null,input)
+ const wind=motion.advanceKnightMotion(idle,{...input,actionStage:'windup',clock:.016})
+ assert.ok(wind.blade<0);assert.ok(Math.abs(wind.blade)<=.65)
+ const hit=motion.advanceKnightMotion(wind,{...input,pose:'attack',phase:0,clock:.032})
+ close(hit.blade,2.8-motion.SOURCE_BLADE_ANGLE)
+ const follow=motion.advanceKnightMotion(hit,{...input,pose:'attack',phase:.3,clock:.048})
+ assert.ok(follow.blade>hit.blade)
+ const end=motion.advanceKnightMotion(follow,{...input,pose:'attack',phase:1,clock:.064})
+ close(end.blade,0)
+})
+test('leg IK remains finite at full extension and has consistent bone lengths',()=>{
+ for(const side of ['left','right'])for(let i=0;i<32;i++){
+  const a=motion.sampleLegBones(side,108,134,0,0,0)
+  const b=motion.sampleLegBones(side,108,134,i*Math.PI/16,Math.PI/3,1)
+  const len=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y)
+  close(len(a.hip,a.knee),len(b.hip,b.knee));close(len(a.knee,a.foot),len(b.knee,b.foot))
+  assert.ok(Number.isFinite(b.foot.x)&&Number.isFinite(b.foot.y))
+ }
+})
