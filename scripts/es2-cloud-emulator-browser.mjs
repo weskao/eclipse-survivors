@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { chromium } from 'playwright'
 
-const base = 'http://127.0.0.1:4175/tests/fixtures/cloud-wallet.html'
+const unlocked = process.env.ES2_QA_UNLOCKED === '1'
+const base = 'http://127.0.0.1:' + (unlocked ? '4176' : '4175') + '/tests/fixtures/cloud-wallet.html'
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--enable-unsafe-swiftshader'] })
 const live = /^https?:\/\/(?:(?:identitytoolkit|securetoken|firestore)\.googleapis\.com|accounts\.google\.com)/
 const waitStatus = async (page, state) => page.locator(`[data-es2-cloud-account][data-es2-cloud-state="${state}"]`).waitFor({timeout: 30000})
@@ -11,6 +12,7 @@ async function createPage(viewport, locale = 'en-US') {
   const context = await browser.newContext({ viewport, locale })
   await context.route(live, route => route.abort())
   const page = await context.newPage()
+  page.on('console', message => { if (message.type() === 'warning' || message.type() === 'error') console.log('browser:', message.text()) })
   await page.goto(base)
   await waitStatus(page, 'guest')
   return page
@@ -54,7 +56,14 @@ try {
   await login(first, '[data-es2-cloud-account]', 'ember-qa@example.test')
   await waitStatus(first, 'synced')
   assert.equal(await first.locator('[role="dialog"]').count(), 0, 'homepage login must not open a custom dialog')
-  assert.equal(await balance(first), 0)
+  assert.equal(await balance(first), unlocked ? 100_000 : 0)
+  if (unlocked) {
+    const second = await createPage({width: 1280, height: 800})
+    await login(second, '[data-es2-cloud-account]', 'ember-qa@example.test', true)
+    await waitStatus(second, 'synced')
+    await waitBalance(second, 100_000)
+    console.log('PASS: unlocked emulator wallet initialized and restored separately')
+  } else {
   await completeRun(first)
   await resultConfirmed(first)
   assert.equal(await first.locator('[data-es2-result-google-login]').count(), 0)
@@ -84,4 +93,5 @@ try {
     await page.context().close()
   }
   console.log('PASS: direct Google emulator OAuth from home and results, real settlement, spending, cross-device restoration, guest isolation, desktop and mobile')
+  }
 } finally { await browser.close() }

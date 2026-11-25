@@ -64,6 +64,16 @@ describe('Google OAuth entry points', () => {
     expect(wrapper.find('[data-es2-result-google-login]').exists()).toBe(false)
     wrapper.unmount()
   })
+  it('does not claim a live save or offer sync for unlocked phone sign-in', async () => {
+    const { cloud, status, user } = fixture()
+    status.value = 'playtest'
+    user.value = { uid: 'test' } as User
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 100_000, result: true } })
+    expect(wrapper.get('[data-es2-result-cloud-status]').text()).toContain('測試模式')
+    expect(wrapper.get('[data-es2-result-cloud-status]').text()).not.toContain('已儲存至')
+    expect(wrapper.find('[data-es2-result-cloud-retry]').exists()).toBe(false)
+    wrapper.unmount()
+  })
   it('does not launch OAuth when Firebase is unavailable', async () => {
     const { cloud, available, login, status } = fixture()
     available.value = false

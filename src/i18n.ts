@@ -1757,6 +1757,7 @@ const english = new Map<string, string>([
   , ["正在同步暮光餘燼…","Syncing Twilight Embers…"]
   , ["正在連線 Google 帳號…","Connecting to your Google account…"]
   , ["Google 登入失敗，請重試。","Google sign-in failed. Please retry."]
+  , ["測試模式：餘燼僅保存在本次測試。","Playtest mode: Embers stay in this test session."]
   , ["訪客餘燼保存在本機；登入後可跨裝置同步帳號餘燼。","Guest Embers stay on this device. Sign in to sync account Embers across devices."]
 ])
 const chinese = new Map<string, string>([

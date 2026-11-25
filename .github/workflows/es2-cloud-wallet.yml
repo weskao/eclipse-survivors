@@ -2,7 +2,7 @@ name: ES2 Google OAuth and Twilight Embers emulator QA
 on:
   push:
     branches: [feature/es2-release-readiness-integration]
-    paths: ['src/cloud/**', 'src/components/es2/menu/**', 'src/App.vue', 'src/game/content/meta/**', 'src/game/engine.ts', 'src/i18n.ts', 'firestore.rules', 'firebase.json', 'tests/fixtures/cloud-wallet.*', 'scripts/es2-cloud-emulator-browser.mjs', '.github/workflows/es2-cloud-wallet.yml']
+    paths: ['Makefile', 'src/cloud/**', 'src/components/es2/menu/**', 'src/App.vue', 'src/game/content/meta/**', 'src/game/engine.ts', 'src/i18n.ts', 'firestore.rules', 'firebase.json', 'tests/fixtures/cloud-wallet.*', 'scripts/es2-cloud-emulator-browser.mjs', '.github/workflows/es2-cloud-wallet.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -33,9 +33,17 @@ jobs:
       - name: Exercise direct Google OAuth against Firebase emulators only
         env:
           VITE_ES2_FIREBASE_EMULATOR: '1'
-          VITE_ES2_FIREBASE_CONFIG: '{"apiKey":"demo-api-key","authDomain":"demo-eclipse-survivors.firebaseapp.com","projectId":"demo-eclipse-survivors","appId":"1:123:web:cloudqa"}'
         run: |
           pnpm exec vite --host 127.0.0.1 --port 4175 --strictPort > /tmp/es2-cloud-vite.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4175/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4175/ >/dev/null
           pnpm dlx firebase-tools@15.34.1 emulators:exec --project demo-eclipse-survivors --only auth,firestore 'node scripts/es2-cloud-emulator-browser.mjs'
+      - name: Verify unlocked desktop OAuth uses a separate demo project
+        env:
+          VITE_ES2_FIREBASE_EMULATOR: '1'
+          VITE_ES2_UNLOCKED: '1'
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 4176 --strictPort > /tmp/es2-unlocked-vite.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4176/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4176/ >/dev/null
+          pnpm dlx firebase-tools@15.34.1 emulators:exec --project demo-eclipse-survivors-unlocked --only auth,firestore 'ES2_QA_UNLOCKED=1 node scripts/es2-cloud-emulator-browser.mjs'

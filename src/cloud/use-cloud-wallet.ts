@@ -1,11 +1,14 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import type { Engine } from '../game/engine'
 import type { User, createCloudClient } from './firebase-wallet'
+import { cloudRuntime } from './cloud-runtime'
 
-type Status = 'unavailable' | 'loading' | 'guest' | 'syncing' | 'synced' | 'error' | 'conflict'
+type Status = 'unavailable' | 'loading' | 'guest' | 'syncing' | 'synced' | 'error' | 'conflict' | 'playtest'
 export function useCloudWallet(engine: Engine) {
-  const config = import.meta.env.VITE_ES2_FIREBASE_CONFIG as string | undefined
-  const status = ref<Status>(config && engine.cloudWallet ? 'loading' : 'unavailable')
+  const runtime = cloudRuntime()
+  const config = runtime.config
+  const authOnly = runtime.mode === 'auth-only'
+  const status = ref<Status>(config && (engine.cloudWallet || authOnly) ? 'loading' : 'unavailable')
   const user = shallowRef<User | null>(null)
   const client = shallowRef<ReturnType<typeof createCloudClient> | null>(null)
   const busy = ref(false)
@@ -15,7 +18,9 @@ export function useCloudWallet(engine: Engine) {
   const safeScreen = () => engine.ui.mode === 'menu' || engine.ui.mode === 'result'
 
   async function sync(restoreOnly = false): Promise<void> {
-    if (disposed || !observed.value || !client.value || !engine.cloudWallet || !safeScreen()) return
+    if (disposed || !observed.value || !client.value || !safeScreen()) return
+    if (authOnly) { status.value = user.value ? 'playtest' : 'guest'; return }
+    if (!engine.cloudWallet) return
     if (running) { queued = true; return }
     const account = user.value
     const uid = account?.uid ?? null
@@ -57,6 +62,7 @@ export function useCloudWallet(engine: Engine) {
     try { await client.value.login() }
     catch (error) {
       const code = (error as { code?: string })?.code
+      console.warn('Google sign-in did not complete:', code ?? 'unknown')
       status.value = code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' ? 'guest' : 'error'
     } finally { busy.value = false }
   }
@@ -69,7 +75,7 @@ export function useCloudWallet(engine: Engine) {
   }
   const online = () => { if (status.value !== 'conflict') void sync() }
   onMounted(async () => {
-    if (!config || !engine.cloudWallet) return
+    if (!config || (!engine.cloudWallet && !authOnly)) return
     try {
       const { createCloudClient: create } = await import('./firebase-wallet')
       if (disposed) return

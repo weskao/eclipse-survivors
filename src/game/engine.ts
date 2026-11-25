@@ -1,5 +1,6 @@
 import { shallowReactive } from 'vue'
 import { accountStorage } from '../cloud/account-storage'
+import { cloudRuntime } from '../cloud/cloud-runtime'
 import type { CloudWallet } from '../cloud/wallet-policy'
 import { createProfileStore, type ProfileStore } from '../meta/profile'
 import { MODES, isObjectiveModeId } from '../meta/modes'
@@ -160,14 +161,22 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // The unlocked mode exists only in Vite dev, and uses disposable saves.
   // Even a build with VITE_ES2_UNLOCKED=1 cannot enable it in production.
   const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
-  let profileStore = opts.profileStore ?? createProfileStore(
-    unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : undefined,
-  )
+  const runtime = cloudRuntime()
+  const emulator = runtime.mode === 'emulator'
+  const namespace = emulator ? 'emulator.' + runtime.projectId : 'account'
+  const scopedStorage = (uid: string | null) => {
+    if (!uid && !emulator) return undefined
+    return accountStorage(localStorage, uid ?? 'guest', namespace + (emulator ? (uid ? '.uid' : '.guest') : ''))
+  }
+  // Unlocked test profiles remain in memory even when authenticated. A dedicated
+  // demo project owns their test currency; live phone sign-in is identity-only.
+  const guestProfileStorage = unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : scopedStorage(null)
+  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : scopedStorage(null)
+  const unlockedAccounts = new Map<string, { profile: ReturnType<typeof createUnlockedPlaytestProfileStorage>; meta: ReturnType<typeof createUnlockedPlaytestMetaStorage> }>()
+  let profileStore = opts.profileStore ?? createProfileStore(guestProfileStorage)
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  let metaStore = opts.profileStore ? null : createMetaProgressionStore(
-    unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : undefined,
-  )
+  let metaStore = opts.profileStore ? null : createMetaProgressionStore(guestMetaStorage)
   let walletAccount: string | null = null
   const walletReady = (): boolean => !walletAccount || !!metaStore?.get().state?.cloudWallet
   function displayProfile() {
@@ -1055,15 +1064,25 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     new URLSearchParams(window.location.search).get('content-showcase') === '1'
 
   return {
-    ...(!opts.profileStore && !unlockedPlaytest ? { cloudWallet: {
+    ...(!opts.profileStore && (!unlockedPlaytest || emulator) ? { cloudWallet: {
       select(uid: string | null) {
         if (s.mode !== 'menu' && s.mode !== 'result') return false
         if (uid === walletAccount) return true
         try {
-          const storage = uid ? accountStorage(localStorage, uid) : undefined
-          const nextMeta = createMetaProgressionStore(storage)
+          let profileStorage = uid ? scopedStorage(uid) : guestProfileStorage
+          let metaStorage = uid ? profileStorage : guestMetaStorage
+          if (uid && unlockedPlaytest) {
+            let saved = unlockedAccounts.get(uid)
+            if (!saved) {
+              saved = { profile: createUnlockedPlaytestProfileStorage(), meta: createUnlockedPlaytestMetaStorage(0) }
+              unlockedAccounts.set(uid, saved)
+            }
+            profileStorage = saved.profile
+            metaStorage = saved.meta
+          }
+          const nextMeta = createMetaProgressionStore(metaStorage)
           if (uid && nextMeta.get().status !== 'ready') return false
-          profileStore = createProfileStore(storage)
+          profileStore = createProfileStore(profileStorage)
           metaStore = nextMeta
           walletAccount = uid
           refreshMeta()

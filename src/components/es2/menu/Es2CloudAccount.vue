@@ -8,10 +8,11 @@ const props = defineProps<{ cloud: ReturnType<typeof useCloudWallet>; embers: nu
 const open = ref(false), confirmRestore = ref(false)
 const statusLabels = {
   unavailable: '雲端存檔尚未設定', loading: '正在連線', guest: '訪客・本機存檔',
-  syncing: '正在同步暮光餘燼', synced: '暮光餘燼已同步', error: '無法同步，請重試', conflict: '雲端餘燼已在其他裝置變更',
+  playtest: '測試模式：餘燼僅保存在本次測試。', syncing: '正在同步暮光餘燼', synced: '暮光餘燼已同步', error: '無法同步，請重試', conflict: '雲端餘燼已在其他裝置變更',
 } as const
 const resultMessage = computed(() => {
   if (props.cloud.user.value) {
+    if (props.cloud.status.value === 'playtest') return statusLabels.playtest
     if (props.cloud.confirmed.value) return '暮光餘燼已儲存至 Google 帳號。'
     if (props.cloud.status.value === 'conflict') return '雲端餘燼發生衝突，尚未同步。'
     if (props.cloud.status.value === 'error') return '暮光餘燼尚未同步，請重試。'
@@ -60,7 +61,7 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
       </div>
     </div>
     <template #actions>
-        <button type="button" class="es2-secondary" data-ui-sfx="select" :disabled="cloud.busy.value" @click="cloud.sync()">{{ t('立即同步') }}</button>
+        <button v-if="cloud.status.value !== 'playtest'" type="button" class="es2-secondary" data-ui-sfx="select" :disabled="cloud.busy.value" @click="cloud.sync()">{{ t('立即同步') }}</button>
         <button v-if="cloud.status.value === 'conflict' && !confirmRestore" type="button" class="es2-secondary" data-ui-sfx="select" @click="confirmRestore = true">{{ t('使用雲端餘燼') }}</button>
         <button type="button" class="es2-secondary" data-ui-sfx="select" :disabled="cloud.busy.value" @click="cloud.logout">{{ t('登出') }}</button>
     </template>
