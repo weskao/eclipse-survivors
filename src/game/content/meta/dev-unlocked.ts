@@ -20,9 +20,9 @@ function memoryStorage(initial: readonly (readonly [string, string])[]) {
 }
 
 /** Seed only supported v3 unlocks. The real transaction store still validates all writes. */
-export function createUnlockedPlaytestMetaStorage() {
+export function createUnlockedPlaytestMetaStorage(embers = 100_000) {
   const state = createMetaState()
-  state.embers = 100_000
+  state.embers = embers
   state.runs = 20
   state.wins = 10
   state.bossWins = 3

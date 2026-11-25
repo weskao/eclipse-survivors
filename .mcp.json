@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "firebase": {
+      "type": "stdio",
+      "command": "pnpm",
+      "args": [
+        "dlx",
+        "firebase-tools@15.34.1",
+        "mcp",
+        "--dir",
+        "."
+      ]
+    }
+  }
+}

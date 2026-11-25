@@ -47,6 +47,7 @@ const stats = computed(() => props.result ? [
       <p v-if="result">{{ t(MODES[result.mode].label) }}</p>
       <div class="es2-stat-strip es2-result-stats"><div v-for="stat in stats" :key="stat.title"><b>{{ stat.value }}</b><small>{{ t(stat.title) }}</small></div></div>
       <div v-if="rewards" class="es2-reward-strip"><strong>✧ +{{ rewards.embers }} {{ t("暮光餘燼") }}</strong><span v-for="id in rewards.newAchievements" :key="id">{{ t("新成就：") }}{{ t(achievementNames.get(id) ?? id) }}</span><span v-for="id in rewards.newCosmetics" :key="id">{{ t("新造型：") }}{{ t(cosmeticNames.get(id) ?? id) }}</span></div>
+      <slot name="cloud" />
     </div>
     <template #actions><button type="button" class="es2-primary" data-ui-sfx="managed" @click="emit('again')">{{ t("再次挑戰 ✦") }}</button><button type="button" class="es2-secondary" data-ui-sfx="managed" @click="emit('home')">{{ t("返回主選單") }}</button></template>
   </Es2Dialog>

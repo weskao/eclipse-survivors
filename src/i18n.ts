@@ -1769,6 +1769,14 @@ const english = new Map<string, string>([
   , ["立即同步","Sync now"]
   , ["使用雲端餘燼","Use cloud balance"]
   , ["登出","Sign out"]
+  , ["暮光餘燼已儲存至 Google 帳號。","Twilight Embers saved to your Google account."]
+  , ["雲端餘燼發生衝突，尚未同步。","Cloud balance conflict. Not synced yet."]
+  , ["暮光餘燼尚未同步，請重試。","Twilight Embers not synced yet. Please retry."]
+  , ["正在同步暮光餘燼…","Syncing Twilight Embers…"]
+  , ["正在連線 Google 帳號…","Connecting to your Google account…"]
+  , ["Google 登入失敗，請重試。","Google sign-in failed. Please retry."]
+  , ["測試模式：餘燼僅保存在本次測試。","Playtest mode: Embers stay in this test session."]
+  , ["訪客餘燼保存在本機；登入後可跨裝置同步帳號餘燼。","Guest Embers stay on this device. Sign in to sync account Embers across devices."]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],

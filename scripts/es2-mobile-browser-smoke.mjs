@@ -15,6 +15,82 @@ const viewports = [
 await mkdir(directory, { recursive: true })
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 try {
+  // Run the real fine-pointer interaction before mobile-only scenarios.
+  const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'no-preference' })
+  try {
+    const page = await desktop.newPage()
+    await page.goto(target, { waitUntil: 'domcontentloaded' })
+    const portal = page.locator('.es2-portal-start')
+    await portal.waitFor({ state: 'visible', timeout: 30000 })
+    const paint = () => portal.evaluate(el => {
+      const rect = el.getBoundingClientRect()
+      return { frame: getComputedStyle(el, '::before').backgroundImage,
+        fill: getComputedStyle(el, '::after').backgroundImage,
+        width: rect.width, height: rect.height, x: rect.x, y: rect.y,
+        sweep: getComputedStyle(el.querySelector('.es2-portal-sheen'), '::before').animationName,
+        menu: !!el.closest('.es2-menu'),
+        core: getComputedStyle(el.querySelector('.es2-portal-core')).transform,
+        ring: getComputedStyle(el.querySelector('.es2-portal-decoration')).transform,
+        glow: getComputedStyle(el.querySelector('.es2-portal-decoration')).boxShadow,
+        outline: getComputedStyle(el).outlineStyle,
+      }
+    })
+    await page.mouse.move(0, 0)
+    const idle = await paint()
+    await portal.screenshot({ path: directory + '/portal-start-idle.png', animations: 'disabled' })
+    await portal.hover()
+    const hover = await paint()
+    assert.equal(idle.sweep, 'none', 'Idle must not shimmer')
+    assert.equal(hover.frame, idle.frame, 'The metallic rim is already illuminated at rest')
+    assert.equal(hover.fill, idle.fill, 'The dimensional interior is already illuminated at rest')
+    assert.notEqual(hover.glow, idle.glow, 'Hover intensifies the already visible magical glow')
+    assert.equal(hover.sweep, 'es2-portal-sweep')
+    assert.deepEqual([hover.x, hover.y, hover.width, hover.height], [idle.x, idle.y, idle.width, idle.height], 'Hover must not move the hit area')
+    assert.equal(hover.menu, true)
+    const expectTransform = async (selector, scale, angle = 0) => {
+      await page.waitForFunction(({ selector, scale, angle }) => {
+        const value = getComputedStyle(document.querySelector(selector)).transform
+        const matrix = value === 'none' ? new DOMMatrix() : new DOMMatrix(value)
+        return Math.abs(Math.hypot(matrix.a, matrix.b) - scale) < .005
+          && Math.abs(Math.atan2(matrix.b, matrix.a) * 180 / Math.PI - angle) < .2
+      }, { selector, scale, angle })
+    }
+    await expectTransform('.es2-portal-decoration', 1.08)
+    await expectTransform('.es2-portal-core', 1.13, 12)
+    await portal.screenshot({ path: directory + '/portal-start-hover.png' })
+    await page.mouse.down()
+    await expectTransform('.es2-portal-decoration', .96)
+    await expectTransform('.es2-portal-core', .92)
+    await page.mouse.move(0, 0)
+    await page.mouse.up()
+    await expectTransform('.es2-portal-decoration', 1)
+    await expectTransform('.es2-portal-core', 1)
+    assert.equal((await paint()).frame, idle.frame, 'Leaving the portal preserves its idle rim')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await portal.hover()
+    assert.equal((await paint()).sweep, 'none', 'Reduced motion disables the sweep')
+    assert.equal((await paint()).ring, 'none', 'Reduced motion disables ring scaling')
+    assert.equal((await paint()).core, 'none', 'Reduced motion disables core scaling and rotation')
+    assert.equal((await paint()).frame, idle.frame, 'Reduced motion preserves the metallic rim')
+    assert.equal((await paint()).outline, 'solid', 'Reduced motion retains a static hover indicator')
+    await page.mouse.move(0, 0)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.evaluate(() => document.documentElement.dataset.es2ReduceFlashing = 'true')
+    await portal.hover()
+    assert.equal((await paint()).sweep, 'none', 'Reduced flashing disables the sweep')
+    assert.equal((await paint()).ring, 'none', 'Reduced flashing disables ring scaling')
+    assert.equal((await paint()).core, 'none', 'Reduced flashing disables core scaling and rotation')
+    assert.equal((await paint()).glow, idle.glow, 'Reduced flashing keeps a constant magical glow')
+    await page.mouse.move(0, 0)
+    await page.keyboard.press('Tab')
+    await portal.focus()
+    assert.equal(await portal.evaluate(el => el.matches(':focus-visible')), true, 'Expected keyboard focus')
+    assert.equal((await paint()).frame, idle.frame, 'Keyboard focus preserves the metallic rim')
+    assert.equal((await paint()).outline, 'solid', 'Keyboard focus retains a visible outline')
+    await page.screenshot({ path: directory + '/portal-start-focus.png', animations: 'disabled' })
+    console.log('PASS desktop: portal hover, leave, focus, stable hit area and accessibility')
+  } finally { await desktop.close() }
+
   for (const viewport of viewports) {
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
@@ -101,6 +177,19 @@ try {
       await page.locator('[data-es2-expedition-navigation]').click()
       assert.equal(await page.locator('.es2-mode-section').isVisible(), true)
       assert.equal(await page.locator('[data-mode]:visible, [data-objective-mode]:visible').count(), 9)
+      const objectiveIcons = await page.locator('[data-objective-mode] .es2-objective-sigil:visible').evaluateAll(icons =>
+        icons.map(icon => {
+          const a = icon.getBoundingClientRect()
+          const b = icon.closest('button').getBoundingClientRect()
+          const title = icon.nextElementSibling.getBoundingClientRect()
+          return { glyph: icon.textContent.trim(), width: a.width, height: a.height,
+            contained: a.left >= b.left && a.right <= b.right && a.top >= b.top && a.bottom <= b.bottom,
+            separate: a.right <= title.left + 1 }
+        }))
+      assert.equal(objectiveIcons.length, 5, viewport.name + ': all objective mode icons must be visible')
+      assert.equal(new Set(objectiveIcons.map(icon => icon.glyph)).size, 5)
+      assert.ok(objectiveIcons.every(icon => icon.width >= 18 && icon.height >= 18 && icon.contained && icon.separate),
+        viewport.name + ': objective mode icon clipped or overlapping title ' + JSON.stringify(objectiveIcons))
       assert.equal(await page.locator('.es2-hero-section').isVisible(), false)
       await assertHomepage('expedition selection')
       await page.screenshot({ path: `${directory}/${viewport.name}-menu-objectives.png`, animations: 'disabled' })

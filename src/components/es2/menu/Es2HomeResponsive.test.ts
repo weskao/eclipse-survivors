@@ -255,6 +255,31 @@ describe('phone homepage viewport-first navigation', () => {
 })
 
 describe('homepage menu layout across devices', () => {
+  it.each(Object.entries({"boss-rush":"♛","endless-eclipse":"☾","relic-hunt":"◇","cursed-expedition":"✧","chaos-arena":"✵"}))('shares the %s mode icon with its selected expedition summary', (id, glyph) => {
+    const wrapper = menu({ runMode: id })
+    expect(wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`).text()).toBe(glyph)
+    expect(wrapper.get('.es2-expedition-sigil').text()).toBe(glyph)
+    expect(css).toContain('.es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}')
+  })
+
+  it('uses only a gear for settings in both languages and keeps its accessible action', async () => {
+    const previous = getLocale()
+    try {
+      const wrapper = menu()
+      const settings = wrapper.get('[data-es2-settings]')
+      for (const locale of ['zh-TW', 'en'] as const) {
+        setLocale(locale)
+        await nextTick()
+        expect(settings.text()).toBe('⚙')
+        expect(settings.attributes('aria-label')).toBeTruthy()
+        expect(settings.attributes('title')).toBe(settings.attributes('aria-label'))
+      }
+      await settings.trigger('click')
+      expect(wrapper.emitted('settings')).toHaveLength(1)
+      expect(css).toContain('grid-template-areas:"version account settings"')
+    } finally { setLocale(previous) }
+  })
+
   it('keeps the start dock separate from the scrollable hero or mode page', () => {
     expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*position:fixed;[^}]*bottom:0/)
     expect(css).toMatch(/\.es2-menu\s*\{[^}]*bottom:var\(--es2-action-bar-height/)
@@ -315,5 +340,34 @@ describe('in-game volume control shares HUD action button geometry', () => {
     wrappers.push(hud, menuAudio)
     expect(hud.get('.audio-trigger').classes()).toContain('es2-hud__control-button')
     expect(menuAudio.get('.audio-trigger').classes()).not.toContain('es2-hud__control-button')
+  })
+})
+
+describe('portal start interaction feedback', () => {
+  it('keeps decorative hover feedback pointer-transparent and never starts gameplay on entry', async () => {
+    const wrapper = menu()
+    const start = wrapper.get('.es2-portal-start')
+    expect(start.get('.es2-portal-sheen').attributes('aria-hidden')).toBe('true')
+    await start.trigger('pointerenter')
+    await start.trigger('mouseover')
+    await start.trigger('focus')
+    expect(wrapper.emitted('start')).toBeUndefined()
+    await start.trigger('click')
+    expect(wrapper.emitted('start')).toHaveLength(1)
+  })
+  it('provides a finite fine-pointer sweep, press feedback, focus and reduced-flashing fallback', () => {
+    for (const token of [".es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before","animation:es2-portal-sweep .72s","@keyframes es2-portal-sweep",".es2-portal-start:active:not(:disabled) .es2-portal-core","[data-es2-reduce-flashing=\"true\"] .es2-portal-start",".es2-portal-start:focus-visible:not(:disabled)"]) expect(css).toContain(token)
+    expect(css).toMatch(/\.es2-portal-sheen\s*\{[^}]*pointer-events:none/)
+    expect(css).toMatch(/@media\s*\(hover:hover\) and \(pointer:fine\)\s*\{\s*\.es2-menu \.es2-portal-start:hover/)
+    expect(css).toContain("--es2-portal-rim:linear-gradient(105deg,#d79b4c,#fff7d5 26%,#ffe6a0 58%,#e1ad5c 82%,#fff7d0);")
+    expect(css).toContain("--es2-portal-fill:radial-gradient(ellipse at 24% 50%,#ffda8566,transparent 57%),linear-gradient(180deg,#ca9651,#976333 46%,#593820 52%,#82552d);")
+    expect(css).not.toContain('--es2-portal-lit-rim')
+    expect(css).not.toContain('--es2-portal-lit-fill')
+    expect(css).not.toMatch(/\.es2-portal-start:hover:not\(:disabled\) \.es2-portal-label\s*\{/)
+    expect(css).toContain('.es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{transform:scale(1.08);box-shadow:0 0 26px #ffda85bf,inset 0 0 16px #ffe9b1c4}')
+    expect(css).toContain('.es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-core{transform:scale(1.13) rotate(12deg)}')
+    expect(css).toContain('.es2-portal-start:active:not(:disabled) .es2-portal-core{transform:scale(.92)}')
+    expect(css).toContain('.es2-portal-start:active:not(:disabled) .es2-portal-decoration{transform:scale(.96)}')
+    expect(css).toContain('box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399')
   })
 })

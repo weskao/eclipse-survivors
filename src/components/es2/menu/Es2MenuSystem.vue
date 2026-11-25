@@ -111,7 +111,9 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
     <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :items="specialCards.items"
       :still="upgradeEffect === 'still'" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
-      :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')" />
+      :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')">
+      <template #cloud><slot name="result-cloud" /></template>
+    </Es2Result>
     <Es2Message :active="resetOpen && !settingsOpen" kind="confirmation" :title="t('重置所有遠征紀錄？')"
       :message="t('成就、餘燼、戰績、造型及永久升級將全部刪除。')" :confirm-label="t('永久刪除')" destructive
       @confirm="confirmReset" @cancel="resetOpen = false" />

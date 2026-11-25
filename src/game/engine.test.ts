@@ -133,6 +133,68 @@ describe('home selection persistence', () => {
     } finally { write.mockRestore() }
   })
 
+  it('falls back independently on returning home when a previously stored choice is no longer available', () => {
+    engine.selectHero('shadowblade')
+    engine.selectRunMode('boss-rush')
+    engine.start()
+    localStorage.setItem('eclipseSelectedHero', 'removed-hero')
+    engine.goMenu()
+    expect(engine.ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'boss-rush' })
+    engine.selectHero('ranger')
+    engine.start()
+    localStorage.setItem('eclipseSelectedRunMode', 'removed-mode')
+    engine.goMenu()
+    expect(engine.ui).toMatchObject({ heroId: 'ranger', choice: 'ranger', runMode: 'quick' })
+    expect(engine.state.runMode).toBe('quick')
+  })
+
+  it('revalidates each browser preference when the active account changes without playing a selection cue', () => {
+    engine.selectHero('spirit-summoner')
+    engine.selectRunMode('relic-hunt')
+    audio.cues.length = 0
+    const account = engine.cloudWallet!
+    expect(account.select('selection-qa-a')).toBe(true)
+    expect(engine.ui).toMatchObject({ heroId: 'spirit-summoner', choice: 'wizard', runMode: 'relic-hunt' })
+    localStorage.setItem('eclipseSelectedHero', 'removed-hero')
+    expect(account.select('selection-qa-b')).toBe(true)
+    expect(engine.ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'relic-hunt' })
+    localStorage.setItem('eclipseSelectedHero', 'ranger')
+    localStorage.setItem('eclipseSelectedRunMode', 'removed-mode')
+    expect(account.select(null)).toBe(true)
+    expect(engine.ui).toMatchObject({ heroId: 'ranger', choice: 'ranger', runMode: 'quick' })
+    expect(audio.cues).toEqual([])
+  })
+
+  it('rejects specializations whose starting ability is no longer registered', () => {
+    localStorage.setItem('eclipseSelectedHero', 'shadowblade')
+    localStorage.setItem('eclipseSelectedRunMode', 'standard')
+    const limited = createEngine({ audio, contentPacks: [] })
+    expect(limited.ui).toMatchObject({ heroId: 'knight', choice: 'knight', runMode: 'standard' })
+    limited.selectHero('shadowblade')
+    expect(limited.ui.heroId).toBe('knight')
+    expect(localStorage.getItem('eclipseSelectedHero')).toBe('shadowblade')
+  })
+
+  it('does not restore an older saved choice when the latest write fails', () => {
+    engine.selectJob('ranger')
+    engine.selectRunMode('standard')
+    const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked') })
+    try {
+      engine.selectHero('crimson-paladin')
+      engine.selectRunMode('challenge')
+      engine.start()
+      engine.goMenu()
+      expect(engine.ui).toMatchObject({ heroId: 'crimson-paladin', choice: 'knight', runMode: 'challenge' })
+      expect(engine.state.runMode).toBe('challenge')
+    } finally { write.mockRestore() }
+  })
+
+  it('keeps the displayed and engine mode aligned before starting a run', () => {
+    engine.selectRunMode('chaos-arena')
+    expect(engine.ui.runMode).toBe('chaos-arena')
+    expect(engine.state.runMode).toBe('chaos-arena')
+  })
+
   it('ignores mode changes during combat and rejects invalid mode IDs', () => {
     engine.selectRunMode('constructor' as never)
     expect(engine.ui.runMode).toBe('quick')

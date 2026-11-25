@@ -23,11 +23,13 @@
 .es2-menu-brand h1{font-size:clamp(2rem,4.3vw,4.4rem);line-height:1.12;letter-spacing:.075em;font-weight:600;margin:5px 0 9px;text-shadow:0 0 45px #dbbd8655}
 .es2-menu-brand h1 em{color:var(--es2-gold);font-style:normal;font-weight:400}
 .es2-menu-brand p{font-size:clamp(.82rem,1.2vw,1rem);color:var(--es2-muted);margin:0}
-.es2-top-actions{display:grid;grid-template-areas:"version settings" "music music";grid-template-columns:max-content max-content;column-gap:10px;row-gap:8px;min-width:0;align-items:center;white-space:nowrap}
+.es2-top-actions{display:grid;grid-template-areas:"version settings";grid-template-columns:max-content max-content;column-gap:8px;row-gap:6px;min-width:0;align-items:center;white-space:nowrap}
+.es2-top-actions:has([data-es2-audio-unlock]){grid-template-areas:"version settings" "music music"}
 .es2-top-actions #gameVersion{grid-area:version}
-.es2-top-actions [data-es2-settings]{grid-area:settings}
+.es2-top-actions [data-es2-settings]{grid-area:settings;display:grid;place-items:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;font-size:1.3rem;line-height:1}
 .es2-top-actions [data-es2-audio-unlock]{grid-area:music;justify-self:start}
-.es2-top-actions:has([data-es2-cloud-account]){grid-template-areas:"version settings" "account music"}
+.es2-top-actions:has([data-es2-cloud-account]){grid-template-areas:"version account settings";grid-template-columns:repeat(3,max-content)}
+.es2-top-actions:has([data-es2-cloud-account]):has([data-es2-audio-unlock]){grid-template-areas:"version account settings" "music music music"}
 .es2-top-actions [data-es2-cloud-account]{grid-area:account;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .es2-version{font:600 .72rem system-ui,sans-serif;color:var(--es2-muted)}
 .es2-icon-button{min-height:44px;padding:9px 13px;border-radius:8px;background:#122134d9;border:1px solid var(--es2-line)}
@@ -480,7 +482,7 @@
 .es2-menu .es2-objective-choice{min-height:68px;padding:8px 40px 8px 9px;gap:4px;justify-content:center;overflow-wrap:anywhere}
 .es2-menu .es2-objective-choice strong{font-size:.86rem;line-height:1.25}
 .es2-menu .es2-objective-choice .reward{font-size:.7rem;line-height:1.25}
-.es2-menu .es2-objective-choice>:not(strong):not(.reward){display:none}
+.es2-menu .es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}
 .es2-menu-action-bar{
   position:fixed;inset-inline:0;bottom:0;z-index:5;display:grid;gap:4px;
   padding:6px max(12px,env(safe-area-inset-right),calc((100% - 760px) / 2)) max(6px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left),calc((100% - 760px) / 2));
@@ -506,10 +508,10 @@
   .es2-menu-header{gap:6px;padding-bottom:4px}
   .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.6rem);line-height:1.1;letter-spacing:.02em;margin:0}
   .es2-menu-brand .es2-eyebrow,.es2-menu-brand p{display:none}
-  .es2-top-actions{display:flex;align-items:center;gap:5px}
+  .es2-top-actions{display:flex;align-items:center;gap:6px}
   .es2-top-actions #gameVersion{font-size:.6875rem}
   .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
-  .es2-top-actions [data-es2-settings] span,.es2-top-actions .es2-cloud-trigger-label{display:none}
+  .es2-top-actions .es2-cloud-trigger-label{display:none}
   .es2-top-actions [data-es2-cloud-account]{width:44px;min-width:44px;min-height:44px;padding:0;flex:none}
   .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:80px;padding:3px 5px;font-size:.72rem;line-height:1.25;white-space:normal}
   .es2-hall-navigation{padding:4px;gap:3px}
@@ -605,19 +607,73 @@
 .es2-menu .es2-expedition-description{display:block;min-width:0;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif;overflow-wrap:anywhere}
 .es2-menu .es2-expedition-hero{font:600 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif}
 .es2-menu .es2-expedition-change{color:#e9cc95;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:end;max-width:30%;overflow-wrap:anywhere}
-.es2-menu .es2-portal-start{padding:10px 14px;gap:12px;color:#fff4d5!important;text-align:center}
+.es2-menu .es2-portal-start{
+  --es2-portal-rim:linear-gradient(105deg,#d79b4c,#fff7d5 26%,#ffe6a0 58%,#e1ad5c 82%,#fff7d0);
+  --es2-portal-fill:radial-gradient(ellipse at 24% 50%,#ffda8566,transparent 57%),linear-gradient(180deg,#ca9651,#976333 46%,#593820 52%,#82552d);
+  padding:10px 14px;gap:12px;color:#fff4d5!important;text-align:center;transition:none
+}
 .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{
   clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%)
 }
-.es2-menu .es2-portal-start::before{background:linear-gradient(105deg,#8b5630,#f2d28e 40%,#ffdf9d 58%,#8b5630)}
-.es2-menu .es2-portal-start::after{inset:2px;z-index:-1;background:radial-gradient(ellipse at 22% 50%,#9b612f88,transparent 50%),linear-gradient(112deg,#583221,#936235 48%,#503022)}
+.es2-menu .es2-portal-start::before{background:var(--es2-portal-rim)}
+.es2-menu .es2-portal-start::after{inset:2px;z-index:-1;background:var(--es2-portal-fill)}
 .es2-menu .es2-portal-start:hover:not(:disabled){background:none}
-.es2-menu .es2-portal-start:hover::after{background:linear-gradient(110deg,#80502c,#b78545,#673b24)}
+.es2-menu .es2-portal-start:focus-visible:not(:disabled),
+.es2-menu .es2-portal-start:active:not(:disabled){
+  background:none
+}
+/* A clipped, one-shot light sweep; no pointer tracking, layout changes or animated paint properties. */
+.es2-menu .es2-portal-sheen{
+  position:absolute;inset:3px;margin:0;z-index:0;pointer-events:none;overflow:hidden;
+  clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%)
+}
+.es2-menu .es2-portal-sheen::before{
+  content:'';position:absolute;inset:0 auto 0 -48%;width:42%;
+  background:linear-gradient(105deg,transparent,#ffe5a636 32%,#fff4cc9e 51%,#ffe5a625 70%,transparent);
+  opacity:0;transform:translateX(0) skewX(-17deg)
+}
+.es2-menu .es2-portal-start .es2-portal-decoration{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.es2-menu .es2-portal-start .es2-portal-core{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.es2-menu .es2-portal-start .es2-portal-label{position:relative;color:#fff8df;text-shadow:0 2px 3px #21110c,0 0 10px #f6c66e}
+/* Keep the fully lit metallic finish; hover energizes the seal and plays one shimmer. */
+@media(hover:hover) and (pointer:fine){
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before{animation:es2-portal-sweep .72s ease-out both}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{transform:scale(1.08);box-shadow:0 0 26px #ffda85bf,inset 0 0 16px #ffe9b1c4}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-core{transform:scale(1.13) rotate(12deg)}
+  [data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399}
+  [data-es2-reduce-motion="true"] .es2-menu .es2-portal-start:hover:not(:disabled),
+  [data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:hover:not(:disabled){outline:2px solid #ffe0a0;outline-offset:2px}
+}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:reduce){
+  .es2-menu .es2-portal-start:hover:not(:disabled){outline:2px solid #ffe0a0;outline-offset:2px}
+}
+.es2-menu .es2-portal-start:active:not(:disabled) .es2-portal-core{transform:scale(.92)}
+.es2-menu .es2-portal-start:active:not(:disabled) .es2-portal-decoration{transform:scale(.96)}
+@keyframes es2-portal-sweep{
+  0%{opacity:0;transform:translateX(0) skewX(-17deg)}
+  20%{opacity:.85}
+  80%{opacity:.75}
+  100%{opacity:0;transform:translateX(370%) skewX(-17deg)}
+}
+@media(prefers-reduced-motion:reduce){
+  .es2-menu .es2-portal-start .es2-portal-sheen::before{animation:none!important}
+  .es2-menu .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+}
+[data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen::before,
+[data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen::before{animation:none!important}
+[data-es2-reduce-motion="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core),
+[data-es2-reduce-flashing="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+@media(forced-colors:active){
+  .es2-menu .es2-portal-start{border:2px solid ButtonText;color:ButtonText!important;background:ButtonFace}
+  .es2-menu .es2-portal-start:is(:hover,:focus-visible,:active):not(:disabled){background:ButtonFace;text-shadow:none}
+  .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after,.es2-menu .es2-portal-sheen{display:none}
+  .es2-menu .es2-portal-start:focus-visible:not(:disabled){outline:3px solid Highlight}
+}
 .es2-menu .es2-portal-decoration{
   position:relative;display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;
-  border-radius:50%;margin:0;border:1px solid #f4d29b;
+  border-radius:50%;margin:0;border:1px solid #fff2bc;
   background:radial-gradient(circle,#f6cc7944 0,#c8893d22 43%,#231927 65%,#e8c58c55 69%,#261c24 78%);
-  box-shadow:0 0 15px #edb05b44,inset 0 0 12px #e8a74d55;pointer-events:none
+  box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399;pointer-events:none
 }
 .es2-menu .es2-portal-decoration::before{
   content:'';position:absolute;inset:4px;border:1px dashed #f9d394b0;border-radius:50%;
@@ -628,7 +684,7 @@
   background:radial-gradient(circle at 12% 35%,#ffe2a6 0 1px,transparent 2px),radial-gradient(circle at 82% 24%,#edbb75 0 1px,transparent 2px),radial-gradient(circle at 78% 84%,#ffe2a6 0 1px,transparent 2px);
   opacity:.65;animation:es2-portal-embers 6s ease-in-out infinite;pointer-events:none
 }
-.es2-menu .es2-portal-core{margin:0;color:#fff1c4;font-size:29px;text-shadow:0 0 12px #eab86c;line-height:1}
+.es2-menu .es2-portal-core{margin:0;color:#fff1c4;font-size:29px;text-shadow:0 0 14px #fff1c4,0 0 22px #eab86c;line-height:1}
 .es2-menu .es2-portal-label{margin:0;min-width:0;font:800 max(.9rem,calc(1.2rem * var(--es2-ui-scale,1)))/1.2 Georgia,'Noto Serif TC',serif;letter-spacing:.035em;overflow-wrap:anywhere}
 @keyframes es2-portal-orbit{to{transform:rotate(360deg)}}
 @keyframes es2-portal-embers{0%,100%{transform:scale(.9) translateY(1px);opacity:.45}50%{transform:scale(1.05) translateY(-3px);opacity:.8}}

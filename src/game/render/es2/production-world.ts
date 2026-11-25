@@ -2,6 +2,8 @@ import { BIOME_IDS, type BiomeId } from '../../content/biomes'
 import { BOSS_DEFINITIONS, type BossId } from '../../content/bosses/definitions'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import type { Ctx2D } from '../ctx'
+import { bossPhaseVisualScale, measureBossPhaseLayouts, type BossPhaseLayout } from './boss-phase-layout'
+export { BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
 import { BOSS_NATIVE_KEYFRAMES, registerBossNativeKeyframe, type NativeBossKeyframe } from './boss-native-keyframes'
 
 /** Vite resolves all URLs at build time. The browser only fetches a bitmap when it is used. */
@@ -16,6 +18,40 @@ const bossQaLoaders = import.meta.env.DEV
   }) as Record<string, () => Promise<string>>
   : {}
 const bossQaInsets = new WeakMap<HTMLImageElement, number>()
+const bossLayouts = new WeakMap<HTMLImageElement, { src: string; cell: number; inset: number; phases: readonly BossPhaseLayout[] }>()
+
+/** Cache only three small geometry records per decoded atlas; invalidate on source swap. */
+export function cacheBossPhaseLayouts(image: HTMLImageElement, rgba: Uint8ClampedArray, inset = 0): void {
+  bossLayouts.delete(image)
+  const cell = image.naturalHeight
+  if (image.naturalWidth !== cell * 3) return
+  const phases = measureBossPhaseLayouts(rgba, cell, inset)
+  if (phases) bossLayouts.set(image, { src: image.src, cell, inset, phases })
+}
+
+export function bossFrameLayout(image: HTMLImageElement, phase: 1 | 2 | 3, sourceInset?: number): BossPhaseLayout | undefined {
+  const cached = bossLayouts.get(image)
+  const inset = sourceInset ?? (image.naturalHeight === 756 ? bossQaInsets.get(image) ?? 0 : 0)
+  return cached && cached.src === image.src && cached.cell === image.naturalHeight && cached.inset === inset
+    ? cached.phases[phase - 1] : undefined
+}
+
+function prepareBossPhaseLayouts(image: HTMLImageElement): void {
+  bossLayouts.delete(image)
+  const cell = image.naturalHeight
+  if (!image.complete || cell < 192 || image.naturalWidth !== cell * 3 || typeof document === 'undefined') return
+  // A temporary readback canvas is created only on image decode, not during combat frames.
+  try {
+    const canvas = document.createElement('canvas')
+    canvas.width = image.naturalWidth; canvas.height = cell
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return
+    ctx.drawImage(image, 0, 0)
+    cacheBossPhaseLayouts(image, ctx.getImageData(0, 0, canvas.width, cell).data,
+      cell === 756 ? bossQaInsets.get(image) ?? 0 : 0)
+    canvas.width = canvas.height = 0
+  } catch { /* Preserve the original phase rendering if pixel readback is unavailable. */ }
+}
 // Isolated reference atlases are loaded only for an explicit development motion review.
 const bossMotionSourceLoaders = import.meta.env.DEV
   ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/*-attack-source-reference.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
@@ -103,7 +139,9 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   const loadBoss = (id: BossId): HTMLImageElement => {
     const candidatePath = `../../../assets/es2/production/bosses/candidates/${id}-phases-native3x-QA-PENDING.webp`
-    const image = load(WORLD_ART.bosses[id])
+    const image = makeImage()
+    image.onload = () => prepareBossPhaseLayouts(image)
+    image.src = WORLD_ART.bosses[id]
     const loadCandidate = import.meta.env.DEV && reviewMotion !== 'native' && reviewBossId === id ? bossQaLoaders[candidatePath] : undefined
     if (loadCandidate) {
       void loadCandidate().then(url => {
@@ -160,26 +198,20 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
 }
 
-/** Shared authored body display width before phase growth. */
-export const BOSS_BASE_DRAW_PX = 255
-
-/** Scale art only; collision geometry and source rects remain unchanged. */
-export function bossPhaseVisualScale(phase: 1 | 2 | 3): number {
-  return phase === 3 ? 1.24 : phase === 2 ? 1.12 : 1
-}
-
 export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
   sourceInset?: number,
 ): boolean {
   if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || !Number.isInteger(phase) || phase < 1 || phase > 3) return false
   const inset = sourceInset ?? (image.naturalHeight === 756 ? bossQaInsets.get(image) ?? 0 : 0)
-  const side = Math.min(width, height) * bossPhaseVisualScale(phase)
+  const base = Math.min(width, height)
+  const layout = bossFrameLayout(image, phase, inset)
+  const side = base * (layout?.scale ?? bossPhaseVisualScale(phase))
   const sourceSide = image.naturalHeight - inset * 2
   if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(inset) || inset < 0 || sourceSide <= 0) return false
   ctx.drawImage(
     image, (phase - 1) * image.naturalHeight + inset, inset, sourceSide, sourceSide,
-    -side / 2, -side + 4, side, side,
+    layout ? base * layout.x : -side / 2, layout ? 4 + base * layout.y : 4 - side, side, side,
   )
   return true
 }
