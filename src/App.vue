@@ -7,6 +7,7 @@ import { BOSS_DEFINITIONS } from './game/content/bosses/definitions'
 import { getBossArrivalWarning } from './game/bosses/countdown'
 import { locateOffscreenBoss } from './components/es2/hud/boss-pointer'
 import { installGameTouchGuard } from './ios-touch-guard'
+import { installCursorAccent } from './cursor-accent'
 import { applyPresentation, resolvePresentationPolicy } from './game/content/accessibility/presentation'
 import './game/content/accessibility/presentation.css'
 import { inventorySnapshot } from './game/content/relics/runtime'
@@ -128,6 +129,7 @@ const combatFeed = computed<CombatHudFeed>(() => {
 
 let unmount: (() => void) | undefined
 let removeTouchGuard: () => void = () => {}
+let removeCursorAccent: () => void = () => {}
 let clearPresentation: () => void = () => {}
 function syncPresentation(): void {
   clearPresentation()
@@ -143,12 +145,14 @@ function syncPresentation(): void {
 watch(accessibilityPreferences, syncPresentation)
 onMounted(() => {
   removeTouchGuard = installGameTouchGuard(document)
+  removeCursorAccent = installCursorAccent(document)
   syncPresentation()
   applyDocumentLocale()
   if (canvas.value) unmount = engine.mount(canvas.value, hudRef.value?.minimap ?? null)
 })
 onBeforeUnmount(() => {
   removeTouchGuard()
+  removeCursorAccent()
   clearPresentation()
   unmount?.()
 })

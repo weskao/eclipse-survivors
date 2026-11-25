@@ -787,9 +787,9 @@
 @media(max-width:540px){.es2-menu .es2-skins{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 /* Native cursor images preserve real OS hit testing; no Pixi/canvas loop. */
 @media (hover:hover) and (pointer:fine){
-  body{cursor:url('../../assets/ui/cursor-bronze.svg') 3 2,auto}
+  body{cursor:url('../../assets/ui/cursor-bronze.svg') 4 3,auto}
   body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),input[type="range"]){
-    cursor:url('../../assets/ui/cursor-action.svg') 12 3,pointer!important
+    cursor:url('../../assets/ui/cursor-action.svg') 13 3,pointer!important
   }
   body :is(button:disabled,[aria-disabled="true"]){cursor:not-allowed!important}
 }
@@ -797,3 +797,25 @@
   body{cursor:auto!important}
   body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),input[type="range"]){cursor:pointer!important}
 }
+
+/* A single brief star glint beside the OS cursor, never a cursor replacement.
+   Only transform/opacity animate. It never participates in hit testing. */
+.es2-cursor-accent{
+  position:fixed;z-index:2147483000;left:0;top:0;width:19px;height:19px;
+  opacity:0;pointer-events:none;user-select:none;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,#f0ca8666,transparent 72%)
+}
+.es2-cursor-accent::before{
+  content:'';position:absolute;inset:3px;
+  background:linear-gradient(140deg,#fff8dc,#e8b764 64%,#9f7041);
+  clip-path:polygon(50% 0,59% 40%,100% 50%,59% 60%,50% 100%,41% 60%,0 50%,41% 40%)
+}
+.es2-cursor-accent::after{
+  content:'';position:absolute;top:1px;right:1px;width:2px;height:2px;
+  border-radius:50%;background:#f4d9a4;box-shadow:-12px 10px #e6be7d80
+}
+@media(hover:none),(pointer:coarse),(prefers-reduced-motion:reduce),(forced-colors:active){
+  .es2-cursor-accent{display:none!important}
+}
+[data-es2-reduce-motion="true"] .es2-cursor-accent,
+[data-es2-reduce-flashing="true"] .es2-cursor-accent{display:none!important}
