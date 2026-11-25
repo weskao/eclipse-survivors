@@ -229,10 +229,11 @@ describe('ES3 reward feedback', () => {
 
   it('accelerates a magnetized XP gem during consecutive simulation ticks', () => {
     const { s } = setup()
-    const star = { x: 120, y: 0, value: 3, t: 0 }
+    const star = { x: 100, y: 0, value: 3, t: 0 }
     s.stars.push(star)
     step(s, 0.05, still, spyHooks())
-    const first = 120 - star.x
+    const first = 100 - star.x
+    expect(first).toBeGreaterThan(0)
     const previous = star.x
     step(s, 0.05, still, spyHooks())
     expect(previous - star.x).toBeGreaterThan(first)
