@@ -7,7 +7,7 @@ PORT ?= 5173
 # Like Skyline Rush, desktop dev runs against disposable Auth/Firestore emulators.
 # Distinct demo projects and ports prevent accidental reuse of Skyline Rush or live data.
 JAVA21_HOME := $(shell /usr/libexec/java_home -v 21+ 2>/dev/null)
-WITH_EMULATORS := $(if $(JAVA21_HOME),PATH="$(JAVA21_HOME)/bin:$PATH" )VITE_ES2_FIREBASE_EMULATOR=1 $(PNPM) dlx firebase-tools@15.34.1 emulators:exec --only auth,firestore
+WITH_EMULATORS := $(if $(JAVA21_HOME),PATH="$(JAVA21_HOME)/bin:$$PATH" )VITE_ES2_FIREBASE_EMULATOR=1 $(PNPM) dlx firebase-tools@15.34.1 emulators:exec --only auth,firestore
 
 .PHONY: setup dev dev-unlocked test-unlocked phone phone-unlocked build preview run test typecheck check-release verify deploy deploy-pages help
 
