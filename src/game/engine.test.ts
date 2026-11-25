@@ -325,6 +325,8 @@ describe('engine commands fire the original cues', () => {
     expect(s.time).toBe(pausedAt)
     expect(s.killStreak.current).toBe(2)
     engine.togglePause()
+    // Isolate the expiry window from the four faction actors spawned by start().
+    s.hero!.attack = 100
     for (let i = 0; i < 35; i++) engine.advance(0.1)
     expect(engine.ui.hud).toMatchObject({ kill: 2 })
     expect(engine.ui.hud).not.toMatchObject({ combo: { count: 2 } })
