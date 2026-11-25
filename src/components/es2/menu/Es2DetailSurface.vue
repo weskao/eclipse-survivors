@@ -11,9 +11,17 @@ watchPostEffect(onCleanup => {
   const anchor = props.anchor
   if (!el || !anchor) return
   const place = () => {
-    const a = anchor.getBoundingClientRect(), p = el.getBoundingClientRect()
+    const a = anchor.getBoundingClientRect()
     const edge = 12, gap = 10
-    const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight
+    const vw = document.documentElement.clientWidth
+    // A hover dossier must never intercept the fixed expedition action dock.
+    const dock = anchor.closest('.es2-menu')?.querySelector('.es2-menu-action-bar')
+    const viewportHeight = document.documentElement.clientHeight
+    const dockTop = dock?.getBoundingClientRect().top ?? viewportHeight
+    const vh = dockTop > edge * 2 ? Math.min(viewportHeight, dockTop) : viewportHeight
+    el.style.maxHeight = Math.max(0, vh - edge * 2) + 'px'
+    el.style.boxSizing = 'border-box'
+    const p = el.getBoundingClientRect()
     const clamp = (v: number, max: number) => Math.max(edge, Math.min(v, Math.max(edge, max)))
     // Prefer an adjacent side; use the space above/below on narrower viewports.
     let x = a.right + gap, y = a.top

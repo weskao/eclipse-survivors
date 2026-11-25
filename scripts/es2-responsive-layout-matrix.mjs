@@ -362,6 +362,13 @@ try {
       // The actual selection, not an authored mock, must update the visible brief on returning to the hero page.
       await page.locator('[data-es2-expedition-navigation]').click()
       await page.locator('[data-objective-mode="boss-rush"]').click()
+      if (hoverCapable) {
+        const tip = page.locator('[data-es2-hover-details]')
+        await tip.waitFor({ state: 'visible' })
+        const tipBottom = await tip.evaluate(el => el.getBoundingClientRect().bottom)
+        const dockTop = await page.locator('.es2-menu-action-bar').evaluate(el => el.getBoundingClientRect().top)
+        assert.ok(tipBottom <= dockTop + 2, name + ': hover dossier covers expedition dock')
+      }
       await page.locator('[data-es2-expedition-navigation]').click()
       assert.equal(await page.locator('[data-es2-expedition-summary]').getAttribute('data-run-mode'), 'boss-rush')
       assert.match(await page.locator('[data-es2-mode-summary]').innerText(), /five increasingly powerful bosses/i)
