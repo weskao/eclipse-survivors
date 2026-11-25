@@ -35,6 +35,7 @@ export interface BossTelegraph {
 }
 
 export interface BossProjectile {
+  readonly attackId?: BossAttackId
   readonly x: number
   readonly y: number
   readonly vx: number
@@ -99,6 +100,7 @@ interface Windup { readonly attackId: BossAttackId; readonly telegraphs: BossTel
 interface Hazard { readonly telegraph: BossTelegraph; remaining: number; pulse: number }
 interface MutableImpact { readonly telegraph: BossTelegraph; life: number; readonly max: number }
 interface MutableProjectile {
+  attackId?: BossAttackId
   x: number; y: number; vx: number; vy: number; radius: number
   damage: number; life: number; color: string
 }
@@ -350,7 +352,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         if (e.projectiles.length >= MAX_BOSS_PROJECTILES) break
         const speed = attack.speed ?? 220
         e.projectiles.push({
-          x: t.x, y: t.y, vx: Math.cos(t.angle) * speed, vy: Math.sin(t.angle) * speed,
+          attackId: windup.attackId, x: t.x, y: t.y, vx: Math.cos(t.angle) * speed, vy: Math.sin(t.angle) * speed,
           radius: attack.radius, damage: attack.damage,
           life: t.length / speed, color: t.color,
         })
