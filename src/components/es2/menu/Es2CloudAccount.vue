@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import googleSignInIcon from '../../../assets/ui/google-sign-in.webp'
 import { t, formatNumber } from '../../../i18n'
 import type { useCloudWallet } from '../../../cloud/use-cloud-wallet'
@@ -27,6 +27,7 @@ function activate() {
   else if (props.cloud.available.value && !props.cloud.busy.value) void props.cloud.login()
 }
 function close() { open.value = false; confirmRestore.value = false }
+watch(() => props.cloud.user.value, user => { if (!user) close() })
 function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
 </script>
 <template>
@@ -42,7 +43,7 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
     :disabled="!cloud.user.value && (!cloud.available.value || cloud.busy.value)" @click="activate">
     <img :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" /><span class="es2-cloud-trigger-label">{{ t(cloud.user.value ? '帳號' : 'Google 登入') }}</span>
   </button>
-  <Es2Dialog v-if="!result" :active="open" :title="t('Google 帳號與雲端存檔')" :subtitle="t('目前僅同步暮光餘燼，其他進度與設定保存在此裝置。')" @cancel="close">
+  <Es2Dialog v-if="!result && cloud.user.value" :active="open" :title="t('Google 帳號與雲端存檔')" :subtitle="t('目前僅同步暮光餘燼，其他進度與設定保存在此裝置。')" @cancel="close">
     <div class="es2-cloud-card">
       <div v-if="cloud.user.value" class="es2-cloud-identity">
         <img :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" />
@@ -59,13 +60,9 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
       </div>
     </div>
     <template #actions>
-      <button v-if="!cloud.user.value" type="button" class="es2-primary es2-google-signin" data-es2-google-login data-ui-sfx="select"
-        :disabled="!cloud.available.value || cloud.busy.value" @click="cloud.login"><img :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" />{{ t('使用 Google 登入') }}</button>
-      <template v-else>
         <button type="button" class="es2-secondary" data-ui-sfx="select" :disabled="cloud.busy.value" @click="cloud.sync()">{{ t('立即同步') }}</button>
         <button v-if="cloud.status.value === 'conflict' && !confirmRestore" type="button" class="es2-secondary" data-ui-sfx="select" @click="confirmRestore = true">{{ t('使用雲端餘燼') }}</button>
         <button type="button" class="es2-secondary" data-ui-sfx="select" :disabled="cloud.busy.value" @click="cloud.logout">{{ t('登出') }}</button>
-      </template>
     </template>
   </Es2Dialog>
 </template>

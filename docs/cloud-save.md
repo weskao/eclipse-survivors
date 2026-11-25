@@ -18,3 +18,7 @@ With no Firebase configuration, the account dialog explains that cloud save is u
 ## Direct Google sign-in and expedition results
 
 The unsigned-in home and expedition result buttons invoke Firebase Google OAuth directly, with no intermediary game dialog. They reuse the exact Skyline Rush WebP (`src/assets/ui/google-sign-in.webp`, source Git blob `02c51f38140fb8ae66b30a3b93777ef75c5f2ad1`). An authenticated home button remains an account-management entry for sync and logout. The result line displays a successful save only when the current account's acknowledged wallet matches the local v3 balance; it never claims other game statistics are saved. Guest rewards remain in the guest wallet even if the player signs in from results; the Google account has its own wallet. The result prompt makes that distinction explicit. No live OAuth test is implied by emulator results.
+
+### Automated OAuth and wallet integration check
+
+The branch workflow `ES2 Google OAuth and Twilight Embers emulator QA` exercises the actual Vue entry points and Firebase SDK popup with emulator accounts, not real Google credentials. It checks a desktop login, an actual engine settlement and spending, second-device wallet restoration, and a guest login from a short landscape result without a nested custom dialog. The DEV fixture is outside the production entrypoint and refuses non-loopback or non-emulator execution. Production verification still requires the dedicated Firebase project, deployed rules, authorized domain and a real account.

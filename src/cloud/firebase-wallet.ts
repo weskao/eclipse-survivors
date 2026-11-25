@@ -29,6 +29,12 @@ export function createCloudClient(raw: string) {
         const remote: unknown = snapshot.exists() ? snapshot.data() : { revision: 0, embers: 0 }
         if (!validWallet(remote)) throw Error('Invalid cloud wallet')
         const kind = restoreOnly ? 'restore' : walletPlan(baseline, local, remote)
+        // A first authenticated zero balance still gets a durable owner-only document.
+        if (!snapshot.exists() && !baseline && local === 0 && kind === 'restore') {
+          const wallet = { embers: 0, revision: 1 }
+          transaction.set(ref, wallet)
+          return { kind: 'restore' as const, wallet }
+        }
         if (kind !== 'upload') return { kind, wallet: remote }
         if (remote.revision >= Number.MAX_SAFE_INTEGER || auth.currentUser?.uid !== uid) throw Error('Invalid revision or account changed')
         const wallet = { revision: remote.revision + 1, embers: local }
