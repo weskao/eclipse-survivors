@@ -78,32 +78,8 @@ const english = new Map<string, string>([
     "Combat camera shake"
   ],
   [
-    "已開啟",
-    "Enabled"
-  ],
-  [
-    "已關閉",
-    "Disabled"
-  ],
-  [
     "完成設定",
     "Done"
-  ],
-  [
-    "將背景音樂靜音",
-    "Mute background music"
-  ],
-  [
-    "開啟背景音樂",
-    "Enable background music"
-  ],
-  [
-    "將遊戲音效靜音",
-    "Mute game sound effects"
-  ],
-  [
-    "開啟遊戲音效",
-    "Enable game sound effects"
   ],
   [
     "設定",

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import Es2Select from '../menu/Es2Select.vue'
+import Es2Switch from '../menu/Es2Switch.vue'
 import { computed } from 'vue'
 import {
   DEFAULT_ACCESSIBILITY_PREFERENCES,
@@ -93,25 +94,25 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
       <div class="es2-switch-row">
         <div><strong>{{ t("減少動態") }}</strong><small>{{ t("減少 UI 移動與過渡動畫") }}</small></div>
         <div class="es2-switch-group" role="group" :aria-label="t('減少動態')">
-          <button data-testid="es2-motion" type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'on'" @click="update({ reducedMotion: modelValue.reducedMotion === 'on' ? 'off' : 'on' })">{{ t(modelValue.reducedMotion === 'on' ? '開啟' : '關閉') }}</button>
+          <Es2Switch data-testid="es2-motion" :disabled="disabled" :checked="policy.reduceMotion" :label="t('減少動態')" @toggle="update({ reducedMotion: policy.reduceMotion ? 'off' : 'on' })" />
           <button type="button" :disabled="disabled" :aria-pressed="modelValue.reducedMotion === 'system'" @click="update({ reducedMotion: 'system' })">{{ t("依系統") }}</button>
         </div>
       </div>
       <div class="es2-switch-row">
         <div><strong>{{ t("降低閃光") }}</strong><small>{{ t("避免頻繁閃爍；保留必要攻擊警示") }}</small></div>
-        <button type="button" :aria-label="t('降低閃光')" :disabled="disabled" :aria-pressed="modelValue.reducedFlashing" @click="update({ reducedFlashing: !modelValue.reducedFlashing })">{{ t(modelValue.reducedFlashing ? '開啟' : '關閉') }}</button>
+        <Es2Switch :label="t('降低閃光')" :disabled="disabled" :checked="modelValue.reducedFlashing" @toggle="update({ reducedFlashing: !modelValue.reducedFlashing })" />
       </div>
       <div class="es2-switch-row">
         <div><strong>{{ t("色覺輔助") }}</strong><small>{{ t("以符號及文字區分狀態，不只靠顏色") }}</small></div>
-        <button type="button" :aria-label="t('色覺輔助')" :disabled="disabled" :aria-pressed="modelValue.colorblindIndicators" @click="update({ colorblindIndicators: !modelValue.colorblindIndicators })">{{ t(modelValue.colorblindIndicators ? '開啟' : '關閉') }}</button>
+        <Es2Switch :label="t('色覺輔助')" :disabled="disabled" :checked="modelValue.colorblindIndicators" @toggle="update({ colorblindIndicators: !modelValue.colorblindIndicators })" />
       </div>
       <div class="es2-switch-row">
         <div><strong>{{ t("傷害數字") }}</strong><small>{{ t("顯示或隱藏戰鬥傷害浮字") }}</small></div>
-        <button type="button" :aria-label="t('傷害數字')" :disabled="disabled" :aria-pressed="modelValue.showDamageNumbers" @click="update({ showDamageNumbers: !modelValue.showDamageNumbers })">{{ t(modelValue.showDamageNumbers ? '顯示' : '隱藏') }}</button>
+        <Es2Switch :label="t('傷害數字')" :disabled="disabled" :checked="modelValue.showDamageNumbers" @toggle="update({ showDamageNumbers: !modelValue.showDamageNumbers })" />
       </div>
       <div class="es2-switch-row">
         <div><strong>{{ t("滿血時顯示怪物血條") }}</strong><small>{{ t("關閉時僅隱藏滿血怪物頭頂的血條；首領 HUD 保持顯示") }}</small></div>
-        <button data-testid="es2-full-enemy-health-bars" type="button" :aria-label="t('滿血時顯示怪物血條')" :disabled="disabled" :aria-pressed="modelValue.showFullEnemyHealthBars" @click="update({ showFullEnemyHealthBars: !modelValue.showFullEnemyHealthBars })">{{ t(modelValue.showFullEnemyHealthBars ? '開啟' : '關閉') }}</button>
+        <Es2Switch data-testid="es2-full-enemy-health-bars" :label="t('滿血時顯示怪物血條')" :disabled="disabled" :checked="modelValue.showFullEnemyHealthBars" @toggle="update({ showFullEnemyHealthBars: !modelValue.showFullEnemyHealthBars })" />
       </div>
     </div>
 
@@ -156,7 +157,8 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 .es2-switch-row strong, .es2-switch-row small { display: block; }
 .es2-switch-row strong { font-size: 13px; margin-bottom: 4px; }
 .es2-switch-row small { max-width: 260px; }
-.es2-switch-group { display: flex; flex: none; gap: 6px; }
+.es2-switch-group { display: flex; flex: none; align-items: center; gap: 6px; }
+.es2-switch-row > div:first-child { min-width: 0; overflow-wrap: anywhere; }
 .es2-settings button { min-height: 44px; border: 1px solid #a9997d; border-radius: 8px; padding: 8px 12px; background: #243345; color: #e5e6e7; font: 700 12px/1.3 system-ui, sans-serif; cursor: pointer; }
 .es2-settings button[aria-pressed="true"] { border-color: #e9c98e; background: #534936; color: #fff0cc; box-shadow: inset 0 0 0 1px #f4c37c44; }
 .es2-settings :is(button, input):focus-visible { outline: 3px solid #ffe3a6; outline-offset: 2px; }
@@ -177,8 +179,8 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 @media (max-width: 420px) {
   .es2-settings-head { flex-wrap: wrap; }
   .es2-options { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .es2-switch-row { align-items: flex-start; flex-direction: column; }
-  .es2-switch-group { flex-wrap: wrap; }
+  .es2-switch-row { gap: 8px; }
+  .es2-switch-group { flex-direction: column; align-items: flex-end; }
 }
 @media (prefers-reduced-motion: reduce) {
   .es2-settings * { animation: none !important; transition: none !important; }

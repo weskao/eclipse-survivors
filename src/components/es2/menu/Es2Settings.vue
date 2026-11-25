@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Es2Dialog from './Es2Dialog.vue'
 import Es2Select from './Es2Select.vue'
+import Es2Switch from './Es2Switch.vue'
 import { currentLocale, setLocale, t } from '../../../i18n'
 import AccessibilitySettings from '../accessibility/AccessibilitySettings.vue'
 import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
@@ -33,10 +34,10 @@ function volume(e: Event): number { return Number((e.target as HTMLInputElement)
         <p class="es2-hint">{{ t('初次使用時依系統語言顯示；手動選擇後將記住此瀏覽器的偏好。') }}</p>
       </section>
       <section :aria-label="t('音訊設定')"><h3>{{ t('音訊') }}</h3>
-        <div class="es2-slider-row"><button type="button" :aria-pressed="!musicOn" :aria-label="t(musicOn ? '將背景音樂靜音' : '開啟背景音樂')" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
+        <div class="es2-slider-row"><Es2Switch :checked="musicOn" :label="t('背景音樂')" @toggle="emit('toggleMusic')" />
           <label>{{ t('背景音樂') }} <output>{{ musicVolume }}%</output><input type="range" min="0" max="100" :value="musicVolume" @input="emit('musicVolume', volume($event))" /></label>
         </div>
-        <div class="es2-slider-row"><button type="button" :aria-pressed="!sfxOn" :aria-label="t(sfxOn ? '將遊戲音效靜音' : '開啟遊戲音效')" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
+        <div class="es2-slider-row"><Es2Switch :checked="sfxOn" :label="t('戰鬥音效')" @toggle="emit('toggleSfx')" />
           <label>{{ t('戰鬥音效') }} <output>{{ sfxVolume }}%</output><input type="range" min="0" max="100" :value="sfxVolume" @input="emit('sfxVolume', volume($event))" /></label>
         </div>
       </section>
@@ -45,7 +46,7 @@ function volume(e: Event): number { return Number((e.target as HTMLInputElement)
           <button type="button" :aria-pressed="upgradeEffect === 'soft'" @click="emit('upgradeEffect', 'soft')">{{ t('柔和淡入') }}</button>
           <button type="button" :aria-pressed="upgradeEffect === 'still'" @click="emit('upgradeEffect', 'still')">{{ t('完全靜止') }}</button>
         </div></div>
-        <div class="es2-setting-option"><span>{{ t('戰鬥時鏡頭震動') }}</span><button type="button" class="es2-secondary" :aria-pressed="cameraShake" @click="emit('cameraShake', !cameraShake)">{{ t(cameraShake ? '已開啟' : '已關閉') }}</button></div>
+        <div class="es2-setting-option"><span>{{ t('戰鬥時鏡頭震動') }}</span><Es2Switch :checked="cameraShake" :label="t('戰鬥時鏡頭震動')" @toggle="emit('cameraShake', !cameraShake)" /></div>
       </section>
       <AccessibilitySettings v-if="accessibilityPreferences" :model-value="accessibilityPreferences"
         @update:model-value="emit('accessibility', $event)" />
