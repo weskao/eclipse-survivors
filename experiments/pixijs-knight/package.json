@@ -1,0 +1,7 @@
+{
+  "name": "es2-pixijs-knight-experiment",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test pose.test.mjs" },
+  "dependencies": { "pixi.js": "8.23.0" }
+}

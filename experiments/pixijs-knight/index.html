@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ES2 Knight — PixiJS experiment</title>
+<style>
+body { margin: 16px; background: #10121b; color: #f3e5c3; font: 16px system-ui; }
+main { max-width: 600px; margin: auto; }
+#stage { background: radial-gradient(ellipse, #343248, #14151c); width: 100%; max-width: 360px; aspect-ratio: 360/260; }
+#stage canvas { display: block; width: 100% !important; height: 100% !important; }
+#controls { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+button { color: inherit; background: #242635; border: 1px solid #a58d53; border-radius: 6px; padding: 10px; min-height: 44px; font: inherit; }
+button[aria-pressed="true"] { background: #5d4931; }
+button:focus-visible { outline: 2px solid #ffdf91; }
+</style>
+</head>
+<body><main>
+<h1>Knight / 騎士 — PixiJS POC</h1>
+<p>Experimental animation viewer / 實驗動畫檢視器 · QA_PENDING</p>
+<div id="stage"></div>
+<div id="controls" aria-label="Animation / 動畫">
+<button data-pose="idle" aria-pressed="true">Idle / 待機</button>
+<button data-pose="run" aria-pressed="false">Run / 移動</button>
+<button data-pose="attack" aria-pressed="false">Attack / 攻擊</button>
+<button data-pose="dash" aria-pressed="false">Dash / 衝刺</button>
+<button data-pose="hurt" aria-pressed="false">Hurt / 受擊</button>
+<button id="pause" aria-pressed="false">Pause / 暫停</button>
+<button id="reduce" aria-pressed="false">Reduced motion / 減少動態</button>
+<button id="canvas" aria-pressed="false">Canvas fallback / 原版</button>
+</div>
+<p id="status" role="status">Loading / 載入中</p>
+</main><script type="module" src="./main.mjs"></script></body></html>
