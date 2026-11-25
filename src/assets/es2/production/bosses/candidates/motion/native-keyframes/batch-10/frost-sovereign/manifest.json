@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "2f1ee4133f67f0acb07e1f711976ac0083c9513e",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "ice-fan-windup-key-a",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/ice-fan-windup-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "d700242e-6287-4772-a511-a30ee0ee186e",
+        "originalPngSha256": "198c415bf0357bfcc786f6988cea6dc035217dd4a7158aa04543791287686ddd",
+        "canonicalReferenceHead": "2f1ee4133f67f0acb07e1f711976ac0083c9513e"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        73,
+        19,
+        1149,
+        1243
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1253,
+        1254
+      ],
+      "alphaExtent": [
+        1076,
+        1224
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        73,
+        19,
+        105,
+        11
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "669fde7cece1b2397592de3dccbfe80086aee594f444cfb94ccb05f1ce71a85f",
+      "webpCompressedBytes": 763972,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Candidate redrawn from visual inspection of approved Frost Sovereign atlas, not a pixel-preserving source edit. Hooded faceless ice mage, silver-blue robes and crystal staff. Phase, attack mapping, anchor and identity not approved. Alpha128 lower margin 11px; some low-alpha effects reach image edge; do not treat as approved or pad to conceal clipping."
+    }
+  ],
+  "missing": [
+    "idle and locomotion",
+    "verified attack-specific release sequence and recovery",
+    "hurt and phase-specific transformations",
+    "death sequence",
+    "direction, hover anchor, visual and runtime QA"
+  ]
+}
