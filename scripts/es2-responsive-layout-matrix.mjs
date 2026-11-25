@@ -60,6 +60,29 @@ try {
     try {
       await page.goto(base, { waitUntil: 'domcontentloaded' })
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
+      // Non-editable UI must never enter native text selection, including teleported overlays.
+      const verifySelectionPolicy = async (stage) => {
+        const offenders = await page.evaluate(() => [...document.body.querySelectorAll('*')]
+          .filter(el => !el.closest('input, textarea, [contenteditable]:not([contenteditable="false"])'))
+          .filter(el => el.getClientRects().length && getComputedStyle(el).userSelect !== 'none')
+          .map(el => el.tagName + ' ' + (el.getAttribute('class') || '')).slice(0, 20))
+        assert.deepEqual(offenders, [], name + ': selectable UI at ' + stage)
+      }
+      await verifySelectionPolicy('home')
+      if (!mobile) {
+        await page.locator('.es2-menu-brand h1').dblclick()
+        assert.equal(await page.evaluate(() => window.getSelection()?.toString()), '', name + ': title text selected')
+      }
+      const editablePolicy = await page.evaluate(() => {
+        const input = document.createElement('input')
+        const textarea = document.createElement('textarea')
+        const editable = document.createElement('div')
+        editable.contentEditable = 'true'
+        document.body.append(input, textarea, editable)
+        try { return [input, textarea, editable].map(el => getComputedStyle(el).userSelect) }
+        finally { input.remove(); textarea.remove(); editable.remove() }
+      })
+      assert.deepEqual(editablePolicy, ['text', 'text', 'text'], name + ': editable fields must remain selectable')
       const bounds = await page.evaluate(() => ({
         documentWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth,
       }))
@@ -127,6 +150,7 @@ try {
       await page.locator('.es2-top-actions [data-es2-settings]').click()
       const dialog = page.locator('.es2-dialog[role="dialog"]')
       await dialog.waitFor({ state: 'visible' })
+      await verifySelectionPolicy('settings dialog and close button')
       await dialog.evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)))
       const initialDialog = await dialog.evaluate(rect)
       assert.ok(inside(initialDialog, width, height),
