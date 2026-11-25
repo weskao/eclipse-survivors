@@ -53,6 +53,7 @@
       "damageRatio": 1.4
     },
     "frost": {
+      "maxRankRangeBonus": 22,
       "cooldownFloor": 1.2,
       "cooldownBase": 5.4,
       "cooldownPerRank": 0.48,
@@ -84,6 +85,7 @@
       "damagePerRank": 0.045
     },
     "vortex": {
+      "maxRankRangeBonus": 35,
       "cooldownFloor": 2.2,
       "cooldownBase": 8,
       "cooldownPerRank": 0.6,

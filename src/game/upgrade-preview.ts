@@ -27,9 +27,9 @@ export function upgradeStatPreview(id: string, level?: number, maxLevel?: number
   const radius = (base: number, step: number) => row('技能作用範圍', linear(base, step), number, true)
   const cooldown = (base: number, step: number, floor: number) => row('技能冷卻時間', rank => Math.max(floor, base - step * rank), seconds, true)
   const count = (label: string, value: (rank: number) => number) => row(label, rank => rank === 0 ? 0 : value(rank))
-  const area = (a: { cooldownBase: number; cooldownPerRank: number; cooldownFloor: number; rangeBase: number; rangePerRank: number; damageBase: number; damagePerRank: number }) => {
+  const area = (a: { cooldownBase: number; cooldownPerRank: number; cooldownFloor: number; rangeBase: number; rangePerRank: number; damageBase: number; damagePerRank: number; maxRankRangeBonus?: number }) => {
     damage(a.damageBase, a.damagePerRank)
-    radius(a.rangeBase, a.rangePerRank)
+    row('技能作用範圍', rank => a.rangeBase + rank * a.rangePerRank + (rank >= 5 ? a.maxRankRangeBonus ?? 0 : 0), number, true)
     cooldown(a.cooldownBase, a.cooldownPerRank, a.cooldownFloor)
   }
   switch (id) {

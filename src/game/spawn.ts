@@ -6,7 +6,16 @@ import { getMode } from '../meta/modes'
 import { rand, random } from './math'
 import type { GameHooks, GameState, MobType } from './types'
 import { pointIsClear } from './world'
+import type { FactionBridge } from './content/enemies/integration'
+import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
 
+const FACTION_IDS = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
+const FACTION_COMPOSITIONS: Partial<Record<OrdinaryEncounter, readonly FactionKind[]>> = {
+  'swarm-rush': ['fire-imp', 'phantom'], encirclement: ['shadow-assassin', 'phantom'],
+  'elite-invasion': ['shield-guardian', 'berserker'], 'ranged-assault': ['dark-archer', 'frost-wraith'],
+  'titan-march': ['crystal-sentinel', 'shield-guardian'], 'treasure-rush': ['necromancer', 'plague-carrier'],
+  'eclipse-surge': ['crystal-sentinel', 'shadow-assassin'],
+}
 const BASE_HP: Record<MobType, number> = BALANCE.enemies.baseHp
 
 interface OrdinarySpawn { type: MobType; elite: boolean; angle?: number; rewardXpMultiplier?: number }
@@ -78,8 +87,38 @@ function encounterSpawn(encounter: OrdinaryEncounter, index: number, angle: numb
   }
 }
 
+/** The only ordinary spawn scheduler, including initial and faction reinforcements. */
+export function spawnOpeningWave(s: GameState, factions?: FactionBridge): void {
+  for (let i = 0; i < 12; i++) spawnMob(s)
+  if (!factions || !s.hero) return
+  for (let i = 0; i < 4 && factions.availableSpawnSlots(s) > 0; i++) {
+    const theta = i * Math.PI / 2
+    factions.spawn(s, FACTION_IDS[s.factionSpawnSequence++ % FACTION_IDS.length]!,
+      s.hero.x + Math.cos(theta) * 320, s.hero.y + Math.sin(theta) * 230)
+  }
+}
+
+function factionPulse(s: GameState, factions: FactionBridge, encounter: OrdinaryEncounter, allow: boolean): void {
+  const window = Math.floor(s.time / BALANCE.enemies.factionSpawnInterval)
+  if (window <= s.factionSpawnWindow) return
+  s.factionSpawnWindow = window
+  const hero = s.hero
+  if (!allow || !hero || factions.availableSpawnSlots(s) === 0) return
+  const roster = FACTION_COMPOSITIONS[encounter] ?? FACTION_IDS
+  const sequence = s.factionSpawnSequence++
+  const radius = Math.min(1600, Math.max(320, Math.hypot(s.W / 2 + 36, s.H / 2 + 36)))
+  for (let i = 0; i < 8; i++) {
+    const theta = sequence * 2.399963229728653 + i * .71
+    const x = hero.x + Math.cos(theta) * radius, y = hero.y + Math.sin(theta) * radius
+    if (!pointIsClear(s.currentScene, { x, y }, 32)) continue
+    const affix = encounter === 'elite-invasion' || encounter === 'titan-march' ? factions.chooseAffix() : null
+    factions.spawn(s, roster[sequence % roster.length]!, x, y, affix ? { affix } : {})
+    break
+  }
+}
+
 /** Counts down `spawnT`, spawns the wave (plus a 32%+ extra after 38s) and the boss after 92s. */
-export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void, otherLiving = 0): void {
+export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void, otherLiving = 0, factions?: FactionBridge): void {
   s.spawnT -= dt
   if (s.spawnT <= 0) {
     const wave = describeWave(s.runMode, 0, s.time)
@@ -103,12 +142,13 @@ export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBo
         if (s.time > BALANCE.enemies.extraSpawnAfterSeconds && random() < BALANCE.enemies.extraSpawnChance + sceneBonus(s.currentScene)) spawnMob(s, undefined, otherLiving)
       }
     }
+    if (factions) factionPulse(s, factions, wave.encounter, stage !== 'recovery')
   }
   if (!s.bossSpawned && s.time > getMode(s.runMode).bossAt) {
     if (spawnBoss) spawnBoss(s, hooks)
     else {
       s.bossSpawned = true
-      spawnMob(s, 'boss')
+      spawnMob(s, 'boss', otherLiving)
       hooks.sfx('boss')
       hooks.message('⚠ 魔王降臨！')
     }

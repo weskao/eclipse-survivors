@@ -10,11 +10,14 @@ import type { AbilityId, ContentId, GameHooks, GameState, Hero, SkillRarity, Upg
 export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero) return
-  hero.xp += n * s.xpGainMultiplier
+  const earned = n * s.xpGainMultiplier
+  hero.xp += earned
+  s.combatTelemetry.xpEarned += earned
   while (hero.xp >= hero.need) {
     hero.xp -= hero.need
     hero.level++
-    hero.need = Math.round(hero.need * BALANCE.progression.growthMultiplier + BALANCE.progression.growthFlat)
+    if (hero.level === 2) s.combatTelemetry.firstUpgradeAt = s.time
+    hero.need = Math.round((hero.level === 2 ? BALANCE.progression.initialXp : hero.need) * BALANCE.progression.growthMultiplier + BALANCE.progression.growthFlat)
     s.levelQueue++
     hero.levelAnim = 1.1
     impact(s, hero.x, hero.y, 88, '#ffe1a8', 1.8)

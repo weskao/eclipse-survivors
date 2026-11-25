@@ -1,4 +1,5 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
+import { sampleCombat } from './combat-telemetry'
 import { BALANCE } from './config'
 import { expireKillStreak, flushKillMilestone } from './kill-streak'
 import { burst } from './fx'
@@ -194,7 +195,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
-  tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0)
+  tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0, factions)
   moveHero(s, input, dt, factions?.movementMultiplier ?? 1)
   const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
   hero.x = free.x; hero.y = free.y
@@ -217,6 +218,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   flushKillMilestone(s, hooks)
   collectStars(s, hero, dt, hooks)
   tickWorld(s, dt, hooks)
+  sampleCombat(s, factions?.runtime.enemies.length ?? 0)
   if (hero.hp <= 0 || s.mode !== 'play') return
   if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * BALANCE.skills.passive.regenPerRank * dt)
   ageEffects(s, hero, dt)

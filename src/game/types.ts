@@ -154,6 +154,9 @@ export interface GameState {
   bossDefeated: boolean
   runMode: RunModeId
   cosmetic: CosmeticId
+  combatTelemetry: import('./combat-telemetry').CombatTelemetry
+  factionSpawnWindow: number
+  factionSpawnSequence: number
   damageDealt: number
   damageTaken: number
   /** Applied once when starting a run; no in-combat config reads. */

@@ -23,6 +23,7 @@
   "intervalBase": 0.75,
   "intervalTimeFactor": 0.003,
   "intervalFloor": 0.18,
+  "factionSpawnInterval": 8,
   "assaultIntervalMultiplier": 0.78,
   "rewardIntervalMultiplier": 1.25,
   "sceneSpawnBonuses": [

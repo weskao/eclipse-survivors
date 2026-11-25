@@ -48,14 +48,14 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
 
   if (sk.frost && hero.frostCd <= 0) {
     hero.frostCd = Math.max(AREA.frost.cooldownFloor, AREA.frost.cooldownBase - sk.frost * AREA.frost.cooldownPerRank)
-    impact(s, hero.x, hero.y, 120 + sk.frost * 12, '#bcefff', 1)
+    impact(s, hero.x, hero.y, 120 + sk.frost * 12 + (sk.frost >= 5 ? AREA.frost.maxRankRangeBonus : 0), '#bcefff', 1)
     for (let i = 0; i < 20; i++) {
       s.fx.push({
         x: hero.x + rand(-18, 18), y: hero.y + rand(-18, 12), vx: rand(-110, 110), vy: rand(-150, 10),
         life: 0.7, max: 0.7, color: '#d8f7ff', r: 2 + random() * 5, type: 'ice',
       })
     }
-    const reach = AREA.frost.rangeBase + sk.frost * AREA.frost.rangePerRank
+    const reach = AREA.frost.rangeBase + sk.frost * AREA.frost.rangePerRank + (sk.frost >= 5 ? AREA.frost.maxRankRangeBonus : 0)
     for (const e of s.mobs) {
       const dx = e.x - hero.x, dy = e.y - hero.y
       if (dx * dx + dy * dy < reach * reach) {
@@ -99,21 +99,21 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks): void {
 
   if (sk.vortex && hero.vortexCd <= 0) {
     hero.vortexCd = Math.max(AREA.vortex.cooldownFloor, AREA.vortex.cooldownBase - sk.vortex * AREA.vortex.cooldownPerRank)
-    impact(s, hero.x, hero.y, 145, '#cbaeff', 1.4)
+    impact(s, hero.x, hero.y, 145 + (sk.vortex >= 5 ? AREA.vortex.maxRankRangeBonus : 0), '#cbaeff', 1.4)
     for (let i = 0; i < 36; i++) {
       s.fx.push({
         x: hero.x + Math.cos((i / 36) * TAU) * 90, y: hero.y + Math.sin((i / 36) * TAU) * 90, vx: 0, vy: 0,
         life: 0.8, max: 0.8, color: '#baa1ff', r: 2 + random() * 4, type: 'vortex', a: (i / 36) * TAU,
       })
     }
-    const reach = AREA.vortex.rangeBase + sk.vortex * AREA.vortex.rangePerRank
+    const reach = AREA.vortex.rangeBase + sk.vortex * AREA.vortex.rangePerRank + (sk.vortex >= 5 ? AREA.vortex.maxRankRangeBonus : 0)
     for (const e of s.mobs) {
       const dx = e.x - hero.x, dy = e.y - hero.y
       const squared = dx * dx + dy * dy
       if (squared < reach * reach) {
         const pull = Math.max(0, 1 - Math.sqrt(squared) / reach)
         e.x += (hero.x - e.x) * AREA.vortex.pullRatio * pull
-        e.y += (hero.y - e.y) * 0.18 * pull
+        e.y += (hero.y - e.y) * AREA.vortex.pullRatio * pull
         hit(s, e, hero.damage * (AREA.vortex.damageBase + AREA.vortex.damagePerRank * sk.vortex), hooks)
       }
     }

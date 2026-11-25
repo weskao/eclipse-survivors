@@ -20,6 +20,8 @@ export interface RunStats {
   /** Optional for compatibility with older run receipts. */
   bestKillStreak?: number
   bestMultiKill?: number
+  xpEarned?: number
+  firstUpgradeSeconds?: number
   level: number
   damageDealt: number
   damageTaken: number

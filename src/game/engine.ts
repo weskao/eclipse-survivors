@@ -37,13 +37,12 @@ import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
 import { createPixiVfxBridge, type PixiVfxBridge, type PixiVfxStats } from './render/pixi-vfx/bridge'
 import { createFactionBridge } from './content/enemies/integration'
-import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
 import { loadProductionFactionArt } from './render/es2/production-factions'
 import { loadProductionHeroes } from './render/es2/production-heroes'
 import { markHeroSpecialAnimation } from './render/animation'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
-import { ordinarySpawnsAllowed, spawnMob } from './spawn'
+import { spawnOpeningWave } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
@@ -139,10 +138,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     random,
   )
   const bossIds = Object.keys(BOSS_DEFINITIONS) as BossId[]
-  const factionIds = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
   const factions = requestedPacks.some(pack => pack.id === 'factions') ? createFactionBridge({ random }) : null
-  let factionSequence = 0
-  let factionWindow = 0
   let bossSequence = 0
   const bossAdapter = bosses ? {
     spawn(state: GameState, hooks: GameHooks): void {
@@ -455,6 +451,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       specializationId: isSpecializationId(s.heroId) ? s.heroId : undefined,
       victory: win, seconds: Math.floor(s.time),
       bestKillStreak: s.killStreak.best, bestMultiKill: s.killStreak.bestBurst,
+      xpEarned: Math.round(s.combatTelemetry.xpEarned), firstUpgradeSeconds: s.combatTelemetry.firstUpgradeAt ?? undefined,
       kills: s.kill, level: h?.level ?? 1, remainingHp: Math.max(0, Math.ceil(h?.hp ?? 0)),
       damageDealt: Math.round(s.damageDealt), damageTaken: Math.round(s.damageTaken),
       bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
@@ -523,8 +520,6 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.worldEventMarkers = []
     resetRun(s)
     factions?.reset()
-    factionSequence = 0
-    factionWindow = 0
     objectiveRuntime = isObjectiveModeId(ui.runMode)
       ? createObjectiveRuntime(ui.runMode, (_state, evaluation) => {
         if (s.mode === 'play') end(evaluation.status === 'victory')
@@ -542,6 +537,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ? { power: unlocked?.research.power ?? 0, vitality: unlocked?.research.vitality ?? 0 }
       : profileStore.get().upgrades
     if (s.hero) {
+      s.hero.need = BALANCE.progression.initialXpByMode[s.runMode]
       const bonusHp = BALANCE.meta.research.vitality.benefitPerRank * permanent.vitality
       s.hero.damage *= 1 + BALANCE.meta.research.power.benefitPerRank * permanent.power
       s.hero.max += bonusHp
@@ -577,14 +573,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     audio.resetBattleClock(0.06)
     message('幽暮之門已開啟')
     setScene(s, 0, false, hooks)
-    for (let i = 0; i < 12; i++) spawnMob(s)
-    if (factions && s.hero) {
-      for (let i = 0; i < 4 && factions.availableSpawnSlots(s) > 0; i++) {
-        const theta = i * Math.PI / 2
-        factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
-          s.hero.x + Math.cos(theta) * 320, s.hero.y + Math.sin(theta) * 230)
-      }
-    }
+    spawnOpeningWave(s, factions ?? undefined)
     hud()
   }
 
@@ -669,17 +658,6 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
-    if (factions && s.mode === 'play' && s.hero) {
-      const window = Math.floor(s.time / 8)
-      if (window > factionWindow) {
-        factionWindow = window
-        if (ordinarySpawnsAllowed(s) && factions.availableSpawnSlots(s) > 0) {
-          const theta = factionSequence * 2.399963229728653
-          factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
-            s.hero.x + Math.cos(theta) * 315, s.hero.y + Math.sin(theta) * 230)
-        }
-      }
-    }
     if (s.mode !== 'play') return
     heroSpecialization?.tick(dt)
     worldEvents?.tick()
