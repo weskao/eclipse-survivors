@@ -4,7 +4,6 @@ import { createEngine, type Engine } from './game/engine'
 import { ART_URLS } from './game/art'
 import { WORLD_ART } from './game/render/es2/production-world'
 import { BOSS_DEFINITIONS } from './game/content/bosses/definitions'
-import { getBossArrivalWarning } from './game/bosses/countdown'
 import { locateOffscreenBoss } from './components/es2/hud/boss-pointer'
 import { installGameTouchGuard } from './ios-touch-guard'
 import { installCursorAccent } from './cursor-accent'
@@ -21,6 +20,8 @@ import WorldEventPanel from './components/es2/world-event-ui/WorldEventPanel.vue
 import { isSpecializationId } from './game/content/heroes'
 import type { CombatHudActions, CombatHudFeed } from './components/es2/hud/model'
 import Es2MenuSystem from './components/es2/menu/Es2MenuSystem.vue'
+import Es2CloudAccount from './components/es2/menu/Es2CloudAccount.vue'
+import { useCloudWallet } from './cloud/use-cloud-wallet'
 import MobileControls from './components/es2/accessibility/MobileControls.vue'
 import {
   createAccessibilityPreferencesController,
@@ -35,6 +36,7 @@ import './ui-fidelity.css'
 const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
 const ui = engine.ui
+const cloud = useCloudWallet(engine)
 const version = __APP_VERSION__
 const ContentShowcase = import.meta.env.DEV ? defineAsyncComponent(() => import('./components/ContentShowcase.vue')) : null
 const devShowcase = import.meta.env.DEV && typeof location !== 'undefined' &&
@@ -104,7 +106,7 @@ const combatFeed = computed<CombatHudFeed>(() => {
   const offscreen = boss && ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
     ? locateOffscreenBoss(state, boss) : null
   const warning = ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
-    ? getBossArrivalWarning(state, ui.objectiveProgress) : null
+    ? engine.bossArrivalWarning : null
   return {
     boss: boss ? {
       name: boss.bossArtId ? BOSS_DEFINITIONS[boss.bossArtId].title : '首領',
@@ -254,7 +256,9 @@ onBeforeUnmount(() => {
     @music-volume="engine.setMusicVolume"
     @sfx-volume="engine.setSfxVolume"
     @accessibility="changeAccessibility"
-  />
+  >
+    <template #account><Es2CloudAccount :cloud="cloud" :embers="ui.profile.embers" /></template>
+  </Es2MenuSystem>
   <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen && !ui.settingsOpen" @resume="engine.togglePause" @leave="requestHome" @settings="engine.openSettings" />
   <Es2Dialog :active="homeConfirmOpen" :title="t('返回主選單？')"
     :subtitle="t('戰鬥已暫停。返回主選單將結束本次遠征，未結算的戰鬥進度不會保留。確定要離開嗎？')"

@@ -1,4 +1,6 @@
 import { shallowReactive } from 'vue'
+import { accountStorage } from '../cloud/account-storage'
+import type { CloudWallet } from '../cloud/wallet-policy'
 import { createProfileStore, type ProfileStore } from '../meta/profile'
 import { MODES, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
@@ -15,7 +17,7 @@ import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type Her
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
-import { getBossArrivalWarning } from './bosses/countdown'
+import { getBossArrivalWarning, type BossArrivalWarning } from './bosses/countdown'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
@@ -89,6 +91,10 @@ declare global {
 }
 
 export interface Engine extends GameCommands {
+  readonly cloudWallet?: {
+    select(uid: string | null): boolean
+    apply(wallet: CloudWallet, expectedBalance: number, preserveBalance: boolean): boolean
+  }
   readonly contentRegistry: ContentRegistry
   setVisualPresentationPolicy(policy: VisualPresentationPolicy): void
   /** Only active in development with ?content-showcase=1. */
@@ -96,6 +102,7 @@ export interface Engine extends GameCommands {
   showcaseEmit(event: ContentEvent): void
   readonly ui: UiState
   readonly state: GameState
+  readonly bossArrivalWarning: BossArrivalWarning | null
   readonly testApi: TestApi
   /** Original `update()` tail run by `frame()`: clock, step, toast, 8 Hz hud. */
   advance(dt: number): void
@@ -153,14 +160,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // The unlocked mode exists only in Vite dev, and uses disposable saves.
   // Even a build with VITE_ES2_UNLOCKED=1 cannot enable it in production.
   const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
-  const profileStore = opts.profileStore ?? createProfileStore(
+  let profileStore = opts.profileStore ?? createProfileStore(
     unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : undefined,
   )
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  const metaStore = opts.profileStore ? null : createMetaProgressionStore(
+  let metaStore = opts.profileStore ? null : createMetaProgressionStore(
     unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : undefined,
   )
+  let walletAccount: string | null = null
+  const walletReady = (): boolean => !walletAccount || !!metaStore?.get().state?.cloudWallet
   function displayProfile() {
     const legacy = profileStore.get()
     const persisted = metaStore?.get()
@@ -276,6 +285,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let art: Artwork | null = null
   let heroSpecialization: HeroSpecializationAdapter | null = null
   let objectiveRuntime: ObjectiveRuntime | null = null
+  const arrivalWarning = () => getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null,
+    bosses ? bossIds[bossSequence % bossIds.length]! : null)
   let worldEvents: LiveWorldEvents | null = null
   let ending = false
   let lastCritical = false
@@ -499,6 +510,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function start(): void {
+    if (!walletReady()) return
     ending = false
     if (metaStore && typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
       const entropy = new Uint8Array(16)
@@ -695,10 +707,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const liveBoss = s.mobs.find(m => m.type === 'boss' && m.hp > 0)
-      const upcoming = getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null)
+      const upcoming = arrivalWarning()
       audio.setBossWarning?.(upcoming?.seconds ?? null)
       if (liveBoss?.bossArtId) audio.prepareBossAttackAudio?.(liveBoss.bossArtId)
-      else if (upcoming && bosses) audio.prepareBossAttackAudio?.(bossIds[bossSequence % bossIds.length]!)
+      else if (upcoming?.bossId && bosses) audio.prepareBossAttackAudio?.(upcoming.bossId)
       audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
       const phase = liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
       audio.setCombatIntensity(phase)
@@ -1045,6 +1057,28 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     new URLSearchParams(window.location.search).get('content-showcase') === '1'
 
   return {
+    ...(!opts.profileStore && !unlockedPlaytest ? { cloudWallet: {
+      select(uid: string | null) {
+        if (s.mode !== 'menu' && s.mode !== 'result') return false
+        if (uid === walletAccount) return true
+        try {
+          const storage = uid ? accountStorage(localStorage, uid) : undefined
+          const nextMeta = createMetaProgressionStore(storage)
+          if (uid && nextMeta.get().status !== 'ready') return false
+          profileStore = createProfileStore(storage)
+          metaStore = nextMeta
+          walletAccount = uid
+          refreshMeta()
+          return true
+        } catch { return false }
+      },
+      apply(wallet: CloudWallet, expectedBalance: number, preserveBalance: boolean) {
+        if (!walletAccount || !metaStore) return false
+        const result = metaStore.applyCloudWallet(wallet, expectedBalance, preserveBalance)
+        refreshMeta()
+        return result.ok
+      },
+    } } : {}),
     contentRegistry,
     setVisualPresentationPolicy(policy) { presentationPolicy = policy; resizeRenderer() },
     showcaseGrant(id) {
@@ -1056,6 +1090,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     showcaseEmit(event) { if (devShowcase() && s.mode === 'play') hooks.content?.(s, event) },
     ui,
     state: s,
+    get bossArrivalWarning() { return arrivalWarning() },
     testApi,
     advance,
     listen,
@@ -1070,7 +1105,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       audio.playSfx('select')
     },
     buyPermanentUpgrade(id: PermanentUpgrade) {
-      if (s.mode !== 'menu') return
+      if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore) {
         finishPurchase(metaStore.purchaseResearch(id).ok, '永久研究未完成：儲存失敗或條件不足')
       } else {
@@ -1078,15 +1113,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }
     },
     purchaseResearch(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       finishPurchase(metaStore.purchaseResearch(id).ok, '研究未解鎖或儲存失敗')
     },
     purchaseEquipment(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗')
     },
     purchaseBonus(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗')
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
@@ -1102,7 +1137,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }
     },
     resetProgress() {
-      if (s.mode !== 'menu') return
+      if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore && !metaStore.reset().ok) {
         message('永久資料無法安全重置，原有紀錄已保留')
         return

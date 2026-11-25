@@ -27,6 +27,8 @@
 .es2-top-actions #gameVersion{grid-area:version}
 .es2-top-actions [data-es2-settings]{grid-area:settings}
 .es2-top-actions [data-es2-audio-unlock]{grid-area:music;justify-self:start}
+.es2-top-actions:has([data-es2-cloud-account]){grid-template-areas:"version settings" "account music"}
+.es2-top-actions [data-es2-cloud-account]{grid-area:account;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .es2-version{font:600 .72rem system-ui,sans-serif;color:var(--es2-muted)}
 .es2-icon-button{min-height:44px;padding:9px 13px;border-radius:8px;background:#122134d9;border:1px solid var(--es2-line)}
 @media(max-width:610px){.es2-top-actions{width:100%;gap:8px}.es2-top-actions .es2-icon-button{max-width:100%;white-space:normal}}
@@ -36,12 +38,11 @@
 .es2-section-heading h2{font-size:clamp(1.3rem,2vw,1.95rem);margin:7px 0;line-height:1.3}
 .es2-section-heading p{color:var(--es2-muted);font-size:.85rem;margin:0}
 .es2-hero-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.es2-menu .es2-hero-select-card{position:relative;display:flex;flex-direction:column;width:100%;height:100%;min-width:0;overflow:hidden;padding:0;text-align:left;color:#f6e7cf;background:linear-gradient(#263b50,#0b1521);border:1px solid #8292a47d;border-radius:13px;cursor:pointer;touch-action:manipulation;transition:border-color .2s,box-shadow .2s,transform .2s}
-@media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px);border-color:#e7c896}}
+.es2-menu .es2-hero-select-card{position:relative;display:flex;flex-direction:column;width:100%;height:100%;min-width:0;overflow:hidden;padding:0;text-align:left;color:#f6e7cf;--es2-hero-glow:var(--es2-hero-idle-glow);background:radial-gradient(ellipse at 50% 36%,var(--es2-hero-glow) 0%,transparent 72%),linear-gradient(165deg,#1b2c3a,#0a1421 70%);border:1px solid #6f7c895e;border-radius:30px 30px 10px 10px / 18px 18px 10px 10px;cursor:pointer;touch-action:manipulation;transition:border-color .2s,box-shadow .2s,transform .2s}
+@media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px)}}
 .es2-menu .es2-hero-select-card:active:not(:disabled){transform:translateY(-1px) scale(.99)}
-.es2-menu .es2-hero-select-card[aria-pressed="true"]{border-color:#e7c896;box-shadow:0 0 0 1px #e7c896,0 0 32px #dfbb7055}
-.es2-hero-card img{width:100%;height:clamp(165px,27vw,360px);object-fit:contain;object-position:center bottom;background:radial-gradient(ellipse,#ac905348,#091421 72%);padding:15px 5px 0}
-.es2-hero-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:13px;background:linear-gradient(#122033,#0a111b);border-top:1px solid var(--es2-line)}
+.es2-hero-card img{width:100%;height:clamp(165px,27vw,360px);object-fit:contain;object-position:center bottom;padding:15px 5px 0}
+.es2-hero-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:13px}
 .es2-hero-copy strong{font-size:clamp(.83rem,1.3vw,1.12rem)}
 .es2-hero-copy small{font:400 .74rem/1.5 system-ui,sans-serif;color:var(--es2-muted)}
 .es2-hero-selection{font:700 .73rem system-ui,sans-serif;color:var(--es2-gold);padding-top:8px;margin-top:auto}
@@ -351,7 +352,6 @@
 .es2-hero-card-shell>.es2-hero-card,.es2-roster__card-shell>.es2-roster__card{width:100%;height:100%}
 .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{
   object-fit:contain;object-position:center center;
-  background:radial-gradient(ellipse at 50% 50%,#ac905348 0%,#091421 72%);
 }
 .es2-hero-detail-trigger{display:none}
 .es2-hero-detail-content{display:grid;gap:12px;font:400 .9rem/1.5 system-ui,sans-serif}
@@ -384,7 +384,6 @@
 }
 
 /* Shared pointer, selected and portrait motion for all six homepage heroes. */
-.es2-menu .es2-hero-select-card > :is(.es2-hero-copy,.es2-roster__copy){background:linear-gradient(#122033,#0a111b);border-top:1px solid var(--es2-line)}
 .es2-menu .es2-hero-select-card > img{transition:transform .24s ease-out}
 @media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled) > img{transform:translateY(-4px)}}
 .es2-menu .es2-hero-select-card[aria-pressed="true"] > img{transform:translateY(-6px)}
@@ -510,7 +509,8 @@
   .es2-top-actions{display:flex;align-items:center;gap:5px}
   .es2-top-actions #gameVersion{font-size:.6875rem}
   .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
-  .es2-top-actions [data-es2-settings] span{display:none}
+  .es2-top-actions [data-es2-settings] span,.es2-top-actions .es2-cloud-trigger-label{display:none}
+  .es2-top-actions [data-es2-cloud-account]{width:44px;min-width:44px;min-height:44px;padding:0;flex:none}
   .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:80px;padding:3px 5px;font-size:.72rem;line-height:1.25;white-space:normal}
   .es2-hall-navigation{padding:4px;gap:3px}
   .es2-menu .es2-hall-links{gap:3px}
@@ -556,16 +556,13 @@
   background:linear-gradient(150deg,#514733,#111d2a);
   clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);color:#e9cc92
 }
-.es2-menu .es2-hero-select-card{
-  border-radius:30px 30px 10px 10px / 18px 18px 10px 10px;
-  border-color:#6f7c895e;background:linear-gradient(165deg,#1b2c3a,#0a1421 70%);
-}
-.es2-menu .es2-hero-select-card[aria-pressed="true"]{
-  border-color:#ecc98c;box-shadow:inset 0 0 0 1px #e0b77578,0 0 20px #d3ac6133;
-  background:linear-gradient(165deg,#41382c,#152331 72%);
-}
-.es2-menu .es2-hero-select-card>img{background:radial-gradient(ellipse at 50% 54%,#57616a4a,transparent 69%)}
-.es2-menu .es2-hero-select-card[aria-pressed="true"]>img{background:radial-gradient(ellipse at 50% 54%,#e2be7950,transparent 72%)}
+/* One panel gradient; hero identity supplies only a muted ambient tint. */
+.es2-menu .es2-hero-select-card[data-hero="knight"]{--es2-hero-idle-glow:#91a9c128}
+.es2-menu .es2-hero-select-card[data-hero="ranger"]{--es2-hero-idle-glow:#65b89128}
+.es2-menu .es2-hero-select-card[data-hero="wizard"]{--es2-hero-idle-glow:#9a79d828}
+.es2-menu .es2-hero-select-card[data-hero-id="shadowblade"]{--es2-hero-idle-glow:#6f80c928}
+.es2-menu .es2-hero-select-card[data-hero-id="spirit-summoner"]{--es2-hero-idle-glow:#62b5bf28}
+.es2-menu .es2-hero-select-card[data-hero-id="crimson-paladin"]{--es2-hero-idle-glow:#cc657728}
 .es2-menu .es2-hero-select-card>:is(.es2-hero-copy,.es2-roster__copy){
   background:linear-gradient(180deg,#172638,#0b1421);border-top:1px solid #9e8d6859
 }
@@ -772,11 +769,9 @@
 }
 .es2-menu--archive .es2-embers[data-es2-ember-wallet]{padding-inline-end:13px}
 .es2-archive-page-caption{color:#bfc9d4;font:400 calc(.82rem * var(--es2-ui-scale,1))/1.5 system-ui,sans-serif;margin:6px 0 0;overflow-wrap:anywhere}
-.es2-menu .es2-hero-card[data-es2-cosmetic]>img{
-  background:radial-gradient(ellipse at 50% 79%,var(--es2-skin-glow),transparent 67%)
-}
-.es2-menu .es2-hero-card[data-es2-cosmetic][aria-pressed="true"]>img{
-  background:radial-gradient(ellipse at 50% 79%,var(--es2-skin-glow),transparent 72%)
+/* Equipped non-default skins tint the idle panel without competing with selection. */
+.es2-menu .es2-hero-select-card:is([data-es2-cosmetic="knight-gilded"],[data-es2-cosmetic="ranger-moonlit"],[data-es2-cosmetic="wizard-astral"]){
+  --es2-hero-idle-glow:color-mix(in srgb,var(--es2-skin-glow) 30%,transparent);
 }
 .es2-menu .es2-skins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),220px));gap:12px}
 .es2-menu .es2-skins button{min-width:0;overflow:hidden;padding:8px;gap:6px;border-radius:20px 6px 16px 6px;text-align:center;align-items:center}
@@ -823,8 +818,8 @@
 /* Selected hero: same silhouette, crest and status ribbon for all six cards.
    Never dim the other portraits, alter image bounds, or occupy the detail-button corner. */
 .es2-menu .es2-hero-select-card[aria-pressed="true"]{
+  --es2-hero-glow:#ffd16b80;
   border-color:#ffe3a3;
-  background:radial-gradient(ellipse at 50% 36%,#c9a25b54 0%,#654e3355 43%,transparent 79%),linear-gradient(160deg,#263849,#151c2b);
   box-shadow:inset 0 0 0 2px #e9c27e,0 0 0 1px #b58a4a,0 0 18px #e7b56465;
 }
 .es2-menu .es2-hero-select-card[aria-pressed="true"]::after{

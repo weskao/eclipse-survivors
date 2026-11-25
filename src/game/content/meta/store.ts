@@ -1,3 +1,4 @@
+import { validWallet, type CloudWallet } from '../../../cloud/wallet-policy'
 import { migrateProfile, SAVE_KEY } from '../../../meta/profile'
 import type { CosmeticId, Profile } from '../../../meta/types'
 import type { JobId } from '../../types'
@@ -43,6 +44,7 @@ export interface MetaTransactionResult {
 }
 export interface MetaProgressionStore {
   get(): MetaStoreSnapshot
+  applyCloudWallet(wallet: CloudWallet, expectedBalance: number, preserveBalance: boolean): MetaTransactionResult
   settle(receipt: RunReceipt): MetaTransactionResult
   purchaseResearch(id: string): MetaTransactionResult
   purchaseEquipment(id: string): MetaTransactionResult
@@ -176,6 +178,17 @@ export function createMetaProgressionStore(
 
   return {
     get: () => snapshot(load(storage)),
+    applyCloudWallet(wallet, expectedBalance, preserveBalance) {
+      const current = load(storage)
+      if (current.status !== 'ready' || !current.state) return rejected('blocked', null)
+      if (!validWallet(wallet) || (!preserveBalance && current.state.embers !== expectedBalance)) return rejected('invalid', current.state)
+      const next = cloneMetaState(current.state)
+      if (!preserveBalance) next.embers = wallet.embers
+      if (next.embers === current.state.embers && next.cloudWallet?.revision === wallet.revision && next.cloudWallet.embers === wallet.embers)
+        return { ok: true, state: next, rewards: [] }
+      next.cloudWallet = { ...wallet }
+      return commit(current, next, [])
+    },
     settle(receipt) {
       const current = load(storage)
       if (current.status !== 'ready' || !current.state) return rejected('blocked', null)
@@ -202,7 +215,9 @@ export function createMetaProgressionStore(
       const current = load(storage)
       if (current.status !== 'ready' || !current.state) return rejected('blocked', null)
       // The new envelope intentionally drops the legacy rollback snapshot.
-      return commit({ ...current, legacyProfile: null }, createMetaState(), [])
+      const next = createMetaState()
+      if (current.state.cloudWallet) next.cloudWallet = { ...current.state.cloudWallet }
+      return commit({ ...current, legacyProfile: null }, next, [])
     },
   }
 }

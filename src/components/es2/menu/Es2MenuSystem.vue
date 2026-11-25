@@ -96,6 +96,7 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       :profile="currentProfile" :needs-audio-unlock="musicOn && !audioUnlocked" :archive-view="archive"
       @select="emit('select', $event)" @select-hero="emit('selectHero', $event)" @mode="emit('mode', $event)" @start="emit('start')"
       @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')">
+      <template #account><slot name="account" /></template>
       <template #archive>
         <Es2Archive v-if="archiveActive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
           :hero="choice" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"

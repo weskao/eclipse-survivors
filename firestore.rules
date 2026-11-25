@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /twilightEmbers/{uid} {
+      function owner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+      function validWallet() {
+        let data = request.resource.data;
+        return data.keys().hasAll(['embers', 'revision']) && data.keys().hasOnly(['embers', 'revision'])
+          && data.embers is int && data.embers >= 0 && data.embers <= 9007199254740991
+          && data.revision is int && data.revision > 0 && data.revision <= 9007199254740991;
+      }
+      allow get: if owner();
+      allow create: if owner() && validWallet() && request.resource.data.revision == 1;
+      allow update: if owner() && validWallet() && request.resource.data.revision == resource.data.revision + 1;
+      allow list, delete: if false;
+    }
+  }
+}

@@ -124,3 +124,16 @@ describe('boss arrival warning vertical alignment', () => {
     expect(css).toContain('--es2-encounter-top: max(48px, calc(env(safe-area-inset-top) + 8px))')
   })
 })
+
+describe('boss arrival warning character palette', () => {
+  it('derives the entire countdown skin from the upcoming boss accent', () => {
+    const surfaces = [[".es2-hud__boss-warning","background"],[".es2-hud__boss-warning","box-shadow"],[".es2-hud__boss-warning::before","color"],[".es2-hud__boss-warning-sigil","background"],[".es2-hud__boss-warning-text > span","color"],[".es2-hud__boss-warning-text > strong","color"],[".es2-hud__boss-warning-count","color"],[".es2-hud__boss-warning-count small","color"],[".es2-hud__boss-warning-track","border"],[".es2-hud__boss-warning-track > span","background"],[".es2-hud__boss-warning--urgent","box-shadow"]]
+    for (const [selector, property] of surfaces) {
+      const body = css.split(selector + ' {')[1]?.split('}')[0] ?? ''
+      const declaration = body.split(';').find(part => part.trim().startsWith(property + ':')) ?? ''
+      expect(declaration, selector + ' ' + property).toContain('var(--es2-warning-accent)')
+    }
+    const glow = css.split('@keyframes es2-boss-alert-glow {')[1]?.split('@media')[0] ?? ''
+    expect(glow.match(/var\(--es2-warning-accent\)/g)).toHaveLength(2)
+  })
+})
