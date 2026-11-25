@@ -5,11 +5,12 @@ const pair = p => Array.isArray(p) && p.length === 2 && p.every(unit)
 const clamp = n => Math.max(0, Math.min(1, n))
 const octant = angle => ((Math.round(angle * 8 / TAU) % 8) + 8) % 8
 const chain = a => Array.isArray(a) && a.length === 3 && a.every(pair) && a.slice(1).every((p,i)=>Math.hypot(p[0]-a[i][0],p[1]-a[i][1])>1e-5)
+const foot = f => f && pair(f.heel) && pair(f.toe) && Math.hypot(f.heel[0]-f.toe[0],f.heel[1]-f.toe[1])>1e-5
 const region = a => Array.isArray(a) && a.length === 4 && unit(a[0]) && unit(a[1]) && a.slice(2).every(n => finite(n) && n > 0)
 const immutable = value => { if (value && typeof value === 'object') { for (const child of Object.values(value)) immutable(child); Object.freeze(value) } return value }
 /** Visual-only data. Each profile owns its source anatomy; never silently mirror asymmetric gear. */
 export function defineRig(profile) {
-  if (!profile || typeof profile.id !== 'string' || !profile.id || !finite(profile.width) || profile.width <= 0 || !finite(profile.height) || profile.height <= 0 || !finite(profile.sourceAngle) || !chain(profile.legJoints?.left) || !chain(profile.legJoints?.right) || (profile.armJoints && (!chain(profile.armJoints.weapon) || !chain(profile.armJoints.support))) || !Array.isArray(profile.regions) || profile.regions.length !== 10 || !profile.regions.every(region)) throw new RangeError('Invalid humanoid rig profile')
+  if (!profile || typeof profile.id !== 'string' || !profile.id || !finite(profile.width) || profile.width <= 0 || !finite(profile.height) || profile.height <= 0 || !finite(profile.sourceAngle) || !chain(profile.legJoints?.left) || !chain(profile.legJoints?.right) || (profile.armJoints && (!chain(profile.armJoints.weapon) || !chain(profile.armJoints.support))) || (profile.footJoints && (!foot(profile.footJoints.left) || !foot(profile.footJoints.right))) || !Array.isArray(profile.regions) || profile.regions.length !== 10 || !profile.regions.every(region)) throw new RangeError('Invalid humanoid rig profile')
   return immutable(structuredClone(profile))
 }
 export const KNIGHT_RIG = defineRig({id:'knight',width:108,height:134,sourceAngle:2.3,weaponHand:'right',

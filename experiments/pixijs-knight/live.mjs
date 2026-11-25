@@ -24,7 +24,9 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
   await app.init({width:WIDTH,height:HEIGHT,resolution,backgroundAlpha:0,preference:'webgl',
     autoStart:false,sharedTicker:false,preserveDrawingBuffer:true})
   let disposed=false,failed=false,reported=false,old=null,owner=null,facing=0,active=null,previousFrame=null,renderCount=0
-  const diagnostics=new URLSearchParams(location.search).get('knightPixiQA')==='1'
+  const params=new URLSearchParams(location.search)
+  const diagnostics=params.get('knightPixiQA')==='1'
+  const debugBones=diagnostics&&params.get('knightRigBones')==='1'
   try {
     const root=new Container()
     root.position.set(FOOT_X,FOOT_Y)
@@ -64,6 +66,8 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
     }) : null
     const fallback=views?null:createView(layers,profile)
     root.addChild(slashFx,specialFx)
+    const bones=debugBones?new Graphics():null
+    if(bones)root.addChild(bones)
     const canvas=app.canvas
     const onLost=event=>{event.preventDefault();failed=true;report('canvas')}
     canvas.addEventListener('webglcontextlost',onLost)
@@ -80,7 +84,7 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             const rig=sampleWeaponRig(job,model,anim)
             const idle=sampleWeaponRig(job,model,{...anim,pose:'idle',phase:0})
             const input={...anim,clock,vx:hero.vx,vy:hero.vy,move:hero.moveAmount,
-              step:hero.step,aim:hero.aimAngle,handX:rig.hand.x-idle.hand.x,handY:rig.hand.y-idle.hand.y,
+              step:hero.step,aim:hero.aimAngle,windupProgress:1-Math.max(0,Math.min(1,(hero.attack-Math.max(.03,hero.delay*.08))/Math.max(.001,Math.max(.08,hero.delay*.24)-Math.max(.03,hero.delay*.08)))),handX:rig.hand.x-idle.hand.x,handY:rig.hand.y-idle.hand.y,
               elbowX:rig.elbow.x-idle.elbow.x,elbowY:rig.elbow.y-idle.elbow.y,
               supportX:rig.supportHand.x-idle.supportHand.x,supportY:rig.supportHand.y-idle.supportHand.y,
               supportElbowX:rig.supportElbow.x-idle.supportElbow.x,supportElbowY:rig.supportElbow.y-idle.supportElbow.y}
@@ -91,13 +95,24 @@ export async function createHeroPixi(image, report, { profile = KNIGHT_RIG, job 
             if(active!==selected){if(active)active.group.visible=false;selected.group.visible=true;active=selected}
             const current=advanceRigMotion(old,input,selected.profile)
             const {body,vertices,skin,buffer,weapon:sword,layer}=selected
-            if(selected.human)deformHumanSkin(skin,vertices,sampleHumanPose(selected.profile,current,skin.chains))
+            const humanPose=selected.human?sampleHumanPose(selected.profile,current,skin.chains):null
+            if(humanPose)deformHumanSkin(skin,vertices,humanPose)
             else deformRig(skin,vertices,current)
+            if(bones){
+              bones.clear();bones.position.copyFrom(body.position)
+              if(humanPose){
+                for(const [key,color] of [['weapon',0xffc566],['support',0x9ad5ff],['left',0x37f5b2],['right',0xe3a0ff]]){
+                  const chain=humanPose[key];bones.moveTo(...chain[0]).lineTo(...chain[1]).lineTo(...chain[2]).stroke({color,width:1.5})
+                  for(const point of chain)bones.circle(...point,1.8).fill(color)
+                  if(humanPose.feet[key]){const foot=humanPose.feet[key];bones.moveTo(...foot.heel).lineTo(...foot.toe).stroke({color,width:2})}
+                }
+              }
+            }
             buffer.update()
             const grip=meshPoint(vertices,11,13,...layer.grip)
             sword.position.set(body.position.x+grip.x,body.position.y+grip.y)
             sword.scale.set(H/layer.weapon.height)
-            sword.rotation=current.blade
+            sword.rotation=humanPose?.blade??current.blade
             // GPU sprite tint is a local feedback effect, no full-screen flashing or extra filter pass.
             const effect=sampleRigVfx(anim,reduceFlashing)
             sword.tint=effect.flash>0?0xffdfa7:0xffffff
