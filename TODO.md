@@ -111,3 +111,18 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Long-run FPS, p95/p99 frame time, memory, draw operations/overdraw, and physical-device thermals.
 - [ ] All required CI checks pass at exact HEAD before completion.
 - [ ] Document game-feel design rules (meaningful upgrades, hero identity, build diversity, fair difficulty, risk/reward, visual clarity, performance, accessibility, real evidence).
+
+## Failing unit tests on `feature/es2-release-readiness-integration` (2026-11-26)
+
+`pnpm test` at `d3bc0821`: 13 failed / 1800 passed / 1 skipped across 10 files. Deterministic (the same 13 fail when the files run alone) and unrelated to the Firebase cloud wallet. They block the release gate: `pnpm typecheck`, `pnpm build` and `pnpm check-release` are not reached in the chained command.
+
+- [ ] `src/game/critical-feedback.test.ts` — a Shadowblade critical hit no longer emits `combat-vfx:critical-hit`
+- [ ] `src/game/render/hit-impact.test.ts` — the critical contact impact lacks `contact: 'critical'`
+- [ ] `src/game/render/es2/production-direction-no-flip.test.ts` — a left-octant attack no longer calls `scale` to mirror the 900px portrait
+- [ ] `tests/es2/mobile/mobile-a11y-regressions.test.ts` — a stateful settings switch lacks `aria-pressed="false"`
+- [ ] `src/components/es2/hud/style.test.ts` — the short-landscape info toggle rule (`font: 700 0/1.2 system-ui`) is missing
+- [ ] `src/components/es2/menu/Es2AppliedArt.test.ts` — the archives render 0 of 4 biome scene images
+- [ ] `src/components/es2/menu/Es2HeroStatParity.test.ts` — the hero card `radial-gradient(ellipse at 50% 50%` is missing
+- [ ] `src/components/es2/menu/Es2SourceFramePreview.test.ts` (4 tests) — enemy/boss/decor preview animations and the `.es2-world-art-scene` `object-fit` rule are missing
+- [ ] `src/assets/es2/production/ui/ui-runtime-sizing.test.ts` — the 3× art budget computes `NaN`
+- [ ] `src/assets/es2/production/heroes/production-art.test.ts` — shadowblade, spirit-summoner and crimson-paladin are still unreviewed; this clears only with human visual approval, not a code change
