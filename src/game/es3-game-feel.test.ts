@@ -152,3 +152,39 @@ it('bounds direct decorative particles and differentiates heavy enemy death dura
   expect(b.deathVisual!).toBeGreaterThan(a.deathVisual!)
   expect(c.deathVisual!).toBeGreaterThan(b.deathVisual!)
 })
+
+it('records only living enemies when a faction enemy dies in the sampling tick', () => {
+  const s = session(), bridge = createFactionBridge({ random: () => 0 })
+  s.hero!.attack = 999; s.hero!.inv = 999; s.spawnT = 999; s.nextEventAt = Infinity
+  s.time = 9.99
+  const enemy = bridge.spawn(s, 'fire-imp', 100, 0)!
+  s.shots.push({ x: 100, y: 0, vx: 0, vy: 0, life: 1, d: 10000, kind: 'arrow', r: 5 })
+  step(s, .02, { x: 0, y: 0 }, hooks(), undefined, undefined, bridge)
+  expect(enemy.hp).toBe(0)
+  expect(s.combatTelemetry.samples[0]).toMatchObject({ kills: 1, enemies: 0 })
+})
+
+it('uses the same bounded directional camera contact feedback for faction criticals', () => {
+  const s = session(), bridge = createFactionBridge({ random: () => 0 })
+  const enemy = bridge.spawn(s, 'berserker', 0, 70)!
+  const h = { ...hooks(), consumeCriticalHit: () => true }
+  bridge.hitFaction(s, enemy, 5, 0, 0, h)
+  expect(s.cameraKick).toBe(1.25)
+  expect(s.cameraKickAngle).toBeCloseTo(Math.PI / 2)
+  bridge.hitFaction(s, enemy, 5, 100, 70, h)
+  expect(s.cameraKickAngle).toBeCloseTo(Math.PI / 2)
+})
+
+it('routes distinct elemental, evolved and active skill contacts in both enemy pools, retaining critical priority', () => {
+  const s = session(), bridge = createFactionBridge({ random: () => 0 })
+  const contactSfx = vi.fn(), h = { ...hooks(), contactSfx }
+  const enemy = bridge.spawn(s, 'berserker', 70, 0)!
+  for (const kind of ['elemental', 'evolved', 'hero'] as const) {
+    hit(s, mob(40), 1, h, s.hero, kind)
+    bridge.hitFaction(s, enemy, 1, 0, 0, h, kind)
+  }
+  hit(s, mob(40), 1, { ...h, consumeCriticalHit: () => true }, s.hero, 'evolved')
+  expect(contactSfx.mock.calls.map(([cue]) => cue)).toEqual([
+    'hitElemental', 'hitElemental', 'hitEvolved', 'hitEvolved', 'hitHero', 'hitHero', 'hitCritical',
+  ])
+})

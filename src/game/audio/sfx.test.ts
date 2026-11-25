@@ -76,3 +76,12 @@ it('gives five advertised chest tiers distinct bounded reveal sounds',()=>{
   expect(new Set(tones.map(t=>JSON.stringify(t))).size).toBe(5)
   expect(tones.every(t=>t.length<=6&&t.every(([,d,l,g])=>d+l<=1.5&&g<=.085))).toBe(true)
 })
+
+it('gives elemental, evolution and active-skill contact audio distinct bounded layers', () => {
+  const cues = ['hitElemental', 'hitEvolved', 'hitHero'] as const
+  // String lookup keeps this test executable on the pre-feature commit.
+  const notes = cues.map(cue => (SFX_CUES as Record<string, readonly (readonly [number, number, number, number, string])[]>)[cue])
+  expect(notes.every(n => n && n.length >= 2 && n.length <= 4)).toBe(true)
+  expect(new Set(notes.map(n => JSON.stringify(n))).size).toBe(3)
+  expect(notes.every(n => n!.every(([, delay, duration, gain]) => delay + duration <= .5 && gain <= .065))).toBe(true)
+})
