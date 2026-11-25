@@ -194,14 +194,14 @@ function projectile(ctx: Ctx2D, p: BossProjectile, ox: number, oy: number, palet
   ctx.restore()
 }
 export function drawBossTelegraphs(ctx: Ctx2D, snapshot: BossSnapshot, ox: number, oy: number,
-  reduced = false, w = Infinity, h = Infinity, sprites?: Partial<ProjectileSprites>, art = sharedArt, settings?: Settings, materials = art === sharedArt ? sharedMaterials : undefined, skipProjectiles = false): void {
+  reduced = false, w = Infinity, h = Infinity, sprites?: Partial<ProjectileSprites>, art = sharedArt, settings?: Settings, materials = art === sharedArt ? sharedMaterials : undefined, skipProjectiles = false, skipDecorations = false): void {
   if (!snapshot.id) return
   const palette = PALETTES[snapshot.id], budget = particleBudget(reduced, settings)
   ctx.save()
   try {
     for (const t of snapshot.telegraphs) {
       const releaseOwnsMaterial = t.stage === 'active' && !!snapshot.impacts?.some(i => i.life > 0 && i.attackId === t.attackId && i.x === t.x && i.y === t.y && i.angle === t.angle)
-      telegraph(ctx, t, ox, oy, palette, reduced, w, h, art, budget, settings, releaseOwnsMaterial, materials)
+      telegraph(ctx, t, ox, oy, palette, reduced, w, h, art, budget, settings, releaseOwnsMaterial || skipDecorations, materials)
     }
     if (!skipProjectiles) for (const p of snapshot.projectiles) projectile(ctx, p, ox, oy, palette, reduced, w, h, MISSILE_ART[snapshot.id], sprites, settings)
   } finally { ctx.restore() }

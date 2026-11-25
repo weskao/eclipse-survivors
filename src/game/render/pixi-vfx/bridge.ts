@@ -30,7 +30,7 @@ export function createPixiVfxBridge(): PixiVfxBridge {
   }
   const draw = (frame: VfxFrame, kind: 'projectiles' | 'impacts'): boolean => {
     if (disposed || failed || !frame.snapshot.id) return false
-    const active = kind === 'projectiles' ? frame.snapshot.projectiles.length > 0 : !!frame.snapshot.impacts?.length && frame.policy?.vfxOpacity !== 0
+    const active = kind === 'projectiles' ? (frame.snapshot.projectiles.length > 0 || frame.snapshot.telegraphs.length > 0) : !!frame.snapshot.impacts?.length && frame.policy?.vfxOpacity !== 0
     if (!renderer) { ensure(); if (active) fallbackPasses++; return false }
     try {
       const painted = renderer[kind](frame)

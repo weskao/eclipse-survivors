@@ -43,7 +43,7 @@ describe('baked boss material art', () => {
     expect(bossMaterialKind('shadow-sweep')).toBe('abyss')
     expect(bossMaterialKind('seraph-finale')).toBe('seraph')
   })
-  it.each(Object.keys(BOSS_ATTACKS) as BossAttackId)('%s draws clipped material plus attack-specific detail', id => {
+  it.each(Object.keys(BOSS_ATTACKS) as BossAttackId[])('%s draws clipped material plus attack-specific detail', id => {
     const t = geometry(id), s: BossSnapshot = { id: ATTACK_PRESENTATION[id].boss, phase: 1,
       telegraphs: [], projectiles: [], impacts: [{ ...t, life: 0.35, max: 0.56 }] }
     const f = createFakeCtx()

@@ -151,9 +151,10 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   const vfxFrame: VfxFrame | undefined = bossSnapshot?.id && assets.pixiVfx ? { ctx, snapshot: bossSnapshot, ox, oy, width: W, height: H, dpr, reduced, policy } : undefined
   if (bossSnapshot) {
     // Warning geometry stays in Canvas. GPU composition follows the same under-actor layer.
-    if (vfxFrame && bossSnapshot.projectiles.length) {
-      drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined, undefined, true)
-      runVfxPass(() => assets.pixiVfx!.projectiles(vfxFrame), () => drawBossTelegraphs(ctx, { ...bossSnapshot, telegraphs: [] }, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined))
+    if (vfxFrame && (bossSnapshot.projectiles.length || bossSnapshot.telegraphs.length)) {
+      // Paint boundaries exactly once, only after the GPU lower pass confirms ownership.
+      if (assets.pixiVfx!.projectiles(vfxFrame)) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined, undefined, true, true)
+      else drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined)
     } else drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined)
   }
   if (!reduced) drawEchoes(ctx, s, ox, oy)

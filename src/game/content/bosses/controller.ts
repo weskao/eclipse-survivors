@@ -1,6 +1,7 @@
 import { damageHero } from '../../combat'
 import { requestCameraKick } from '../../fx'
 import { ATTACK_PRESENTATION } from './attack-presentation'
+import choreographyProfiles from './choreography.json'
 import { BALANCE } from '../../config'
 import { summonBossMinions } from '../../bosses/phases'
 import { MAX_MOBS } from '../../constants'
@@ -325,7 +326,8 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     // Capped, deterministic release accents. The collision geometry remains untouched.
     for (const telegraph of windup.telegraphs) {
       if (e.impacts.length >= MAX_BOSS_IMPACTS) break
-      e.impacts.push({ telegraph, life: 0.56, max: 0.56 })
+      const duration = choreographyProfiles[windup.attackId].duration
+      e.impacts.push({ telegraph, life: duration, max: duration })
       // A volley has one launch accent, not one full overlay per projectile.
       if (attack.kind === 'projectile') break
     }

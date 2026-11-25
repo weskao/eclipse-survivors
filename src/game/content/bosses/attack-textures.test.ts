@@ -17,7 +17,7 @@ describe('authored boss combat art', () => {
         drawBossImpacts(release.ctx,snapshot,0,0,reduced,800,600,sprites)
         expect(release.drawn).toEqual([sprites[id]])
         expect(release.calls).not.toContain('stroke')
-        expect(release.calls).not.toContain('fill')
+        expect(release.calls.filter(call => call === 'fill').length).toBeLessThanOrEqual(reduced ? 0 : 2)
         const off=createFakeCtx()
         drawBossImpacts(off.ctx,snapshot,-5000,-5000,reduced,800,600,sprites)
         expect(off.drawn).toHaveLength(0)

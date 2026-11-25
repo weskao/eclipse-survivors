@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossId } from './definitions'
+import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossId, type BossAttackId } from './definitions'
+import choreographyProfiles from './choreography.json'
 import { createBossEncounterController, type BossSnapshot, type BossTelegraph, MAX_BOSS_IMPACTS } from './controller'
 import { drawBossImpacts, drawBossTelegraphs } from './render'
 import { createFakeCtx } from '../../render/fakes'
@@ -31,8 +32,9 @@ describe('boss attack presentation contract', () => {
     const released = controller.snapshot(state)
     expect(released.impacts?.length).toBeGreaterThan(0)
     expect(released.impacts!.length).toBeLessThanOrEqual(MAX_BOSS_IMPACTS)
-    expect(released.impacts![0]).toMatchObject({ attackId: first.attackId, max: 0.56 })
-    controller.tick(state, 0.7, hooks)
+    const duration = choreographyProfiles[first.attackId as BossAttackId].duration
+    expect(released.impacts![0]).toMatchObject({ attackId: first.attackId, max: duration })
+    controller.tick(state, duration + 0.01, hooks)
     expect(controller.snapshot(state).impacts).toHaveLength(0)
     controller.onContentEvent(state, { type: 'reset' }, hooks)
     expect(controller.snapshot(state).impacts).toEqual([])
