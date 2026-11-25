@@ -9,6 +9,7 @@ Each requirement lives in exactly one file below. Files under `.claude/rules/` w
 | Situation | Read and follow |
 |-----------|-----------------|
 | ANY player-facing UI — every device: desktop, mobile portrait/landscape, tablet, foldable (hinge), safe-area, no occlusion, player-perspective visual review, 11 px text floor, start action visible | [`.claude/rules/ui-responsive-layout.md`](.claude/rules/ui-responsive-layout.md) |
+| Hero selection panels — any hero creation, update, replacement, new cosmetic or lobby UI change: one shared panel gradient, subdued hero-specific idle glow, gold selection only | [`.claude/rules/ui-responsive-layout.md`](.claude/rules/ui-responsive-layout.md#hero-selection-panel-contract) |
 | Settings, menus, dropdowns, dialogs, pickers (no native browser UI) | [`.claude/rules/no-native-ui.md`](.claude/rules/no-native-ui.md) |
 | Any visible text, ARIA/`alt` label, reward name (`en` / `zh-TW`) | [`.claude/rules/bilingual-copy.md`](.claude/rules/bilingual-copy.md) |
 | Any UI interaction, flow, music transition, or hero active skill (mandatory cinematic cast SFX, Q/touch parity) | [`.claude/rules/ui-audio.md`](.claude/rules/ui-audio.md) |
