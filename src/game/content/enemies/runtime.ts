@@ -20,6 +20,7 @@ export interface FactionEnemy {
   damage: number
   affix?: FactionAffix
   summonedBy?: number
+  rewardXpMultiplier?: number
   summonsMade: number
   state: FactionAiState
   timer: number
@@ -106,7 +107,7 @@ export function spawnFactionEnemy(
   kind: FactionKind,
   x: number,
   y: number,
-  options: { affix?: FactionAffix; summonedBy?: number } = {},
+  options: { affix?: FactionAffix; summonedBy?: number; rewardXpMultiplier?:number } = {},
 ): FactionEnemy | null {
   if (!Number.isFinite(x) || !Number.isFinite(y) || runtime.enemies.length + runtime.legacyMobCount >= MAX_FACTION_ENEMIES) return null
   const def = ENEMY_DEFINITIONS[kind]
@@ -116,7 +117,7 @@ export function spawnFactionEnemy(
   const enemy: FactionEnemy = {
     id: runtime.nextId++, kind, x, y, hp: max, max,
     radius: def.radius, speed: def.speed, damage: Math.round(def.damage * (elite ? 1.2 : 1)),
-    affix: options.affix, summonedBy: options.summonedBy,
+    affix: options.affix, summonedBy: options.summonedBy, rewardXpMultiplier:options.rewardXpMultiplier,
     summonsMade: 0, state: 'approach', timer: 0, phaseCooldown: 0, cycle: 0,
     aimX: x, aimY: y, facingX: -1, facingY: 0, hitThisAttack: false,
   }
@@ -207,7 +208,7 @@ export function damageFactionEnemy(
     e.deathVisual = 0.28
     const def = ENEMY_DEFINITIONS[e.kind]
     onReward?.({ kind: e.kind, x: e.x, y: e.y,
-      xp: Math.round(def.xp * (e.affix ? 1.7 : 1)), elite: !!e.affix })
+      xp: Math.round(def.xp * (e.affix ? 1.7 : 1) * (e.rewardXpMultiplier ?? 1)), elite: !!e.affix })
     if (e.affix === 'explosive') addZone(runtime, e, e.x, e.y, 75, e.damage, 'burn', 0.45, 0.8)
     if (e.affix === 'frozen') addZone(runtime, e, e.x, e.y, 75, e.damage * 0.4, 'freeze', 0.4, 1.3)
   }

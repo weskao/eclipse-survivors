@@ -17,6 +17,8 @@ export function upgradeStatPreview(id: string, level?: number, maxLevel?: number
   if (mastery) return mastery
   const { statUpgrades: S, passive: P, area: A } = BALANCE.skills
   const W = BALANCE.weapons
+  const B = W.breakthrough
+  const bonus = (rank:number, value:number) => rank >= B.rank ? value : 0
   const rows: MasteryStatChange[] = []
   const row = (label: string, value: (rank: number) => number, format = number, inactive = false) => {
     const before = inactive && level === 0 ? '—' : format(value(level))
@@ -24,7 +26,7 @@ export function upgradeStatPreview(id: string, level?: number, maxLevel?: number
     if (before !== after) rows.push({ label, before, after })
   }
   const damage = (base: number, step: number) => row('技能傷害倍率', linear(base, step), percent, true)
-  const radius = (base: number, step: number) => row('技能作用範圍', linear(base, step), number, true)
+  const radius = (base: number, step: number, cap = 0) => row('技能作用範圍', rank=>base+step*rank+bonus(rank,cap), number, true)
   const cooldown = (base: number, step: number, floor: number) => row('技能冷卻時間', rank => Math.max(floor, base - step * rank), seconds, true)
   const count = (label: string, value: (rank: number) => number) => row(label, rank => rank === 0 ? 0 : value(rank))
   const area = (a: { cooldownBase: number; cooldownPerRank: number; cooldownFloor: number; rangeBase: number; rangePerRank: number; damageBase: number; damagePerRank: number; maxRankRangeBonus?: number }) => {
@@ -73,18 +75,18 @@ export function upgradeStatPreview(id: string, level?: number, maxLevel?: number
   const interval = W.intervals[key]
   if (interval === undefined) return
   switch (key) {
-    case 'shadow-daggers': damage(0.42, 0.115); count('投射物數量', rank => Math.min(6, 1 + rank)); count('彈跳次數', rank => 2 + Math.floor(rank / 2)); break
-    case 'holy-lance': damage(1.12 - W.common.straightDamagePerRank, W.common.straightDamagePerRank); count('穿透數量', rank => 2 + rank); break
-    case 'blood-scythe': damage(W.scythe.damageBase, W.scythe.damagePerRank); radius(W.scythe.sweepRangeBase, W.scythe.sweepRangePerRank); row('吸血上限', linear(W.scythe.lifestealLimitBase, W.scythe.lifestealLimitPerRank), number, true); break
-    case 'arcane-mines': damage(W.arcaneMines.damageBase, W.arcaneMines.damagePerRank); radius(W.arcaneMines.radiusBase, W.arcaneMines.radiusPerRank); break
-    case 'bone-spears': damage(0.58, 0.18); count('投射物數量', rank => Math.min(6, 2 + rank)); count('穿透數量', rank => 2 + Math.floor(rank / 3)); break
-    case 'poison-cloud': damage(W.poisonCloud.damageBase, W.poisonCloud.damagePerRank); radius(W.poisonCloud.radiusBase, W.poisonCloud.radiusPerRank); break
-    case 'ricochet-blades': damage(0.62, 0.135); count('彈跳次數', rank => 2 + rank); break
-    case 'spirit-wolves': damage(W.spiritWolves.damageBase, W.spiritWolves.damagePerRank); count('召喚物數量', rank => Math.min(3, 1 + Math.floor(rank / 2))); cooldown(W.spiritWolves.attackCooldownBase, W.spiritWolves.attackCooldownPerRank, 0.52); break
-    case 'solar-beam': damage(W.solarBeam.damageBase, W.solarBeam.damagePerRank); radius(W.solarBeam.rangeBase, W.solarBeam.rangePerRank); row('光束寬度', linear(W.solarBeam.widthBase, W.solarBeam.widthPerRank), number, true); break
-    case 'gravity-orbs': damage(W.gravity.damageBase, W.gravity.damagePerRank); count('法球數量', rank => Math.min(3, 1 + Math.floor(rank / 2))); break
-    case 'spectral-bow': damage(1.9 - W.common.straightDamagePerRank, W.common.straightDamagePerRank); count('穿透數量', rank => 1 + Math.ceil(rank / 2)); break
-    case 'thorn-chain': damage(W.thornChain.damageBase, W.thornChain.damagePerRank); count('目標數量', rank => Math.min(6, 2 + rank)); break
+    case 'shadow-daggers': damage(0.42, 0.115); count('投射物數量', rank => Math.min(6, 1 + rank)); count('彈跳次數', rank => 2 + Math.floor(rank / 2) + bonus(rank,B.daggerJumps)); break
+    case 'holy-lance': damage(1.12 - W.common.straightDamagePerRank, W.common.straightDamagePerRank); count('穿透數量', rank => 2 + rank + bonus(rank,B.lancePierce)); break
+    case 'blood-scythe': damage(W.scythe.damageBase, W.scythe.damagePerRank); radius(W.scythe.sweepRangeBase, W.scythe.sweepRangePerRank, B.scytheRange); row('吸血上限', linear(W.scythe.lifestealLimitBase, W.scythe.lifestealLimitPerRank), number, true); break
+    case 'arcane-mines': damage(W.arcaneMines.damageBase, W.arcaneMines.damagePerRank); radius(W.arcaneMines.radiusBase, W.arcaneMines.radiusPerRank, B.mineRadius); break
+    case 'bone-spears': damage(0.58, 0.18); count('投射物數量', rank => Math.min(6, 2 + rank)); count('穿透數量', rank => 2 + Math.floor(rank / 3) + bonus(rank,B.bonePierce)); break
+    case 'poison-cloud': damage(W.poisonCloud.damageBase, W.poisonCloud.damagePerRank); radius(W.poisonCloud.radiusBase, W.poisonCloud.radiusPerRank); row('效果持續時間',rank=>3.15+bonus(rank,B.poisonDuration),seconds,true); break
+    case 'ricochet-blades': damage(0.62, 0.135); count('彈跳次數', rank => 2 + rank + bonus(rank,B.bladeJumps)); break
+    case 'spirit-wolves': damage(W.spiritWolves.damageBase, W.spiritWolves.damagePerRank); count('召喚物數量', rank => Math.min(3, 1 + Math.floor(rank / 2))); row('技能冷卻時間',rank=>Math.max(.52,W.spiritWolves.attackCooldownBase-W.spiritWolves.attackCooldownPerRank*rank-bonus(rank,B.wolfCooldownReduction)),seconds,true); row('技能作用範圍',rank=>23+bonus(rank,B.wolfAttackRange),number,true); break
+    case 'solar-beam': damage(W.solarBeam.damageBase, W.solarBeam.damagePerRank); radius(W.solarBeam.rangeBase, W.solarBeam.rangePerRank); row('光束寬度', rank=>W.solarBeam.widthBase+W.solarBeam.widthPerRank*rank+bonus(rank,B.beamWidth), number, true); break
+    case 'gravity-orbs': damage(W.gravity.damageBase, W.gravity.damagePerRank); count('法球數量', rank => Math.min(3, 1 + Math.floor(rank / 2))); radius(W.gravity.pullReach,0,B.gravityReach); break
+    case 'spectral-bow': damage(1.9 - W.common.straightDamagePerRank, W.common.straightDamagePerRank); count('穿透數量', rank => 1 + Math.ceil(rank / 2) + bonus(rank,B.bowPierce)); break
+    case 'thorn-chain': damage(W.thornChain.damageBase, W.thornChain.damagePerRank); count('目標數量', rank => Math.min(6, 2 + rank)); row('效果持續時間',rank=>1.75+bonus(rank,B.chainDuration),seconds,true); break
   }
   if (interval > 0) row('技能冷卻時間', rank => Math.max(W.common.cooldownFloor, interval * (1 - W.common.cooldownReductionPerRank * (rank - 1))), seconds, true)
   return rows.length ? rows : undefined

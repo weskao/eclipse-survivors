@@ -1120,6 +1120,7 @@ const english = new Map<string, string>([
 , ["每秒生命恢復","HP regeneration / s"]
 , ["目標數量","Targets"]
 , ["技能冷卻時間","Skill cooldown"]
+  , ["效果持續時間", "Effect Duration"]
 , ["技能傷害倍率","Skill damage multiplier"]
 , ["技能作用範圍","Skill reach"]
 , ["減速持續時間","Slow duration"]

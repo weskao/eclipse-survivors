@@ -161,6 +161,7 @@ export interface GameState {
   runMode: RunModeId
   cosmetic: CosmeticId
   combatTelemetry: import('./combat-telemetry').CombatTelemetry
+  directorSeed: number
   factionSpawnWindow: number
   factionSpawnSequence: number
   damageDealt: number

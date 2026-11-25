@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import type { Ctx2D } from '../../render/ctx'
 import type { GameState } from '../../types'
 import { runtimeOf } from './runtime'
@@ -141,17 +142,18 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
   }
 
   if (r.slashLife > 0) {
+    const slashScale = (state.content.levels['weapons:blood-scythe'] ?? 0) >= BALANCE.weapons.breakthrough.rank ? 1 + BALANCE.weapons.breakthrough.scytheRange / 172 : 1
     ctx.save()
     ctx.globalAlpha = r.slashLife / 0.3
     const image = art['crimson-paladin']
     if (image?.complete && image.naturalWidth > 0) {
       ctx.translate(hero.x + ox, hero.y + oy)
       ctx.rotate(r.slashAngle)
-      ctx.drawImage(image, -172, -172, 344, 344)
+      ctx.drawImage(image, -172 * slashScale, -172 * slashScale, 344 * slashScale, 344 * slashScale)
     } else {
       ctx.fillStyle = '#e97c99'
-      ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy, 150, r.slashAngle - 1.35, r.slashAngle + 1.35)
-      ctx.arc(hero.x + ox, hero.y + oy, 126, r.slashAngle + 1.35, r.slashAngle - 1.35, true)
+      ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy, 150 * slashScale, r.slashAngle - 1.35, r.slashAngle + 1.35)
+      ctx.arc(hero.x + ox, hero.y + oy, 126 * slashScale, r.slashAngle + 1.35, r.slashAngle - 1.35, true)
       ctx.closePath(); ctx.fill()
     }
     ctx.restore()

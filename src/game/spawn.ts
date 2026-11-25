@@ -70,7 +70,7 @@ export const spawnInterval = (time: number, currentScene: number, frequency = 1)
   Math.max(BALANCE.enemies.intervalFloor, BALANCE.enemies.intervalBase - time * BALANCE.enemies.intervalTimeFactor - sceneBonus(currentScene)) / frequency
 
 export function ordinarySpawnsAllowed(s: GameState): boolean {
-  return describeWave(s.runMode, 0, s.time).stage !== 'recovery'
+  return describeWave(s.runMode, s.directorSeed, s.time).stage !== 'recovery'
 }
 
 /** Only called on a spawn pulse, never in the render loop. */
@@ -112,7 +112,7 @@ function factionPulse(s: GameState, factions: FactionBridge, encounter: Ordinary
     const x = hero.x + Math.cos(theta) * radius, y = hero.y + Math.sin(theta) * radius
     if (!pointIsClear(s.currentScene, { x, y }, 32)) continue
     const affix = encounter === 'elite-invasion' || encounter === 'titan-march' ? factions.chooseAffix() : null
-    factions.spawn(s, roster[sequence % roster.length]!, x, y, affix ? { affix } : {})
+    factions.spawn(s, roster[sequence % roster.length]!, x, y, { ...(affix ? {affix} : {}), ...(encounter === 'treasure-rush' ? {rewardXpMultiplier:BALANCE.combat.treasureRushXpMultiplier} : {}) })
     break
   }
 }
@@ -121,10 +121,10 @@ function factionPulse(s: GameState, factions: FactionBridge, encounter: Ordinary
 export function tickSpawning(s: GameState, dt: number, hooks: GameHooks, spawnBoss?: (state: GameState, hooks: GameHooks) => void, otherLiving = 0, factions?: FactionBridge): void {
   s.spawnT -= dt
   if (s.spawnT <= 0) {
-    const wave = describeWave(s.runMode, 0, s.time)
+    const wave = describeWave(s.runMode, s.directorSeed, s.time)
     const stage = wave.stage
     const frequency = getMode(s.runMode).modifiers.spawnFrequency
-    const multiplier = stage === 'assault' ? BALANCE.enemies.assaultIntervalMultiplier
+    const multiplier = stage === 'assault' ? BALANCE.enemies.assaultIntervalMultiplier * BALANCE.enemies.encounterIntervalMultipliers[wave.encounter]
       : stage === 'reward' ? BALANCE.enemies.rewardIntervalMultiplier : 1
     s.spawnT = Math.max(BALANCE.enemies.intervalFloor / frequency, spawnInterval(s.time, s.currentScene, frequency) * multiplier)
     if (stage !== 'recovery') {

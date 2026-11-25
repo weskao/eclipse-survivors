@@ -211,5 +211,16 @@
     },
     "hitMargin": 17,
     "projectileContactMargin": 15
+  },
+  "encounterIntervalMultipliers": {
+    "swarm-rush": 0.8,
+    "encirclement": 0.92,
+    "elite-invasion": 1.14,
+    "ranged-assault": 1,
+    "titan-march": 1.5,
+    "treasure-rush": 1.1,
+    "eclipse-surge": 0.72,
+    "mixed": 1,
+    "recovery": 1
   }
 }

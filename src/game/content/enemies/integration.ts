@@ -69,7 +69,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
   }
 
   function spawn(state: GameState, kind: FactionKind, x: number, y: number,
-    config: { affix?: FactionAffix } = {}): FactionEnemy | null {
+    config: { affix?: FactionAffix; rewardXpMultiplier?:number } = {}): FactionEnemy | null {
     if (state.mode !== 'play' || !state.hero) return null
     syncBudget(state)
     return spawnFactionEnemy(runtime, kind, x, y, config)

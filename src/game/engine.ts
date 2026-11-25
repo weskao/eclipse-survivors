@@ -570,6 +570,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.worldEventChoice = null
     ui.worldEventMarkers = []
     resetRun(s)
+    s.directorSeed = Math.floor(random() * 0x100000000)
     lastHapticAt = -Infinity
     factions?.reset()
     objectiveRuntime = isObjectiveModeId(ui.runMode)
