@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '../i18n'
+import AudioMuteIcon from './AudioMuteIcon.vue'
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
@@ -103,14 +104,14 @@ onBeforeUnmount(detach)
       <div v-if="opened && active" :id="id('AudioPopover')" ref="popover" class="audio-popover" :style="position" role="group" :aria-label="t('即時音量控制')">
         <div class="audio-popover-heading"><strong>{{ t("音訊控制") }}</strong><button type="button" class="audio-popover-close" :aria-label="t('關閉音訊控制')" @click="close(true)">×</button></div>
         <div class="audio-popover-row">
-          <button :id="id('MusicMute')" type="button" class="audio-mute" :aria-pressed="!musicOn" :aria-label="t(musicOn ? '靜音背景音樂' : '恢復背景音樂')" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
+          <button :id="id('MusicMute')" type="button" class="audio-mute" :aria-pressed="!musicOn" :aria-label="t(musicOn ? '靜音背景音樂' : '恢復背景音樂')" @click="emit('toggleMusic')"><AudioMuteIcon channel="music" :muted="!musicOn" /></button>
           <div class="audio-volume">
             <label :for="id('MusicVolume')">{{ t("背景音樂") }} <output>{{ musicVolume }}%</output></label>
             <input :id="id('MusicVolume')" type="range" min="0" max="100" step="1" :value="musicVolume" :style="{ '--audio-fill': musicVolume + '%' }" @input="emit('musicVolume', volume($event))" />
           </div>
         </div>
         <div class="audio-popover-row">
-          <button :id="id('SfxMute')" type="button" class="audio-mute" :aria-pressed="!sfxOn" :aria-label="t(sfxOn ? '靜音遊戲音效' : '恢復遊戲音效')" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
+          <button :id="id('SfxMute')" type="button" class="audio-mute" :aria-pressed="!sfxOn" :aria-label="t(sfxOn ? '靜音遊戲音效' : '恢復遊戲音效')" @click="emit('toggleSfx')"><AudioMuteIcon channel="sfx" :muted="!sfxOn" /></button>
           <div class="audio-volume">
             <label :for="id('SfxVolume')">{{ t("遊戲音效") }} <output>{{ sfxVolume }}%</output></label>
             <input :id="id('SfxVolume')" type="range" min="0" max="100" step="1" :value="sfxVolume" :style="{ '--audio-fill': sfxVolume + '%' }" @input="emit('sfxVolume', volume($event))" />

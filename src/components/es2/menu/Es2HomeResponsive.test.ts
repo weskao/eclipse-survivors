@@ -283,6 +283,31 @@ describe('in-game volume control shares HUD action button geometry', () => {
     expect(hudCss).not.toContain('.es2-hud__controls .audio-trigger')
   })
 
+  it.each(['menu', 'hud'] as const)('uses the same independent mute indicators in the %s audio popover', async context => {
+    const audio = mount(AudioControl, { attachTo: document.body, props: {
+      context, active: true, musicOn: false, sfxOn: false, musicVolume: 80, sfxVolume: 75,
+    } })
+    wrappers.push(audio)
+    await audio.get('.audio-trigger').trigger('click')
+    const music = document.getElementById(context + 'MusicMute')!
+    const sfx = document.getElementById(context + 'SfxMute')!
+    expect(music.querySelector('svg[data-audio-icon="music-muted"] path[data-mute-mark]')).not.toBeNull()
+    expect(sfx.querySelector('svg[data-audio-icon="sfx-muted"] path[data-mute-mark]')).not.toBeNull()
+    expect(music.getAttribute('aria-pressed')).toBe('true')
+    expect(sfx.getAttribute('aria-pressed')).toBe('true')
+    music.click()
+    expect(audio.emitted('toggleMusic')).toHaveLength(1)
+    await audio.setProps({ musicOn: true })
+    expect(music.textContent).toBe('♫')
+    expect(music.querySelector('svg')).toBeNull()
+    expect(sfx.querySelector('[data-audio-icon="sfx-muted"]')).not.toBeNull()
+    sfx.click()
+    expect(audio.emitted('toggleSfx')).toHaveLength(1)
+    await audio.setProps({ sfxOn: true })
+    expect(sfx.textContent).toBe('♬')
+    expect(sfx.querySelector('svg')).toBeNull()
+  })
+
   it('adds shared class only to the HUD audio trigger and preserves the menu audio button', () => {
     const base = { active: true, musicOn: true, sfxOn: true, musicVolume: 80, sfxVolume: 75, compact: true }
     const hud = mount(AudioControl, { props: { ...base, context: 'hud' } })
