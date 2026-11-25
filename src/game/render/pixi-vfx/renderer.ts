@@ -6,7 +6,7 @@ import { MAX_BOSS_IMPACTS, MAX_BOSS_PROJECTILES } from '../../content/bosses/con
 import { impactGeometry, visibleImpact, particleLimit, type ImpactGeometry } from './plan'
 import type { VfxFrame } from './bridge'
 
-export interface PixiBossRenderer { projectiles(frame: VfxFrame): boolean; impacts(frame: VfxFrame): boolean; dispose(): void }
+export interface PixiBossRenderer { projectiles(frame: VfxFrame): boolean; impacts(frame: VfxFrame): boolean; lastReleaseIds(): readonly BossAttackId[]; dispose(): void }
 const TAU = Math.PI * 2, SAFE = Math.PI / 5, MAX_PARTICLES = 28
 const clamp = (x: number) => Math.max(0, Math.min(1, x))
 const palette = { abyss: 0xc393ff, frost: 0xc3f3ff, infernal: 0xffb45a, seraph: 0xffdf91 }
@@ -48,7 +48,7 @@ function slot(mote: Texture) {
 export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
   const app = new Application()
   // Offscreen GPU canvas, same frame loop and DPR as the gameplay canvas.
-  await app.init({ preference: 'webgl', backgroundAlpha: 0, autoStart: false, sharedTicker: false,
+  await app.init({ preference: ['webgl'], backgroundAlpha: 0, autoStart: false, sharedTicker: false,
     antialias: false, width: 1, height: 1, resolution: 1, powerPreference: 'low-power' })
   app.stop()
   const canvas = app.canvas as HTMLCanvasElement
@@ -57,6 +57,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
   canvas.addEventListener('webglcontextlost', onLost)
   const owned = new Map<HTMLImageElement, Texture>()
   const mote = moteTexture()
+  const lastReleaseIds: BossAttackId[] = []
   const impacts = Array.from({ length: MAX_BOSS_IMPACTS }, () => slot(mote))
   const missiles = Array.from({ length: MAX_BOSS_PROJECTILES }, () => sprite())
   const impactLayer = new Container(), missileLayer = new Container()
@@ -106,6 +107,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
     return composite(f)
   }
   function release(f: VfxFrame): boolean {
+    lastReleaseIds.length = 0
     if (!f.snapshot.impacts?.length || f.policy?.vfxOpacity === 0) return true
     if (!prepare(f)) return false
     const sources = bossVfxImages()
@@ -118,6 +120,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
       const id = t.attackId as BossAttackId, profile = ATTACK_PRESENTATION[id], kind = bossMaterialKind(id)
       const surface = texture(sources.materials?.[kind]), accent = texture(sources.attacks?.[id])
       if (!surface || !accent || count >= impacts.length) return false
+      lastReleaseIds.push(id)
       const s = impacts[count++]!, p = clamp(1 - t.life / t.max), motion = f.reduced ? .5 : p
       s.root.visible = true; s.root.position.set(t.x + f.ox, t.y + f.oy); s.root.rotation = g.rotation
       const key = [g.shape, g.radius, g.innerRadius, g.width, g.length].join(':')
@@ -164,7 +167,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
     missileLayer.visible = false; impactLayer.visible = true
     return composite(f)
   }
-  return { projectiles, impacts: release, dispose() {
+  return { projectiles, impacts: release, lastReleaseIds: () => lastReleaseIds, dispose() {
     if (disposed) return
     disposed = true
     canvas.removeEventListener('webglcontextlost', onLost)

@@ -33,7 +33,7 @@ import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from
 import { minmax, random } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
-import { createPixiVfxBridge } from './render/pixi-vfx/bridge'
+import { createPixiVfxBridge, type PixiVfxBridge, type PixiVfxStats } from './render/pixi-vfx/bridge'
 import { createFactionBridge } from './content/enemies/integration'
 import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
 import { loadProductionFactionArt } from './render/es2/production-factions'
@@ -68,6 +68,7 @@ export interface TestApi {
   readonly pose: Pose
   readonly attackAnimation: boolean
   readonly vfxCount: number
+  readonly pixiVfx?: PixiVfxStats
   readonly frames: number
   readonly scene: string
   /** Live encounter identity and phase for browser QA; not a player setting. */
@@ -269,6 +270,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let runSequence = 0
   let runReceiptId: string | null = null
   let frameDrawn = 0
+  let pixiVfx: PixiVfxBridge | undefined
   let presentationPolicy: VisualPresentationPolicy | null = null
   let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
@@ -792,6 +794,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     get attackAnimation() { return !!s.hero && s.hero.strike > 0 },
     get vfxCount() { return s.impactWaves.length + s.lightningFx.length + s.swipes.length + s.fx.length },
     get frames() { return frameDrawn },
+    get pixiVfx() { return pixiVfx?.stats() },
     get scene() { return currentSceneInfo(s).name },
     get bossPreview() {
       const boss = bosses?.snapshot(s)
@@ -973,7 +976,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
-    assets.pixiVfx = createPixiVfxBridge()
+    assets.pixiVfx = pixiVfx = createPixiVfxBridge()
     assets.productionHeroes = loadProductionHeroes()
     const bossArtQaId = import.meta.env.DEV && typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('es2BossArtQa') : null
@@ -1026,6 +1029,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     return () => {
       cancelAnimationFrame(raf)
       assets.pixiVfx?.dispose()
+      if (pixiVfx === assets.pixiVfx) pixiVfx = undefined
       resizeRenderer = () => {}
       removeEventListener('resize', resize)
       unlisten()
