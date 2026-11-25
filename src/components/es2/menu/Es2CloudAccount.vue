@@ -14,8 +14,8 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
 </script>
 <template>
   <button type="button" class="es2-icon-button es2-cloud-trigger" data-es2-cloud-account data-ui-sfx="select"
-    aria-haspopup="dialog" :aria-label="t('Google 帳號與雲端存檔')" @click="open = true">
-    <span aria-hidden="true" class="es2-cloud-emblem">G</span><span>{{ t(cloud.user.value ? '帳號' : 'Google 登入') }}</span>
+    aria-haspopup="dialog" :aria-label="t('Google 帳號與雲端存檔')" :title="t(statusLabels[cloud.status.value])" :data-es2-cloud-state="cloud.status.value" @click="open = true">
+    <span aria-hidden="true" class="es2-cloud-emblem">G</span><span class="es2-cloud-trigger-label">{{ t(cloud.user.value ? '帳號' : 'Google 登入') }}</span>
   </button>
   <Es2Dialog :active="open" :title="t('Google 帳號與雲端存檔')" :subtitle="t('目前僅同步暮光餘燼，其他進度與設定保存在此裝置。')" @cancel="close">
     <div class="es2-cloud-card">

@@ -32,7 +32,11 @@ export function useCloudWallet(engine: Engine) {
       if (disposed || user.value?.uid !== uid || selected !== uid) return
       if (result.kind === 'conflict') { status.value = 'conflict'; return }
       const applied = engine.cloudWallet.apply(result.wallet, state.embers, result.kind === 'upload')
-      if (!applied) { status.value = 'error'; return }
+      if (!applied) {
+        status.value = 'error'
+        if (engine.ui.metaState?.embers !== state.embers) queued = true
+        return
+      }
       status.value = 'synced'
       if (engine.ui.metaState?.embers !== result.wallet.embers) queued = true
     } catch {
@@ -77,7 +81,8 @@ export function useCloudWallet(engine: Engine) {
       window.addEventListener('online', online)
     } catch { if (!disposed) status.value = 'error' }
   })
-  watch(() => [engine.ui.mode, engine.ui.profile.embers] as const, () => {
+  // Watch scalar sources, not a newly allocated array: a no-op restore refreshes the profile object.
+  watch([() => engine.ui.mode, () => engine.ui.profile.embers], () => {
     if (status.value !== 'conflict' || (user.value?.uid ?? null) !== selected) void sync()
   })
   onBeforeUnmount(() => {

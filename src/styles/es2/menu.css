@@ -27,6 +27,8 @@
 .es2-top-actions #gameVersion{grid-area:version}
 .es2-top-actions [data-es2-settings]{grid-area:settings}
 .es2-top-actions [data-es2-audio-unlock]{grid-area:music;justify-self:start}
+.es2-top-actions:has([data-es2-cloud-account]){grid-template-areas:"version settings" "account music"}
+.es2-top-actions [data-es2-cloud-account]{grid-area:account;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .es2-version{font:600 .72rem system-ui,sans-serif;color:var(--es2-muted)}
 .es2-icon-button{min-height:44px;padding:9px 13px;border-radius:8px;background:#122134d9;border:1px solid var(--es2-line)}
 @media(max-width:610px){.es2-top-actions{width:100%;gap:8px}.es2-top-actions .es2-icon-button{max-width:100%;white-space:normal}}
@@ -510,7 +512,8 @@
   .es2-top-actions{display:flex;align-items:center;gap:5px}
   .es2-top-actions #gameVersion{font-size:.6875rem}
   .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
-  .es2-top-actions [data-es2-settings] span{display:none}
+  .es2-top-actions [data-es2-settings] span,.es2-top-actions .es2-cloud-trigger-label{display:none}
+  .es2-top-actions [data-es2-cloud-account]{width:44px;min-width:44px;min-height:44px;padding:0;flex:none}
   .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:80px;padding:3px 5px;font-size:.72rem;line-height:1.25;white-space:normal}
   .es2-hall-navigation{padding:4px;gap:3px}
   .es2-menu .es2-hall-links{gap:3px}
