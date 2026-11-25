@@ -5,10 +5,13 @@ import { ART_URLS } from '../../../game/art'
 import { skillImageSrc } from '../../../game/ui-art'
 import { ACHIEVEMENTS } from '../../../meta/achievements'
 import { COSMETICS, cosmeticStyle } from '../../../meta/cosmetics'
+import { ACHIEVEMENTS as META_ACHIEVEMENTS } from '../../../game/content/meta/catalog'
+import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
+import HeroPortrait from '../hero-roster/HeroPortrait.vue'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { encyclopedia } from '../../../meta/compendium'
 import type { Profile, PermanentUpgrade, CosmeticId } from '../../../meta/types'
-import type { JobId, MobType } from '../../../game/types'
+import type { HeroId, JobId, MobType } from '../../../game/types'
 import ProgressionPanel from '../progression/ProgressionPanel.vue'
 import { createMetaState, type MetaState } from '../../../game/content/meta/state'
 import type { MenuView, RelicEntry } from './model'
@@ -17,7 +20,7 @@ import Es2CardDetails from './Es2CardDetails.vue'
 import Es2CardInfo from './Es2CardInfo.vue'
 import type { CardDetail } from './Es2CardDetails.vue'
 const props = defineProps<{
-  view: Exclude<MenuView, 'main'>; profile: Profile; hero: JobId; relics?: readonly RelicEntry[]
+  view: Exclude<MenuView, 'main'>; profile: Profile; hero: JobId; heroId?: HeroId; relics?: readonly RelicEntry[]
   metaState?: MetaState | null; metaStatus?: 'ready' | 'blocked' | null
 }>()
 const emit = defineEmits<{
@@ -53,7 +56,18 @@ const title: Record<Exclude<MenuView, 'main'>, string> = {
   relics: '聖物收藏庫', progression: '永久強化 · 英雄傳承',
   monsters: '魔物圖鑑', skills: '覺醒能力圖鑑', achievements: '遠征成就殿堂',
 }
-const skins = COSMETICS
+const selectedHeroId = computed(() => props.heroId ?? props.hero)
+// Cosmetic ownership still uses the persisted legacy job; portraits use the real hero ID.
+const cosmeticHero = computed(() => {
+  const id = selectedHeroId.value
+  return isSpecializationId(id) ? HERO_DEFINITIONS[id].legacyArtJob : id
+})
+const skins = computed(() => COSMETICS.filter(item => item.hero === cosmeticHero.value))
+function unlockCondition(id: CosmeticId): string | undefined {
+  return props.metaStatus
+    ? META_ACHIEVEMENTS.find(a => a.cosmetic === id)?.description
+    : ACHIEVEMENTS.find(a => a.cosmetic === id)?.hint
+}
 const upgrades: readonly { id: PermanentUpgrade; title: string; icon: string; bonus: string }[] = [
   { id: 'power', title: '破曉之刃', icon: '⚔', bonus: '永久傷害 +4% / 階' },
   { id: 'vitality', title: '不滅之心', icon: '✚', bonus: '永久生命 +12 / 階' },
@@ -91,12 +105,15 @@ const achievementArt: Record<string, string> = {
       </div>
       <h3>{{ t("英雄造型") }} <small>{{ t("目前為光環造型 · 不影響戰鬥數值") }}</small></h3>
       <div class="es2-skins" role="group" :aria-label="t('英雄造型')">
-        <button v-for="skin in skins.filter(item => item.hero === hero)" :key="skin.id" type="button" data-ui-sfx="managed"
+        <button v-for="skin in skins" :key="skin.id" type="button" data-ui-sfx="managed"
           :data-es2-cosmetic-option="skin.id" :style="cosmeticStyle(skin.id)"
           :disabled="!profile.unlockedCosmetics.includes(skin.id)"
-          :aria-pressed="profile.equippedCosmetics[hero] === skin.id" @click="emit('cosmetic', hero, skin.id)">
-          <span class="es2-skin-preview" aria-hidden="true"><img :src="ART_URLS[skin.hero]" alt="" loading="lazy" draggable="false" /><span class="es2-skin-ring"></span></span>
-          <strong>{{ t(skin.name) }}</strong><small>{{ t(profile.equippedCosmetics[hero] === skin.id ? '✓ 使用中' : profile.unlockedCosmetics.includes(skin.id) ? '套用造型' : '🔒 未解鎖') }}</small>
+          :aria-pressed="profile.equippedCosmetics[cosmeticHero] === skin.id" @click="emit('cosmetic', cosmeticHero, skin.id)">
+          <span class="es2-skin-preview" aria-hidden="true"><HeroPortrait :hero-id="selectedHeroId" alt="" /><span class="es2-skin-ring"></span></span>
+          <strong>{{ t(skin.name) }}</strong>
+          <small v-if="!profile.unlockedCosmetics.includes(skin.id)" class="es2-skin-locked"><span aria-hidden="true">🔒</span> {{ t('未解鎖') }}</small>
+          <small v-if="!profile.unlockedCosmetics.includes(skin.id) && unlockCondition(skin.id)" class="es2-skin-unlock" data-es2-cosmetic-unlock>{{ t('解鎖條件：{condition}', { condition: t(unlockCondition(skin.id)) }) }}</small>
+          <small v-if="profile.unlockedCosmetics.includes(skin.id)">{{ t(profile.equippedCosmetics[cosmeticHero] === skin.id ? '✓ 使用中' : '套用造型') }}</small>
         </button>
       </div>
       <button class="es2-danger" type="button" @click="emit('reset')">{{ t("重置永久進度…") }}</button>

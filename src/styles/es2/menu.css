@@ -835,6 +835,10 @@
 .es2-skin-preview img{height:100%;max-width:100%;width:auto;object-fit:contain;z-index:1;min-height:0}
 .es2-skin-ring{position:absolute;width:67%;height:17%;bottom:5%;border:2px solid var(--es2-skin-ring);border-radius:50%;box-shadow:0 0 9px var(--es2-skin-glow);pointer-events:none}
 .es2-menu .es2-skins button[aria-pressed=true]{border-color:var(--es2-skin-ring);box-shadow:inset 0 0 0 1px var(--es2-skin-ring)}
+.es2-menu .es2-skins button:disabled{opacity:1;border-color:#8496a755}
+.es2-menu .es2-skins button:disabled .es2-skin-preview{opacity:.72;filter:saturate(.65)}
+.es2-menu .es2-skins .es2-skin-locked{color:var(--es2-gold);font-size:max(11px,.75rem);font-weight:600}
+.es2-menu .es2-skins .es2-skin-unlock{display:block;width:100%;box-sizing:border-box;padding:6px 4px;border-top:1px solid var(--es2-line);color:var(--es2-text);font-size:max(11px,.75rem);line-height:1.45;white-space:normal;overflow-wrap:anywhere}
 @media(max-width:540px){.es2-menu .es2-skins{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 /* Native cursor images preserve real OS hit testing; no Pixi/canvas loop. */
 @media (hover:hover) and (pointer:fine){
