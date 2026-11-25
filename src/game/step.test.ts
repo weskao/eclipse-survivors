@@ -224,3 +224,17 @@ describe('projectile collision precision', () => {
     expect(target.hp).toBe(78)
   })
 })
+
+describe('ES3 reward feedback', () => {
+  it('aggregates same-tick pickup audio without losing individual XP or pickup receipts', () => {
+    const { s, hero } = setup()
+    const content = vi.fn()
+    const hooks = { ...spyHooks(), content }
+    s.stars.push({ x: 10, y: 0, value: 2, t: 0 }, { x: 0, y: 10, value: 3, t: 0 }, { x: -10, y: 0, value: 4, t: 0 })
+    step(s, 0.016, still, hooks)
+    expect(hero.xp).toBe(9)
+    expect(s.stars).toHaveLength(0)
+    expect(content.mock.calls.filter(([, event]) => event.type === 'pickup').map(([, event]) => event.amount)).toEqual([2, 3, 4])
+    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickup')).toHaveLength(1)
+  })
+})
