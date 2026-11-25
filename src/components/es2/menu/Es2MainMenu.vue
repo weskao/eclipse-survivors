@@ -141,7 +141,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               <img :src="ART_URLS[hero.id]" :alt="t('{name} 原始角色插畫', { name: t(hero.name) })" decoding="async" draggable="false" />
               <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small>
                 <HeroStats class="es2-roster__stats" data-es2-classic-preview :stats="JOB[hero.id]" />
-                <span class="es2-hero-selection">{{ t((heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span></span>
+                <span class="es2-hero-selection es2-hero-selection-status" :data-es2-hero-selected="(heroId ?? choice) === hero.id ? '' : undefined">{{ t((heroId ?? choice) === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span></span>
               </button>
               <button type="button" class="es2-hero-detail-trigger" data-ui-sfx="select"
                 :data-es2-hero-details="hero.id" :aria-label="t('查看英雄詳情') + ' · ' + t(hero.name)"

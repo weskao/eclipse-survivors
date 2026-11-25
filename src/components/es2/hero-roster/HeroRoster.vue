@@ -54,7 +54,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
         </span>
         <span class="es2-roster__traits">{{ t("優勢 ·") }} {{ t(hero.strengths.join(' / ')) }}</span>
         <span class="es2-roster__traits">{{ t("弱點 ·") }} {{ t(hero.weaknesses.join(' / ')) }}</span>
-        <span class="es2-roster__selection">{{ t(selectedId === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span>
+        <span class="es2-roster__selection es2-hero-selection-status" :data-es2-hero-selected="selectedId === hero.id ? '' : undefined">{{ t(selectedId === hero.id ? '✓ 已選擇' : '選擇英雄') }}</span>
       </span>
       </button>
       <button type="button" class="es2-hero-detail-trigger" data-ui-sfx="select"
