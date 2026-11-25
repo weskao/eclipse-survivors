@@ -2,6 +2,7 @@ import type { Ctx2D } from './ctx'
 import { drawProjectileSprite, type ProjectileArtId, type ProjectileSprites } from './projectile-art'
 
 const TAU = Math.PI * 2
+const DIRECTIONS = Array.from({ length: 12 }, (_, i) => ({ x: Math.cos(i * TAU / 12), y: Math.sin(i * TAU / 12) }))
 
 /** Local-space, fixed-count sparks; no particles are allocated in simulation. */
 export function drawEnergyTrail(ctx: Ctx2D, radius: number, life: number, color: string, reduced = false): void {
@@ -52,15 +53,33 @@ export function drawZoneMotes(ctx: Ctx2D, x: number, y: number, outer: number,
   ctx.save()
   ctx.fillStyle = color
   ctx.globalAlpha *= 0.68
+  const angle = phase * 0.65
+  const cs = Math.cos(angle), sn = Math.sin(angle)
+  const size = Math.min(3.5, thickness * 0.09)
   ctx.beginPath()
-  for (let i = 0; i < 12; i++) {
-    const a = i * TAU / 12 + phase * 0.65
-    const size = Math.min(3.5, thickness * 0.09)
+  for (let i = 0; i < DIRECTIONS.length; i++) {
+    const d = DIRECTIONS[i]!
+    const ux = d.x * cs - d.y * sn, uy = d.y * cs + d.x * sn
     const r = inner + thickness * (i % 2 ? 0.76 : 0.48)
-    const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r
+    const px = x + ux * r, py = y + uy * r
     ctx.moveTo(px, py - size * 1.6); ctx.lineTo(px + size, py)
     ctx.lineTo(px, py + size * 1.6); ctx.lineTo(px - size, py); ctx.closePath()
   }
   ctx.fill()
+  // Broken, tapered-looking filaments are interior decoration, not new boundaries.
+  // They never paint into the safe hole of an annulus.
+  ctx.strokeStyle = color
+  ctx.globalAlpha *= 0.6
+  ctx.lineWidth = Math.min(2.3, thickness * 0.07)
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  for (let i = 0; i < 4; i++) {
+    const a = i * TAU / 4 + angle
+    ctx.arc(x, y, inner + thickness * 0.63, a, a + 0.38)
+    // Start a new subpath so adjacent filaments are never joined by a chord.
+    ctx.moveTo(x + Math.cos(a + TAU / 4) * (inner + thickness * 0.63),
+      y + Math.sin(a + TAU / 4) * (inner + thickness * 0.63))
+  }
+  ctx.stroke()
   ctx.restore()
 }

@@ -69,7 +69,7 @@ export function drawLiveFactionArt(
   healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reducedMotion = false, showFullHealthBars = false,
 ): number {
   // Original warning geometries, tied to true aim/radius, are painted first.
-  drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy)
+  drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy, reducedMotion, state.W, state.H)
   let drawn = 0
   const width = state.W, height = state.H
   for (const enemy of runtime.enemies) {

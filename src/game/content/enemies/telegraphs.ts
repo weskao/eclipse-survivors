@@ -1,5 +1,6 @@
 import { ENEMY_DEFINITIONS } from './definitions'
 import type { FactionRuntime } from './runtime'
+import { drawZoneMotes } from '../../render/energy-art'
 
 /**
  * Read-only Canvas 2D warning overlay for the integration-owned renderer.
@@ -7,7 +8,10 @@ import type { FactionRuntime } from './runtime'
  */
 export function drawFactionTelegraphs(
   ctx: CanvasRenderingContext2D, runtime: FactionRuntime, ox: number, oy: number,
+  reduced = false, width = Infinity, height = Infinity,
 ): void {
+  const visible = (x: number, y: number, radius: number) =>
+    x + radius >= 0 && y + radius >= 0 && x - radius <= width && y - radius <= height
   ctx.save()
   ctx.lineWidth = 3
   ctx.globalAlpha = 0.7
@@ -27,20 +31,26 @@ export function drawFactionTelegraphs(
         : enemy.kind === 'plague-carrier' ? 75
           : enemy.radius + 45
       const aimed = enemy.kind === 'fire-imp' || enemy.kind === 'plague-carrier'
-      ctx.arc((aimed ? enemy.aimX : enemy.x) + ox,
-        (aimed ? enemy.aimY : enemy.y) + oy, radius, 0, Math.PI * 2)
+      const x = (aimed ? enemy.aimX : enemy.x) + ox
+      const y = (aimed ? enemy.aimY : enemy.y) + oy
+      if (!visible(x, y, radius)) continue
+      ctx.arc(x, y, radius, 0, Math.PI * 2)
+      ctx.stroke()
+      drawZoneMotes(ctx, x, y, radius, 0, enemy.timer, ENEMY_DEFINITIONS[enemy.kind].telegraphColor, reduced)
+      continue
     }
     ctx.stroke()
   }
   // Zones remain visible while armed and after activation until their finite lifetime ends.
   for (const zone of runtime.zones) {
-    if (zone.life <= 0) continue
+    if (zone.life <= 0 || !visible(zone.x + ox, zone.y + oy, zone.radius)) continue
     ctx.strokeStyle = zone.status === 'freeze' ? '#83defc'
       : zone.status === 'poison' ? '#b4ed64' : '#ff956f'
     ctx.globalAlpha = zone.delay > 0 ? 0.85 : 0.5
     ctx.beginPath()
     ctx.arc(zone.x + ox, zone.y + oy, zone.radius, 0, Math.PI * 2)
     ctx.stroke()
+    drawZoneMotes(ctx, zone.x + ox, zone.y + oy, zone.radius, 0, zone.life, String(ctx.strokeStyle), reduced)
   }
   ctx.restore()
 }

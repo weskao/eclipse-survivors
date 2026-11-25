@@ -6,7 +6,7 @@ import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
 import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
-import { drawEnergyTrail, drawZoneMotes } from './energy-art'
+import { drawEnergyMissile, drawEnergyTrail, drawZoneMotes } from './energy-art'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -252,17 +252,9 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     } else {
       drawEnergyTrail(ctx, b.r, b.life, '#c3adff', reduced)
       if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
-      if (magicGlow) {
-        ctx.drawImage(magicGlow, -28, -28, 56, 56)
-      } else {
-        // Preserve standalone renderer behavior when no prepainted asset is supplied.
-        const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 28)
-        gl.addColorStop(0, '#f2eaff'); gl.addColorStop(0.2, '#a6d8ff'); gl.addColorStop(0.44, '#937af7b9'); gl.addColorStop(1, '#9170ec00')
-        ctx.fillStyle = gl
-        ctx.beginPath(); ctx.arc(0, 0, 28, 0, TAU); ctx.fill()
-      }
-      ctx.strokeStyle = '#d6baff80'; ctx.lineWidth = 2
-      ctx.beginPath(); ctx.moveTo(-30, 0); ctx.lineTo(0, 0); ctx.stroke()
+        // Keep the cached halo, but replace the old dot-and-line fallback with a faceted core.
+        if (magicGlow) ctx.drawImage(magicGlow, -28, -28, 56, 56)
+        drawEnergyMissile(ctx, undefined, 'arcane-bolt', b.r, b.life, '#a88af0', '#f2eaff', true)
       }
     }
     ctx.restore()

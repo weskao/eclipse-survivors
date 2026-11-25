@@ -40,7 +40,7 @@ describe('combat energy artwork', () => {
     const { ctx } = createFakeCtx()
     const move = vi.spyOn(ctx, 'moveTo'), line = vi.spyOn(ctx, 'lineTo')
     drawZoneMotes(ctx, 100, 200, 100, 65, 0.6, '#aa88ff')
-    expect(move).toHaveBeenCalledTimes(12)
+    expect(move).toHaveBeenCalledTimes(16)
     for (const [x, y] of [...move.mock.calls, ...line.mock.calls]) {
       const r = Math.hypot(x - 100, y - 200)
       expect(r).toBeGreaterThan(65)
