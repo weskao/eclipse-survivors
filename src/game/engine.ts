@@ -238,11 +238,26 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       },
     }) : null
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
-  function readSetting(key: string): string | null {
-    try { return settingsStorage?.getItem(key) ?? null } catch { return null }
+  type SelectionKey = 'eclipseSelectedHero' | 'eclipseSelectedRunMode'
+  const pendingSelectionWrites = new Set<SelectionKey>()
+  // A failed write must not replace a newer in-memory choice with stale storage on Home.
+  function readSelection(key: SelectionKey, fallback: string): string {
+    if (pendingSelectionWrites.has(key)) return fallback
+    try { return settingsStorage?.getItem(key) ?? fallback } catch { return fallback }
   }
-  function isHeroId(id: unknown): id is HeroId {
-    return isSpecializationId(id) || (typeof id === 'string' && Object.prototype.hasOwnProperty.call(JOB, id))
+  function saveSelection(key: SelectionKey, value: string): void {
+    try {
+      if (!settingsStorage) throw new Error('Storage unavailable')
+      settingsStorage.setItem(key, value)
+      pendingSelectionWrites.delete(key)
+    } catch { pendingSelectionWrites.add(key) }
+  }
+  // The current roster has no account-specific hero/mode entitlements.
+  // Keep restoration and explicit selection on the same availability checks.
+  function canSelectHero(id: unknown): id is HeroId {
+    return isSpecializationId(id)
+      ? !!contentRegistry.getAbility(HERO_DEFINITIONS[id].startingAbility)
+      : typeof id === 'string' && Object.prototype.hasOwnProperty.call(JOB, id)
   }
   function isRunModeId(id: unknown): id is RunModeId {
     return typeof id === 'string' && Object.prototype.hasOwnProperty.call(MODES, id)
@@ -253,11 +268,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.cosmetic = displayProfile().equippedCosmetics[s.choice]
   }
   // Restore silently: reopening the page is not a player gesture or a new selection.
-  function restoreMenuSelection(fallbackMode = s.runMode): void {
-    const hero = readSetting('eclipseSelectedHero')
-    const mode = readSetting('eclipseSelectedRunMode')
-    if (isHeroId(hero)) applyHeroChoice(hero)
-    s.runMode = isRunModeId(mode) ? mode : fallbackMode
+  function restoreMenuSelection(): void {
+    const hero = readSelection('eclipseSelectedHero', s.heroId)
+    const mode = readSelection('eclipseSelectedRunMode', s.runMode)
+    applyHeroChoice(canSelectHero(hero) ? hero : 'knight')
+    s.runMode = isRunModeId(mode) ? mode : 'quick'
   }
   restoreMenuSelection()
   let initialEffect: 'soft' | 'still' = 'soft'
@@ -275,6 +290,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     profile: displayProfile(), metaState: metaStore?.get().state ?? null,
     metaStatus: metaStore?.get().status ?? null, runResult: null, rewards: null,
   })
+  function syncMenuSelection(): void {
+    restoreMenuSelection()
+    ui.heroId = s.heroId
+    ui.choice = s.choice
+    ui.runMode = s.runMode
+  }
   function refreshMeta(): void {
     const snapshot = metaStore?.get()
     ui.metaState = snapshot?.state ?? null
@@ -506,18 +527,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function selectHero(id: HeroId): void {
-    if (s.mode !== 'menu' || !isHeroId(id)) return
+    if (s.mode !== 'menu' || !canSelectHero(id)) return
     applyHeroChoice(id)
     ui.heroId = s.heroId
     ui.choice = s.choice
     ui.heroSpecial = null
-    saveSetting('eclipseSelectedHero', id)
+    saveSelection('eclipseSelectedHero', id)
     wakeAudio()
     audio.playSfx('select')
   }
 
   function start(): void {
     if (!walletReady()) return
+    // Account changes at results must not rewrite a completed run. Restore only
+    // when the player starts another run or returns to the menu.
+    if (s.mode === 'result') syncMenuSelection()
     ending = false
     if (metaStore && typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
       const entropy = new Uint8Array(16)
@@ -1086,6 +1110,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
           metaStore = nextMeta
           walletAccount = uid
           refreshMeta()
+          if (s.mode === 'menu') syncMenuSelection()
           return true
         } catch { return false }
       },
@@ -1115,7 +1140,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) {
       if (s.mode !== 'menu' || !isRunModeId(mode)) return
-      saveSetting('eclipseSelectedRunMode', mode)
+      saveSelection('eclipseSelectedRunMode', mode)
+      s.runMode = mode
       if (ui.runMode === mode) return
       ui.runMode = mode
       wakeAudio()
@@ -1217,10 +1243,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       worldEvents?.reset()
       heroSpecialization = null
       ui.heroSpecial = null
-      restoreMenuSelection(ui.runMode)
-      ui.heroId = s.heroId
-      ui.choice = s.choice
-      ui.runMode = s.runMode
+      syncMenuSelection()
       screen('menu')
     },
     setStick(v) { stick = v ?? { x: 0, y: 0 } },
