@@ -918,7 +918,14 @@
   .es2-menu .es2-hero-select-card[aria-pressed="true"] .es2-hero-selection-status{background:Highlight;color:HighlightText;clip-path:none}
 }
 
-/* Compact wide landscape keeps all six selectable cards above the persistent dock. */
-@media (min-width:1000px) and (max-height:850px) {
-  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(105px,calc(100dvh - var(--es2-action-bar-height,112px) - 470px),300px);padding:4px 2px}
+/* Fit the actual remaining hero-page area, including localized header and dock height. */
+@media (min-width:1000px) and (min-height:700px) {
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-menu-shell{height:100%;min-height:0}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-menu-header,.es2-hall-navigation){flex:0 0 auto}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-menu-layout{flex:1 1 0;min-height:0}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-hero-section{height:100%;grid-template-rows:auto minmax(0,1fr)}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-grid,.es2-roster){min-height:0;grid-template-rows:minmax(0,1fr)}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-card,.es2-roster__card){min-height:0}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-card > img,.es2-roster__portrait){flex:1 1 0;min-height:0;height:0;max-height:none;object-fit:contain;padding:4px 2px}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-copy,.es2-roster__copy){flex:0 0 auto}
 }
