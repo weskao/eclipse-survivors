@@ -4,7 +4,7 @@ import type { ContentRegistry } from '../content/registry'
 import type { VisualPresentationPolicy } from '../content/accessibility/presentation'
 import type { BossEncounterController } from '../content/bosses/controller'
 import type { FactionBridge } from '../content/enemies/integration'
-import { drawBossImpacts, drawBossTelegraphs } from '../content/bosses/render'
+import { drawBossImpacts, drawBossTelegraphs, preloadBossAttackArt } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
@@ -64,6 +64,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
     : null
   preloadHeroSpecialVfx()
+  preloadBossAttackArt()
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     heroSheets: createHeroSheets(makeCanvas),

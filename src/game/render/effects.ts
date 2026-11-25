@@ -209,7 +209,9 @@ export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number, spr
     if (x < -margin || x > s.W + margin || y < -margin || y > s.H + margin) continue
     ctx.save()
     ctx.translate(x, y)
-    ctx.rotate(sw.a)
+    // A weighted knight follow-through, paired shadow cuts and deliberate paladin sweep.
+    const sweep = reduced ? 0 : (t - 0.5) * (id === 'shadowblade' ? 0.32 : id === 'crimson-paladin' ? 0.48 : 0.68)
+    ctx.rotate(sw.a + sweep)
     ctx.globalAlpha = Math.pow(1 - t, 0.75) * (reduced ? 0.7 : 1)
     if (image?.complete && image.naturalWidth > 0) {
       // One textured draw replaces repeated arcs, shadow blur and five separate sparks.
@@ -243,7 +245,7 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     const extent = Math.min(1, 14 / Math.max(1, history))
     const tx = x - (x - prevX) * extent
     const ty = y - (y - prevY) * extent
-    if (history > 2) {
+    if (history > 2 && b.kind === 'arrow' && !reduced) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
       ctx.strokeStyle = b.kind === 'arrow' ? '#f6d6a4' : '#a9a1ff'

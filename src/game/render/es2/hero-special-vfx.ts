@@ -97,8 +97,8 @@ function summoner(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: 
     const y = Math.sin(a) * radius * 0.37 - 36 - converge * 17 - (reduced ? 0 : Math.sin(t * Math.PI + i) * 9)
     const image = sprite(ctx, 'flame', x, y, 112 + bloom * 34, 144 + bloom * 46,
       alpha * 0.82, Math.sin(a) * 0.16)
-    sprite(ctx, 'guardian', x, y - 9, 106 + bloom * 22, 152 + bloom * 34, alpha * 0.88, Math.sin(a) * 0.06)
-    if (!image) {
+    const guardian = sprite(ctx, 'guardian', x, y - 9, 106 + bloom * 22, 152 + bloom * 34, alpha * 0.88, Math.sin(a) * 0.06)
+    if (!image && !guardian) {
       ctx.fillStyle = '#a0d9d6'; ctx.beginPath(); ctx.ellipse(x, y, 8, 18, a, 0, TAU); ctx.fill()
     }
   }

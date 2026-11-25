@@ -87,7 +87,8 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
   hero.aimAngle = angle
   hero.strike = 0.29
-  impact(s, hero.x, hero.y, choice === 'knight' ? 56 : 21, choice === 'wizard' ? '#b49cff' : '#f8dba8', 0.35)
+  // The weapon ribbon owns melee release; ranged casts retain one local muzzle accent.
+  if (choice === 'ranger') impact(s, hero.x, hero.y, 21, '#f8dba8', 0.35)
   if (choice === 'knight') {
     for (let j = 0; j < multi; j++) {
       const a = angle + (j - (multi - 1) / 2) * 0.43
@@ -124,7 +125,7 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
         life: ranger ? 1.2 : 1.7, d: hero.damage, kind: ranger ? 'arrow' : 'magic', r: ranger ? 5 : 9,
       })
     }
-    if (choice === 'wizard') impact(s, hero.x, hero.y, 42, '#aa91ff', 0.45)
+    if (choice === 'wizard') impact(s, originX, originY, 42, s.heroId === 'spirit-summoner' ? '#a5e8d7' : '#aa91ff', 0.45)
     hooks.sfx(ranger ? 'ranger' : 'wizard')
   }
   const chain = hero.skills.chain

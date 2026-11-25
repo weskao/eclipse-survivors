@@ -324,6 +324,8 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     for (const telegraph of windup.telegraphs) {
       if (e.impacts.length >= MAX_BOSS_IMPACTS) break
       e.impacts.push({ telegraph, life: 0.56, max: 0.56 })
+      // A volley has one launch accent, not one full overlay per projectile.
+      if (attack.kind === 'projectile') break
     }
     notify({ type: 'attack', boss: e.id, phase: e.phase, attack: windup.attackId })
     // Exactly one major release nudge, never per projectile or hazard tick.
