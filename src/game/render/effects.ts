@@ -8,6 +8,7 @@ import { softGlow } from './environment'
 import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
 import { drawEnergyMissile, drawEnergyTrail, drawZoneMotes } from './energy-art'
 import { meleeArtId, type HeroAttackSprites } from './hero-attack-art'
+import { drawHitImpact } from './hit-impact'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -305,13 +306,21 @@ export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: n
 }
 
 // Expanding contact rings / shock waves.
-export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced = false, flashing = false, opacity = 1): void {
+  if (opacity <= 0) return
   for (const z of s.impactWaves) {
     const t = 1 - z.life / z.max
     const x = z.x + ox
     const y = z.y + oy
     const reach = z.size + 15
-    if (x < -reach || x > s.W + reach || y < -reach || y > s.H + reach) continue
+    if (z.life <= 0 || x < -reach || x > s.W + reach || y < -reach || y > s.H + reach) continue
+    if (z.contact) {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(z.angle ?? 0)
+      ctx.globalAlpha *= opacity
+      drawHitImpact(ctx, z.contact, z.size, t, reduced, flashing)
+      ctx.restore()
+      continue
+    }
     ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 1.7) * 0.85; ctx.strokeStyle = z.color; ctx.lineWidth = (1 - t) * 4.6
     ctx.shadowColor = z.color; ctx.shadowBlur = 9
     ctx.beginPath(); ctx.ellipse(x, y, 9 + z.size * easing(t), 4 + z.size * 0.36 * easing(t), 0, 0, TAU); ctx.stroke()

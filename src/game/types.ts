@@ -102,7 +102,7 @@ export interface ContentRuntime {
 
 export type ContentEvent =
   | { type: 'hit' | 'kill'; mob: Mob; damage: number }
-  | { type: 'critical-hit'; x: number; y: number }
+  | { type: 'critical-hit'; x: number; y: number; angle?: number; contactOwned?: boolean }
   | { type: 'damage'; amount: number }
   | { type: 'pickup'; kind: 'xp' | 'world'; amount?: number }
   | { type: 'start' | 'reset' }
@@ -111,7 +111,7 @@ export type ContentEvent =
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
 export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean }
-export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number }
+export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number; contact?: 'normal' | 'critical'; angle?: number }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
 export interface MotionEcho { x: number; y: number; kind: JobId; frame: number; angle: number; life: number; max: number }

@@ -108,7 +108,7 @@ describe('ES2 combat VFX contract', () => {
   it('restores Canvas state even when a draw operation fails', () => {
     const { registry, s } = queue('critical-hit')
     const { ctx, calls } = fakeCanvas()
-    ctx.stroke = () => { throw new Error('context unavailable') }
+    ctx.fill = () => { throw new Error('context unavailable') }
     expect(() => registry.render(ctx, s, 0, 0)).toThrow('context unavailable')
     expect(calls.filter(c => c.startsWith('save:'))).toHaveLength(2)
     expect(calls.filter(c => c.startsWith('restore:'))).toHaveLength(2)

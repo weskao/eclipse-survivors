@@ -15,6 +15,14 @@ export function impact(s: GameState, x: number, y: number, size = 36, color = '#
   if (strength >= 2.5) requestCameraKick(s, strength * 0.6)
 }
 
+/** Single-owner local hit cue: independent of damage text, no secondary particle pool. */
+export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean): void {
+  if (s.impactWaves.length > 36) s.impactWaves.shift()
+  const duration = critical ? 0.34 : 0.24
+  s.impactWaves.push({ x, y, angle, size: Math.max(44, Math.min(124, radius * (critical ? 2.5 : 1.85))),
+    color: critical ? '#ffc577' : '#f4d9b0', life: duration, max: duration, contact: critical ? 'critical' : 'normal' })
+}
+
 /** At most one brief camera nudge per 0.6 game-seconds, regardless of hit count. */
 export function requestCameraKick(s: GameState, strength: number): void {
   if (s.worldClock - s.lastCameraKickAt < 0.6) return

@@ -1,6 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
-import { burst, impact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
+import { burst, impact, emitHitImpact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
@@ -34,10 +34,10 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const knock = dist(e.x - hero.x, e.y - hero.y) || 1
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
-  impact(s, e.x, e.y, boss ? 68 : 30, boss ? '#ffab79' : '#ffe6ab', boss ? 1.5 : 0.3)
+  const impactAngle = Math.atan2(e.ky, e.kx)
+  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical)
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
-  burst(s, e.x, e.y, '#fff3c4', 2)
-  if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20 })
+  if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     s.kill++

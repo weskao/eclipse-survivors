@@ -1,10 +1,11 @@
 import type { ContentVisualFx, GameState } from '../../types'
 import type { Ctx2D } from '../ctx'
+import { drawHitImpact } from '../hit-impact'
 import { drawHeroSpecialFx } from './hero-special-vfx'
 
 /** Lightweight ES2 VFX: cached immutable directions, bounded geometry, no per-frame gradients. */
 export const COMBAT_FX_SPECS = [
-  { kind: 'critical-hit', id: 'combat-vfx:critical-hit', title: 'Critical Impact', duration: 0.52, radius: 110 },
+  { kind: 'critical-hit', id: 'combat-vfx:critical-hit', title: 'Critical Impact', duration: 0.34, radius: 76 },
   { kind: 'sword-slash', id: 'combat-vfx:sword-slash', title: 'Directional Sword Arc', duration: 0.42, radius: 122 },
   { kind: 'projectile-trail', id: 'combat-vfx:projectile-trail', title: 'Projectile Release Trail', duration: 0.34, radius: 128 },
   { kind: 'spell-cast', id: 'combat-vfx:spell-cast', title: 'Arcane Conjuration', duration: 0.72, radius: 110 },
@@ -143,9 +144,7 @@ export function drawCombatEffect(
     ctx.shadowBlur = 0 // Native Canvas shadows are expensive with large crowds.
     switch (kind) {
       case 'critical-hit':
-        ring(ctx, 10 + strike * 52, '#ffc577', 5 - 2 * strike)
-        rays(ctx, count, 8 + strike * 16, 24 + strike * 76, '#fff1cd', t)
-        shards(ctx, count, 15 + strike * 65, 7 * (1 - strike * 0.55), '#f6a75e', strike)
+        drawHitImpact(ctx, 'critical', 96, raw, reduced, flashing)
         break
       case 'sword-slash': {
         ctx.strokeStyle = '#ffc577'; ctx.lineCap = 'round'

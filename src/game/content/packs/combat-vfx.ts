@@ -54,7 +54,8 @@ export function createCombatVfxPack(settings: CombatVfxPreferences = {}): Conten
         return
       }
       if (event.type === 'critical-hit') {
-        emitCombatVfx(addEffect, 'critical-hit', event.x, event.y)
+        // The authoritative hit path already emitted one contact texture; retain event for other packs.
+        if (!event.contactOwned) emitCombatVfx(addEffect, 'critical-hit', event.x, event.y, { angle: event.angle })
         return
       }
       if (event.type !== 'kill' && event.type !== 'run-complete') return

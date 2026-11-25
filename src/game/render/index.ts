@@ -10,6 +10,7 @@ import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
 import { preloadEnemyReleaseArt } from './enemy-motion'
+import { preloadHitImpactArt } from './hit-impact'
 import type { HealthBarMotion, HealthBarTarget } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
@@ -67,6 +68,7 @@ export function createRenderAssets(art: Artwork, makeCanvas: MakeCanvas = domCan
   preloadHeroSpecialVfx()
   preloadBossAttackArt()
   preloadEnemyReleaseArt()
+  preloadHitImpactArt()
   return {
     art, sprites: buildSprites(makeCanvas), props: buildProps(makeCanvas),
     heroSheets: createHeroSheets(makeCanvas),
@@ -187,7 +189,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawEnemyProjectiles(ctx, s, ox, oy, projectiles, reduced)
   if (assets.factions) drawLiveFactionProjectiles(ctx, s, assets.factions.runtime, ox, oy, projectiles, reduced)
   drawOrbs(ctx, s, hero, ox, oy, projectiles)
-  drawImpactWaves(ctx, s, ox, oy)
+  drawImpactWaves(ctx, s, ox, oy, reduced, policy?.reduceFlashing ?? false, policy?.vfxOpacity ?? 1)
   drawLightning(ctx, s, ox, oy, reduced)
   drawFx(ctx, s, ox, oy, reduced, assets.particles, projectiles)
   if (bossSnapshot) drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H)
