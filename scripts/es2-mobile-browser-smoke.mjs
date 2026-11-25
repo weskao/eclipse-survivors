@@ -454,6 +454,38 @@ try {
           `${heroId}: ${side} landscape info toggle overlaps ${key}: ${JSON.stringify(landscapeBounds)}`)
       }
       await page.screenshot({ path: `${directory}/landscape-${landscape.width}-${heroId}-${side}-game.png`, animations: 'disabled' })
+      // Exercise desktop-width layout during a real cast, not only before Q.
+      await page.setViewportSize({ width: 1440, height: 900 })
+      const action = page.locator('[data-hero-special]')
+      await action.waitFor({ state: 'visible' })
+      await page.waitForFunction(() => document.querySelector('[data-hero-special]')?.dataset.ready === 'true')
+      const geometry = () => action.evaluate(button => {
+        const rect = el => {
+          const b = el.getBoundingClientRect()
+          return { x: b.x, y: b.y, width: b.width, height: b.height, right: b.right, bottom: b.bottom }
+        }
+        return { button: rect(button),
+          icon: rect(button.querySelector('.es2-hero-special__icon')),
+          name: rect(button.querySelector('.es2-hero-special__name')),
+          hint: rect(button.querySelector('.es2-hero-special__hint')),
+          fill: rect(button.querySelector('.es2-hero-special__fill')),
+          border: parseFloat(getComputedStyle(button).borderBottomWidth) }
+      })
+      const readyGeometry = await geometry()
+      await page.keyboard.press('KeyQ')
+      await page.waitForFunction(() => document.querySelector('[data-hero-special]')?.dataset.ready === 'false')
+      const cooldownGeometry = await geometry()
+      for (const key of ['button', 'icon', 'name', 'hint']) {
+        const before = readyGeometry[key], after = cooldownGeometry[key]
+        assert.ok(['x', 'y', 'width', 'height'].every(k => Math.abs(before[k] - after[k]) < 1),
+          `${heroId}: ${key} shifted during cooldown: ${JSON.stringify({ before, after })}`)
+        assert.ok(after.x >= cooldownGeometry.button.x && after.y >= cooldownGeometry.button.y &&
+          after.right <= cooldownGeometry.button.right && after.bottom <= cooldownGeometry.button.bottom,
+          `${heroId}: ${key} clipped during cooldown`)
+      }
+      assert.ok(Math.abs(cooldownGeometry.fill.bottom - (cooldownGeometry.button.bottom - cooldownGeometry.border)) < 1,
+        `${heroId}: cooldown fill detached from the bottom border`)
+      await page.screenshot({ path: `${directory}/desktop-1440-${heroId}-cooldown.png`, animations: 'disabled' })
       assert.deepEqual(errors, [], `${heroId}: uncaught browser errors`)
       console.log(`PASS ${heroId}: committed portrait and action preview, same hero on in-game HUD`)
     } catch (error) {

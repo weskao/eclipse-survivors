@@ -136,6 +136,46 @@ describe('ES2 shared homepage hero selection interaction', () => {
 })
 
 describe('ES2 dedicated hero special action', () => {
+  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
+    'keeps %s cast content and cooldown decoration in separate stable layout layers', async heroId => {
+      const previous = getLocale()
+      const snapshot = { cooldown: 0, stealth: 0, barrier: 0, companions: [] }
+      const wrapper = render(HeroSpecialAction, { heroId, active: true, snapshot })
+      const button = wrapper.get('[data-hero-special]')
+      const content = button.get('.es2-hero-special__content')
+      const image = content.get('[data-hero-special-icon]').element
+      const name = content.get('.es2-hero-special__name').element
+      const hint = content.get('.es2-hero-special__hint').element
+      const fill = button.get('.es2-hero-special__fill').element
+      expect(content.element.parentElement).toBe(button.element)
+      expect(fill.parentElement).toBe(button.element)
+      expect(content.element.contains(fill)).toBe(false)
+      try {
+        for (const locale of ['zh-TW', 'en'] as const) {
+          setLocale(locale)
+          for (const cooldown of [0, 12.3, 0.6, 0]) {
+            await wrapper.setProps({ snapshot: { ...snapshot, cooldown } })
+            expect(button.get('.es2-hero-special__content').element).toBe(content.element)
+            expect(content.get('[data-hero-special-icon]').element).toBe(image)
+            expect(content.get('.es2-hero-special__name').element).toBe(name)
+            expect(content.get('.es2-hero-special__hint').element).toBe(hint)
+            expect(button.get('.es2-hero-special__fill').element).toBe(fill)
+            expect(hint.textContent).toBe(cooldown ? cooldown.toFixed(1) + 's' : t('Q · 施放'))
+            expect(button.attributes('data-ready')).toBe(String(cooldown === 0))
+          }
+        }
+      } finally { setLocale(previous) }
+    },
+  )
+
+  it('keeps native button geometry independent of the internal grid and cooldown fill', () => {
+    const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    expect(source).toMatch(/\.es2-hero-special__button\s*\{[^}]*appearance:\s*none;[^}]*display:\s*block;/)
+    expect(source).toMatch(/\.es2-hero-special__content\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*44px minmax\(0,\s*1fr\)/)
+    expect(source).toMatch(/\.es2-hero-special__fill\s*\{[^}]*position:\s*absolute;[^}]*bottom:\s*0;/)
+    expect(source).toMatch(/\.es2-hero-special__hint\s*\{[^}]*font-variant-numeric:\s*tabular-nums/)
+  })
+
   it('shows live cooldown, triggers one mouse/touch activation, and disables unavailable actions', async () => {
     const wrapper = render(HeroSpecialAction, {
       heroId: 'shadowblade', active: true,
