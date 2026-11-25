@@ -40,7 +40,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
       @click="select(hero.id)" @keydown="move($event, hero.id)">
       <span class="es2-hero-action-preview" :style="{ backgroundImage: `url(${PRODUCTION_HERO_POSE_SOURCES[hero.id].action})` }" aria-hidden="true"></span>
       <HeroPortrait class="es2-roster__portrait" :hero-id="hero.id" :alt="t(hero.label + ' 角色插畫')" />
-      <span class="es2-roster__copy">
+      <span class="es2-hero-copy">
         <strong>{{ t(hero.label) }}</strong>
         <span class="es2-roster__subtitle">{{ t(hero.subtitle) }}</span>
         <span class="es2-roster__description">{{ t(hero.description) }}</span>
@@ -68,8 +68,6 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
 .es2-roster { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; width: 100%; }
 .es2-roster__card:disabled { cursor: not-allowed; opacity: .55; }
 .es2-roster__portrait { display: block; width: 100%; height: clamp(165px,27vw,360px); object-fit: contain; }
-.es2-roster__copy { display: grid; gap: .3rem; padding: .75rem; }
-.es2-roster__copy strong { font-size: 1.1rem; }
 .es2-roster__subtitle, .es2-roster__traits { color: #cebeb6; font-size: .8rem; }
 .es2-roster__description, .es2-roster__skill { font-size: .86rem; line-height: 1.45; }
 .es2-roster__skill { display: flex; align-items: center; gap: .65rem; }

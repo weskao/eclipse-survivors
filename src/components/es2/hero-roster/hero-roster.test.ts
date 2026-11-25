@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
 import Es2MainMenu from '../menu/Es2MainMenu.vue'
+import { getLocale, setLocale, t } from '../../../i18n'
 
 const instances: Array<{ unmount(): void }> = []
 function render(component: Component, props: Record<string, unknown>) {
@@ -79,6 +80,30 @@ describe('ES2 shared homepage hero selection interaction', () => {
     await wrapper.setProps({ heroId: 'crimson-paladin' })
     expect(wrapper.get('[data-hero-id="crimson-paladin"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.get('[data-hero="knight"]').attributes('aria-pressed')).toBe('false')
+  })
+
+  it('uses one localized hero name surface and one typography owner for all six cards', async () => {
+    const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
+    const labels = ['曙鋼騎士', '夜痕遊俠', '虛空術士', '影刃行者', '靈契召喚師', '緋紅聖騎']
+    const previous = getLocale()
+    try {
+      for (const locale of ['zh-TW', 'en'] as const) {
+        setLocale(locale)
+        await nextTick()
+        const cards = wrapper.findAll('.es2-hero-select-card')
+        expect(cards).toHaveLength(labels.length)
+        expect(cards.map(card => card.get('.es2-hero-copy > strong').text())).toEqual(labels.map(label => t(label)))
+        expect(wrapper.findAll('.es2-hero-copy > strong')).toHaveLength(labels.length)
+        expect(wrapper.find('.es2-roster__copy').exists()).toBe(false)
+      }
+    } finally { setLocale(previous) }
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    const roster = readFileSync(resolve('src/components/es2/hero-roster/HeroRoster.vue'), 'utf8')
+    expect(css).not.toContain('.es2-roster__copy')
+    expect(roster).not.toContain('es2-roster__copy')
+    const nameRules = [...css.matchAll(/\.es2-hero-copy\s*>\s*strong\s*\{([^}]+)\}/g)]
+      .filter(([, declarations]) => declarations!.includes('font-size:'))
+    expect(nameRules).toHaveLength(1)
   })
 
   it('uses one card gradient with a muted hero tint and gold reserved for selection', () => {

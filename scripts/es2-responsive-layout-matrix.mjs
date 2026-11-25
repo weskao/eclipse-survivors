@@ -140,6 +140,18 @@ try {
       }
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
       await verifyPage('[data-hero], [data-hero-id]', 6, width >= 1000 && height >= 700)
+      // The same name typography must apply to classic and specialization cards
+      // even when the selection state intentionally changes their foreground color.
+      const names = await page.locator('.es2-hero-select-card > .es2-hero-copy > strong').evaluateAll(nodes =>
+        nodes.map(el => {
+          const style = getComputedStyle(el)
+          return { text: el.textContent.trim(), font: [style.fontFamily, style.fontSize, style.fontWeight,
+            style.lineHeight, style.textAlign, style.overflowWrap].join('|'),
+            visible: el.getBoundingClientRect().height > 0, fits: el.scrollWidth <= el.clientWidth + 2 }
+        }))
+      assert.equal(names.length, 6, name + ': shared hero names missing')
+      assert.equal(new Set(names.map(n => n.font)).size, 1, name + ': hero name typography mismatch')
+      assert.ok(names.every(n => n.text && n.visible && n.fits), name + ': hero name clipped ' + JSON.stringify(names))
       // Verify the real selection treatment is exclusive, visible, and stronger than an unselected card.
       const verifyHeroSelection = async () => {
         const result = await page.evaluate(() => {
