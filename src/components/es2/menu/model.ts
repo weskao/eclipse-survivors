@@ -1,6 +1,14 @@
 import type { AbilityId, SkillRarity } from '../../../game/types'
+import type { RunModeId } from '../../../meta/types'
 import { upgradeKeyIndex } from '../../../game/input'
 import type { MasteryStatChange } from '../../../game/content/heroes/mastery-preview'
+
+/** Shared expedition icon identity for chooser cards and the selected-mode dock. */
+export const MODE_SIGILS: Readonly<Record<RunModeId, string>> = {
+  quick: '✦', standard: '♜', endless: '∞', challenge: 'ϟ',
+  'boss-rush': '♛', 'endless-eclipse': '☾', 'relic-hunt': '◇',
+  'cursed-expedition': '✧', 'chaos-arena': '✵',
+}
 
 export type MenuView = 'main' | 'relics' | 'progression' | 'monsters' | 'skills' | 'achievements'
 export type ChoiceKind = 'level' | 'evolution' | 'treasure'

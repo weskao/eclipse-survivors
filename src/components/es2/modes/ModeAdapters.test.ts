@@ -14,6 +14,13 @@ describe('ES2 objective mode chooser adapter', () => {
     const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' } })
     wrappers.push(wrapper)
     expect(wrapper.findAll('[data-objective-mode]')).toHaveLength(5)
+    const sigils = {"boss-rush":"♛","endless-eclipse":"☾","relic-hunt":"◇","cursed-expedition":"✧","chaos-arena":"✵"}
+    for (const [id, glyph] of Object.entries(sigils)) {
+      const icon = wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`)
+      expect(icon.text()).toBe(glyph)
+      expect(icon.attributes('aria-hidden')).toBe('true')
+      expect(wrapper.get(`[data-objective-mode="${id}"] .es2-objective-heading strong`).text()).toBeTruthy()
+    }
     expect(wrapper.find('[data-objective-mode="boss-rush"]').attributes('aria-checked')).toBe('true')
     expect(wrapper.text()).toContain('永恆星蝕')
     expect(wrapper.text()).toContain('聖物追獵')

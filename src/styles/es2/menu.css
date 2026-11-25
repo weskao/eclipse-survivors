@@ -482,7 +482,7 @@
 .es2-menu .es2-objective-choice{min-height:68px;padding:8px 40px 8px 9px;gap:4px;justify-content:center;overflow-wrap:anywhere}
 .es2-menu .es2-objective-choice strong{font-size:.86rem;line-height:1.25}
 .es2-menu .es2-objective-choice .reward{font-size:.7rem;line-height:1.25}
-.es2-menu .es2-objective-choice>:not(strong):not(.reward){display:none}
+.es2-menu .es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}
 .es2-menu-action-bar{
   position:fixed;inset-inline:0;bottom:0;z-index:5;display:grid;gap:4px;
   padding:6px max(12px,env(safe-area-inset-right),calc((100% - 760px) / 2)) max(6px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left),calc((100% - 760px) / 2));

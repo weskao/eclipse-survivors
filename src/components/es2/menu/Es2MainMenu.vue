@@ -16,7 +16,7 @@ import ModeChooser from '../modes/ModeChooser.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
-import { formatDuration, type MenuView } from './model'
+import { formatDuration, MODE_SIGILS, type MenuView } from './model'
 const props = withDefaults(defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean; archiveView?: MenuView }>(), { archiveView: 'main' })
 const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
@@ -63,11 +63,6 @@ const objectiveBriefs: Readonly<Record<ObjectiveModeId, string>> = {
   'relic-hunt': '回收四件聖物，擊敗守護首領。',
   'cursed-expedition': '承受輪替詛咒，擊敗兩位守衛。',
   'chaos-arena': '突破八波遭遇戰，挑戰混沌首領。',
-}
-const modeSigils: Readonly<Record<RunModeId, string>> = {
-  quick: '✦', standard: '♜', endless: '∞', challenge: 'ϟ',
-  'boss-rush': '♛', 'endless-eclipse': '☾', 'relic-hunt': '◇',
-  'cursed-expedition': '✧', 'chaos-arena': '✵',
 }
 const selectedMode = computed(() => MODES[props.runMode])
 const modeTitle = computed(() => t(selectedMode.value.label).split(' · ')[0]!)
@@ -157,7 +152,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
             <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" class="es2-mode-card" data-ui-sfx="managed"
               :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
               @click="emit('mode', id)" @keydown="moveMode($event, id)">
-              <span class="es2-mode-mark" aria-hidden="true">{{ id === 'endless' ? '∞' : id === 'challenge' ? '⚡' : id === 'standard' ? '♜' : '✦' }}</span>
+              <span class="es2-mode-mark" aria-hidden="true">{{ MODE_SIGILS[id] }}</span>
               <span class="es2-mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
               <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
             </button>
@@ -172,7 +167,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
             data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"
             :aria-controls="page === 'heroes' ? 'es2ExpeditionPage' : 'es2HeroPage'"
             data-ui-sfx="select" @click="toggleExpeditionPage">
-            <span class="es2-expedition-sigil" aria-hidden="true">{{ modeSigils[runMode] }}</span>
+            <span class="es2-expedition-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
             <span class="es2-mobile-selected-mode" aria-live="polite">
               <span class="es2-expedition-kicker">{{ t('目前遠征') }} <span class="es2-expedition-duration">{{ modeDuration }}</span></span>
               <strong class="es2-expedition-name">{{ modeTitle }}</strong>

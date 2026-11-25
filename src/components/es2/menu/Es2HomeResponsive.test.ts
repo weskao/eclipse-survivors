@@ -255,6 +255,13 @@ describe('phone homepage viewport-first navigation', () => {
 })
 
 describe('homepage menu layout across devices', () => {
+  it.each(Object.entries({"boss-rush":"♛","endless-eclipse":"☾","relic-hunt":"◇","cursed-expedition":"✧","chaos-arena":"✵"}))('shares the %s mode icon with its selected expedition summary', (id, glyph) => {
+    const wrapper = menu({ runMode: id })
+    expect(wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`).text()).toBe(glyph)
+    expect(wrapper.get('.es2-expedition-sigil').text()).toBe(glyph)
+    expect(css).toContain('.es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}')
+  })
+
   it('uses only a gear for settings in both languages and keeps its accessible action', async () => {
     const previous = getLocale()
     try {
