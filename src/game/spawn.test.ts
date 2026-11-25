@@ -124,3 +124,19 @@ describe('ES3 live encounter pacing', () => {
     expect(s.mobs).toHaveLength(count)
   })
 })
+
+describe('ES3 ordinary encounter composition reaches live spawning', () => {
+  it('actually spawns lightweight swarm foes and later elite heavy foes instead of using random legacy composition', () => {
+    const s = setup()
+    s.runMode = 'endless'
+    s.bossSpawned = true
+    setRandom(() => 0.99)
+    s.time = 20
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.mobs.length).toBeGreaterThan(0)
+    expect(s.mobs.every(mob => mob.type === 'slime' || mob.type === 'bat')).toBe(true)
+    s.mobs = []; s.spawnT = 0; s.time = 110
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.mobs.some(mob => mob.elite && mob.type === 'golem')).toBe(true)
+  })
+})

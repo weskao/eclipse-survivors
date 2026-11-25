@@ -287,3 +287,35 @@ describe('ES3 bounded XP conservation', () => {
     expect(hero.xp).toBe(total)
   })
 })
+
+describe('ES3 local animation and milestone feedback', () => {
+  it('holds only the struck actor visual phase for a heavy impact without freezing simulation', () => {
+    const { s, hero } = setup()
+    const enemy = mob(200, 0, { type: 'golem', r: 30, phase: 2, hp: 500, speed: 40 })
+    s.mobs.push(enemy)
+    hit(s, enemy, 10, spyHooks())
+    expect(enemy).toMatchObject({ visualPhase: 2 })
+    const attackTimer = hero.attack
+    step(s, 0.02, { x: 1, y: 0 }, spyHooks())
+    expect(s.time).toBeCloseTo(0.02)
+    expect(hero.x).toBeGreaterThan(0)
+    expect(hero.attack).toBeLessThan(attackTimer)
+    expect(enemy.phase).toBeGreaterThan(2)
+    expect(enemy).toMatchObject({ visualPhase: 2 })
+    step(s, 0.1, still, spyHooks())
+    expect(enemy.visualPhase).toBeGreaterThan(2)
+  })
+  it('coalesces multiple crossed kill milestones into the highest actual milestone once per tick', () => {
+    const { s, hero } = setup()
+    hero.need = 1000000
+    const hooks = spyHooks()
+    for (let i = 0; i < 25; i++) hit(s, mob(200, i, { hp: 1 }), 10, hooks)
+    step(s, 0.016, still, hooks)
+    expect(s.killStreak).toMatchObject({ current: 25, milestone: 25 })
+    expect(hooks.message.mock.calls.filter(([message]) => message === '狂暴殺戮')).toHaveLength(1)
+    expect(hooks.message.mock.calls.filter(([message]) => message === '殺戮序曲')).toHaveLength(0)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'killStreak')).toHaveLength(1)
+    step(s, 0.016, still, hooks)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'killStreak')).toHaveLength(1)
+  })
+})

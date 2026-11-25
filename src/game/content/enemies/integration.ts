@@ -1,4 +1,5 @@
 import { damageHero, hit } from '../../combat'
+import { BALANCE } from '../../config'
 import { recordKill } from '../../kill-streak'
 import { compactXpGems } from '../../xp-gems'
 import { emitHitImpact, pushDamageNumber } from '../../fx'
@@ -110,7 +111,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       defeated[reward.kind] = (defeated[reward.kind] ?? 0) + 1
       // The legacy XP collection path owns level progression; never award XP twice.
       state.stars.push({ x: reward.x, y: reward.y, value: reward.xp, t: 0 })
-      compactXpGems(state.stars)
+      if (state.stars.length > BALANCE.combat.starKeepLimit) compactXpGems(state.stars)
       hooks.sfx('kill')
       options.onReward?.(reward)
     })

@@ -197,3 +197,18 @@ it('keeps ultra-wide viewport spawns within the legacy 1700-unit mob culling bou
     expect(mob.telegraphSeconds).toBeGreaterThan(1)
   }
 })
+
+describe('ES3 mode-specific encounter cycle', () => {
+  it('stretches the standard expedition buildup while preserving the quick cycle and boss clock', () => {
+    expect(describeWave('quick', 0, 14).stage).toBe('assault')
+    expect(describeWave('standard', 0, 14).stage).toBe('build-up')
+    expect(describeWave('standard', 0, 21).stage).toBe('assault')
+    expect(describeWave('standard', 0, 288).stage).toBe('boss-prep')
+    expect(describeWave('standard', 0, 300).stage).toBe('boss')
+  })
+  it('exposes all seven live assault encounter identities plus recovery over deterministic cycles', () => {
+    const encounters = Array.from({ length: 7 }, (_, i) => describeWave('endless', 0, i * 48 + 14).encounter)
+    expect(encounters).toEqual(['swarm-rush', 'encirclement', 'elite-invasion', 'ranged-assault', 'titan-march', 'treasure-rush', 'eclipse-surge'])
+    expect(describeWave('endless', 0, 40).encounter).toBe('recovery')
+  })
+})

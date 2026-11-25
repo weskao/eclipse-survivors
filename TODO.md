@@ -51,7 +51,8 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Establish automated frame-time, memory and draw-operation baselines using comparable workloads; physical-device thermal and manual hardware sign-off WAIVED for ES3.
 
 ### Wave 1 — Combat Juice [P0; first delivery]
-- [ ] Tiered impact feedback: normal, heavy, critical, evolved, mass kill, boss stagger, hero active and boss death.
+- [x] Normal/heavy/critical contact differentiation with single cached rendering path and priority preservation (RED 45683517312; GREEN 45683993331).
+- [ ] Remaining tiered impact feedback: evolved, mass kill, boss stagger, hero active and boss death.
 - [ ] Local animation hit stop (initial target 25–50ms) and directional knockback without pausing simulation, inputs, cooldowns or audio.
 - [ ] Authored enemy hit, death and dissolve animations; preserve art identity.
 - [ ] Critical and damage-number hierarchy; preserve danger readability.
@@ -67,7 +68,8 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Improve first-upgrade timing with mode-specific balance tests.
 - [x] Coalesce same-tick XP gem pickup audio while preserving exact per-gem XP and pickup receipts (RED: run 45677562464; GREEN: run 45678439675, step.test.ts).
 - [x] XP gem acceleration and same-tick collection, preserving exact XP and pickup receipts (RED: run 45680019938; GREEN: run 45680367799, step.test.ts; player simulation path verified).
-- [ ] XP gem trails and optional magnet pickups; preserve exact reward totals. Cached bounded trails and reduced-motion/offscreen rules implemented; automated rendering contract RED 45680983083 / GREEN 45681389783; manual visual acceptance WAIVED; magnet and exact overflow XP conservation pending.
+- [x] XP gem trails and exact bounded overflow conservation, including all original per-drop receipts in legacy/faction paths. Trail RED 45680983083 / GREEN 45681389783; overflow RED 45683517312 / GREEN 45683993331; manual visual acceptance WAIVED.
+- [ ] Optional global magnet reward and enhanced absorption feedback.
 - [ ] Rare/epic/legendary chest reveal animations with skip, single claim and uninterrupted essential audio.
 - [ ] Distinct evolution reveal and actual gameplay transformation.
 

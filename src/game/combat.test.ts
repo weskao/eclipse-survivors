@@ -322,3 +322,26 @@ describe('ES3 tiered contact feedback', () => {
     expect(s.impactWaves[1]!.max).toBeGreaterThan(s.impactWaves[0]!.max)
   })
 })
+
+describe('ES3 chain lightning breakthroughs', () => {
+  it('applies a real bounded shock to living targets starting at rank four', () => {
+    const { s, hero } = setup('ranger')
+    hero.skills.chain = 4
+    const target = mob(80, 0, { hp: 500 })
+    s.mobs.push(target)
+    attack(s, spyHooks())
+    expect(target.hp).toBeLessThan(500)
+    expect(target.slow).toBeGreaterThan(0)
+    expect(target.slow).toBeLessThanOrEqual(1.5)
+  })
+  it('discharges from one killed rank-five chain target to at most one additional living enemy', () => {
+    const { s, hero } = setup('ranger')
+    hero.skills.chain = 5
+    s.mobs = Array.from({ length: 9 }, (_, i) => mob(80 + i * 18, 0, { hp: i === 0 ? 1 : 500, max: 500 }))
+    attack(s, spyHooks())
+    expect(s.kill).toBe(1)
+    expect(s.mobs[7]!.hp).toBeLessThan(500)
+    expect(s.mobs[8]!.hp).toBe(500)
+    expect(s.lightningFx).toHaveLength(8)
+  })
+})
