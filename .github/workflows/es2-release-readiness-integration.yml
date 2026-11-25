@@ -1,7 +1,7 @@
 name: ES2 release readiness integration verification
 on:
   push:
-    branches: [feature/es2-release-readiness-integration]
+    branches: [feature/es2-release-readiness-integration, feature/es2-responsive-menu-hud-layout]
   workflow_dispatch:
 permissions:
   contents: read
