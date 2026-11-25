@@ -1,0 +1,51 @@
+name: Knight PixiJS hybrid verification
+on:
+  push:
+    branches: [feature/es2-pixijs-knight-hybrid]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: knight-pixi-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Resolve pinned experimental PixiJS and preserve lockfile evidence
+        run: |
+          npm install --prefix experiments/pixijs-knight --package-lock
+          npm ls --prefix experiments/pixijs-knight pixi.js
+          node --test experiments/pixijs-knight/pose.test.mjs experiments/pixijs-knight/motion.test.mjs
+      - run: pnpm test
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm check-release
+      - name: Install isolated Chromium
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Real game and matched 130-mob renderer evidence
+        run: |
+          pnpm exec vite --host 127.0.0.1 --port 5173 --strictPort > /tmp/knight-pixi.log 2>&1 &
+          for i in {1..45}; do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:5173/ >/dev/null
+          node scripts/knight-pixi-browser-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: knight-pixi-evidence
+          path: |
+            artifacts/knight-pixi/
+            experiments/pixijs-knight/package-lock.json
+            /tmp/knight-pixi.log
+          if-no-files-found: warn
+          retention-days: 7
