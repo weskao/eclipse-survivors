@@ -197,3 +197,17 @@ it('resolves final-lifetime swept contact with a faction enemy before removing a
   expect(e.hp).toBeLessThan(hp)
   expect(s.shots).toHaveLength(0)
 })
+
+it('holds only the faction visual frame on heavy contact and keeps its gameplay timer advancing', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => .2, lineOfSight: () => true })
+  const e = bridge.spawn(s, 'shield-guardian', 100, 0)!
+  e.state = 'recover'; e.timer = .4
+  bridge.hitFaction(s, e, 5, 0, 0, hooks)
+  expect(e.visualHold).toBeGreaterThan(0)
+  expect(e.visualFrame).toBe(4)
+  bridge.tick(s, .02, hooks)
+  expect(e.timer).toBeLessThan(.4)
+  expect(e.visualFrame).toBe(4)
+  bridge.tick(s, .1, hooks)
+  expect(e.visualHold).toBe(0)
+})

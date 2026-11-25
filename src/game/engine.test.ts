@@ -625,3 +625,13 @@ describe('hero active skill audio', () => {
     expect(audio.cues).toEqual([cue])
   })
 })
+
+describe('ES3 early upgrade pacing', () => {
+  it.each([['quick', 12], ['standard', 14], ['challenge', 15], ['endless', 13]] as const)('sets a mode-specific initial XP threshold in a real run (%s)', (mode, need) => {
+    engine.selectRunMode(mode)
+    engine.start()
+    expect(engine.state.hero!.need).toBe(need)
+    expect(engine.state.hero!.level).toBe(1)
+    expect(engine.state.levelQueue).toBe(0)
+  })
+})

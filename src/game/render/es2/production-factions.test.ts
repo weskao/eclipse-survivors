@@ -156,3 +156,16 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(0)
   })
 })
+
+it('renders a cosmetic faction death from the original body art, without retaining an active actor or warning', () => {
+  const state=createState(); resetRun(state);state.W=900;state.H=600
+  const runtime=createFactionRuntime()
+  const enemy=spawnFactionEnemy(runtime,'shadow-assassin',120,110)!
+  enemy.hp=0
+  enemy.deathVisual=.28
+  const image=loaded(576,96)
+  const images={ 'shadow-assassin':{body:image,telegraph:loaded(96,96)} } as FactionArtwork
+  const {ctx,drawn}=createFakeCtx()
+  expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
+  expect(drawn).toHaveLength(1)
+})

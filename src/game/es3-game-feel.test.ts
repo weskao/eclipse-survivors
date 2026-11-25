@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { step } from './step'
+import { addXp } from './progression'
 import { attack } from './combat'
 import { emitHitImpact } from './fx'
 import { seeded, setRandom } from './math'
@@ -58,5 +60,27 @@ describe('ES3 live encounter pacing', () => {
     s.spawnT = 0
     tickSpawning(s, 0.016, hooks())
     expect(s.mobs.filter(e => e.type === 'boss')).toHaveLength(1)
+  })
+})
+
+describe('ES3 deterministic combat telemetry', () => {
+  it('collects real XP and first-upgrade time, samples pressure and DPS on the simulation clock, and repeats with the same seed', () => {
+    function scenario() {
+      setRandom(seeded(17))
+      const s=session(); s.hero!.attack=999; s.hero!.inv=999; s.spawnT=999; s.nextEventAt=Infinity
+      s.mobs=[mob(100)]
+      const h=hooks()
+      s.time=2
+      addXp(s,15,h)
+      s.damageDealt=50
+      for(let i=0;i<100;i++) step(s,.1,{x:0,y:0},h)
+      expect(s.combatTelemetry.xpEarned).toBe(15)
+      expect(s.combatTelemetry.firstUpgradeAt).toBe(2)
+      expect(s.combatTelemetry.samples).toHaveLength(1)
+      expect(s.combatTelemetry.samples[0]).toMatchObject({kills:0, xp:15, enemies:1})
+      expect(s.combatTelemetry.samples[0]!.dps).toBeGreaterThan(0)
+      return s.combatTelemetry
+    }
+    expect(scenario()).toEqual(scenario())
   })
 })

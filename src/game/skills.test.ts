@@ -111,3 +111,26 @@ describe('tickSkills', () => {
     expect(m.hit).toBe(0.28)
   })
 })
+
+describe('ES3 maximum-rank area breakthroughs', () => {
+  it('adds a frost outer ring at rank five without striking beyond the new boundary', () => {
+    const { s, hero } = setup()
+    hero.skills.frost = 5
+    const edge = mob(272, 0), outside = mob(310, 0)
+    s.mobs.push(edge, outside)
+    tickSkills(s, .016, spyHooks())
+    expect(edge.hp).toBeLessThan(edge.max)
+    expect(edge.slow).toBeGreaterThan(0)
+    expect(outside.hp).toBe(outside.max)
+  })
+  it('gives maximum-rank vortex a wider pull with unchanged collision ownership', () => {
+    const { s, hero } = setup()
+    hero.skills.vortex = 5
+    const edge = mob(310, 0), outside = mob(350, 0)
+    s.mobs.push(edge, outside)
+    tickSkills(s, .016, spyHooks())
+    expect(edge.x).toBeLessThan(310)
+    expect(edge.hp).toBeLessThan(edge.max)
+    expect(outside.x).toBe(350)
+  })
+})

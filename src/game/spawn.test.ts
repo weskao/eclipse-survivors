@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneBonus, spawnInterval, spawnMob, tickSpawning } from './spawn'
+import { createFactionBridge } from './content/enemies/integration'
 import { MAX_MOBS } from './constants'
 import { dist, seeded, setRandom } from './math'
 import { createHero, createState } from './state'
@@ -138,5 +139,25 @@ describe('ES3 ordinary encounter composition reaches live spawning', () => {
     s.mobs = []; s.spawnT = 0; s.time = 110
     tickSpawning(s, 0.016, spyHooks())
     expect(s.mobs.some(mob => mob.elite && mob.type === 'golem')).toBe(true)
+  })
+})
+
+describe('ES3 single live ordinary spawn owner', () => {
+  it('only schedules faction reinforcements from a spawn pulse, never during recovery or beyond the shared cap', () => {
+    const s = setup(), bridge = createFactionBridge({ random: seeded(9) })
+    setRandom(seeded(8))
+    s.time = 8.1; s.spawnT = 1
+    tickSpawning(s, .016, spyHooks(), undefined, 0, bridge)
+    expect(bridge.runtime.enemies).toHaveLength(0)
+    s.spawnT = 0
+    tickSpawning(s, .016, spyHooks(), undefined, 0, bridge)
+    expect(bridge.runtime.enemies).toHaveLength(1)
+    s.time = 42; s.spawnT = 0
+    tickSpawning(s, .016, spyHooks(), undefined, 1, bridge)
+    expect(bridge.runtime.enemies).toHaveLength(1)
+    s.time = 49; s.spawnT = 0
+    while (s.mobs.length < MAX_MOBS - 1) spawnMob(s, undefined, 1)
+    tickSpawning(s, .016, spyHooks(), undefined, 1, bridge)
+    expect(s.mobs.length + bridge.runtime.enemies.length).toBe(MAX_MOBS)
   })
 })
