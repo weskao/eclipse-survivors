@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { step } from './step'
 import { addXp } from './progression'
-import { attack } from './combat'
-import { emitHitImpact, pushDamageNumber } from './fx'
+import { attack, hit } from './combat'
+import { flushKillMilestone, recordKill } from './kill-streak'
+import { createFactionBridge } from './content/enemies/integration'
+import { emitHitImpact, pushDamageNumber, zigzag } from './fx'
 import { seeded, setRandom } from './math'
 import { createHero, createState } from './state'
 import { tickSpawning } from './spawn'
@@ -91,4 +93,43 @@ it('preserves damage feedback priorities for incoming harm, critical hits, and o
   s.numberFx.push({x:0,y:0,life:.8,value:50,boss:false,critical:true})
   pushDamageNumber(s,{x:0,y:0,life:.6,value:1,boss:false})
   expect(s.numberFx.filter(n=>n.received)).toHaveLength(79)
+})
+
+it('routes distinct normal, heavy and critical contact sounds and elite defeat to the bounded combat audio path', () => {
+  const s=session()
+  const contactSfx=vi.fn()
+  const h={...hooks(),contactSfx}
+  hit(s,mob(40),5,h)
+  hit(s,{...mob(45),type:'golem'},5,h)
+  hit(s,mob(50),5,{...h,consumeCriticalHit:()=>true})
+  hit(s,{...mob(55),hp:1,elite:true},10,h)
+  expect(contactSfx.mock.calls.map(([cue])=>cue)).toEqual(['hitNormal','hitHeavy','hitCritical','hitHeavy','eliteKill'])
+})
+it('uses the same distinct contact audio on authored faction targets', () => {
+  const s=session(), bridge=createFactionBridge({random:()=>0})
+  const contactSfx=vi.fn()
+  const target=bridge.spawn(s,'berserker',70,0)!
+  bridge.hitFaction(s,target,5,0,0,{...hooks(),contactSfx,consumeCriticalHit:()=>true})
+  expect(contactSfx).toHaveBeenCalledWith('hitCritical')
+})
+it('emits a distinct milestone variant for every streak tier', () => {
+  for (const count of [10,25,50,100,200,500]) {
+    const s=session(), sfx=vi.fn(), h={...hooks(),sfx}
+    for(let i=0;i<count;i++) recordKill(s)
+    flushKillMilestone(s,h)
+    expect(sfx).toHaveBeenCalledWith('killStreak',count)
+  }
+})
+it('bounds lightning cosmetics during saturated casts and reuses effect arrays across simulation ticks', () => {
+  const s=session()
+  for(let i=0;i<100;i++) zigzag(s,0,0,100,i)
+  expect(s.lightningFx.length).toBeLessThanOrEqual(48)
+  const lightning=s.lightningFx, particles=s.fx, numbers=s.numberFx, waves=s.impactWaves
+  s.hero!.attack=999; s.spawnT=999; s.nextEventAt=Infinity
+  step(s,.5,{x:0,y:0},hooks())
+  expect(s.lightningFx).toBe(lightning)
+  expect(s.fx).toBe(particles)
+  expect(s.numberFx).toBe(numbers)
+  expect(s.impactWaves).toBe(waves)
+  expect(lightning).toHaveLength(0)
 })
