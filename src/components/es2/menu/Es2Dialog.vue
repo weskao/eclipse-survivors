@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
+import { upgradeKeyIndex } from '../../../game/input'
 import { nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 const props = withDefaults(defineProps<{
   active: boolean; title: string; subtitle?: string; dismissible?: boolean
@@ -21,19 +22,19 @@ function restoreFocus(): void {
   if (previousFocus?.isConnected) previousFocus.focus()
   previousFocus = null
 }
-// Choice cards accept pointer clicks and 1–9 shortcuts only; Space/Enter must
-// not synthesize a native click on whichever button happens to have focus.
-function suppressChoiceActivation(event: KeyboardEvent): boolean {
-  if (!props.active || props.variant !== 'choice' ||
-      !(event.code === 'Space' || event.code === 'Enter' || event.code === 'NumpadEnter' ||
-        event.key === ' ' || event.key === 'Enter')) return false
-  event.preventDefault()
-  event.stopPropagation()
-  return true
+// Choice dialogs allow physical number shortcuts only. Suppress browser activation,
+// scrolling and focus navigation, but let keyup reach the engine to release held controls.
+function onKeyup(event: KeyboardEvent): void {
+  if (props.active && props.variant === 'choice') event.preventDefault()
 }
-function onKeyup(event: KeyboardEvent): void { suppressChoiceActivation(event) }
 function onKeydown(event: KeyboardEvent): void {
-  if (!props.active || suppressChoiceActivation(event)) return
+  if (!props.active) return
+  if (props.variant === 'choice') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    if (upgradeKeyIndex(event.code) >= 0) emit('shortcut', event)
+    return
+  }
   if (event.key === 'Escape') {
     event.preventDefault()
     event.stopImmediatePropagation()
