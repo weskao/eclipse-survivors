@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Es2Dialog from './Es2Dialog.vue'
+import AudioMuteIcon from '../../AudioMuteIcon.vue'
 import Es2Select from './Es2Select.vue'
 import Es2Switch from './Es2Switch.vue'
 import { currentLocale, setLocale, t } from '../../../i18n'
@@ -34,10 +35,10 @@ function volume(e: Event): number { return Number((e.target as HTMLInputElement)
         <p class="es2-hint">{{ t('初次使用時依系統語言顯示；手動選擇後將記住此瀏覽器的偏好。') }}</p>
       </section>
       <section :aria-label="t('音訊設定')"><h3>{{ t('音訊') }}</h3>
-        <div class="es2-slider-row"><button type="button" :aria-pressed="!musicOn" :aria-label="t(musicOn ? '靜音背景音樂' : '恢復背景音樂')" @click="emit('toggleMusic')">{{ musicOn ? '♫' : '♪' }}</button>
+        <div class="es2-slider-row"><button type="button" :aria-pressed="!musicOn" :aria-label="t(musicOn ? '靜音背景音樂' : '恢復背景音樂')" @click="emit('toggleMusic')"><AudioMuteIcon channel="music" :muted="!musicOn" /></button>
           <label>{{ t('音樂') }} <output>{{ musicVolume }}%</output><input type="range" min="0" max="100" :value="musicVolume" @input="emit('musicVolume', volume($event))" /></label>
         </div>
-        <div class="es2-slider-row"><button type="button" :aria-pressed="!sfxOn" :aria-label="t(sfxOn ? '靜音遊戲音效' : '恢復遊戲音效')" @click="emit('toggleSfx')">{{ sfxOn ? '♬' : '♩' }}</button>
+        <div class="es2-slider-row"><button type="button" :aria-pressed="!sfxOn" :aria-label="t(sfxOn ? '靜音遊戲音效' : '恢復遊戲音效')" @click="emit('toggleSfx')"><AudioMuteIcon channel="sfx" :muted="!sfxOn" /></button>
           <label>{{ t('音效') }} <output>{{ sfxVolume }}%</output><input type="range" min="0" max="100" :value="sfxVolume" @input="emit('sfxVolume', volume($event))" /></label>
         </div>
       </section>
