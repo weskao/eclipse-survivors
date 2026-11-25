@@ -141,6 +141,7 @@
   font-variant-numeric: tabular-nums;
 }
 .es2-hud__top-right { display: flex; align-items: flex-start; gap: 8px; }
+.es2-hud__counter-row { display: contents; }
 .es2-hud__counters { display: flex; gap: 6px; padding: 6px 9px; min-height: 46px; }
 .es2-hud__counter { display: grid; gap: 0; grid-template-columns: 15px auto; grid-template-rows: 21px 10px; align-items: center; min-width: 57px; }
 .es2-hud__counter > span:nth-child(1) { color: #ddc288; font-size: 16px; }
@@ -464,7 +465,8 @@
 }
 
 @media (orientation: portrait) and (max-width: 700px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
+       (orientation: landscape) and (max-height: 520px) and (max-width: 900px),
+       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse) {
   .es2-hud__encounter { position: static; transform: none; width: auto; }
   .es2-hud__scene-title {
     display: block; text-align: center; color: #fff0cd;
@@ -488,7 +490,8 @@
 
 /* The same compact information drawer protects both phone orientations.
    Landscape overrides only the geometry; no duplicate HUD or input state. */
-@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px),
+       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse) {
   .es2-hud {
     --es2-encounter-top: max(8px, env(safe-area-inset-top));
     --es2-compact-info-top: max(116px, calc(env(safe-area-inset-top) + 105px));
@@ -500,8 +503,9 @@
   }
   .es2-hud__scene-title { margin-top: 11px; }
   .es2-hud__encounter + .es2-hud__scene-title { margin-top: 4px; }
-  /* Below the portrait, outside the top-right menu and right-hand special action. */
-  .es2-hud__info-toggle { left: max(8px, env(safe-area-inset-left)); right: auto; }
+  /* Reserve a real slot next to the timer, below the top controls and clear of either touch-action lane. */
+  .es2-hud__counter-row { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+  .es2-hud__info-toggle { position: static; flex: 0 0 44px; height: 44px; }
   .es2-hud__info-drawer {
     top: max(8px, env(safe-area-inset-top));
     bottom: max(108px, calc(env(safe-area-inset-bottom) + 104px));

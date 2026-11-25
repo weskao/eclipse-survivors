@@ -132,12 +132,22 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
       <div class="es2-hud__top-right">
+        <div class="es2-hud__counter-row">
+          <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
+            data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
+            :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+              <path d="M4 6h2m4 0h10M4 12h2m4 0h10M4 18h2m4 0h10" />
+            </svg>
+          </button>
         <div class="es2-hud__counters es2-hud__plate" :aria-label="t('戰鬥統計')">
           <div class="es2-hud__counter"><span aria-hidden="true">◷</span><span>{{ view.timer }}</span><small>{{ t('TIME') }}</small></div>
           <div class="es2-hud__counter"><span aria-hidden="true">☠</span><span>{{ view.kills }}</span><small>{{ t('KILLS') }}</small></div>
           <div v-if="view.combo && view.combo.count > 1" class="es2-hud__counter es2-hud__counter--combo" data-es2-combo>
             <span aria-hidden="true">✦</span><span>{{ view.combo.count }}×</span><small>{{ t('COMBO') }}</small>
           </div>
+        </div>
         </div>
         <nav class="es2-hud__controls es2-hud__plate" :aria-label="t('戰鬥操作')">
           <AudioControl v-if="actions.toggleMusic && actions.toggleSfx && actions.setMusicVolume && actions.setSfxVolume && musicOn !== undefined && sfxOn !== undefined && musicVolume !== undefined && sfxVolume !== undefined"
@@ -222,14 +232,6 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         :style="{ backgroundImage: 'url(' + view.boss.offscreen.artSrc + ')' }"></span>
       <span class="es2-hud__boss-pointer-distance" aria-hidden="true">{{ t('距離') }} {{ view.boss.offscreen.distance }}</span>
     </div>
-    <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
-      data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
-      :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-        stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
-        <path d="M4 6h2m4 0h10M4 12h2m4 0h10M4 18h2m4 0h10" />
-      </svg>
-    </button>
     <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" aria-hidden="true">
       {{ t(view.notices.find(notice => notice.kind === 'critical')?.text ?? '') }}
     </div>

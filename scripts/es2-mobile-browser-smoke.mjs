@@ -183,7 +183,7 @@ try {
       `${viewport.name}: joystick and dash controls overlap`)
       assert.equal(layout.dashDisabled, false, `${viewport.name}: dash must be enabled during gameplay`)
       if (viewport.name === 'portrait-320') assert.equal(layout.reducedMotion, true)
-      if (viewport.width < viewport.height || (viewport.height <= 520 && viewport.width <= 900)) {
+      if (viewport.width < viewport.height || (viewport.height <= 520 && viewport.width <= 1100)) {
         const toggle = page.locator('[data-es2-info-toggle]')
         const panel = page.locator('[data-es2-info-panel]')
         await toggle.waitFor({ state: 'visible' })
@@ -273,6 +273,8 @@ try {
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
     try {
+      const side = heroId === 'spirit-summoner' ? 'right' : 'left'
+      await page.addInitScript(side => localStorage.setItem('eclipse-survivors.accessibility.v1', JSON.stringify({ joystickSide: side })), side)
       await page.goto(target, { waitUntil: 'domcontentloaded' })
       await page.locator('[data-es2-mobile-hero-tab="new"]').click()
       const card = page.locator(`button[data-hero-id="${heroId}"]`)
@@ -345,6 +347,30 @@ try {
       assert.ok(!overlaps(specialBounds.special, specialBounds.infoToggle),
         `${heroId}: special action overlaps information toggle: ${JSON.stringify(specialBounds)}`)
       await page.screenshot({ path: `${directory}/portrait-375-${heroId}-game.png`, animations: 'disabled' })
+      // Rotate the real running game; cover narrow, standard and wide phone landscape,
+      // and both joystick sides without duplicating any in-game controls.
+      const landscape = heroId === 'shadowblade' ? { width: 640, height: 320 }
+        : heroId === 'spirit-summoner' ? { width: 932, height: 430 } : { width: 812, height: 375 }
+      await page.setViewportSize(landscape)
+      await page.locator(`[data-hero-special]`).waitFor({ state: 'visible' })
+      const landscapeBounds = await page.evaluate(() => {
+        const rect = selector => {
+          const el = document.querySelector(selector), b = el.getBoundingClientRect()
+          return { x: b.x, y: b.y, right: b.right, bottom: b.bottom }
+        }
+        return { toggle: rect('[data-es2-info-toggle]'), special: rect('[data-hero-special]'),
+          dash: rect('[data-testid="es2-dash"]'), joystick: rect('[data-testid="es2-stick"]'),
+          timer: rect('.es2-hud__counters'), controls: rect('.es2-hud__controls'),
+          side: document.querySelector('.es2-mobile-controls').dataset.side,
+          position: getComputedStyle(document.querySelector('[data-es2-info-toggle]')).position }
+      })
+      assert.equal(landscapeBounds.side, side, `${heroId}: joystick side not restored`)
+      assert.equal(landscapeBounds.position, 'static', `${heroId}: landscape toggle must be in the timer row`)
+      for (const key of ['special', 'dash', 'joystick', 'timer', 'controls']) {
+        assert.ok(!overlaps(landscapeBounds.toggle, landscapeBounds[key]),
+          `${heroId}: ${side} landscape info toggle overlaps ${key}: ${JSON.stringify(landscapeBounds)}`)
+      }
+      await page.screenshot({ path: `${directory}/landscape-${landscape.width}-${heroId}-${side}-game.png`, animations: 'disabled' })
       assert.deepEqual(errors, [], `${heroId}: uncaught browser errors`)
       console.log(`PASS ${heroId}: committed portrait and action preview, same hero on in-game HUD`)
     } catch (error) {
