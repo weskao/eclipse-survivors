@@ -169,7 +169,14 @@ export function drawArsenal(ctx: Ctx2D, state: GameState, ox: number, oy: number
     const b = r.beam
     const x = b.x + ox, y = b.y + oy
     ctx.save(); ctx.globalAlpha = Math.min(1, b.life * 2.5)
-    ctx.strokeStyle = '#ffb94f'; ctx.shadowColor = '#ffda76'; ctx.shadowBlur = 23
+    const image = art['solar-beam']
+    if (image?.complete && image.naturalWidth > 0) {
+      ctx.translate(x, y); ctx.rotate(Math.atan2(b.uy, b.ux))
+      ctx.drawImage(image, 0, -b.width, b.range, b.width * 2)
+      ctx.restore()
+      return
+    }
+    ctx.strokeStyle = '#ffb94f'; ctx.shadowColor = '#ffda76'; ctx.shadowBlur = reduced ? 0 : 23
     ctx.lineCap = 'round'; ctx.lineWidth = b.width * 2
     ctx.beginPath(); ctx.moveTo(x, y)
     ctx.lineTo(x + b.ux * b.range, y + b.uy * b.range); ctx.stroke()

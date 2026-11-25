@@ -245,7 +245,9 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     const extent = Math.min(1, 14 / Math.max(1, history))
     const tx = x - (x - prevX) * extent
     const ty = y - (y - prevY) * extent
-    if (history > 2 && b.kind === 'arrow' && !reduced) {
+    const readyMagic = s.heroId === 'spirit-summoner' ? heroArt?.['spirit-summoner'] : projectiles?.['arcane-bolt']
+    const historicalTrail = history > 2 && !reduced && (b.kind === 'arrow' || !readyMagic?.complete || !readyMagic.naturalWidth)
+    if (historicalTrail) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
       ctx.strokeStyle = b.kind === 'arrow' ? '#f6d6a4' : '#a9a1ff'
@@ -269,7 +271,7 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
       }
     } else {
       const spirit = s.heroId === 'spirit-summoner'
-      drawEnergyTrail(ctx, b.r, b.life, spirit ? '#a7efdc' : '#c3adff', reduced)
+      if (!historicalTrail) drawEnergyTrail(ctx, b.r, b.life, spirit ? '#a7efdc' : '#c3adff', reduced)
       const spiritImage = spirit ? heroArt?.['spirit-summoner'] : undefined
       if (spiritImage?.complete && spiritImage.naturalWidth > 0) {
         ctx.drawImage(spiritImage, -30, -30, 60, 60)
