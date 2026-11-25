@@ -53,6 +53,13 @@ describe('ES2 combat HUD', () => {
 
 
 
+  it('shows and clears the engine-owned combo without a synthetic feed', async () => {
+    const { wrapper } = render({ hud: { ...equipped, combo: { count: 12 } } })
+    expect(wrapper.get('[data-es2-combo]').text()).toContain('12×')
+    await wrapper.setProps({ hud: { ...equipped } })
+    expect(wrapper.find('[data-es2-combo]').exists()).toBe(false)
+  })
+
   it('smoothly presents damage and healing without delaying authoritative HP, XP, boss or wave values', async () => {
     const { wrapper } = render({
       hud: { ...equipped, bossPct: 40 },

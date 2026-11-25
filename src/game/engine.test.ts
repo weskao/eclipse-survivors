@@ -309,6 +309,33 @@ describe('engine commands fire the original cues', () => {
     expect(engine.ui.ending).toBe('🏆 遠征勝利！')
   })
 
+  it('projects real combat streaks into the HUD and run results, with gameplay-clock expiry', () => {
+    engine.selectHero('knight')
+    engine.selectRunMode('quick')
+    engine.start()
+    const s = engine.state
+    s.spawnT = 999
+    s.hero!.need = 99999
+    s.mobs = [50, 60].map(x => ({ x, y: 0, type: 'slime' as const, hp: 1, max: 1, r: 18, speed: 0, dmg: 0, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }))
+    engine.advance(0.13)
+    expect(engine.ui.hud).toMatchObject({ kill: 2, combo: { count: 2 } })
+    engine.togglePause()
+    const pausedAt = s.time
+    engine.advance(4)
+    expect(s.time).toBe(pausedAt)
+    expect(s.killStreak.current).toBe(2)
+    engine.togglePause()
+    for (let i = 0; i < 35; i++) engine.advance(0.1)
+    expect(engine.ui.hud).toMatchObject({ kill: 2 })
+    expect(engine.ui.hud).not.toMatchObject({ combo: { count: 2 } })
+    s.mobs = []
+    s.time = DURATION - 0.01
+    s.bossSpawned = true
+    s.bossDefeated = true
+    engine.advance(0.033)
+    expect(engine.ui.runResult).toMatchObject({ bestKillStreak: 2, bestMultiKill: 2 })
+  })
+
   it('dying ends in defeat', () => {
     engine.start()
     const hero = engine.state.hero!

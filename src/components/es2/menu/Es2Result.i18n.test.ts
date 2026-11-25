@@ -28,6 +28,25 @@ describe('result celebration rendering contract', () => {
 })
 
 describe('localized expedition results', () => {
+  it('renders streak records in both locales without fabricating records for older runs', async () => {
+    setLocale('en', storage)
+    const wrapper = mount(Es2Result, {
+      props: { active: true, ending: '🏆 遠征勝利！', summary: '', result: { ...result, bestKillStreak: 12, bestMultiKill: 4 } },
+      attachTo: document.body,
+    })
+    await nextTick()
+    const stats = document.body.querySelector('.es2-result-stats')!
+    expect(stats.textContent).toContain('Best kill streak')
+    expect(stats.textContent).toContain('Best multikill')
+    setLocale('zh-TW', storage)
+    await nextTick()
+    expect(stats.textContent).toContain('最高連殺')
+    expect(stats.textContent).toContain('最高瞬間多殺')
+    await wrapper.setProps({ result })
+    expect(stats.textContent).not.toContain('最高連殺')
+    wrapper.unmount()
+  })
+
   it('renders a natural English summary and localized reward names, not internal IDs', async () => {
     setLocale('en', storage)
     const wrapper = mount(Es2Result, {

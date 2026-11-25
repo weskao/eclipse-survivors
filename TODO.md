@@ -55,7 +55,8 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Local animation hit stop (initial target 25–50ms) and directional knockback without pausing simulation, inputs, cooldowns or audio.
 - [ ] Authored enemy hit, death and dissolve animations; preserve art identity.
 - [ ] Critical and damage-number hierarchy; preserve danger readability.
-- [ ] Kill streak and burst multikill feedback, records and bilingual HUD; proposed milestones 10/25/50/100/200/500, expiry/reset, no initial power bonus.
+- [x] Authoritative kill streak and burst multikill counts, expiry/reset, legacy and faction kill ownership; no damage bonus (RED: 45680983083; GREEN test log: 45681389783, combat.test.ts; later workflow steps cancelled by newer HEAD).
+- [ ] Kill streak and burst multikill feedback, records and bilingual HUD; milestones 10/25/50/100/200/500.
 - [ ] Layered combat/kill SFX, rate limiting, preserve complete active-skill playback.
 - [ ] Camera impact and accessibility controls; reduced motion/flashing, supported mobile haptics.
 
@@ -65,7 +66,7 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 - [ ] Improve first-upgrade timing with mode-specific balance tests.
 - [x] Coalesce same-tick XP gem pickup audio while preserving exact per-gem XP and pickup receipts (RED: run 45677562464; GREEN: run 45678439675, step.test.ts).
 - [x] XP gem acceleration and same-tick collection, preserving exact XP and pickup receipts (RED: run 45680019938; GREEN: run 45680367799, step.test.ts; player simulation path verified).
-- [ ] XP gem trails and optional magnet pickups; preserve exact reward totals.
+- [ ] XP gem trails and optional magnet pickups; preserve exact reward totals. Cached bounded trails and reduced-motion/offscreen rules implemented; automated rendering contract RED 45680983083 / GREEN 45681389783; actual browser visual acceptance and magnet pending.
 - [ ] Rare/epic/legendary chest reveal animations with skip, single claim and uninterrupted essential audio.
 - [ ] Distinct evolution reveal and actual gameplay transformation.
 
@@ -81,7 +82,7 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 ### Wave 4 — Encounter Director [P1; first delivery]
 - [ ] Audit and extend existing director, single authoritative spawn owner.
 - [ ] Eight encounter compositions: Swarm Rush, Encirclement, Elite Invasion, Ranged Assault, Titan March, Treasure Rush, Eclipse Surge, Recovery Phase.
-- [ ] Pressure peaks and recovery windows scaled by mode duration; preserve boss timing, win rules and actor caps.
+- [ ] Pressure peaks and recovery windows scaled by mode duration; preserve boss timing, win rules and actor caps. Live assault/reward interval multipliers implemented; RED 45680983083 / GREEN 45681389783; mode-specific timing and integrated acceptance pending.
 - [ ] Risk/reward world events, cursed offers and optional dangerous treasure.
 - [ ] Boss stagger, weakness windows and phase transitions with readable telegraphs; preserve collisions.
 - [ ] Boss kill and battlefield cleansing audiovisual presentation.
