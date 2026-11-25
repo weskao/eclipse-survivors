@@ -608,8 +608,8 @@
 .es2-menu .es2-expedition-hero{font:600 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif}
 .es2-menu .es2-expedition-change{color:#e9cc95;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:end;max-width:30%;overflow-wrap:anywhere}
 .es2-menu .es2-portal-start{
-  --es2-portal-rim:linear-gradient(105deg,#ba763c,#fff2bd 26%,#ffdc83 58%,#c68b42 82%,#fff0b5);
-  --es2-portal-fill:radial-gradient(ellipse at 24% 50%,#edb45388,transparent 57%),linear-gradient(180deg,#ad783e,#80502c 46%,#46291c 52%,#694024);
+  --es2-portal-rim:linear-gradient(105deg,#d79b4c,#fff7d5 26%,#ffe6a0 58%,#e1ad5c 82%,#fff7d0);
+  --es2-portal-fill:radial-gradient(ellipse at 24% 50%,#ffda8566,transparent 57%),linear-gradient(180deg,#ca9651,#976333 46%,#593820 52%,#82552d);
   padding:10px 14px;gap:12px;color:#fff4d5!important;text-align:center;transition:none
 }
 .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{
@@ -635,9 +635,12 @@
 .es2-menu .es2-portal-start .es2-portal-decoration{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
 .es2-menu .es2-portal-start .es2-portal-core{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
 .es2-menu .es2-portal-start .es2-portal-label{position:relative;color:#fff8df;text-shadow:0 2px 3px #21110c,0 0 10px #f6c66e}
-/* The fully lit metal finish is the idle state; hover only plays one shimmer. */
+/* Keep the fully lit metallic finish; hover energizes the seal and plays one shimmer. */
 @media(hover:hover) and (pointer:fine){
   .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before{animation:es2-portal-sweep .72s ease-out both}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{transform:scale(1.08);box-shadow:0 0 26px #ffda85bf,inset 0 0 16px #ffe9b1c4}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-core{transform:scale(1.13) rotate(12deg)}
+  [data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399}
   [data-es2-reduce-motion="true"] .es2-menu .es2-portal-start:hover:not(:disabled),
   [data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:hover:not(:disabled){outline:2px solid #ffe0a0;outline-offset:2px}
 }
@@ -670,7 +673,7 @@
   position:relative;display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;
   border-radius:50%;margin:0;border:1px solid #fff2bc;
   background:radial-gradient(circle,#f6cc7944 0,#c8893d22 43%,#231927 65%,#e8c58c55 69%,#261c24 78%);
-  box-shadow:0 0 17px #f6c66e88,inset 0 0 12px #e8a74d99;pointer-events:none
+  box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399;pointer-events:none
 }
 .es2-menu .es2-portal-decoration::before{
   content:'';position:absolute;inset:4px;border:1px dashed #f9d394b0;border-radius:50%;

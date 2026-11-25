@@ -30,6 +30,7 @@ try {
         sweep: getComputedStyle(el.querySelector('.es2-portal-sheen'), '::before').animationName,
         menu: !!el.closest('.es2-menu'),
         core: getComputedStyle(el.querySelector('.es2-portal-core')).transform,
+        ring: getComputedStyle(el.querySelector('.es2-portal-decoration')).transform,
         glow: getComputedStyle(el.querySelector('.es2-portal-decoration')).boxShadow,
         outline: getComputedStyle(el).outlineStyle,
       }
@@ -42,18 +43,34 @@ try {
     assert.equal(idle.sweep, 'none', 'Idle must not shimmer')
     assert.equal(hover.frame, idle.frame, 'The metallic rim is already illuminated at rest')
     assert.equal(hover.fill, idle.fill, 'The dimensional interior is already illuminated at rest')
-    assert.equal(hover.core, idle.core, 'Hover must not resize or rotate the core')
-    assert.equal(hover.glow, idle.glow, 'The magical glow is already visible at rest')
+    assert.notEqual(hover.glow, idle.glow, 'Hover intensifies the already visible magical glow')
     assert.equal(hover.sweep, 'es2-portal-sweep')
     assert.deepEqual([hover.x, hover.y, hover.width, hover.height], [idle.x, idle.y, idle.width, idle.height], 'Hover must not move the hit area')
     assert.equal(hover.menu, true)
-    await page.waitForTimeout(220)
+    const expectTransform = async (selector, scale, angle = 0) => {
+      await page.waitForFunction(({ selector, scale, angle }) => {
+        const value = getComputedStyle(document.querySelector(selector)).transform
+        const matrix = value === 'none' ? new DOMMatrix() : new DOMMatrix(value)
+        return Math.abs(Math.hypot(matrix.a, matrix.b) - scale) < .005
+          && Math.abs(Math.atan2(matrix.b, matrix.a) * 180 / Math.PI - angle) < .2
+      }, { selector, scale, angle })
+    }
+    await expectTransform('.es2-portal-decoration', 1.08)
+    await expectTransform('.es2-portal-core', 1.13, 12)
     await portal.screenshot({ path: directory + '/portal-start-hover.png' })
+    await page.mouse.down()
+    await expectTransform('.es2-portal-decoration', .96)
+    await expectTransform('.es2-portal-core', .92)
     await page.mouse.move(0, 0)
-    assert.equal((await paint()).frame, idle.frame, 'Leaving the portal restores its idle rim')
+    await page.mouse.up()
+    await expectTransform('.es2-portal-decoration', 1)
+    await expectTransform('.es2-portal-core', 1)
+    assert.equal((await paint()).frame, idle.frame, 'Leaving the portal preserves its idle rim')
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await portal.hover()
     assert.equal((await paint()).sweep, 'none', 'Reduced motion disables the sweep')
+    assert.equal((await paint()).ring, 'none', 'Reduced motion disables ring scaling')
+    assert.equal((await paint()).core, 'none', 'Reduced motion disables core scaling and rotation')
     assert.equal((await paint()).frame, idle.frame, 'Reduced motion preserves the metallic rim')
     assert.equal((await paint()).outline, 'solid', 'Reduced motion retains a static hover indicator')
     await page.mouse.move(0, 0)
@@ -61,6 +78,9 @@ try {
     await page.evaluate(() => document.documentElement.dataset.es2ReduceFlashing = 'true')
     await portal.hover()
     assert.equal((await paint()).sweep, 'none', 'Reduced flashing disables the sweep')
+    assert.equal((await paint()).ring, 'none', 'Reduced flashing disables ring scaling')
+    assert.equal((await paint()).core, 'none', 'Reduced flashing disables core scaling and rotation')
+    assert.equal((await paint()).glow, idle.glow, 'Reduced flashing keeps a constant magical glow')
     await page.mouse.move(0, 0)
     await page.keyboard.press('Tab')
     await portal.focus()
