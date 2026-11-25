@@ -7,7 +7,7 @@ import type { GameState, Hero, JobId, SceneDef } from './types'
 export function createState(): GameState {
   return {
     mode: 'menu', choice: 'knight', heroId: 'knight', hero: null, content: { levels: {}, cooldowns: {}, effects: [] },
-    mobs: [], shots: [], enemyShots: [], stars: [], fx: [], swipes: [],
+    mobs: [], fallenMobs: [], shots: [], enemyShots: [], stars: [], fx: [], swipes: [],
     numberFx: [], impactWaves: [], lightningFx: [], motionEchoes: [],
     cameraKick: 0, lastCameraKickAt: -Infinity, time: 0, kill: 0, killStreak: emptyKillStreak(), spawnT: 0, bossSpawned: false, bossDefeated: false,
     combatTelemetry: emptyCombatTelemetry(), factionSpawnWindow: 0, factionSpawnSequence: 0,
@@ -34,7 +34,7 @@ export function createHero(job: JobId): Hero {
 export function resetRun(s: GameState): void {
   s.hero = createHero(s.choice)
   s.content = { levels: {}, cooldowns: {}, effects: [] }
-  s.mobs = []; s.shots = []; s.enemyShots = []; s.stars = []; s.fx = []; s.swipes = []
+  s.mobs = []; s.fallenMobs = []; s.shots = []; s.enemyShots = []; s.stars = []; s.fx = []; s.swipes = []
   s.time = 0; s.kill = 0; s.killStreak = emptyKillStreak(); s.spawnT = 0; s.bossSpawned = false; s.bossDefeated = false
   s.combatTelemetry = emptyCombatTelemetry(); s.factionSpawnWindow = 0; s.factionSpawnSequence = 0
   s.damageDealt = 0; s.damageTaken = 0; s.xpGainMultiplier = 1; s.pickupGainMultiplier = 1; s.defeatedTypes = {}

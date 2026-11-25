@@ -148,6 +148,12 @@ function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): v
 }
 
 function ageEffects(s: GameState, hero: Hero, dt: number): void {
+  let fallenWrite = 0
+  for (const mob of s.fallenMobs) {
+    mob.deathVisual = Math.max(0, (mob.deathVisual ?? 0) - dt)
+    if (mob.deathVisual > 0) s.fallenMobs[fallenWrite++] = mob
+  }
+  s.fallenMobs.length = fallenWrite
   for (const f of s.fx) {
     f.x += (f.vx ?? 0) * dt
     f.y += (f.vy ?? 0) * dt

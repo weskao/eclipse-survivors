@@ -273,6 +273,12 @@ export function drawCharacter(
     }
   }
   ctx.save(); ctx.translate(x, y)
+  if (mob?.deathVisual && mob.hp <= 0) {
+    const alpha = Math.min(1, mob.deathVisual / (mob.type === 'boss' ? .7 : .28))
+    ctx.globalAlpha = alpha
+    ctx.translate(mob.kx * (1 - alpha) * 12, (1 - alpha) * 8)
+    ctx.scale(1, .65 + .35 * alpha)
+  }
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
   // Hit tint takes priority over warlock tint, which takes priority over elite.
   // Reuse a 2x bitmap instead of a Canvas CSS filter on every visible enemy.

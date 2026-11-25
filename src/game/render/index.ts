@@ -168,6 +168,10 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     const x = mob.x + ox, y = mob.y + oy
     if (mob.hp > 0 && x >= -180 && x <= W + 180 && y >= -240 && y <= H + 220) objects.push(mob)
   }
+  if (!reduced) for (const mob of s.fallenMobs) {
+    const x = mob.x + ox, y = mob.y + oy
+    if (mob.deathVisual && x >= -180 && x <= W + 180 && y >= -240 && y <= H + 220) objects.push(mob)
+  }
   objects.push(hero)
   objects.sort((a, b) => a.y - b.y)
   const nativeKey = import.meta.env.DEV && bossSnapshot && assets.productionWorld?.bossNativeKeyframes

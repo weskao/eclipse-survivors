@@ -3,7 +3,7 @@ import { applyEnemyPose, applyEnemyRecoil, enemyWeight } from '../enemy-motion'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import assassinMasterUrl from '../../../assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
 import frostWraithMasterUrl from '../../../assets/es2/production/enemies/masters/frost-wraith-6poses-3x2-master-1536x1024.png?url'
-import type { FactionRuntime } from '../../content/enemies/runtime'
+import { factionPoseFrame, type FactionRuntime } from '../../content/enemies/runtime'
 import type { GameState } from '../../types'
 import { WORLD_ART } from './production-world'
 import { drawFactionTelegraphs } from '../../content/enemies/telegraphs'
@@ -73,8 +73,10 @@ export function drawLiveFactionArt(
   drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy, reducedMotion, state.W, state.H)
   let drawn = 0
   const width = state.W, height = state.H
-  for (const enemy of runtime.enemies) {
-    if (enemy.hp <= 0) continue
+  for (let i = 0; i < runtime.enemies.length + runtime.fallen.length; i++) {
+    const enemy = i < runtime.enemies.length ? runtime.enemies[i]! : runtime.fallen[i - runtime.enemies.length]!
+    const dying = enemy.hp <= 0
+    if (dying && (reducedMotion || !enemy.deathVisual)) continue
     const x = enemy.x + ox, y = enemy.y + oy
     const size = FACTION_VISUAL_SIZE[enemy.kind]
     const half = size / 2
@@ -87,14 +89,16 @@ export function drawLiveFactionArt(
     const master = pair?.highResBody
     const masterReady = !!master?.complete && master.naturalWidth === 1536 && master.naturalHeight === 1024
     if (!masterReady && !ready(body, 6)) continue
-    const frame = enemy.state === 'phase' ? 5
-      : enemy.state === 'windup' ? 2
-        : enemy.state === 'attack' ? 3
-          : enemy.state === 'recover' ? ((enemy.releaseFx ?? 0) > 0.16 ? 3 : 4)
-            : (Math.floor(state.worldClock * 6 + enemy.id) & 1)
+    const frame = dying ? 4 : !reducedMotion && enemy.visualHold && enemy.visualFrame !== undefined ? enemy.visualFrame : factionPoseFrame(enemy, state.worldClock)
     const h = size // Preserve square source-cell proportions and the existing feet anchor.
     ctx.save()
     ctx.translate(x, y)
+    if (dying) {
+      const alpha = Math.min(1, (enemy.deathVisual ?? 0) / .28)
+      ctx.globalAlpha = alpha
+      ctx.translate((enemy.hitX ?? 0) * (1 - alpha) * 12, (1 - alpha) * 6)
+      ctx.scale(1, .65 + .35 * alpha)
+    }
     const weight = enemyWeight(enemy.kind)
     const def = ENEMY_DEFINITIONS[enemy.kind]
     const remaining = enemy.state === 'windup' ? enemy.timer / (def.windup * (enemy.affix === 'swift' ? 0.8 : 1))
@@ -113,12 +117,13 @@ export function drawLiveFactionArt(
       const sourceSide = body.naturalHeight
       ctx.drawImage(body, frame * sourceSide, 0, sourceSide, sourceSide, -size / 2, -h + 5, size, h)
     }
-    if (enemy.state === 'windup' && pair && ready(pair.telegraph)) {
+    if (!dying && enemy.state === 'windup' && pair && ready(pair.telegraph)) {
       // Decorative cue only; the true world-sized hitbox is drawn above.
       ctx.drawImage(pair.telegraph, 0, 0, pair.telegraph.naturalWidth, pair.telegraph.naturalHeight, -20, -h - 18, 40, 40)
     }
     ctx.restore()
     // Keep the bar above the windup cue in every pose so it never jumps or mirrors.
+    if (dying) { drawn++; continue }
     const motion = sampleHealthBar(enemy, state.worldClock, healthBars, reducedMotion)
     if (shouldShowHealthBar(motion, showFullHealthBars))
       drawEnemyHealthBar(ctx, motion, x, y - h - 26, size, !!enemy.affix)

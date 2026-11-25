@@ -57,6 +57,7 @@ export interface Mob {
   phase: number; hit: number; slow: number; stagger: number; kx: number; ky: number
   /** Cosmetic animation clock; authoritative phase and AI always advance. */
   visualPhase?: number
+  deathVisual?: number
   visualHold?: number
   lastVisualHoldAt?: number
   rewardXpMultiplier?: number
@@ -134,6 +135,7 @@ export interface GameState {
   /** Owned by this run; never stored in a module singleton or rebuilt per frame. */
   content: ContentRuntime
   mobs: Mob[]
+  fallenMobs: Mob[]
   shots: Shot[]
   enemyShots: EnemyProjectile[]
   stars: Star[]

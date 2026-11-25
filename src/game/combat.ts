@@ -48,6 +48,9 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     recordKill(s)
+    if (s.fallenMobs.length >= 24) s.fallenMobs.shift()
+    e.deathVisual = boss ? .7 : .28
+    s.fallenMobs.push(e)
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
     const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
     s.stars.push({ x: e.x, y: e.y, value: Math.round(value * (e.rewardXpMultiplier ?? 1)), t: rand(0, 6) })

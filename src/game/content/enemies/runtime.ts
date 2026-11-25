@@ -34,6 +34,10 @@ export interface FactionEnemy {
   hitX?: number
   hitY?: number
   releaseFx?: number
+  visualHold?: number
+  visualFrame?: number
+  lastVisualHoldAt?: number
+  deathVisual?: number
 }
 
 export interface FactionProjectile {
@@ -50,6 +54,7 @@ export interface FactionZone {
 
 export interface FactionRuntime {
   enemies: FactionEnemy[]
+  fallen: FactionEnemy[]
   projectiles: FactionProjectile[]
   zones: FactionZone[]
   nextId: number
@@ -88,7 +93,7 @@ export interface FactionArena {
 }
 
 export function createFactionRuntime(): FactionRuntime {
-  return { enemies: [], projectiles: [], zones: [], nextId: 1, legacyMobCount: 0 }
+  return { enemies: [], fallen: [], projectiles: [], zones: [], nextId: 1, legacyMobCount: 0 }
 }
 
 /** Spawn is explicit: ContentPack registration never calls this function. */
@@ -163,6 +168,12 @@ function addProjectile(
   })
 }
 
+/** Shared pose selection for the renderer and hit-stop snapshot. */
+export function factionPoseFrame(e: FactionEnemy, clock: number): number {
+  return e.state === 'phase' ? 5 : e.state === 'windup' ? 2 : e.state === 'attack' ? 3
+    : e.state === 'recover' ? ((e.releaseFx ?? 0) > .16 ? 3 : 4) : (Math.floor(clock * 6 + e.id) & 1)
+}
+
 /** Damage accounting lives here, not in legacy hit(); reward ownership stays with integration. */
 export function damageFactionEnemy(
   runtime: FactionRuntime,
@@ -188,6 +199,7 @@ export function damageFactionEnemy(
   e.hitX = distance > 0.001 ? dx / distance : 0
   e.hitY = distance > 0.001 ? dy / distance : 0
   if (e.hp === 0) {
+    e.deathVisual = 0.28
     const def = ENEMY_DEFINITIONS[e.kind]
     onReward?.({ kind: e.kind, x: e.x, y: e.y,
       xp: Math.round(def.xp * (e.affix ? 1.7 : 1)), elite: !!e.affix })
@@ -353,6 +365,12 @@ function tickZones(a: FactionArena, dt: number): void {
 export function tickFactionEnemies(a: FactionArena, dt: number): void {
   if (!Number.isFinite(dt) || dt <= 0) return
   const { runtime: r, hero } = a
+  let fallenWrite = 0
+  for (const e of r.fallen) {
+    e.deathVisual = Math.max(0, (e.deathVisual ?? 0) - dt)
+    if (e.deathVisual > 0) r.fallen[fallenWrite++] = e
+  }
+  r.fallen.length = fallenWrite
   if (a.legacyMobCount !== undefined && Number.isFinite(a.legacyMobCount))
     r.legacyMobCount = Math.max(0, Math.floor(a.legacyMobCount))
   // Snapshot length: necromancer summons start acting on the following tick.
@@ -361,6 +379,7 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
     const e = r.enemies[i]!
     if (!e || e.hp <= 0) continue
     e.phaseCooldown = Math.max(0, e.phaseCooldown - dt)
+    if (e.visualHold) e.visualHold = Math.max(0, e.visualHold - dt)
     if (e.hitTime) e.hitTime = Math.max(0, e.hitTime - dt)
     if (e.releaseFx) e.releaseFx = Math.max(0, e.releaseFx - dt)
     if (e.state === 'phase') {
@@ -426,7 +445,13 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
 /** Integrator invokes after resolving damage and on run reset to release per-run memory. */
 export function cleanupFactionEnemies(runtime: FactionRuntime): void {
   let write = 0
-  for (const enemy of runtime.enemies) if (enemy.hp > 0) runtime.enemies[write++] = enemy
+  for (const enemy of runtime.enemies) {
+    if (enemy.hp > 0) runtime.enemies[write++] = enemy
+    else if (enemy.deathVisual) {
+      if (runtime.fallen.length >= 24) runtime.fallen.shift()
+      runtime.fallen.push(enemy)
+    }
+  }
   runtime.enemies.length = write
   // Live projectiles/zones intentionally finish their brief, bounded lifetimes.
 }

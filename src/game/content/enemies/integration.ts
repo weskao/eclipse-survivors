@@ -7,7 +7,7 @@ import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ELITE_AFFIXES, ENEMY_DEFINITIONS, type FactionAffix, type FactionKind } from './definitions'
 import {
-  cleanupFactionEnemies, createFactionRuntime, damageFactionEnemy,
+  cleanupFactionEnemies, createFactionRuntime, damageFactionEnemy, factionPoseFrame,
   spawnFactionEnemy, tickFactionEnemies,
   type FactionEnemy, type FactionHit, type FactionReward,
 } from './runtime'
@@ -116,6 +116,11 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       options.onReward?.(reward)
     })
     if (applied > 0) {
+      if ((critical || enemy.radius >= 24 || enemy.affix) && state.time - (enemy.lastVisualHoldAt ?? -Infinity) >= BALANCE.combat.hitStopCooldownSeconds) {
+        enemy.visualFrame = factionPoseFrame(enemy, state.worldClock)
+        enemy.visualHold = critical ? BALANCE.combat.hitStopCriticalSeconds : BALANCE.combat.hitStopHeavySeconds
+        enemy.lastVisualHoldAt = state.time
+      }
       state.damageDealt += applied
       pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
         value: Math.round(applied), boss: false, critical })
