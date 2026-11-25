@@ -90,3 +90,17 @@ describe('gothic boss meter skin', () => {
     expect(css).toContain('.es2-hud__boss.es2-hud__plate')
   })
 })
+
+describe('bounded fixed boss health HUD', () => {
+  it('centers the boss panel independently of the full-width encounter grid', () => {
+    expect(css).toMatch(/\.es2-hud__boss\s*\{[^}]*align-self:\s*center;[^}]*width:\s*min\(100%, 420px, 52vw\)/s)
+    expect(css).toMatch(/@media \(orientation: portrait\) and \(max-width: 700px\)\s*\{[^]*?\.es2-hud__boss\s*\{\s*width: min\(100%, 360px, 78vw\);\s*\}/)
+    expect(css).toMatch(/\.es2-hud__encounter\s*\{ grid-area: 3 \/ 1 \/ auto \/ -1; \}/)
+  })
+  it('keeps the legacy fixed meter bounded in portrait and landscape too', () => {
+    const shared = readFileSync(resolve(process.cwd(), 'src/style.css'), 'utf8')
+    expect(shared).toContain('width:min(420px,52vw)')
+    expect(shared).toContain('.boss-wrap{top:188px;width:min(360px,78vw)}')
+    expect(shared).toContain('.boss-wrap{width:min(330px,38vw)}')
+  })
+})
