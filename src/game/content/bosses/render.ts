@@ -8,6 +8,24 @@ import type { ProjectileArtId, ProjectileSprites } from '../../render/projectile
 import type { VisualPresentationPolicy } from '../accessibility/presentation'
 
 const ATTACK_ART = import.meta.glob('../../../assets/es2/production/skills/boss-attacks/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+const MATERIAL_ART = import.meta.glob('../../../assets/es2/production/skills/boss-materials/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+export type BossMaterialKind = 'abyss' | 'frost' | 'infernal' | 'seraph'
+export type BossMaterialSprites = Partial<Record<BossMaterialKind, HTMLImageElement>>
+let sharedMaterials: BossMaterialSprites | undefined
+export function bossMaterialKind(id: BossAttackId): BossMaterialKind {
+  if (id === 'void-fan' || id === 'shadow-sweep' || id === 'eclipse-wedge' || id === 'twilight-ground') return 'abyss'
+  const boss = ATTACK_PRESENTATION[id].boss
+  return boss === 'abyss-monarch' ? 'abyss' : boss === 'frost-sovereign' ? 'frost' : boss === 'infernal-titan' ? 'infernal' : 'seraph'
+}
+export function loadBossMaterialSprites(makeImage: () => HTMLImageElement = () => new Image()): BossMaterialSprites {
+  const result: BossMaterialSprites = {}
+  for (const [path, url] of Object.entries(MATERIAL_ART)) {
+    const kind = path.split('/').pop()!.replace('.png', '') as BossMaterialKind
+    const image = makeImage(); image.decoding = 'async'; image.src = url
+    result[kind] = image
+  }
+  return result
+}
 const PROJECTILE_ART = import.meta.glob('../../../assets/es2/production/skills/boss-projectiles/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 export type BossAttackSprites = Partial<Record<BossAttackId, HTMLImageElement>>
 let sharedArt: BossAttackSprites | undefined
@@ -29,6 +47,7 @@ export function loadBossProjectileSprites(makeImage: () => HTMLImageElement = ()
 }
 export function preloadBossAttackArt(): BossAttackSprites | undefined {
   if (typeof Image === 'undefined') return undefined
+  sharedMaterials ??= loadBossMaterialSprites()
   sharedMissiles ??= loadBossProjectileSprites()
   return sharedArt ??= loadBossAttackSprites()
 }
@@ -101,8 +120,32 @@ function material(ctx: Ctx2D, t: BossTelegraph, image: HTMLImageElement | undefi
     ctx.fill('evenodd')
   }
 }
+/** Baked fluid/crystal/lava/feather surface. All transforms are inside the authoritative clip;
+ * the distinct attack-specific overlay is a separate accent, not a duplicate surface. */
+function drawMaterialLayer(ctx: Ctx2D, t: BossTelegraph, id: BossAttackId, progress: number, reduced: boolean,
+  stage: 'warning' | 'active' | 'release', materials?: BossMaterialSprites): boolean {
+  if (!materials || !ATTACK_PRESENTATION[id]) return false
+  const kind = bossMaterialKind(id), image = materials[kind]
+  if (!image?.complete || image.naturalWidth <= 0) return false
+  ctx.save()
+  try {
+    if (t.shape === 'beam') {
+      const w = t.length + t.width * 2
+      ctx.drawImage(image, -t.width, -t.width, w, t.width * 2)
+    } else {
+      const collapse = kind === 'abyss' && (ATTACK_PRESENTATION[id].visual === 'collapse' || ATTACK_PRESENTATION[id].visual === 'vortex')
+      const motion = reduced ? 0.5 : progress
+      const scale = t.shape !== 'circle' ? 1 : stage === 'warning' ? 0.72 + motion * 0.28
+        : collapse ? 1.06 - motion * 0.18 : 0.88 + motion * 0.12
+      if (!reduced && kind !== 'infernal') ctx.rotate((kind === 'abyss' ? -1.3 : kind === 'seraph' ? 0.45 : 0.12) * motion)
+      const r = t.radius * scale
+      ctx.drawImage(image, -r, -r, r * 2, r * 2)
+    }
+  } finally { ctx.restore() }
+  return true
+}
 function telegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number, palette: Palette, reduced: boolean,
-  w: number, h: number, art: BossAttackSprites | undefined, budget: ParticleBudget, settings: Settings | undefined, releaseOwnsMaterial: boolean): void {
+  w: number, h: number, art: BossAttackSprites | undefined, budget: ParticleBudget, settings: Settings | undefined, releaseOwnsMaterial: boolean, materials?: BossMaterialSprites): void {
   if (!visible(t, ox, oy, w, h)) return
   const id = t.attackId as BossAttackId, attack = BOSS_ATTACKS[id], profile = ATTACK_PRESENTATION[id]
   const progress = clamp(t.progress ?? 0), active = t.stage === 'active'
@@ -123,7 +166,11 @@ function telegraph(ctx: Ctx2D, t: BossTelegraph, ox: number, oy: number, palette
     ctx.clip('evenodd')
     const image = attack?.kind === 'projectile' ? undefined : ready(id, art)
     ctx.globalAlpha = strength * (settings?.reduceFlashing ? 0.25 : reduced ? 0.24 : active ? 0.47 : 0.14 + progress * 0.33)
-    if (image) material(ctx, t, image, palette, progress, reduced)
+    const baked = drawMaterialLayer(ctx, t, id, progress, reduced, active ? 'active' : 'warning', materials)
+    if (image) {
+      if (baked) ctx.globalAlpha *= 0.58
+      material(ctx, t, image, palette, progress, reduced)
+    }
     if (profile && !reduced) drawBossParticles(ctx, t, profile, active ? 'active' : 'warning', progress, budget, palette.edge, palette.core)
   } finally { ctx.restore() }
 }
@@ -142,19 +189,19 @@ function projectile(ctx: Ctx2D, p: BossProjectile, ox: number, oy: number, palet
   ctx.restore()
 }
 export function drawBossTelegraphs(ctx: Ctx2D, snapshot: BossSnapshot, ox: number, oy: number,
-  reduced = false, w = Infinity, h = Infinity, sprites?: Partial<ProjectileSprites>, art = sharedArt, settings?: Settings): void {
+  reduced = false, w = Infinity, h = Infinity, sprites?: Partial<ProjectileSprites>, art = sharedArt, settings?: Settings, materials = art === sharedArt ? sharedMaterials : undefined): void {
   if (!snapshot.id) return
   const palette = PALETTES[snapshot.id], budget = particleBudget(reduced, settings)
   ctx.save()
   try {
     for (const t of snapshot.telegraphs) {
       const releaseOwnsMaterial = t.stage === 'active' && !!snapshot.impacts?.some(i => i.life > 0 && i.attackId === t.attackId && i.x === t.x && i.y === t.y && i.angle === t.angle)
-      telegraph(ctx, t, ox, oy, palette, reduced, w, h, art, budget, settings, releaseOwnsMaterial)
+      telegraph(ctx, t, ox, oy, palette, reduced, w, h, art, budget, settings, releaseOwnsMaterial, materials)
     }
     for (const p of snapshot.projectiles) projectile(ctx, p, ox, oy, palette, reduced, w, h, MISSILE_ART[snapshot.id], sprites, settings)
   } finally { ctx.restore() }
 }
-function impact(ctx: Ctx2D, t: BossImpact, ox: number, oy: number, palette: Palette, reduced: boolean, w: number, h: number, art: BossAttackSprites | undefined, budget: ParticleBudget, settings?: Settings): void {
+function impact(ctx: Ctx2D, t: BossImpact, ox: number, oy: number, palette: Palette, reduced: boolean, w: number, h: number, art: BossAttackSprites | undefined, budget: ParticleBudget, settings?: Settings, materials?: BossMaterialSprites): void {
   if (t.life <= 0 || t.max <= 0 || (settings?.vfxOpacity ?? 1) <= 0) return
   const id = t.attackId as BossAttackId, attack = BOSS_ATTACKS[id], profile = ATTACK_PRESENTATION[id]
   if (!attack || !profile) return
@@ -170,7 +217,12 @@ function impact(ctx: Ctx2D, t: BossImpact, ox: number, oy: number, palette: Pale
     ctx.clip('evenodd')
     const fade = (1 - progress) ** 1.2
     ctx.globalAlpha = strength * Math.min(settings?.reduceFlashing || reduced ? 0.43 : 0.84, (0.65 + profile.weight * 0.21) * fade)
-    material(ctx, local, ready(id, art), palette, progress, reduced)
+    const baked = drawMaterialLayer(ctx, local, id, progress, reduced, 'release', materials)
+    const detail = ready(id, art)
+    if (detail || !baked) {
+      if (baked) ctx.globalAlpha *= 0.62
+      material(ctx, local, detail, palette, progress, reduced)
+    }
     if (!reduced) {
       ctx.globalAlpha *= 0.83
       drawBossParticles(ctx, local, profile, 'release', progress, budget, palette.edge, palette.core)
@@ -178,10 +230,10 @@ function impact(ctx: Ctx2D, t: BossImpact, ox: number, oy: number, palette: Pale
   } finally { ctx.restore() }
 }
 export function drawBossImpacts(ctx: Ctx2D, snapshot: BossSnapshot, ox: number, oy: number,
-  reduced = false, w = Infinity, h = Infinity, art = sharedArt, settings?: Settings): void {
+  reduced = false, w = Infinity, h = Infinity, art = sharedArt, settings?: Settings, materials = art === sharedArt ? sharedMaterials : undefined): void {
   if (!snapshot.id || !snapshot.impacts?.length) return
   const palette = PALETTES[snapshot.id], budget = particleBudget(reduced, settings, true)
   ctx.save()
-  try { for (const t of snapshot.impacts) impact(ctx, t, ox, oy, palette, reduced, w, h, art, budget, settings) }
+  try { for (const t of snapshot.impacts) impact(ctx, t, ox, oy, palette, reduced, w, h, art, budget, settings, materials) }
   finally { ctx.restore() }
 }
