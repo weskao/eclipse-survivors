@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneBonus, spawnInterval, spawnMob, tickSpawning } from './spawn'
 import { createFactionBridge } from './content/enemies/integration'
+import { summonBossMinions } from './bosses/phases'
 import { MAX_MOBS } from './constants'
 import { dist, seeded, setRandom } from './math'
 import { createHero, createState } from './state'
@@ -160,4 +161,11 @@ describe('ES3 single live ordinary spawn owner', () => {
     tickSpawning(s, .016, spyHooks(), undefined, 1, bridge)
     expect(s.mobs.length + bridge.runtime.enemies.length).toBe(MAX_MOBS)
   })
+})
+
+it('reserves the shared actor budget for boss summons including faction actors', () => {
+  const s = setup(); spawnMob(s, 'boss')
+  const boss = s.mobs[0]!
+  summonBossMinions(s, boss, MAX_MOBS - 1)
+  expect(s.mobs).toHaveLength(1)
 })

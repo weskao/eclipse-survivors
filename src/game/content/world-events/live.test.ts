@@ -302,3 +302,18 @@ describe('world-event live integration', () => {
     expect(actions.message).toHaveBeenCalledWith('✦ Healing Fountain · Drink restorative water')
   })
 })
+
+it('dangerous vault pays a legendary relic only after three confirmed guardians die', () => {
+  const { state, live, spawn } = setup()
+  const marker = spawn('events:treasure-vault')
+  expect(live.choose(marker.id, 'force')).toBe('applied')
+  expect(inventorySnapshot(state).items).toHaveLength(0)
+  expect(state.mobs).toHaveLength(3)
+  for (const mob of state.mobs) { mob.hp = 0; live.onContentEvent({ type: 'kill', mob, damage: 10 }) }
+  live.tick()
+  expect(inventorySnapshot(state).items).toHaveLength(1)
+  const item = inventorySnapshot(state).items[0]!
+  expect(RELICS.find(relic => relic.id === item.id)?.rarity).toBe('legendary')
+  live.tick()
+  expect(inventorySnapshot(state).items).toHaveLength(1)
+})
