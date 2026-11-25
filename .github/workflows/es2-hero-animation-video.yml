@@ -1,7 +1,7 @@
 name: ES2 actual gameplay hero MP4 capture
 on:
   push:
-    branches: [feature/es2-release-readiness-integration]
+    branches: [feature/es2-release-readiness-integration, feature/es2-pixijs-knight-hybrid]
     paths:
       - 'scripts/es2-hero-animation-video.mjs'
       - 'scripts/es2-hero-video-config.mjs'
@@ -51,6 +51,7 @@ jobs:
           for i in {1..40}; do curl -sf http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4174/@vite/client -o /tmp/es2-hero-qa-vite-client.js
           grep -q 'vite' /tmp/es2-hero-qa-vite-client.js
+          if [ "$GITHUB_REF_NAME" = feature/es2-pixijs-knight-hybrid ]; then export ES2_HERO_QA_DEFAULT=1; fi
           PREVIEW_URL=http://127.0.0.1:4174/ ES2_HERO_QA=1 node scripts/es2-hero-animation-video.mjs
       - uses: actions/upload-artifact@v4
         if: always()

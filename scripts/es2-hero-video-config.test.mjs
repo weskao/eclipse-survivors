@@ -155,3 +155,9 @@ test('northern run evidence requires all four real distinct cells per eligible d
   assert.deepEqual(assessHeroNorthernRunCoverage('shadowblade', [cell('shadowblade', 'n', 0, 4), cell('crimson-paladin', 'ne', 0)]), { counts: { n: 0, ne: 0, nw: 0 }, complete: false })
   assert.equal(assessHeroNorthernRunCoverage('spirit-summoner', [cell('spirit-summoner', 'ne', 0, 4)]).counts.ne, 0)
 })
+
+test('default development capture proves candidates without an activation query', () => {
+  const config = heroVideoCaptureConfig('http://127.0.0.1:4174/', true, true)
+  assert.equal(config.url, 'http://127.0.0.1:4174/')
+  assert.equal(config.status, 'QA_PENDING')
+})

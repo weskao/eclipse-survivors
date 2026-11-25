@@ -10,7 +10,7 @@ import { chromium } from 'playwright'
 import { heroVideoCaptureConfig, assessHeroCandidateCoverage, assessHeroEastActionCoverage, assessHeroNorthernRunCoverage, heroNorthernRunBatches } from './es2-hero-video-config.mjs'
 
 const candidateQA = process.env.ES2_HERO_QA === '1'
-const capture = heroVideoCaptureConfig(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/', candidateQA)
+const capture = heroVideoCaptureConfig(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/', candidateQA, process.env.ES2_HERO_QA_DEFAULT === '1')
 const output = capture.output
 await mkdir(output, { recursive: true })
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })

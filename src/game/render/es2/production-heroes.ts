@@ -95,11 +95,19 @@ function loadHeroMotionOnDemand(image: HeroWithMotion): HTMLImageElement | null 
 }
 export type ProductionHeroArtwork = Record<SpecializationId, HTMLImageElement>
 
+/** Normal development gameplay on this integration branch reviews the already wired
+ * candidate clips. Production and explicit diagnostic opt-out retain approved sources. */
+export function heroCandidatePlaybackEnabled(dev: boolean, mode: string, search: string): boolean {
+  if (!dev) return false
+  const query = new URLSearchParams(search)
+  if (query.get('es2HeroArtQA') === '0' || query.get('es2HeroSouthQA') === '0') return false
+  return mode !== 'test' || query.get('es2HeroArtQA') === '1' || query.get('es2HeroSouthQA') === '1'
+}
+
 export function loadProductionHeroes(
   makeImage: () => HTMLImageElement = () => new Image(),
-  enableSouthRunQA = import.meta.env.DEV && typeof window !== 'undefined' &&
-    (new URLSearchParams(window.location.search).get('es2HeroSouthQA') === '1' ||
-      new URLSearchParams(window.location.search).get('es2HeroArtQA') === '1'),
+  enableSouthRunQA = heroCandidatePlaybackEnabled(import.meta.env.DEV, import.meta.env.MODE,
+    typeof window === 'undefined' ? '' : window.location.search),
 ): ProductionHeroArtwork {
   const result = {} as ProductionHeroArtwork
   for (const id of Object.keys(PRODUCTION_HERO_SOURCES) as SpecializationId[]) {

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { drawProductionHeroFrame, loadProductionHeroes, productionHeroSouthRunRect, productionHeroQAEastRect, PRODUCTION_HERO_SOUTH_RUN_SOURCES } from './production-heroes'
+import { describe, expect, it, vi } from 'vitest'
+import { drawProductionHeroFrame, heroCandidatePlaybackEnabled, loadProductionHeroes, productionHeroSouthRunRect, productionHeroQAEastRect, PRODUCTION_HERO_SOUTH_RUN_SOURCES } from './production-heroes'
 import { HERO_DIAGONAL_RUN_ATLASES, HERO_NORTHERN_RUN_ATLASES } from './hero-candidate-atlas'
 import { sampleHeroAnimation, type HeroAnimation } from '../animation'
 import { createHero, createState } from '../../state'
@@ -281,5 +281,38 @@ describe('Shadowblade real-state to Canvas continuity', () => {
     draw(makeAnim({ direction: 0, pose: 'cast', special: true, phase: .4 }), 1.048)
     expect(draws).toHaveLength(1)
     expect((draws[0]?.[0] as HTMLImageElement).src).toContain('special-east-4frames')
+  })
+})
+
+describe('ordinary development entry uses eligible hero motion assets', () => {
+  it('defaults to candidate motion only in development; explicit opt-out and production are safe', () => {
+    expect(heroCandidatePlaybackEnabled(true, 'development', '')).toBe(true)
+    expect(heroCandidatePlaybackEnabled(true, 'development', '?es2HeroArtQA=0')).toBe(false)
+    expect(heroCandidatePlaybackEnabled(false, 'production', '?es2HeroArtQA=1')).toBe(false)
+    expect(heroCandidatePlaybackEnabled(true, 'test', '')).toBe(false)
+  })
+  it('loads each hero own movement, attack and special in the default DEV loader', () => {
+    vi.stubEnv('DEV', true)
+    vi.stubEnv('MODE', 'development')
+    try {
+      const heroes = loadProductionHeroes(() => ({
+        src: '', complete: true,
+        get naturalWidth() { return this.src.includes('/east-2026-11-23/') ? 1408 :
+          this.src.includes('4frames@3x.webp') ? 1536 : 900 },
+        get naturalHeight() { return this.naturalWidth },
+      }) as HTMLImageElement)
+      const draws: unknown[][] = []
+      const ctx = { save: () => {}, restore: () => {},
+        drawImage: (...args: unknown[]) => draws.push(args) } as unknown as Ctx2D
+      for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+        for (const [pose, special, expected] of [
+          ['run', false, 'run'], ['attack', false, 'attack'], ['cast', true, 'special'],
+        ] as const) {
+          draws.length = 0
+          expect(drawProductionHeroFrame(ctx, heroes[id], makeAnim({direction: 0, pose, special, phase: .5}), 117, 147)).toBe(true)
+          expect((draws[0]?.[0] as HTMLImageElement).src).toContain(id + '/candidates/east-2026-11-23/' + expected + '-east-4frames')
+        }
+      }
+    } finally { vi.unstubAllEnvs() }
   })
 })
