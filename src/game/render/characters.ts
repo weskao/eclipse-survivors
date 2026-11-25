@@ -11,7 +11,7 @@ import { isSpecializationId } from '../content/heroes'
 import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, drawProductionBossFrame } from './es2/production-world'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
-import { sampleHealthBar, type HealthBarMotion } from './health-bars'
+import { drawEnemyHealthBar, sampleHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
@@ -225,7 +225,7 @@ export function drawCharacter(
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
-  healthBars?: WeakMap<Mob, HealthBarMotion>,
+  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -344,12 +344,10 @@ export function drawCharacter(
     }
   }
   ctx.restore()
-  if (mob) {
+  if (mob && mob.hp > 0) {
     // The cache is renderer-owned and weakly keyed. Full-health enemies only seed one entry;
     // no gradients, timers or extra frame loops are needed in dense combat.
-    const motion = healthBars ? sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
-      : { front: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))),
-          trail: Math.max(0, Math.min(1, mob.hp / Math.max(1, mob.max))) }
+    const motion = sampleHealthBar(mob, s.worldClock, healthBars, reducedMotion)
     if (mob.type === 'boss') {
       const bar = 190, left = x - bar / 2
       const growth = productionBoss ? Math.min(sx, sy) * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
@@ -361,15 +359,8 @@ export function drawCharacter(
       }
       ctx.fillStyle = '#ce63a5'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 8)
       ctx.fillStyle = '#f9c0d8'; ctx.fillRect(left + 2, top + 2, (bar - 4) * motion.front, 1)
-    } else if (mob.hp < mob.max || motion.front < 0.998) {
-      const bar = Math.max(34, sx * 0.58), left = x - bar / 2, top = y - sy - 8
-      ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
-      if (motion.trail > motion.front + 0.002) {
-        ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.trail, 4)
-      }
-      ctx.fillStyle = mob.elite ? '#d6a4f3' : '#e98275'
-      ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 4)
-      ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 1)
+    } else {
+      drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite)
     }
   }
 }

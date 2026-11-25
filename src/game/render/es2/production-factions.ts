@@ -6,6 +6,7 @@ import type { GameState } from '../../types'
 import { WORLD_ART } from './production-world'
 import { drawFactionTelegraphs } from '../../content/enemies/telegraphs'
 import type { Ctx2D } from '../ctx'
+import { drawEnemyHealthBar, sampleHealthBar, type HealthBarMotion, type HealthBarTarget } from '../health-bars'
 import { drawProjectileSprite, type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
 
 export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement; highResBody?: HTMLImageElement }>
@@ -64,6 +65,7 @@ const ready = (image: HTMLImageElement | undefined, columns = 1): image is HTMLI
 export function drawLiveFactionArt(
   ctx: Ctx2D, state: GameState, runtime: FactionRuntime, images: Partial<FactionArtwork>,
   ox: number, oy: number,
+  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reducedMotion = false,
 ): number {
   // Original warning geometries, tied to true aim/radius, are painted first.
   drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy)
@@ -108,6 +110,9 @@ export function drawLiveFactionArt(
       ctx.drawImage(pair.telegraph, 0, 0, pair.telegraph.naturalWidth, pair.telegraph.naturalHeight, -20, -h - 18, 40, 40)
     }
     ctx.restore()
+    // Keep the bar above the windup cue in every pose so it never jumps or mirrors.
+    drawEnemyHealthBar(ctx, sampleHealthBar(enemy, state.worldClock, healthBars, reducedMotion),
+      x, y - h - 26, size, !!enemy.affix)
     drawn++
   }
   return drawn

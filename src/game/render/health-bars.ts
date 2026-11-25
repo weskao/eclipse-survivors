@@ -1,4 +1,6 @@
-import type { Mob } from '../types'
+import type { Ctx2D } from './ctx'
+
+export interface HealthBarTarget { hp: number; max: number }
 
 export interface HealthBarMotion {
   front: number
@@ -9,14 +11,15 @@ export interface HealthBarMotion {
 
 export interface HealthBarFrame { readonly front: number; readonly trail: number }
 
-const ratio = (mob: Mob): number => mob.max > 0 && Number.isFinite(mob.hp) && Number.isFinite(mob.max)
+const ratio = (mob: HealthBarTarget): number => mob.max > 0 && Number.isFinite(mob.hp) && Number.isFinite(mob.max)
   ? Math.max(0, Math.min(1, mob.hp / mob.max)) : 0
 
 /** A WeakMap lives with the renderer: dead mobs never retain history and simulation HP is untouched. */
 export function sampleHealthBar(
-  mob: Mob, time: number, cache: WeakMap<Mob, HealthBarMotion>, reduceMotion = false,
+  mob: HealthBarTarget, time: number, cache?: WeakMap<HealthBarTarget, HealthBarMotion>, reduceMotion = false,
 ): HealthBarFrame {
   const target = ratio(mob)
+  if (!cache) return { front: target, trail: target }
   const old = cache.get(mob)
   if (!old || reduceMotion || !Number.isFinite(time) || time < old.at) {
     const current: HealthBarMotion = { front: target, trail: target, target, at: time }
@@ -40,4 +43,18 @@ export function sampleHealthBar(
   if (Math.abs(target - old.front) < 0.002) old.front = target
   if (Math.abs(target - old.trail) < 0.002) old.trail = target
   return old
+}
+
+/** Shared overhead UI for all non-boss enemies, regardless of their simulation pool. */
+export function drawEnemyHealthBar(
+  ctx: Ctx2D, motion: HealthBarFrame, x: number, top: number, spriteWidth: number, elite = false,
+): void {
+  const bar = Math.max(34, spriteWidth * 0.58), left = x - bar / 2
+  ctx.fillStyle = '#020608e6'; ctx.fillRect(left, top, bar, 6)
+  if (motion.trail > motion.front + 0.002) {
+    ctx.fillStyle = '#f2c37e'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.trail, 4)
+  }
+  ctx.fillStyle = elite ? '#d6a4f3' : '#e98275'
+  ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 4)
+  ctx.fillStyle = '#fff1de88'; ctx.fillRect(left + 1, top + 1, (bar - 2) * motion.front, 1)
 }

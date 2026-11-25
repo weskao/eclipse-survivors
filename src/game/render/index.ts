@@ -9,7 +9,7 @@ import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
 import type { GameState, Hero, Mob } from '../types'
 import { drawCharacter } from './characters'
-import { type HealthBarMotion } from './health-bars'
+import type { HealthBarMotion, HealthBarTarget } from './health-bars'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
 import { preloadHeroSpecialVfx } from './es2/hero-special-vfx'
@@ -52,7 +52,7 @@ export interface RenderAssets {
   gems: GemSprites
   particles: ParticleSpriteCache
   mobTint: MobTintCache
-  healthBars: WeakMap<Mob, HealthBarMotion>
+  healthBars: WeakMap<HealthBarTarget, HealthBarMotion>
   weatherCache?: { ctx: Ctx2D; width: number; height: number; weather: string; gradient: CanvasGradient }
 }
 
@@ -138,7 +138,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (bossSnapshot) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H)
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)
-    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy)
+    drawLiveFactionArt(ctx, s, assets.factions.runtime, assets.factionArtwork, ox, oy, assets.healthBars, reduced)
   const objects = assets.depthOrder
   objects.length = 0
   // Reject offscreen and dead mobs before sorting, not after the sort in drawCharacter.
