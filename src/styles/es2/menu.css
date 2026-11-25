@@ -672,3 +672,28 @@
 @media(horizontal-viewport-segments:2){
   .es2-menu .es2-menu-action-bar{padding-left:max(calc(env(viewport-segment-left 1 0) + 12px),env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
 }
+
+/* One visual language for hero dossiers and expedition briefings. The panel is
+   teleported above the lobby but below real modals, never clipped by a card. */
+.es2-hover-details{
+  position:fixed;z-index:300;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);
+  overflow:auto;overscroll-behavior:contain;padding:15px 16px 16px;
+  color:#f7e9d1;font-family:Georgia,'Noto Serif TC','PingFang TC',serif;
+  border:1px solid #a98a55;border-radius:5px 19px 5px 19px;
+  background:radial-gradient(ellipse at 0 0,#51432e66,transparent 50%),linear-gradient(155deg,#1b2938,#0b1420 80%);
+  box-shadow:0 15px 36px #000a,inset 0 0 0 3px #bca27816;
+}
+.es2-hover-details__header{display:flex;gap:11px;align-items:center;padding-bottom:10px;margin-bottom:11px;border-bottom:1px solid #a78d5955}
+.es2-hover-details__header>div{min-width:0}
+.es2-hover-details__seal{flex:0 0 36px;width:36px;height:36px;display:grid;place-items:center;background:#493b29;color:#ffe2a0;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);font-size:23px}
+.es2-hover-details__header h2{margin:0;color:#ffe1a6;font-size:calc(1.2rem * var(--es2-ui-scale,1));line-height:1.25;overflow-wrap:anywhere}
+.es2-hover-details__header p{margin:4px 0 0;color:#bfcad3;font:500 calc(.78rem * var(--es2-ui-scale,1))/1.4 system-ui,sans-serif}
+.es2-hover-details .es2-hero-detail-content{gap:9px;font-size:calc(.84rem * var(--es2-ui-scale,1));overflow-wrap:anywhere}
+.es2-hover-details .es2-hero-detail-content p{padding-block-end:6px;border-bottom:1px solid #a78d5926}
+.es2-hover-details .es2-hero-detail-content p:last-child{border:0;padding-block-end:0}
+.es2-hover-details .es2-hero-detail-content .es2-hero-stat{border-radius:3px;border-color:#a78d5933;background:#0c1723}
+.es2-hover-details .es2-hero-detail-special{padding:6px;border-inline-start:2px solid #caa972;background:#caa9720c}
+@media (hover:hover) and (pointer:fine){
+  .es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger{display:none}
+  .es2-menu .es2-objective-choice{padding-inline-end:9px}
+}

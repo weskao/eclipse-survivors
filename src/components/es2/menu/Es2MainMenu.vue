@@ -8,7 +8,8 @@ import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { HeroId, JobId } from '../../../game/types'
 import HeroRoster from '../hero-roster/HeroRoster.vue'
 import HeroStats from '../hero-roster/HeroStats.vue'
-import Es2Dialog from './Es2Dialog.vue'
+import Es2DetailSurface from './Es2DetailSurface.vue'
+import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
@@ -38,7 +39,9 @@ const links: readonly { id: MenuView; name: string; icon: string }[] = [
   { id: 'monsters', name: '魔物圖鑑', icon: '♜' }, { id: 'skills', name: '技能圖鑑', icon: '✦' },
   { id: 'achievements', name: '成就殿堂', icon: '♛' },
 ]
-const detailHero = ref<HeroId | null>(null)
+const heroDetails = useHoverDetails<HeroId>('[data-hero], [data-hero-id]', el =>
+  (el.getAttribute('data-hero') ?? el.getAttribute('data-hero-id')) as HeroId | null)
+const { id: detailHero, anchor: heroAnchor, tooltipId: heroTooltipId, events: heroHoverEvents } = heroDetails
 const detailClassic = computed(() => heroes.find(hero => hero.id === detailHero.value) ?? null)
 const detailSpecialization = computed(() => detailHero.value && detailHero.value in HERO_DEFINITIONS
   ? HERO_DEFINITIONS[detailHero.value as keyof typeof HERO_DEFINITIONS] : null)
@@ -72,6 +75,7 @@ const modeDuration = computed(() => selectedMode.value.duration === null
   ? '∞' : formatDuration(selectedMode.value.duration))
 const page = ref<'heroes' | 'modes'>('heroes')
 function toggleExpeditionPage(): void {
+  heroDetails.clear()
   page.value = page.value === 'heroes' ? 'modes' : 'heroes'
   void nextTick(() => { if (menu.value) menu.value.scrollTop = 0 })
 }
@@ -124,7 +128,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         <div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" data-ui-sfx="select" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
       </nav>
       <div class="es2-menu-layout">
-        <section v-show="page === 'heroes'" id="es2HeroPage" class="es2-hero-section" aria-labelledby="es2HeroTitle">
+        <section v-show="page === 'heroes'" id="es2HeroPage" class="es2-hero-section" aria-labelledby="es2HeroTitle" v-on="heroHoverEvents">
           <div class="es2-section-heading"><span>{{ t('01 / 命運繼承者') }}</span><h2 id="es2HeroTitle">{{ t("選擇命運的繼承者") }}</h2><p>{{ t("每位英雄都擁有專屬的戰鬥風格。") }}</p></div>
           <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
             <div v-for="hero in heroes" :key="hero.id" class="es2-hero-card-shell">
@@ -140,10 +144,10 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               </button>
               <button type="button" class="es2-hero-detail-trigger" data-ui-sfx="select"
                 :data-es2-hero-details="hero.id" :aria-label="t('查看英雄詳情') + ' · ' + t(hero.name)"
-                @click="detailHero = hero.id" aria-haspopup="dialog"><span aria-hidden="true">i</span></button>
+                @click="heroDetails.openModal(hero.id)" aria-haspopup="dialog"><span aria-hidden="true">i</span></button>
             </div>
           </div>
-          <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" @details="detailHero = $event" />
+          <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" @details="heroDetails.openModal($event)" />
         </section>
         <section v-show="page === 'modes'" id="es2ExpeditionPage" class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
@@ -182,8 +186,8 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
         <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
       </div>
     </div>
-    <Es2Dialog :active="detailHero !== null" :title="t(detailName)" :subtitle="t(detailRole)"
-      @cancel="detailHero = null">
+    <Es2DetailSurface :active="detailHero !== null" :title="t(detailName)" :subtitle="t(detailRole)"
+      :anchor="heroAnchor" :tooltip-id="heroTooltipId" @cancel="heroDetails.clear()" @hold="heroDetails.hold()" @leave="heroDetails.leave()">
       <div v-if="detailStats" class="es2-hero-detail-content">
         <HeroStats class="es2-roster__stats" :stats="detailStats" />
         <template v-if="detailSpecialization">
@@ -198,6 +202,6 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <p>{{ t('弱點 ·') }} {{ t(detailSpecialization.weaknesses.join(' / ')) }}</p>
         </template>
       </div>
-    </Es2Dialog>
+    </Es2DetailSurface>
   </main>
 </template>
