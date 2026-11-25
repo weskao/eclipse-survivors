@@ -199,6 +199,27 @@ describe('ES2 main menu integration adapter', () => {
     }
   })
 
+  it('shows unlocked archive details on request, with no disclosure of undiscovered entries', async () => {
+    const wrapper = mounted({ relics: [
+      { id: 'known', title: 'Known relic', owned: true, description: 'Known effect', effect: 'Known effect' },
+      { id: 'secret', title: 'Secret relic', owned: false, effect: 'Secret effect' },
+    ] })
+    click('.es2-hall-links button:nth-child(2)')
+    await nextTick()
+    expect(find('[data-es2-archive-page]').textContent).not.toContain('Known effect')
+    expect(find('[data-es2-card-info="relic:known"]')).not.toBeNull()
+    expect(document.querySelector('[data-es2-card-info="relic:secret"]')).toBeNull()
+    expect(find('[data-es2-archive-page]').textContent).not.toContain('Secret effect')
+    click('[data-es2-card-info="relic:known"]')
+    await nextTick()
+    expect(find('[role="dialog"]').textContent).toContain('Known effect')
+    expect(find('[role="dialog"]').textContent).not.toContain('Secret effect')
+    expect(wrapper.emitted('purchase')).toBeUndefined()
+    click('.es2-close')
+    await nextTick()
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+  })
+
   it('uses a single hall navigation, preserves lobby selection and restores the expedition page when returning', async () => {
     const wrapper = mounted({ heroId: 'shadowblade', runMode: 'boss-rush' })
     click('[data-es2-expedition-navigation]')

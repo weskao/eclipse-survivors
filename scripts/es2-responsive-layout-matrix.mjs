@@ -303,6 +303,25 @@ try {
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
       }
+      const achievement = page.locator('[data-es2-context-card="achievement:first-blood"]')
+      const info = achievement.locator('[data-es2-card-info]')
+      if (hoverCapable) {
+        assert.equal(await info.isVisible(), false)
+        await achievement.hover()
+        const tip = page.locator('[data-es2-hover-details]')
+        await tip.waitFor({ state: 'visible' })
+        assert.ok(inside(await tip.evaluate(rect), width, height), name + ': archive detail clips')
+        assert.match(await tip.innerText(), /初臨戰場|First Blood/i)
+        await page.keyboard.press('Escape')
+        await tip.waitFor({ state: 'hidden' })
+      } else {
+        assert.equal(await info.isVisible(), true)
+        await info.click()
+        const detail = page.locator('.es2-dialog[role="dialog"]')
+        await detail.waitFor({ state: 'visible' })
+        assert.match(await detail.innerText(), /初臨戰場|First Blood/i)
+        await detail.locator('.es2-close').click()
+      }
       await page.screenshot({ path: destination + '/' + name + '-archive.png', animations: 'disabled' })
       await page.locator('[data-es2-return-lobby]').click()
       await page.locator('.es2-start').waitFor({ state: 'visible' })
