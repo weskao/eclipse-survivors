@@ -53,18 +53,21 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 ### Wave 1 — Combat Juice [P0; first delivery]
 - [x] Normal/heavy/critical contact differentiation with single cached rendering path and priority preservation (RED 45683517312; GREEN 45683993331).
 - [ ] Remaining tiered impact feedback: evolved, mass kill, boss stagger, hero active and boss death.
-- [ ] Local animation hit stop (initial target 25–50ms) and directional knockback without pausing simulation, inputs, cooldowns or audio.
+- [x] Legacy heavy/critical local animation hit stop (35/50ms) without pausing simulation or input (RED 45684497744; GREEN 45685008359).
+- [ ] Extend local hit stop to faction and boss-specific poses; directional knockback acceptance.
 - [ ] Authored enemy hit, death and dissolve animations; preserve art identity.
 - [ ] Critical and damage-number hierarchy; preserve danger readability.
 - [x] Authoritative kill streak and burst multikill counts, expiry/reset, legacy and faction kill ownership; no damage bonus (RED: 45680983083; GREEN test log: 45681389783, combat.test.ts; later workflow steps cancelled by newer HEAD).
 - [x] Live combo HUD, game-clock expiry and bilingual highest streak/multikill run results (RED 45681795019; GREEN 45682705645, engine/HUD/result tests).
-- [ ] Kill streak and burst multikill presentation and milestone feedback 10/25/50/100/200/500.
+- [x] Six kill streak milestones (10/25/50/100/200/500), highest-per-tick feedback and rate-limited layered cue (RED 45684497744; GREEN 45685008359).
+- [ ] Further distinct milestone visual/audio presentation and multikill feedback.
 - [ ] Layered combat/kill SFX, rate limiting, preserve complete active-skill playback.
 - [ ] Camera impact and accessibility controls; reduced motion/flashing, supported mobile haptics.
 
 ### Wave 2 — Power Fantasy [P0; first delivery]
 - [ ] Review skill Lv.1–5 power curves; keep tuning in balance config.
-- [ ] Qualitative rank breakthroughs: projectile count, AoE, chains, elemental effects or summons; e.g. chain lightning single target to chaining, shock, kill discharge and evolution.
+- [x] Chain lightning Lv.1–5 target progression, Lv.4 shock and bounded Lv.5 kill discharge; actual damage and upgrade preview (RED 45684497744; GREEN 45685008359).
+- [ ] Other qualitative rank breakthroughs: projectile count, AoE, elemental effects or summons.
 - [ ] Improve first-upgrade timing with mode-specific balance tests.
 - [x] Coalesce same-tick XP gem pickup audio while preserving exact per-gem XP and pickup receipts (RED: run 45677562464; GREEN: run 45678439675, step.test.ts).
 - [x] XP gem acceleration and same-tick collection, preserving exact XP and pickup receipts (RED: run 45680019938; GREEN: run 45680367799, step.test.ts; player simulation path verified).
@@ -84,8 +87,9 @@ Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First de
 
 ### Wave 4 — Encounter Director [P1; first delivery]
 - [ ] Audit and extend existing director, single authoritative spawn owner.
-- [ ] Eight encounter compositions: Swarm Rush, Encirclement, Elite Invasion, Ranged Assault, Titan March, Treasure Rush, Eclipse Surge, Recovery Phase.
-- [ ] Pressure peaks and recovery windows scaled by mode duration; preserve boss timing, win rules and actor caps. Live assault/reward interval multipliers implemented; RED 45680983083 / GREEN 45681389783; mode-specific timing and integrated acceptance pending.
+- [x] Eight encounter identities and legacy spawn composition policies; deterministic rotation, swarm/elite live tests (RED 45684497744; GREEN 45685008359).
+- [ ] Integrated encounter acceptance across all eight compositions and faction spawn ownership.
+- [ ] Pressure peaks and recovery windows scaled by mode duration; preserve boss timing, win rules and actor caps. Live assault/reward interval multipliers implemented; RED 45680983083 / GREEN 45681389783; mode-specific cycle scaling RED 45684497744 / GREEN 45685008359; integrated acceptance pending.
 - [ ] Risk/reward world events, cursed offers and optional dangerous treasure.
 - [ ] Boss stagger, weakness windows and phase transitions with readable telegraphs; preserve collisions.
 - [ ] Boss kill and battlefield cleansing audiovisual presentation.

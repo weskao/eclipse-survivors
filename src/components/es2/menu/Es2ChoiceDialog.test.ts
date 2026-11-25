@@ -259,3 +259,20 @@ describe('ES2 dialog accessibility', () => {
     expect(wrapper.emitted('cancel')).toHaveLength(1)
   })
 })
+
+it('reveals treasure rarity without delaying or duplicating the claim, and supports skipping', async () => {
+  const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'treasure', items: [
+    { id: 'cursed', title: 'Cursed relic', rarity: 'legendary', cursed: true },
+    { id: 'epic', title: 'Epic relic', rarity: 'epic' },
+  ] })
+  await nextTick()
+  expect(dialog().querySelector('[data-es3-reveal="treasure"]')).not.toBeNull()
+  expect(button('cursed').querySelector('[data-es3-cursed]')).not.toBeNull()
+  dialog().querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!.click()
+  await nextTick()
+  expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
+  expect(wrapper.emitted('choose')).toBeUndefined()
+  button('epic').click()
+  button('epic').click()
+  expect(wrapper.emitted('choose')).toEqual([['epic']])
+})

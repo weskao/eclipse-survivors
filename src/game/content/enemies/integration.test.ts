@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { step } from '../../step'
 import { createHero, createState } from '../../state'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ENEMY_DEFINITIONS, ELITE_AFFIXES } from './definitions'
@@ -181,4 +182,18 @@ it('keeps previously dropped XP when a faction death crosses the gem budget', ()
   expect(s.kill).toBe(1)
   expect(s.stars.length).toBeLessThanOrEqual(220)
   expect(s.stars.reduce((sum, star) => sum + star.value, 0)).toBe(660 + ENEMY_DEFINITIONS.berserker.xp)
+})
+
+it('resolves final-lifetime swept contact with a faction enemy before removing a projectile', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => 0.2, lineOfSight: () => true })
+  s.hero!.attack = 999
+  s.spawnT = 999
+  s.nextEventAt = Infinity
+  const e = bridge.spawn(s, 'berserker', 60, 0)!
+  e.speed = 0
+  const hp = e.hp
+  s.shots.push({ x: 0, y: 0, vx: 540, vy: 0, life: 0.1, d: 10, r: 5, kind: 'arrow' })
+  step(s, 0.15, { x: 0, y: 0 }, hooks, undefined, undefined, bridge)
+  expect(e.hp).toBeLessThan(hp)
+  expect(s.shots).toHaveLength(0)
 })

@@ -319,3 +319,34 @@ describe('ES3 local animation and milestone feedback', () => {
     expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'killStreak')).toHaveLength(1)
   })
 })
+
+ describe('ES3 reward feedback', () => {
+  it('collects a global magnet and attracts distant XP only while active', () => {
+    const { s, hero } = setup()
+    s.nextEventAt = Infinity
+    s.events.push({ id: 1, kind: 'magnet', x: hero.x, y: hero.y, expiresAt: 30 })
+    s.stars.push({ x: 700, y: 0, value: 3, t: 0 })
+    const hooks = spyHooks()
+    step(s, 0.016, still, hooks)
+    expect(s.events).toHaveLength(0)
+    expect(s.magnetUntil).toBeGreaterThan(s.time)
+    step(s, 0.1, still, hooks)
+    expect(s.stars[0]!.x).toBeLessThan(700)
+    s.time = s.magnetUntil + 0.1
+    const x = s.stars[0]!.x
+    step(s, 0.1, still, hooks)
+    expect(s.stars[0]!.x).toBe(x)
+  })
+  it('plays a single enhanced pickup cue and bounded absorption particles for many gems', () => {
+    const { s, hero } = setup()
+    hero.need = 1000000
+    s.stars = Array.from({ length: 12 }, () => ({ x: 0, y: 0, value: 1, t: 0 }))
+    const hooks = spyHooks()
+    step(s, 0.016, still, hooks)
+    expect(hero.xp).toBe(12)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'pickupBurst')).toHaveLength(1)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'pickup')).toHaveLength(0)
+    expect(s.fx.length).toBeGreaterThan(0)
+    expect(s.fx.length).toBeLessThanOrEqual(12)
+  })
+})
