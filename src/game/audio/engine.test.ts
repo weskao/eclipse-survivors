@@ -752,3 +752,18 @@ describe('hero active skill audio lifetime', () => {
     if (action !== 'dispose') audio.dispose()
   })
 })
+
+it('plays five different claim signatures through the real audio scheduler', () => {
+  const signatures = Array.from({ length: 5 }, (_, tier) => {
+    ctx = new FakeAudioContext()
+    const audio = make()
+    audio.wake()
+    audio.playSfx('treasureClaim', tier)
+    const signature = ctx.oscillators.map(n => [n.type, n.frequency.value, n.startedAt, n.stoppedAt])
+    expect(signature.length).toBeGreaterThanOrEqual(3)
+    expect(signature.length).toBeLessThanOrEqual(6)
+    audio.dispose()
+    return JSON.stringify(signature)
+  })
+  expect(new Set(signatures).size).toBe(5)
+})

@@ -212,3 +212,17 @@ describe('ES3 mode-specific encounter cycle', () => {
     expect(describeWave('endless', 0, 40).encounter).toBe('recovery')
   })
 })
+
+it('gives objective modes distinct ordinary encounter timing without moving their boss and wave gates', () => {
+  expect(describeWave('boss-rush', 0, 12).stage).toBe('assault')
+  expect(describeWave('boss-rush', 0, 13).stage).toBe('boss-prep')
+  expect(describeWave('boss-rush', 0, 25).stage).toBe('boss')
+  expect(describeWave('endless-eclipse', 0, 15).stage).toBe('build-up')
+  expect(describeWave('endless-eclipse', 0, 51).stage).toBe('recovery')
+  expect(describeWave('relic-hunt', 0, 15).stage).toBe('build-up')
+  expect(describeWave('relic-hunt', 0, 220).stage).toBe('boss')
+  expect(describeWave('cursed-expedition', 0, 13).stage).toBe('assault')
+  expect(describeWave('cursed-expedition', 0, 100).stage).toBe('boss')
+  expect(describeWave('chaos-arena', 0, 15).stage).toBe('assault')
+  expect(describeWave('chaos-arena', 0, 32).stage).toBe('recovery')
+})

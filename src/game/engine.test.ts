@@ -697,3 +697,19 @@ describe('ES3 early upgrade pacing', () => {
     expect(engine.state.levelQueue).toBe(0)
   })
 })
+
+it.each(['common', 'rare', 'epic', 'legendary', 'cursed'] as const)('plays the actual claimed relic rarity accent from a %s chest only once', tier => {
+  engine.start()
+  const s = engine.state, hero = s.hero!
+  s.mobs = []; s.spawnT = 100; s.nextEventAt = Infinity
+  s.events = [{ id: 1, kind: 'chest', tier, x: hero.x, y: hero.y, expiresAt: s.time + 30 }]
+  const play = vi.spyOn(audio, 'playSfx')
+  engine.advance(.016)
+  expect(engine.ui.specialChoice?.tier).toBe(tier)
+  const item = engine.ui.specialChoice!.items[0]!
+  const expected = ['common','rare','epic','legendary','cursed'].indexOf(item.cursed ? 'cursed' : item.rarity ?? 'common')
+  engine.chooseTreasure(item.id)
+  engine.chooseTreasure(item.id)
+  expect(play.mock.calls.filter(([cue]) => cue === 'treasureClaim')).toEqual([['treasureClaim', expected]])
+  expect(inventorySnapshot(s).items).toHaveLength(1)
+})
