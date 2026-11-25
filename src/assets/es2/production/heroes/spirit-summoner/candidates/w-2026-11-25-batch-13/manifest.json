@@ -1,0 +1,268 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "W",
+  "sourceDirection": "W",
+  "mirrorAllowed": false,
+  "native3x": "core_height_threshold_pass_visual_unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    641,
+    649,
+    633,
+    646
+  ],
+  "footBottomsStatus": "Alpha >=128 bottom proxy only; verify anatomical feet at gameplay size.",
+  "alphaBounds": [
+    [
+      78,
+      78,
+      689,
+      689
+    ],
+    [
+      78,
+      78,
+      689,
+      689
+    ],
+    [
+      78,
+      78,
+      689,
+      689
+    ],
+    [
+      78,
+      78,
+      689,
+      683
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        36,
+        48,
+        607,
+        571
+      ],
+      "coreExtent": [
+        571,
+        523
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "clearedMarginPixels": 3921,
+      "outputAlphaBounds": [
+        78,
+        78,
+        689,
+        689
+      ],
+      "footBottomProxy": 641,
+      "footAnchor": null
+    },
+    {
+      "index": 1,
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        35,
+        48,
+        603,
+        579
+      ],
+      "coreExtent": [
+        568,
+        531
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "clearedMarginPixels": 3705,
+      "outputAlphaBounds": [
+        78,
+        78,
+        689,
+        689
+      ],
+      "footBottomProxy": 649,
+      "footAnchor": null
+    },
+    {
+      "index": 2,
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        35,
+        48,
+        597,
+        563
+      ],
+      "coreExtent": [
+        562,
+        515
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "clearedMarginPixels": 5167,
+      "outputAlphaBounds": [
+        78,
+        78,
+        689,
+        689
+      ],
+      "footBottomProxy": 633,
+      "footAnchor": null
+    },
+    {
+      "index": 3,
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        35,
+        47,
+        610,
+        576
+      ],
+      "coreExtent": [
+        575,
+        529
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "clearedMarginPixels": 4465,
+      "outputAlphaBounds": [
+        78,
+        78,
+        689,
+        683
+      ],
+      "footBottomProxy": 646,
+      "footAnchor": null
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "6df054b20ba090864510ae31b251053451a9094cb8f54bbaa4a669d94bbd87b8",
+  "originalPNGSHA256": "327410b4bda7e3215ca461072d6b4a3dd713788edc8517754d0b6484fe19247e",
+  "atlasFile": "run-w-4frames@3x.webp",
+  "webpSHA256": "673be12a125d69d70e8b717936306e8970fc3b1a16803fdc86a836ce036d1eef",
+  "bytes": 849342,
+  "sourceProvenance": {
+    "generationId": "a8311352-5fcc-4f32-be78-139591040b1d",
+    "reference": "Repository Spirit Summoner canonical portrait at 819191383c89d8e300f024870a8215f45292c0a4; visually reviewed",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "inputName": "a_clean_transparent_png_composite_sheet_no_backgr.png"
+  },
+  "encoding": "Pillow WebP quality 100; review only; Polytool not run",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "No resizing; 627px original cells centered on transparent 768px cells. Only alpha <=2 outer 8px source margin pixels cleared in padded derivative.",
+    "Canonical silver hair, blue-white-gold outfit and blue flame staff visually checked; anatomical staff hand and animation continuity need gameplay review.",
+    "Native 3x core-height proxy does not certify manual visual quality. Four-frame DEV candidate only, not a complete ten-frame run.",
+    "Polytool installation attempted but GitHub DNS resolution failed; cwebp absent. Official conversion/provenance review required before admission."
+  ]
+}
