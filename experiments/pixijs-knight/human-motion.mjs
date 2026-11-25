@@ -56,8 +56,17 @@ export function sampleFootCycle(distance,strideLength,side,stride,stance=.6){
  const t=clamp((u-stance)/(1-stance)),travel=u<stance?strideLength*(stance/2-u):strideLength*stance*(ease(t)-.5)
  const lift=u<stance?0:Math.sin(Math.PI*t)**2
  const heelEnd=stance*.2,toeStart=stance*.75
- const pitch=u<heelEnd?-.22*(1-ease(u/heelEnd)):u<toeStart?0:u<stance?.42*ease((u-toeStart)/(stance-toeStart)):.42*(1-ease(t))-.22*ease(t)
- return {travel:travel*stride,lift:lift*stride,pitch:pitch*stride,phase:u,planted:u<stance}
+ // The heel rocker lowers the forefoot; the midstance sole stays flat.
+ // The forefoot rocker raises the heel, then swing restores clearance
+ // and prepares the next heel contact. Values are conservative art tuning.
+ const heelPitch=-.16,toePitch=.26
+ const rocker=u<heelEnd?'heel':u<toeStart?'flat':u<stance?'toe':'swing'
+ const pitch=rocker==='heel'?heelPitch*(1-ease(u/heelEnd)):
+  rocker==='flat'?0:rocker==='toe'?toePitch*ease((u-toeStart)/(stance-toeStart)):
+  t<.5?toePitch*(1-ease(t/.5)):heelPitch*ease((t-.5)/.5)
+ // Release the forefoot pivot in early swing and prepare the heel in late swing.
+ const pivotWeight=rocker!=='swing'?1:t<.5?1-ease(t/.5):ease((t-.5)/.5)
+ return {travel:travel*stride,lift:lift*stride,pitch:pitch*stride,phase:u,planted:u<stance,rocker,pivotWeight}
 }
 export function sampleSwordArc(p){
  const t=clamp(p.phase),attack=p.pose==='attack'||p.pose==='cast'
@@ -85,17 +94,20 @@ const shinRotation=(rest,solved)=>signedAngle(angle(solved[1],solved[2])-angle(r
 function solveAnkleLeg(chain,target,viewAngle,activity,limits,pitch){
  const solve=(t,a)=>Number.isFinite(viewAngle)?solveProjectedLeg(chain,t,viewAngle,a,limits).points:solveChain(chain,t,limits)
  const maxShin=radians(40),maxRelative=radians(30),maxBoot=radians(18)
+ // Contact orientation has priority: the tibia adapts to the boot, not
+ // the boot to an infeasible tibia. Otherwise a flat support foot tilts.
+ const desired=bound(pitch,-maxBoot,maxBoot)
+ const admissible=points=>{const shin=shinRotation(chain,points);return Math.abs(shin)<=maxShin&&Math.abs(signedAngle(desired-shin))<=maxRelative}
  let points=solve(target,activity)
- if(Math.abs(shinRotation(chain,points))>maxShin){
+ if(!admissible(points)){
   let lo=0,hi=1
   points=chain.map(p=>p.slice())
   for(let i=0;i<10;i++){
    const t=(lo+hi)/2,goal=chain[2].map((x,k)=>x+(target[k]-x)*t),candidate=solve(goal,activity*t)
-   if(Math.abs(shinRotation(chain,candidate))<=maxShin){lo=t;points=candidate}else hi=t
+   if(admissible(candidate)){lo=t;points=candidate}else hi=t
   }
  }
- const shin=shinRotation(chain,points)
- return {points,pitch:bound(pitch,Math.max(-maxBoot,shin-maxRelative),Math.min(maxBoot,shin+maxRelative))}
+ return {points,pitch:desired}
 }
 function bootPose(foot,restAnkle,ankle,pitch){return {heel:add(ankle,rotateVector(sub(foot.heel,restAnkle),pitch)),toe:add(ankle,rotateVector(sub(foot.toe,restAnkle),pitch)),pitch}}
 export function sampleHumanPose(profile,p,rest=restChains(profile)){
@@ -135,7 +147,8 @@ export function sampleHumanPose(profile,p,rest=restChains(profile)){
   if(leg){
    foot=footRest(profile,k,chain[2]);pitch=swing.pitch*Math.cos(Number.isFinite(profile.viewAngle)?profile.viewAngle:p.heading)*.70
    const contactPoint=swing.pitch>0?foot.toe:foot.heel,lever=sub(contactPoint,chain[2]),rolled=rotateVector(lever,pitch)
-   target=add(chain[2],[dir[0]*swing.travel+lever[0]-rolled[0],dir[1]*swing.travel*groundY-swing.lift*h*.065+lever[1]-rolled[1]])
+   const pivot=swing.pivotWeight
+   target=add(chain[2],[dir[0]*swing.travel+(lever[0]-rolled[0])*pivot,dir[1]*swing.travel*groundY-swing.lift*h*.065+(lever[1]-rolled[1])*pivot])
   }else{
    const side=k==='weapon'?1:-1,reach=k==='weapon'?w*.22:w*.09,extension=(strike-windup)*side*reach
    const swingAim=rotateVector(aim,arc.angle*side)

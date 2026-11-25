@@ -112,3 +112,34 @@ test('actual eight direction ankles stay attached to their own shin and boot dur
   }
  }
 })
+
+test('heel rocker, flat support, toe rocker and swing return occur in physiological order',()=>{
+ const cycle=(u)=>sampleFootCycle(u*100,100,0,1,.6)
+ assert.equal(cycle(0).rocker,'heel');assert.ok(cycle(0).pitch<0)
+ assert.equal(cycle(.2).rocker,'flat');close(cycle(.2).pitch,0)
+ assert.equal(cycle(.55).rocker,'toe');assert.ok(cycle(.55).pitch>0)
+ assert.equal(cycle(.8).rocker,'swing');assert.ok(cycle(.8).lift>0);close(cycle(.8).pitch,0)
+ assert.ok(cycle(.98).pitch<0)
+ for(const u of [.12,.45,.6,.8,1]){
+  const a=cycle(u-1e-6),b=cycle(u+1e-6)
+  assert.ok(Math.abs(a.pitch-b.pitch)<1e-4,'continuous rocker '+u)
+ }
+})
+test('actual directional boots keep requested stance contact orientation under shin constraints',async()=>{
+ const {readFile}=await import('node:fs/promises')
+ const manifest=JSON.parse(await readFile(new URL('./assets/knight/manifest.json',import.meta.url),'utf8'))
+ let flat=0
+ for(const v of manifest.views){
+  const p={width:108,height:134,...v.profile}
+  for(let i=0;i<100;i++)for(const offset of [0,Math.PI/2,Math.PI]){
+   const input={...base,pose:offset?'attack':'run',phase:.32,step:i/10,stride:1,heading:v.direction*Math.PI/4+offset,aim:v.direction*Math.PI/4,gait:{cycle:i/100,strideLength:120.6,stance:.48,strength:1}}
+   const pose=sampleHumanPose(p,input)
+   for(const [side,k] of ['left','right'].entries()){
+    const g=sampleFootCycle(i/100*120.6,120.6,side,1,.48)
+    if(g.planted&&g.pitch===0){flat++;close(pose.feet[k].pitch,0)}
+    close(pose.feet[k].pitch,g.pitch*Math.cos(p.viewAngle)*.70)
+   }
+  }
+ }
+ assert.ok(flat>1000)
+})
