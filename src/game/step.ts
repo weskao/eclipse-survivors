@@ -91,19 +91,28 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
   let playedPickup = false
+  const reach = BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
+  const pickupSquared = BALANCE.combat.starPickupDistance ** 2
   for (const star of s.stars) {
     star.t += dt
     const dx = hero.x - star.x
     const dy = hero.y - star.y
-    const squared = dx * dx + dy * dy
-    const reach = BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
+    let squared = dx * dx + dy * dy
     if (squared < reach * reach) {
-      // Only crystal attraction needs a true distance for normalization.
-      const d = Math.max(1, Math.sqrt(squared))
-      star.x += (dx / d) * Math.min(d, BALANCE.combat.starPickupSpeed * dt)
-      star.y += (dy / d) * Math.min(d, 450 * dt)
+      // Normalize once, keep acceleration per gem and clamp at the hero.
+      const d = Math.sqrt(squared)
+      const speed = star.attractionSpeed ?? BALANCE.combat.starPickupSpeed
+      const travel = Math.min(d, speed * dt)
+      if (d > 0) {
+        star.x += dx * travel / d
+        star.y += dy * travel / d
+      }
+      star.attractionSpeed = Math.min(BALANCE.combat.starPickupMaxSpeed, speed + BALANCE.combat.starPickupAcceleration * dt)
+      squared = (d - travel) ** 2
+    } else {
+      star.attractionSpeed = undefined
     }
-    if (squared < BALANCE.combat.starPickupDistance * BALANCE.combat.starPickupDistance) {
+    if (squared < pickupSquared) {
       star.dead = true
       addXp(s, star.value * s.pickupGainMultiplier, hooks)
       if (!playedPickup) {

@@ -11,6 +11,8 @@
   "dashDuration": 0.22,
   "dashInvulnerability": 0.35,
   "starPickupSpeed": 450,
+  "starPickupAcceleration": 1500,
+  "starPickupMaxSpeed": 900,
   "starPickupDistance": 23,
   "starKeepLimit": 220,
   "chainTargetBase": 2,

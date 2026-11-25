@@ -84,7 +84,7 @@ export interface Shot {
   kind: 'arrow' | 'magic'; r: number; prevX?: number; prevY?: number
 }
 
-export interface Star { x: number; y: number; value: number; t: number; dead?: boolean }
+export interface Star { x: number; y: number; value: number; t: number; dead?: boolean; attractionSpeed?: number }
 
 export type FxType = 'spark' | 'footstep' | 'ice' | 'meteor' | 'ember' | 'vortex'
 export interface Fx {
