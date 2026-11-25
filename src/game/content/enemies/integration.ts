@@ -102,8 +102,8 @@ export function createFactionBridge(options: FactionBridgeOptions) {
 
   function hitFaction(state: GameState, enemy: FactionEnemy, amount: number,
     sourceX: number, sourceY: number, hooks: GameHooks): number {
-    if (state.mode !== 'play' || !state.hero || !runtime.enemies.includes(enemy)) return 0
-    const modified = hooks.modifyOutgoingDamage?.(amount) ?? amount
+    if (state.mode !== 'play' || !state.hero || !runtime.enemies.includes(enemy) || enemy.hp <= 0 || enemy.state === 'phase' || !Number.isFinite(amount) || amount <= 0) return 0
+    const modified = hooks.modifyOutgoingDamage?.(amount, enemy) ?? amount
     if (!Number.isFinite(modified) || modified <= 0) return 0
     const critical = hooks.consumeCriticalHit?.() ?? false
     const applied = damageFactionEnemy(runtime, enemy, modified, sourceX, sourceY, reward => {
@@ -161,7 +161,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     if (state.mode !== 'play' || shot.life <= 0) return null
     const contact = shotContact(state, shot)
     if (!contact) return null
-    if (contact.kind === 'legacy') hit(state, contact.target, shot.d, hooks)
+    if (contact.kind === 'legacy') hit(state, contact.target, shot.d, hooks, source)
     else hitFaction(state, contact.target, shot.d, source.x, source.y, hooks)
     shot.life = 0
     return contact

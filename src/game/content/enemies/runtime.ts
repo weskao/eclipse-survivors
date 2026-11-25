@@ -34,6 +34,7 @@ export interface FactionEnemy {
   hitTime?: number
   hitX?: number
   hitY?: number
+  knockRemaining?: number
   releaseFx?: number
   visualHold?: number
   visualFrame?: number
@@ -201,6 +202,7 @@ export function damageFactionEnemy(
   e.hitTime = 0.24
   e.hitX = distance > 0.001 ? dx / distance : 0
   e.hitY = distance > 0.001 ? dy / distance : 0
+  if (e.hp > 0 && (e.state === 'approach' || e.state === 'recover')) e.knockRemaining = .10
   if (e.hp === 0) {
     e.deathVisual = 0.28
     const def = ENEMY_DEFINITIONS[e.kind]
@@ -387,6 +389,16 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
     if (e.visualHold) e.visualHold = Math.max(0, e.visualHold - dt)
     if (e.hitTime) e.hitTime = Math.max(0, e.hitTime - dt)
     if (e.releaseFx) e.releaseFx = Math.max(0, e.releaseFx - dt)
+    // Mass-scaled, bounded contact motion; never relocate a committed telegraph or attack.
+    if (e.knockRemaining) {
+      const duration = Math.min(dt, e.knockRemaining)
+      e.knockRemaining = Math.max(0, e.knockRemaining - dt)
+      if (e.state === 'approach' || e.state === 'recover') {
+        const strength = 115 * Math.min(1, 16 / Math.max(1, e.radius)) * (e.affix === 'armored' ? .6 : 1)
+        e.x += (e.hitX ?? 0) * duration * strength
+        e.y += (e.hitY ?? 0) * duration * strength
+      }
+    }
     if (e.state === 'phase') {
       e.timer -= dt
       if (e.timer <= 0) e.state = 'approach'

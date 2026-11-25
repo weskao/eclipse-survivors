@@ -84,7 +84,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
       }
     }
     if (closest) {
-      hit(s, closest, b.d, hooks)
+      hit(s, closest, b.d, hooks, { x: b.prevX, y: b.prevY })
       b.life = 0
     }
   }

@@ -149,6 +149,7 @@ export interface GameState {
   lightningFx: LightningFx[]
   motionEchoes: MotionEcho[]
   cameraKick: number
+  cameraKickAngle?: number
   /** Game-clock time of the last accepted screen recoil; prevents crowd-hit shake loops. */
   lastCameraKickAt: number
   time: number
@@ -196,6 +197,8 @@ export interface MoveInput { x: number; y: number }
  */
 export interface GameHooks {
   otherLivingActors?(): number
+  /** Same authoritative actors used by legacy, arsenal and evolution combat. */
+  factions?(): import('./content/enemies/integration').FactionBridge | undefined
   sfx(cue: SfxCue, milestone?: number): void
   /** Optional local contact layer, routed through the same bounded audio mixer. */
   contactSfx?(cue: 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'eliteKill'): void
@@ -209,7 +212,7 @@ export interface GameHooks {
   /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
   openTreasure?(state: GameState, chestId: number, tier?: TreasureTier): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
-  modifyOutgoingDamage?(amount: number, target?: Mob): number
+  modifyOutgoingDamage?(amount: number, target?: Pick<Mob, 'hp' | 'max'> & { type?: MobType }): number
   /** One-shot metadata from the authoritative outgoing-damage roll. */
   consumeCriticalHit?(): boolean
   mitigateIncomingDamage?(amount: number): number

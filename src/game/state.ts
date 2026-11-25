@@ -39,7 +39,7 @@ export function resetRun(s: GameState): void {
   s.combatTelemetry = emptyCombatTelemetry(); s.factionSpawnWindow = 0; s.factionSpawnSequence = 0
   s.damageDealt = 0; s.damageTaken = 0; s.xpGainMultiplier = 1; s.pickupGainMultiplier = 1; s.defeatedTypes = {}
   s.numberFx = []; s.impactWaves = []; s.lightningFx = []; s.motionEchoes = []
-  s.cameraKick = 0; s.lastCameraKickAt = -Infinity; s.cam.x = s.cam.y = 0; s.levelQueue = 0; s.currentScene = 0
+  s.cameraKick = 0; s.cameraKickAngle = undefined; s.lastCameraKickAt = -Infinity; s.cam.x = s.cam.y = 0; s.levelQueue = 0; s.currentScene = 0
   s.events = []; s.eventSerial = 0; s.nextEventAt = BALANCE.events.firstSpawnAt; s.sceneEnteredAt = 0
   s.hazardLastHitAt = -Infinity; s.blessingUntil = 0; s.magnetUntil = 0; s.challengeUntil = 0; s.challengePoint = null
 }

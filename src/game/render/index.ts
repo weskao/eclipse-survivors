@@ -117,8 +117,13 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced && assets.cameraShakeEnabled()) {
     // Cap even externally-triggered recoil; avoid high-frequency screen oscillation.
     const nudge = Math.min(s.cameraKick, 1.6)
-    ox += Math.sin(s.worldClock * 19) * nudge
-    oy += Math.cos(s.worldClock * 17) * nudge * 0.55
+    if (s.cameraKickAngle !== undefined) {
+      ox += Math.cos(s.cameraKickAngle) * nudge
+      oy += Math.sin(s.cameraKickAngle) * nudge * .55
+    } else {
+      ox += Math.sin(s.worldClock * 19) * nudge
+      oy += Math.cos(s.worldClock * 17) * nudge * .55
+    }
   }
   paintEnvironment(ctx, s, assets.art, assets.props, assets.biomes, ox, oy, assets.productionWorld)
   const scene = currentSceneInfo(s)

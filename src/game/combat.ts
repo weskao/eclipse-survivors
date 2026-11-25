@@ -44,7 +44,7 @@ export function hitTarget(s: GameState, e: CombatTarget, damage: number, hooks: 
   if (!source || e.hp <= 0) return false
   const before = e.hp
   if ('radius' in e) factions?.hitFaction(s, e, damage, source.x, source.y, hooks)
-  else hit(s, e, damage, hooks)
+  else hit(s, e, damage, hooks, source)
   return e.hp < before
 }
 
@@ -52,7 +52,7 @@ export function slowTarget(e: CombatTarget, seconds: number): void {
   if (e.hp > 0) e.slow = Math.max(e.slow ?? 0, seconds)
 }
 
-export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
+export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
   const modified = hooks.modifyOutgoingDamage?.(d, e) ?? d
@@ -71,10 +71,12 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   e.hp = Math.max(0, e.hp - applied)
   e.hit = 0.16
   e.stagger = Math.min(0.22, e.stagger + (boss ? 0.04 : 0.12))
-  const knock = dist(e.x - hero.x, e.y - hero.y) || 1
-  e.kx = (e.x - hero.x) / knock
-  e.ky = (e.y - hero.y) / knock
+  const origin = source ?? hero
+  const knock = dist(e.x - origin.x, e.y - origin.y) || 1
+  e.kx = (e.x - origin.x) / knock
+  e.ky = (e.y - origin.y) / knock
   const impactAngle = Math.atan2(e.ky, e.kx)
+  if (critical || heavy) requestCameraKick(s, boss ? 1.6 : critical ? 1.25 : .85, impactAngle)
   emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy)
   hooks.contactSfx?.(critical ? 'hitCritical' : heavy ? 'hitHeavy' : 'hitNormal')
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })

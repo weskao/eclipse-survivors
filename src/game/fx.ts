@@ -40,9 +40,10 @@ export function emitHitImpact(s: GameState, x: number, y: number, radius: number
 }
 
 /** At most one brief camera nudge per 0.6 game-seconds, regardless of hit count. */
-export function requestCameraKick(s: GameState, strength: number): void {
+export function requestCameraKick(s: GameState, strength: number, angle?: number): void {
   if (s.worldClock - s.lastCameraKickAt < 0.6) return
   s.lastCameraKickAt = s.worldClock
+  s.cameraKickAngle = angle
   s.cameraKick = Math.max(s.cameraKick, Math.min(1.6, strength))
 }
 

@@ -326,6 +326,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   const hooks: GameHooks = {
     otherLivingActors: () => factions?.runtime.enemies.length ?? 0,
+    factions: () => factions ?? undefined,
     contactSfx: cue => audio.playSfx(cue),
     sfx: (cue, milestone) => {
       if (milestone === undefined) audio.playSfx(cue)

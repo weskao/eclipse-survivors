@@ -1,21 +1,23 @@
-import { hit } from '../../combat'
+import { combatTargets, hitTarget, slowTarget, targetRadius, type CombatTarget } from '../../combat'
+import type { FactionBridge } from '../enemies/integration'
 import type { ContentContext } from '../contracts'
-import type { GameState, Mob } from '../../types'
+import type { GameState } from '../../types'
 import { EVOLUTION2_CUES } from './cues'
 import type { Evolution2Recipe } from './recipes'
 
-interface Candidate { mob: Mob; distance2: number; order: number }
+interface Candidate { mob: CombatTarget; distance2: number; order: number }
 const MAX_HITS_PER_CAST = 12
 const MAX_VOLLEY_PROJECTILES = 80
 
 /** Choose at most 24 nearest living targets. Ties use insertion order. */
-function targetsNear(state: GameState, x: number, y: number, range: number): Mob[] {
+function targetsNear(state: GameState, x: number, y: number, range: number, factions?: FactionBridge): CombatTarget[] {
   const results: Candidate[] = []
-  for (let i = 0; i < state.mobs.length; i++) {
-    const mob = state.mobs[i]!
+  const targets = combatTargets(state, factions)
+  for (let i = 0; i < targets.length; i++) {
+    const mob = targets[i]!
     if (mob.hp <= 0) continue
     const dx = mob.x - x, dy = mob.y - y
-    const reach = range + mob.r
+    const reach = range + targetRadius(mob)
     const distance2 = dx * dx + dy * dy
     if (distance2 <= reach * reach) results.push({ mob, distance2, order: i })
   }
@@ -29,6 +31,7 @@ function targetsNear(state: GameState, x: number, y: number, range: number): Mob
  */
 export function executeEvolution(context: ContentContext, recipe: Evolution2Recipe): void {
   const { state, hooks } = context
+  const factions = hooks.factions?.()
   // The shared registry may be ticked by an integration host outside gameplay.
   if (state.mode !== 'play') {
     state.content.cooldowns[recipe.id] = 0
@@ -36,18 +39,18 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
   }
   const hero = state.hero
   if (!hero) return
-  const nearby = targetsNear(state, hero.x, hero.y, recipe.radius)
+  const nearby = targetsNear(state, hero.x, hero.y, recipe.radius, factions)
   if (!nearby.length) return
 
   const cue = EVOLUTION2_CUES[recipe.id]!
-  const hitMobs = new Set<Mob>()
+  const hitMobs = new Set<CombatTarget>()
   let hitCount = 0
-  const damage = (mob: Mob, power: number): number => {
+  const damage = (mob: CombatTarget, power: number): number => {
     if (mob.hp <= 0 || hitMobs.has(mob) || hitCount >= MAX_HITS_PER_CAST) return 0
     hitMobs.add(mob)
     hitCount++
     const before = mob.hp
-    hit(state, mob, hero.damage * power, hooks)
+    hitTarget(state, mob, hero.damage * power, hooks, factions)
     return before - mob.hp
   }
   const cueAt = (x: number, y: number): void => {
@@ -56,11 +59,11 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
   const area = (x: number, y: number, radius: number, power: number, pull = 0): void => {
     // Deterministic nearest-first AoE prevents distant array entries from
     // exhausting a cast's hit budget before enemies at the blast center.
-    for (const mob of targetsNear(state, x, y, radius)) {
+    for (const mob of targetsNear(state, x, y, radius, factions)) {
       if (hitCount >= MAX_HITS_PER_CAST) break
       if (mob.hp <= 0 || hitMobs.has(mob)) continue
       if (pull > 0) {
-        const k = mob.type === 'boss' ? pull * 0.25 : pull
+        const k = ('type' in mob && mob.type === 'boss') ? pull * 0.25 : pull
         mob.x += (x - mob.x) * k
         mob.y += (y - mob.y) * k
       }
@@ -82,7 +85,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
         const dx = mob.x - hero.x, dy = mob.y - hero.y
         const forward = dx * ux + dy * uy
         const lateral = Math.abs(dx * uy - dy * ux)
-        if (forward >= 0 && forward <= 430 + mob.r && lateral <= 45 + mob.r) damage(mob, 1.85)
+        if (forward >= 0 && forward <= 430 + targetRadius(mob) && lateral <= 45 + targetRadius(mob)) damage(mob, 1.85)
       }
       hero.inv = Math.max(hero.inv, 0.22)
       cueAt(first.x, first.y)
@@ -105,7 +108,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     case 'evolution2:toxic-permafrost': {
       for (const mob of nearby.slice(0, 10)) {
         damage(mob, 0.85)
-        mob.slow = Math.max(mob.slow, 2.8)
+        slowTarget(mob, 2.8)
       }
       cueAt(hero.x, hero.y)
       break
@@ -114,7 +117,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
       let current = nearby[0]!
       for (let bounce = 0; bounce < 9; bounce++) {
         damage(current, Math.max(0.5, 1.35 - bounce * 0.1))
-        let next: Mob | undefined
+        let next: CombatTarget | undefined
         let nearest2 = 200 * 200
         for (const mob of nearby) {
           if (hitMobs.has(mob) || mob.hp <= 0) continue
@@ -131,10 +134,10 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     case 'evolution2:wild-hunt': {
       for (const mob of nearby.slice(-3).reverse()) {
         damage(mob, 1.8)
-        mob.stagger = Math.max(mob.stagger, mob.type === 'boss' ? 0.1 : 0.32)
+        if ('stagger' in mob) mob.stagger = Math.max(mob.stagger, ('type' in mob && mob.type === 'boss') ? 0.1 : 0.32)
         const dx = mob.x - hero.x, dy = mob.y - hero.y
         const distance = Math.hypot(dx, dy) || 1
-        const push = mob.type === 'boss' ? 8 : 32
+        const push = ('type' in mob && mob.type === 'boss') ? 8 : 32
         mob.x += dx / distance * push
         mob.y += dy / distance * push
         cueAt(mob.x, mob.y)
@@ -144,7 +147,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     case 'evolution2:solar-tempest': {
       for (const mob of nearby.slice(0, 5)) {
         damage(mob, 1.6)
-        mob.slow = Math.max(mob.slow, 0.8)
+        slowTarget(mob, 0.8)
         cueAt(mob.x, mob.y)
       }
       break
@@ -183,8 +186,8 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     case 'evolution2:verdant-snare': {
       for (const mob of nearby.slice(0, 8)) {
         damage(mob, 0.95)
-        mob.slow = Math.max(mob.slow, 3.5)
-        mob.stagger = Math.max(mob.stagger, mob.type === 'boss' ? 0.08 : 0.35)
+        slowTarget(mob, 3.5)
+        if ('stagger' in mob) mob.stagger = Math.max(mob.stagger, ('type' in mob && mob.type === 'boss') ? 0.08 : 0.35)
       }
       cueAt(hero.x, hero.y)
       break
