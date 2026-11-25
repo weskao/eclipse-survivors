@@ -41,6 +41,7 @@ export interface FactionEnemy {
   visualFrame?: number
   lastVisualHoldAt?: number
   deathVisual?: number
+  deathVisualTotal?: number
   slow?: number
   orbCooldown?: number
 }
@@ -205,7 +206,7 @@ export function damageFactionEnemy(
   e.hitY = distance > 0.001 ? dy / distance : 0
   if (e.hp > 0 && (e.state === 'approach' || e.state === 'recover')) e.knockRemaining = .10
   if (e.hp === 0) {
-    e.deathVisual = 0.28
+    e.deathVisual = e.deathVisualTotal = e.affix ? .46 : e.radius >= 24 ? .36 : .28
     const def = ENEMY_DEFINITIONS[e.kind]
     onReward?.({ kind: e.kind, x: e.x, y: e.y,
       xp: Math.round(def.xp * (e.affix ? 1.7 : 1) * (e.rewardXpMultiplier ?? 1)), elite: !!e.affix })

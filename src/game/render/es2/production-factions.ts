@@ -94,7 +94,7 @@ export function drawLiveFactionArt(
     ctx.save()
     ctx.translate(x, y)
     if (dying) {
-      const alpha = Math.min(1, (enemy.deathVisual ?? 0) / .28)
+      const alpha = Math.min(1, (enemy.deathVisual ?? 0) / (enemy.deathVisualTotal ?? .28))
       ctx.globalAlpha = alpha
       ctx.translate((enemy.hitX ?? 0) * (1 - alpha) * 12, (1 - alpha) * 6)
       ctx.scale(1, .65 + .35 * alpha)

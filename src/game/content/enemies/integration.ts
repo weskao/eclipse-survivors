@@ -2,7 +2,7 @@ import { damageHero, hit } from '../../combat'
 import { BALANCE } from '../../config'
 import { recordKill } from '../../kill-streak'
 import { compactXpGems } from '../../xp-gems'
-import { emitHitImpact, pushDamageNumber } from '../../fx'
+import { burst, emitHitImpact, pushDamageNumber } from '../../fx'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ELITE_AFFIXES, ENEMY_DEFINITIONS, type FactionAffix, type FactionKind } from './definitions'
@@ -112,6 +112,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       // The legacy XP collection path owns level progression; never award XP twice.
       state.stars.push({ x: reward.x, y: reward.y, value: reward.xp, t: 0 })
       if (state.stars.length > BALANCE.combat.starKeepLimit) compactXpGems(state.stars)
+      burst(state, reward.x, reward.y, reward.elite ? '#dab0ff' : ENEMY_DEFINITIONS[reward.kind].telegraphColor, reward.elite ? 18 : 8)
       hooks.sfx('kill')
       if (reward.elite) hooks.contactSfx?.('eliteKill')
       options.onReward?.(reward)

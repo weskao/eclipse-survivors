@@ -45,38 +45,38 @@ Design reference: https://chatgpt.com/s/t_6b072b23233c8191b99e375f1b41e17d
 Approved direction: C — hybrid: large-scale horde-clearing power fantasy, dark-fantasy RPG build depth, long-term progression. Initial design emphasis 50% combat, 30% strategy, 20% meta; not a fixed resource allocation or version bump.
 Implementation branch: `feature/es3-combat-juice-power-pacing-rewards`. First delivery: discussion sections 4, 5, 8, 9; all other items remain tracked. Check off implemented behavior after observed RED/GREEN and automated player-path acceptance; retain existing TODO sections. For this ES3 branch only, the owner explicitly waives manual visual/audio/device review, physical thermals, screenshots/MP4 delivery and other manual-only gates (2026-11-26). Record these as WAIVED (not measured or performed); do not let them block this delivery. Automated regressions, build and release checks remain required; the existing three-hero manual art acceptance failure is an acknowledged exception, not an approval or a reason to change the gate. Preserve input, audio lifecycle, hitboxes, saves, bilingual UI, and mobile accessibility. Prefer existing renderer; PixiJS allowed only with measured benefits, single-owner drawing, bounded particles, batching, draw-call/overdraw budgets and comparable mobile visual quality.
 
-Implementation status (2026-11-26): feature and regression-test commits are staged for final integrated validation. Owner authorized implementation-first batching without waiting on CI between batches. Unchecked items remain unverified; tests written before implementation but not observed RED/GREEN must not be claimed as completed TDD. Original manual art gate remains unchanged. Intermediate integrated run 45688647153 (ac1ccfd0): 1,846 passed, 1 skipped, only the acknowledged three-hero manual art gate failed; subsequent commits require final verification.
+Implementation status (2026-11-26): substantial implementation integrated. See [ES3 evidence report](docs/es3-combat-acceptance.md). Run 45696301536 at f9ca7928: 1,942 passed, 1 skipped, 1 acknowledged manual art gate failure. Run 45696301552: all five diagnostic tests, typecheck, build and release checks passed; real browser found a 1024x768 tablet hero-card clipping regression. Corrective implementation 99b12c5f and subsequent faction dissolve test/implementation await final exact-HEAD acceptance. Owner authorized implementation-first batching without waiting on CI between batches. Unchecked items remain unverified; tests written before implementation but not observed RED/GREEN must not be claimed as completed TDD. Original manual art gate remains unchanged. Intermediate integrated run 45688647153 (ac1ccfd0): 1,846 passed, 1 skipped, only the acknowledged three-hero manual art gate failed; subsequent commits require final verification.
 
 ### Wave 0 — Baseline [P0]
 - [ ] Deterministic seed scenarios and per-run combat statistics. Implemented: bounded 10-second combat telemetry, deterministic opening fixtures and run-result fields.
-- [ ] Measure XP, DPS, kill speed, and encounter pressure curves. Implemented instrumentation and four mode opening-curve test cases; numerical run results pending.
-- [ ] Establish automated frame-time, memory and draw-operation baselines using comparable workloads; physical-device thermal and manual hardware sign-off WAIVED for ES3.
+- [ ] Measure XP, DPS, kill speed, and encounter pressure curves. Implementation and deterministic GREEN evidence in 45696301552; measured four-mode curves and comparison recorded in docs/es3-combat-acceptance.md. Formal RED evidence not reconstructed.
+- [ ] Establish automated frame-time, memory and draw-operation baselines using comparable workloads; two comparable diagnostic runs recorded in docs/es3-combat-acceptance.md; browser GPU measurements not inferred from mocked Canvas. Physical-device thermal and manual hardware sign-off WAIVED for ES3.
 
 ### Wave 1 — Combat Juice [P0; first delivery]
 - [x] Normal/heavy/critical contact differentiation with single cached rendering path and priority preservation (RED 45683517312; GREEN 45683993331).
-- [ ] Remaining tiered impact feedback: evolved, mass kill, boss stagger, hero active and boss death. Implemented distinct mass-kill feedback and boss break/cleanse; evolution and hero active reuse their existing effect owners.
+- [ ] Remaining tiered impact feedback: evolved, mass kill, boss stagger, hero active and boss death. Implemented distinct mass-kill feedback, boss break/cleanse, typed elemental/evolution/hero contact, existing skill-specific owners and bounded authored-contact texture reuse. New dedicated art not produced.
 - [x] Legacy heavy/critical local animation hit stop (35/50ms) without pausing simulation or input (RED 45684497744; GREEN 45685008359).
 - [ ] Extend local hit stop to faction and boss-specific poses; directional knockback acceptance. Implemented local pose hold for faction and boss; automated regression pending.
-- [ ] Authored enemy hit, death and dissolve animations; preserve art identity. Implemented bounded original-art death fade/pose, no bespoke new sprite sheets; manual art review waived.
-- [ ] Critical and damage-number hierarchy; preserve danger readability. Implemented incoming/critical/normal priority budgets; acceptance pending.
+- [ ] Authored enemy hit, death and dissolve animations; preserve art identity. Implemented bounded original-art death fade/pose, material-colored dissolves and elite/large-enemy lifetime differentiation; preserve boss identity/phase after death. No bespoke new sprite sheets; manual art review waived.
+- [ ] Critical and damage-number hierarchy; preserve danger readability. Implemented incoming/critical/normal priorities and heavy/elemental/evolved/hero/healing labels. Final regression pending.
 - [x] Authoritative kill streak and burst multikill counts, expiry/reset, legacy and faction kill ownership; no damage bonus (RED: 45680983083; GREEN test log: 45681389783, combat.test.ts; later workflow steps cancelled by newer HEAD).
 - [x] Live combo HUD, game-clock expiry and bilingual highest streak/multikill run results (RED 45681795019; GREEN 45682705645, engine/HUD/result tests).
 - [x] Six kill streak milestones (10/25/50/100/200/500), highest-per-tick feedback and rate-limited layered cue (RED 45684497744; GREEN 45685008359).
-- [ ] Further distinct milestone visual/audio presentation and multikill feedback. Implemented capped per-tick milestone and burst cues with bounded impact waves.
-- [ ] Layered combat/kill SFX, rate limiting, preserve complete active-skill playback.
+- [ ] Further distinct milestone visual/audio presentation and multikill feedback. Implemented capped per-tick milestone and burst cues with six separate layered audio sequences, bounded impact waves; GREEN full suite at f9ca7928.
+- [ ] Layered combat/kill SFX, rate limiting, preserve complete active-skill playback. Implemented normal/heavy/critical/elite cues and preserved existing active skill lifecycle; GREEN full suite at f9ca7928.
 - [ ] Camera impact and accessibility controls; reduced motion/flashing, supported mobile haptics. Implemented opt-in touch-only haptics and reduced-flashing lightning; browser acceptance pending.
 
 ### Wave 2 — Power Fantasy [P0; first delivery]
-- [ ] Review skill Lv.1–5 power curves; keep tuning in balance config. Reviewed legacy and arsenal rank previews; added config-driven capstone values and matching preview.
+- [ ] Review skill Lv.1–5 power curves; keep tuning in balance config. Reviewed legacy and arsenal rank previews; added config-driven capstones for all 12 ES2 weapons with corresponding previews; unified legacy/faction targeting for six area skills, chain, 12 weapons and 12 ES2 evolutions; GREEN full suite at f9ca7928.
 - [x] Chain lightning Lv.1–5 target progression, Lv.4 shock and bounded Lv.5 kill discharge; actual damage and upgrade preview (RED 45684497744; GREEN 45685008359).
-- [ ] Other qualitative rank breakthroughs: projectile count, AoE, elemental effects or summons. Implemented orb extra blade, bolt shock, frost/vortex/blaze/meteor outer-range bonuses.
+- [ ] Other qualitative rank breakthroughs: projectile count, AoE, elemental effects or summons. Implemented orb extra blade, bolt shock, frost/vortex/blaze/meteor outer-range bonuses and all twelve arsenal Lv.5 qualitative bonuses. GREEN full suite at f9ca7928.
 - [ ] Improve first-upgrade timing with mode-specific balance tests. Implemented mode-specific first XP thresholds, unchanged subsequent growth, and deterministic opening test.
 - [x] Coalesce same-tick XP gem pickup audio while preserving exact per-gem XP and pickup receipts (RED: run 45677562464; GREEN: run 45678439675, step.test.ts).
 - [x] XP gem acceleration and same-tick collection, preserving exact XP and pickup receipts (RED: run 45680019938; GREEN: run 45680367799, step.test.ts; player simulation path verified).
 - [x] XP gem trails and exact bounded overflow conservation, including all original per-drop receipts in legacy/faction paths. Trail RED 45680983083 / GREEN 45681389783; overflow RED 45683517312 / GREEN 45683993331; manual visual acceptance WAIVED.
-- [ ] Optional global magnet reward and enhanced absorption feedback.
-- [ ] Rare/epic/legendary chest reveal animations with skip, single claim and uninterrupted essential audio.
-- [ ] Distinct evolution reveal and actual gameplay transformation.
+- [ ] Optional global magnet reward and enhanced absorption feedback. Implemented 5-second global magnet event, exact receipt-preserving collection and coalesced burst cue; GREEN full suite at f9ca7928.
+- [ ] Rare/epic/legendary chest reveal animations with skip, single claim and uninterrupted essential audio. Implemented five tiers (including cursed), deterministic offers, matching reveal/claim cues, original WebP art and skip/reduced-motion controls. Epic reuses rare art with purple styling; no separate authored epic chest. GREEN full suite at f9ca7928; final browser acceptance pending.
+- [ ] Distinct evolution reveal and actual gameplay transformation. Implemented upgrade-specific reveal and unified damage ownership with actual gameplay evolution effects; GREEN full suite at f9ca7928.
 
 ### Wave 3 — Build Synergy [P1]
 - [ ] Unified element/build tags.
@@ -90,8 +90,8 @@ Implementation status (2026-11-26): feature and regression-test commits are stag
 ### Wave 4 — Encounter Director [P1; first delivery]
 - [ ] Audit and extend existing director, single authoritative spawn owner. Implemented ordinary and faction spawn pulse integration with shared actor caps.
 - [x] Eight encounter identities and legacy spawn composition policies; deterministic rotation, swarm/elite live tests (RED 45684497744; GREEN 45685008359).
-- [ ] Integrated encounter acceptance across all eight compositions and faction spawn ownership. Added production-pulse tests for seven assaults plus recovery; integrated results pending.
-- [ ] Pressure peaks and recovery windows scaled by mode duration; preserve boss timing, win rules and actor caps. Live assault/reward interval multipliers implemented; RED 45680983083 / GREEN 45681389783; mode-specific cycle scaling RED 45684497744 / GREEN 45685008359; integrated acceptance pending.
+- [ ] Integrated encounter acceptance across all eight compositions and faction spawn ownership. Added production-pulse tests for seven assaults plus recovery, per-run seed, distinct intervals and shared faction treasure XP; GREEN full suite at f9ca7928.
+- [x] Pressure peaks and recovery windows scaled by mode duration; preserve boss timing, win rules and actor caps. Live assault/reward interval multipliers implemented; RED 45680983083 / GREEN 45681389783; mode-specific cycle scaling RED 45684497744 / GREEN 45685008359; full integrated suite GREEN for automated behavior at f9ca7928.
 - [ ] Risk/reward world events, cursed offers and optional dangerous treasure. Implemented optional guarded legendary vault payout using confirmed deaths, existing curse/transaction UI.
 - [ ] Boss stagger, weakness windows and phase transitions with readable telegraphs; preserve collisions. Implemented recovery-only break, one per phase, 1.25s weakness and 1.25× damage.
 - [ ] Boss kill and battlefield cleansing audiovisual presentation. Implemented hostile projectile/hazard cleanup on actual boss death.
@@ -116,8 +116,8 @@ Implementation status (2026-11-26): feature and regression-test commits are stag
 
 ### Wave 7 — Integration & QA [P0; continuous]
 - [ ] Observed RED → GREEN → REFACTOR and full regression suite.
-- [ ] Gameplay parity across all quality settings. Added fixed-seed low/medium/high parity test.
-- [ ] Automated responsive and localization regression coverage for desktop, phone portrait/landscape, tablet and foldable; manual device review WAIVED.
+- [ ] Gameplay parity across all quality settings. Fixed-seed low/medium/high parity test passed in 45696301552 and 45696950248; formal RED not observed.
+- [ ] Automated responsive and localization regression coverage for desktop, phone portrait/landscape, tablet and foldable; manual device review WAIVED. Real matrix passed first six device profiles, failed tablet-landscape-1024 at f9ca7928; compact wide layout fix at 99b12c5f awaits exact-HEAD confirmation.
 - [ ] Reduced Motion and Reduced Flashing; no HUD or telegraph occlusion.
 - [x] Actual gameplay screenshots and MP4 clips — WAIVED by owner for this ES3 delivery; no capture or review claimed.
 - [ ] Automated long-run diagnostics: p95/p99 timing, memory and comparable draw operations/overdraw; manual FPS and physical-device thermals WAIVED, do not invent metrics.
