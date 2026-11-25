@@ -3,7 +3,7 @@ import { DASH_COOLDOWN, TAU } from '../constants'
 import { createState, resetRun } from '../state'
 import type { GameMode, Hero } from '../types'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
-import { buildGemSprites, createParticleSpriteCache, drawFx, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
+import { buildGemSprites, createParticleSpriteCache, drawFx, drawNumbers, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
 import { loadProjectileSprites } from './projectile-art'
 
 function scene() {
@@ -212,4 +212,17 @@ describe('ES3 magnetized gem trail', () => {
     expect(offscreen.drawn).toHaveLength(0)
     expect(factory.made).toHaveLength(2)
   })
+})
+
+it('paints incoming damage and critical text after ordinary labels without exceeding the visible label budget', () => {
+  const s=scene(); resetRun(s)
+  s.numberFx=Array.from({length:80},(_,i)=>({x:100,y:100,life:.6,value:i+1,boss:false}))
+  s.numberFx.unshift({x:100,y:100,life:.6,value:999,boss:false,critical:true},{x:100,y:100,life:.6,value:888,boss:false,received:true})
+  const {ctx}=createFakeCtx()
+  const labels:string[]=[]
+  ctx.fillText=(label)=>{labels.push(label)}
+  drawNumbers(ctx,s,0,0,true)
+  expect(labels.length).toBeLessThanOrEqual(49)
+  expect(labels.slice(-2)).toContain('−888')
+  expect(labels).toContain('999')
 })

@@ -263,3 +263,36 @@ describe('independent premium boss content', () => {
   })
 
 })
+
+describe('ES3 boss stagger and battlefield cleanse', () => {
+  it('opens a bounded vulnerability during recovery, never interrupts a warning, and boosts subsequent real damage', () => {
+    const {state, hooks, controller}=setup()
+    const boss=controller.spawn(state,'infernal-titan',{x:140,y:0},hooks)!
+    state.hero!.inv=99
+    controller.tick(state,.01,hooks)
+    const warning=controller.snapshot(state).telegraphs[0]!
+    hit(state,boss,boss.max*.12,hooks)
+    expect(controller.snapshot(state).telegraphs).toHaveLength(1)
+    expect(boss.weaknessRemaining ?? 0).toBe(0)
+    controller.tick(state,BOSS_ATTACKS[warning.attackId as keyof typeof BOSS_ATTACKS].windup+.01,hooks)
+    hit(state,boss,boss.max*.12,hooks)
+    expect(boss.weaknessRemaining).toBeGreaterThan(0)
+    const hp=boss.hp
+    hit(state,boss,100,hooks)
+    expect(hp-boss.hp).toBeGreaterThan(100)
+    expect(hooks.sfx).toHaveBeenCalledWith('bossStagger')
+    controller.tick(state,2,hooks)
+    expect(boss.weaknessRemaining).toBe(0)
+  })
+  it('clears hostile legacy projectiles at a true boss kill, preserves player shots and awards no extra kill or XP', () => {
+    const {state,hooks,controller}=setup()
+    const boss=controller.spawn(state,'abyss-monarch',{x:140,y:0},hooks)!
+    state.enemyShots.push({x:0,y:0,vx:1,vy:0,radius:5,damage:10,life:3})
+    state.shots.push({x:0,y:0,vx:1,vy:0,r:5,d:10,life:3,kind:'arrow'})
+    hit(state,boss,boss.hp,hooks)
+    expect(state.enemyShots).toHaveLength(0)
+    expect(state.shots).toHaveLength(1)
+    expect(state.kill).toBe(1)
+    expect(state.stars).toHaveLength(1)
+  })
+})

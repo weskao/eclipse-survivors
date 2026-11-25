@@ -84,3 +84,11 @@ describe('ES3 deterministic combat telemetry', () => {
     expect(scenario()).toEqual(scenario())
   })
 })
+
+it('preserves damage feedback priorities for incoming harm, critical hits, and ordinary contact', () => {
+  const s=session()
+  for(let i=0;i<79;i++) s.numberFx.push({x:0,y:0,life:.6,value:1,boss:false,received:true})
+  s.numberFx.push({x:0,y:0,life:.8,value:50,boss:false,critical:true})
+  attack(s,hooks())
+  expect(s.numberFx.filter(n=>n.received)).toHaveLength(79)
+})

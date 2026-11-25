@@ -350,3 +350,17 @@ describe('ES3 local animation and milestone feedback', () => {
     expect(s.fx.length).toBeLessThanOrEqual(12)
   })
 })
+
+it('keeps dead visual actors out of collision and rewards and expires them on gameplay time', () => {
+  const {s,hero}=setup(); hero.need=9999
+  const enemy=mob(180,0,{hp:1})
+  s.mobs.push(enemy)
+  hit(s,enemy,5,spyHooks())
+  step(s,.016,still,spyHooks())
+  expect(s.mobs).not.toContain(enemy)
+  expect(s.fallenMobs).toContain(enemy)
+  expect(s.kill).toBe(1)
+  for(let i=0;i<20;i++) step(s,.02,still,spyHooks())
+  expect(s.fallenMobs).toHaveLength(0)
+  expect(s.kill).toBe(1)
+})
