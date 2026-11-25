@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { sceneBonus, spawnInterval, spawnMob, tickSpawning } from './spawn'
+import { sceneBonus, spawnInterval, spawnMob, spawnOpeningWave, tickSpawning } from './spawn'
 import { createFactionBridge } from './content/enemies/integration'
 import { summonBossMinions } from './bosses/phases'
 import { MAX_MOBS } from './constants'
 import { dist, seeded, setRandom } from './math'
 import { createHero, createState } from './state'
 import type { GameHooks, GameState } from './types'
+import { nearbyObstacles, pointIsClear } from './world'
 
 const spyHooks = () => ({ sfx: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), end: vi.fn() }) satisfies GameHooks
 
@@ -200,4 +201,24 @@ it('gives treasure-rush faction enemies the same advertised reward multiplier',(
   bridge.hitFaction(s,e,10000,s.hero!.x,s.hero!.y,spyHooks())
   expect(s.stars.length).toBe(before+1)
   expect(s.stars.at(-1)!.value).toBeGreaterThan(0)
+})
+
+it('keeps opening legacy and faction actors clear of authored terrain without moving the hero', () => {
+  const obstacle = nearbyObstacles(0, 0, 0, 1000)[0]!
+  expect(obstacle).toBeDefined()
+  // Force the original first legacy candidate directly into the obstacle.
+  const legacy = setup(); legacy.hero!.x = obstacle.x - 243; legacy.hero!.y = obstacle.y
+  setRandom(() => 0)
+  spawnOpeningWave(legacy)
+  expect(legacy.mobs).toHaveLength(12)
+  expect(legacy.mobs.every(mob => pointIsClear(0, mob, mob.r))).toBe(true)
+  expect(legacy.hero!.x).toBe(obstacle.x - 243)
+  // The old cardinal faction placement independently hits the same obstacle.
+  const faction = setup(); faction.hero!.x = obstacle.x - 320; faction.hero!.y = obstacle.y
+  const bridge = createFactionBridge({ random: seeded(9) })
+  setRandom(seeded(12))
+  spawnOpeningWave(faction, bridge)
+  expect(bridge.runtime.enemies).toHaveLength(4)
+  expect(bridge.runtime.enemies.every(enemy => pointIsClear(0, enemy, enemy.radius))).toBe(true)
+  expect(faction.hero!.x).toBe(obstacle.x - 320)
 })
