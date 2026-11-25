@@ -1,4 +1,6 @@
 import { shallowReactive } from 'vue'
+import { accountStorage } from '../cloud/account-storage'
+import type { CloudWallet } from '../cloud/wallet-policy'
 import { createProfileStore, type ProfileStore } from '../meta/profile'
 import { MODES, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
@@ -89,6 +91,10 @@ declare global {
 }
 
 export interface Engine extends GameCommands {
+  readonly cloudWallet?: {
+    select(uid: string | null): boolean
+    apply(wallet: CloudWallet, expectedBalance: number, preserveBalance: boolean): boolean
+  }
   readonly contentRegistry: ContentRegistry
   setVisualPresentationPolicy(policy: VisualPresentationPolicy): void
   /** Only active in development with ?content-showcase=1. */
@@ -153,14 +159,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // The unlocked mode exists only in Vite dev, and uses disposable saves.
   // Even a build with VITE_ES2_UNLOCKED=1 cannot enable it in production.
   const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
-  const profileStore = opts.profileStore ?? createProfileStore(
+  let profileStore = opts.profileStore ?? createProfileStore(
     unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : undefined,
   )
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  const metaStore = opts.profileStore ? null : createMetaProgressionStore(
+  let metaStore = opts.profileStore ? null : createMetaProgressionStore(
     unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : undefined,
   )
+  let walletAccount: string | null = null
+  const walletReady = (): boolean => !walletAccount || !!metaStore?.get().state?.cloudWallet
   function displayProfile() {
     const legacy = profileStore.get()
     const persisted = metaStore?.get()
@@ -497,6 +505,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function start(): void {
+    if (!walletReady()) return
     ending = false
     if (metaStore && typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
       const entropy = new Uint8Array(16)
@@ -1043,6 +1052,28 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     new URLSearchParams(window.location.search).get('content-showcase') === '1'
 
   return {
+    ...(!opts.profileStore && !unlockedPlaytest ? { cloudWallet: {
+      select(uid: string | null) {
+        if (s.mode !== 'menu' && s.mode !== 'result') return false
+        if (uid === walletAccount) return true
+        try {
+          const storage = uid ? accountStorage(localStorage, uid) : undefined
+          const nextMeta = createMetaProgressionStore(storage)
+          if (uid && nextMeta.get().status !== 'ready') return false
+          profileStore = createProfileStore(storage)
+          metaStore = nextMeta
+          walletAccount = uid
+          refreshMeta()
+          return true
+        } catch { return false }
+      },
+      apply(wallet: CloudWallet, expectedBalance: number, preserveBalance: boolean) {
+        if (!walletAccount || !metaStore) return false
+        const result = metaStore.applyCloudWallet(wallet, expectedBalance, preserveBalance)
+        refreshMeta()
+        return result.ok
+      },
+    } } : {}),
     contentRegistry,
     setVisualPresentationPolicy(policy) { presentationPolicy = policy; resizeRenderer() },
     showcaseGrant(id) {
@@ -1068,7 +1099,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       audio.playSfx('select')
     },
     buyPermanentUpgrade(id: PermanentUpgrade) {
-      if (s.mode !== 'menu') return
+      if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore) {
         finishPurchase(metaStore.purchaseResearch(id).ok, '永久研究未完成：儲存失敗或條件不足')
       } else {
@@ -1076,15 +1107,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }
     },
     purchaseResearch(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       finishPurchase(metaStore.purchaseResearch(id).ok, '研究未解鎖或儲存失敗')
     },
     purchaseEquipment(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗')
     },
     purchaseBonus(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗')
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
@@ -1100,7 +1131,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }
     },
     resetProgress() {
-      if (s.mode !== 'menu') return
+      if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore && !metaStore.reset().ok) {
         message('永久資料無法安全重置，原有紀錄已保留')
         return

@@ -1,0 +1,16 @@
+# Google account and Twilight Embers cloud save
+
+The reference is Skyline Rush's Firebase Authentication + Firestore flow. This game uses a **separate Firebase project**, and only Twilight Embers is stored in `twilightEmbers/{uid}` as `{ embers, revision }`. Revision is technical concurrency metadata. No Google name/email, tokens, hero data, research, achievements, run history, settings or other fields are uploaded to Firestore. Google Auth itself provides the identity displayed in the account dialog.
+
+- Guests retain the existing local save. Signing in selects a distinct UID-scoped local progression save; signing out restores the guest save. Non-currency progression is local to that account on that device. Existing guest balances are intentionally not uploaded or merged.
+- On login, menu/result transitions, committed balance changes and network reconnection, the client reconciles the v3 wallet. It uses a Firestore transaction and the last confirmed revision stored atomically with the local wallet. Spending and reset can lower the balance; do not use max(local, cloud). Conflicting concurrent changes stay local until the player retries or explicitly restores the cloud balance. Equal resulting balances converge without a second write (independent equal-value operations are not aggregated). Offline writes remain pending in local storage; sign out retains the UID-specific pending save. Unlocked playtests and injected legacy stores never connect.
+- The existing v3 local store is a single-writer design. Simultaneous same-account tabs sharing localStorage are not a supported multi-writer workflow. Firestore rules enforce ownership, field schema and revision increments, not server-authoritative gameplay earnings. This is a personal cross-device save, not an anti-cheat economy.
+
+## Setup (project owner, before release)
+
+1. Create or select a dedicated Eclipse Survivors Firebase project, register a web app, enable Google provider in Authentication, create Firestore, and authorize the actual website domain plus approved local development domains. Do not reuse Skyline Rush project or rules.
+2. Copy the public Firebase web app config into `VITE_ES2_FIREBASE_CONFIG` as JSON in local `.env.local` (see `.env.example`). Configure the same repository Actions **variable** for the GitHub Pages release build. Do not commit credentials or OAuth secrets.
+3. Deploy the rules explicitly using `pnpm dlx firebase-tools deploy --only firestore:rules --project <eclipse-survivors-project-id>`. The repository change does not deploy Firebase. Test against a disposable project before production.
+4. Run `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm typecheck`, `pnpm build`. Test Chrome and iPhone Safari Google sign-in/cancel, guest isolation, two distinct accounts, gain/spend/reset, reload and second-device restore, offline recovery, conflicting balances and permission-denied writes. Verify an unauthenticated or different UID cannot read/write the document, and extra fields and invalid values are refused. Check the actual mobile and desktop account dialog layout in both languages.
+
+With no Firebase configuration, the account dialog explains that cloud save is unavailable and guest play remains functional. Real OAuth and Firestore permissions require owner setup and have not been verified by this source change.

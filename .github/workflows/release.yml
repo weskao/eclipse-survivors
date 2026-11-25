@@ -39,6 +39,8 @@ jobs:
           pnpm typecheck
           pnpm test
       - name: Build static site
+        env:
+          VITE_ES2_FIREBASE_CONFIG: ${{ vars.VITE_ES2_FIREBASE_CONFIG }}
         run: pnpm build
       - name: Validate release metadata and built output
         run: pnpm check-release
