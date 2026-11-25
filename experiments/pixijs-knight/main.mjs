@@ -16,7 +16,8 @@ fallback.height = height * resolution
 const ctx = fallback.getContext('2d')
 const media = matchMedia('(prefers-reduced-motion: reduce)')
 let pose = 'idle', elapsed = 0, last = null, frame = 0, paused = false, reduced = false, disposed = false
-let app, gpuDraw, gpuCanvas, useCanvas = false
+let app, gpuDraw, gpuCanvas, useCanvas = false, ready = false
+fallback.setAttribute('aria-label', 'Knight animation / 騎士動畫')
 const state = createState()
 state.mode = 'play'
 let hero = createHero('knight')
@@ -57,9 +58,10 @@ function drawFallback(anim) {
   drawRigSprite(ctx, image, W, H, hero, anim, 'knight')
 }
 function paint() {
+  if (!ready) return
   const anim = sample()
   if (!useCanvas && gpuDraw) {
-    try { gpuDraw(anim); return } catch (error) { console.warn(error); gpuDraw = null; selectCanvas() }
+    try { gpuDraw(anim); return } catch (error) { console.warn(error); gpuDraw = null; selectCanvas(); document.querySelector('#canvas').disabled = true }
   }
   drawFallback(anim)
 }
@@ -74,7 +76,7 @@ function tick(now) {
 }
 function refresh() {
   cancelAnimationFrame(frame); frame = 0; last = null
-  if (disposed || document.hidden) return
+  if (disposed || !ready || document.hidden) return
   paint()
   if (!paused && !(media.matches || reduced)) frame = requestAnimationFrame(tick)
 }
@@ -88,7 +90,7 @@ async function initGpu(layers) {
   const root = new Container()
   root.position.set(footX, footY)
   app.stage.addChild(root)
-  const body = new MeshPlane({ texture: Texture.from(layers.body), verticesX: 11, verticesY: 13 })
+  const body = new MeshPlane({ texture: Texture.from(layers.body), verticesX: 11, verticesY: 13, autoResize: false })
   body.position.set(-W / 2, -H + 4)
   const { buffer } = body.geometry.getAttribute('aPosition')
   const vertices = buffer.data
@@ -115,6 +117,7 @@ async function initGpu(layers) {
     app.render()
   }
   gpuCanvas = app.canvas
+  gpuCanvas.setAttribute('aria-label', 'Knight animation / 騎士動畫')
   gpuCanvas.addEventListener('webglcontextlost', event => {
     event.preventDefault()
     gpuDraw = null
@@ -128,6 +131,7 @@ async function initGpu(layers) {
 async function start() {
   try { await image.decode() } catch { status.textContent = 'Knight asset failed / 騎士素材載入失敗'; return }
   if (disposed) return
+  ready = true
   selectCanvas()
   refresh()
   const layers = getRigidWeaponLayers(image, 'knight')
@@ -136,6 +140,7 @@ async function start() {
     await initGpu(layers)
   } catch (error) {
     console.warn('PixiJS initialization failed; retaining Canvas', error)
+    if (disposed) return
     selectCanvas()
     document.querySelector('#canvas').disabled = true
   }
@@ -162,11 +167,13 @@ document.querySelector('#canvas').addEventListener('click', () => {
 media.addEventListener('change', refresh)
 document.addEventListener('visibilitychange', refresh)
 function dispose() {
+  if (disposed) return
   disposed = true; cancelAnimationFrame(frame)
   media.removeEventListener('change', refresh)
   document.removeEventListener('visibilitychange', refresh)
   if (gpuCanvas && app) app.destroy(true, { children: true, texture: true, textureSource: true })
 }
 window.addEventListener('pagehide', event => { if (!event.persisted) dispose() })
+window.addEventListener('pageshow', event => { if (event.persisted) refresh() })
 if (import.meta.hot) import.meta.hot.dispose(dispose)
 void start()
