@@ -225,6 +225,10 @@ try {
         await tip.waitFor({ state: 'visible' })
         assert.match(await tip.innerText(), /虛空術士|Void/i)
         assert.ok(inside(await tip.evaluate(rect), width, height), name + ': hero tooltip clips')
+        assert.ok(await card.evaluate(el => {
+          const a = el.getBoundingClientRect(), p = document.querySelector('[data-es2-hover-details]').getBoundingClientRect()
+          return p.right <= a.left || p.left >= a.right || p.bottom <= a.top || p.top >= a.bottom
+        }), name + ': hero tooltip overlaps its own trigger')
         assert.equal(await page.locator('[data-es2-hover-details]').count(), 1)
         assert.equal(await page.locator('[data-es2-selected-hero]').getAttribute('data-es2-selected-hero'), selectedBefore)
         await page.keyboard.press('Escape')
