@@ -228,6 +228,7 @@ export function drawCharacter(
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
   healthBars?: WeakMap<Mob, HealthBarMotion>,
   knightPixi?: KnightPixiRenderer,
+  reduceFlashing = false,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -284,7 +285,7 @@ export function drawCharacter(
       // The isolated Knight GPU candidate is composited at the original depth-sorted position.
       // Loading/failure/other identities continue through the existing Canvas path.
       if (s.heroId === 'knight' && kind === 'knight' && drawable === im &&
-          knightPixi?.draw(ctx, hero, anim, s.worldClock, s.mode === 'paused' || s.mode === 'level')) {
+          knightPixi?.draw(ctx, hero, anim, s.worldClock, s.mode === 'paused' || s.mode === 'level', reduceFlashing)) {
         ctx.restore()
         return
       }

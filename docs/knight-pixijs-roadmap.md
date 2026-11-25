@@ -33,3 +33,7 @@ A small 3x actor framebuffer, persistent textures, precomputed joint weights and
 ## First CI result
 
 Run 45542992775: dependency installation and the new tests passed. Full suite: 1567 passed, 1 skipped, 1 failed (`src/assets/es2/production/heroes/production-art.test.ts`, unreviewed Shadowblade/Spirit Summoner/Crimson Paladin). The manifest Git blob matches the base branch exactly. Do not modify these out-of-scope review flags. Later verification steps were initially skipped because of the release gate; workflow now preserves the failing gate but independently collects typecheck/build/real browser evidence.
+
+## Reusable rig follow-up
+
+See [shared humanoid rig contract](hero-skeletal-rig.md). Generic profile/mesh/leg/pose runtime and directional validation are implemented; actual native layered views and physical device evidence remain blocking. CI 45543377998 passed dependency install, typecheck, build and release checks; browser QA reached actual GPU gameplay but failed on attack direction 3. The next run isolates QA target HP/XP; no combat balance change.

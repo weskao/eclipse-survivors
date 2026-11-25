@@ -161,7 +161,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
       ? { image: bossImage, phase: bossSnapshot.phase,
           motion: motionReference && motionReference.id === bossSnapshot.id ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
-    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, assets.knightPixi)
+    drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, assets.knightPixi, policy?.reduceFlashing ?? false)
   }
   // Dead mobs are excluded from depthOrder. Only explicit DEV review may paint a death reference.
   const deathReference = motionReference

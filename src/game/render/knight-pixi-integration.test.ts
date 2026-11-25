@@ -48,7 +48,7 @@ describe('Knight experimental GPU actor at the actual game draw boundary', () =>
     assets.prefersReducedMotion = () => true
     s.mode = 'paused'
     drawFrame(createFakeCtx().ctx, s, 1, assets)
-    expect(draw).toHaveBeenCalledWith(expect.anything(), h, expect.objectContaining({ pose: 'attack', direction: 2, reducedMotion: true }), s.worldClock, true)
+    expect(draw).toHaveBeenCalledWith(expect.anything(), h, expect.objectContaining({ pose: 'attack', direction: 2, reducedMotion: true }), s.worldClock, true, false)
     expect(h).toEqual(before)
   })
 })

@@ -1,15 +1,16 @@
+import { KNIGHT_RIG } from './rig.mjs'
 const TAU = Math.PI * 2
 const clamp = x => Math.max(0, Math.min(1, x))
 const ease = x => { const t = clamp(x); return t*t*(3-2*t) }
 const wrap = x => Math.atan2(Math.sin(x),Math.cos(x))
 const blend = (a,b,t) => a+(b-a)*t
-export const SOURCE_BLADE_ANGLE = 2.3 // down-left in the canonical illustration; visual QA pending
+export const SOURCE_BLADE_ANGLE = KNIGHT_RIG.sourceAngle
 export function movementSlot(vx,vy,move) {
   if (move <= .15 || vx*vx+vy*vy < 1e-8) return 8
   return (Math.round(Math.atan2(vy,vx)*8/TAU)+8)%8
 }
 // Direction of travel and aim are deliberately independent. No mirrored equipment.
-export function advanceKnightMotion(old,s) {
+export function advanceRigMotion(old,s,profile) {
   const slot=movementSlot(s.vx,s.vy,s.move)
   const reset=!old || s.clock<old.clock || s.clock-old.clock>.25 || s.reducedMotion || old.reducedMotion
   const t=reset?1:1-Math.exp(-18*Math.max(0,s.clock-old.clock))
@@ -18,7 +19,7 @@ export function advanceKnightMotion(old,s) {
   const stride=reset?(slot===8?0:clamp(s.move)):blend(old.stride,slot===8?0:clamp(s.move),t)
   const attack=s.pose==='attack'||s.pose==='cast'
   // Engine strike begins at contact; aim alignment is immediate, recovery eased.
-  const blade=attack?wrap(s.aim-SOURCE_BLADE_ANGLE)*(1-ease((s.phase-.16)/.84)) + .35*Math.sin(Math.PI*s.phase)*(1-s.phase):0
+  const blade=attack?wrap(s.aim-profile.sourceAngle)*(1-ease((s.phase-.16)/.84)) + .35*Math.sin(Math.PI*s.phase)*(1-s.phase):0
   const attackStart=attack&&(!old||old.pose!==s.pose||s.phase<old.phase)
   const handBlend=reset||attackStart?1:t
   const p={...s,slot,heading,stride,blade: s.reducedMotion?0:blade}
@@ -26,14 +27,13 @@ export function advanceKnightMotion(old,s) {
   return p
 }
 const near=(u,v,x,y,rx,ry)=>1-ease(Math.hypot((u-x)/rx,(v-y)/ry))
-const LEG_JOINTS={left:[[.46,.63],[.41,.77],[.32,.86]],right:[[.57,.64],[.68,.80],[.74,.96]]}
 const rotateBone=(origin,from,to,angle)=>{
   const x=to.x-from.x,y=to.y-from.y,c=Math.cos(angle),s=Math.sin(angle)
   return {x:origin.x+x*c-y*s,y:origin.y+x*s+y*c}
 }
 // FK for both legs: the hip is fixed, and the upper and lower bone lengths never change.
-export function sampleLegBones(side,width,height,step,heading,stride){
-  const [hip,knee,foot]=LEG_JOINTS[side].map(([x,y])=>({x:x*width,y:y*height}))
+export function sampleLegBones(side,width,height,step,heading,stride,profile=KNIGHT_RIG){
+  const [hip,knee,foot]=profile.legJoints[side].map(([x,y])=>({x:x*width,y:y*height}))
   const wave=Math.sin(step+(side==='right'?Math.PI:0))*stride
   const upper=wave*(.24*Math.cos(heading)+.05*Math.sin(heading))
   const lower=upper+Math.max(0,wave)*(.21+.1*Math.abs(Math.sin(heading)))*(side==='right'?1:-1)
@@ -50,16 +50,17 @@ export function meshPoint(vertices,columns,rows,u,v){
   return {x:at(0),y:at(1)}
 }
 // Precompute the visual joint regions once. One illustration, not authored rear art.
-export function createKnightSkin(rest,width,height,grip) {
+export function createRigSkin(rest,width,height,grip,profile) {
   const weights=new Float32Array(rest.length/2*11)
   for(let i=0;i<rest.length;i+=2){
     const u=rest[i]/width,v=rest[i+1]/height,j=i/2*11
     const hand=near(u,v,...grip,.23,.24), free=1-hand
-    weights.set([hand,free*near(u,v,.27,.41,.20,.23),free*near(u,v,.75,.56,.23,.25),free*near(u,v,.72,.41,.19,.24),free*near(u,v,.52,.45,.32,.31),free*near(u,v,.54,.11,.20,.23),free*near(u,v,.41,.77,.20,.22),free*near(u,v,.32,.86,.19,.20),free*near(u,v,.68,.80,.20,.22),free*near(u,v,.74,.96,.19,.20),free*near(u,v,.90,.55,.25,.35)],j)
+    weights[j]=hand
+    for(let k=0;k<profile.regions.length;k++) weights[j+k+1]=free*near(u,v,...profile.regions[k])
   }
-  return {rest:rest.slice(),weights,width,height,legRest:[sampleLegBones('left',width,height,0,0,0),sampleLegBones('right',width,height,0,0,0)]}
+  return {rest:rest.slice(),weights,width,height,profile,legRest:[sampleLegBones('left',width,height,0,0,0,profile),sampleLegBones('right',width,height,0,0,0,profile)]}
 }
-export function deformKnight({rest,weights,width,height,legRest},out,p){
+export function deformRig({rest,weights,width,height,legRest,profile},out,p){
   if(p.reducedMotion){out.set(rest);return}
   const phase=clamp(p.phase),cycle=Math.sin(p.step),lift=Math.abs(cycle),stride=p.stride
   const x=Math.cos(p.heading),y=Math.sin(p.heading)
@@ -69,7 +70,7 @@ export function deformKnight({rest,weights,width,height,legRest},out,p){
   const attack=p.pose==='attack'||p.pose==='cast'?pulse:0
   const bodyX=x*lean+attack*Math.cos(p.aim)*1.8+fall*5
   const bodyY=y*lean+fall*8-triumph-lift*stride*1.4+(p.pose==='idle'?idle:0)
-  const left=sampleLegBones('left',width,height,p.step,p.heading,stride),right=sampleLegBones('right',width,height,p.step,p.heading,stride)
+  const left=sampleLegBones('left',width,height,p.step,p.heading,stride,profile),right=sampleLegBones('right',width,height,p.step,p.heading,stride,profile)
   const [l0,r0]=legRest
   const lx=left.knee.x-l0.knee.x,ly=left.knee.y-l0.knee.y,lfx=left.foot.x-l0.foot.x,lfy=left.foot.y-l0.foot.y
   const rx=right.knee.x-r0.knee.x,ry=right.knee.y-r0.knee.y,rfx=right.foot.x-r0.foot.x,rfy=right.foot.y-r0.foot.y
@@ -79,3 +80,7 @@ export function deformKnight({rest,weights,width,height,legRest},out,p){
     out[i+1]=rest[i+1]+h*p.handY+e*p.elbowY+sh*p.supportY+se*p.supportElbowY+(torso+head)*bodyY+l*ly+lf*lfy+r*ry+rf*rfy+cape*(Math.sin(p.step-.8)*stride*2+fall*4+(p.pose==='idle'?idle:0))
   }
 }
+
+export const advanceKnightMotion = (old,s) => advanceRigMotion(old,s,KNIGHT_RIG)
+export const createKnightSkin = (rest,width,height,grip) => createRigSkin(rest,width,height,grip,KNIGHT_RIG)
+export const deformKnight = deformRig

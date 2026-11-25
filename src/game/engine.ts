@@ -850,7 +850,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const radius = Math.min(140, Math.max(64, hero.range * .75))
       target.x = hero.x + Math.cos(aim) * radius
       target.y = hero.y + Math.sin(aim) * radius
-      target.speed = 0; target.dmg = 0
+      target.speed = 0; target.dmg = 0; target.hp = target.max = Math.max(100000, hero.damage * 100)
+      // Isolate visual QA from XP/level dialogs and old projectile or hazard residue.
+      s.stars = []; s.shots = []; s.fx = []; hero.need = 999999
       hero.attack = 2; hero.inv = 0; hero.dash = 0
       attack(s, hooks, factions ?? undefined)
       return hero.strike > 0 && Math.cos(hero.aimAngle - aim) > Math.cos(Math.PI / 8)
