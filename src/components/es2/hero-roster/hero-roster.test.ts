@@ -7,6 +7,7 @@ import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
 import Es2MainMenu from '../menu/Es2MainMenu.vue'
 import { getLocale, setLocale, t } from '../../../i18n'
+import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 
 const instances: Array<{ unmount(): void }> = []
 function render(component: Component, props: Record<string, unknown>) {
@@ -167,6 +168,40 @@ describe('ES2 dedicated hero special action', () => {
       } finally { setLocale(previous) }
     },
   )
+
+  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
+    '%s plays one silent ready flourish and one cast flourish per real transition',
+    async heroId => {
+      const snapshot = { cooldown: 3, stealth: 0, barrier: 0, companions: [] }
+      const wrapper = render(HeroSpecialAction, { heroId, active: true, snapshot })
+      const button = wrapper.get('[data-hero-special]')
+      expect(button.attributes('data-flourish')).toBeUndefined()
+      expect(button.attributes('style')).toContain('--es2-special-cooldown: 0.')
+      await wrapper.setProps({ snapshot: { ...snapshot, cooldown: 0 } })
+      expect(button.attributes('data-flourish')).toBe('ready')
+      await wrapper.get('.es2-hero-special__flourish').trigger('animationend')
+      expect(button.attributes('data-flourish')).toBeUndefined()
+      await wrapper.setProps({ snapshot: { ...snapshot, cooldown: HERO_DEFINITIONS[heroId].specialCooldown } })
+      expect(button.attributes('data-flourish')).toBe('cast')
+      await wrapper.setProps({ snapshot: { ...snapshot, cooldown: 2 } })
+      expect(button.attributes('data-flourish')).toBe('cast')
+      await wrapper.get('.es2-hero-special__flourish').trigger('animationend')
+      expect(button.attributes('data-flourish')).toBeUndefined()
+      expect(button.attributes('data-ui-sfx')).toBe('managed')
+      expect(wrapper.get('.es2-hero-special__flourish').attributes('aria-hidden')).toBe('true')
+      // Already ready on mount (e.g. returning from pause) is not a new transition.
+      const resumed = render(HeroSpecialAction, { heroId, active: true, snapshot: { ...snapshot, cooldown: 0 } })
+      expect(resumed.get('[data-hero-special]').attributes('data-flourish')).toBeUndefined()
+    },
+  )
+
+  it('gives each hero its own flourish motif and removes them under reduced motion', () => {
+    const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    for (const motif of ['shadow-slash', 'spirit-rise', 'aegis-flare'])
+      expect(source).toMatch(new RegExp('@keyframes es2-special-' + motif))
+    expect(source).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*\.es2-hero-special__flourish\s*\{[^}]*display:\s*none/)
+    expect(source).toMatch(/:global\(\[data-es2-reduce-motion="true"\]\)[^{]*\.es2-hero-special__flourish[^{]*\{[^}]*display:\s*none/)
+  })
 
   it('clips decorative overflow without creating a scroll container inside the skill button', () => {
     const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')

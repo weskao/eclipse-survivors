@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { HERO_DEFINITIONS, type SpecializationId, type SpecializationSnapshot } from '../../../game/content/heroes'
 
 const props = withDefaults(defineProps<{
@@ -15,6 +15,11 @@ const remaining = computed(() => Number.isFinite(props.snapshot.cooldown) ? Math
 const ready = computed(() => props.active && remaining.value === 0)
 const progress = computed(() => Number.isFinite(remaining.value)
   ? Math.min(100, Math.max(0, 100 * remaining.value / hero.value.specialCooldown)) : 100)
+
+// One decorative flourish per real transition (ready gained, cast spent); never on mount.
+const flourish = ref<'ready' | 'cast' | null>(null)
+watch(ready, (now, was) => { if (now && !was) flourish.value = 'ready' })
+watch(remaining, (now, was) => { if (was === 0 && now > 0) flourish.value = 'cast' })
 
 function trigger(): void { if (ready.value) emit('activate') }
 function keydown(event: KeyboardEvent): void {
@@ -32,7 +37,8 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 
 <template>
   <div class="es2-hero-special" :data-hero="heroId" :data-side="joystickSide" :aria-label="t('{name} 主動技能', { name: t(hero.label) })">
-    <button type="button" class="es2-hero-special__button" :data-ready="ready ? 'true' : 'false'" data-hero-special data-ui-sfx="managed"
+    <button type="button" class="es2-hero-special__button" :data-ready="ready ? 'true' : 'false'" :data-flourish="flourish ?? undefined" data-hero-special data-ui-sfx="managed"
+      :style="{ '--es2-special-cooldown': (progress / 100).toFixed(3) }"
       aria-keyshortcuts="Q" :aria-label="t(hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒'))"
       :disabled="!ready" @click="trigger">
       <span class="es2-hero-special__content">
@@ -41,6 +47,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
         <span class="es2-hero-special__name">{{ t(hero.special.split('：')[0]) }}</span>
         <span class="es2-hero-special__hint">{{ t(ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放') }}</span>
       </span>
+      <span class="es2-hero-special__flourish" aria-hidden="true" @animationend.self="flourish = null"></span>
       <span class="es2-hero-special__fill" aria-hidden="true" :style="{ width: progress + '%' }"></span>
     </button>
     <div class="es2-hero-special__statuses">
@@ -119,6 +126,19 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special__hint { color: var(--es2-special-light); }
 .es2-hero-special__icon { filter: drop-shadow(0 0 4px #ffffff44); }
 @keyframes es2-special-sheen { 0%, 63%, 100% { transform: translateX(-90%); } 85% { transform: translateX(90%); } }
+/* Cooldown sweep over the icon: static paint driven by one custom property, no JS animation loop. */
+.es2-hero-special__content::before { content: ''; grid-column: 1; grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 8px; z-index: 2; pointer-events: none; background: conic-gradient(#0a0610b8 calc(var(--es2-special-cooldown, 0) * 360deg), transparent 0); }
+@media (max-width: 760px), (orientation: landscape) and (max-height: 440px) { .es2-hero-special__content::before { grid-row: 1; } }
+/* Hero-specific ready/cast flourish, clipped by the button; data-flourish clears on animationend. */
+.es2-hero-special__flourish { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; border-radius: inherit; }
+.es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation: es2-special-shadow-slash .55s ease-out 1 both; background: linear-gradient(115deg, transparent 38%, var(--es2-special-accent) 46%, #fff 50%, var(--es2-special-light) 53%, transparent 62%); }
+.es2-hero-special[data-hero="spirit-summoner"] .es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation-name: es2-special-spirit-rise; animation-duration: .7s; background: radial-gradient(ellipse 70% 80% at 50% 100%, var(--es2-special-light), color-mix(in srgb, var(--es2-special-accent) 50%, transparent) 45%, transparent 72%); }
+.es2-hero-special[data-hero="crimson-paladin"] .es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation-name: es2-special-aegis-flare; animation-duration: .6s; background: radial-gradient(ellipse at 50% 50%, transparent 52%, color-mix(in srgb, #e04a5c 45%, transparent) 78%, var(--es2-special-light)); box-shadow: inset 0 0 0 2px var(--es2-special-light); }
+.es2-hero-special__button[data-flourish="cast"] .es2-hero-special__flourish { animation-duration: .8s; }
+@keyframes es2-special-shadow-slash { 0% { opacity: 0; transform: translateX(-110%) skewX(-12deg); } 30% { opacity: .95; } 100% { opacity: 0; transform: translateX(110%) skewX(-12deg); } }
+@keyframes es2-special-spirit-rise { 0% { opacity: 0; transform: translateY(45%); } 40% { opacity: .85; } 100% { opacity: 0; transform: translateY(-35%); } }
+@keyframes es2-special-aegis-flare { 0% { opacity: 0; transform: scale(1.12); } 35% { opacity: .95; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
+:global([data-es2-reduce-motion="true"]) .es2-hero-special__flourish, :global([data-es2-reduce-flashing="true"]) .es2-hero-special__flourish { display: none; }
 /* Out of flow so chips appearing after a cast never move the button. */
 .es2-hero-special__statuses { position: absolute; right: calc(100% + .45rem); bottom: 0; display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; white-space: nowrap; pointer-events: none; }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }
@@ -126,6 +146,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
   .es2-hero-special__fill { transition: none; }
   .es2-hero-special__button[data-ready="true"]::before { animation: none; opacity: .18; }
   .es2-hero-special__button { transition: none; }
+  .es2-hero-special__flourish { display: none; }
 }
 @media (orientation: portrait) and (max-width: 760px) {
   .es2-hero-special { right: max(12px, env(safe-area-inset-right)); bottom: calc(151px + env(safe-area-inset-bottom)); max-width: 112px; flex-direction: column; align-items: flex-end; }
