@@ -21,7 +21,7 @@ function setup() {
         onFocusout: details.events.focusout,
       }, [
         h('button', { 'data-hero': 'wizard' }, 'Wizard'),
-        details.anchor.value ? h('aside', { id: details.tooltipId, role: 'tooltip' }, details.id.value) : null,
+        details.anchor.value ? h('aside', { id: details.tooltipId, role: 'tooltip' }, details.id.value ?? '') : null,
       ])
     },
   }), { attachTo: document.body })
