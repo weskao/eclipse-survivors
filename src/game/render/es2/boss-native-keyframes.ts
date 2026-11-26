@@ -23,6 +23,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   abyssReleaseB: ['batch-08/abyss-monarch/attack/shadow-fan-release-key-b.webp', 1312, 1199, 656, 1180],
   abyssRecover: ['batch-16/abyss-monarch/recover/shadow-fan-recover-key-a.webp', 1254, 1254, 603.5, 1225],
   abyssHurt: ['batch-17/abyss-monarch/hurt/recoil-key-a.webp', 1254, 1254, 638.5, 1231],
+  abyssDeath: ['batch-18/abyss-monarch/death/dissolve-key-a.webp', 1254, 1254, 632.5, 1217],
   frostWindup: ['batch-10/frost-sovereign/windup/ice-fan-windup-key-a.webp', 1254, 1254, 611, 1243],
   frostRecover: ['batch-11/frost-sovereign/recover/staff-lower-key-a.webp', 1315, 1196, 654, 1147],
   frostHurt: ['batch-11/frost-sovereign/hurt/recoil-key-a.webp', 1313, 1198, 650.5, 1151],
@@ -48,6 +49,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   if (!snapshot.phase || !motion || motion.phase !== snapshot.phase
       || !Number.isFinite(motion.progress) || motion.progress < 0 || motion.progress > 1) return null
   if (snapshot.id === 'abyss-monarch') {
+    if (motion.phase === 3 && motion.pose === 'death') return 'abyssDeath'
     if (motion.phase !== 1) return null
     if (motion.pose === 'idle') return 'abyssIdle'
     if (motion.pose === 'hurt') return 'abyssHurt'

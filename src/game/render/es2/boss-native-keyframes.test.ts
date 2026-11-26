@@ -20,7 +20,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(selectBossNativeKeyframe(snapshot('windup', 'ember-line'))).toBeNull()
     expect(selectBossNativeKeyframe(snapshot('recover'))).toBe('recover')
     expect(selectBossNativeKeyframe(snapshot('recover', 'eruption'))).toBeNull()
-    expect(selectBossNativeKeyframe(snapshot('death', 'titan-slam', 'abyss-monarch'))).toBeNull()
+    expect(selectBossNativeKeyframe(snapshot('death', 'titan-slam', 'abyss-monarch'))).toBe('abyssDeath')
     expect(selectBossNativeKeyframe({ ...snapshot('death'), bodyMotion: undefined })).toBeNull()
   })
   it('samples staged death and actual slam candidates at the real encounter progress boundaries', () => {
@@ -230,6 +230,26 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
       expect(drawBossNativeKeyframe(ctx, bad, state, 300)).toBe(false)
       expect(calls).toHaveLength(1)
     }
+  })
+  it('reviews Batch 18 Abyss dissolve only during phase 3 death', () => {
+    const state = snapshot('death', 'shadow-fan', 'abyss-monarch')
+    const earlier = (phase: 1 | 2): BossSnapshot => ({ ...state, phase, bodyMotion: { ...state.bodyMotion!, phase } })
+    expect(selectBossNativeKeyframe({ ...state, impacts: [] })).toBe('abyssDeath')
+    expect(selectBossNativeKeyframe(earlier(1))).toBeNull()
+    expect(selectBossNativeKeyframe(earlier(2))).toBeNull()
+    expect(selectBossNativeKeyframe(snapshot('idle', 'shadow-fan', 'abyss-monarch'))).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: NaN } })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: 1.1 } })).toBeNull()
+    const image = { complete: true, naturalWidth: 1254, naturalHeight: 1254 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'abyssDeath')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1254, 1254, -158.125, -300.25, 313.5, 313.5])
+    expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, earlier(2), 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, snapshot('death', 'light-ring', 'eclipse-seraph'), 300)).toBe(false)
+    expect(calls).toHaveLength(1)
   })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
     const makeImage = () => ({ complete: false, src: '' }) as HTMLImageElement
