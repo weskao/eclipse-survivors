@@ -2,6 +2,8 @@ import type { ContentVisualFx, GameState } from '../../types'
 import type { Ctx2D } from '../ctx'
 import { drawHitImpact } from '../hit-impact'
 import { drawHeroSpecialFx } from './hero-special-vfx'
+import { AEGIS_SHATTER, heroStrikeTime } from '../pixi-vfx/hero-choreography'
+import { BALANCE } from '../../config'
 
 /** Lightweight ES2 VFX: cached immutable directions, bounded geometry, no per-frame gradients. */
 export const COMBAT_FX_SPECS = [
@@ -24,8 +26,10 @@ export const COMBAT_FX_SPECS = [
   { kind: 'ultimate-attack', id: 'combat-vfx:ultimate-attack', title: 'Ultimate Release', duration: 1.1, radius: 190 },
   { kind: 'victory-finish', id: 'combat-vfx:victory-finish', title: 'Victory Benediction', duration: 2.4, radius: 195 },
   { kind: 'hero-shadowblade', id: 'combat-vfx:hero-shadowblade', title: 'Shadowblade · Nightfall Ambush', duration: 1.08, radius: 210 },
-  { kind: 'hero-spirit-summoner', id: 'combat-vfx:hero-spirit-summoner', title: 'Spirit Summoner · Soul Convergence', duration: 1.32, radius: 200 },
-  { kind: 'hero-crimson-paladin', id: 'combat-vfx:hero-crimson-paladin', title: 'Crimson Paladin · Scarlet Aegis', duration: 1.26, radius: 210 },
+  { kind: 'hero-spirit-summoner', id: 'combat-vfx:hero-spirit-summoner', title: 'Spirit Summoner · Soul Convergence', duration: 1.32, radius: 360 },
+  { kind: 'hero-crimson-paladin', id: 'combat-vfx:hero-crimson-paladin', title: 'Crimson Paladin · Scarlet Aegis',
+    // The ward lives exactly as long as the barrier it represents.
+    duration: BALANCE.heroes.specialEffects['crimson-paladin'].barrierSeconds, radius: 210 },
 ] as const
 
 export type CombatFxKind = (typeof COMBAT_FX_SPECS)[number]['kind']
@@ -39,6 +43,10 @@ export interface CombatVfxPreferences {
 export interface DirectedCombatFx extends ContentVisualFx {
   /** Frozen at emission to avoid changing a slash's trajectory when the player turns. */
   angle?: number
+}
+export interface HeroSpecialFx extends ContentVisualFx {
+  /** World positions the cast actually struck, captured at activation (max 3, frozen). */
+  targets?: readonly { readonly x: number; readonly y: number }[]
 }
 
 export const COMBAT_FX_BY_KIND = new Map<CombatFxKind, (typeof COMBAT_FX_SPECS)[number]>(
@@ -127,7 +135,10 @@ export function drawCombatEffect(
   const flashing = live(settings.reducedFlashing, false)
   const quality = live(settings.quality, 'high')
   const count = reduced ? 4 : quality === 'low' ? 4 : quality === 'medium' ? 8 : 12
-  const raw = clamp(1 - effect.life / effect.max)
+  // The Aegis holds its sustain pose for the whole barrier and only shatters in its last moments.
+  const raw = kind === 'hero-crimson-paladin'
+    ? (effect.life < AEGIS_SHATTER ? 1 - 0.28 * effect.life / AEGIS_SHATTER : Math.min((effect.max - effect.life) / 1.26, 0.72))
+    : clamp(1 - effect.life / effect.max)
   // Anticipation (0-16%), strike/expansion (16-72%), fade (72-100%).
   const t = reduced ? 0.42 : raw
   const strike = ease((t - 0.16) / 0.55)
@@ -285,6 +296,7 @@ export function drawCombatEffect(
       case 'hero-shadowblade':
       case 'hero-spirit-summoner':
       case 'hero-crimson-paladin':
+        heroTargetStrikes(ctx, kind, effect as HeroSpecialFx, reduced)
         drawHeroSpecialFx(ctx, kind, t, strike, count, reduced)
         break
       case 'victory-finish':
@@ -297,4 +309,26 @@ export function drawCombatEffect(
   } finally {
     ctx.restore()
   }
+}
+
+/** Canvas fallback contact: one stroked path from the caster to each target as its strike lands. */
+function heroTargetStrikes(
+  ctx: Ctx2D, kind: 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin',
+  effect: HeroSpecialFx, reduced: boolean,
+): void {
+  const targets = effect.targets
+  if (!targets?.length || kind === 'hero-crimson-paladin') return
+  const elapsed = effect.max - effect.life
+  ctx.strokeStyle = kind === 'hero-shadowblade' ? '#b59cff' : '#a0d9d6'
+  ctx.lineWidth = kind === 'hero-shadowblade' ? 3 : 2
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  for (let i = 0; i < targets.length; i++) {
+    const local = elapsed - heroStrikeTime(kind, i)
+    if (!reduced && (local < 0 || local > 0.45)) continue
+    const dx = targets[i]!.x - effect.x, dy = targets[i]!.y - effect.y
+    ctx.moveTo(0, -24); ctx.lineTo(dx, dy)
+    if (kind === 'hero-shadowblade') { ctx.moveTo(dx - 14, dy - 14); ctx.lineTo(dx + 14, dy + 14) }
+  }
+  ctx.stroke()
 }

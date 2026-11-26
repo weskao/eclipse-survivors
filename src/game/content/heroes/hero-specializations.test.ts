@@ -180,6 +180,39 @@ describe('isolated hero specializations', () => {
     expect(adapter.mitigateIncomingDamage(-10)).toBe(0)
   })
 
+  it('records the struck enemy positions of a cast for the VFX and nothing for the barrier', () => {
+    for (const id of ['shadowblade', 'spirit-summoner'] as const) {
+      const { state, adapter } = setup(id)
+      const hero = state.hero!
+      state.mobs.push(mob(hero.x + 40, hero.y), mob(hero.x - 70, hero.y + 30), mob(hero.x, hero.y - 100),
+        mob(hero.x + 120, hero.y + 2), mob(hero.x + 9000, hero.y))
+      expect(adapter.castTargets()).toEqual([])
+      expect(adapter.activate()).toBe(true)
+      const targets = adapter.castTargets()
+      expect(targets).toHaveLength(3)
+      expect(targets[0]).toEqual({ x: hero.x + 40, y: hero.y })
+      expect(targets.every(t => Math.hypot(t.x - hero.x, t.y - hero.y) < 1000)).toBe(true)
+      expect(Object.isFrozen(targets)).toBe(true)
+      adapter.reset()
+      expect(adapter.castTargets()).toEqual([])
+    }
+    const paladin = setup('crimson-paladin')
+    paladin.state.mobs.push(mob(paladin.state.hero!.x + 30, paladin.state.hero!.y))
+    expect(paladin.adapter.activate()).toBe(true)
+    expect(paladin.adapter.castTargets()).toEqual([])
+  })
+
+  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
+    '%s leaves the cast visuals to the dedicated hero VFX instead of legacy impact rings',
+    id => {
+      const { state, adapter } = setup(id)
+      const waves = state.impactWaves.length, sparks = state.fx.length
+      expect(adapter.activate()).toBe(true)
+      expect(state.impactWaves).toHaveLength(waves)
+      expect(state.fx).toHaveLength(sparks)
+    },
+  )
+
   it('reset clears per-run timers, companion state, barrier and content upgrades', () => {
     const { state, registry, adapter } = setup('crimson-paladin')
     registry.acquire(state, HERO_DEFINITIONS['crimson-paladin'].progressionAbility, hooks)

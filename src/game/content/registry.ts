@@ -24,7 +24,8 @@ export interface ContentRegistry {
   tick(state: GameState, dt: number, hooks: GameHooks): void
   emit(state: GameState, event: ContentEvent, hooks: GameHooks): void
   addEffect(state: GameState, effect: ContentVisualFx): boolean
-  render(ctx: Ctx2D, state: GameState, ox: number, oy: number): void
+  /** `skip` is an effect another renderer (the hero Pixi pass) already owns this frame. */
+  render(ctx: Ctx2D, state: GameState, ox: number, oy: number, skip?: ContentVisualFx): void
 }
 
 /** Construct once per engine. No registration or mutable registry lookup tables in a frame. */
@@ -128,8 +129,9 @@ export function createContentRegistry(packs: readonly ContentPack[] = [], rng: (
       for (const pack of stablePacks) pack.onEvent?.(context(state, hooks), event)
     },
     addEffect,
-    render(ctx: Ctx2D, state: GameState, ox: number, oy: number): void {
+    render(ctx: Ctx2D, state: GameState, ox: number, oy: number, skip?: ContentVisualFx): void {
       for (const effect of state.content.effects) {
+        if (effect === skip) continue
         const definition = effectMap.get(effect.id)
         if (!definition) continue
         ctx.save()

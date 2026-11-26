@@ -4,10 +4,20 @@ import { bossMaterialKind, bossVfxImages } from '../../content/bosses/render'
 import type { BossAttackId } from '../../content/bosses/definitions'
 import { MAX_BOSS_IMPACTS, MAX_BOSS_PROJECTILES } from '../../content/bosses/controller'
 import { impactGeometry, visibleImpact, type ImpactGeometry } from './plan'
-import type { VfxFrame } from './bridge'
+import type { HeroVfxFrame, VfxFrame } from './bridge'
+import { heroSpecialImages } from '../es2/hero-special-vfx'
+import {
+  HERO_ART_SLOTS, HERO_MOTE_SLOTS, heroArtPose, heroMoteBudget, heroMotePose, type HeroCast, type HeroPose,
+} from './hero-choreography'
 import { choreography, particlePose, particleFrame, releaseEnvelope, type ParticleKind, type ParticlePose } from './choreography'
 
-export interface PixiBossRenderer { projectiles(frame: VfxFrame): boolean; impacts(frame: VfxFrame): boolean; lastReleaseIds(): readonly BossAttackId[]; dispose(): void }
+export interface PixiBossRenderer {
+  projectiles(frame: VfxFrame): boolean; impacts(frame: VfxFrame): boolean; lastReleaseIds(): readonly BossAttackId[]
+  heroSpecial(frame: HeroVfxFrame): boolean; dispose(): void
+}
+type Surface = Pick<VfxFrame, 'ctx' | 'width' | 'height' | 'dpr'>
+// Hero casts reach at most 330 px (Spirit range) from the caster plus sprite half-size.
+const HERO_CULL = 420
 const TAU = Math.PI * 2, SAFE = Math.PI / 5, MAX_PARTICLES = 64
 const clamp = (x: number) => Math.max(0, Math.min(1, x))
 const palette = { abyss: 0xc393ff, frost: 0xc3f3ff, infernal: 0xffb45a, seraph: 0xffdf91 }
@@ -76,14 +86,23 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
   const missiles = Array.from({ length: MAX_BOSS_PROJECTILES }, () => sprite())
   const impactLayer = new Container(), missileLayer = new Container()
   impactLayer.addChild(...impacts.map(x => x.root)); missileLayer.addChild(...missiles)
-  app.stage.addChild(missileLayer, impactLayer)
+  // Hero Q layer shares this WebGL context; it is visible only during its own composite.
+  const heroArt = Array.from({ length: HERO_ART_SLOTS }, () => sprite())
+  const heroMotes = Array.from({ length: HERO_MOTE_SLOTS }, () => sprite())
+  const heroLayer = new Container()
+  heroLayer.addChild(...heroArt, ...heroMotes); heroLayer.visible = false
+  const heroPose: HeroPose = { x: 0, y: 0, rotation: 0, width: 0, height: 0, alpha: 0, tint: 0, texture: 'spark', additive: true }
+  const heroTargetPool = [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }]
+  const heroTargets = [] as { x: number; y: number }[]
+  const heroCast: HeroCast = { kind: 'hero-shadowblade', elapsed: 0, life: 0, targets: heroTargets, reduced: false }
+  app.stage.addChild(missileLayer, impactLayer, heroLayer)
   function texture(image?: HTMLImageElement): Texture | undefined {
     if (!image?.complete || !image.naturalWidth) return undefined
     let t = owned.get(image)
     if (!t) { t = new Texture({ source: new ImageSource({ resource: image }) }); owned.set(image, t) }
     return t
   }
-  function prepare(f: VfxFrame): boolean {
+  function prepare(f: Surface): boolean {
     if (disposed || lost) return false
     if (width !== f.width || height !== f.height || dpr !== f.dpr) {
       width = f.width; height = f.height; dpr = f.dpr
@@ -91,7 +110,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
     }
     return true
   }
-  function composite(f: VfxFrame): boolean {
+  function composite(f: Surface): boolean {
     if (lost || disposed) return false
     app.render()
     if (lost) return false
@@ -184,7 +203,47 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
     missileLayer.visible=false;impactLayer.visible=true
     return composite(f)
   }
-  return { projectiles, impacts: release, lastReleaseIds: () => lastReleaseIds, dispose() {
+  function paintHero(s: Sprite, tex: Texture, cap: number): void {
+    s.texture = tex; s.position.set(heroPose.x, heroPose.y); s.rotation = heroPose.rotation
+    s.width = heroPose.width; s.height = heroPose.height; s.alpha = heroPose.alpha * cap
+    s.tint = heroPose.tint; s.blendMode = heroPose.additive ? 'add' : 'normal'; s.visible = true
+  }
+  function heroSpecial(f: HeroVfxFrame): boolean {
+    const e = f.effect, strength = f.policy?.vfxOpacity ?? 1
+    const cx = e.x + f.ox, cy = e.y + f.oy - 24
+    if (strength <= 0 || !(e.max > 0) || !(e.life > 0)) return false
+    if (cx < -HERO_CULL || cy < -HERO_CULL || cx > f.width + HERO_CULL || cy > f.height + HERO_CULL) return true
+    if (!prepare(f)) return false
+    const images = heroSpecialImages()
+    const struck = (e as { targets?: readonly { x: number; y: number }[] }).targets ?? []
+    heroTargets.length = 0
+    for (let i = 0; i < struck.length && i < 3; i++) {
+      const p = heroTargetPool[i]!
+      p.x = struck[i]!.x - e.x; p.y = struck[i]!.y - e.y + 24
+      heroTargets.push(p)
+    }
+    heroCast.kind = f.kind; heroCast.elapsed = e.max - e.life; heroCast.life = e.life; heroCast.reduced = f.reduced
+    const cap = strength * (f.policy?.reduceFlashing ? .55 : 1)
+    for (let i = 0; i < HERO_ART_SLOTS; i++) {
+      const s = heroArt[i]!
+      s.visible = false
+      if (!heroArtPose(heroPose, heroCast, i)) continue
+      const tex = heroPose.texture in motes ? motes[heroPose.texture as ParticleKind]
+        : texture(images[heroPose.texture as keyof typeof images])
+      if (!tex) return false // An undecoded authored texture keeps the Canvas fallback as sole owner.
+      paintHero(s, tex, cap)
+    }
+    const budget = heroMoteBudget(f.reduced, f.policy?.quality)
+    for (let i = 0; i < HERO_MOTE_SLOTS; i++) {
+      const s = heroMotes[i]!
+      s.visible = false
+      if (i < budget && heroMotePose(heroPose, heroCast, i)) paintHero(s, motes[heroPose.texture as ParticleKind], cap)
+    }
+    heroLayer.position.set(cx, cy)
+    missileLayer.visible = false; impactLayer.visible = false; heroLayer.visible = true
+    try { return composite(f) } finally { heroLayer.visible = false }
+  }
+  return { projectiles, impacts: release, lastReleaseIds: () => lastReleaseIds, heroSpecial, dispose() {
     if (disposed) return
     disposed = true
     canvas.removeEventListener('webglcontextlost', onLost)
