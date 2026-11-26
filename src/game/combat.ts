@@ -1,5 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
+import { classifyHealthImpact, markHealthCritical } from './health-impact'
 import { burst, impact, emitHitImpact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
@@ -27,6 +28,8 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
   const dealt = Math.min(e.hp, applied)
+  const heavy = classifyHealthImpact(dealt / e.max) === 'heavy'
+  if (critical && dealt > 0) markHealthCritical(e)
   s.damageDealt += dealt
   e.hp = Math.max(0, e.hp - applied)
   e.hit = 0.16
@@ -35,7 +38,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
   const impactAngle = Math.atan2(e.ky, e.kx)
-  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical)
+  emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy)
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
@@ -175,7 +178,11 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
   hero.inv = 1
   // Routine chip damage uses local hit feedback; only major HP loss nudges the camera.
   if (actuallyTaken >= hero.max * 0.22) requestCameraKick(s, 1.6)
-  impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
+  const heavy = classifyHealthImpact(actuallyTaken / hero.max) === 'heavy'
+  if (heavy) {
+    const direction = source ? Math.atan2(hero.y - source.y, hero.x - source.x) : hero.aimAngle + Math.PI
+    emitHitImpact(s, hero.x, hero.y - 22, 24, direction, false, true)
+  } else impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
   if (shield) {
     impact(s, hero.x, hero.y, 58, '#9ad3ff', 0.4)
     burst(s, hero.x, hero.y, '#bbdcff', 10)

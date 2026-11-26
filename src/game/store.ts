@@ -70,6 +70,8 @@ export interface HudView {
   timer: string
   /** 0..100 when a live boss exists, else null (hides `#bossWrap`). */
   bossPct: number | null
+  /** Last real critical hit on the current boss; presentation only. */
+  bossCriticalVersion?: number
   sceneTitle: string
   quest: string
   /** All currently owned skills and evolutions, refreshed at the normal 8 Hz HUD cadence. */

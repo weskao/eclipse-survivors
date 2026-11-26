@@ -3,6 +3,7 @@ import { createHero, createState } from '../../state'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ENEMY_DEFINITIONS, ELITE_AFFIXES } from './definitions'
 import { createFactionBridge } from './integration'
+import { healthCriticalVersion } from '../../health-impact'
 
 const hooks: GameHooks = {
   sfx() {}, message() {}, offerUpgrades() {}, end() {},
@@ -171,4 +172,13 @@ describe('faction runtime integration boundary', () => {
     expect(bridge.runtime.projectiles.length).toBeLessThanOrEqual(100)
     expect(bridge.runtime.zones.length).toBeLessThanOrEqual(64)
   })
+})
+
+it('marks only landed faction crits and preserves actual HP loss', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => .2, lineOfSight: () => true })
+  const enemy = bridge.spawn(s, 'fire-imp', 250, 0)!
+  const before = enemy.hp
+  expect(bridge.hitFaction(s, enemy, 1, 0, 0, { ...hooks, consumeCriticalHit: () => true })).toBe(1)
+  expect(enemy.hp).toBe(before - 1)
+  expect(healthCriticalVersion(enemy)).toBeGreaterThan(0)
 })

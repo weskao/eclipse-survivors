@@ -1,4 +1,5 @@
 import { damageHero, hit } from '../../combat'
+import { classifyHealthImpact, markHealthCritical } from '../../health-impact'
 import { emitHitImpact, pushDamageNumber } from '../../fx'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
@@ -113,11 +114,13 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       options.onReward?.(reward)
     })
     if (applied > 0) {
+      if (critical) markHealthCritical(enemy)
+      const heavy = classifyHealthImpact(applied / enemy.max) === 'heavy'
       state.damageDealt += applied
       pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
         value: Math.round(applied), boss: false, critical })
       const angle = Math.atan2(enemy.y - sourceY, enemy.x - sourceX)
-      emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical)
+      emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical, heavy)
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)
     }

@@ -29,6 +29,8 @@ const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; musicVolume: [value: 
 
 const healthMeter = shallowRef<HTMLElement | null>(null)
 useHeroHealthMotion(healthMeter, () => props.hud.hpPct, () => props.active, () => props.healthMotion ?? 'system')
+const bossMeter = shallowRef<HTMLElement | null>(null)
+useHeroHealthMotion(bossMeter, () => props.hud.bossPct ?? 0, () => props.active && props.hud.bossPct !== null, () => props.healthMotion ?? 'system', () => props.hud.bossCriticalVersion ?? 0)
 const minimap = shallowRef<HTMLCanvasElement | null>(null)
 defineExpose({ minimap })
 </script>
@@ -59,7 +61,7 @@ defineExpose({ minimap })
     </div>
     <div class="boss-wrap" id="bossWrap" :class="{ show: hud.bossPct !== null }">
       <div class="boss-label">{{ t("☠ 墮落守望者 · MVP") }}</div>
-      <div class="boss-meter-frame"><div class="boss-track"><i id="bossHealth" :style="{ width: (hud.bossPct ?? 0) + '%', background: `linear-gradient(180deg, #ffd1bc3d, transparent 40%, #240b20a6), ${healthBarColor((hud.bossPct ?? 0) / 100, 'boss')}` }"></i></div></div>
+      <div class="boss-meter-frame"><div ref="bossMeter" class="boss-track" :style="{ '--es2-progress': (hud.bossPct ?? 0) / 100 }"><i class="hero-hp-trail" aria-hidden="true"></i><i id="bossHealth" :style="{ background: `linear-gradient(180deg, #ffd1bc3d, transparent 40%, #240b20a6), ${healthBarColor((hud.bossPct ?? 0) / 100, 'boss')}` }"></i></div></div>
     </div>
     <div class="quest" id="quest">{{ t(hud.quest) }}</div>
     <div class="toast" id="toast" :style="{ opacity: toastVisible ? '1' : '0' }">{{ t(toastText) }}</div>

@@ -16,10 +16,10 @@ export function impact(s: GameState, x: number, y: number, size = 36, color = '#
 }
 
 /** Single-owner local hit cue: independent of damage text, no secondary particle pool. */
-export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean): void {
+export function emitHitImpact(s: GameState, x: number, y: number, radius: number, angle: number, critical: boolean, heavy = false): void {
   if (s.impactWaves.length > 36) s.impactWaves.shift()
-  const duration = critical ? 0.34 : 0.24
-  s.impactWaves.push({ x, y, angle, size: Math.max(44, Math.min(124, radius * (critical ? 2.5 : 1.85))),
+  const duration = critical ? 0.42 : heavy ? 0.36 : 0.24
+  s.impactWaves.push({ x, y, angle, size: Math.max(critical ? 62 : heavy ? 54 : 44, Math.min(critical ? 144 : heavy ? 132 : 124, radius * (critical ? 3.1 : heavy ? 2.6 : 1.85))),
     color: critical ? '#ffc577' : '#f4d9b0', life: duration, max: duration, contact: critical ? 'critical' : 'normal' })
 }
 

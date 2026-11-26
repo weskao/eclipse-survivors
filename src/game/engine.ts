@@ -10,6 +10,7 @@ import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
 import { attack, dash as heroDash, hit } from './combat'
+import { healthCriticalVersion } from './health-impact'
 import { getFiringOrigin } from './weapon-geometry'
 import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
@@ -445,6 +446,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       kill: s.kill,
       timer: `${pad2(Math.floor(s.time / 60))}:${pad2(Math.floor(s.time % 60))}`,
       bossPct: boss ? Math.max(0, boss.hp / boss.max * 100) : null,
+      bossCriticalVersion: boss ? healthCriticalVersion(boss) : 0,
       sceneTitle,
       quest: boss ? `最終決戰 · ${sc.name}` : sceneTitle,
       skills: equippedSkillHud(hero, contentRegistry, s),

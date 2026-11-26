@@ -37,6 +37,8 @@ const props = withDefaults(defineProps<{
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
 const healthMeter = shallowRef<HTMLElement | null>(null)
 useHeroHealthMotion(healthMeter, () => view.value.health.percent, () => props.active, () => props.healthMotion ?? 'system')
+const bossMeter = shallowRef<HTMLElement | null>(null)
+useHeroHealthMotion(bossMeter, () => view.value.boss?.percent ?? 0, () => props.active && !!view.value.boss, () => props.healthMotion ?? 'system', () => props.hud.bossCriticalVersion ?? 0)
 const lifeTier = computed(() => props.active && props.showHeroLowHealthWarning ? lowHealthTier(view.value.health.percent) : 'normal')
 const lifeMessage = computed(() => lifeTier.value === 'warning' ? '血量偏低' : lifeTier.value === 'critical' ? '生命危急' : '瀕死')
 const selectedId = ref<string | null>(null)
@@ -202,7 +204,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
               </span>
             </div>
             <div class="boss-meter-frame">
-            <div class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
+            <div ref="bossMeter" class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
               :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100"
               :style="{ '--es2-progress': view.boss.percent / 100, '--es2-boss-hp-color': healthBarColor(view.boss.percent / 100, 'boss') }">
               <span class="es2-hud__track-trail" aria-hidden="true"></span>

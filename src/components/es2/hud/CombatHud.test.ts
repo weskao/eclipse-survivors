@@ -259,3 +259,14 @@ describe('ES2 combat HUD', () => {
     expect(wrapper.find('[data-es2-info-toggle]').exists()).toBe(false)
   })
 })
+
+it('uses the same sampled health variables for the fixed boss HUD', async () => {
+  const { wrapper } = render({ healthMotion: 'on', hud: { ...equipped, bossPct: 90 } })
+  const meter = wrapper.get('.es2-hud__track--boss')
+  const value = (name: string) => (meter.element as HTMLElement).style.getPropertyValue(name)
+  await wrapper.setProps({ hud: { ...equipped, bossPct: 30, bossCriticalVersion: 3 } })
+  expect(meter.attributes('aria-valuenow')).toBe('30')
+  expect(value('--hero-hp-front')).toBe('0.3')
+  expect(value('--hero-hp-trail')).toBe('0.3')
+  expect(meter.attributes('data-hp-impact')).toBeUndefined()
+})
