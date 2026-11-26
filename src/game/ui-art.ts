@@ -23,17 +23,22 @@ const generatedIcons = new Set<AbilityId>([
   'vortex', 'meteor', 'orb', 'shield', 'heal',
 ])
 
+const additionalIcons = new Set<AbilityId>([
+  'speed', 'haste', 'maxhp', 'magnet', 'bolt', 'frozen-thunderstorm',
+  'infernal-singularity', 'apocalypse-rain', 'blade-tempest', 'guardian-sanctuary',
+])
+
 export function hasGeneratedSkillArt(id: AbilityId): boolean {
   return generatedIcons.has(id)
 }
 
 export function skillImageSrc(id: AbilityId): string {
-  return `./assets/skill-icons/${id}${hasGeneratedSkillArt(id) ? '@3x.webp' : '.svg'}`
+  return `./assets/skill-icons/${id}${(hasGeneratedSkillArt(id) || additionalIcons.has(id)) ? '@3x.webp' : '.svg'}`
 }
 
 /** Browser-native animated WebP; static art is kept for reduced-motion fallback. */
 export function animatedSkillImageSrc(id: AbilityId): string {
-  return hasGeneratedSkillArt(id) ? `./assets/skill-icons/${id}@3x-animated.webp` : skillImageSrc(id)
+  return (hasGeneratedSkillArt(id) || additionalIcons.has(id)) ? `./assets/skill-icons/${id}@3x-animated.webp` : skillImageSrc(id)
 }
 
 /** Canonical ES2 stills remain the source of truth; animated WebP is presentation-only. */
@@ -73,4 +78,16 @@ export function resolveSkillChoiceArt(
   const animated = animatedEs2ImageSrc(id) ??
     (builtIn ? animatedSkillImageSrc(id) : undefined)
   return { imageSrc: still ? reducedMotionSrc : (animated ?? reducedMotionSrc), reducedMotionSrc }
+}
+
+/** Fall back to the still, then the original legacy SVG if an image cannot load. */
+export function fallbackSkillImage(event: Event, id: string, still?: string): void {
+  const img = event.target as HTMLImageElement
+  img.parentElement?.querySelector('source')?.remove()
+  const current = img.getAttribute('src')
+  if (still && !img.dataset.fallbackStill && current !== still) {
+    img.dataset.fallbackStill = 'true'
+    img.src = still
+  } else if (!id.includes(':') && current !== `./assets/skill-icons/${id}.svg`) img.src = `./assets/skill-icons/${id}.svg`
+  else img.style.display = 'none'
 }

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveSkillChoiceArt } from './ui-art'
-import { readFileSync } from 'node:fs'
+import { hasGeneratedSkillArt, resolveSkillChoiceArt } from './ui-art'
 
 describe('all battle skill choice illustrations', () => {
   it('selects the animated 3x painting for each authored weapon and evolution', () => {
@@ -14,8 +13,8 @@ describe('all battle skill choice illustrations', () => {
   })
   it('keeps native skill SVG and generated animated icon behavior', () => {
     expect(resolveSkillChoiceArt('damage', undefined, false).imageSrc).toContain('damage@3x-animated.webp')
-    expect(resolveSkillChoiceArt('speed', undefined, false).imageSrc).toContain('speed.svg')
-    expect(resolveSkillChoiceArt('speed', undefined, true).imageSrc).toContain('speed.svg')
+    expect(resolveSkillChoiceArt('speed', undefined, false).imageSrc).toContain('speed@3x-animated.webp')
+    expect(resolveSkillChoiceArt('speed', undefined, true).imageSrc).toContain('speed@3x.webp')
   })
   it('provides an illustrated 3x icon for every hero specialization and its passive progression', () => {
     const owned = [
@@ -32,16 +31,13 @@ describe('all battle skill choice illustrations', () => {
     }
   })
 
-  it('ships distinct 384px detailed vector illustrations for every legacy non-WebP choice', () => {
+  it('resolves each new illustration to animated and still art without adding it to the HUD atlas', () => {
     const ids = ['speed', 'haste', 'maxhp', 'magnet', 'bolt', 'frozen-thunderstorm', 'infernal-singularity', 'apocalypse-rain', 'blade-tempest', 'guardian-sanctuary'] as const
-    const art = ids.map(id => {
-      expect(resolveSkillChoiceArt(id).imageSrc).toContain(id + '.svg')
-      const source = readFileSync('assets/skill-icons/' + id + '.svg', 'utf8')
-      expect(source).toContain('width="384"')
-      expect(source).toContain('linearGradient')
-      return source
-    })
-    expect(new Set(art).size).toBe(ids.length)
+    for (const id of ids) {
+      expect(resolveSkillChoiceArt(id).imageSrc).toContain(id + '@3x-animated.webp')
+      expect(resolveSkillChoiceArt(id, undefined, true).imageSrc).toContain(id + '@3x.webp')
+      expect(hasGeneratedSkillArt(id)).toBe(false)
+    }
   })
 
   it('does not replace externally owned illustrations with a generic icon', () => {
