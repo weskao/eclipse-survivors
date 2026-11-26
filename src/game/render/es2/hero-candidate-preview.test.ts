@@ -54,6 +54,7 @@ describe('ES2 candidate review inventory', () => {
   it.each([
     ['shadowblade', 'attack-e-keyframes-2026-11-26-batch-27', ['slash-key-a', 'recovery-key-a']],
     ['spirit-summoner', 'attack-e-keyframes-2026-11-26-batch-28', ['cast-release-key-a']],
+    ['crimson-paladin', 'attack-e-keyframes-2026-11-26-batch-29', ['windup-key-a', 'strike-key-a', 'recovery-key-a']],
   ] as const)('preserves %s independent attack keyframes and their review-only gate', (hero, folder, expectedKeys) => {
     const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero, 'candidates', folder)
     const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
@@ -95,13 +96,16 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain('6 northern four-frame strips')
     expect(summary).toContain('21 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 26} candidate review panels`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 26)
-    expect(summary).toContain('3 independent keyframes')
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 29} candidate review panels`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 29)
+    expect(summary).toContain('6 independent keyframes')
     const keys = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-keyframe"]')]
-    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a'])
+    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a'])
     expect(keys[2]?.dataset.candidateFolder).toBe('attack-e-keyframes-2026-11-26-batch-28')
     expect(keys[2]?.querySelector('h2')?.textContent).toContain('spirit-summoner · ATTACK · E')
+    const paladinKeys = keys.filter(article => article.dataset.candidateFolder === 'attack-e-keyframes-2026-11-26-batch-29')
+    expect(paladinKeys).toHaveLength(3)
+    expect(paladinKeys.every(article => article.querySelector('h2')?.textContent?.startsWith('crimson-paladin · ATTACK · E'))).toBe(true)
     expect(keys.every(article => article.querySelector('h2')?.textContent?.includes('1 frame'))).toBe(true)
     expect(keys.every(article => article.querySelector('canvas')?.dataset.mirrored === 'false')).toBe(true)
     const pending = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-atlas"]')]
