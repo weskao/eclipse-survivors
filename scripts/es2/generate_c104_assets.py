@@ -2,7 +2,7 @@
 
 Never guess grids. Every cropped pose/prop/UI icon has one explicit, disjoint
 source ownership rectangle. Neighbouring art is never read outside the rectangle.
-Inputs: the ten immutable assets/images/imgs{1..10}.png files from c104b4be.
+Inputs: the ten assets/images/imgs{1..10}.webp masters (pixel-identical WebP of the c104b4be PNGs).
 """
 from __future__ import annotations
 
@@ -11,7 +11,21 @@ import json
 from pathlib import Path
 from PIL import Image, ImageOps
 
-SOURCE_FILES = tuple(f'imgs{i}.png' for i in range(1, 11))
+SOURCE_FILES = tuple(f'imgs{i}.webp' for i in range(1, 11))
+# Byte hashes of the original c104b4be PNGs, retired 2026-11-26 after decoded-RGBA equality
+# with the WebP masters was verified; kept so provenance still traces to the original bytes.
+RETIRED_PNG_SHA256 = {
+    'imgs1.png': 'dea9ae2e7751edde9d28e4c27e0ce62f4172b010260b93a805851ca333ef52e9',
+    'imgs2.png': 'f7c9f4af6d25848308fd466af4d68ab4ea9d60edbc53c85b627a3f0f1847adc4',
+    'imgs3.png': '2e4062618b618f3d9954c7ef14729aa1b4c1d80f6cb01d846d8d53a63946fd21',
+    'imgs4.png': '17611f4ca54d22ad8311f796e38a7124464a0ea0f41a10ec05385fc680b603e3',
+    'imgs5.png': 'ea9d8625219f508f7f8fa4fabed6bc1b5db865dcb365756aa29dcd2ce9b4b7bd',
+    'imgs6.png': '78cd0217b67fd44b697d07d3182753e14463971bf3b1107d859dbcae90eb16a7',
+    'imgs7.png': '06cb1394553ac79d915039763d9e74a928193e48b94f4cf77b6b8e76aa6a4148',
+    'imgs8.png': '771590f160d29fb6bc2e188b8546aa16d8360d97e647b02bb7f3b3c36d7f9864',
+    'imgs9.png': '2141e2c54b123c8f1a1f401f61f7c165b4e0e0608f84dbeb3a38744730ca7f94',
+    'imgs10.png': '545869b4338c8b9add2e3ada9a97087567787d0893f3968161716bd781220972',
+}
 ROOT = Path(__file__).resolve().parents[2]
 ASSET_BOXES: dict[int, dict[str, tuple[int,int,int,int]]] = {i:{} for i in range(1,11)}
 
@@ -107,7 +121,7 @@ SPECIALS=('shadowblade','spirit-summoner','crimson-paladin')
 
 def validate_geometry(source_dir: Path)->None:
     for source, rects in ASSET_BOXES.items():
-        with Image.open(source_dir/f'imgs{source}.png') as im:
+        with Image.open(source_dir/SOURCE_FILES[source-1]) as im:
             for label,(x0,y0,x1,y1) in rects.items():
                 if not(0<=x0<x1<=im.width and 0<=y0<y1<=im.height):
                     raise ValueError(f'Out-of-bounds {source}: {label}')
@@ -217,7 +231,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
     source_dir=Path(source_dir)
     output=Path(output)
     validate_geometry(source_dir)
-    sources={i:Image.open(source_dir/f'imgs{i}.png').convert('RGBA') for i in range(1,11)}
+    sources={i:Image.open(source_dir/SOURCE_FILES[i-1]).convert('RGBA') for i in range(1,11)}
     produced=[]
     def emit(name:str,kind:str,image:Image.Image,frames:int,cell:tuple[int,int],source:int|None,boxes:list[tuple[int,int,int,int]],max_bytes:int)->None:
         path=output/name
@@ -227,7 +241,7 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
             image.save(path,'WEBP',quality=64,alpha_quality=72,method=5)
         if path.stat().st_size>=max_bytes:raise ValueError(f'Budget exceeded: {name} {path.stat().st_size}')
         produced.append({'path':name,'kind':kind,'size':list(image.size),'frames':frames,
-            'cell':list(cell),'source':f'imgs{source}.png' if source else 'hero-8dir-WebP',
+            'cell':list(cell),'source':SOURCE_FILES[source-1] if source else 'hero-8dir-WebP',
             'sourceBoxes':boxes,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
             'bytes':path.stat().st_size,'max_bytes':max_bytes})
 
@@ -318,7 +332,8 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
     prov=output/'src/assets/es2/production/c104-provenance.json'
     prov.parent.mkdir(parents=True,exist_ok=True)
     prov.write_text(json.dumps({'schemaVersion':1,'sourceCommit':'c104b4be43fbfe9dad2dd8a1b270b9e47d63e1c0',
-      'sourceAssets':{f'imgs{i}.png':hashlib.sha256((source_dir/f'imgs{i}.png').read_bytes()).hexdigest() for i in range(1,11)},
+      'sourceAssets':{name:hashlib.sha256((source_dir/name).read_bytes()).hexdigest() for name in SOURCE_FILES},
+      'retiredPngSha256':RETIRED_PNG_SHA256,
       'visualStatus':'review-required', 'derived':produced},ensure_ascii=False,indent=2)+'\n')
     return produced
 

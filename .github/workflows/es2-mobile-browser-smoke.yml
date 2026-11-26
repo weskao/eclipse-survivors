@@ -80,12 +80,12 @@ jobs:
             src/assets/es2/production/biomes/manifest.json
             src/assets/es2/production/ui/*.webp
             src/assets/es2/production/ui/manifest.json
-            assets/images/imgs1.png
-            assets/images/imgs5.png
-            assets/images/imgs6.png
-            assets/images/imgs7.png
-            assets/images/imgs8.png
-            assets/images/imgs9.png
-            assets/images/imgs10.png
+            assets/images/imgs1.webp
+            assets/images/imgs5.webp
+            assets/images/imgs6.webp
+            assets/images/imgs7.webp
+            assets/images/imgs8.webp
+            assets/images/imgs9.webp
+            assets/images/imgs10.webp
           retention-days: 7
           if-no-files-found: error

@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <canvas id="game" ref="canvas" :aria-label="t('奇幻生存戰遊戲畫面')"></canvas>
+  <canvas id="game" ref="canvas" :data-es2-combat-scene="ui.mode !== 'menu' && ui.mode !== 'result' ? '' : undefined" :aria-label="t('奇幻生存戰遊戲畫面')"></canvas>
   <CombatHud
     ref="hud"
     :active="ui.mode !== 'menu'"

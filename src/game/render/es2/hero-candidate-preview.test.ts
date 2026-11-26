@@ -51,6 +51,30 @@ describe('ES2 candidate review inventory', () => {
     }
   })
 
+  it.each([
+    ['shadowblade', 'attack-e-keyframes-2026-11-26-batch-27', ['slash-key-a', 'recovery-key-a']],
+    ['spirit-summoner', 'attack-e-keyframes-2026-11-26-batch-28', ['cast-release-key-a']],
+    ['crimson-paladin', 'attack-e-keyframes-2026-11-26-batch-29', ['windup-key-a', 'strike-key-a', 'recovery-key-a']],
+  ] as const)('preserves %s independent attack keyframes and their review-only gate', (hero, folder, expectedKeys) => {
+    const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero, 'candidates', folder)
+    const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
+    expect(m.status).toBe('QA_PENDING')
+    expect(m.eligibleForDevWiring).toBe(false)
+    expect(m.runtimeApplied).toBe(false)
+    expect(m.qaGameplayApplied).toBe(false)
+    expect(m.sequenceComplete).toBe(false)
+    expect(m.continuousSequence).toBe(false)
+    expect(m.frames.map((f: { id: string }) => f.id)).toEqual(expectedKeys)
+    for (const f of m.frames) {
+      const image = readFileSync(resolve(dir, f.file))
+      const source = readFileSync(resolve(dir, f.sourceFile))
+      expect(createHash('sha256').update(image).digest('hex')).toBe(f.webpSHA256)
+      expect(createHash('sha256').update(source).digest('hex')).toBe(f.sourceSHA256)
+      expect(f.outputCellPixels).toEqual([768, 768])
+    }
+    expect(HERO_CANDIDATE_ATLASES.some(c => c.url.includes('/' + folder + '/'))).toBe(false)
+  })
+
   it('describes the real committed East/South candidate count in its accessible preview', async () => {
     const html = readFileSync(resolve(process.cwd(), 'src/game/render/es2/hero-candidate-preview.html'), 'utf8')
     expect(html).toContain('id="candidate-summary"')
@@ -72,8 +96,18 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain('6 northern four-frame strips')
     expect(summary).toContain('21 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 23} candidate animation strips`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 23)
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 29} candidate review panels`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 29)
+    expect(summary).toContain('6 independent keyframes')
+    const keys = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-keyframe"]')]
+    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a'])
+    expect(keys[2]?.dataset.candidateFolder).toBe('attack-e-keyframes-2026-11-26-batch-28')
+    expect(keys[2]?.querySelector('h2')?.textContent).toContain('spirit-summoner · ATTACK · E')
+    const paladinKeys = keys.filter(article => article.dataset.candidateFolder === 'attack-e-keyframes-2026-11-26-batch-29')
+    expect(paladinKeys).toHaveLength(3)
+    expect(paladinKeys.every(article => article.querySelector('h2')?.textContent?.startsWith('crimson-paladin · ATTACK · E'))).toBe(true)
+    expect(keys.every(article => article.querySelector('h2')?.textContent?.includes('1 frame'))).toBe(true)
+    expect(keys.every(article => article.querySelector('canvas')?.dataset.mirrored === 'false')).toBe(true)
     const pending = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-atlas"]')]
     expect(pending).toHaveLength(21)
     const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW","shadowblade · RUN · E","spirit-summoner · RUN · E","crimson-paladin · RUN · E"]

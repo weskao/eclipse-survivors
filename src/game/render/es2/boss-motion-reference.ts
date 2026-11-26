@@ -6,7 +6,7 @@ import { sampleBossSheetFrame } from './boss-sheet-reference'
 import { drawBossNativeKeyframe, isBossNativeKeyframe } from './boss-native-keyframes'
 
 type SourceRect = readonly [left: number, top: number, right: number, bottom: number]
-type Reference = { readonly source: 'imgs7.png' | 'imgs8.png'; readonly phases: readonly (readonly SourceRect[])[] }
+type Reference = { readonly source: 'imgs7.webp' | 'imgs8.webp'; readonly phases: readonly (readonly SourceRect[])[] }
 
 // Original 1448x1086 concept-sheet pose pixels, not newly authored native-3x art.
 // The ranges were visually inspected and extracted without enlarging the source.
@@ -21,10 +21,10 @@ const titanXs = [[29,108],[111,190],[276,355],[356,436],[521,600],[603,682]] as 
 const seraphXs = [[29,106],[104,182],[256,333],[336,413],[502,580],[584,661]] as const
 
 export const BOSS_MOTION_REFERENCES: Readonly<Record<BossId, Reference>> = {
-  'abyss-monarch': { source: 'imgs7.png', phases: casterXs.map(x => rows(x, [323,381])) },
-  'frost-sovereign': { source: 'imgs7.png', phases: casterXs.map(x => rows(x, [848,909])) },
-  'infernal-titan': { source: 'imgs8.png', phases: ([[328,389],[392,458],[463,533]] as const).map(y => rows(titanXs, y)) },
-  'eclipse-seraph': { source: 'imgs8.png', phases: ([[848,914],[918,985],[990,1063]] as const).map(y => rows(seraphXs, y)) },
+  'abyss-monarch': { source: 'imgs7.webp', phases: casterXs.map(x => rows(x, [323,381])) },
+  'frost-sovereign': { source: 'imgs7.webp', phases: casterXs.map(x => rows(x, [848,909])) },
+  'infernal-titan': { source: 'imgs8.webp', phases: ([[328,389],[392,458],[463,533]] as const).map(y => rows(titanXs, y)) },
+  'eclipse-seraph': { source: 'imgs8.webp', phases: ([[848,914],[918,985],[990,1063]] as const).map(y => rows(seraphXs, y)) },
 }
 // Packed lossless reference cells are centered on x=56 and end at y=107.
 const REFERENCE_CELL = 112

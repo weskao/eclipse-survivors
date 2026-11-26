@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "attack",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 3,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "Common 0.84 Lanczos downsampling, never upscale; centered 768px cells; original master retained losslessly",
+  "sourcePixels": [
+    2172,
+    724
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "5a936b816afc1358f62724d497ed8b966ca53956f92bc8f2839bc9f1a8538247",
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "3f6269e9-f26d-4a1b-9284-7c320e5666b4",
+    "originalPNGSHA256": "d287ff53785d52a8499ddc749f386c0553a17a031feffbec3e79510f90eeb6af",
+    "canonicalPortrait": "src/assets/es2/production/heroes/crimson-paladin-portrait@3x.webp",
+    "portraitBlobSHA": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+    "referenceCommit": "e661f3cf5773d001563b8254e4bf631b03ae5259"
+  },
+  "encoding": "Pillow lossless WebP exact=True; decoded RGBA verified; Polytool/cwebp unavailable; review only",
+  "frames": [
+    {
+      "id": "windup-key-a",
+      "description": "右手舉劍蓄力",
+      "sourceRect": [
+        50,
+        0,
+        577,
+        688
+      ],
+      "sourceFile": "windup-key-a-source.webp",
+      "sourceSHA256": "05949f92ffe911cf3092c5880c6bb94a6f94b0bf433612e4bd090481804e05db",
+      "sourceBytes": 409530,
+      "sourceCellPixels": [
+        577,
+        688
+      ],
+      "file": "windup-key-a@3x.webp",
+      "webpSHA256": "814e0b9101eaee1c80e8f5ba1f62be7e979fcc542b24a5e411ebd28e1d004ead",
+      "bytes": 309910,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        141,
+        95
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        577,
+        688
+      ],
+      "coreAlphaBounds": [
+        5,
+        10,
+        570,
+        682
+      ],
+      "coreExtent": [
+        565,
+        672
+      ],
+      "outputAlphaBounds": [
+        141,
+        95,
+        626,
+        673
+      ],
+      "outputCoreExtent": [
+        474,
+        564
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "staged RGBA pixels; scaled output is not pixel-identical to source",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Alpha component isolation: nearest main component; faint alpha outside crop omitted. Common 0.84 downsample. Anatomical anchor, sword/handedness and continuity pending."
+    },
+    {
+      "id": "strike-key-a",
+      "description": "右手聖劍向右刺擊",
+      "sourceRect": [
+        735,
+        75,
+        797,
+        613
+      ],
+      "sourceFile": "strike-key-a-source.webp",
+      "sourceSHA256": "fd00b9e7f086857bf8b9697cebe2d1b98e4fdefda26f8b612a39eb218dc589e7",
+      "sourceBytes": 390330,
+      "sourceCellPixels": [
+        797,
+        613
+      ],
+      "file": "strike-key-a@3x.webp",
+      "webpSHA256": "e24500dce6bd6d8d1b29e08b365b2022770d71fff5e73741eb871002d1f55fcc",
+      "bytes": 295918,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        49,
+        126
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        797,
+        613
+      ],
+      "coreAlphaBounds": [
+        5,
+        8,
+        789,
+        607
+      ],
+      "coreExtent": [
+        784,
+        599
+      ],
+      "outputAlphaBounds": [
+        49,
+        126,
+        718,
+        641
+      ],
+      "outputCoreExtent": [
+        658,
+        502
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "staged RGBA pixels; scaled output is not pixel-identical to source",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Alpha component isolation: nearest main component; faint alpha outside crop omitted. Common 0.84 downsample. Anatomical anchor, sword/handedness and continuity pending."
+    },
+    {
+      "id": "recovery-key-a",
+      "description": "持盾收招",
+      "sourceRect": [
+        1516,
+        63,
+        576,
+        624
+      ],
+      "sourceFile": "recovery-key-a-source.webp",
+      "sourceSHA256": "f17c0ca7c0be7e1fe1b1016a34b17bd6c0528d1a09bcc4a980ef2b7bec2ce834",
+      "sourceBytes": 377722,
+      "sourceCellPixels": [
+        576,
+        624
+      ],
+      "file": "recovery-key-a@3x.webp",
+      "webpSHA256": "6b3bfc2dce91cda3af124ed12588725de059178b40626a0a097f15bc95a120d4",
+      "bytes": 285130,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        142,
+        122
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        576,
+        624
+      ],
+      "coreAlphaBounds": [
+        6,
+        8,
+        569,
+        619
+      ],
+      "coreExtent": [
+        563,
+        611
+      ],
+      "outputAlphaBounds": [
+        142,
+        122,
+        626,
+        646
+      ],
+      "outputCoreExtent": [
+        473,
+        513
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "staged RGBA pixels; scaled output is not pixel-identical to source",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Alpha component isolation: nearest main component; faint alpha outside crop omitted. Common 0.84 downsample. Anatomical anchor, sword/handedness and continuity pending."
+    }
+  ],
+  "reviewNotes": [
+    "Three independently reviewable poses, not a complete 12-frame animation.",
+    "Original 2172×724 sheet retained lossless. Three disconnected alpha>=4 main components separated via nearest-component ownership; significant pixels preserved; faint alpha outside individual crops excluded.",
+    "No mirroring/upscaling. Original identity and continuity, anatomical foot anchors, and official conversion pending."
+  ]
+}

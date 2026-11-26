@@ -30,6 +30,28 @@ function mounted(props: Record<string, unknown> = {}) {
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount(); document.body.innerHTML = '' })
 
 describe('ES2 main menu integration adapter', () => {
+  it('re-enters archive pages on navigation without delaying or remounting the same page', async () => {
+    mounted()
+    const links = document.querySelectorAll<HTMLButtonElement>('.es2-hall-links button')
+    links[0]!.click()
+    await nextTick()
+    const progression = find('[data-es2-archive-page]')
+    expect(progression.getAttribute('data-es2-archive-page')).toBe('progression')
+    links[1]!.click()
+    await nextTick()
+    const relics = find('[data-es2-archive-page]')
+    expect(relics.getAttribute('data-es2-archive-page')).toBe('relics')
+    expect(relics).not.toBe(progression)
+    expect(progression.isConnected).toBe(false)
+    links[1]!.click()
+    await nextTick()
+    expect(find('[data-es2-archive-page]')).toBe(relics)
+    click('[data-es2-return-lobby]')
+    await nextTick()
+    expect(document.querySelector('[data-es2-archive-page]')).toBeNull()
+    expect(find('[data-es2-lobby-content]').hasAttribute('hidden')).toBe(false)
+  })
+
   it('keeps legacy hero, mode and start action names with original artwork', async () => {
     const wrapper = mounted()
     click('[data-hero="ranger"]')
@@ -319,6 +341,46 @@ describe('ES2 responsive and motion CSS contract', () => {
     expect(css).toContain('100dvh')
     expect(css).toContain('@media(max-width:610px)')
     expect(css).toContain('prefers-reduced-motion:reduce')
+  })
+  describe('shared scene transitions', () => {
+    const block = css.slice(css.indexOf('/* Scene transitions'))
+    const ms = (token: string) => Number(block.match(new RegExp(`--es2-scene-${token}:\\s*(\\d+)ms`))?.[1])
+    it('reuses one arrival keyframe with short, bounded duration tokens', () => {
+      expect(block).toMatch(/@keyframes es2-scene-arrive\s*\{\s*from\s*\{\s*opacity:\s*0;\s*translate:\s*var\(--es2-scene-from, 0 0\);\s*scale:\s*var\(--es2-scene-scale, 1\);\s*\}\s*\}/)
+      for (const token of ['fast', 'base', 'slow']) expect(ms(token)).toBeGreaterThan(0)
+      expect(ms('fast')).toBeLessThan(ms('base'))
+      expect(ms('slow')).toBeLessThanOrEqual(320)
+      const delays = [...block.matchAll(/animation-delay:\s*(\d+)ms/g)].map(match => Number(match[1]))
+      expect(Math.max(...delays) + ms('base')).toBeLessThanOrEqual(360)
+      // Old one-off fades are replaced, not layered.
+      expect(css).not.toMatch(/es2-page-arrive|es2-enter\b/)
+    })
+    it('keeps the lobby fade opacity-only so the fixed action bar stays pinned to the viewport bottom', () => {
+      // A filling translate/scale animation makes .es2-menu the containing block of its fixed action bar.
+      const menuRule = block.match(/^\.es2-menu\s*\{([^}]*)\}/m)?.[1] ?? ''
+      const keyframe = menuRule.match(/animation:\s*([\w-]+)/)?.[1] ?? ''
+      expect(keyframe).toBeTruthy()
+      const frames = block.match(new RegExp(`@keyframes ${keyframe}\\s*\\{([^}]*\\})\\s*\\}`))?.[1] ?? ''
+      expect(frames).toContain('opacity')
+      expect(frames).not.toMatch(/translate|scale|transform|filter|perspective/)
+    })
+    it('covers home pages, dialogs, choice cards, loading and combat entry', () => {
+      for (const selector of ['.es2-menu', '.es2-hero-section', '.es2-mode-section', '.es2-archive-page', '.es2-menu-action-bar',
+        '.es2-backdrop', '.es2-dialog', '.es2-choice-grid > .es2-choice', '.es2-loading', '#game[data-es2-combat-scene]',
+        '.es2-hud--active .es2-hud__top', '.es2-hud--active .es2-hud__bottom']) expect(block).toContain(selector)
+      // Hero page slides in from the left, expedition page from the right.
+      expect(block).toMatch(/\.es2-hero-section\s*\{\s*--es2-scene-from:\s*-\d+px 0;/)
+      expect(block).toMatch(/\.es2-mode-section\s*\{\s*--es2-scene-from:\s*\d+px 0;/)
+      expect(block).toMatch(/#game\[data-es2-combat-scene\]\s*\{[^}]*--es2-scene-scale:\s*1\.\d+;[^}]*var\(--es2-scene-slow\)/)
+      // Never uses `transform`, so hover lifts and the centered HUD bottom bar keep working.
+      expect(block.slice(block.indexOf('@keyframes es2-scene-arrive'))).not.toMatch(/transform\s*:/)
+    })
+    it('disables every scene transition for both reduced-motion paths', () => {
+      const reduced = block.match(/\[data-es2-reduce-motion="true"\] :is\(([^)]+(?:\([^)]*\)[^)]*)*)\)/)?.[1] ?? ''
+      for (const selector of ['.es2-menu', '.es2-dialog', '.es2-choice', '#game[data-es2-combat-scene]', '.es2-hud__top', '.es2-hud__bottom'])
+        expect(reduced).toContain(selector)
+      expect(block).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*:is\([^}]+animation: none !important;/)
+    })
   })
   it('never adds gameplay screen-shake animations to upgrade cards', () => {
     expect(css).not.toMatch(/@keyframes\s+.*shake/i)
