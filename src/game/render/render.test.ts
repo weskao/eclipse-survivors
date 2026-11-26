@@ -3,6 +3,7 @@ import { createState, resetRun } from '../state'
 import type { GameState, Mob, MobType } from '../types'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from './fakes'
 import { createRenderAssets, drawFrame, drawMiniMap } from './index'
+import { drawCharacter } from './characters'
 import { createFactionBridge } from '../content/enemies/integration'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../content/enemies/definitions'
 import { spawnFactionEnemy } from '../content/enemies/runtime'
@@ -465,3 +466,32 @@ describe('hero foot health bar uses the live renderer cache', () => {
   })
 })
 
+
+
+describe('ES3 canonical enemy death presentation', () => {
+  it('uses the original bitmap and a stable, actor-specific death pose instead of continued idle motion', () => {
+    const s = busyState()
+    const art = fakeArtwork(true)
+    const sprites = {}
+    const kinds = ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const
+    const poses = kinds.map(type => {
+      const e = mob(type, 80, 80, { hp: 0, phase: 0, kx: 1, ky: 0, deathVisual: .14, deathVisualTotal: .28 })
+      const sample = (clock: number) => {
+        s.worldClock = clock
+        const f = createFakeCtx()
+        const transforms: number[][] = []
+        f.ctx.translate = (x, y) => { transforms.push([x, y]) }
+        f.ctx.scale = (x, y) => { transforms.push([x, y]) }
+        f.ctx.rotate = angle => { transforms.push([angle]) }
+        drawCharacter(f.ctx, s, art, sprites, e, 0, 0)
+        expect(f.drawn).toEqual([art[type === 'warlock' ? 'wizard' : type]])
+        expect([e.x, e.y, e.hp, e.deathVisual]).toEqual([80, 80, 0, .14])
+        return transforms
+      }
+      const first = sample(1)
+      expect(sample(8)).toEqual(first)
+      return JSON.stringify(first)
+    })
+    expect(new Set(poses).size).toBe(kinds.length)
+  })
+})
