@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "ba2f7f7e0d4785061e2179879e4cb65ffd2a7ec3",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "hover-key-a",
+      "pose": "idle",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "idle/hover-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "5f6a1aa4-9461-4f7c-bc94-518019f93ade",
+        "originalPngSha256": "97b589f189a7fd9a41235bc463fb626f6755eb17d3d661eb30137a2fb1c340b0",
+        "canonicalReferenceHead": "ba2f7f7e0d4785061e2179879e4cb65ffd2a7ec3"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        29,
+        4,
+        1297,
+        1194
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1306,
+        1199
+      ],
+      "alphaExtent": [
+        1268,
+        1190
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        29,
+        4,
+        15,
+        5
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "e9b80e757aeda759d379cfa9054bf61841a4db4075f208049bf362a9e3a89d80",
+      "webpCompressedBytes": 546610,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Phase 1 idle/hover candidate, staff held low and right hand extended. Referenced canonical frost-sovereign-phases@3x.webp (Git blob ca359ab9098eb6b7b2e6b7e53e8623c9dc2e4a52) and existing native3x QA_PENDING reference (Git blob 39a2917e5e049b1e70ab093a21e811d268b5d9fd). Character design remains unapproved. Original alpha128 margins [29,4,15,5] FAIL 16px gate; faint alpha touches top, left and bottom. Source may be clipped. No resampling or padding; do not wire runtime until review."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}
