@@ -24,6 +24,34 @@ export function applyEnemyRecoil(ctx: Ctx2D, remaining: number, dx: number, dy: 
   ctx.rotate(dx * impulse * 0.24 * force)
   ctx.scale(1 + impulse * 0.055 * force, 1 - impulse * 0.085 * force)
 }
+/** Renderer-only, material-aware death pose. Keeps the original sprite, anchor
+ * and authoritative death clock; no extra texture, particle or actor allocation. */
+export function applyEnemyDeathPose(ctx: Ctx2D, kind: string, remaining: number, total: number, dx: number, dy: number): void {
+  const p = 1 - clamp(remaining / Math.max(.001, total))
+  const fall = p * p
+  const side = dx < 0 ? -1 : 1
+  ctx.globalAlpha *= Math.min(1, (1 - p) * 1.8)
+  if (kind === 'slime') {
+    ctx.scale(1 + .30 * fall, 1 - .70 * fall)
+  } else if (kind === 'bat' || kind === 'fire-imp') {
+    ctx.translate(dx * 12 * p, dy * 5 * p + 16 * fall)
+    ctx.rotate(side * .66 * fall)
+    ctx.scale(1 - .28 * fall, 1 - .22 * fall)
+  } else if (kind === 'phantom' || kind === 'warlock' || kind === 'frost-wraith' || kind === 'necromancer') {
+    ctx.translate(dx * 5 * p, -12 * fall)
+    ctx.scale(1 - .20 * fall, 1 + .08 * fall)
+  } else if (kind === 'golem' || kind === 'crystal-sentinel' || kind === 'shield-guardian') {
+    ctx.translate(dx * 5 * p, 5 * fall)
+    ctx.rotate(side * .16 * fall)
+    ctx.scale(1 + .04 * fall, 1 - .42 * fall)
+  } else {
+    const weight = enemyWeight(kind)
+    ctx.translate(dx * (14 - 6 * weight) * p, dy * 5 * p + 6 * fall)
+    ctx.rotate(side * (1.05 - .4 * weight) * fall)
+    ctx.scale(1, 1 - .18 * fall)
+  }
+}
+
 /** Foot-pivot anticipation, release follow-through and eased recovery. */
 export function applyEnemyPose(ctx: Ctx2D, state: string, remaining: number, dx: number, dy: number, weight: number, reduced: boolean): void {
   if (reduced || state === 'approach' || state === 'phase') return

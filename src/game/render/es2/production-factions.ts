@@ -1,5 +1,5 @@
 import { drawEnergyMissile } from '../energy-art'
-import { applyEnemyPose, applyEnemyRecoil, enemyWeight } from '../enemy-motion'
+import { applyEnemyDeathPose, applyEnemyPose, applyEnemyRecoil, enemyWeight } from '../enemy-motion'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import assassinMasterUrl from '../../../assets/es2/production/enemies/masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
 import frostWraithMasterUrl from '../../../assets/es2/production/enemies/masters/frost-wraith-6poses-3x2-master-1536x1024.png?url'
@@ -94,17 +94,15 @@ export function drawLiveFactionArt(
     ctx.save()
     ctx.translate(x, y)
     if (dying) {
-      const alpha = Math.min(1, (enemy.deathVisual ?? 0) / (enemy.deathVisualTotal ?? .28))
-      ctx.globalAlpha = alpha
-      ctx.translate((enemy.hitX ?? 0) * (1 - alpha) * 12, (1 - alpha) * 6)
-      ctx.scale(1, .65 + .35 * alpha)
+      applyEnemyDeathPose(ctx, enemy.kind, enemy.deathVisual ?? 0, enemy.deathVisualTotal ?? .28, enemy.hitX ?? 0, enemy.hitY ?? 0)
+    } else {
+      const weight = enemyWeight(enemy.kind)
+      const def = ENEMY_DEFINITIONS[enemy.kind]
+      const remaining = enemy.state === 'windup' ? enemy.timer / (def.windup * (enemy.affix === 'swift' ? 0.8 : 1))
+        : enemy.state === 'attack' ? enemy.timer / 0.34 : (enemy.releaseFx ?? 0) / 0.32
+      applyEnemyPose(ctx, enemy.state, remaining, enemy.facingX, enemy.facingY, weight, reducedMotion)
+      applyEnemyRecoil(ctx, enemy.hitTime ?? 0, enemy.hitX ?? 0, enemy.hitY ?? 0, weight, reducedMotion)
     }
-    const weight = enemyWeight(enemy.kind)
-    const def = ENEMY_DEFINITIONS[enemy.kind]
-    const remaining = enemy.state === 'windup' ? enemy.timer / (def.windup * (enemy.affix === 'swift' ? 0.8 : 1))
-      : enemy.state === 'attack' ? enemy.timer / 0.34 : (enemy.releaseFx ?? 0) / 0.32
-    applyEnemyPose(ctx, enemy.state, remaining, enemy.facingX, enemy.facingY, weight, reducedMotion)
-    applyEnemyRecoil(ctx, enemy.hitTime ?? 0, enemy.hitX ?? 0, enemy.hitY ?? 0, weight, reducedMotion)
     // These 6-frame strips share one artist-authored facing. This mirroring is
     // separate from the 8-direction hero atlas, which must NEVER be mirrored.
     if (enemy.facingX < 0) ctx.scale(-1, 1)

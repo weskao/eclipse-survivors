@@ -1,7 +1,7 @@
 import { TAU } from '../constants'
 import { cosmeticAura } from '../../meta/cosmetics'
 import { BALANCE } from '../config'
-import { applyEnemyPose, applyEnemyRecoil, enemyWeight } from './enemy-motion'
+import { applyEnemyDeathPose, applyEnemyPose, applyEnemyRecoil, enemyWeight } from './enemy-motion'
 import type { Artwork } from '../art'
 import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
@@ -192,7 +192,7 @@ function drawPoseAccents(
 }
 
 export function drawMobBody(ctx: Ctx2D, s: GameState, e: Mob, img: Drawable, sx: number, sy: number, reduced = false): void {
-  if (reduced) { ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy); return }
+  if (reduced || e.hp <= 0) { ctx.drawImage(img, -sx / 2, -sy + 4, sx, sy); return }
   const a = e.visualPhase ?? (e.phase || s.worldClock)
   if (e.type === 'slime') {
     const v = Math.sin(a * 2.2)
@@ -287,10 +287,14 @@ export function drawCharacter(
     return
   }
   if (mob?.deathVisual && mob.hp <= 0) {
-    const alpha = Math.min(1, mob.deathVisual / (mob.deathVisualTotal ?? (mob.type === 'boss' ? .7 : .28)))
-    ctx.globalAlpha = alpha
-    ctx.translate(mob.kx * (1 - alpha) * 12, (1 - alpha) * 8)
-    ctx.scale(1, .65 + .35 * alpha)
+    if (mob.type === 'boss') {
+      const alpha = Math.min(1, mob.deathVisual / (mob.deathVisualTotal ?? .7))
+      ctx.globalAlpha = alpha
+      ctx.translate(mob.kx * (1 - alpha) * 12, (1 - alpha) * 8)
+      ctx.scale(1, .65 + .35 * alpha)
+    } else if (!reducedMotion) {
+      applyEnemyDeathPose(ctx, mob.type, mob.deathVisual, mob.deathVisualTotal ?? .28, mob.kx, mob.ky)
+    }
   }
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
   // Hit tint takes priority over warlock tint, which takes priority over elite.
