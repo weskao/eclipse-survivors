@@ -1,5 +1,5 @@
 import { t as translate } from '../../i18n'
-import { DASH_COOLDOWN, LOW_HP_PCT, TAU } from '../constants'
+import { DASH_COOLDOWN, TAU } from '../constants'
 import { easing } from '../math'
 import type { GameState, Hero } from '../types'
 import type { Ctx2D } from './ctx'
@@ -9,6 +9,7 @@ import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
 import { drawEnergyMissile, drawEnergyTrail, drawZoneMotes } from './energy-art'
 import { meleeArtId, type HeroAttackSprites } from './hero-attack-art'
 import { drawHitImpact } from './hit-impact'
+import { drawHeroHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarTarget, type HealthBarMotion } from './health-bars'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -150,7 +151,7 @@ const DASH_READY_FLASH = 0.28
 const STATUS_BAR_WIDTH = 56
 
 /** Foot-level dash and health readouts; a healthy hero with dash ready draws nothing. */
-export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false, healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reduceFlashing = false): void {
   if (s.mode === 'menu' || s.mode === 'result' || hero.hp <= 0) return
   const x = hero.x + ox
   const y = hero.y + oy
@@ -176,24 +177,9 @@ export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number,
     ctx.stroke()
     ctx.restore()
   }
-  if (hero.hp < hero.max) {
-    const pct = hero.hp / hero.max * 100
-    const critical = pct <= LOW_HP_PCT
-    const left = x - STATUS_BAR_WIDTH / 2
-    const top = y + 22
-    ctx.save()
-    ctx.fillStyle = '#070c11d9'
-    ctx.fillRect(left, top, STATUS_BAR_WIDTH, 6)
-    ctx.fillStyle = critical ? '#ff4250' : '#d65854'
-    ctx.fillRect(left, top, STATUS_BAR_WIDTH * pct / 100, 6)
-    if (critical) {
-      // Outline keeps the critical state readable without relying on hue alone.
-      ctx.strokeStyle = '#ffe3d3'
-      ctx.lineWidth = 1
-      ctx.strokeRect(left, top, STATUS_BAR_WIDTH, 6)
-    }
-    ctx.restore()
-  }
+  const motion = sampleHealthBar(hero, s.worldClock, healthBars, reducedMotion)
+  if (shouldShowHealthBar(motion))
+    drawHeroHealthBar(ctx, motion, x, y + 22, STATUS_BAR_WIDTH, reduceFlashing)
 }
 
 // Weapon ribbons: radial gold-to-ivory gradients with trailing sparkle and wave afterglow.

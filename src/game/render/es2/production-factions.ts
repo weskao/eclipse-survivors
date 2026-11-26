@@ -67,7 +67,7 @@ const ready = (image: HTMLImageElement | undefined, columns = 1): image is HTMLI
 export function drawLiveFactionArt(
   ctx: Ctx2D, state: GameState, runtime: FactionRuntime, images: Partial<FactionArtwork>,
   ox: number, oy: number,
-  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reducedMotion = false, showFullHealthBars = false,
+  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reducedMotion = false, showFullHealthBars = false, reduceFlashing = false,
 ): number {
   // Original warning geometries, tied to true aim/radius, are painted first.
   drawFactionTelegraphs(ctx as CanvasRenderingContext2D, runtime, ox, oy, reducedMotion, state.W, state.H)
@@ -121,7 +121,7 @@ export function drawLiveFactionArt(
     // Keep the bar above the windup cue in every pose so it never jumps or mirrors.
     const motion = sampleHealthBar(enemy, state.worldClock, healthBars, reducedMotion)
     if (shouldShowHealthBar(motion, showFullHealthBars))
-      drawEnemyHealthBar(ctx, motion, x, y - h - 26, size, !!enemy.affix)
+      drawEnemyHealthBar(ctx, motion, x, y - h - 26, size, !!enemy.affix, reduceFlashing)
     drawn++
   }
   return drawn

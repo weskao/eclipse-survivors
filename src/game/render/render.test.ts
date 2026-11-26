@@ -405,3 +405,27 @@ describe('biome renderer contracts', () => {
     expect(world.calls.filter(x => x === 'fillText').length).toBeGreaterThan(1)
   })
 })
+
+describe('hero foot health bar uses the live renderer cache', () => {
+  it('animates damage, clears the trail on healing, then hides after reaching full', () => {
+    const s = busyState(); s.mobs = []; s.cameraKick = 0
+    const hero = s.hero!; hero.dash = 0; hero.inv = 0; hero.dashCd = -1
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number; height: number }[] = []
+    ctx.fillRect = (_x, _y, width, height) => { fills.push({ color: String(ctx.fillStyle), width, height }) }
+    const paint = () => { fills.length = 0; drawFrame(ctx, s, 1, assets) }
+    paint()
+    expect(fills.some(f => f.color === '#d65854' && f.height === 6)).toBe(false)
+    hero.hp = hero.max * .5; s.worldClock += .04; paint()
+    const fill = fills.find(f => f.color === '#d65854' && f.height === 6)!
+    expect(fill.width).toBeGreaterThan(28)
+    expect(fill.width).toBeLessThan(56)
+    expect(fills.some(f => f.color === '#f2c37e' && f.width > fill.width)).toBe(true)
+    hero.hp = hero.max; s.worldClock += .04; paint()
+    expect(fills.some(f => f.color === '#d65854' && f.height === 6)).toBe(true)
+    expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
+    for (let j = 0; j < 100; j++) { s.worldClock += .02; paint() }
+    expect(fills.some(f => f.color === '#d65854' && f.height === 6)).toBe(false)
+  })
+})

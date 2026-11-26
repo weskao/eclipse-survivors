@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Mob } from '../types'
-import { drawBossHealthBar, drawEnemyHealthBar, healthBarColor, sampleHealthBar } from './health-bars'
+import { drawBossHealthBar, drawEnemyHealthBar, drawHeroHealthBar, healthBarColor, sampleHealthBar } from './health-bars'
+import { markHealthCritical } from '../health-impact'
 import { createFakeCtx } from './fakes'
 
 const enemy = (): Mob => ({
@@ -212,4 +213,44 @@ it('retains a fresh damage hold when the HP event and previous sample share a ti
   expect(first.front).toBeLessThan(1)
   expect(first.trail).toBe(1)
   expect(sampleHealthBar(mob, 10.16, cache).trail).toBeLessThan(1)
+})
+
+describe('shared major-hit feedback', () => {
+  it('distinguishes real small crits, heavy loss and ordinary damage; healing cancels accents', () => {
+    const normal = enemy(), crit = enemy(), heavy = enemy(), cache = new WeakMap()
+    for (const mob of [normal, crit, heavy]) sampleHealthBar(mob, 0, cache)
+    normal.hp = crit.hp = 95; heavy.hp = 70
+    markHealthCritical(crit)
+    const ordinary = { ...sampleHealthBar(normal, .02, cache) }
+    const critical = { ...sampleHealthBar(crit, .02, cache) }
+    expect(ordinary.impact).toBeUndefined()
+    expect(critical.impact).toBe('critical')
+    expect(critical.front).toBeLessThan(ordinary.front)
+    expect(sampleHealthBar(heavy, .02, cache).impact).toBe('heavy')
+    expect(sampleHealthBar(heavy, .13, cache).trail).toBe(1)
+    expect(sampleHealthBar(normal, .13, cache).trail).toBeLessThan(1)
+    crit.hp = 96
+    const healed = sampleHealthBar(crit, .14, cache)
+    expect(healed.impact).toBeUndefined()
+    expect(healed.trail).toBe(healed.front)
+    expect(sampleHealthBar(heavy, .15, cache, true).impact).toBeUndefined()
+  })
+  it('retains distinct palettes with the same bounded accent on all four ranks', () => {
+    const { ctx } = createFakeCtx()
+    const colors: string[] = []
+    ctx.fillRect = () => { colors.push(String(ctx.fillStyle)) }
+    const frame = { target: .5, front: .6, trail: .9, impact: 'critical' as const }
+    for (const draw of [() => drawEnemyHealthBar(ctx, frame, 0, 0, 80),
+      () => drawEnemyHealthBar(ctx, frame, 0, 0, 80, true),
+      () => drawBossHealthBar(ctx, frame, 0, 0),
+      () => drawHeroHealthBar(ctx, frame, 0, 0, 56)]) {
+      colors.length = 0; draw()
+      expect(colors).toContain('#ffdc92')
+      expect(colors).toContain('#f2c37e')
+    }
+    colors.length = 0
+    drawHeroHealthBar(ctx, frame, 0, 0, 56, true)
+    expect(colors).not.toContain('#ffdc92')
+    expect(colors).toContain('#d65854')
+  })
 })

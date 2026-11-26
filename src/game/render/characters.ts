@@ -244,7 +244,7 @@ export function drawCharacter(
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
-  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, showFullHealthBars = false,
+  healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, showFullHealthBars = false, reduceFlashing = false,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -370,9 +370,9 @@ export function drawCharacter(
       const base = Math.min(sx, sy)
       const layout = productionBoss && !bossMotionPainted ? bossFrameLayout(productionBoss.image, productionBoss.phase) : undefined
       const growth = productionBoss ? base * (bossPhaseVisualScale(productionBoss.phase) - 1) : 0
-      drawBossHealthBar(ctx, motion, x, layout ? y + 4 + base * layout.bodyTop - 25 : y - sy - 25 - growth)
+      drawBossHealthBar(ctx, motion, x, layout ? y + 4 + base * layout.bodyTop - 25 : y - sy - 25 - growth, reduceFlashing)
     } else {
-      drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite)
+      drawEnemyHealthBar(ctx, motion, x, y - sy - 8, sx, mob.elite, reduceFlashing)
     }
   }
 }
