@@ -64,6 +64,38 @@ class CandidateTests(unittest.TestCase):
             pack(src, self.root/'out')
         self.assertFalse((self.root/'out').exists())
 
+    def test_rejects_undersized_solid_core_even_with_large_translucent_effect(self):
+        for width, height in [(440, 441), (441, 440), (0, 0)]:
+            with self.subTest(width=width, height=height):
+                src = self.source()
+                with Image.open(src) as original:
+                    im = original.copy()
+                draw = ImageDraw.Draw(im)
+                draw.rectangle((0, 0, 626, 626), fill=(0, 0, 0, 0))
+                draw.rectangle((40, 40, 580, 580), fill=(50, 40, 80, 127))
+                if width and height:
+                    draw.rectangle((80, 80, 79+width, 79+height), fill=(50, 40, 80, 128))
+                im.save(src)
+                out = self.root/f'out-{width}-{height}'
+                with self.assertRaisesRegex(ValueError, 'solid-alpha core'):
+                    pack(src, out)
+                self.assertFalse(out.exists())
+
+    def test_records_minimum_size_solid_core_from_original_pixels(self):
+        src = self.source()
+        with Image.open(src) as original:
+            im = original.copy()
+        draw = ImageDraw.Draw(im)
+        draw.rectangle((0, 0, 626, 626), fill=(0, 0, 0, 0))
+        draw.rectangle((40, 40, 580, 580), fill=(50, 40, 80, 127))
+        draw.rectangle((80, 80, 520, 520), fill=(50, 40, 80, 128))
+        im.save(src)
+        m = pack(src, self.root/'out')
+        self.assertIn('coreAlphaBounds', m['frames'][0])
+        self.assertEqual(m['frames'][0]['coreAlphaBounds'], [80, 80, 521, 521])
+        self.assertEqual(m['frames'][0]['coreExtent'], [441, 441])
+        self.assertEqual(m['native3x'], 'unverified')
+
     def test_refuses_overwrite(self):
         src = self.source()
         pack(src, self.root/'out')
