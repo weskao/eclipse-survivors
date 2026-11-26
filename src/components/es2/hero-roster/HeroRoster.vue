@@ -26,7 +26,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
   if (!next) return
   emit('select', next.id)
   await nextTick()
-  root.value?.querySelector<HTMLButtonElement>(`[data-hero-id="${next.id}"]`)?.focus()
+  root.value?.querySelector<HTMLButtonElement>(`[data-hero-id="${next.id}"]`)?.focus({ preventScroll: true })
 }
 </script>
 

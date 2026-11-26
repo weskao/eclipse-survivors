@@ -102,9 +102,21 @@ async function moveChoice(event: KeyboardEvent, value: string, items: readonly s
   if (!next) return
   update(next)
   await nextTick()
-  document.querySelector<HTMLButtonElement>(`${selector}[data-${selector === '.es2-hero-card' ? 'hero' : 'mode'}="${next}"]`)?.focus()
+  const hero = selector === '.es2-hero-card'
+  // Hero cards scroll smoothly through revealHero; a default focus scroll would jump first.
+  document.querySelector<HTMLButtonElement>(`${selector}[data-${hero ? 'hero' : 'mode'}="${next}"]`)?.focus({ preventScroll: hero })
 }
-const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveChoice(event, id, heroes.map(hero => hero.id), '.es2-hero-card', next => emit('select', next as JobId)) }
+// Bring the whole chosen card into view on both axes; data-es2-reduce-motion already merges the OS and in-game preference.
+// Optional call: jsdom (unit tests) has no scrollIntoView.
+function revealHero(id: HeroId): void {
+  void nextTick(() => menu.value?.querySelector<HTMLElement>(`[data-hero="${id}"], [data-hero-id="${id}"]`)?.scrollIntoView?.({
+    behavior: document.documentElement.getAttribute('data-es2-reduce-motion') === 'true' ? 'instant' : 'smooth',
+    block: 'nearest', inline: 'nearest',
+  }))
+}
+function selectClassic(id: JobId): void { emit('select', id); revealHero(id) }
+function selectSpecialization(id: HeroId): void { emit('selectHero', id); revealHero(id) }
+const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveChoice(event, id, heroes.map(hero => hero.id), '.es2-hero-card', next => selectClassic(next as JobId)) }
 const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoice(event, id, modeIds, '.es2-mode-card', next => emit('mode', next as RunModeId)) }
 </script>
 <template>
@@ -133,7 +145,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
               :data-es2-cosmetic="profile?.equippedCosmetics[hero.id] ?? (hero.id + '-default')" :style="cosmeticStyle(profile?.equippedCosmetics[hero.id])"
               :class="{ 'es2-hero-active': (heroId ?? choice) === hero.id }" :aria-pressed="(heroId ?? choice) === hero.id"
               :aria-label="t(hero.name) + ' · ' + t(hero.role)"
-              @click="emit('select', hero.id)" @keydown="moveHero($event, hero.id)">
+              @click="selectClassic(hero.id)" @keydown="moveHero($event, hero.id)">
               <img :src="ART_URLS[hero.id]" :alt="t('{name} 原始角色插畫', { name: t(hero.name) })" decoding="async" draggable="false" />
               <span class="es2-hero-copy"><strong>{{ t(hero.name) }}</strong><small>{{ t(hero.role) }}</small>
                 <HeroStats class="es2-roster__stats" data-es2-classic-preview :stats="JOB[hero.id]" />
@@ -144,7 +156,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
                 @click="heroDetails.openModal(hero.id)" aria-haspopup="dialog"><span aria-hidden="true">i</span></button>
             </div>
           </div>
-          <HeroRoster :selected-id="heroId ?? choice" @select="emit('selectHero', $event)" @details="heroDetails.openModal($event)" />
+          <HeroRoster :selected-id="heroId ?? choice" @select="selectSpecialization" @details="heroDetails.openModal($event)" />
         </section>
         <section v-show="page === 'modes'" id="es2ExpeditionPage" class="es2-mode-section" aria-labelledby="es2ModeTitle">
           <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>

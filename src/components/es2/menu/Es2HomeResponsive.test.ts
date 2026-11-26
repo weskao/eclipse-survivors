@@ -371,3 +371,65 @@ describe('portal start interaction feedback', () => {
     expect(css).toContain('box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399')
   })
 })
+
+describe('hero card selection reveals the whole card', () => {
+  const original = Element.prototype.scrollIntoView
+  const calls: { id: string | null; options: ScrollIntoViewOptions }[] = []
+  afterEach(() => {
+    Element.prototype.scrollIntoView = original
+    calls.length = 0
+    document.documentElement.removeAttribute('data-es2-reduce-motion')
+  })
+  function spyScroll(): void {
+    Element.prototype.scrollIntoView = function (this: Element, options?: boolean | ScrollIntoViewOptions) {
+      calls.push({ id: this.getAttribute('data-hero') ?? this.getAttribute('data-hero-id'), options: options as ScrollIntoViewOptions })
+    }
+  }
+
+  it('smoothly scrolls a clicked classic or new hero card into view on both axes', async () => {
+    spyScroll()
+    const wrapper = menu()
+    await wrapper.get('[data-hero="ranger"]').trigger('click')
+    await nextTick()
+    await wrapper.get('[data-hero-id="crimson-paladin"]').trigger('click')
+    await nextTick()
+    expect(calls).toEqual([
+      { id: 'ranger', options: { behavior: 'smooth', block: 'nearest', inline: 'nearest' } },
+      { id: 'crimson-paladin', options: { behavior: 'smooth', block: 'nearest', inline: 'nearest' } },
+    ])
+  })
+
+  it('jumps without animation when reduced motion is active', async () => {
+    spyScroll()
+    document.documentElement.setAttribute('data-es2-reduce-motion', 'true')
+    const wrapper = menu()
+    await wrapper.get('[data-hero="wizard"]').trigger('click')
+    await nextTick()
+    expect(calls).toEqual([{ id: 'wizard', options: { behavior: 'instant', block: 'nearest', inline: 'nearest' } }])
+  })
+
+  it('reveals the next card on arrow keys without an instant focus jump, and details do not scroll', async () => {
+    spyScroll()
+    const focus = HTMLElement.prototype.focus
+    const focusOptions: (FocusOptions | undefined)[] = []
+    HTMLElement.prototype.focus = function (this: HTMLElement, options?: FocusOptions) {
+      if (this.matches('[data-hero], [data-hero-id]')) focusOptions.push(options)
+    }
+    try {
+      // Classic arrow-key focus looks the card up in the document.
+      const wrapper = mount(Es2MainMenu, { attachTo: document.body, props: { choice: 'knight', runMode: 'quick', version: '1.2.0' } })
+      wrappers.push(wrapper)
+      await wrapper.get('[data-es2-hero-details="ranger"]').trigger('click')
+      await wrapper.get('[data-hero="knight"]').trigger('keydown', { key: 'ArrowRight' })
+      await wrapper.setProps({ choice: 'ranger' })
+      await nextTick()
+      await wrapper.get('[data-hero-id="shadowblade"]').trigger('keydown', { key: 'ArrowRight' })
+      await wrapper.setProps({ heroId: 'spirit-summoner' })
+      await nextTick()
+      expect(calls.map(call => call.id)).toEqual(['ranger', 'spirit-summoner'])
+      expect(focusOptions).toEqual([{ preventScroll: true }, { preventScroll: true }])
+    } finally {
+      HTMLElement.prototype.focus = focus
+    }
+  })
+})
