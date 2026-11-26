@@ -8,19 +8,22 @@ Each requirement lives in exactly one file. Rules without `paths:` frontmatter l
 
 | Situation | Read and follow |
 |-----------|-----------------|
-| Any player-facing UI on every device (desktop, mobile portrait/landscape, tablet, foldable, safe-area, no occlusion, player-perspective review); hero selection panels | `.claude/rules/ui-responsive-layout.md` |
+| Any player-facing UI on every device (desktop, mobile portrait/landscape, tablet, foldable, safe-area, no occlusion, player-perspective review) | `.claude/rules/ui-responsive-layout.md` |
+| Combat HUD, information drawer, touch controls | `.claude/rules/hud-layout.md` |
 | Settings, menus, dropdowns, dialogs, pickers (no native browser UI) | `.claude/rules/no-native-ui.md` |
 | Visible text, ARIA/`alt` labels, reward names (`en` / `zh-TW`) | `.claude/rules/bilingual-copy.md` |
 | UI interaction, flow, music transition, hero active skill SFX | `.claude/rules/ui-audio.md` |
 | Any gameplay number, including 「永久強化」/暮光餘燼 | `.claude/rules/game-balance-config.md` |
-| Game logic, AI, combat, collisions, world, rendering, VFX, perf-critical UI | `.claude/rules/realtime-performance.md` (§8 VFX gate, §9 single-owner rendering) |
+| Game logic, AI, combat, collisions, world, rendering, VFX, perf-critical UI | `.claude/rules/realtime-performance.md` |
+| Any effect, projectile, particle, skill card, HUD treatment, character/BOSS visual (§8 VFX gate, §9 single-owner rendering) | `.claude/rules/rendering-budget.md` |
 | Character CRUD: heroes, enemies, bosses, NPCs, summons, portraits, animations | `.claude/rules/character-art-3x.md` (§5 CRUD gate) |
+| Directional or animated character art: facings, mirror reuse, atlases (§3, §4) | `.claude/rules/character-directions-atlas.md` |
 | Knight/ranger/wizard sprites, rigid weapons, held projectiles, body atlas | `.claude/rules/hero-weapon-rendering.md` |
 | Raster image generation or delivery (Polytool `towebp`, WebP only) | `.claude/rules/webp-assets.md` |
 | Images: commit real asset files first, code consumer second | `.claude/rules/asset-workflow.md` |
 | BOSS CRUD: original score, phase music, per-attack cinematic SFX | `.claude/rules/boss-music-production.md` |
 | BOSS arrival countdown UI, BOSS phase body size | `.claude/rules/boss-visuals.md` |
-| Last expedition selection, hero cosmetic cards (every new or updated hero) | `.claude/rules/hero-lobby.md` |
+| Lobby, Adventurer Hall, hero selection panels, last expedition selection, hero cosmetic cards (every new or updated hero) | `.claude/rules/hero-lobby.md` |
 | Skill CRUD, ability option, projectile, enemy bullet, damage feedback, attack animation — read **before** implementation | `es2-combat-visual-fidelity` skill |
 | Content pack or shared runtime integration | `es-content-integration` skill |
 | Browser-facing change (menus, touch, a11y, Canvas art, audio, perf) | `es-browser-qa` skill |
