@@ -51,9 +51,11 @@ describe('ES2 candidate review inventory', () => {
     }
   })
 
-  it('preserves Batch 27 independent attack keyframes and their review-only gate', () => {
-    const folder = 'attack-e-keyframes-2026-11-26-batch-27'
-    const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes/shadowblade/candidates', folder)
+  it.each([
+    ['shadowblade', 'attack-e-keyframes-2026-11-26-batch-27', ['slash-key-a', 'recovery-key-a']],
+    ['spirit-summoner', 'attack-e-keyframes-2026-11-26-batch-28', ['cast-release-key-a']],
+  ] as const)('preserves %s independent attack keyframes and their review-only gate', (hero, folder, expectedKeys) => {
+    const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero, 'candidates', folder)
     const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
     expect(m.status).toBe('QA_PENDING')
     expect(m.eligibleForDevWiring).toBe(false)
@@ -61,7 +63,7 @@ describe('ES2 candidate review inventory', () => {
     expect(m.qaGameplayApplied).toBe(false)
     expect(m.sequenceComplete).toBe(false)
     expect(m.continuousSequence).toBe(false)
-    expect(m.frames.map((f: { id: string }) => f.id)).toEqual(['slash-key-a', 'recovery-key-a'])
+    expect(m.frames.map((f: { id: string }) => f.id)).toEqual(expectedKeys)
     for (const f of m.frames) {
       const image = readFileSync(resolve(dir, f.file))
       const source = readFileSync(resolve(dir, f.sourceFile))
@@ -93,11 +95,13 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain('6 northern four-frame strips')
     expect(summary).toContain('21 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 25} candidate review panels`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 25)
-    expect(summary).toContain('2 independent keyframes')
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 26} candidate review panels`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 26)
+    expect(summary).toContain('3 independent keyframes')
     const keys = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-keyframe"]')]
-    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a'])
+    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a'])
+    expect(keys[2]?.dataset.candidateFolder).toBe('attack-e-keyframes-2026-11-26-batch-28')
+    expect(keys[2]?.querySelector('h2')?.textContent).toContain('spirit-summoner · ATTACK · E')
     expect(keys.every(article => article.querySelector('h2')?.textContent?.includes('1 frame'))).toBe(true)
     expect(keys.every(article => article.querySelector('canvas')?.dataset.mirrored === 'false')).toBe(true)
     const pending = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-atlas"]')]

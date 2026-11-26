@@ -1,5 +1,6 @@
 import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atlas'
 import batch27 from '../../../assets/es2/production/heroes/shadowblade/candidates/attack-e-keyframes-2026-11-26-batch-27/manifest.json'
+import batch28 from '../../../assets/es2/production/heroes/spirit-summoner/candidates/attack-e-keyframes-2026-11-26-batch-28/manifest.json'
 import summonerNWReview from '../../../assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-6/run-nw-4frames@3x.webp'
 
 const grid = document.querySelector<HTMLElement>('#grid')!
@@ -69,17 +70,22 @@ for (const [hero, pose, direction, folder] of pendingAtlases) {
   })
 }
 // These are single authored poses, not a synthetic looping attack atlas.
-const keyframeFolder = 'attack-e-keyframes-2026-11-26-batch-27'
-for (const key of batch27.frames) {
-  previewClips.push({
-    hero: batch27.hero, pose: batch27.pose, direction: batch27.direction,
-    cellPixels: 768, reviewKind: 'pending-keyframe', folder: keyframeFolder, keyframe: key.id,
-    url: import.meta.env.BASE_URL + `src/assets/es2/production/heroes/${batch27.hero}/candidates/${keyframeFolder}/${key.file}`,
-  })
+const keyframeBatches = [
+  ['attack-e-keyframes-2026-11-26-batch-27', batch27],
+  ['attack-e-keyframes-2026-11-26-batch-28', batch28],
+] as const
+for (const [folder, manifest] of keyframeBatches) {
+  for (const key of manifest.frames) {
+    previewClips.push({
+      hero: manifest.hero, pose: manifest.pose, direction: manifest.direction,
+      cellPixels: 768, reviewKind: 'pending-keyframe', folder, keyframe: key.id,
+      url: import.meta.env.BASE_URL + `src/assets/es2/production/heroes/${manifest.hero}/candidates/${folder}/${key.file}`,
+    })
+  }
 }
 grid.setAttribute('aria-label', `${previewClips.length} candidate review panels`)
 document.querySelector<HTMLElement>('#candidate-summary')!.textContent +=
-  ` ${pendingAtlases.length} additional pending atlases (review only). ${batch27.frames.length} independent keyframes (review only).`
+  ` ${pendingAtlases.length} additional pending atlases (review only). ${keyframeBatches.reduce((total, [, manifest]) => total + manifest.frames.length, 0)} independent keyframes (review only).`
 
 const decodedSources = new Map<string, HTMLImageElement>()
 const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, reviewKind, folder, keyframe, mirrored = false }) => {
