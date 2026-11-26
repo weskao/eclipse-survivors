@@ -111,7 +111,7 @@ export type ContentEvent =
   | { type: 'run-complete'; win: boolean }
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
-export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean; severity?: import('./health-impact').HeroDamageSeverity }
+export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean; /** Outgoing damage ÷ base damage; drives the number's visual tier. */ multiplier?: number; severity?: import('./health-impact').HeroDamageSeverity }
 export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number; contact?: 'normal' | 'critical'; angle?: number }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }

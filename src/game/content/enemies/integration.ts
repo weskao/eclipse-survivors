@@ -118,7 +118,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       const heavy = classifyHealthImpact(applied / enemy.max) === 'heavy'
       state.damageDealt += applied
       pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
-        value: Math.round(applied), boss: false, critical })
+        value: Math.round(applied), boss: false, critical, multiplier: modified / amount })
       const angle = Math.atan2(enemy.y - sourceY, enemy.x - sourceX)
       emitHitImpact(state, enemy.x, enemy.y - Math.min(30, enemy.radius), enemy.radius, angle, critical, heavy)
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
