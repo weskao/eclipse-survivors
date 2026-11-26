@@ -53,6 +53,12 @@ describe('expedition result screen fits without scrolling', () => {
     expect(css).toMatch(/\.es2-dialog-result \.es2-result-hero img\{[^}]*object-fit:contain/)
   })
 
+  it('never breaks a stat number across lines; the label wraps instead', () => {
+    // The shared stat strip allows overflow-wrap:anywhere, which split "1,834,502" at 320px.
+    expect(css).toMatch(/\.es2-dialog-result \.es2-result-stats b\{[^}]*white-space:nowrap/)
+    expect(css).toMatch(/\.es2-dialog-result \.es2-result-stats small\{[^}]*min-width:0/)
+  })
+
   it('uses a two-column banner/report layout on wide and landscape screens', () => {
     expect(css).toMatch(/@media \(min-width:640px\)\{[^@]*\.es2-dialog-result \.es2-result\{[^}]*display:grid;grid-template-columns:/)
   })

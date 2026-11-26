@@ -948,18 +948,19 @@
 .es2-dialog-result .es2-dialog-actions{justify-content:center;margin-top:clamp(8px,1.8dvh,18px);padding-top:clamp(8px,1.8dvh,16px)}
 .es2-dialog-result .es2-dialog-actions button{flex:0 1 220px}
 .es2-dialog-result .es2-result{position:relative;display:flex;flex-direction:column;flex:1 1 auto;gap:clamp(8px,1.5dvh,14px);min-height:0;text-align:center}
-.es2-dialog-result .es2-result-banner{position:relative;display:flex;flex-direction:column;align-items:center;flex:1 1 auto;gap:2px;min-height:0;padding:clamp(6px,1.2dvh,12px) 10px;border:1px solid #c3a97d40;border-radius:12px;background:radial-gradient(ellipse 58% 52% at 50% 40%,#e4b26324,transparent 72%),#08121ecc;box-shadow:inset 0 1px #d9bb8726}
+.es2-dialog-result .es2-result-banner{position:relative;display:flex;flex-direction:column;align-items:center;flex:1 1 clamp(136px,31dvh,300px);gap:2px;padding:clamp(6px,1.2dvh,12px) 10px;border:1px solid #c3a97d40;border-radius:12px;background:radial-gradient(ellipse 58% 52% at 50% 40%,#e4b26324,transparent 72%),#08121ecc;box-shadow:inset 0 1px #d9bb8726}
 .es2-tone-defeat .es2-result-banner{background:radial-gradient(ellipse 58% 52% at 50% 40%,#9d454536,transparent 72%),#08121ecc}
-.es2-dialog-result .es2-result-hero{position:relative;flex:1 1 clamp(80px,24dvh,240px);width:100%;min-height:56px}
+/* Preferred size lives on the banner; a zero-basis portrait keeps the banner floor at portrait-min + status + mode. */
+.es2-dialog-result .es2-result-hero{position:relative;flex:1 1 0;width:100%;min-height:56px}
 .es2-dialog-result .es2-result-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 10px 18px #000a)}
 .es2-dialog-result .es2-result-crown{position:absolute;top:6px;right:10px;z-index:2;font-size:clamp(1.6rem,4dvh,2.4rem);line-height:1;color:#e7bf80;text-shadow:0 0 20px #e4b26377}
 .es2-dialog-result .es2-result-status{flex:none;margin:4px 0 0;font:700 .75rem system-ui,sans-serif;letter-spacing:.13em;color:#e6c995}
 .es2-dialog-result .es2-result-mode{flex:none;margin:0;font-size:.85rem;color:var(--es2-muted)}
-.es2-dialog-result .es2-result-report{display:flex;flex:none;flex-direction:column;justify-content:center;gap:clamp(8px,1.5dvh,12px);min-width:0}
+.es2-dialog-result .es2-result-report{display:flex;flex:none;flex-direction:column;justify-content:safe center;gap:clamp(8px,1.5dvh,12px);min-width:0}
 .es2-dialog-result .es2-result-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(5px,1dvh,10px);margin:0;text-align:left}
 .es2-dialog-result .es2-result-stats>div{gap:3px;padding:clamp(6px,1.2dvh,12px) clamp(7px,1vw,14px)}
-.es2-dialog-result .es2-result-stats b{font-size:clamp(.95rem,2.2dvh,1.25rem)}
-.es2-dialog-result .es2-result-stats small{font-size:.72rem}
+.es2-dialog-result .es2-result-stats b{font-size:clamp(.95rem,2.2dvh,1.25rem);white-space:nowrap}
+.es2-dialog-result .es2-result-stats small{min-width:0;font-size:.72rem}
 .es2-reward-strip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:clamp(5px,1.1dvh,12px) 8px;border:1px solid #b5a06c7a;border-radius:10px;background:#4d3a2655}
 .es2-reward-strip strong{color:#f9d596}
 .es2-reward-group{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 6px;margin:0}
@@ -976,7 +977,7 @@
   .es2-dialog-result .es2-result{gap:6px}
   .es2-dialog-result .es2-result-report{gap:5px}
   .es2-dialog-result .es2-result-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 6px}
-  .es2-dialog-result .es2-result-stats>div{flex-direction:row-reverse;justify-content:space-between;align-items:baseline;gap:6px;padding:2px 8px;border-radius:7px}
+  .es2-dialog-result .es2-result-stats>div{flex-direction:row-reverse;justify-content:space-between;align-items:baseline;gap:6px;padding:1px 8px;border-radius:7px}
   .es2-dialog-result .es2-result-stats b{font-size:.9rem;text-align:right}
   .es2-dialog-result .es2-reward-strip{gap:3px;padding:4px 8px}
   .es2-dialog-result .es2-reward-strip span{line-height:1.3}
@@ -991,6 +992,13 @@
   .es2-dialog-result .es2-dialog-header .es2-eyebrow{display:none}
   .es2-dialog-result .es2-dialog-header h2{margin:0 0 4px;font-size:calc(1.2rem * var(--es2-ui-scale,1))}
   .es2-dialog-result .es2-dialog-header p{font-size:.78rem;line-height:1.35}
+}
+/* 320-class phones: a long value plus a one-word label overflow a ledger row, so stack value over label. The header summary repeats time, kills and level from the stats, so drop it here. */
+@media (max-width:360px){
+  .es2-dialog-result .es2-dialog-header h2{font-size:calc(1.05rem * var(--es2-ui-scale,1))}
+  .es2-dialog-result .es2-dialog-header p{display:none}
+  .es2-dialog-result .es2-result-stats>div{flex-direction:column;align-items:stretch;gap:0;padding:2px 8px}
+  .es2-dialog-result .es2-result-stats b{text-align:left}
 }
 @media (orientation:landscape) and (max-height:520px){
   .es2-dialog-result .es2-dialog-header>div:first-child{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px}
