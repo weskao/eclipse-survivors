@@ -71,7 +71,12 @@ export function useHoverDetails<T extends string>(selector: string, resolveId: (
     }
   }
   function onScroll(event: Event): void {
-    if (anchor.value && !(event.target instanceof Element && event.target.closest('[data-es2-hover-details]'))) clear()
+    const el = anchor.value
+    if (!el || (event.target instanceof Element && event.target.closest('[data-es2-hover-details]'))) return
+    // A scroll-to-view event may arrive after pointerover/focusin. Keep an
+    // actively inspected card open; the surface follows its new position.
+    if (el.matches(':hover') || document.activeElement === el) return
+    clear()
   }
   function onPointerDown(event: PointerEvent): void {
     if (!anchor.value || !(event.target instanceof Element)) return

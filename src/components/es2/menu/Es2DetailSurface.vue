@@ -41,10 +41,16 @@ watchPostEffect(onCleanup => {
     position.value = { left: clamp(x, vw - p.width - edge) + 'px', top: clamp(y, vh - p.height - edge) + 'px', visibility: 'visible' }
   }
   place()
-  if (typeof ResizeObserver === 'undefined') return
-  const observer = new ResizeObserver(place)
-  observer.observe(el)
-  onCleanup(() => observer.disconnect())
+  const onScroll = (event: Event) => {
+    if (!(event.target instanceof Node && el.contains(event.target))) place()
+  }
+  window.addEventListener('scroll', onScroll, true)
+  const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place)
+  observer?.observe(el)
+  onCleanup(() => {
+    observer?.disconnect()
+    window.removeEventListener('scroll', onScroll, true)
+  })
 })
 </script>
 
