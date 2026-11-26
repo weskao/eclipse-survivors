@@ -571,6 +571,30 @@ describe('keyboard and focus', () => {
   })
 })
 
+describe('ES3 live combat soundtrack pressure', () => {
+  it('counts living legacy and faction enemies together without counting defeated mobs', () => {
+    const intensity = vi.spyOn(audio, 'setCombatIntensity')
+    engine.selectJob('knight')
+    engine.selectRunMode('quick')
+    engine.start()
+    const s = engine.state
+    s.hero!.attack = 999
+    s.hero!.inv = 999
+    s.spawnT = 999
+    s.nextEventAt = Infinity
+    const mob = s.mobs[0]!
+    // The live opening faction wave is already present. Fifteen legacy actors
+    // alone would remain below the combat music threshold.
+    s.mobs = Array.from({ length: 15 }, (_, i) => ({ ...mob, x: 300 + i * 30, y: 100, hp: 100, max: 100 }))
+    engine.advance(.26)
+    expect(intensity).toHaveBeenLastCalledWith('combat')
+    // Only the few faction actors remain alive; corpses cannot sustain combat intensity.
+    s.mobs.forEach(m => { m.hp = 0 })
+    engine.advance(.26)
+    expect(intensity).toHaveBeenLastCalledWith('calm')
+  })
+})
+
 describe('engine victory integration', () => {
   it('keeps playing beyond the deadline until the required boss has been killed', () => {
     engine.start()
