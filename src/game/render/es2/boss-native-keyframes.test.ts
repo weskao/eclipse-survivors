@@ -109,7 +109,10 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
       .toEqual(['abyssWindup', 'abyssWindupB', 'abyssReleaseA', 'abyssReleaseB'])
     expect(selectBossNativeKeyframe(at('attack', .9, 'darkness-field'))).toBeNull()
     expect(selectBossNativeKeyframe(at('attack', .9, 'shadow-fan', 2))).toBeNull()
-    expect(selectBossNativeKeyframe(at('recover', .9))).toBeNull()
+    expect(selectBossNativeKeyframe(at('recover', .9))).toBe('abyssRecover')
+    expect(selectBossNativeKeyframe(at('recover', .9, 'darkness-field'))).toBeNull()
+    expect(selectBossNativeKeyframe(at('recover', .9, 'shadow-fan', 2))).toBeNull()
+    expect(selectBossNativeKeyframe({ ...at('recover', .9), impacts: [] })).toBeNull()
     expect(selectBossNativeKeyframe({ ...at('attack', .5), impacts: [] })).toBeNull()
     const image = { complete: true, naturalWidth: 1312, naturalHeight: 1199 } as HTMLImageElement
     registerBossNativeKeyframe(image, 'abyssReleaseA')

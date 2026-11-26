@@ -21,6 +21,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   abyssWindupB: ['batch-08/abyss-monarch/windup/shadow-orb-windup-key-b.webp', 1374, 1145, 690, 1130],
   abyssReleaseA: ['batch-08/abyss-monarch/attack/shadow-fan-release-key-a.webp', 1312, 1199, 660.5, 1190],
   abyssReleaseB: ['batch-08/abyss-monarch/attack/shadow-fan-release-key-b.webp', 1312, 1199, 656, 1180],
+  abyssRecover: ['batch-16/abyss-monarch/recover/shadow-fan-recover-key-a.webp', 1254, 1254, 603.5, 1225],
   frostWindup: ['batch-10/frost-sovereign/windup/ice-fan-windup-key-a.webp', 1254, 1254, 611, 1243],
   frostRecover: ['batch-11/frost-sovereign/recover/staff-lower-key-a.webp', 1315, 1196, 654, 1147],
   frostHurt: ['batch-11/frost-sovereign/hurt/recoil-key-a.webp', 1313, 1198, 650.5, 1151],
@@ -49,8 +50,10 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
     if (motion.pose === 'idle') return 'abyssIdle'
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'shadow-fan'))
       return motion.progress < .5 ? 'abyssWindup' : 'abyssWindupB'
-    if (motion.pose === 'attack' && snapshot.impacts?.at(-1)?.attackId === 'shadow-fan')
-      return motion.progress < .5 ? 'abyssReleaseA' : 'abyssReleaseB'
+    if (snapshot.impacts?.at(-1)?.attackId === 'shadow-fan') {
+      if (motion.pose === 'attack') return motion.progress < .5 ? 'abyssReleaseA' : 'abyssReleaseB'
+      if (motion.pose === 'recover') return 'abyssRecover'
+    }
     return null
   }
   if (snapshot.id === 'frost-sovereign') {
