@@ -24,7 +24,7 @@ let scheduled = false
 // reflection of the admitted NE source without adding either to the runtime registry.
 type PreviewClip = {
   hero: string; pose: string; direction: string; url: string; cellPixels: 704 | 768
-  reviewKind?: string; mirrored?: boolean
+  reviewKind?: string; mirrored?: boolean; folder?: string
 }
 const previewClips: PreviewClip[] = [...HERO_CANDIDATE_ATLASES]
 const summonerNE = HERO_CANDIDATE_ATLASES.find(c =>
@@ -39,6 +39,9 @@ if (summonerNE) previewClips.push({
 // Uploaded candidates are displayed here only. They must not enter the
 // gameplay atlas registry until the explicit manifest admission gate passes.
 const pendingAtlases = [
+  ['shadowblade', 'run', 'E', 'run-e-2026-11-26-batch-26'],
+  ['spirit-summoner', 'run', 'E', 'run-e-2026-11-26-batch-26'],
+  ['crimson-paladin', 'run', 'E', 'run-e-2026-11-26-batch-26'],
   ['shadowblade', 'run', 'E', 'run-e-2026-11-26-batch-24'],
   ['spirit-summoner', 'run', 'E', 'run-e-2026-11-26-batch-25'],
   ['spirit-summoner', 'run', 'W', 'w-2026-11-25-batch-13'],
@@ -60,7 +63,7 @@ const pendingAtlases = [
 ] as const
 for (const [hero, pose, direction, folder] of pendingAtlases) {
   previewClips.push({
-    hero, pose, direction, cellPixels: 768, reviewKind: 'pending-atlas',
+    hero, pose, direction, cellPixels: 768, reviewKind: 'pending-atlas', folder,
     url: import.meta.env.BASE_URL + `src/assets/es2/production/heroes/${hero}/candidates/${folder}/${pose}-${direction.toLowerCase()}-4frames@3x.webp`,
   })
 }
@@ -69,7 +72,7 @@ document.querySelector<HTMLElement>('#candidate-summary')!.textContent +=
   ` ${pendingAtlases.length} additional pending atlases (review only).`
 
 const decodedSources = new Map<string, HTMLImageElement>()
-const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, reviewKind, mirrored = false }) => {
+const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, reviewKind, folder, mirrored = false }) => {
   const article = document.createElement('article')
   const label = document.createElement('h2')
   const reviewLabel = reviewKind === 'batch-6-nw' ? ' · authored NW (review only)'
@@ -77,6 +80,10 @@ const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, review
     : reviewKind === 'pending-atlas' ? ' · pending atlas (review only)' : ''
   label.textContent = `${hero} · ${pose.toUpperCase()} · ${direction} (4 frames)${reviewLabel}`
   if (reviewKind) article.dataset.reviewKind = reviewKind
+  if (folder) {
+    article.dataset.candidateFolder = folder
+    label.textContent += ` · ${folder}`
+  }
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = 336
   canvas.setAttribute('aria-label', label.textContent)
