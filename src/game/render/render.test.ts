@@ -405,3 +405,38 @@ describe('biome renderer contracts', () => {
     expect(world.calls.filter(x => x === 'fillText').length).toBeGreaterThan(1)
   })
 })
+
+
+describe('ES3 authored legacy enemy dissolution in the live renderer', () => {
+  it('samples each of the four isolated atlas cells, once per fallen actor, at the existing visual scale', () => {
+    const s = busyState()
+    s.cameraKick = 0
+    s.mobs = []
+    const corpse = mob('golem', 0, 50, { hp: 0, deathVisual: 1, deathVisualTotal: 1 })
+    s.fallenMobs = [corpse]
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const atlas = { complete: true, naturalWidth: 872, naturalHeight: 872 } as HTMLImageElement
+    assets.productionWorld = { enemyDeaths: { golem: atlas } } as unknown as NonNullable<typeof assets.productionWorld>
+    const { ctx } = createFakeCtx()
+    const crops: unknown[][] = []
+    ctx.drawImage = (...args: unknown[]) => { if (args[0] === atlas) crops.push(args.slice(1)) }
+    for (const remaining of [1, .7, .4, .1]) {
+      corpse.deathVisual = remaining
+      drawFrame(ctx, s, 1, assets)
+    }
+    expect(crops.map(a => a.slice(0, 4))).toEqual([[8,8,420,420],[444,8,420,420],[8,444,420,420],[444,444,420,420]])
+    for (const crop of crops) {
+      const [, , , , x, y, w, h] = crop as number[]
+      expect(w).toBe(h)
+      expect(w).toBeLessThanOrEqual(139)
+      expect(x).toBe(-w! / 2)
+      expect(y! + h!).toBe(4)
+    }
+    const before = crops.length
+    corpse.hp = 1
+    s.fallenMobs = []
+    s.mobs = [corpse]
+    drawFrame(ctx, s, 1, assets)
+    expect(crops).toHaveLength(before)
+  })
+})
