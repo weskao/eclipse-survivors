@@ -3,6 +3,7 @@ import { BOSS_DEFINITIONS, type BossId } from '../../content/bosses/definitions'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import type { Ctx2D } from '../ctx'
 import type { MobType } from '../../types'
+import es3ArtManifest from '../../../assets/es3/production/manifest.json'
 import { bossPhaseVisualScale, measureBossPhaseLayouts, type BossPhaseLayout } from './boss-phase-layout'
 export { BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
 import { BOSS_NATIVE_KEYFRAMES, registerBossNativeKeyframe, type NativeBossKeyframe } from './boss-native-keyframes'
@@ -204,9 +205,11 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   const epic = ES3_EPIC_TREASURE_URL ? load(ES3_EPIC_TREASURE_URL) : rare
   if (epic !== rare) epic.onerror = () => { epic.onerror = null; epic.src = WORLD_ART.ui['treasure-rare'] }
   const enemyDeaths: NonNullable<WorldRuntimeImages['enemyDeaths']> = {}
+  // Never substitute a character's established appearance with an unreviewed atlas.
   for (const id of LEGACY_DEATH_IDS) {
     const url = ES3_DEATH_URLS[id]
-    if (url) enemyDeaths[id] = load(url)
+    const entry = es3ArtManifest.assets.find(asset => asset.id === id)
+    if (url && entry?.status === 'approved' && entry.visualReview === 'approved') enemyDeaths[id] = load(url)
   }
   const legendary = load(WORLD_ART.ui['treasure-legendary'])
   const cursed = load(WORLD_ART.ui['treasure-cursed'])

@@ -41,3 +41,6 @@ pnpm check-release
 
 ## 限制
 目前未以專案原始角色圖作為生成參照，素材的形象一致性、個別原始格邊界（可能有觸邊或鄰格內容）、死亡動作與實機視覺皆尚未驗收；所有項目維持 QA_PENDING。8px gutter 可防止運行時採樣跨格，但不能證明原始生成圖沒有跨格。這是五種 Legacy 敵人消散動畫，不是 10 種 Faction 敵人的素材，也不包含獨立受擊或倒地分鏡。原始 PNG 已存在於對話，保留其 SHA-256 供追溯。
+
+## Canonical character identity
+The five legacy dissolution sheets are retained as QA_PENDING candidates, not automatically loaded. Normal gameplay continues to use the existing canonical actor art and bounded procedural death presentation. Only an owner-reviewed, identity-matched atlas may be activated by setting both `status` and `visualReview` to `approved` in the manifest. The Epic chest remains independent of enemy/hero/boss identity. Do not replace canonical hero, faction or boss art to satisfy this batch.
