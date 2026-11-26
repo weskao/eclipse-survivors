@@ -21,6 +21,9 @@ const DUST = Object.freeze(Array.from({ length: 24 }, (_, i) => Object.freeze({
   size: 1.1 + (i % 4) * 0.7,
 })))
 
+/** Shared decoded sources for the GPU hero pass (same images, no second decode). */
+export const heroSpecialImages = (): Readonly<Partial<Record<Texture, HTMLImageElement>>> => cached
+
 /** Decode the five authored SVG textures once, never during a rendering frame. */
 export function preloadHeroSpecialVfx(): void {
   if (typeof Image === 'undefined') return

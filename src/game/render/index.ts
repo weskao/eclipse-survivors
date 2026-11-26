@@ -7,9 +7,10 @@ import type { FactionBridge } from '../content/enemies/integration'
 import { drawBossImpacts, drawBossTelegraphs, preloadBossAttackArt } from '../content/bosses/render'
 import { buildBiomeArt, type BiomeArt } from './biome-art'
 import { currentSceneInfo } from '../state'
-import type { GameState, Hero, Mob } from '../types'
+import type { ContentVisualFx, GameState, Hero, Mob } from '../types'
 import { characterOutsideViewport, drawCharacter } from './characters'
 import type { PixiVfxBridge, VfxFrame } from './pixi-vfx/bridge'
+import type { HeroSpecialKind } from './pixi-vfx/hero-choreography'
 import { runVfxPass } from './pixi-vfx/plan'
 import { preloadEnemyReleaseArt } from './enemy-motion'
 import { preloadHitImpactArt } from './hit-impact'
@@ -104,6 +105,9 @@ function weatherGrade(ctx: Ctx2D, W: number, H: number, weather: string): Canvas
 }
 
 /** Original `draw()` minus frame counter and minimap call (engine owns both). */
+const HERO_FX_PREFIX = 'combat-vfx:hero-'
+const HERO_FX_ID_OFFSET = 'combat-vfx:'.length
+
 export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderAssets): void {
   const { W, H } = s
   const hero = s.hero
@@ -222,7 +226,17 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   drawLightning(ctx, s, ox, oy, reduced || !!policy?.reduceFlashing)
   drawFx(ctx, s, ox, oy, reduced, assets.particles, projectiles)
   if (bossSnapshot) runVfxPass(() => !!vfxFrame && assets.pixiVfx!.impacts(vfxFrame), () => drawBossImpacts(ctx, bossSnapshot, ox, oy, reduced, W, H, undefined, policy ?? undefined))
-  assets.content?.render(ctx, s, ox, oy)
+  // One owner per hero Q cast: the GPU pass when it paints, otherwise the Canvas registry.
+  let heroOwned: ContentVisualFx | undefined
+  if (assets.pixiVfx) {
+    for (const effect of s.content.effects) {
+      if (!effect.id.startsWith(HERO_FX_PREFIX)) continue
+      const kind = effect.id.slice(HERO_FX_ID_OFFSET) as HeroSpecialKind
+      if (assets.pixiVfx.heroSpecial({ ctx, effect, kind, ox, oy, width: W, height: H, dpr, reduced, policy })) heroOwned = effect
+      break
+    }
+  }
+  assets.content?.render(ctx, s, ox, oy, heroOwned)
   if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)
   drawVignette(ctx, s)
   if (heroImpact && !policy?.reduceFlashing && !reduced && (policy?.vfxOpacity ?? 1) > 0) {

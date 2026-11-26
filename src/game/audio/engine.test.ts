@@ -297,18 +297,26 @@ describe('tick', () => {
     expect(ctx.oscillators).toHaveLength(0)
   })
 
-  it('battle tune only in play mode while bgm is paused', () => {
+  it('continues the fallback battle tune through level selection but not pause', () => {
     const audio = make()
     audio.wake()
-    audio.tick('level')
     audio.tick('paused')
     expect(ctx.oscillators).toHaveLength(0)
     bgm.paused = false
     audio.tick('play')
+    audio.tick('level')
     expect(ctx.oscillators).toHaveLength(0)
     bgm.paused = true
     audio.tick('play')
-    expect(ctx.oscillators.length).toBeGreaterThan(0)
+    const before = ctx.oscillators.length
+    expect(before).toBeGreaterThan(0)
+    ctx.currentTime = 2
+    audio.tick('level')
+    expect(ctx.oscillators.length).toBeGreaterThan(before)
+    const during = ctx.oscillators.length
+    ctx.currentTime = 4
+    audio.tick('paused')
+    expect(ctx.oscillators).toHaveLength(during)
   })
 
   it('resetBattleClock restarts the tune clock from currentTime + delay', () => {
@@ -507,13 +515,18 @@ describe('toggles', () => {
 })
 
 describe('onScreen', () => {
-  it('level lowers bgm volume to .20; play restores .38 and plays', () => {
+  it('keeps the same media track, volume and position through level selection', async () => {
     const audio = make()
-    audio.onScreen('level')
-    expect(bgm.volume).toBe(0.2)
     audio.onScreen('play')
+    bgm.currentTime = 42
+    audio.onScreen('level')
+    await Promise.resolve()
+    expect(bgm.paused).toBe(false)
     expect(bgm.volume).toBe(0.38)
+    expect(bgm.currentTime).toBe(42)
+    audio.onScreen('play')
     expect(bgm.playCalls).toBe(1)
+    expect(bgm.currentTime).toBe(42)
   })
 
   it('does not play bgm when music is off', () => {

@@ -16,6 +16,9 @@ export interface BgmElement {
 export type SettingsStorage = Pick<Storage, 'getItem' | 'setItem'>
 export type CombatIntensity = 'calm' | 'combat' | 'boss'
 
+/** Skill/relic selection freezes gameplay, not the expedition soundtrack. */
+export const isBattleMusicMode = (mode: GameMode): boolean => mode === 'play' || mode === 'level'
+
 /**
  * Port of the original audio globals and functions (`ac`, `master`, `musicBus`, `wakeAudio`,
  * `audioTone`, `playSfx`, `menuScore`, `music`, `toggleMusic`, `toggleSfx`, bgm handling in `screen`).

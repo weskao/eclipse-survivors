@@ -32,7 +32,7 @@ import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
 import { burst, impact } from './fx'
-import { emitCombatVfx } from './content/packs/combat-vfx'
+import { emitCombatVfx, followHeroSpecialFx } from './content/packs/combat-vfx'
 import { EVOLUTIONS } from './evolutions'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
 import { minmax, random } from './math'
@@ -589,6 +589,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (objectiveRuntime) bossSequence = 0
     heroSpecialization = createHeroRosterAdapter(s, s.heroId, heroHooks, random)
     heroSpecialization?.reset()
+    // Start decoding the GPU hero pass before the first Q, not on the cast frame.
+    if (heroSpecialization) pixiVfx?.warm()
     hooks.content?.(s, { type: 'reset' })
     s.runMode = ui.runMode
     s.cosmetic = displayProfile().equippedCosmetics[s.choice]
@@ -727,6 +729,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
     if (s.mode !== 'play') return
     heroSpecialization?.tick(dt)
+    if (heroSpecialization?.id === 'crimson-paladin' && s.hero && s.content.effects.length) {
+      followHeroSpecialFx(s.content.effects, 'hero-crimson-paladin', s.hero.x, s.hero.y, heroSpecialization.snapshot().barrier > 0)
+    }
     worldEvents?.tick()
     if (objectiveRuntime) {
       objectiveRuntime.tick(dt, true)
@@ -1213,7 +1218,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         markHeroSpecialAnimation(s.hero, s.worldClock)
         // Snapshot the authoritative cast position; a dash/movement cannot drag the effect.
         emitCombatVfx(effect => contentRegistry.addEffect(s, effect),
-          `hero-${heroSpecialization.id}`, s.hero.x, s.hero.y)
+          `hero-${heroSpecialization.id}`, s.hero.x, s.hero.y, { targets: heroSpecialization.castTargets() })
       }
       if (activated) hud()
       return activated

@@ -47,6 +47,26 @@ describe('audio integration adapter', () => {
     expect(a.created()).toBe(1)
   })
 
+  it.each(['exploration', 'combat', 'boss'] as const)('continues the %s score on the same timeline during level selection', scene => {
+    const actual = make()
+    const reference = make()
+    for (const a of [actual, reference]) {
+      a.director.wakeFromGesture()
+      a.director.setScene(scene)
+      a.director.tick('play')
+    }
+    const before = actual.tone.mock.calls.length
+    for (const t of [0.25, 0.5, 0.75, 1, 1.25, 1.5]) {
+      actual.setClock(t)
+      reference.setClock(t)
+      actual.director.tick('level')
+      reference.director.tick('play')
+    }
+    expect(actual.director.scene).toBe(scene)
+    expect(actual.tone.mock.calls.length).toBeGreaterThan(before)
+    expect(actual.tone.mock.calls).toEqual(reference.tone.mock.calls)
+  })
+
   it('suspends on interruption and waits for the next permitted gesture to resume', () => {
     const a = make()
     a.director.wakeFromGesture()

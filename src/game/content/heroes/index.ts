@@ -1,7 +1,7 @@
 import { BALANCE } from '../../config'
 import { HERO_MASTERY_DESCRIPTIONS } from './mastery-preview'
 import { damageHero, hit } from '../../combat'
-import { impact, burst } from '../../fx'
+import { impact } from '../../fx'
 import { random as simulationRandom } from '../../math'
 import { createHero } from '../../state'
 import type { ContentId, GameHooks, GameState, JobId, Mob, SfxCue } from '../../types'
@@ -122,6 +122,9 @@ export interface SpecializationSnapshot {
   readonly companions: readonly CompanionKind[]
 }
 
+export interface CastTarget { readonly x: number; readonly y: number }
+const NO_TARGETS: readonly CastTarget[] = Object.freeze([])
+
 export interface HeroSpecializationAdapter {
   readonly id: SpecializationId
   /** Run AFTER the integration-owned resetRun; does not change global or shared types. */
@@ -144,6 +147,8 @@ export interface HeroSpecializationAdapter {
   /** Route incoming damage through guards, mitigation, legacy damage and counter in that order. */
   receiveDamage(amount: number): number
   snapshot(): SpecializationSnapshot
+  /** World positions of the enemies the last successful cast struck (VFX only; empty for the barrier). */
+  castTargets(): readonly CastTarget[]
 }
 
 const SHADOW = BALANCE.heroes.specialEffects.shadowblade
@@ -173,6 +178,10 @@ function nearby(state: GameState, reach: number, limit: number): Mob[] {
   return selected.map(entry => entry.mob)
 }
 
+// Captured before hit() so knockback or death cannot move the visual contact point.
+const strikePoints = (mobs: readonly Mob[]): readonly CastTarget[] =>
+  mobs.length ? Object.freeze(mobs.map(m => Object.freeze({ x: m.x, y: m.y }))) : NO_TARGETS
+
 /**
  * Per-engine, per-run closure. No module-global mutable state and no changes to JobId
  * or GameState. The integration branch owns engine lifecycle, damage and input wiring.
@@ -191,6 +200,7 @@ export function createHeroSpecializationAdapter(
   let barrierLife = 0
   let counterCooldown = 0
   let companionTimer = 0
+  let lastTargets = NO_TARGETS
 
   const alive = () => state.mode === 'play' && !!state.hero && state.hero.hp > 0
   const upgrades = () => state.content.levels[def.progressionAbility] ?? 0
@@ -204,6 +214,7 @@ export function createHeroSpecializationAdapter(
     id,
     reset(): void {
       cooldown = stealth = barrier = barrierLife = counterCooldown = companionTimer = 0
+      lastTargets = NO_TARGETS
       lastCritical = false
       state.choice = def.legacyArtJob
       state.hero = createHero(def.legacyArtJob)
@@ -243,20 +254,21 @@ export function createHeroSpecializationAdapter(
       if (id === 'shadowblade') {
         stealth = SHADOW.stealthSeconds
         hero.inv = Math.max(hero.inv, 0.7)
-        for (const enemy of nearby(state, SHADOW.specialReach, SHADOW.specialHits)) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), hooks)
-        impact(state, hero.x, hero.y, 95, '#aa8eff', 0.7)
-        burst(state, hero.x, hero.y, '#8666ef', 12)
+        const struck = nearby(state, SHADOW.specialReach, SHADOW.specialHits)
+        lastTargets = strikePoints(struck)
+        for (const enemy of struck) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), hooks)
       } else if (id === 'spirit-summoner') {
-        for (const enemy of nearby(state, SPIRIT.companionRange, 3)) hit(state, enemy, hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank), hooks)
+        const struck = nearby(state, SPIRIT.companionRange, 3)
+        lastTargets = strikePoints(struck)
+        for (const enemy of struck) hit(state, enemy, hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank), hooks)
         hero.hp = Math.min(hero.max, hero.hp + SPIRIT.specialHeal)
-        impact(state, hero.x, hero.y, 115, '#95eaff', 0.9)
       } else {
         const cost = Math.min(Math.max(0, hero.hp - 1), Math.ceil(hero.max * PALADIN.healthCostRatio))
         hero.hp -= cost
         state.damageTaken += cost
         barrier = PALADIN.barrierBase + hero.level * PALADIN.barrierPerHeroLevel + upgrades() * PALADIN.barrierPerRank
+        lastTargets = NO_TARGETS
         barrierLife = PALADIN.barrierSeconds
-        impact(state, hero.x, hero.y, 105, '#ed6178', 1)
       }
       hooks.sfx(def.audio.special)
       return true
@@ -320,6 +332,7 @@ export function createHeroSpecializationAdapter(
     snapshot(): SpecializationSnapshot {
       return { cooldown, stealth, barrier, barrierSeconds: barrierLife, companions: companions() }
     },
+    castTargets: () => lastTargets,
   }
 }
 
