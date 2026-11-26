@@ -26,10 +26,13 @@ describe('ES2 candidate review inventory', () => {
     expect(m.status).toBe('QA_PENDING')
   })
 
-  it('preserves Batch 24 and 25 East run art as review-only assets', () => {
+  it('preserves Batch 24, 25 and 26 East run art as review-only assets', () => {
     for (const [hero, folder] of [
       ['shadowblade', 'run-e-2026-11-26-batch-24'],
       ['spirit-summoner', 'run-e-2026-11-26-batch-25'],
+      ['shadowblade', 'run-e-2026-11-26-batch-26'],
+      ['spirit-summoner', 'run-e-2026-11-26-batch-26'],
+      ['crimson-paladin', 'run-e-2026-11-26-batch-26'],
     ]) {
       const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero!, 'candidates', folder!)
       const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
@@ -67,15 +70,20 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain(`${south} South-facing`)
     expect(summary).toContain('6 diagonal four-frame strips')
     expect(summary).toContain('6 northern four-frame strips')
-    expect(summary).toContain('18 additional pending atlases')
+    expect(summary).toContain('21 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 20} candidate animation strips`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 20)
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 23} candidate animation strips`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 23)
     const pending = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-atlas"]')]
-    expect(pending).toHaveLength(18)
-    const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW","shadowblade · RUN · E","spirit-summoner · RUN · E"]
+    expect(pending).toHaveLength(21)
+    const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW","shadowblade · RUN · E","spirit-summoner · RUN · E","crimson-paladin · RUN · E"]
     for (const name of expectedPending) {
       expect(pending.some(article => article.querySelector('h2')?.textContent?.startsWith(name))).toBe(true)
+    }
+    const batch26 = pending.filter(article => article.dataset.candidateFolder === 'run-e-2026-11-26-batch-26')
+    expect(batch26).toHaveLength(3)
+    for (const hero of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
+      expect(batch26.some(article => article.querySelector('h2')?.textContent?.startsWith(hero + ' · RUN · E'))).toBe(true)
     }
     expect(pending.every(article => article.querySelector('canvas')?.dataset.mirrored === 'false')).toBe(true)
     const authored = document.querySelector<HTMLElement>('[data-review-kind="batch-6-nw"]')
