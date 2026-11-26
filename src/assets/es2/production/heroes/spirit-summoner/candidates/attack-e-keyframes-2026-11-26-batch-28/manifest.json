@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "attack",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "output only: 1254x1254 -> 704x704 Lanczos -> centered 768x768; source untouched dimensions; no upscaling",
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    1254,
+    1254
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "8514c9d6-171e-41f9-ad5f-099bab26e877",
+    "originalPNGSHA256": "828ead9e9eabad19c46ce0ad4b317f0d8ffeeb43856414bf809ea1851eb58c4e",
+    "canonicalPortrait": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "referenceCommit": "8d130f68425d66f92a1106b6abec4599f3972c61"
+  },
+  "encoding": "Pillow WebP quality=100 method=3; review only; official Polytool/cwebp unavailable",
+  "frames": [
+    {
+      "id": "cast-release-key-a",
+      "description": "向右揮杖並伸出左手釋放法術的候選關鍵姿勢",
+      "sourceFile": "cast-release-key-a-source.webp",
+      "sourceSHA256": "7e87c88b0ddbb8b3cc601cf322c4b5dbd4cc2106d39b691074e07d82c395a47a",
+      "sourceBytes": 748500,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "cast-release-key-a@3x.webp",
+      "webpSHA256": "29baa4bd656149959ec8168e857170d3f8440501bce11447a27073cdbcf2f754",
+      "bytes": 284064,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "sourceAlphaBounds": [
+        0,
+        7,
+        1240,
+        1230
+      ],
+      "coreAlphaBounds": [
+        50,
+        134,
+        1187,
+        1150
+      ],
+      "coreExtent": [
+        1137,
+        1016
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        32,
+        37,
+        726,
+        714
+      ],
+      "outputCoreExtent": [
+        638,
+        571
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "staged image for each file; output was downsampled from source",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Original source retained; normalized review copy is downsampled, never upscaled. Verify identity, staff handedness, relative scale, anchor and continuity."
+    }
+  ],
+  "reviewNotes": [
+    "Independent single keyframe, not 12-frame animation.",
+    "Downsampled output is not a no-resampling native approval. Original 1254px source retained.",
+    "Do not admit to gameplay until visual and official asset pipeline QA."
+  ]
+}
