@@ -2,6 +2,7 @@ import { BIOME_IDS, type BiomeId } from '../../content/biomes'
 import { BOSS_DEFINITIONS, type BossId } from '../../content/bosses/definitions'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import type { Ctx2D } from '../ctx'
+import type { MobType } from '../../types'
 import { bossPhaseVisualScale, measureBossPhaseLayouts, type BossPhaseLayout } from './boss-phase-layout'
 export { BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
 import { BOSS_NATIVE_KEYFRAMES, registerBossNativeKeyframe, type NativeBossKeyframe } from './boss-native-keyframes'
@@ -10,6 +11,19 @@ import { BOSS_NATIVE_KEYFRAMES, registerBossNativeKeyframe, type NativeBossKeyfr
 const urls = import.meta.glob('../../../assets/es2/production/{enemies,bosses,biomes,ui}/*.webp', {
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
+
+// ES3 additions are separate from the 49 owner-approved ES2 assets. A missing
+// upload never breaks the existing art; Vite resolves supplied WebPs on build.
+const es3Urls = import.meta.glob('../../../assets/es3/production/{ui,enemies}/*.webp', {
+  eager: true, query: '?url', import: 'default',
+}) as Record<string, string>
+export const ES3_EPIC_TREASURE_URL = es3Urls['../../../assets/es3/production/ui/treasure-epic@3x.webp']
+const LEGACY_DEATH_IDS = ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const
+export const ES3_DEATH_URLS: Partial<Record<MobType, string>> = {}
+for (const id of LEGACY_DEATH_IDS) {
+  const url = es3Urls[`../../../assets/es3/production/enemies/${id}-death-dissolve@3x.webp`]
+  if (url) ES3_DEATH_URLS[id] = url
+}
 
 /** Preview assets stay out of production; visual QA and explicit opt-in are required. */
 const bossQaLoaders = import.meta.env.DEV
@@ -123,6 +137,7 @@ export interface WorldRuntimeImages {
   /** Reuse authored treasure art in live world events. */
   chest: HTMLImageElement
   chests?: Partial<Record<import('../../types').TreasureTier, HTMLImageElement>>
+  enemyDeaths?: Partial<Record<MobType, HTMLImageElement>>
   magnet?: HTMLImageElement
   bosses: Record<BossId, HTMLImageElement>
   bossMotionReference?: { id: BossId; image: HTMLImageElement }
@@ -187,12 +202,20 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   const chest = load(WORLD_ART.ui['treasure-common'])
   const rare = load(WORLD_ART.ui['treasure-rare'])
+  const epic = ES3_EPIC_TREASURE_URL ? load(ES3_EPIC_TREASURE_URL) : rare
+  if (epic !== rare) epic.onerror = () => { epic.onerror = null; epic.src = WORLD_ART.ui['treasure-rare'] }
+  const enemyDeaths: NonNullable<WorldRuntimeImages['enemyDeaths']> = {}
+  for (const id of LEGACY_DEATH_IDS) {
+    const url = ES3_DEATH_URLS[id]
+    if (url) enemyDeaths[id] = load(url)
+  }
   const legendary = load(WORLD_ART.ui['treasure-legendary'])
   const cursed = load(WORLD_ART.ui['treasure-cursed'])
   return {
     bossMotionReference,
     bossNativeKeyframes,
-    chest, chests: { common: chest, rare, epic: rare, legendary, cursed },
+    chest, chests: { common: chest, rare, epic, legendary, cursed },
+    enemyDeaths,
     magnet: load(WORLD_ART.ui['hud-xp']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
       [id, loadBoss(id)])) as Record<BossId, HTMLImageElement>,
@@ -230,5 +253,25 @@ export function drawProductionEnemyFrame(
   if (!Number.isFinite(side) || side <= 0) return false
   const sourceSide = image.naturalHeight
   ctx.drawImage(image, slot * sourceSide, 0, sourceSide, sourceSide, -side / 2, -side + 4, side, side)
+  return true
+}
+
+
+/** Four fixed row-major cells, each with an eight-pixel transparent gutter. */
+export function drawEs3EnemyDeath(
+  ctx: Ctx2D, image: HTMLImageElement, remaining: number, total: number, width: number, height: number,
+): boolean {
+  if (!image.complete || image.naturalWidth !== 872 || image.naturalHeight !== 872 ||
+      !Number.isFinite(remaining) || !Number.isFinite(total) || total <= 0 || remaining <= 0) return false
+  const progress = Math.max(0, Math.min(1, 1 - remaining / total))
+  const frame = Math.min(3, Math.floor(progress * 4))
+  const side = Math.min(width, height)
+  if (!Number.isFinite(side) || side <= 0) return false
+  ctx.save()
+  // Dissolve art is already transparent; taper only the last quarter.
+  ctx.globalAlpha *= Math.min(1, (1 - progress) * 4)
+  ctx.drawImage(image, (frame % 2) * 436 + 8, Math.floor(frame / 2) * 436 + 8,
+    420, 420, -side / 2, 4 - side, side, side)
+  ctx.restore()
   return true
 }

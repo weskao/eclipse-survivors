@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { WORLD_ART, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame } from './production-world'
+import { WORLD_ART, ES3_EPIC_TREASURE_URL, ES3_DEATH_URLS, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame } from './production-world'
 import type { Ctx2D } from '../ctx'
 import { cacheBossPhaseLayouts, bossFrameLayout } from './production-world'
 import { BOSS_MAX_DRAW_PX, BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
@@ -38,8 +38,13 @@ describe('ES2 world art live asset mapping', () => {
     expect(assigned).toContain(WORLD_ART.ui['hud-xp'])
     expect(runtime.magnet).toBeDefined()
     for(const tier of ['rare','legendary','cursed'] as const) expect(assigned).toContain(WORLD_ART.ui['treasure-'+tier as keyof typeof WORLD_ART.ui])
-    expect(runtime.chests?.epic).toBe(runtime.chests?.rare)
-    expect(assigned).toHaveLength(17)
+    if (ES3_EPIC_TREASURE_URL) {
+      expect(runtime.chests?.epic).not.toBe(runtime.chests?.rare)
+      expect(assigned).toContain(ES3_EPIC_TREASURE_URL)
+    } else expect(runtime.chests?.epic).toBe(runtime.chests?.rare)
+    expect(Object.keys(runtime.enemyDeaths ?? {})).toEqual(Object.keys(ES3_DEATH_URLS))
+    for (const url of Object.values(ES3_DEATH_URLS)) expect(assigned).toContain(url)
+    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL) + Object.keys(ES3_DEATH_URLS).length)
   })
 
   it('loads only live world image categories once at mount, not all 49 UI resources', () => {
@@ -52,7 +57,7 @@ describe('ES2 world art live asset mapping', () => {
     expect(Object.keys(runtime.bosses)).toHaveLength(4)
     expect(Object.keys(runtime.ground)).toHaveLength(4)
     expect(Object.keys(runtime.decor)).toHaveLength(4)
-    expect(assigned).toHaveLength(17)
+    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL) + Object.keys(ES3_DEATH_URLS).length)
   })
 
   it('crops the real phase and enemy atlas cells without redrawing a blank image', () => {

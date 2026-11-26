@@ -11,7 +11,7 @@ import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type Rigid
 import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
 import { isSpecializationId } from '../content/heroes'
-import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, bossFrameLayout, drawProductionBossFrame } from './es2/production-world'
+import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, bossFrameLayout, drawProductionBossFrame, drawEs3EnemyDeath } from './es2/production-world'
 import { BOSS_DRAW_CULL_MARGIN } from './es2/boss-phase-layout'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
 import type { BossSnapshot } from '../content/bosses/controller'
@@ -245,6 +245,7 @@ export function drawCharacter(
   productionHeroes?: ProductionHeroArtwork,
   productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
   healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, showFullHealthBars = false,
+  enemyDeath?: HTMLImageElement,
 ): void {
   const { W, H } = s
   const mob = 'type' in e ? e : null
@@ -280,6 +281,11 @@ export function drawCharacter(
     }
   }
   ctx.save(); ctx.translate(x, y)
+  if (!reducedMotion && mob?.type !== 'boss' && mob?.deathVisual && mob.hp <= 0 && enemyDeath &&
+      drawEs3EnemyDeath(ctx, enemyDeath, mob.deathVisual, mob.deathVisualTotal ?? .28, sx, sy)) {
+    ctx.restore()
+    return
+  }
   if (mob?.deathVisual && mob.hp <= 0) {
     const alpha = Math.min(1, mob.deathVisual / (mob.deathVisualTotal ?? (mob.type === 'boss' ? .7 : .28)))
     ctx.globalAlpha = alpha
