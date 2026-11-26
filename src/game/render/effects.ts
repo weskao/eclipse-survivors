@@ -321,10 +321,9 @@ export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number
     if (z.contact) {
       ctx.save(); ctx.translate(x, y); ctx.rotate(z.angle ?? 0)
       ctx.globalAlpha *= opacity
-      drawHitImpact(ctx, z.contact, z.size, t, reduced, flashing)
-      // The cached contact remains the single texture owner. A small colored afterglow
-      // distinguishes skill families without another particle pool or image allocation.
-      if (z.kind && !reduced) {
+      const dedicated = drawHitImpact(ctx, z.contact, z.size, t, reduced, flashing, undefined, z.kind)
+      // Only the legacy fallback needs a color accent. Uploaded 3x variants own the whole hit.
+      if (z.kind && !reduced && !flashing && !dedicated) {
         ctx.globalAlpha *= .6 * (1-t)
         ctx.strokeStyle = z.color; ctx.lineWidth = 2
         ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(z.size * .45,0); ctx.stroke()
