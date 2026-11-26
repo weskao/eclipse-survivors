@@ -24,7 +24,7 @@ for (const file of releaseFiles) {
 }
 assert.ok(files.every(file => !file.includes('-QA-PENDING')),
   'Unapproved boss QA candidate images must not ship in the production bundle')
-assert.ok(files.every(file => !/^(?:infernal-titan-keyframe-candidates-3x2|idle-stance-[a-d]|windup-key-a|stride-key-[a-d]|ground-slam-key-[ab]|ground-slam-retract-key-a|crouch-key-b|core-dimming-key-b|rubble-key-c|forward-punch-key-a|recoil-key-[ab]|overload-key-a|phase-2-awakening-key-a|collapse-key-a|shadow-orb-windup-key-[ab]|shadow-fan-release-key-[ab]|glide-east-key-a|ice-fan-windup-key-a)-.*\.webp$/.test(file)),
+assert.ok(files.every(file => !/^(?:infernal-titan-keyframe-candidates-3x2|idle-stance-[a-d]|windup-key-a|stride-key-[a-d]|ground-slam-key-[ab]|ground-slam-retract-key-a|crouch-key-b|core-dimming-key-b|rubble-key-c|forward-punch-key-a|recoil-key-[ab]|overload-key-a|phase-2-awakening-key-a|collapse-key-a|shadow-orb-windup-key-[ab]|shadow-fan-release-key-[ab]|glide-east-key-a|ice-fan-windup-key-a|staff-lower-key-[abc]|eclipse-hover-key-a|ice-fan-release-key-a|light-ring-windup-key-a)-.*\.webp$/.test(file)),
   'Native boss keyframe candidates must stay out of the production bundle')
 const js = files.filter(f => f.endsWith('.js')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')
 const css = files.filter(f => f.endsWith('.css')).map(f => readFileSync(new URL(`assets/${f}`, dist), 'utf8')).join('\n')

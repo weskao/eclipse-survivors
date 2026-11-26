@@ -22,6 +22,12 @@ export const BOSS_NATIVE_KEYFRAMES = {
   abyssReleaseA: ['batch-08/abyss-monarch/attack/shadow-fan-release-key-a.webp', 1312, 1199, 660.5, 1190],
   abyssReleaseB: ['batch-08/abyss-monarch/attack/shadow-fan-release-key-b.webp', 1312, 1199, 656, 1180],
   frostWindup: ['batch-10/frost-sovereign/windup/ice-fan-windup-key-a.webp', 1254, 1254, 611, 1243],
+  frostRecover: ['batch-11/frost-sovereign/recover/staff-lower-key-a.webp', 1315, 1196, 654, 1147],
+  frostHurt: ['batch-11/frost-sovereign/hurt/recoil-key-a.webp', 1313, 1198, 650.5, 1151],
+  // Batch 12 paths are optional until the artist's WebP package is installed.
+  abyssIdle: ['batch-12/abyss-monarch/idle/eclipse-hover-key-a.webp', 1254, 1254, 621.5, 1239],
+  frostRelease: ['batch-12/frost-sovereign/attack/ice-fan-release-key-a.webp', 1254, 1254, 639.5, 1245],
+  seraphWindup: ['batch-12/eclipse-seraph/windup/light-ring-windup-key-a.webp', 1254, 1254, 628, 1251],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -39,14 +45,25 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
       || !Number.isFinite(motion.progress) || motion.progress < 0 || motion.progress > 1) return null
   if (snapshot.id === 'abyss-monarch') {
     if (motion.phase !== 1) return null
+    if (motion.pose === 'idle') return 'abyssIdle'
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'shadow-fan'))
       return motion.progress < .5 ? 'abyssWindup' : 'abyssWindupB'
     if (motion.pose === 'attack' && snapshot.impacts?.at(-1)?.attackId === 'shadow-fan')
       return motion.progress < .5 ? 'abyssReleaseA' : 'abyssReleaseB'
     return null
   }
-  if (snapshot.id === 'frost-sovereign') return motion.phase === 1 && motion.pose === 'windup'
-    && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'ice-fan') ? 'frostWindup' : null
+  if (snapshot.id === 'frost-sovereign') {
+    if (motion.phase !== 1) return null
+    if (motion.pose === 'hurt') return 'frostHurt'
+    if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'ice-fan')) return 'frostWindup'
+    if (snapshot.impacts?.at(-1)?.attackId === 'ice-fan') {
+      if (motion.pose === 'attack') return 'frostRelease'
+      if (motion.pose === 'recover') return 'frostRecover'
+    }
+    return null
+  }
+  if (snapshot.id === 'eclipse-seraph') return motion.phase === 1 && motion.pose === 'windup'
+    && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'light-ring') ? 'seraphWindup' : null
   if (snapshot.id !== 'infernal-titan') return null
   switch (motion.pose) {
     case 'windup': return snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'titan-slam') ? (motion.progress < .5 ? 'windup' : 'windupB') : null
