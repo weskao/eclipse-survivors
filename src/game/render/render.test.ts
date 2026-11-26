@@ -416,7 +416,7 @@ describe('ES3 authored legacy enemy dissolution in the live renderer', () => {
     s.fallenMobs = [corpse]
     const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
     const atlas = { complete: true, naturalWidth: 872, naturalHeight: 872 } as HTMLImageElement
-    assets.productionWorld = { enemyDeaths: { golem: atlas } } as unknown as NonNullable<typeof assets.productionWorld>
+    assets.productionWorld = { ground: {}, decor: {}, bosses: {}, enemyDeaths: { golem: atlas } } as unknown as NonNullable<typeof assets.productionWorld>
     const { ctx } = createFakeCtx()
     const crops: unknown[][] = []
     ctx.drawImage = (...args: unknown[]) => { if (args[0] === atlas) crops.push(args.slice(1)) }
