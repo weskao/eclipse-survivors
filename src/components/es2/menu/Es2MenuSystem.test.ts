@@ -202,6 +202,29 @@ describe('ES2 main menu integration adapter', () => {
     expect(image()).toContain('speed@3x.webp')
   })
 
+  it('uses the same three-choice layout for treasure and upgrades with no extra chest header art', async () => {
+    const wrapper = mounted({ screen: 'level' })
+    await nextTick()
+    const upgradeDialog = find('.es2-dialog-choice')
+    const upgradeClasses = [...upgradeDialog.querySelectorAll('.es2-choice')].map(card => card.classList.contains('es2-skill-card'))
+    expect(upgradeClasses).toEqual([true, true, true])
+
+    await wrapper.setProps({ specialChoice: { kind: 'treasure', items: [
+      { id: 'relics:frost-rune', title: 'Frost Rune', rarity: 'common' },
+      { id: 'relics:guardian-sigil', title: 'Guardian Sigil', rarity: 'rare' },
+      { id: 'relics:fragile-crown', title: 'Fragile Crown', rarity: 'legendary' },
+    ] } })
+    await nextTick()
+    const rewardDialog = find('.es2-dialog-choice')
+    expect(rewardDialog.classList.contains('es2-dialog-wide')).toBe(true)
+    expect(rewardDialog.querySelector('.es2-dialog-header img')).toBeNull()
+    expect(rewardDialog.querySelectorAll('.es2-selection-scene > :not(.es2-choice-grid):not(.es2-hint)')).toHaveLength(0)
+    expect([...rewardDialog.querySelectorAll('.es2-choice')].map(card => card.classList.contains('es2-skill-card'))).toEqual(upgradeClasses)
+    expect(rewardDialog.querySelectorAll('.es2-card-art img')).toHaveLength(3)
+    click('[data-choice="relics:guardian-sigil"]')
+    expect(wrapper.emitted('specialChoose')).toEqual([['relics:guardian-sigil']])
+  })
+
   it('renders every cursed relic with the cursed chest artwork, independent of its ID and rarity', async () => {
     mounted({ screen: 'hidden', specialChoice: { kind: 'treasure', items: [
       { id: 'relics:ashen-heart', title: 'Ashen Heart', rarity: 'epic' },
