@@ -3,6 +3,7 @@ import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 import type { HeroSheets } from '../hero-sheets'
 import { drawPortraitMotion } from './portrait-motion'
+import { drawGaitBody, sampleGait } from '../gait'
 import { CHARACTER_FOOT_BOTTOMS } from './character-foot-anchors'
 import { HERO_CANDIDATE_ATLASES, HERO_DIAGONAL_RUN_ATLASES, HERO_NORTHERN_RUN_ATLASES } from './hero-candidate-atlas'
 import summonerSouthManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/south-2026-11-24-mist-repair/manifest.json'
@@ -329,7 +330,9 @@ const SOUTH_QA_FOOT_BOTTOMS: Partial<Record<SpecializationId, readonly number[]>
 }
 
 type PoseRect = ReturnType<typeof productionHeroPoseRect>
-type SmoothFrame = { type: 'atlas'; atlas: HTMLImageElement; rect: PoseRect; anchor: number }
+/** Approximate feet-to-crown share of a painted 448px cell (held guard art). */
+const HELD_FIGURE = 0.88
+type SmoothFrame = { type: 'atlas'; atlas: HTMLImageElement; rect: PoseRect; anchor: number; anim?: HeroAnimation }
   | { type: 'candidate'; atlas: HTMLImageElement; rect: { x: number; y: number; size: 704 | 768 }; anchor?: number; mirror?: boolean }
   | { type: 'portrait'; atlas: HTMLImageElement; anim: HeroAnimation }
 
@@ -356,7 +359,7 @@ export function productionHeroFrameAnchor(image: HTMLImageElement, rect: PoseRec
 
 function drawHeroPoseAtlas(
   ctx: Ctx2D, atlas: HTMLImageElement, rect: PoseRect,
-  width: number, height: number, footBottom = 448,
+  width: number, height: number, footBottom = 448, anim?: HeroAnimation,
 ): void {
   const paintedWidth = Math.min(width * 1.16, 147)
   const paintedHeight = Math.min(height * 1.05, 147)
@@ -372,15 +375,20 @@ function drawHeroPoseAtlas(
   const content = 448 - 2 * gutter
   const scaleX = paintedWidth / 448
   const scaleY = paintedHeight / 448
-  ctx.drawImage(atlas, rect.x + gutter, rect.y + gutter, content, content,
-    -paintedWidth / 2 + gutter * scaleX,
-    4 - footBottom * scaleY + gutter * scaleY,
-    content * scaleX, content * scaleY)
+  const left = -paintedWidth / 2 + gutter * scaleX
+  const top = 4 - footBottom * scaleY + gutter * scaleY
+  // A held directional guard cell has no authored stride: the shared human
+  // gait articulates its legs under one rigid torso (built-in weapon intact).
+  const gait = anim && rect.sheet === 'direction' ? sampleGait(anim, false) : null
+  if (gait) drawGaitBody(ctx, atlas, rect.x + gutter, rect.y + gutter, content, content,
+    left, top, content * scaleX, content * scaleY, 4, paintedHeight * HELD_FIGURE, gait)
+  else ctx.drawImage(atlas, rect.x + gutter, rect.y + gutter, content, content,
+    left, top, content * scaleX, content * scaleY)
   ctx.restore()
 }
 
 function drawSmoothFrame(ctx: Ctx2D, frame: SmoothFrame, width: number, height: number): void {
-  if (frame.type === 'atlas') drawHeroPoseAtlas(ctx, frame.atlas, frame.rect, width, height, frame.anchor)
+  if (frame.type === 'atlas') drawHeroPoseAtlas(ctx, frame.atlas, frame.rect, width, height, frame.anchor, frame.anim)
   else if (frame.type === 'candidate') {
     // Original 627px source frame is padded (never resampled) to 704px or 768px.
     // Maintain a 147px visible silhouette; this is dev QA, not signed-off art.
@@ -524,7 +532,7 @@ export function drawProductionHeroFrame(
       const sheet = loadHeroPoseOnDemand(hero, rect.sheet)
       if (sheet) {
         drawSmoothedHero(ctx, image, { type: 'atlas', atlas: sheet, rect,
-          anchor: productionHeroFrameAnchor(image, rect) }, anim, width, height, frameTimeSeconds)
+          anchor: productionHeroFrameAnchor(image, rect), anim }, anim, width, height, frameTimeSeconds)
         return true
       }
       // If an action sheet is still decoding, hold the same character's
@@ -539,7 +547,7 @@ export function drawProductionHeroFrame(
             y: Math.floor(cell / 4) * 448,
             width: 448, height: 448, mirror: false }
           drawSmoothedHero(ctx, image, { type: 'atlas', atlas: ready, rect: held,
-            anchor: productionHeroFrameAnchor(image, held) }, anim, width, height, frameTimeSeconds)
+            anchor: productionHeroFrameAnchor(image, held), anim }, anim, width, height, frameTimeSeconds)
           return true
         }
       }

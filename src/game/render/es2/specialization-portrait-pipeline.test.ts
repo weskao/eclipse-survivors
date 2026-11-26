@@ -71,15 +71,16 @@ describe('ES2 new heroes share the original three heroes\' source-illustration +
     expect(flips).toEqual([])
   })
 
-  it.each(ids)('%s generates a 3x cached run/attack/cast sequence from the same source', () => {
+  it.each(ids)('%s caches 3x attack/cast sequences and walks run live from the same source', () => {
     const factory = fakeCanvasFactory()
     const sheets = createHeroSheets(factory.make)
     const image = source()
     const ctx = createFakeCtx()
     for (const pose of ['run', 'attack', 'cast'] as const) {
       expect(sheets.drawSpecialization(ctx.ctx, image, animation(pose), 108, 134)).toBe(true)
+      if (pose === 'run') expect(ctx.drawn.filter(x => x === image).length).toBeGreaterThan(1)
     }
-    expect(sheets.size).toBe(3)
+    expect(sheets.size).toBe(2)
     expect(factory.made.every(x => x.canvas.width >= 324 && x.canvas.height >= 402)).toBe(true)
     expect(factory.made.some(x => x.fake.drawn.includes(image))).toBe(true)
   })

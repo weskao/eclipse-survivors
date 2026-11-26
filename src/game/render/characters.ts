@@ -7,6 +7,7 @@ import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
 import { getFiringOrigin } from '../weapon-geometry'
 import { sampleWeaponRig } from './weapon-rig'
+import { gaitPoint, sampleGait, type GaitPoint } from './gait'
 import { drawLoadedProjectile, drawRigidWeapon, getRigidWeaponLayers, type RigidWeaponLayers } from './rigid-weapons'
 import type { HeroSheets } from './hero-sheets'
 import { drawProductionHeroFrame, productionHeroMotionReady, productionHeroPoseReady, productionHeroUsesPoseSheets, type ProductionHeroArtwork } from './es2/production-heroes'
@@ -21,6 +22,7 @@ import { softGlow } from './environment'
 import { cachedMobTint, type MobTintCache } from './tint-cache'
 
 type Drawable = HTMLImageElement | HTMLCanvasElement
+const cellPoint: GaitPoint = { x: 0, y: 0, rotation: 0 }
 const ease = (n: number): number => {
   const t = Math.max(0, Math.min(1, n))
   return t * t * (3 - 2 * t)
@@ -71,18 +73,17 @@ export function drawRigSprite(
   const upperTurn = Math.atan2(posed.elbow.y - posed.shoulder.y, posed.elbow.x - posed.shoulder.x)
     - Math.atan2(rest.elbow.y - rest.shoulder.y, rest.elbow.x - rest.shoulder.x)
   const bladeTurn = posed.bladeAngle - ((anim.pose === 'attack' || anim.pose === 'cast') ? 0 : rest.bladeAngle)
-  const walk = Math.sin(hero.step) * Math.max(0, Math.min(1, hero.moveAmount))
   const action = anim.pose === 'attack' || anim.pose === 'cast'
   const recoil = action ? Math.sin(Math.PI * anim.phase) : 0
+  // Run/dash: legs, pelvis and torso follow the shared human gait (weapon overlay uses the same sample).
+  const gait = sampleGait(anim, true)
 
   for (let row = 0; row < rows; row++) {
     const v = (row + 0.5) / rows
-    const legs = ease((v - 0.60) / 0.34)
     const chest = ease((v - 0.20) / 0.19) * (1 - ease((v - 0.68) / 0.16))
     const head = 1 - ease((v - 0.08) / 0.25)
     for (let col = 0; col < columns; col++) {
       const u = (col + 0.5) / columns
-      const side = 1 - u * 2
       // The image's weapon and casting arms occupy DIFFERENT sides by hero.
       // Skin original pixels once, so no extra sword / duplicate bow appears.
       const right = ease((u - 0.53) / 0.23) * ease((v - 0.16) / 0.15)
@@ -102,21 +103,20 @@ export function drawRigSprite(
         + supportWeight * (supportElbowX * (1 - supportWrist) + supportX * supportWrist) * 0.55
       let dy = mainWeight * (elbowY * (1 - mainWrist) + wristY * mainWrist) + weapon * wristY * 0.35
         + supportWeight * (supportElbowY * (1 - supportWrist) + supportY * supportWrist) * 0.55
-      const rotation = mainWeight * (upperTurn * (1 - mainWrist) + bladeTurn * mainWrist) * 0.55
+      let rotation = mainWeight * (upperTurn * (1 - mainWrist) + bladeTurn * mainWrist) * 0.55
         + weapon * bladeTurn * 0.28 + supportWeight * supportTurn * 0.35
 
-      if (anim.pose === 'run') {
-        dx += legs * side * walk * 4.3 - chest * walk * 1.6
-        dy += legs * side * walk * 3.2 - (chest + head) * Math.abs(walk) * 1.1
+      if (gait) {
+        gaitPoint(gait, left + (col + 0.5) * cw, top + (row + 0.5) * ch, sy, cellPoint)
+        dx += cellPoint.x
+        dy += cellPoint.y
+        rotation += cellPoint.rotation
       } else if (anim.pose === 'idle') {
         dx += Math.sin(anim.phase * TAU) * chest * 0.5
         dy -= Math.sin(anim.phase * TAU) * chest * 0.5
       } else if (action) {
         dx += chest * recoil * 2.4
         dy -= chest * recoil * 1.7
-      } else if (anim.pose === 'dash') {
-        dx += (1 - anim.phase) * (head * 5.6 + chest * 4.6)
-        dy -= Math.sin(anim.phase * Math.PI) * (head + chest) * 2.8
       } else if (anim.pose === 'hurt') {
         dx += (1 - anim.phase) * (head * 4 + chest * 3.6)
       } else if (anim.pose === 'death') {
