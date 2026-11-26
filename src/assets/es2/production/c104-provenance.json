@@ -2,16 +2,16 @@
   "schemaVersion": 1,
   "sourceCommit": "c104b4be43fbfe9dad2dd8a1b270b9e47d63e1c0",
   "sourceAssets": {
-    "imgs1.webp": "3bc4c130b4b40b9187257d1f3f45d7f1c158b096f1f59b5cb166879a06dd9650",
-    "imgs2.webp": "d84b01ff7ccec58455eecf90cb822df90adcc43c7fe4498d51761aa927d6ce82",
-    "imgs3.webp": "64bd2182602c54910cb18f7123a0123e89fc56c416b1d3f3031404d0a9d16c3c",
-    "imgs4.webp": "a4eb3caf11f3188f1dc45640d74411a8a181654a8350dac5a1aec72bc48262e8",
-    "imgs5.webp": "568a4d0a0e79f01732ca692a859a48ea80c031908eee75cd48b25b7a97af69bf",
-    "imgs6.webp": "faeffee9fdb56610773a8187f014b8a1708886b88cb525790025365dd038f283",
-    "imgs7.webp": "d312aa0e5aa8c1db052840cd680ac59e512bad86e9fbcd1b230ec63989a1c27a",
-    "imgs8.webp": "b69b4067003bc00f71b0cc20845626a290788666936ebb3ad328d3960eaece0c",
-    "imgs9.webp": "c2f91b834d55b22f62d72e113f8c567ff57ecd2d9f4aff4ad6ea85fb390de44e",
-    "imgs10.webp": "b8546eb7ee1aaad9a8668e2882010fa5f2ebd3528b9d48a8bc27d5de929d0e9a"
+    "imgs1.webp": "7c71aef403b76129c5cb592c1fabea2a141993045eb6a4cc911199f09372d282",
+    "imgs2.webp": "4ad7488844a863b7f3d6e8c19e965733a2b5f116edbf1dd60fcbf45bbe955d9e",
+    "imgs3.webp": "a5ac4150923a9fd95be35823706333583693737458fd70a140da1e088ec2a888",
+    "imgs4.webp": "8cd72a7c2f783e9635f4b794f61e2bcc7ecaccc10df3e8c0c7fe5e67b991926c",
+    "imgs5.webp": "4927e428131cc4616e1a09bd7a3c96daa0b3b63aafdc44b4b720e6d4e2fee37d",
+    "imgs6.webp": "143b832d029077c9f13737cb3bae7b9bd06822b9ae3e4dcccbc5b3d7bec6c459",
+    "imgs7.webp": "687d5bfe9158b93bb20779a2a6233feef095db54620724184d1aa26143bea1b7",
+    "imgs8.webp": "4776ae109c38aedb9cffd341b2e39b1af6c2c0f2dffe864975b29f6cea522a13",
+    "imgs9.webp": "56eb377417f20efcbf7372ecf44b8e38db125b3e852dc917390dc34717b49fd6",
+    "imgs10.webp": "0c80560f7c523fd1f4dd8da1e441949385a72bbe881a0f318d861565716cf4b9"
   },
   "retiredPngSha256": {
     "imgs1.png": "dea9ae2e7751edde9d28e4c27e0ce62f4172b010260b93a805851ca333ef52e9",

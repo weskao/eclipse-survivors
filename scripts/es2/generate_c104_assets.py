@@ -232,8 +232,6 @@ def generate_assets(source_dir:Path,output:Path)->list[dict]:
     output=Path(output)
     validate_geometry(source_dir)
     sources={i:Image.open(source_dir/SOURCE_FILES[i-1]).convert('RGBA') for i in range(1,11)}
-    # WebP container info (loop/background) would otherwise ride into every derived encode.
-    for image in sources.values():image.info.clear()
     produced=[]
     def emit(name:str,kind:str,image:Image.Image,frames:int,cell:tuple[int,int],source:int|None,boxes:list[tuple[int,int,int,int]],max_bytes:int)->None:
         path=output/name

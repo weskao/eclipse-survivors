@@ -45,6 +45,19 @@ class TestC104ProductionArt(unittest.TestCase):
                 self.assertEqual(hashlib.sha256((images / name).read_bytes()).hexdigest(),
                                  provenance['sourceAssets'][name])
 
+    def test_source_masters_are_lossless_webp(self):
+        # Lossy masters (e.g. towebp -q 100) shift RGB under the alpha mattes and change every derived asset.
+        for name in SOURCE_FILES:
+            data = (ROOT / 'assets' / 'images' / name).read_bytes()
+            chunks, offset = [], 12
+            while offset + 8 <= len(data):
+                chunks.append(data[offset:offset + 4])
+                offset += 8 + ((int.from_bytes(data[offset + 4:offset + 8], 'little') + 1) & ~1)
+            with self.subTest(name=name):
+                self.assertEqual(data[:4] + data[8:12], b'RIFFWEBP')
+                self.assertIn(b'VP8L', chunks)
+                self.assertNotIn(b'VP8 ', chunks)
+
     def test_explicit_boxes_are_nonoverlapping_and_in_source(self):
         for source, rects in ASSET_BOXES.items():
             with Image.open(ROOT / 'assets' / 'images' / f'imgs{source}.webp') as image:
