@@ -435,7 +435,7 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     ctx.lineWidth = critical ? 6 : received ? 5 : 4
     ctx.strokeStyle = critical ? '#321525' : received ? '#44121c' : '#151019e8'
     if (critical || severity) {
-      const caption = translate(severity === 'extreme' ? '極重擊!' : critical ? '暴擊!' : '重擊!')
+      const caption = translate(severity === 'extreme' ? (critical ? '極重暴擊!' : '極重擊!') : critical ? '暴擊!' : '重擊!')
       ctx.font = '900 12px system-ui'
       ctx.strokeText(caption, 0, -29)
       ctx.fillStyle = '#fff4bf'

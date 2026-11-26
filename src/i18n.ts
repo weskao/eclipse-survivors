@@ -32,6 +32,7 @@ const english = new Map<string, string>([
   ["暴擊!", "CRITICAL!"],
   ["重擊!", "HEAVY HIT!"],
   ["極重擊!", "DEVASTATING HIT!"],
+  ["極重暴擊!", "DEVASTATING CRITICAL!"],
   ["英雄類別", "Hero categories"],
   ["經典英雄", "Classic Heroes"],
   ["新增英雄", "New Heroes"],

@@ -47,7 +47,7 @@ describe('mobile interruption and recovery', () => {
     expect(audio.sfxOn).toBe(true)
     ctx.currentTime = 5
     audio.playSfx('hurt')
-    expect(ctx.oscillators.length).toBeGreaterThan(0)
+    expect(ctx.sources.length).toBeGreaterThan(0)
   })
 
   it('recovers from a suspended context and can be restarted after disposal', async () => {
@@ -88,7 +88,7 @@ describe('adaptive battle audio and allocation bounds', () => {
     expect(ctx.gains.slice(2).some(n => n.targets.includes(musicBus))).toBe(true)
   })
 
-  it('reuses the short noise buffer across frequent impactful cues', () => {
+  it('reuses the rendered hurt sample across frequent impacts', () => {
     const audio = make()
     audio.wake()
     ctx.currentTime = 5
