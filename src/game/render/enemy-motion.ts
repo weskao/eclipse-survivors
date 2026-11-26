@@ -1,4 +1,6 @@
 import type { Ctx2D } from './ctx'
+import type { BossBodyMotion } from '../content/bosses/controller'
+import type { BossId } from '../content/bosses/definitions'
 
 const sources = import.meta.glob('../../assets/es2/production/skills/enemy-release/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 export const ENEMY_RELEASE_ART: Record<string, string> = Object.fromEntries(Object.entries(sources).map(([path, url]) => [path.split('/').pop()!.replace('.svg', ''), url]))
@@ -69,6 +71,24 @@ export function applyEnemyPose(ctx: Ctx2D, state: string, remaining: number, dx:
     ctx.scale(1 - release * 0.045 * force, 1 + release * 0.07 * force)
   }
 }
+/** Use the controller's held pose in production too, not only opt-in candidate art.
+ * Only the phase bitmap is transformed; the locked telegraph and HP bar stay in world space. */
+export function applyBossBodyPose(ctx: Ctx2D, id: BossId | undefined, body: BossBodyMotion, reduced: boolean): void {
+  if (reduced || !Number.isFinite(body.progress)) return
+  const p = clamp(body.progress)
+  const weight = id === 'infernal-titan' ? 1 : id === 'frost-sovereign' ? .65 : id === 'eclipse-seraph' ? .48 : .75
+  if (body.pose === 'windup' || body.pose === 'attack' || body.pose === 'recover') {
+    // No horizontal facing flip: phase art has authored equipment and silhouette.
+    applyEnemyPose(ctx, body.pose, 1 - p, 0, 1, weight, false)
+  } else if (body.pose === 'hurt' || body.pose === 'transform') {
+    const pulse = Math.sin(Math.PI * p)
+    if (pulse <= 0) return
+    const force = (1 - weight * .5) * pulse
+    ctx.translate(0, -5 * force)
+    ctx.scale(1 + .035 * force, 1 - .045 * force)
+  }
+}
+
 function ready(image: HTMLImageElement | undefined): image is HTMLImageElement {
   return !!image?.complete && image.naturalWidth > 0
 }

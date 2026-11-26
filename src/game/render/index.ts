@@ -194,6 +194,7 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
     const bossImage = bossId && assets.productionWorld?.bosses[bossId]
     const liveBossArt = boss && bossImage && phase
       ? { image: bossImage, phase,
+          body: boss.hp > 0 && bossSnapshot?.id === bossId ? bossSnapshot.bodyMotion : undefined,
           motion: boss.hp > 0 && bossSnapshot && bossSnapshot.id === bossId && motionReference?.id === bossId ? { image: motionReference.image, snapshot: bossSnapshot } : undefined }
       : undefined
     drawCharacter(ctx, s, assets.art, assets.sprites, obj, ox, oy, reduced, assets.heroSheets, assets.mobTint, assets.productionHeroes, liveBossArt, assets.healthBars, showFullHealthBars, policy?.reduceFlashing ?? false,

@@ -1,7 +1,7 @@
 import { TAU } from '../constants'
 import { cosmeticAura } from '../../meta/cosmetics'
 import { BALANCE } from '../config'
-import { applyEnemyDeathPose, applyEnemyPose, applyEnemyRecoil, enemyWeight } from './enemy-motion'
+import { applyBossBodyPose, applyEnemyDeathPose, applyEnemyPose, applyEnemyRecoil, enemyWeight } from './enemy-motion'
 import type { Artwork } from '../art'
 import type { GameState, Hero, Mob } from '../types'
 import { sampleHeroAnimation, type HeroAnimation } from './animation'
@@ -14,7 +14,7 @@ import { isSpecializationId } from '../content/heroes'
 import { BOSS_BASE_DRAW_PX, bossPhaseVisualScale, bossFrameLayout, drawProductionBossFrame, drawEs3EnemyDeath } from './es2/production-world'
 import { BOSS_DRAW_CULL_MARGIN } from './es2/boss-phase-layout'
 import { drawBossAttackReference } from './es2/boss-motion-reference'
-import type { BossSnapshot } from '../content/bosses/controller'
+import type { BossBodyMotion, BossSnapshot } from '../content/bosses/controller'
 import { drawBossHealthBar, drawEnemyHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarMotion, type HealthBarTarget } from './health-bars'
 import type { Ctx2D } from './ctx'
 import { softGlow } from './environment'
@@ -243,7 +243,7 @@ export function drawCharacter(
   e: Hero | Mob, ox: number, oy: number, reducedMotion = false, heroSheets?: HeroSheets,
   tintCache?: MobTintCache,
   productionHeroes?: ProductionHeroArtwork,
-  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
+  productionBoss?: { image: HTMLImageElement; phase: 1 | 2 | 3; body?: BossBodyMotion; motion?: { image: HTMLImageElement; snapshot: BossSnapshot } },
   healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, showFullHealthBars = false, reduceFlashing = false,
   enemyDeath?: HTMLImageElement,
 ): void {
@@ -370,9 +370,15 @@ export function drawCharacter(
         }
       }
       // Use the controller's real phase; the original boss sprite remains the decode fallback.
-      const painted = mob.type === 'boss' && productionBoss
-        ? (bossMotionPainted = !!(productionBoss.motion && drawBossAttackReference(ctx, productionBoss.motion.image, productionBoss.motion.snapshot, Math.min(sx, sy), reducedMotion)))
-          || drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy) : false
+      let painted = false
+      if (mob.type === 'boss' && productionBoss) {
+        bossMotionPainted = !!(productionBoss.motion && drawBossAttackReference(ctx, productionBoss.motion.image, productionBoss.motion.snapshot, Math.min(sx, sy), reducedMotion))
+        if (!bossMotionPainted) {
+          if (productionBoss.body?.phase === productionBoss.phase)
+            applyBossBodyPose(ctx, mob.bossArtId, productionBoss.body, reducedMotion)
+          painted = drawProductionBossFrame(ctx, productionBoss.image, productionBoss.phase, sx, sy)
+        } else painted = true
+      }
       if (!painted) drawMobBody(ctx, s, mob, drawable, sx, sy, reducedMotion)
     }
   }

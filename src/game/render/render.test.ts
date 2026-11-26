@@ -532,7 +532,7 @@ describe('ES3 production boss body motion', () => {
     expect(windup).not.toEqual(first)
     hit(s, boss, 1, hooks)
     const held = sample()
-    const warningProgress = controller.snapshot(s).telegraphs[0]!.progress
+    const warningProgress = controller.snapshot(s).telegraphs[0]!.progress ?? 0
     s.time += .02; s.worldClock += .02
     controller.tick(s, .02, hooks)
     expect(sample()).toEqual(held)
