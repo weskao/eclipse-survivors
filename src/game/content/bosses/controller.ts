@@ -76,6 +76,8 @@ export interface BossBodyMotion {
   readonly progress: number
   readonly x: number
   readonly y: number
+  /** Move/held-move only: sign of actual horizontal travel, for direction-locked art. */
+  readonly facingX?: -1 | 1
 }
 export interface BossSnapshot {
   readonly id: BossId | null
@@ -126,6 +128,8 @@ interface Encounter {
   staggeredPhase: number
   bodyHold: number
   heldBody?: BossBodyMotion
+  /** Presentation only: last predominantly horizontal travel sign; unset until one occurs. */
+  moveFacingX?: -1 | 1
 }
 
 /** Entire damaging geometry uses world coordinates and the same predicate as rendering. */
@@ -153,8 +157,8 @@ const BODY_DEATH_SECONDS = 1.2
 const clampBodyProgress = (value: number): number => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0))
 
 function bodyMotion(e: Encounter): BossBodyMotion | undefined {
-  const frame = (pose: BossBodyPose, progress: number): BossBodyMotion => ({
-    pose, phase: e.phase, progress: clampBodyProgress(progress), x: e.boss.x, y: e.boss.y,
+  const frame = (pose: BossBodyPose, progress: number, facingX?: -1 | 1): BossBodyMotion => ({
+    pose, phase: e.phase, progress: clampBodyProgress(progress), x: e.boss.x, y: e.boss.y, facingX,
   })
   if (e.boss.hp <= 0 || e.rewarded) {
     if (e.deathAt === null) return undefined
@@ -164,7 +168,7 @@ function bodyMotion(e: Encounter): BossBodyMotion | undefined {
   if (e.transforming && e.recovery > 0)
     return frame('transform', 1 - e.recovery / BODY_TRANSFORM_SECONDS)
   if ((e.boss.weaknessRemaining ?? 0) > 0) return frame('hurt', 1 - e.boss.weaknessRemaining! / BALANCE.bosses.weaknessSeconds)
-  if (e.bodyHold > 0 && e.heldBody) return frame(e.heldBody.pose, e.heldBody.progress)
+  if (e.bodyHold > 0 && e.heldBody) return frame(e.heldBody.pose, e.heldBody.progress, e.heldBody.facingX)
   if (e.windup)
     return frame('windup', 1 - e.windup.remaining / BOSS_ATTACKS[e.windup.attackId].windup)
   const impact = e.impacts[e.impacts.length - 1]
@@ -174,7 +178,7 @@ function bodyMotion(e: Encounter): BossBodyMotion | undefined {
     return progress < 0.5 ? frame('attack', progress * 2) : frame('recover', (progress - 0.5) * 2)
   }
   if (e.boss.hit > 0) return frame('hurt', 1 - e.boss.hit / 0.16)
-  if (e.boss.bossMoving) return frame('move', (e.state.worldClock * 1.4) % 1)
+  if (e.boss.bossMoving) return frame('move', (e.state.worldClock * 1.4) % 1, e.moveFacingX)
   if (e.recovery > 0 && e.recoveryDuration > 0)
     return frame('recover', 1 - e.recovery / e.recoveryDuration)
   return frame('idle', (e.state.worldClock * 0.65) % 1)
@@ -214,8 +218,12 @@ function pursueHero(e: Encounter, dt: number): void {
   const orbit = toward === 0 && motion.orbitSpeed > 0
     ? motion.orbitSpeed * dt * (e.turn % 2 ? 1 : -1) * slowed * staggered : 0
   if (toward === 0 && orbit === 0) return
-  e.boss.x += dx / distance * toward - dy / distance * orbit
-  e.boss.y += dy / distance * toward + dx / distance * orbit
+  const stepX = dx / distance * toward - dy / distance * orbit
+  const stepY = dy / distance * toward + dx / distance * orbit
+  e.boss.x += stepX
+  e.boss.y += stepY
+  // Hysteresis: near-vertical travel keeps the previous facing instead of popping per tick.
+  if (Math.abs(stepX) > Math.abs(stepY) * 0.5) e.moveFacingX = stepX > 0 ? 1 : -1
   e.boss.bossMoving = true
 }
 

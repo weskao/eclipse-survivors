@@ -150,6 +150,42 @@ describe('independent premium boss content', () => {
     expect(boss.bossMoving).toBe(true)
   })
 
+  it.each([
+    ['abyss-monarch', 520, 0], ['abyss-monarch', -520, 0], ['abyss-monarch', 0, 150], ['abyss-monarch', 0, -150],
+    ['eclipse-seraph', 520, 0], ['eclipse-seraph', -520, 0],
+  ] as const)('%s from (%i,%i): move facing follows actual horizontal travel, never the hero side', (id, x, y) => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, id, { x, y }, hooks)!
+    state.hero!.inv = 100
+    let horizontal = 0
+    for (let i = 0; i < 300; i++) {
+      const px = boss.x, py = boss.y
+      controller.tick(state, 0.05, hooks)
+      const motion = controller.snapshot(state).bodyMotion
+      const mx = boss.x - px, my = boss.y - py
+      if (motion?.pose !== 'move' || Math.abs(mx) <= Math.abs(my) * 0.5) continue
+      horizontal++
+      expect(motion.facingX).toBe(Math.sign(mx))
+    }
+    expect(horizontal).toBeGreaterThan(0)
+  })
+
+  it('keeps move facing unset on purely vertical pursuit, so direction-locked art falls back', () => {
+    const { state, hooks, controller } = setup()
+    const boss = controller.spawn(state, 'abyss-monarch', { x: 0, y: 420 }, hooks)!
+    state.hero!.inv = 100
+    let moves = 0
+    for (let i = 0; i < 300; i++) {
+      controller.tick(state, 0.05, hooks)
+      const motion = controller.snapshot(state).bodyMotion
+      if (motion?.pose !== 'move') continue
+      moves++
+      // Above the 158 px standoff the boss only descends; orbiting below it legitimately sets a facing.
+      if (boss.y > 160) expect(motion.facingX).toBeUndefined()
+    }
+    expect(moves).toBeGreaterThan(0)
+  })
+
   it('respects a safe stop distance and freezes pursuit while paused', () => {
     const { state, hooks, controller } = setup()
     const boss = controller.spawn(state, 'infernal-titan', { x: 220, y: 0 }, hooks)!

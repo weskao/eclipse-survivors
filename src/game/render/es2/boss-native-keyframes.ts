@@ -33,6 +33,10 @@ export const BOSS_NATIVE_KEYFRAMES = {
   seraphWindup: ['batch-12/eclipse-seraph/windup/light-ring-windup-key-a.webp', 1254, 1254, 628, 1251],
   seraphRelease: ['batch-17/eclipse-seraph/attack/light-ring-release-key-a.webp', 1254, 1254, 624, 1235],
   seraphDeath: ['batch-14/eclipse-seraph/death/fallen-key-a.webp', 1254, 1254, 614.5, 1225],
+  // East-facing glides, mirrorAllowed: false.
+  abyssMove: ['batch-09-revision-01/abyss-monarch/move/glide-east-key-a.webp', 1313, 1198, 598, 1171],
+  seraphMove: ['batch-13/eclipse-seraph/move/glide-east-key-a.webp', 1312, 1199, 652.5, 1179],
+  seraphMoveB: ['batch-13/eclipse-seraph/move/glide-east-key-b.webp', 1312, 1199, 650, 1167],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -48,10 +52,13 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   const motion = snapshot.bodyMotion
   if (!snapshot.phase || !motion || motion.phase !== snapshot.phase
       || !Number.isFinite(motion.progress) || motion.progress < 0 || motion.progress > 1) return null
+  // Abyss/Seraph glides are east-only (mirrorAllowed: false); other facings keep the phase frame.
+  const eastGlide = motion.pose === 'move' && motion.facingX === 1
   if (snapshot.id === 'abyss-monarch') {
     if (motion.phase === 3 && motion.pose === 'death') return 'abyssDeath'
     if (motion.phase !== 1) return null
     if (motion.pose === 'idle') return 'abyssIdle'
+    if (motion.pose === 'move') return eastGlide ? 'abyssMove' : null
     if (motion.pose === 'hurt') return 'abyssHurt'
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'shadow-fan'))
       return motion.progress < .5 ? 'abyssWindup' : 'abyssWindupB'
@@ -74,6 +81,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   if (snapshot.id === 'eclipse-seraph') {
     if (motion.phase === 3 && motion.pose === 'death') return 'seraphDeath'
     if (motion.phase !== 1) return null
+    if (motion.pose === 'move') return eastGlide ? (motion.progress < .5 ? 'seraphMove' : 'seraphMoveB') : null
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'light-ring')) return 'seraphWindup'
     if (motion.pose === 'attack' && snapshot.impacts?.at(-1)?.attackId === 'light-ring') return 'seraphRelease'
     return null

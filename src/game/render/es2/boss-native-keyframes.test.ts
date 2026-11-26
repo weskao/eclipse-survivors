@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { BOSS_NATIVE_KEYFRAMES, selectBossNativeKeyframe, drawBossNativeKeyframe, registerBossNativeKeyframe } from './boss-native-keyframes'
 import { loadWorldRuntimeImages, WORLD_ART } from './production-world'
-import type { BossSnapshot, BossBodyPose } from '../../content/bosses/controller'
+import { createBossEncounterController, type BossSnapshot, type BossBodyPose } from '../../content/bosses/controller'
+import { createHero, createState } from '../../state'
+import type { GameHooks } from '../../types'
 import type { BossId } from '../../content/bosses/definitions'
 import type { Ctx2D } from '../ctx'
 
@@ -251,19 +253,81 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(drawBossNativeKeyframe(ctx, image, snapshot('death', 'light-ring', 'eclipse-seraph'), 300)).toBe(false)
     expect(calls).toHaveLength(1)
   })
+  it('reviews east-only Abyss and Seraph glide candidates during phase 1 pursuit, never mirrored', () => {
+    const glide = (id: BossId, facingX: -1 | 1 | undefined, progress = .25, phase: 1 | 2 | 3 = 1): BossSnapshot => {
+      const base = snapshot('move', 'shadow-fan', id)
+      return { ...base, phase, bodyMotion: { ...base.bodyMotion!, phase, progress, facingX } }
+    }
+    expect(selectBossNativeKeyframe(glide('abyss-monarch', 1))).toBe('abyssMove')
+    expect(selectBossNativeKeyframe(glide('eclipse-seraph', 1))).toBe('seraphMove')
+    expect(selectBossNativeKeyframe(glide('eclipse-seraph', 1, .5))).toBe('seraphMoveB')
+    // mirrorAllowed: false — a westward glide keeps the production phase frame.
+    expect(selectBossNativeKeyframe(glide('abyss-monarch', -1))).toBeNull()
+    expect(selectBossNativeKeyframe(glide('eclipse-seraph', -1))).toBeNull()
+    expect(selectBossNativeKeyframe(glide('abyss-monarch', undefined))).toBeNull()
+    expect(selectBossNativeKeyframe(glide('abyss-monarch', 1, .25, 2))).toBeNull()
+    expect(selectBossNativeKeyframe(glide('eclipse-seraph', 1, .25, 3))).toBeNull()
+    expect(selectBossNativeKeyframe(glide('frost-sovereign', 1))).toBeNull()
+    for (const [key, state, w, h, dx, dy] of [
+      ['abyssMove', glide('abyss-monarch', 1), 1313, 1198, -149.5, -288.75],
+      ['seraphMove', glide('eclipse-seraph', 1), 1312, 1199, -163.125, -290.75],
+      ['seraphMoveB', glide('eclipse-seraph', 1, .75), 1312, 1199, -162.5, -287.75],
+    ] as const) {
+      const image = { complete: true, naturalWidth: w, naturalHeight: h } as HTMLImageElement
+      registerBossNativeKeyframe(image, key)
+      const calls: unknown[][] = []
+      const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+      expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+      expect(calls[0]?.slice(1)).toEqual([0, 0, w, h, dx, dy, w / 4, h / 4])
+      expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+      expect(drawBossNativeKeyframe(ctx, image, { ...state, bodyMotion: { ...state.bodyMotion!, facingX: -1 } }, 300)).toBe(false)
+      expect(calls).toHaveLength(1)
+    }
+  })
+  it.each([['abyss-monarch', ['abyssMove']], ['eclipse-seraph', ['seraphMove', 'seraphMoveB']]] as const)(
+    '%s: real encounter pursuit reaches the east glide only while travelling east', (id, eastKeys) => {
+      for (const [x, expected] of [[-520, eastKeys], [520, []]] as const) {
+        const controller = createBossEncounterController({})
+        const state = createState()
+        state.mode = 'play'
+        state.hero = createHero('knight')
+        state.hero.inv = 100
+        const hooks = { end: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), sfx: vi.fn() } as unknown as GameHooks
+        controller.spawn(state, id, { x, y: 0 }, hooks)
+        const seen = new Set<string>()
+        let drawn = 0
+        for (let i = 0; i < 120; i++) {
+          state.worldClock += 0.05 // step() owns the clock in the real loop
+          controller.tick(state, 0.05, hooks)
+          const snap = controller.snapshot(state)
+          if (snap.bodyMotion?.pose !== 'move') continue
+          const key = selectBossNativeKeyframe(snap)
+          if (!key) continue
+          seen.add(key)
+          const [, w, h] = BOSS_NATIVE_KEYFRAMES[key]
+          const image = { complete: true, naturalWidth: w, naturalHeight: h } as HTMLImageElement
+          registerBossNativeKeyframe(image, key)
+          if (drawBossNativeKeyframe({ drawImage: () => {} } as unknown as Ctx2D, image, snap, 300)) drawn++
+        }
+        expect([...seen].sort()).toEqual([...expected])
+        expect(drawn > 0).toBe(expected.length > 0)
+      }
+    })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
+    // Cold Vite ?url transforms of a dozen 1.2k WebPs exceed waitFor's 1 s default.
+    const LOAD_WAIT = { timeout: 15_000 }
     const makeImage = () => ({ complete: false, src: '' }) as HTMLImageElement
     expect(loadWorldRuntimeImages(makeImage).bossNativeKeyframes).toBeUndefined()
     // Batch 12 source files are delivered independently; exercise both absence and presence.
     const batch12 = import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-12/*/**/*.webp')
     const present = (path: string) => !path.startsWith('batch-12/') || Object.hasOwn(batch12, '../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path)
     const seraph = loadWorldRuntimeImages(makeImage, 'eclipse-seraph', 'native')
-    const seraphKeys = (['seraphWindup', 'seraphRelease', 'seraphDeath'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
+    const seraphKeys = (['seraphWindup', 'seraphRelease', 'seraphDeath', 'seraphMove', 'seraphMoveB'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
     expect(Object.keys(seraph.bossNativeKeyframes ?? {})).toEqual(seraphKeys)
     await vi.waitFor(() => {
       for (const key of seraphKeys)
         expect(seraph.bossNativeKeyframes?.[key]?.src).toContain(BOSS_NATIVE_KEYFRAMES[key][0].split('/').at(-1)!)
-    })
+    }, LOAD_WAIT)
     expect(seraph.bosses['eclipse-seraph'].src).toBe(WORLD_ART.bosses['eclipse-seraph'])
     const frost = loadWorldRuntimeImages(makeImage, 'frost-sovereign', 'native')
     const frostKeys = (['frostWindup', 'frostRecover', 'frostHurt', 'frostRelease'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
@@ -271,7 +335,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     await vi.waitFor(() => {
       for (const key of frostKeys)
         expect(frost.bossNativeKeyframes?.[key]?.src).toContain(BOSS_NATIVE_KEYFRAMES[key][0].split('/').at(-1)!)
-    })
+    }, LOAD_WAIT)
     expect(frost.bosses['frost-sovereign'].src).toBe(WORLD_ART.bosses['frost-sovereign'])
     const abyss = loadWorldRuntimeImages(makeImage, 'abyss-monarch', 'native')
     const abyssKeys = (Object.keys(BOSS_NATIVE_KEYFRAMES) as (keyof typeof BOSS_NATIVE_KEYFRAMES)[]).filter(key => BOSS_NATIVE_KEYFRAMES[key][0].includes('/abyss-monarch/') && present(BOSS_NATIVE_KEYFRAMES[key][0]))
@@ -279,7 +343,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     await vi.waitFor(() => {
       for (const key of abyssKeys)
         expect(abyss.bossNativeKeyframes?.[key]?.src).toContain(BOSS_NATIVE_KEYFRAMES[key][0].split('/').at(-1)!)
-    })
+    }, LOAD_WAIT)
     expect(abyss.bosses['abyss-monarch'].src).toBe(WORLD_ART.bosses['abyss-monarch'])
     const review = loadWorldRuntimeImages(makeImage, 'infernal-titan', 'native')
     const titanKeys = (Object.keys(BOSS_NATIVE_KEYFRAMES) as (keyof typeof BOSS_NATIVE_KEYFRAMES)[]).filter(key => BOSS_NATIVE_KEYFRAMES[key][0].includes('/infernal-titan/'))
@@ -288,8 +352,8 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
       for (const key of titanKeys) {
         expect(review.bossNativeKeyframes?.[key]?.src).toContain(BOSS_NATIVE_KEYFRAMES[key][0].split('/').at(-1)!)
       }
-    })
+    }, LOAD_WAIT)
     expect(review.bosses['infernal-titan'].src).toBe(WORLD_ART.bosses['infernal-titan'])
     expect(review.bossMotionReference).toBeUndefined()
-  })
+  }, 60_000)
 })
