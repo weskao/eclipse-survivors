@@ -404,7 +404,8 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
 
   return {
     spawn(state, id, point, hooks) {
-      if (encounter || !state.hero || state.mode !== 'play'
+      // A finalized encounter keeps its death presentation until a new boss is due.
+      if ((encounter && (encounter.state !== state || !encounter.rewarded || encounter.boss.hp > 0)) || !state.hero || state.mode !== 'play'
         || !Number.isFinite(point.x) || !Number.isFinite(point.y)
         || state.mobs.length + (hooks.otherLivingActors?.() ?? 0) >= MAX_MOBS + 1
         || state.mobs.some(m => m.type === 'boss' && m.hp > 0)) return null

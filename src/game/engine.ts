@@ -392,8 +392,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         // Only an actual finalized kill can advance an objective. The existing
         // boss controller gets first chance to account for its original XP/reward.
         if (state === s && event.type === 'kill' && objectiveRuntime) {
-          const accepted = objectiveRuntime.defeatMob(event.mob)
-          if (accepted && event.mob.type === 'boss') bosses?.reset(state)
+          objectiveRuntime.defeatMob(event.mob)
+          // The controller retains the defeated pose and accepts the next scheduled boss.
         }
       }
       : undefined,
