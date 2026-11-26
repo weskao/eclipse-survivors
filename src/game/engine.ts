@@ -12,6 +12,7 @@ import type { AudioSystem } from './audio/types'
 import { attack, dash as heroDash, hit } from './combat'
 import { getFiringOrigin } from './weapon-geometry'
 import { BALANCE } from './config'
+import { countLivingEnemies } from './combat-telemetry'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
 import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
@@ -752,7 +753,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (liveBoss?.bossArtId) audio.prepareBossAttackAudio?.(liveBoss.bossArtId)
       else if (upcoming?.bossId && bosses) audio.prepareBossAttackAudio?.(upcoming.bossId)
       audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
-      const phase = liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
+      const phase = liveBoss ? 'boss' : countLivingEnemies(s.mobs, factions?.runtime.enemies) >= 16 ? 'combat' : 'calm'
       audio.setCombatIntensity(phase)
       setAdaptiveScore(
         !(liveBoss && audio.setBossTheme) && !(upcoming && audio.setBossWarning),
