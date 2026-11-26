@@ -974,8 +974,8 @@
 /* Short or narrow screens: scoreboard ledger rows (label … value) instead of tall tiles. */
 @media (max-width:480px),(orientation:landscape) and (max-height:520px){
   .es2-dialog-result .es2-result{gap:6px}
-  .es2-dialog-result .es2-result-report{gap:6px}
-  .es2-dialog-result .es2-result-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 6px}
+  .es2-dialog-result .es2-result-report{gap:5px}
+  .es2-dialog-result .es2-result-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 6px}
   .es2-dialog-result .es2-result-stats>div{flex-direction:row-reverse;justify-content:space-between;align-items:baseline;gap:6px;padding:2px 8px;border-radius:7px}
   .es2-dialog-result .es2-result-stats b{font-size:.9rem;text-align:right}
   .es2-dialog-result .es2-reward-strip{gap:3px;padding:4px 8px}
@@ -995,5 +995,10 @@
 @media (orientation:landscape) and (max-height:520px){
   .es2-dialog-result .es2-dialog-header>div:first-child{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px}
   .es2-dialog-result .es2-dialog-header h2{margin:0}
-  .es2-dialog-result .es2-result{grid-template-columns:minmax(130px,1fr) minmax(0,2.3fr)}
+  .es2-dialog-result .es2-result{grid-template-columns:minmax(110px,.8fr) minmax(0,2.6fr)}
+  /* One flowing chip line: ember total, kind labels and unlock names share rows. */
+  .es2-dialog-result .es2-reward-strip{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:3px 6px}
+  .es2-dialog-result .es2-reward-group{display:contents}
+  .es2-dialog-result .es2-result-cloud{font-size:.75rem}
+  .es2-dialog-result .es2-result-cloud button{min-height:44px;padding:.3rem .8rem}
 }
