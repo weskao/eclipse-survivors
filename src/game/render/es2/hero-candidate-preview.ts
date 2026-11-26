@@ -9,8 +9,9 @@ const eastCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'E'
 const southCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'S').length
 const diagonalCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'SE' || asset.direction === 'SW').length
 const northernCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'N' || asset.direction === 'NE' || asset.direction === 'NW').length
+const westCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'W').length
 document.querySelector<HTMLElement>('#candidate-summary')!.textContent =
-  `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing, ${southCount} South-facing and ${diagonalCount} diagonal four-frame strips; ${northernCount} northern four-frame strips. Two extra NW comparison panels are review-only.`
+  `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing, ${southCount} South-facing and ${diagonalCount} diagonal four-frame strips; ${northernCount} northern and ${westCount} West four-frame strips. Two extra NW comparison panels are review-only.`
 
 const pause = document.querySelector<HTMLButtonElement>('#pause')!
 const previous = document.querySelector<HTMLButtonElement>('#step-prev')!

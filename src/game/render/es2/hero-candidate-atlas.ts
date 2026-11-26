@@ -54,6 +54,10 @@ const shadowN = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2
 import shadowNManifest from '../../../assets/es2/production/heroes/shadowblade/candidates/n-2026-11-24-batch-5/manifest.json'
 const summonerNE = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-5/run-ne-4frames@3x.webp' : ''
 import summonerNEManifest from '../../../assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-5/manifest.json'
+const paladinNE = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2/production/heroes/crimson-paladin/candidates/run-ne-2026-11-25-batch-14/run-ne-4frames@3x.webp' : ''
+import paladinNEManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/run-ne-2026-11-25-batch-14/manifest.json'
+const paladinNW = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2/production/heroes/crimson-paladin/candidates/run-nw-2026-11-25-batch-14/run-nw-4frames@3x.webp' : ''
+import paladinNWManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/run-nw-2026-11-25-batch-14/manifest.json'
 
 /** Explicitly selected northern candidates; DEV review only, not approved production art. */
 export const HERO_NORTHERN_RUN_ATLASES = [
@@ -63,6 +67,16 @@ export const HERO_NORTHERN_RUN_ATLASES = [
   { hero: 'shadowblade', pose: 'run', direction: 'NW', cellPixels: 768, url: shadowNW, footBottoms: shadowNWManifest.footBottoms },
   { hero: 'spirit-summoner', pose: 'run', direction: 'N', cellPixels: 768, url: summonerN, footBottoms: summonerNManifest.footBottoms },
   { hero: 'crimson-paladin', pose: 'run', direction: 'N', cellPixels: 768, url: paladinN, footBottoms: paladinNManifest.footBottoms },
+  { hero: 'crimson-paladin', pose: 'run', direction: 'NE', cellPixels: 768, url: paladinNE, footBottoms: paladinNEManifest.footBottoms, folder: 'run-ne-2026-11-25-batch-14' },
+  { hero: 'crimson-paladin', pose: 'run', direction: 'NW', cellPixels: 768, url: paladinNW, footBottoms: paladinNWManifest.footBottoms, folder: 'run-nw-2026-11-25-batch-14' },
+] as const
+
+const paladinW = import.meta.env.DEV ? import.meta.env.BASE_URL + 'src/assets/es2/production/heroes/crimson-paladin/candidates/run-w-2026-11-25-batch-14/run-w-4frames@3x.webp' : ''
+import paladinWManifest from '../../../assets/es2/production/heroes/crimson-paladin/candidates/run-w-2026-11-25-batch-14/manifest.json'
+
+/** Independently authored West run; the sword/shield must never reuse a mirrored East clip. */
+export const HERO_WEST_RUN_ATLASES = [
+  { hero: 'crimson-paladin', pose: 'run', direction: 'W', cellPixels: 768, url: paladinW, footBottoms: paladinWManifest.footBottoms, folder: 'run-w-2026-11-25-batch-14' },
 ] as const
 
 export const HERO_CANDIDATE_ATLASES = [
@@ -80,6 +94,7 @@ export const HERO_CANDIDATE_ATLASES = [
   { hero: 'crimson-paladin', pose: 'run', direction: 'S', cellPixels: 768, url: paladinSouthRun },
   ...HERO_DIAGONAL_RUN_ATLASES,
   ...HERO_NORTHERN_RUN_ATLASES,
+  ...HERO_WEST_RUN_ATLASES,
 ] as const
 
 /** Each isolated 2×2 atlas is sampled using its declared exact source-cell size. */

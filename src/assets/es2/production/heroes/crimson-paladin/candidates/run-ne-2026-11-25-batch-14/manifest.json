@@ -8,9 +8,9 @@
   "mirrorAllowed": false,
   "native3x": "UNVERIFIED",
   "runtimeApplied": false,
-  "qaGameplayApplied": false,
+  "qaGameplayApplied": true,
   "completeEightDirections": false,
-  "eligibleForDevWiring": false,
+  "eligibleForDevWiring": true,
   "sourcePixels": [
     1254,
     1254
