@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "b15e5d34e20ccc31f8f36d6051dbf9a07f21f8cd",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "shadow-fan-recover-key-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/shadow-fan-recover-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "40859999-76f9-477a-ad23-762611c54a28",
+        "originalPngSha256": "b74a0488af5c752874a00780793aeb283552b2a553b1ca3e800d2aa104990c9a",
+        "canonicalReferenceHead": "b15e5d34e20ccc31f8f36d6051dbf9a07f21f8cd"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        74,
+        40,
+        1133,
+        1225
+      ],
+      "alphaAnyBounds": [
+        0,
+        33,
+        1242,
+        1236
+      ],
+      "alphaExtent": [
+        1059,
+        1185
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        74,
+        40,
+        121,
+        29
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "e0c2cb4a8b238ca746056744f9b9e80a16f7f36e6ca963dc9879c3178d89ba86",
+      "webpCompressedBytes": 580434,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Provisional recovery pose: forward-bent body, lowered arms. Generated redraw referencing canonical abyss-monarch-phases@3x.webp (Git blob 510b8c68092555fac5b73d8f84e8643e28423c6f). Face, crown and clothing identity, phase and attack mapping are not approved. Alpha128 margin passes; faint alpha reaches left boundary. Do not use as an approved sequence or enable production."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}
