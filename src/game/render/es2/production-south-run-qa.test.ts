@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { drawProductionHeroFrame, loadProductionHeroes, productionHeroSouthRunRect, productionHeroQAEastRect, PRODUCTION_HERO_SOUTH_RUN_SOURCES } from './production-heroes'
-import { HERO_DIAGONAL_RUN_ATLASES, HERO_NORTHERN_RUN_ATLASES } from './hero-candidate-atlas'
+import { HERO_DIAGONAL_RUN_ATLASES, HERO_NORTHERN_RUN_ATLASES, HERO_WEST_RUN_ATLASES } from './hero-candidate-atlas'
 import { sampleHeroAnimation, type HeroAnimation } from '../animation'
 import { createHero, createState } from '../../state'
 import type { Ctx2D } from '../ctx'
@@ -137,8 +137,8 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
       return image
     }, true)
     expect(images).toHaveLength(3)
-    const facing = { NW: 5, N: 6, NE: 7 } as const
-    for (const clip of HERO_NORTHERN_RUN_ATLASES) {
+    const facing = { W: 4, NW: 5, N: 6, NE: 7 } as const
+    for (const clip of [...HERO_NORTHERN_RUN_ATLASES, ...HERO_WEST_RUN_ATLASES]) {
       const calls: unknown[][] = []
       const ctx = { save: () => {}, restore: () => {}, drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
       const count = images.length
@@ -152,13 +152,36 @@ describe('three-hero south-run gameplay QA (never default production)', () => {
     }
   })
 
+  it('uses the batch-14 independent Crimson Paladin W, NE and NW run clips', () => {
+    const paladin = [...HERO_NORTHERN_RUN_ATLASES, ...HERO_WEST_RUN_ATLASES]
+      .filter(clip => clip.hero === 'crimson-paladin')
+    for (const direction of ['W', 'NE', 'NW'] as const) {
+      const clip = paladin.find(c => c.direction === direction)
+      expect(clip?.url, direction).toContain('/run-' + direction.toLowerCase() + '-2026-11-25-batch-14/')
+    }
+  })
+
+  it('DEV play shows every directional run clip by default, but East candidates stay opt-in', () => {
+    const heroes = loadProductionHeroes(() => ({ src: '' }) as HTMLImageElement, false)
+    type QA = HTMLImageElement & {
+      qaSouthRunUrl?: string; qaDiagonalSources?: Record<number, unknown>; qaEastSources?: unknown
+    }
+    for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const) {
+      const hero = heroes[id] as QA
+      expect(hero.qaSouthRunUrl, id).toContain('run-south-4frames@3x.webp')
+      expect(hero.qaEastSources, id).toBeUndefined()
+    }
+    expect(Object.keys((heroes['crimson-paladin'] as QA).qaDiagonalSources ?? {}).sort())
+      .toEqual(['1', '3', '4', '5', '6', '7'])
+  })
+
   it('never loads QA images when disabled', () => {
     const images: HTMLImageElement[] = []
     const heroes = loadProductionHeroes(() => {
       const image = { src: '' } as HTMLImageElement
       images.push(image)
       return image
-    }, false)
+    }, false, false)
     expect(images).toHaveLength(3)
     expect((heroes.shadowblade as HTMLImageElement & { qaSouthRunUrl?: string }).qaSouthRunUrl).toBeUndefined()
     expect((heroes.shadowblade as HTMLImageElement & { qaDiagonalSources?: unknown }).qaDiagonalSources).toBeUndefined()
@@ -188,7 +211,7 @@ describe('explicitly permitted horizontal candidate reuse', () => {
     expect(scales).toEqual([[-1, 1]])
   })
 
-  it('does not substitute West attack, special, staff or sword/shield candidates', () => {
+  it('does not mirror East candidates onto the staff or sword/shield West run', () => {
     const images: HTMLImageElement[] = []
     const heroes = loadProductionHeroes(() => {
       const image = { src: '', complete: true,
@@ -205,7 +228,9 @@ describe('explicitly permitted horizontal candidate reuse', () => {
     }
     // Verify the strict resolver also retains its existing East-only default.
     expect(productionHeroQAEastRect(makeAnim({ direction: 4, pose: 'attack' }))).toBeNull()
-    expect(images.every(image => !image.src.includes('/candidates/'))).toBe(true)
+    // Only the Paladin's independently authored West clip may load; never an East reflection.
+    expect(images.filter(image => image.src.includes('/candidates/')).map(image => image.src))
+      .toEqual([HERO_WEST_RUN_ATLASES[0].url])
   })
 })
 

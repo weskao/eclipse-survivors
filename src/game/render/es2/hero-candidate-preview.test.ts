@@ -93,7 +93,7 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain(`${east} East-facing`)
     expect(summary).toContain(`${south} South-facing`)
     expect(summary).toContain('6 diagonal four-frame strips')
-    expect(summary).toContain('6 northern four-frame strips')
+    expect(summary).toContain('8 northern and 1 West four-frame strips')
     expect(summary).toContain('21 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
       .toBe(`${HERO_CANDIDATE_ATLASES.length + 29} candidate review panels`)
