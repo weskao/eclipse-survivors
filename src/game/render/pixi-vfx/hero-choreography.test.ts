@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  HERO_ART_SLOTS, HERO_MOTE_SLOTS, heroArtPose, heroMoteBudget, heroMotePose, heroStrikeTime,
+  AEGIS_SHATTER, HERO_ART_SLOTS, HERO_MOTE_SLOTS, heroArtPose, heroMoteBudget, heroMotePose, heroStrikeTime,
   type HeroCast, type HeroPose,
 } from './hero-choreography'
 
@@ -58,9 +58,28 @@ describe('hero special GPU choreography', () => {
     const shatter = art(cast('hero-crimson-paladin', 3.4, 0.1))
     const brokenWard = shatter.find(p => p.texture === 'ward')!
     expect(brokenWard.width).toBeGreaterThan(ward.width)
-    expect(brokenWard.alpha).toBeLessThan(ward.alpha)
+    const onset = art(cast('hero-crimson-paladin', 3.16, AEGIS_SHATTER)).find(p => p.texture === 'ward')!
+    expect(brokenWard.alpha).toBeLessThan(onset.alpha)
     const r = (p: HeroPose) => Math.hypot(p.x, p.y)
     expect(Math.min(...shatter.filter(p => p.texture === 'crystal').map(r))).toBeGreaterThan(Math.max(...runes.map(r)))
+  })
+
+  it('plays the Scarlet Aegis in three beats: a cast as short as the other heroes, a dim hold, a bright burst', () => {
+    const ward = (e: number, life: number) => art(cast('hero-crimson-paladin', e, life)).find(p => p.texture === 'ward')?.alpha ?? 0
+    const rays = (e: number, life: number) => art(cast('hero-crimson-paladin', e, life)).some(p => p.texture === 'rays')
+    const peak = ward(0.6, 2.9)
+    expect(peak).toBeGreaterThan(0.8)
+    expect(rays(0.6, 2.9)).toBe(true)
+    // Hold: from ~1.4 s the ward stays readable but recedes, and the god-rays are gone.
+    expect(ward(2, 1.5)).toBeLessThanOrEqual(peak * 0.5)
+    expect(ward(2, 1.5)).toBeGreaterThan(0.2)
+    expect(rays(2, 1.5)).toBe(false)
+    const holdMotes = motes(cast('hero-crimson-paladin', 2, 1.5)).reduce((sum, p) => sum + p.alpha, 0)
+    const castMotes = motes(cast('hero-crimson-paladin', 0.8, 2.7)).reduce((sum, p) => sum + p.alpha, 0)
+    expect(holdMotes).toBeLessThan(castMotes * 0.6)
+    // Burst: the retribution flash re-brightens well above the hold, even on an early break.
+    expect(ward(3.16, AEGIS_SHATTER)).toBeGreaterThan(peak * 0.9)
+    expect(ward(0.9, AEGIS_SHATTER)).toBeGreaterThan(peak * 0.9)
   })
 
   it('reduced motion keeps a static readable pose, dim alpha and no particles', () => {
