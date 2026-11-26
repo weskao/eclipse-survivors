@@ -26,6 +26,28 @@ describe('ES2 candidate review inventory', () => {
     expect(m.status).toBe('QA_PENDING')
   })
 
+  it('preserves Batch 24 and 25 East run art as review-only assets', () => {
+    for (const [hero, folder] of [
+      ['shadowblade', 'run-e-2026-11-26-batch-24'],
+      ['spirit-summoner', 'run-e-2026-11-26-batch-25'],
+    ]) {
+      const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero!, 'candidates', folder!)
+      const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
+      const atlas = readFileSync(resolve(dir, 'run-e-4frames@3x.webp'))
+      const source = readFileSync(resolve(dir, 'source.webp'))
+      expect(createHash('sha256').update(atlas).digest('hex')).toBe(m.webpSHA256)
+      expect(createHash('sha256').update(source).digest('hex')).toBe(m.sourceSHA256)
+      expect(atlas.length).toBe(m.bytes)
+      expect(m.atlasPixels).toEqual([1536, 1536])
+      expect(m.frameCount).toBe(4)
+      expect(m.status).toBe('QA_PENDING')
+      expect(m.eligibleForDevWiring).toBe(false)
+      expect(m.qaGameplayApplied).toBe(false)
+      expect(m.runtimeApplied).toBe(false)
+      expect(HERO_CANDIDATE_ATLASES.some(c => c.url.includes('/' + folder + '/'))).toBe(false)
+    }
+  })
+
   it('describes the real committed East/South candidate count in its accessible preview', async () => {
     const html = readFileSync(resolve(process.cwd(), 'src/game/render/es2/hero-candidate-preview.html'), 'utf8')
     expect(html).toContain('id="candidate-summary"')
@@ -45,13 +67,13 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain(`${south} South-facing`)
     expect(summary).toContain('6 diagonal four-frame strips')
     expect(summary).toContain('6 northern four-frame strips')
-    expect(summary).toContain('16 additional pending atlases')
+    expect(summary).toContain('18 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 18} candidate animation strips`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 18)
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 20} candidate animation strips`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 20)
     const pending = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-atlas"]')]
-    expect(pending).toHaveLength(16)
-    const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW"]
+    expect(pending).toHaveLength(18)
+    const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW","shadowblade · RUN · E","spirit-summoner · RUN · E"]
     for (const name of expectedPending) {
       expect(pending.some(article => article.querySelector('h2')?.textContent?.startsWith(name))).toBe(true)
     }

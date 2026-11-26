@@ -39,6 +39,8 @@ if (summonerNE) previewClips.push({
 // Uploaded candidates are displayed here only. They must not enter the
 // gameplay atlas registry until the explicit manifest admission gate passes.
 const pendingAtlases = [
+  ['shadowblade', 'run', 'E', 'run-e-2026-11-26-batch-24'],
+  ['spirit-summoner', 'run', 'E', 'run-e-2026-11-26-batch-25'],
   ['spirit-summoner', 'run', 'W', 'w-2026-11-25-batch-13'],
   ['spirit-summoner', 'run', 'NW', 'nw-2026-11-25-batch-12'],
   ['crimson-paladin', 'run', 'W', 'w-2026-11-25-batch-10'],
