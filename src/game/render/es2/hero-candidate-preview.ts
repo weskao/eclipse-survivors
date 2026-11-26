@@ -1,4 +1,5 @@
 import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atlas'
+import batch27 from '../../../assets/es2/production/heroes/shadowblade/candidates/attack-e-keyframes-2026-11-26-batch-27/manifest.json'
 import summonerNWReview from '../../../assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-6/run-nw-4frames@3x.webp'
 
 const grid = document.querySelector<HTMLElement>('#grid')!
@@ -24,7 +25,7 @@ let scheduled = false
 // reflection of the admitted NE source without adding either to the runtime registry.
 type PreviewClip = {
   hero: string; pose: string; direction: string; url: string; cellPixels: 704 | 768
-  reviewKind?: string; mirrored?: boolean; folder?: string
+  reviewKind?: string; mirrored?: boolean; folder?: string; keyframe?: string
 }
 const previewClips: PreviewClip[] = [...HERO_CANDIDATE_ATLASES]
 const summonerNE = HERO_CANDIDATE_ATLASES.find(c =>
@@ -67,22 +68,36 @@ for (const [hero, pose, direction, folder] of pendingAtlases) {
     url: import.meta.env.BASE_URL + `src/assets/es2/production/heroes/${hero}/candidates/${folder}/${pose}-${direction.toLowerCase()}-4frames@3x.webp`,
   })
 }
-grid.setAttribute('aria-label', `${previewClips.length} candidate animation strips`)
+// These are single authored poses, not a synthetic looping attack atlas.
+const keyframeFolder = 'attack-e-keyframes-2026-11-26-batch-27'
+for (const key of batch27.frames) {
+  previewClips.push({
+    hero: batch27.hero, pose: batch27.pose, direction: batch27.direction,
+    cellPixels: 768, reviewKind: 'pending-keyframe', folder: keyframeFolder, keyframe: key.id,
+    url: import.meta.env.BASE_URL + `src/assets/es2/production/heroes/${batch27.hero}/candidates/${keyframeFolder}/${key.file}`,
+  })
+}
+grid.setAttribute('aria-label', `${previewClips.length} candidate review panels`)
 document.querySelector<HTMLElement>('#candidate-summary')!.textContent +=
-  ` ${pendingAtlases.length} additional pending atlases (review only).`
+  ` ${pendingAtlases.length} additional pending atlases (review only). ${batch27.frames.length} independent keyframes (review only).`
 
 const decodedSources = new Map<string, HTMLImageElement>()
-const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, reviewKind, folder, mirrored = false }) => {
+const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, reviewKind, folder, keyframe, mirrored = false }) => {
   const article = document.createElement('article')
   const label = document.createElement('h2')
   const reviewLabel = reviewKind === 'batch-6-nw' ? ' · authored NW (review only)'
     : reviewKind === 'ne-reflected-nw' ? ' · reflected NE (review only)'
+    : reviewKind === 'pending-keyframe' ? ' · independent pose (review only)'
     : reviewKind === 'pending-atlas' ? ' · pending atlas (review only)' : ''
-  label.textContent = `${hero} · ${pose.toUpperCase()} · ${direction} (4 frames)${reviewLabel}`
+  label.textContent = `${hero} · ${pose.toUpperCase()} · ${direction} (${keyframe ? '1 frame' : '4 frames'})${reviewLabel}`
   if (reviewKind) article.dataset.reviewKind = reviewKind
   if (folder) {
     article.dataset.candidateFolder = folder
     label.textContent += ` · ${folder}`
+  }
+  if (keyframe) {
+    article.dataset.keyframe = keyframe
+    label.textContent += ` · ${keyframe}`
   }
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = 336
@@ -94,7 +109,7 @@ const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, review
   grid.append(article)
   const existing = decodedSources.get(url)
   const image = existing ?? new Image()
-  const readyText = reviewKind === 'pending-atlas'
+  const readyText = reviewKind === 'pending-atlas' || reviewKind === 'pending-keyframe'
     ? 'QA_PENDING · preview only · not admitted to gameplay'
     : reviewKind
     ? 'QA_PENDING · comparison only · verify staff handedness before gameplay'
@@ -110,13 +125,14 @@ const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, review
   } else if (image.complete && image.naturalWidth > 0) {
     status.textContent = readyText
   }
-  return { image, canvas, cellPixels, mirrored }
+  return { image, canvas, cellPixels, mirrored, keyframe }
 })
 
 function paint(): void {
-  for (const { image, canvas, cellPixels, mirrored } of tiles) {
-    if (!image.complete || image.naturalWidth !== cellPixels * 2 || image.naturalHeight !== cellPixels * 2) continue
-    const rect = heroCandidateRect(frame, cellPixels)!
+  for (const { image, canvas, cellPixels, mirrored, keyframe } of tiles) {
+    const sourceSize = keyframe ? cellPixels : cellPixels * 2
+    if (!image.complete || image.naturalWidth !== sourceSize || image.naturalHeight !== sourceSize) continue
+    const rect = keyframe ? { x: 0, y: 0, size: cellPixels } : heroCandidateRect(frame, cellPixels)!
     const ctx = canvas.getContext('2d')
     if (!ctx) continue
     ctx.clearRect(0, 0, canvas.width, canvas.height)
