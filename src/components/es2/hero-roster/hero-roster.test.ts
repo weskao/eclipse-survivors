@@ -123,6 +123,27 @@ describe('ES2 shared homepage hero selection interaction', () => {
     expect(css).not.toMatch(/\.es2-hero-select-card(?:\[aria-pressed="true"\])?>img\s*\{background:/)
   })
 
+  it('adds a subdued hover glow to all unselected heroes without selecting them', async () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    expect(css).toContain('@media(hover:hover) and (pointer:fine){')
+    const hover = css.match(/\.es2-hero-select-card\[aria-pressed="false"\]:hover:not\(:disabled\)\s*\{([^}]+)\}/)
+    expect(hover?.[1]).toContain('--es2-hero-glow:')
+    expect(css).toContain('rgb(from var(--es2-hero-idle-glow) r g b / .30)')
+    expect(hover?.[1]).not.toContain('#ffd16b80')
+    const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
+    const cards = wrapper.findAll('.es2-hero-select-card')
+    expect(cards).toHaveLength(6)
+    for (const card of cards) {
+      const selected = card.attributes('aria-pressed')
+      await card.trigger('mouseenter')
+      await card.trigger('mouseleave')
+      expect(card.attributes('aria-pressed')).toBe(selected)
+    }
+    expect(wrapper.findAll('.es2-hero-select-card[aria-pressed="true"]')).toHaveLength(1)
+    expect(wrapper.emitted('select')).toBeUndefined()
+    expect(wrapper.emitted('selectHero')).toBeUndefined()
+  })
+
   it('shares hover, press, selection glow and portrait lift with a reduced-motion fallback', () => {
     const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
     expect(css).toContain('.es2-menu .es2-hero-select-card{')
