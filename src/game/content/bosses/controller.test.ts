@@ -195,6 +195,24 @@ describe('independent premium boss content', () => {
     expect(victoryConditionMet(state, 'boss')).toBe(true)
   })
 
+  it('retains defeated boss presentation until the next legitimate encounter replaces it', () => {
+    const { state, hooks, controller, notices } = setup()
+    const first = controller.spawn(state, 'abyss-monarch', { x: 110, y: 0 }, hooks)!
+    expect(controller.spawn(state, 'frost-sovereign', { x: 190, y: 0 }, hooks)).toBeNull()
+    hit(state, first, first.hp, hooks)
+    expect(controller.snapshot(state).bodyMotion).toMatchObject({ pose: 'death' })
+    state.worldClock += 0.4
+    expect(controller.snapshot(state).bodyMotion?.progress).toBeGreaterThan(0)
+    const next = controller.spawn(state, 'frost-sovereign', { x: 190, y: 0 }, hooks)
+    expect(next?.bossArtId).toBe('frost-sovereign')
+    expect(controller.hud(state)?.id).toBe('frost-sovereign')
+    expect(controller.snapshot(state).bodyMotion?.pose).toBe('idle')
+    expect(state.mobs.filter(m => m.type === 'boss' && m.hp > 0)).toEqual([next])
+    expect(state.kill).toBe(1)
+    expect(state.stars).toHaveLength(1)
+    expect(notices.filter(x => x === 'reward')).toHaveLength(1)
+  })
+
   it('clears encounter-owned effects and minions on scene transitions but never removes living required bosses', () => {
     const { state, hooks, controller } = setup()
     const boss = controller.spawn(state, 'frost-sovereign', { x: 190, y: 0 }, hooks)!
