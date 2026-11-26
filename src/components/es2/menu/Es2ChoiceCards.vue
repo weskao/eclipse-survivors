@@ -23,7 +23,7 @@ function select(item: MenuChoice): void {
       <div class="es2-card-art">
         <picture v-if="item.imageSrc">
           <source v-if="item.reducedMotionSrc" media="(prefers-reduced-motion: reduce)" :srcset="item.reducedMotionSrc" />
-          <img :src="item.imageSrc" @error="fallbackSkillImage($event, item.id, item.reducedMotionSrc)" :alt="t(item.title + ' 插畫')" loading="lazy" decoding="async" draggable="false" />
+          <img :src="item.imageSrc" @error="fallbackSkillImage($event, item.id, item.reducedMotionSrc)" :alt="t('{name} 插畫', { name: t(item.title) })" loading="lazy" decoding="async" draggable="false" />
         </picture>
         <span v-else class="es2-card-glyph" aria-hidden="true">{{ item.icon ?? '✦' }}</span>
         <span v-if="item.evolution" class="es2-evolution-sigil" aria-hidden="true">✧</span>

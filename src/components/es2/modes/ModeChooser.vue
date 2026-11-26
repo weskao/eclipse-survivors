@@ -15,8 +15,7 @@ const detail = computed(() => detailId.value ? getObjectiveMode(detailId.value) 
 // The authored title contains both languages; display only the current one.
 const modeTitle = (id: ObjectiveModeId) => t(getObjectiveMode(id).title).split(' · ')[0]!
 const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
-  ? '每 3 分鐘 +' + getObjectiveMode(id).rewardEmbers + ' 餘燼（最高 1500）'
-  : '勝利獎勵 ' + getObjectiveMode(id).rewardEmbers + ' 餘燼')
+  ? '每 3 分鐘 +{embers} 餘燼（最高 1500）' : '勝利獎勵 {embers} 餘燼', { embers: getObjectiveMode(id).rewardEmbers })
 </script>
 
 <template>

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { setLocale } from '../../../i18n'
 import type { RunStats } from '../../../meta/types'
 import Es2Result from './Es2Result.vue'
 
@@ -11,7 +12,8 @@ const run = {
   remainingHp: 10, damageDealt: 100, damageTaken: 20,
 } as unknown as RunStats
 
-afterEach(() => { document.body.innerHTML = '' })
+const storage = { getItem: () => null, setItem: () => {} }
+afterEach(() => { setLocale('zh-TW', storage); document.body.innerHTML = '' })
 
 describe('expedition result screen fits without scrolling', () => {
   it('splits the result into a hero banner and a run report inside a result-variant dialog', () => {
@@ -57,6 +59,20 @@ describe('expedition result screen fits without scrolling', () => {
     // The shared stat strip allows overflow-wrap:anywhere, which split "1,834,502" at 320px.
     expect(css).toMatch(/\.es2-dialog-result \.es2-result-stats b\{[^}]*white-space:nowrap/)
     expect(css).toMatch(/\.es2-dialog-result \.es2-result-stats small\{[^}]*min-width:0/)
+  })
+
+  it.each([
+    ['zh-TW', run, '本次遠征英雄：曙鋼騎士'],
+    ['en', run, 'Expedition Hero: Dawnsteel Knight'],
+    ['en', { ...run, specializationId: 'crimson-paladin' }, 'Expedition Hero: Crimson Paladin'],
+  ] as const)('names the expedition hero in the portrait alt (%s)', (locale, result, alt) => {
+    setLocale(locale, storage)
+    const wrapper = mount(Es2Result, {
+      props: { active: true, ending: '勝利', summary: '', result: result as RunStats, rewards: null },
+      attachTo: document.body,
+    })
+    expect(document.body.querySelector('.es2-result-hero img')?.getAttribute('alt')).toBe(alt)
+    wrapper.unmount()
   })
 
   it('uses a two-column banner/report layout on wide and landscape screens', () => {

@@ -121,7 +121,7 @@ const achievementArt: Record<string, string> = {
     <section v-else-if="view === 'relics'" class="es2-archive-section" :aria-label="t('聖物庫')">
       <div v-if="relics?.length" class="es2-archive-grid"><article v-for="relic in relics" :key="relic.id" class="es2-archive-card" :class="[`es2-rarity-${relic.rarity ?? 'common'}`, { 'es2-context-card': cardDetails['relic:' + relic.id] }]"
         :data-es2-context-card="cardDetails['relic:' + relic.id] ? 'relic:' + relic.id : undefined" :tabindex="cardDetails['relic:' + relic.id] ? 0 : undefined">
-        <img v-if="relic.imageSrc" :src="relic.imageSrc" :alt="t(relic.title + ' 插畫')" loading="lazy" /><div v-else class="es2-archive-glyph">{{ relic.icon ?? '✧' }}</div>
+        <img v-if="relic.imageSrc" :src="relic.imageSrc" :alt="t('{name} 插畫', { name: t(relic.title) })" loading="lazy" /><div v-else class="es2-archive-glyph">{{ relic.icon ?? '✧' }}</div>
         <strong>{{ t(relic.owned ? relic.title : '未知聖物') }}</strong>
         <p v-if="!relic.owned">{{ t('尚未發現') }}</p>
         <Es2CardInfo v-if="cardDetails['relic:' + relic.id]" :id="'relic:' + relic.id" :title="t(relic.title)" @open="open" />
@@ -131,7 +131,7 @@ const achievementArt: Record<string, string> = {
     <section v-else-if="view === 'monsters'" class="es2-archive-section" :aria-label="t('魔物圖鑑')">
       <div class="es2-archive-grid"><article v-for="mob in entries.monsters" :key="mob.id" class="es2-archive-card" :class="{ 'es2-locked': !mob.count, 'es2-context-card': !!mob.count }"
         :data-es2-context-card="mob.count ? 'monster:' + mob.id : undefined" :tabindex="mob.count ? 0 : undefined">
-        <img v-if="mob.count && monsterImage(mob.id)" :src="monsterImage(mob.id)" :alt="t(mob.label + ' 插畫')" loading="lazy" />
+        <img v-if="mob.count && monsterImage(mob.id)" :src="monsterImage(mob.id)" :alt="t('{name} 插畫', { name: t(mob.label) })" loading="lazy" />
         <span v-else class="es2-archive-glyph">{{ mob.icon }}</span><strong>{{ t(mob.count ? mob.label : '???') }}</strong>
         <p v-if="!mob.count">{{ t('尚未遭遇') }}</p><small v-if="mob.count">{{ t("擊倒") }} {{ mob.count }}</small>
         <Es2CardInfo v-if="mob.count" :id="'monster:' + mob.id" :title="t(mob.label)" @open="open" />
@@ -141,7 +141,7 @@ const achievementArt: Record<string, string> = {
     <section v-else-if="view === 'skills'" class="es2-archive-section" :aria-label="t('技能圖鑑')">
       <div class="es2-archive-grid"><article v-for="ability in entries.abilities" :key="ability.id" class="es2-archive-card" :class="{ 'es2-locked': !ability.discovered, 'es2-context-card': ability.discovered }"
         :data-es2-context-card="ability.discovered ? 'skill:' + ability.id : undefined" :tabindex="ability.discovered ? 0 : undefined">
-        <img v-if="ability.discovered" :src="skillImageSrc(ability.id)" :alt="t(ability.title + ' 技能插畫')" loading="lazy" />
+        <img v-if="ability.discovered" :src="skillImageSrc(ability.id)" :alt="t('{name} 技能插畫', { name: t(ability.title) })" loading="lazy" />
         <span v-else class="es2-archive-glyph">{{ ability.icon }}</span><strong>{{ t(ability.discovered ? ability.title : '???') }}</strong>
         <p v-if="!ability.discovered">{{ t('尚未覺醒') }}</p>
         <Es2CardInfo v-if="ability.discovered" :id="'skill:' + ability.id" :title="t(ability.title)" @open="open" />
@@ -151,7 +151,7 @@ const achievementArt: Record<string, string> = {
       <div class="es2-stat-strip"><div><b>{{ profile.achievements.length }} / {{ ACHIEVEMENTS.length }}</b><small>{{ t("已達成") }}</small></div></div>
       <div class="es2-archive-grid"><article v-for="achievement in ACHIEVEMENTS" :key="achievement.id" class="es2-archive-card es2-context-card" :class="{ 'es2-locked': !profile.achievements.includes(achievement.id) }"
         :data-es2-context-card="'achievement:' + achievement.id" tabindex="0">
-        <img class="es2-achievement-icon" :src="achievementArt[achievement.id]" :alt="t(achievement.title + ' 成就徽章')" data-es2-achievement-badge loading="lazy" decoding="async" />
+        <img class="es2-achievement-icon" :src="achievementArt[achievement.id]" :alt="t('{name} 成就徽章', { name: t(achievement.title) })" data-es2-achievement-badge loading="lazy" decoding="async" />
         <strong>{{ t(achievement.title) }}</strong>
         <Es2CardInfo :id="'achievement:' + achievement.id" :title="t(achievement.title)" @open="open" />
         <small>{{ t(profile.achievements.includes(achievement.id) ? '✓ 已達成' : '尚未達成') }}</small>

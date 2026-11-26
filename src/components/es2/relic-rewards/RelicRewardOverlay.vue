@@ -83,7 +83,7 @@ function shortcut(event: KeyboardEvent): void {
         <article v-for="(relic, index) in choices" :key="relic.id" class="relic-rewards__card"
           :class="['relic-rewards__card--' + relic.rarity, { 'relic-rewards__card--cursed': relic.cursed }]">
           <button type="button" class="relic-rewards__claim" :data-relic-claim="relic.id" :disabled="busy"
-            :aria-label="t('領取 ' + relic.title + '，' + relic.description)" @click="claim(relic.id)">
+            :aria-label="t('領取 {title}，{description}', { title: t(relic.title), description: t(relic.description) })" @click="claim(relic.id)">
             <span class="relic-rewards__icon" aria-hidden="true"><img :src="relic.cursed ? WORLD_ART.ui['treasure-cursed'] : relic.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary'] : relic.rarity === 'rare' || relic.rarity === 'epic' ? WORLD_ART.ui['treasure-rare'] : WORLD_ART.ui['treasure-common']" alt="" decoding="async" /></span>
             <span class="relic-rewards__rarity">{{ t({ common: '普通', rare: '稀有', epic: '史詩', legendary: '傳說' }[relic.rarity]) }} · {{ index + 1 }}</span>
             <strong>{{ t(relic.title) }}</strong>
@@ -92,7 +92,7 @@ function shortcut(event: KeyboardEvent): void {
             <span class="relic-rewards__obtain">{{ t("領取遺物") }}</span>
           </button>
           <button type="button" class="relic-rewards__banish" :data-relic-banish="relic.id"
-            :disabled="busy || !canBanish(relic.id)" :aria-label="t('放逐 ' + relic.title)" @click="banish(relic.id)">
+            :disabled="busy || !canBanish(relic.id)" :aria-label="t('放逐 {title}', { title: t(relic.title) })" @click="banish(relic.id)">
             {{ t("放逐此遺物") }}
           </button>
         </article>

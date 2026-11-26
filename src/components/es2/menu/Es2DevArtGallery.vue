@@ -29,7 +29,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
         <article v-for="entry in worldEnemies" :key="entry.id" class="es2-world-art-card" :data-es2-world-enemy="entry.id">
           <span class="es2-world-art-enemy" :style="{ backgroundImage: `url('${entry.body}')` }" aria-hidden="true"></span>
           <img class="es2-world-art-telegraph" :src="entry.telegraph" :data-es2-world-telegraph="entry.id"
-            :alt="t(entry.title + ' 攻擊預警示意')" loading="lazy" decoding="async" />
+            :alt="t('{name} 攻擊預警示意', { name: t(entry.title) })" loading="lazy" decoding="async" />
           <strong>{{ t(entry.title) }}</strong>
         </article>
       </div>
@@ -43,8 +43,8 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
       <h3>{{ t("暗蝕之地 · 地板與場景裝飾") }}</h3>
       <div class="es2-world-art-grid" :aria-label="t('四種場景美術')">
         <article v-for="entry in worldBiomes" :key="entry.id" class="es2-world-art-card" :data-es2-world-biome="entry.id">
-          <img class="es2-world-art-scene" :src="entry.scene" :alt="t(entry.title + ' 場景插畫')" data-es2-biome-scene loading="lazy" decoding="async" />
-          <img class="es2-world-art-ground" :src="entry.ground" :alt="t(entry.title + ' 地板材質')" loading="lazy" decoding="async" />
+          <img class="es2-world-art-scene" :src="entry.scene" :alt="t('{name} 場景插畫', { name: t(entry.title) })" data-es2-biome-scene loading="lazy" decoding="async" />
+          <img class="es2-world-art-ground" :src="entry.ground" :alt="t('{name} 地板材質', { name: t(entry.title) })" loading="lazy" decoding="async" />
           <span class="es2-world-art-decor" :style="{ backgroundImage: `url('${entry.decor}')` }" aria-hidden="true"></span>
           <strong>{{ t(entry.title) }}</strong>
         </article>
@@ -55,7 +55,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
         <div class="es2-c104-source-grid">
           <figure v-for="entry in c104Gallery" :key="entry.id">
             <img :src="entry.src" :data-es2-c104-source="entry.id"
-              :alt="t(entry.category + ' 原始圖板 ' + entry.id)" loading="lazy" decoding="async" draggable="false" />
+              :alt="t('{category} 原始圖板 {id}', { category: t(entry.category), id: entry.id })" loading="lazy" decoding="async" draggable="false" />
             <figcaption>{{ t(entry.category) }} · {{ entry.id }}</figcaption>
           </figure>
         </div>

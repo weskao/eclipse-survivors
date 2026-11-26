@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
   <div v-if="ui.mode === 'play' && !ui.settingsOpen" class="es2-world-markers" :aria-label="t('世界事件標記')">
     <button v-for="marker in worldMarkerButtons" :key="marker.event.id" type="button"
       class="es2-world-marker" data-ui-sfx="managed" :style="{ left: marker.left, top: marker.top }"
-      :aria-label="t('互動世界事件 ' + marker.event.kind.slice(7))"
+      :aria-label="t('互動世界事件 {kind}', { kind: marker.event.kind.slice(7) })"
       @click="engine.openWorldEvent(marker.event.id)">✧</button>
   </div>
   <WorldEventPanel :event="ui.worldEventChoice?.event ?? null"
