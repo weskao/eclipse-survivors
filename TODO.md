@@ -88,11 +88,11 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 - [x] Live combo HUD, game-clock expiry and bilingual highest streak/multikill run results (RED 45681795019; GREEN 45682705645, engine/HUD/result tests).
 - [x] Six kill streak milestones (10/25/50/100/200/500), highest-per-tick feedback and rate-limited layered cue (RED 45684497744; GREEN 45685008359).
 - [ ] Further distinct milestone visual/audio presentation and multikill feedback. Implemented capped per-tick milestone and burst cues with six separate layered audio sequences, bounded impact waves; GREEN full suite at f9ca7928.
-- [ ] Layered combat/kill SFX, rate limiting, preserve complete active-skill playback. Implemented normal/heavy/critical/elite cues and preserved existing active skill lifecycle; GREEN full suite at f9ca7928.
+- [ ] Layered combat/kill SFX, rate limiting, preserve complete active-skill playback. Implemented normal/heavy/critical/elite cues and preserved existing active skill lifecycle; gameplay tests passed at f9ca7928 and e81f7fdd. Test-first 8ded420c and implementation 2b6d9e97 share living legacy/faction pressure with adaptive combat music; exact-HEAD test pending.
 - [ ] Camera impact and accessibility controls; reduced motion/flashing, supported mobile haptics. Implemented opt-in touch-only haptics and reduced-flashing lightning; browser acceptance pending.
 
 ### Wave 2 — Power Fantasy [P0; first delivery]
-- [ ] Five distinct rarity-specific claim signatures routed from the actual acquired relic; preserve one claim. Test-first b7bdd9f2, implementation 786d1405; full CI evidence pending.
+- [ ] Five distinct rarity-specific claim signatures routed from the actual acquired relic; preserve one claim. Test-first b7bdd9f2, implementation 786d1405; unit suite GREEN for gameplay at cc87cf77 and e81f7fdd (45754080001); historical test-only RED not observed.
 - [ ] Review skill Lv.1–5 power curves; keep tuning in balance config. Reviewed legacy and arsenal rank previews; added config-driven capstones for all 12 ES2 weapons with corresponding previews; unified legacy/faction targeting for six area skills, chain, 12 weapons and 12 ES2 evolutions; GREEN full suite at f9ca7928.
 - [x] Chain lightning Lv.1–5 target progression, Lv.4 shock and bounded Lv.5 kill discharge; actual damage and upgrade preview (RED 45684497744; GREEN 45685008359).
 - [ ] Other qualitative rank breakthroughs: projectile count, AoE, elemental effects or summons. Implemented orb extra blade, bolt shock, frost/vortex/blaze/meteor outer-range bonuses and all twelve arsenal Lv.5 qualitative bonuses. GREEN full suite at f9ca7928.
@@ -115,14 +115,14 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 
 ### Wave 4 — Encounter Director [P1; first delivery]
 - [x] Opening-wave legacy and faction actors use bounded terrain-safe placement without moving the hero (RED 45701540066; GREEN 45702064115).
-- [ ] Objective-mode-specific ordinary encounter cycle configuration, preserving explicit boss/wave gates (test-first b7bdd9f2; implementation 786d1405; full CI evidence pending).
+- [ ] Objective-mode-specific ordinary encounter cycle configuration, preserving explicit boss/wave gates (test-first b7bdd9f2; implementation 786d1405; unit suite GREEN for gameplay at e81f7fdd (45754080001); historical test-only RED not observed).
 - [ ] Audit and extend existing director, single authoritative spawn owner. Implemented ordinary and faction spawn pulse integration with shared actor caps.
 - [x] Eight encounter identities and legacy spawn composition policies; deterministic rotation, swarm/elite live tests (RED 45684497744; GREEN 45685008359).
 - [ ] Integrated encounter acceptance across all eight compositions and faction spawn ownership. Added production-pulse tests for seven assaults plus recovery, per-run seed, distinct intervals and shared faction treasure XP; GREEN full suite at f9ca7928.
 - [x] Pressure peaks and recovery windows scaled by mode duration; preserve boss timing, win rules and actor caps. Live assault/reward interval multipliers implemented; RED 45680983083 / GREEN 45681389783; mode-specific cycle scaling RED 45684497744 / GREEN 45685008359; full integrated suite GREEN for automated behavior at f9ca7928.
 - [ ] Risk/reward world events, cursed offers and optional dangerous treasure. Implemented optional guarded legendary vault payout using confirmed deaths, existing curse/transaction UI.
 - [ ] Boss stagger, weakness windows and phase transitions with readable telegraphs; preserve collisions. Implemented recovery-only break, one per phase, 1.25s weakness and 1.25× damage.
-- [ ] Boss kill and battlefield cleansing audiovisual presentation. Implemented hostile projectile/hazard cleanup on actual boss death.
+- [ ] Boss kill and battlefield cleansing audiovisual presentation. Implemented hostile projectile/hazard cleanup on actual boss death; four identity-specific bilingual defeat notices and palettes, plus objective-boss death pose retention until the next scheduled encounter. Tests passed at e81f7fdd (45754080001); test-only runs cancelled.
 
 ### Wave 5 — Hero Identity [P1]
 - [ ] Unique combat loops for all six heroes (warrior rage, ranger focus, wizard elements, shadow crit, spirit souls, paladin shield).
@@ -145,7 +145,7 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 ### Wave 7 — Integration & QA [P0; continuous]
 - [ ] Observed RED → GREEN → REFACTOR and full regression suite.
 - [ ] Gameplay parity across all quality settings. Fixed-seed low/medium/high parity test passed in 45696301552 and 45696950248; formal RED not observed.
-- [ ] Automated responsive and localization regression coverage for desktop, phone portrait/landscape, tablet and foldable; manual device review WAIVED. Real Chromium run 45702064486 at ba34d948 passed 11/12 profiles, including tablet landscape and desktop 1280/1440/1920. Remaining 640×360 zoom-equivalent hover obstruction addressed in 01883573; exact-HEAD verification pending.
+- [ ] Automated responsive and localization regression coverage for desktop, phone portrait/landscape, tablet and foldable; manual device review WAIVED. Real Chromium run 45702064486 at ba34d948 passed 11/12 profiles, including tablet landscape and desktop 1280/1440/1920. At cc87cf77 (45703042822) the 640×360 hover still timed out; test-first e93d8787, implementation 4fd0e1e1 and test typing fix d11be7d5 preserve/reposition active hover details on scroll. Unit regression passed at e81f7fdd; browser acceptance pending.
 - [ ] Reduced Motion and Reduced Flashing; no HUD or telegraph occlusion.
 - [x] Actual gameplay screenshots and MP4 clips — WAIVED by owner for this ES3 delivery; no capture or review claimed.
 - [ ] Automated long-run diagnostics: p95/p99 timing, memory and comparable draw operations/overdraw; manual FPS and physical-device thermals WAIVED, do not invent metrics.
