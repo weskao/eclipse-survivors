@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { attack, damageHero, dash, hit, nearestAlive, victoryConditionMet } from './combat'
+import { getLocale, setLocale, t } from '../i18n'
 import { DURATION, JOB } from './constants'
 import { getFiringOrigin } from './weapon-geometry'
 import { seeded, setRandom } from './math'
@@ -108,6 +109,31 @@ describe('hit', () => {
     expect(s.stars[0]!.value).toBe(45)
     expect(hooks.sfx).toHaveBeenCalledWith('bossDefeat')
     expect(hooks.message).toHaveBeenCalledWith('🏆 擊敗森林魔王！')
+  })
+  it.each([
+    ['abyss-monarch', 'Abyss Monarch', '深淵君王', '#a58aff'],
+    ['frost-sovereign', 'Frost Sovereign', '霜寒君主', '#9cddff'],
+    ['infernal-titan', 'Infernal Titan', '煉獄泰坦', '#ff9958'],
+    ['eclipse-seraph', 'Eclipse Seraph', '星蝕熾天使', '#ffe8a8'],
+  ] as const)('uses the defeated %s identity for its reward notice and final impact', (id, name, zh, color) => {
+    const { s } = setup()
+    const e = mob(30, 40, { type: 'boss', bossArtId: id, hp: 10 })
+    const hooks = spyHooks()
+    hit(s, e, 20, hooks)
+    hit(s, e, 20, hooks)
+    expect(s.stars.map(star => star.value)).toEqual([45])
+    expect(hooks.sfx).toHaveBeenCalledTimes(1)
+    expect(s.impactWaves.at(-1)).toMatchObject({ size: 210, color })
+    const notice = hooks.message.mock.calls[0]?.[0]
+    const previous = getLocale()
+    try {
+      setLocale('en')
+      expect(t(notice)).toBe(`🏆 ${name} Defeated!`)
+      setLocale('zh-TW')
+      expect(t(notice)).toBe(`🏆 擊敗${zh}！`)
+    } finally {
+      setLocale(previous)
+    }
   })
   it('a non-lethal hit plays no sfx', () => {
     const { s } = setup()
