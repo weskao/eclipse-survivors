@@ -934,7 +934,10 @@
   from { opacity: 0; translate: var(--es2-scene-from, 0 0); scale: var(--es2-scene-scale, 1); }
 }
 /* Home: lobby fades in, hero page from the left, expedition page from the right, archive rises. */
-.es2-menu { animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
+/* Opacity only: a filling translate/scale here would make .es2-menu the containing block of the
+   fixed action bar and lift it off the viewport bottom. */
+@keyframes es2-scene-fade { from { opacity: 0; } }
+.es2-menu { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) both; }
 .es2-hero-section { --es2-scene-from: -18px 0; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
 .es2-mode-section { --es2-scene-from: 18px 0; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
 .es2-archive-page { --es2-scene-from: 0 12px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }

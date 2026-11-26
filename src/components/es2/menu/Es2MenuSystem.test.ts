@@ -355,6 +355,15 @@ describe('ES2 responsive and motion CSS contract', () => {
       // Old one-off fades are replaced, not layered.
       expect(css).not.toMatch(/es2-page-arrive|es2-enter\b/)
     })
+    it('keeps the lobby fade opacity-only so the fixed action bar stays pinned to the viewport bottom', () => {
+      // A filling translate/scale animation makes .es2-menu the containing block of its fixed action bar.
+      const menuRule = block.match(/^\.es2-menu\s*\{([^}]*)\}/m)?.[1] ?? ''
+      const keyframe = menuRule.match(/animation:\s*([\w-]+)/)?.[1] ?? ''
+      expect(keyframe).toBeTruthy()
+      const frames = block.match(new RegExp(`@keyframes ${keyframe}\\s*\\{([^}]*\\})\\s*\\}`))?.[1] ?? ''
+      expect(frames).toContain('opacity')
+      expect(frames).not.toMatch(/translate|scale|transform|filter|perspective/)
+    })
     it('covers home pages, dialogs, choice cards, loading and combat entry', () => {
       for (const selector of ['.es2-menu', '.es2-hero-section', '.es2-mode-section', '.es2-archive-page', '.es2-menu-action-bar',
         '.es2-backdrop', '.es2-dialog', '.es2-choice-grid > .es2-choice', '.es2-loading', '#game[data-es2-combat-scene]',
