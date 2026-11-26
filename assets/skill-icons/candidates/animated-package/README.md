@@ -1,3 +1,9 @@
+# Revision: seamless counterclockwise evolution rotations (2026-11-26)
+
+Supersedes only `infernal-singularity` and `blade-tempest` in the earlier revisions. Base revision `4634a26054800a1ef7ece82c03f5093078a70834`. Both are newly drawn 1254 × 1254 RGBA sources. A fixed core is centered, with sufficient radial padding for every orientation. Each frame is independently sampled from the original at increasing counterclockwise angles; there is no repeated 360° endpoint. Native 24 FPS (41/42 ms) and infinite looping. No scaling/ping-pong/reversal or crossfade is used during playback.
+
+Verified all decoded frames, transparent edge, positive rotation alignment against reverse alignment, seam and file hashes. The other eight manifest entries are unchanged. The earlier candidate description below is historical. Pillow/libwebp was used; Polytool/cwebp unavailable. Actual browser, CI and art approval remain pending.
+
 # Revision: three evolution skill illustrations (2026-11-26)
 
 The original candidate package below describes the earlier 10-asset batch. The three entries `frozen-thunderstorm`, `infernal-singularity`, and `blade-tempest` are superseded by the six authored GIF frames in this revision. The other seven entries are unchanged. Each 512 × 512 source frame is downsampled to 384 × 384; alpha and infinite looping are preserved. The revised animations have six distinct decoded frames each, with original timing (150/140/130 ms per frame respectively); they are not 24 FPS. No artificial interpolation or whole-image transform. All three are under the 1.2 MB reference budget. Pillow/libwebp encoding was used, not Polytool; browser/CI/visual acceptance remain pending. See the manifest for exact hashes, timing and provenance.
