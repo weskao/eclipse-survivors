@@ -29,10 +29,6 @@ const english = new Map<string, string>([
   ["攻擊力", "Attack"],
   ["移動速度", "Move speed"],
   ["攻擊間隔", "Attack interval"],
-  ["暴擊!", "CRITICAL!"],
-  ["重擊!", "HEAVY HIT!"],
-  ["極重擊!", "DEVASTATING HIT!"],
-  ["極重暴擊!", "DEVASTATING CRITICAL!"],
   ["英雄類別", "Hero categories"],
   ["經典英雄", "Classic Heroes"],
   ["新增英雄", "New Heroes"],
@@ -1110,12 +1106,12 @@ const english = new Map<string, string>([
 , ["主動技能消耗生命","Active ability consumes health"]
 , ["緋紅聖盾","Crimson Aegis"]
 , ["緋紅韌性：受到傷害減少 14%，受傷時有冷卻的近距離反擊。","Crimson Resilience: take 14% less damage and counterattack at close range with a cooldown when struck."]
-, ["血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；生命低時反擊更強。","Blood Oath Barrier: sacrifice a little health for a 3.5-second absorbing shield; counterattacks are stronger at low health."]
+, ["血誓屏障：犧牲少量生命換取 {seconds} 秒的吸收護盾；屏障到期或破碎時引爆緋紅報復，依吸收的傷害重創周圍敵人。","Blood Oath Barrier: sacrifice a little health for a {seconds}-second absorbing shield; when it expires or breaks, Crimson Retribution detonates, striking nearby enemies based on the damage absorbed."]
 , ["· 專精","· Mastery"]
 , ["提升英雄獨有的被動能力","Enhance this hero's unique passive ability"]
 , ["強化暴擊與影襲傷害。","Boost critical hits and Shadow Assault damage."]
 , ["強化靈體攻擊、治療與靈潮集結。","Boost spirit attacks, healing and Spectral Convergence."]
-, ["強化減傷、反擊、低血量增傷與屏障。","Boost mitigation, counters, low-HP damage and barriers."]
+, ["強化減傷、反擊、低血量增傷、屏障與緋紅報復。","Boost mitigation, counters, low-HP damage, barriers and Crimson Retribution."]
 , ["暴擊傷害倍率","Crit damage multiplier"]
 , ["技能攻擊倍率","Skill attack multiplier"]
 , ["技能移動倍率","Skill movement multiplier"]
@@ -1146,6 +1142,7 @@ const english = new Map<string, string>([
 , ["反擊傷害倍率","Counter damage multiplier"]
 , ["低血量傷害倍率","Low-HP damage multiplier"]
 , ["屏障額外吸收（Q）","Extra barrier absorption (Q)"]
+, ["緋紅報復傷害倍率（Q）","Crimson Retribution damage multiplier (Q)"]
 , ["依序迎戰五位首領，每次擊敗後迎接更強的對手；闖關與獎勵均依實際擊殺進度結算。","Face five bosses in order, each stronger than the last. Progression and rewards follow confirmed defeats."]
 , ["於 480 秒內，依序擊敗五位已正式登場的首領才算勝利。","Defeat all five encountered bosses in order within 480 seconds to win."]
 , ["角色死亡、放棄挑戰或 480 秒截止仍未擊敗五名首領即失敗。","Fail if your hero dies, you withdraw, or five bosses remain unbeaten at 480 seconds."]

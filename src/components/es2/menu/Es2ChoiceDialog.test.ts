@@ -65,8 +65,8 @@ describe('ES2 upgrade and reward picker', () => {
     await nextTick()
     const stats = button(mastery.id).querySelectorAll('.es2-mastery-stat')
     expect(stats).toHaveLength(2)
-    expect(stats[0]?.textContent).toContain('170% → 188%')
-    expect(stats[1]?.textContent).toContain('140% → 144.5%')
+    expect(stats[0]?.querySelector('.es2-mastery-values')?.textContent).toBe('170%→188%')
+    expect(stats[1]?.querySelector('.es2-mastery-values')?.textContent).toBe('140%→144.5%')
     expect(button('bolt').querySelector('.es2-mastery-stats')).toBeNull()
   })
 

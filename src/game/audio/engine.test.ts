@@ -723,6 +723,29 @@ describe('hero active skill audio lifetime', () => {
     audio.dispose()
   })
 
+  it('preloads the Crimson Retribution burst and layers it over an unfinished barrier cast', async () => {
+    const urls: string[] = []
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      loadHeroSfx: async url => { urls.push(url); return ctx.createBuffer(1, 48000, 48000) },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+    expect(urls.some(url => url.endsWith('audio/heroes/crimson-paladin-retribution.wav'))).toBe(true)
+    audio.playSfx('crimson-paladin-special')
+    const cast = ctx.sources.at(-1)!
+    ctx.currentTime = .4
+    const oscillators = ctx.oscillators.length
+    audio.playSfx('crimson-paladin-retribution')
+    const burst = ctx.sources.at(-1)!
+    expect(burst).not.toBe(cast)
+    expect(cast.stoppedAt).toBeNull()
+    expect(ctx.oscillators).toHaveLength(oscillators) // the sample replaces, never doubles, the synth fallback
+    audio.onScreen('menu')
+    expect(burst.stoppedAt).toBe(.4)
+    audio.dispose()
+  })
+
   it('does not stop already completed samples on returning home', async () => {
     const audio = await sampled()
     audio.playSfx(cue)

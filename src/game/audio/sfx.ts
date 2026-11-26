@@ -10,7 +10,7 @@ export const SFX_COOLDOWN: Record<SfxCue, number> = {
   treasureReveal: .35, treasureClaim: .35,
   hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, hitElemental: .22, hitEvolved: .32, hitHero: .35, eliteKill: 0.45,
   hurt: 0.28, 'hurt-heavy': .34, 'hurt-critical': .39, 'hurt-extreme': .48, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
-  'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75,
+  'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75, 'crimson-paladin-retribution': 0.6,
 }
 
 export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
@@ -64,6 +64,8 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   'spirit-summoner-special': [[48, 0, 0.65, 0.051, 'sine'], [67, 0.025, 0.45, 0.041, 'triangle'], [75, 0.12, 0.55, 0.038, 'sine'], [82, 0.25, 0.68, 0.03, 'sine'], [87, 0.36, 0.69, 0.022, 'triangle']],
   // Paladin: weighty shield impact, metallic overtones and a protective chord.
   'crimson-paladin-special': [[36, 0, 0.36, 0.085, 'triangle'], [48, 0.018, 0.19, 0.052, 'sawtooth'], [79, 0.035, 0.24, 0.032, 'triangle'], [55, 0.13, 0.61, 0.052, 'triangle'], [67, 0.21, 0.58, 0.037, 'sine'], [72, 0.29, 0.55, 0.024, 'sine']],
+  // Burst fallback: low blast, fractured overtone, falling ember tail.
+  'crimson-paladin-retribution': [[31, 0, 0.42, 0.085, 'sawtooth'], [43, 0.01, 0.3, 0.06, 'triangle'], [86, 0.02, 0.16, 0.03, 'sawtooth'], [62, 0.08, 0.45, 0.04, 'triangle'], [50, 0.2, 0.6, 0.03, 'sine']],
 }
 
 /** Cues that also get a short percussive noise burst. */

@@ -108,11 +108,19 @@
   .es2-skill-card:hover:not(:disabled),.es2-skill-card.es2-choice-focused{transform:none}
 }
 
-/* Compact rank comparisons: keep rarity colors and authored art independent. */
-.es2-mastery-stats{position:relative;z-index:1;display:grid;gap:3px;margin:8px 13px 0;padding:6px 0 0;border-top:1px solid var(--es2-card-border);min-width:0}
-.es2-mastery-stat{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:1px 6px;color:var(--es2-card-description);font:500 max(11px,calc(.75rem * var(--es2-ui-scale,1)))/1.35 system-ui,sans-serif;overflow-wrap:anywhere}
-.es2-mastery-values{white-space:nowrap;font-variant-numeric:tabular-nums;margin-left:auto}
-.es2-mastery-values strong{color:#a8efbd;font-weight:800}
+/* Rank comparisons: align every value and arrow; wrap labels, not the comparison group. */
+.es2-mastery-stats{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,max-content) auto minmax(0,max-content);gap:2px 5px;margin:8px 13px 0;padding:6px 0 0;border-top:1px solid var(--es2-card-border);min-width:0;container-type:inline-size}
+.es2-mastery-stat{display:grid;grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,46%);grid-template-columns:subgrid;align-items:center;gap:2px 5px;padding:2px 3px;border-radius:4px;background:#050b182b;color:var(--es2-card-description);font:500 max(11px,calc(.75rem * var(--es2-ui-scale,1)))/1.35 system-ui,sans-serif;min-width:0}
+.es2-mastery-label{grid-column:1;min-width:0;overflow-wrap:anywhere}
+.es2-mastery-values{display:grid;grid-column:2/-1;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-columns:subgrid;align-items:center;gap:3px;min-width:0;font-variant-numeric:tabular-nums lining-nums;text-align:right;overflow-wrap:anywhere}
+.es2-mastery-before{grid-column:1;color:var(--es2-card-description);opacity:.8}
+.es2-mastery-arrow{grid-column:2;color:var(--es2-card-description);opacity:.7;text-align:center}
+.es2-mastery-values strong{grid-column:3;color:#a8efbd;font-weight:800}
+@container(max-width:155px){
+  .es2-mastery-label{grid-column:1/-1}
+  .es2-mastery-values{grid-column:1/-1;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+}
 @media(max-width:610px),(orientation:landscape) and (max-height:520px){
-  .es2-mastery-stats{margin:4px 8px 0;padding-top:3px;gap:2px}
+  .es2-mastery-stats{margin:4px 8px 0;padding-top:3px;gap:1px 4px}
+  .es2-mastery-stat{padding:1px 2px}
 }

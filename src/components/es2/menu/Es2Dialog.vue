@@ -4,7 +4,7 @@ import { upgradeKeyIndex } from '../../../game/input'
 import { nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 const props = withDefaults(defineProps<{
   active: boolean; title: string; subtitle?: string; dismissible?: boolean
-  wide?: boolean; variant?: 'default' | 'choice' | 'settings'; tone?: 'neutral' | 'legendary' | 'victory' | 'defeat'
+  wide?: boolean; variant?: 'default' | 'choice' | 'settings' | 'result'; tone?: 'neutral' | 'legendary' | 'victory' | 'defeat'
 }>(), { dismissible: true, wide: false, variant: 'default', tone: 'neutral' })
 const emit = defineEmits<{ cancel: []; shortcut: [event: KeyboardEvent] }>()
 const headingId = useId()
@@ -85,7 +85,7 @@ onBeforeUnmount(() => {
 <template>
   <Teleport to="body">
     <div v-if="active" class="es2-backdrop" :class="{ 'es2-backdrop-preferences': variant === 'settings' }" @pointerdown.self="onOutside" @click.stop>
-      <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice', 'es2-dialog-preferences': variant === 'settings' }]"
+      <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice', 'es2-dialog-preferences': variant === 'settings', 'es2-dialog-result': variant === 'result' }]"
         role="dialog" aria-modal="true" :aria-labelledby="headingId" tabindex="-1" @pointerdown.stop>
         <header class="es2-dialog-header">
           <div><span class="es2-eyebrow">✦ ECLIPSE SURVIVORS ✦</span><h2 :id="headingId">{{ title }}</h2><p v-if="subtitle">{{ subtitle }}</p></div>

@@ -25,7 +25,7 @@ export type SfxCue =
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'massKill' | 'boss' | 'bossStagger' | 'bossDefeat' | 'hurt' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'pickup' | 'pickupBurst' | 'evolution'
   | ContactSfxCue | 'treasureReveal' | 'treasureClaim'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
-  | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
+  | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special' | 'crimson-paladin-retribution'
 
 export interface JobDef { label: string; hp: number; speed: number; damage: number; delay: number; range: number }
 /** Original tuple `[id, icon, title, desc]` as a named record. */
@@ -123,7 +123,7 @@ export type ContentEvent =
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
 export type ContactKind = 'elemental' | 'evolved' | 'hero'
-export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean; kind?: ContactKind | 'heavy' | 'heal'; severity?: import('./health-impact').HeroDamageSeverity }
+export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean; kind?: ContactKind | 'heavy' | 'heal'; /** Outgoing damage ÷ base damage; drives the number's visual tier. */ multiplier?: number; severity?: import('./health-impact').HeroDamageSeverity }
 export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number; contact?: 'normal' | 'heavy' | 'critical'; angle?: number; kind?: ContactKind }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }

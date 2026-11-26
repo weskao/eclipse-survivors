@@ -132,15 +132,6 @@
 .es2-skins button small{font:.72rem system-ui,sans-serif;color:var(--es2-muted)}
 .es2-archive-section>.es2-danger{margin-top:22px}
 .es2-empty{padding:35px 16px;text-align:center;line-height:1.7;color:var(--es2-muted);border:1px dashed #8d9ba95b;border-radius:12px}
-.es2-result{text-align:center}
-.es2-result-hero{position:relative;width:145px;height:165px;margin:auto}
-.es2-result-hero img{width:100%;height:100%;object-fit:contain}
-.es2-result-crown{position:absolute;right:0;top:-8px;font-size:2.6rem;color:#e7bf80;text-shadow:0 0 20px #e4b26377}
-.es2-result-status{font:700 .72rem system-ui,sans-serif;letter-spacing:.13em;color:#e6c995}
-.es2-result-stats{text-align:left;margin-top:20px}
-.es2-reward-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;padding:15px;border:1px solid #b5a06c7a;border-radius:10px;background:#4d3a2655}
-.es2-reward-strip strong{color:#f9d596}
-.es2-reward-strip span{font-size:.8rem}
 .es2-backdrop-preferences{grid-template-columns:minmax(0,1fr)}
 .es2-dialog-preferences{min-width:0;max-width:100%;overflow:clip}
 .es2-dialog-preferences .es2-dialog-body{overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;padding-inline:5px;box-sizing:border-box}
@@ -217,11 +208,6 @@
   .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 8px 0;font-size:calc(.75rem * var(--es2-ui-scale,1));line-height:1.3}
   .es2-choice .es2-card-selected-text{padding:3px 8px 0}
   .es2-dialog-choice .es2-hint{margin:7px 0 0;line-height:1.3;font-size:.7rem}
-  .es2-result-hero{width:clamp(75px,22vw,110px);height:clamp(85px,24vw,118px)}
-  .es2-result-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0}
-  .es2-result-stats>div{padding:8px 5px;gap:3px}
-  .es2-result-stats b{font-size:1rem}
-  .es2-reward-strip{gap:7px;padding:9px}
 }
 @media (orientation:landscape) and (max-height:520px) {
   .es2-backdrop{padding:max(5px,env(safe-area-inset-top)) max(5px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left))}
@@ -270,13 +256,6 @@
   .es2-settings section+section{margin-top:10px;padding-top:8px}
   .es2-settings h3{margin:0 0 6px}
   .es2-slider-row{padding:4px 0}
-  .es2-result-hero{width:70px;height:75px}
-  .es2-result-status,.es2-result>p{margin:4px 0}
-  .es2-result-stats{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:6px 0}
-  .es2-result-stats>div{padding:5px 3px;gap:2px}
-  .es2-result-stats b{font-size:.88rem}
-  .es2-result-stats small{font-size:.72rem}
-  .es2-reward-strip{gap:5px;padding:7px}
 }
 @media (orientation:landscape) and (max-height:520px) and (pointer:coarse){.es2-dialog-choice .es2-hint{display:none}}
 
@@ -979,4 +958,74 @@
   :is(.es2-menu, .es2-hero-section, .es2-mode-section, .es2-archive-page, .es2-menu-action-bar, .es2-loading, .es2-backdrop, .es2-dialog, .es2-choice, #game[data-es2-combat-scene], .es2-hud__top, .es2-hud__bottom) {
     animation: none !important;
   }
+}
+
+/* Expedition result (victory/defeat): the whole report fits the viewport with no body scroll.
+   The portrait is the only flexible element: it grows into spare height and yields it to rewards.
+   Narrow portrait stacks banner over report; wide or landscape screens use banner | report. */
+.es2-dialog-result .es2-dialog-body{display:flex;flex-direction:column;overflow:hidden;touch-action:manipulation}
+.es2-dialog-result .es2-dialog-actions{justify-content:center;margin-top:clamp(8px,1.8dvh,18px);padding-top:clamp(8px,1.8dvh,16px)}
+.es2-dialog-result .es2-dialog-actions button{flex:0 1 220px}
+.es2-dialog-result .es2-result{position:relative;display:flex;flex-direction:column;flex:1 1 auto;gap:clamp(8px,1.5dvh,14px);min-height:0;text-align:center}
+.es2-dialog-result .es2-result-banner{position:relative;display:flex;flex-direction:column;align-items:center;flex:1 1 clamp(136px,31dvh,300px);gap:2px;padding:clamp(6px,1.2dvh,12px) 10px;border:1px solid #c3a97d40;border-radius:12px;background:radial-gradient(ellipse 58% 52% at 50% 40%,#e4b26324,transparent 72%),#08121ecc;box-shadow:inset 0 1px #d9bb8726}
+.es2-tone-defeat .es2-result-banner{background:radial-gradient(ellipse 58% 52% at 50% 40%,#9d454536,transparent 72%),#08121ecc}
+/* Preferred size lives on the banner; a zero-basis portrait keeps the banner floor at portrait-min + status + mode. */
+.es2-dialog-result .es2-result-hero{position:relative;flex:1 1 0;width:100%;min-height:56px}
+.es2-dialog-result .es2-result-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 10px 18px #000a)}
+.es2-dialog-result .es2-result-crown{position:absolute;top:6px;right:10px;z-index:2;font-size:clamp(1.6rem,4dvh,2.4rem);line-height:1;color:#e7bf80;text-shadow:0 0 20px #e4b26377}
+.es2-dialog-result .es2-result-status{flex:none;margin:4px 0 0;font:700 .75rem system-ui,sans-serif;letter-spacing:.13em;color:#e6c995}
+.es2-dialog-result .es2-result-mode{flex:none;margin:0;font-size:.85rem;color:var(--es2-muted)}
+.es2-dialog-result .es2-result-report{display:flex;flex:none;flex-direction:column;justify-content:safe center;gap:clamp(8px,1.5dvh,12px);min-width:0}
+.es2-dialog-result .es2-result-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(5px,1dvh,10px);margin:0;text-align:left}
+.es2-dialog-result .es2-result-stats>div{gap:3px;padding:clamp(6px,1.2dvh,12px) clamp(7px,1vw,14px)}
+.es2-dialog-result .es2-result-stats b{font-size:clamp(.95rem,2.2dvh,1.25rem);white-space:nowrap}
+.es2-dialog-result .es2-result-stats small{min-width:0;font-size:.72rem}
+.es2-reward-strip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:clamp(5px,1.1dvh,12px) 8px;border:1px solid #b5a06c7a;border-radius:10px;background:#4d3a2655}
+.es2-reward-strip strong{color:#f9d596}
+.es2-reward-group{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 6px;margin:0}
+.es2-reward-group small{font:700 .72rem system-ui,sans-serif;color:var(--es2-muted)}
+.es2-reward-strip span{padding:1px 8px;border:1px solid #b5a06c55;border-radius:999px;background:#0e1b2bcc;font-size:.75rem;line-height:1.4}
+.es2-dialog-result .es2-result-cloud{margin:0}
+@media (min-width:640px){
+  .es2-dialog-result .es2-result{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-rows:minmax(0,1fr);gap:clamp(10px,1.8vw,22px)}
+  .es2-dialog-result .es2-result-hero{flex-basis:clamp(96px,38dvh,340px)}
+  .es2-dialog-result .es2-victory-celebration{grid-column:1;grid-row:1}
+}
+/* Short or narrow screens: scoreboard ledger rows (label … value) instead of tall tiles. */
+@media (max-width:480px),(orientation:landscape) and (max-height:520px){
+  .es2-dialog-result .es2-result{gap:6px}
+  .es2-dialog-result .es2-result-report{gap:5px}
+  .es2-dialog-result .es2-result-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 6px}
+  .es2-dialog-result .es2-result-stats>div{flex-direction:row-reverse;justify-content:space-between;align-items:baseline;gap:6px;padding:1px 8px;border-radius:7px}
+  .es2-dialog-result .es2-result-stats b{font-size:.9rem;text-align:right}
+  .es2-dialog-result .es2-reward-strip{gap:3px;padding:4px 8px}
+  .es2-dialog-result .es2-reward-strip span{line-height:1.3}
+  .es2-dialog-result .es2-dialog-actions{margin-top:5px;padding-top:5px}
+  .es2-dialog-result .es2-result-hero{min-height:44px}
+  .es2-dialog-result .es2-result-banner{padding:4px 8px}
+  .es2-dialog-result .es2-result-status{margin-top:2px;letter-spacing:.08em}
+  .es2-dialog-result .es2-result-mode{font-size:.75rem}
+  .es2-dialog-result .es2-dialog-actions button{flex:1 1 0;min-width:0;padding:.5rem .75rem}
+}
+@media (max-width:480px){
+  .es2-dialog-result .es2-dialog-header .es2-eyebrow{display:none}
+  .es2-dialog-result .es2-dialog-header h2{margin:0 0 4px;font-size:calc(1.2rem * var(--es2-ui-scale,1))}
+  .es2-dialog-result .es2-dialog-header p{font-size:.78rem;line-height:1.35}
+}
+/* 320-class phones: a long value plus a one-word label overflow a ledger row, so stack value over label. The header summary repeats time, kills and level from the stats, so drop it here. */
+@media (max-width:360px){
+  .es2-dialog-result .es2-dialog-header h2{font-size:calc(1.05rem * var(--es2-ui-scale,1))}
+  .es2-dialog-result .es2-dialog-header p{display:none}
+  .es2-dialog-result .es2-result-stats>div{flex-direction:column;align-items:stretch;gap:0;padding:2px 8px}
+  .es2-dialog-result .es2-result-stats b{text-align:left}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .es2-dialog-result .es2-dialog-header>div:first-child{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px}
+  .es2-dialog-result .es2-dialog-header h2{margin:0}
+  .es2-dialog-result .es2-result{grid-template-columns:minmax(110px,.8fr) minmax(0,2.6fr)}
+  /* One flowing chip line: ember total, kind labels and unlock names share rows. */
+  .es2-dialog-result .es2-reward-strip{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:3px 6px}
+  .es2-dialog-result .es2-reward-group{display:contents}
+  .es2-dialog-result .es2-result-cloud{font-size:.75rem}
+  .es2-dialog-result .es2-result-cloud button{min-height:44px;padding:.3rem .8rem}
 }

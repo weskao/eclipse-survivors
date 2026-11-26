@@ -35,8 +35,12 @@ function select(item: MenuChoice): void {
       <small v-if="item.description" class="es2-card-description">{{ t(item.description) }}</small>
       <span v-if="item.statChanges?.length" class="es2-mastery-stats">
         <span v-for="stat in item.statChanges" :key="stat.label" class="es2-mastery-stat">
-          <span>{{ t(stat.label) }}</span>
-          <span class="es2-mastery-values">{{ stat.before }} → <strong>{{ stat.after }}</strong></span>
+          <span class="es2-mastery-label">{{ t(stat.label) }}</span>
+          <span class="es2-mastery-values">
+            <span v-if="stat.before !== '—'" class="es2-mastery-before">{{ stat.before }}</span>
+            <span v-if="stat.before !== '—'" class="es2-mastery-arrow">→</span>
+            <strong class="es2-mastery-after">{{ stat.after }}</strong>
+          </span>
         </span>
       </span>
       <small v-if="item.requirements" class="es2-card-requirements">◈ {{ t(item.requirements) }}</small>

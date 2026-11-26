@@ -87,7 +87,12 @@
       "counterDamagePerRank": 0.135,
       "lowHpThreshold": 0.4,
       "lowHpDamageBase": 1.35,
-      "lowHpDamagePerRank": 0.07
+      "lowHpDamagePerRank": 0.07,
+      "retributionRange": 175,
+      "retributionTargets": 5,
+      "retributionMinAbsorb": 8,
+      "retributionAbsorbRatio": 1.25,
+      "retributionRatioPerRank": 0.2
     }
   }
 }

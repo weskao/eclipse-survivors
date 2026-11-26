@@ -58,6 +58,13 @@ function set(
 const time = (c: HeroCast) => c.reduced ? STILL[c.kind] : c.elapsed
 const endFade = (c: HeroCast) => clamp(c.life / 0.2)
 const shatterOf = (c: HeroCast) => c.reduced ? 0 : clamp(1 - c.life / AEGIS_SHATTER)
+// Aegis beats: full-strength cast for ~1.2 s (on par with the other heroes), then a dim hold.
+const AEGIS_HOLD_FROM = 1, AEGIS_HOLD_RAMP = 0.4, AEGIS_HOLD_LEVEL = 0.42
+/** Aegis intensity: raise → hold → full retribution flash fading out across the shatter. */
+function aegisLevel(c: HeroCast, e: number): number {
+  if (!c.reduced && c.life <= AEGIS_SHATTER) return 1 - shatterOf(c)
+  return ease(e / 0.35) * (1 - (1 - AEGIS_HOLD_LEVEL) * ease((e - AEGIS_HOLD_FROM) / AEGIS_HOLD_RAMP))
+}
 
 /** Spirit wisp i: gathers beside the hero, then arcs to its target (or the guardian if none). */
 function wisp(c: HeroCast, i: number, e: number, out: { x: number; y: number }): void {
@@ -122,21 +129,24 @@ export function heroArtPose(out: HeroPose, c: HeroCast, slot: number): boolean {
     }
     return false
   }
-  // Crimson Paladin: raise → sustain (ward + orbiting runes) → shatter outward.
-  const raise = ease(e / 0.35), shatter = shatterOf(c)
+  // Crimson Paladin: raise → cast → dim hold (ward + orbiting runes) → retribution shatter outward.
+  const raise = ease(e / 0.35), shatter = shatterOf(c), level = aegisLevel(c, e)
+  const bursting = !r && c.life <= AEGIS_SHATTER
   if (slot === 0) {
+    // God-rays belong to the cast and the burst only; they leave during the hold.
+    const rays = bursting ? level : raise * (1 - ease((e - 0.9) / 0.4))
     return set(out, 0, -40, 0, 260 + raise * 60 + shatter * 120, 280 + raise * 50,
-      0.38 * raise * (1 - shatter) * (r ? 1 : 0.85 + Math.sin(e * 3) * 0.15), 0xffe2b0, 'rays', true, r)
+      0.38 * rays * (r ? 1 : 0.85 + Math.sin(e * 3) * 0.15), 0xffe2b0, 'rays', true, r)
   }
   if (slot === 1) {
     return set(out, 0, 0, 0, 150 + raise * 40 + shatter * 90, 165 + raise * 44 + shatter * 90,
-      0.88 * raise * (1 - shatter * 0.8), 0xffffff, 'ward', false, r)
+      0.88 * level, 0xffffff, 'ward', false, r)
   }
   if (slot < 8) {
     const k = slot - 2, a = k * TAU / 6 + e * 1.6
     const rad = 62 * raise + shatter * 140
     return set(out, Math.cos(a) * rad, Math.sin(a) * rad * 0.6, a + Math.PI / 2, 16, 26,
-      0.9 * raise * (1 - shatter), 0xffc27a, 'crystal', true, r)
+      0.9 * level, 0xffc27a, 'crystal', true, r)
   }
   return false
 }
@@ -171,9 +181,9 @@ export function heroMotePose(out: HeroPose, c: HeroCast, slot: number): boolean 
     return set(out, Math.cos(a) * rad, Math.sin(a) * rad * 0.4 - 10 - u * 40, 0, 8, 8,
       Math.sin(Math.PI * u) * 0.9 * fade, 0x8ff0e6, 'mist', true, false)
   }
-  const raise = ease(e / 0.35), shatter = shatterOf(c)
+  const shatter = shatterOf(c)
   const local = (e + slot * 0.137) % 1.2
   const rad = 50 + (slot % 4) * 8 + shatter * 160
   return set(out, Math.cos(a) * rad, Math.sin(a) * rad * 0.55 - local * 50, a, 6, 9,
-    Math.sin(Math.PI * local / 1.2) * 0.7 * raise * (shatter ? 1 - shatter * 0.5 : 1), 0xff7a5c, 'ember', true, false)
+    Math.sin(Math.PI * local / 1.2) * 0.7 * aegisLevel(c, e), 0xff7a5c, 'ember', true, false)
 }

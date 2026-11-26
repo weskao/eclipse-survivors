@@ -161,6 +161,24 @@ describe('three hero Q specials cinematic visuals', () => {
     expect(effects[0]!.life).toBe(HERO_AEGIS_SHATTER_SECONDS)
   })
 
+  it('fires Crimson Retribution once from real enemy contact and shatters the Aegis on the same frame', () => {
+    const cues: string[] = []
+    const engine = createEngine({ audio: { ...audio(), playSfx: cue => { cues.push(cue) } } })
+    engine.selectHero('crimson-paladin')
+    engine.start()
+    const h = engine.state.hero!
+    engine.state.mobs = [{ ...mob(h.x + 8, h.y), dmg: 30 }]
+    expect(engine.activateHeroSpecial()).toBe(true)
+    const fx = engine.state.content.effects.find(e => e.id === 'combat-vfx:hero-crimson-paladin')!
+    let elapsed = 0
+    while (!cues.includes('crimson-paladin-retribution') && elapsed < 5) { engine.advance(0.016); elapsed += 0.016 }
+    expect(cues.filter(cue => cue === 'crimson-paladin-retribution')).toHaveLength(1)
+    expect(fx.life).toBeLessThanOrEqual(HERO_AEGIS_SHATTER_SECONDS)
+    expect(engine.state.mobs[0]!.hp).toBeLessThan(9999)
+    for (let i = 0; i < 120; i++) engine.advance(0.016)
+    expect(cues.filter(cue => cue === 'crimson-paladin-retribution')).toHaveLength(1)
+  })
+
   it('lets the GPU pass own a hero effect so the Canvas registry skips exactly that one', () => {
     const s = createState()
     s.W = 840; s.H = 540; s.hero = createHero('knight')

@@ -2,7 +2,7 @@ import { t as translate } from '../../i18n'
 import { BALANCE } from '../config'
 import { DASH_COOLDOWN, TAU } from '../constants'
 import { easing } from '../math'
-import type { GameState, Hero } from '../types'
+import type { GameState, Hero, NumberFx } from '../types'
 import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
@@ -440,6 +440,40 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
   }
 }
 
+/** Damage-number tiers: size, fill, outline, coloured rim (silhouette cue) and punch-in pop.
+ * Escalation is carried by the number itself, as in most action RPGs, never by caption text. */
+interface NumberTier { font: string; bossFont: string; fill: string; bossFill: string; stroke: string; width: number; rim?: string; rimWidth: number; pop: number; shake: boolean }
+const tier = (size: number, bossSize: number, fill: string, stroke: string, width: number, pop: number,
+  rim?: string, shake = false, bossFill = fill): NumberTier => Object.freeze({
+  font: `900 ${size}px system-ui`, bossFont: `900 ${bossSize}px system-ui`, fill, bossFill, stroke, width,
+  rim, rimWidth: width + 6, pop, shake,
+})
+const NUMBER_TIERS = Object.freeze({
+  normal: tier(16, 21, '#fff1d0', '#151019e8', 4, .3, undefined, false, '#ffca7c'),
+  amplified: tier(20, 24, '#ffd27a', '#2a1508', 5, .3),
+  critical: tier(28, 32, '#ffb12e', '#3a1204', 6, .6, '#ff6a1a'),
+  devastating: tier(34, 38, '#fff6dc', '#3a0a04', 6, .8, '#ff3b1f', true),
+  hurt: tier(22, 22, '#ff737b', '#44121c', 5, .3),
+  hurtHeavy: tier(26, 26, '#ff9a62', '#44121c', 5, .38),
+  hurtCritical: tier(30, 30, '#ff4d6a', '#3a0710', 6, .45, '#ffd29b'),
+  hurtExtreme: tier(34, 34, '#fff0ea', '#3a0710', 6, .55, '#e0182f', true),
+})
+// Presentation thresholds only: ≥1.2× reads as a boosted hit; ≥2.4× (an upgraded crit) as devastating.
+const AMPLIFIED_AT = 1.2, DEVASTATING_AT = 2.4
+const KIND_FILL: Readonly<Record<NonNullable<NumberFx['kind']>, string>> = Object.freeze({
+  heal: '#9be9b6', elemental: '#9ae7ff', evolved: '#c6a0ff', hero: '#ffe49b', heavy: '#ffca7c',
+})
+
+function numberTier(z: NumberFx): NumberTier {
+  if (z.received) {
+    return z.severity === 'extreme' ? NUMBER_TIERS.hurtExtreme : z.severity === 'critical' ? NUMBER_TIERS.hurtCritical
+      : z.severity === 'heavy' ? NUMBER_TIERS.hurtHeavy : NUMBER_TIERS.hurt
+  }
+  const multiplier = z.multiplier ?? 1
+  return multiplier >= DEVASTATING_AT ? NUMBER_TIERS.devastating : z.critical ? NUMBER_TIERS.critical
+    : multiplier >= AMPLIFIED_AT ? NUMBER_TIERS.amplified : NUMBER_TIERS.normal
+}
+
 export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   // Three bounded passes: normal, important outgoing, incoming. No sort or temporary list.
   for (let tier = 0; tier < 3; tier++) {
@@ -453,12 +487,15 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     const critical = z.critical === true
     const received = z.received === true
     const severity = received ? z.severity : undefined
+    const style = numberTier(z)
     const life = critical || severity ? 0.82 : received ? 0.7 : 0.62
     const progress = Math.max(0, Math.min(1, 1 - z.life / life))
     const opacity = Math.max(0, Math.min(1, z.life / (critical ? 0.28 : 0.4)))
-    // A local pop makes confirmed crits readable without another full-screen reaction.
-    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * (severity === 'extreme' ? .5 : severity ? .38 : .3)
-    const px = Math.max(48, Math.min(s.W - 48, x))
+    // A local punch-in pop (bigger per tier) makes crits readable without a full-screen reaction.
+    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * style.pop
+    // Top tiers get a brief decaying horizontal jolt, folded into the one translate.
+    const shake = style.shake && !reducedMotion && progress < 0.25 ? Math.sin(progress * 90) * 3 * (1 - progress / 0.25) : 0
+    const px = Math.max(48, Math.min(s.W - 48, x)) + shake
     const py = Math.max(54, Math.min(s.H - 16, y))
     ctx.save()
     ctx.globalAlpha = opacity
@@ -466,19 +503,19 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     ctx.lineJoin = 'round'
     ctx.translate(px, py)
     if (pop !== 1) ctx.scale(pop, pop)
-    ctx.lineWidth = critical ? 6 : received ? 5 : 4
-    ctx.strokeStyle = critical ? '#321525' : received ? '#44121c' : '#151019e8'
-    if (critical || severity) {
-      const caption = translate(severity === 'extreme' ? (critical ? '極重暴擊!' : '極重擊!') : critical ? '暴擊!' : '重擊!')
-      ctx.font = '900 12px system-ui'
-      ctx.strokeText(caption, 0, -29)
-      ctx.fillStyle = '#fff4bf'
-      ctx.fillText(caption, 0, -29)
-    }
-    ctx.font = `900 ${severity === 'extreme' ? 33 : severity ? 28 : critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss || z.kind ? 21 : 16)}px system-ui`
+    // Contact kind tints only the low tiers; critical, devastating and incoming keep their tier colour.
+    const kindFill = !received && z.kind && (style === NUMBER_TIERS.normal || style === NUMBER_TIERS.amplified) ? KIND_FILL[z.kind] : undefined
+    ctx.font = z.boss || (kindFill && style === NUMBER_TIERS.normal) ? style.bossFont : style.font
     const label = received ? `−${z.value}` : z.kind === 'heal' ? `+${z.value}` : String(z.value)
+    if (style.rim) {
+      ctx.lineWidth = style.rimWidth
+      ctx.strokeStyle = style.rim
+      ctx.strokeText(label, 0, 0)
+    }
+    ctx.lineWidth = style.width
+    ctx.strokeStyle = style.stroke
     ctx.strokeText(label, 0, 0)
-    ctx.fillStyle = severity ? '#ffd29b' : received ? '#ff737b' : critical ? '#ffba45' : z.kind === 'heal' ? '#9be9b6' : z.kind === 'elemental' ? '#9ae7ff' : z.kind === 'evolved' ? '#c6a0ff' : z.kind === 'hero' ? '#ffe49b' : z.boss || z.kind === 'heavy' ? '#ffca7c' : '#fff1d0'
+    ctx.fillStyle = kindFill ?? (z.boss ? style.bossFill : style.fill)
     ctx.fillText(label, 0, 0)
     ctx.restore()
     }
