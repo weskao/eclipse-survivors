@@ -35,6 +35,25 @@ describe('hero render animation sampling', () => {
     expect(sampleHeroAnimation(s, hero).pose).toBe('victory')
   })
 
+  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)('%s samples actual dash travel in all eight octants', id => {
+    for (const reduced of [false, true]) {
+      for (let direction = 0; direction < 8; direction++) {
+        const s = setup(id === 'spirit-summoner' ? 'wizard' : 'knight')
+        s.heroId = id
+        const hero = s.hero!
+        // Prime the previous direction with East before changing dash travel.
+        hero.vx = 80; hero.vy = 0; hero.moveAmount = 1
+        expect(sampleHeroAnimation(s, hero, reduced).direction).toBe(0)
+        hero.dash = 0.2
+        hero.vx = 80 * Math.cos(direction * Math.PI / 4)
+        hero.vy = 80 * Math.sin(direction * Math.PI / 4)
+        expect(sampleHeroAnimation(s, hero, reduced)).toMatchObject({ pose: 'dash', direction })
+        hero.vx = 0; hero.vy = 0
+        expect(sampleHeroAnimation(s, hero, reduced).direction).toBe(direction)
+      }
+    }
+  })
+
   it('uses casting for wizard and weapon attacks for knight and ranger', () => {
     for (const job of ['knight', 'ranger', 'wizard'] as const) {
       const s = setup(job)
