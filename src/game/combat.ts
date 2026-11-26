@@ -1,5 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
+import { BOSS_DEFINITIONS } from './content/bosses/definitions'
 import { recordKill } from './kill-streak'
 import { burst, impact, emitHitImpact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
@@ -96,14 +97,15 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
     const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
     s.stars.push({ x: e.x, y: e.y, value: Math.round(value * (e.rewardXpMultiplier ?? 1)), t: rand(0, 6) })
-    burst(s, e.x, e.y, boss ? '#ffae83' : e.elite ? '#dab0ff' : e.type === 'golem' ? '#e3bc92' : e.type === 'bat' ? '#a99ce0' : '#8cebbf', boss ? 35 : e.elite ? 18 : 11)
+    const identity = boss && e.bossArtId ? BOSS_DEFINITIONS[e.bossArtId] : undefined
+    burst(s, e.x, e.y, boss ? (identity?.color ?? '#ffae83') : e.elite ? '#dab0ff' : e.type === 'golem' ? '#e3bc92' : e.type === 'bat' ? '#a99ce0' : '#8cebbf', boss ? 35 : e.elite ? 18 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
     if (!boss && e.elite) hooks.contactSfx?.('eliteKill')
     if (boss) {
       s.bossDefeated = true
       s.enemyShots.length = 0
-      hooks.message('🏆 擊敗森林魔王！')
-      impact(s, e.x, e.y, 210, '#ffdca4', 3)
+      hooks.message(identity ? `🏆 ${identity.title} Defeated!` : '🏆 擊敗森林魔王！')
+      impact(s, e.x, e.y, 210, identity?.color ?? '#ffdca4', 3)
     }
     // Observers see a fully finalized kill, including the boss flag and spawned XP.
     hooks.content?.(s, { type: 'kill', mob: e, damage: dealt })
