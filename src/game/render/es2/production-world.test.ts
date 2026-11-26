@@ -42,9 +42,9 @@ describe('ES2 world art live asset mapping', () => {
       expect(runtime.chests?.epic).not.toBe(runtime.chests?.rare)
       expect(assigned).toContain(ES3_EPIC_TREASURE_URL)
     } else expect(runtime.chests?.epic).toBe(runtime.chests?.rare)
-    expect(Object.keys(runtime.enemyDeaths ?? {})).toEqual(Object.keys(ES3_DEATH_URLS))
-    for (const url of Object.values(ES3_DEATH_URLS)) expect(assigned).toContain(url)
-    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL) + Object.keys(ES3_DEATH_URLS).length)
+    expect(Object.keys(runtime.enemyDeaths ?? {})).toEqual([])
+    for (const url of Object.values(ES3_DEATH_URLS)) expect(assigned).not.toContain(url)
+    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL))
   })
 
   it('loads only live world image categories once at mount, not all 49 UI resources', () => {
@@ -57,7 +57,7 @@ describe('ES2 world art live asset mapping', () => {
     expect(Object.keys(runtime.bosses)).toHaveLength(4)
     expect(Object.keys(runtime.ground)).toHaveLength(4)
     expect(Object.keys(runtime.decor)).toHaveLength(4)
-    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL) + Object.keys(ES3_DEATH_URLS).length)
+    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL))
   })
 
   it('crops the real phase and enemy atlas cells without redrawing a blank image', () => {
