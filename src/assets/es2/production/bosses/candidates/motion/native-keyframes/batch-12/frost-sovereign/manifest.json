@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "ice-fan-release-key-a",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/ice-fan-release-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "6024815e-39c0-45c2-9c9f-1621e1f320db",
+        "originalPngSha256": "99262907968e38e655d976c120c40d420abc71433ffdd12c07bb6d5891ed462b",
+        "canonicalReferenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        37,
+        0,
+        1242,
+        1245
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "alphaExtent": [
+        1205,
+        1245
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        37,
+        0,
+        12,
+        9
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "f181d47da4e75d451213f55d6b65e63322cd5cd6c006f84598f33fc26a4cbe1a",
+      "webpCompressedBytes": 983778,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Provisional Phase 1 ice-fan release. Wide frost effects influence bounds; art reaches image edges."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

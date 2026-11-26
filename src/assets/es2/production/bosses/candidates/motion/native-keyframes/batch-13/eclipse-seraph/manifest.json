@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "glide-east-key-a",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/glide-east-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "1644bc9e-95bb-4072-a647-2ea960ed460e",
+        "originalPngSha256": "fe4cbe7d39bdfa508da32a2e40caa1c2f38215939562ed639faa1edbf67f4cd9",
+        "canonicalReferenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        17,
+        23,
+        1288,
+        1179
+      ],
+      "alphaAnyBounds": [
+        13,
+        10,
+        1306,
+        1199
+      ],
+      "alphaExtent": [
+        1271,
+        1156
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        17,
+        23,
+        24,
+        20
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "36b6120c5d253c8379a18e5900b95bf57f5dd53bf1126ab13695c621b22237d7",
+      "webpCompressedBytes": 608128,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Previously generated but not delivered. Rightward glide alternative; not a verified sequence, phase or hover anchor. Original canonical silhouette and facial detail require review; no mirroring."
+    },
+    {
+      "bossId": "eclipse-seraph",
+      "id": "glide-east-key-b",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/glide-east-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "96e079d8-15f9-45d1-97a1-ec85e82b132e",
+        "originalPngSha256": "fdbbff47ed4ec162aaf1a5a6ec0c165824982d96bf7f028590143cdf06d39a78",
+        "canonicalReferenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        33,
+        33,
+        1267,
+        1167
+      ],
+      "alphaAnyBounds": [
+        0,
+        17,
+        1294,
+        1181
+      ],
+      "alphaExtent": [
+        1234,
+        1134
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        33,
+        33,
+        45,
+        32
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "b53a5f19f700599495fa56ad1f186473fb1288a7086f9cd7ca8c420559cd3826",
+      "webpCompressedBytes": 562972,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Previously generated but not delivered. Rightward glide alternative; not a verified sequence, phase or hover anchor. Original canonical silhouette and facial detail require review; no mirroring."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}
