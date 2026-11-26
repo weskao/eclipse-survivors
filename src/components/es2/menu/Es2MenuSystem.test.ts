@@ -168,6 +168,27 @@ describe('ES2 main menu integration adapter', () => {
     }
   })
 
+  it('aligns distinct old and new values and omits inactive placeholders on first unlock', async () => {
+    mounted({ screen: 'level', upgrades: [
+      { id: 'weapons:bone-spears', title: 'Bone Spears', desc: '', icon: '✦', rarity: 'common', level: 0, maxLevel: 5 },
+      { ...UP[0]!, level: 1 },
+    ] })
+    await nextTick()
+    const fresh = find('[data-choice="weapons:bone-spears"] .es2-mastery-stat')
+    expect(fresh.querySelector('.es2-mastery-label')?.textContent?.trim()).toBeTruthy()
+    expect(fresh.querySelector('.es2-mastery-before')).toBeNull()
+    expect(fresh.querySelector('.es2-mastery-arrow')).toBeNull()
+    expect(fresh.querySelector('.es2-mastery-after')?.textContent).toBe('76%')
+    const projectile = find('[data-choice="weapons:bone-spears"] .es2-mastery-stat:nth-child(2)')
+    expect(projectile.querySelector('.es2-mastery-before')?.textContent).toBe('0')
+    expect(projectile.querySelector('.es2-mastery-arrow')?.textContent).toBe('→')
+    expect(projectile.querySelector('.es2-mastery-after')?.textContent).toBe('3')
+    const learned = find('[data-choice="damage"] .es2-mastery-stat')
+    expect(learned.querySelector('.es2-mastery-before')?.textContent).toBe('128%')
+    expect(learned.querySelector('.es2-mastery-arrow')?.textContent).toBe('→')
+    expect(learned.querySelector('.es2-mastery-after')?.textContent).toBe('163.84%')
+  })
+
   it('forwards both legacy level-up and independently supplied treasure choices', async () => {
     const wrapper = mounted({ screen: 'level' })
     await nextTick()
