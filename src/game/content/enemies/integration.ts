@@ -3,6 +3,7 @@ import { BALANCE } from '../../config'
 import { recordKill } from '../../kill-streak'
 import { compactXpGems } from '../../xp-gems'
 import { burst, pushDamageNumber } from '../../fx'
+import { classifyHealthImpact, markHealthCritical } from '../../health-impact'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ELITE_AFFIXES, ENEMY_DEFINITIONS, type FactionAffix, type FactionKind } from './definitions'
@@ -118,16 +119,17 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       options.onReward?.(reward)
     })
     if (applied > 0) {
-      if ((critical || enemy.radius >= 24 || enemy.affix) && state.time - (enemy.lastVisualHoldAt ?? -Infinity) >= BALANCE.combat.hitStopCooldownSeconds) {
+      if (critical) markHealthCritical(enemy)
+      const heavy = enemy.radius >= 24 || !!enemy.affix || classifyHealthImpact(applied / enemy.max) === 'heavy'
+      if ((critical || heavy) && state.time - (enemy.lastVisualHoldAt ?? -Infinity) >= BALANCE.combat.hitStopCooldownSeconds) {
         enemy.visualFrame = factionPoseFrame(enemy, state.worldClock)
         enemy.visualHold = critical ? BALANCE.combat.hitStopCriticalSeconds : BALANCE.combat.hitStopHeavySeconds
         enemy.lastVisualHoldAt = state.time
       }
       state.damageDealt += applied
       pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
-        value: Math.round(applied), boss: false, critical, kind: kind ?? (enemy.radius >= 24 || enemy.affix ? 'heavy' : undefined) })
+        value: Math.round(applied), boss: false, critical, kind: kind ?? (heavy ? 'heavy' : undefined) })
       const angle = Math.atan2(enemy.y - sourceY, enemy.x - sourceX)
-      const heavy = enemy.radius >= 24 || !!enemy.affix
       emitCombatContact(state, hooks, enemy.x, enemy.y, enemy.radius, angle, critical, heavy, kind)
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)
@@ -217,7 +219,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     const hero = state.hero
     if (!hero || state.mode !== 'play') return false
     const before = hero.hp
-    damageHero(state, amount, hooks)
+    damageHero(state, amount, hooks, undefined, { rank: info.attackRank, angle: info.angle })
     if (hero.hp >= before) return false
     if (info.status && info.duration && info.duration > 0) {
       const existing = statuses[info.status]

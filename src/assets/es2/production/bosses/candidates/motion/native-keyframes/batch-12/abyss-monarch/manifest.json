@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "eclipse-hover-key-a",
+      "pose": "idle",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "idle/eclipse-hover-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "6d9589d3-728c-4eb3-88ae-94c2e37d27ce",
+        "originalPngSha256": "7053dd0dba6ad97fd5aa9d58b2dd1ea039e4be189a99d6dd6d08865ed9172304",
+        "canonicalReferenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        80,
+        4,
+        1163,
+        1239
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1230,
+        1254
+      ],
+      "alphaExtent": [
+        1083,
+        1235
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        80,
+        4,
+        91,
+        15
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "1f28611a076f59a0eb062fac7c2a6dd710a43a6d14b81872fc0ca8780a6df2c9",
+      "webpCompressedBytes": 550878,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Provisional Phase 1 hover. Face, hair and clothing differ from canonical art."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

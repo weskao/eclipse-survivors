@@ -1,5 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
+import { classifyHealthImpact, classifyHeroDamage, markHealthCritical, recordHeroImpact, type IncomingHit } from './health-impact'
 import { BOSS_DEFINITIONS } from './content/bosses/definitions'
 import { recordKill } from './kill-streak'
 import { burst, impact, emitHitImpact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
@@ -69,13 +70,14 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
   if (!Number.isFinite(applied) || applied <= 0) return
   const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
-  const heavy = boss || e.type === 'golem' || !!e.elite
+  const dealt = Math.min(e.hp, applied)
+  const heavy = boss || e.type === 'golem' || !!e.elite || classifyHealthImpact(dealt / e.max) === 'heavy'
   if ((critical || heavy) && s.time - (e.lastVisualHoldAt ?? -Infinity) >= BALANCE.combat.hitStopCooldownSeconds) {
     e.visualPhase ??= e.phase
     e.visualHold = critical ? BALANCE.combat.hitStopCriticalSeconds : BALANCE.combat.hitStopHeavySeconds
     e.lastVisualHoldAt = s.time
   }
-  const dealt = Math.min(e.hp, applied)
+  if (critical && dealt > 0) markHealthCritical(e)
   s.damageDealt += dealt
   e.hp = Math.max(0, e.hp - applied)
   e.hit = 0.16
@@ -236,10 +238,13 @@ export function victoryConditionMet(
   return survived && bossDefeated
 }
 
-export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: Mob): void {
+export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: Mob, incoming?: IncomingHit): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play' || hero.hp <= 0 || hero.inv > 0 || hero.dash > 0 || !Number.isFinite(n) || n <= 0) return
-  const mitigated = hooks.mitigateIncomingDamage?.(n) ?? n
+  const rank = incoming?.rank ?? (source ? source.type === 'boss' ? 'boss' : source.elite ? 'elite' : 'ordinary' : undefined)
+  const critical = !!rank && (hooks.rollIncomingCritical?.(rank) ?? false)
+  const raw = critical && rank ? n * BALANCE.combat.incomingCritical[rank].multiplier : n
+  const mitigated = hooks.mitigateIncomingDamage?.(raw) ?? raw
   // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
   if (!Number.isFinite(mitigated) || mitigated <= 0) return
   const shield = hero.skills.shield ?? 0
@@ -248,14 +253,18 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
   hero.hp = Math.max(0, hero.hp - taken)
+  const severity = classifyHeroDamage(actuallyTaken / hero.max, critical)
   if (actuallyTaken > 0) {
-    pushDamageNumber(s, { x: hero.x, y: hero.y - 56, life: 0.7,
-      value: Math.round(actuallyTaken), boss: false, received: true })
+    if (critical) markHealthCritical(hero)
+    pushDamageNumber(s, { x: hero.x, y: hero.y - 56, life: severity ? 0.82 : 0.7,
+      value: Math.round(actuallyTaken), boss: false, received: true, critical, severity })
   }
   hero.inv = 1
-  // Routine chip damage uses local hit feedback; only major HP loss nudges the camera.
-  if (actuallyTaken >= hero.max * 0.22) requestCameraKick(s, 1.6)
-  impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
+  if (severity && actuallyTaken > 0) {
+    const direction = incoming?.angle ?? (source ? Math.atan2(hero.y - source.y, hero.x - source.x) : hero.aimAngle + Math.PI)
+    recordHeroImpact(hero, s.worldClock, direction, severity)
+    emitHitImpact(s, hero.x, hero.y - 22, severity === 'extreme' ? 34 : 24, direction, critical, true)
+  } else impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
   if (shield) {
     impact(s, hero.x, hero.y, 58, '#9ad3ff', 0.4)
     burst(s, hero.x, hero.y, '#bbdcff', 10)
@@ -280,7 +289,7 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
     e.ky = ky
     e.stagger = Math.max(e.stagger, boss ? 0.04 : 0.14)
   }
-  hooks.sfx('hurt')
+  hooks.sfx(severity === 'extreme' ? 'hurt-extreme' : critical ? 'hurt-critical' : severity === 'heavy' ? 'hurt-heavy' : 'hurt')
   hooks.content?.(s, { type: 'damage', amount: actuallyTaken })
   hooks.afterDamage?.(actuallyTaken, source)
   if (hero.hp === 0) hooks.end(false)

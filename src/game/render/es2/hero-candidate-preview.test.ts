@@ -45,9 +45,17 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain(`${south} South-facing`)
     expect(summary).toContain('6 diagonal four-frame strips')
     expect(summary).toContain('6 northern four-frame strips')
+    expect(summary).toContain('16 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length} candidate animation strips`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 2)
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 18} candidate animation strips`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 18)
+    const pending = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-atlas"]')]
+    expect(pending).toHaveLength(16)
+    const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW"]
+    for (const name of expectedPending) {
+      expect(pending.some(article => article.querySelector('h2')?.textContent?.startsWith(name))).toBe(true)
+    }
+    expect(pending.every(article => article.querySelector('canvas')?.dataset.mirrored === 'false')).toBe(true)
     const authored = document.querySelector<HTMLElement>('[data-review-kind="batch-6-nw"]')
     const reflected = document.querySelector<HTMLElement>('[data-review-kind="ne-reflected-nw"]')
     expect(authored?.textContent).toContain('NW')

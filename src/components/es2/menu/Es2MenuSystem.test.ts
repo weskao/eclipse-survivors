@@ -10,6 +10,7 @@ import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
 import Es2MenuSystem from './Es2MenuSystem.vue'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../../../game/content/accessibility/preferences'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 
 const base = {
@@ -166,6 +167,17 @@ describe('ES2 main menu integration adapter', () => {
     expect(image.closest('picture')?.querySelector('source')?.getAttribute('srcset')).toContain('solar-tempest@3x.webp')
     await wrapper.setProps({ upgradeEffect: 'still' })
     expect(image.getAttribute('src')).toContain('solar-tempest@3x.webp')
+  })
+
+  it('uses animated skill art normally and still art for accessibility preferences', async () => {
+    const wrapper = mounted({ screen: 'level', upgradeEffect: 'soft', upgrades: [UP.find(u => u.id === 'speed')!],
+      accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES } })
+    const image = () => find('[data-choice="speed"] .es2-card-art img').getAttribute('src')
+    expect(image()).toContain('speed@3x-animated.webp')
+    await wrapper.setProps({ accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedFlashing: true } })
+    expect(image()).toContain('speed@3x.webp')
+    await wrapper.setProps({ accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'on' } })
+    expect(image()).toContain('speed@3x.webp')
   })
 
   it('renders every cursed relic with the cursed chest artwork, independent of its ID and rarity', async () => {

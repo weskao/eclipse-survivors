@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "071de3d0bdc4ac93183b2524e9ca25f0f313d29e",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "fallen-key-a",
+      "pose": "death",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "death/fallen-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "352ffd17-e2fb-48db-a231-491c7a41ed67",
+        "originalPngSha256": "a66fad0bb7a438a82ee55082b6587116d4e7b07cf8c8ac492599546ad027c540",
+        "canonicalReferenceHead": "071de3d0bdc4ac93183b2524e9ca25f0f313d29e"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        40,
+        42,
+        1189,
+        1225
+      ],
+      "alphaAnyBounds": [
+        0,
+        19,
+        1240,
+        1254
+      ],
+      "alphaExtent": [
+        1149,
+        1183
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        40,
+        42,
+        65,
+        29
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "8fe7e6e786e45b2029c7e92451a58d0a063eb7752ab7310641e95155e7611dcf",
+      "webpCompressedBytes": 775856,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Fallen seraph: bowed head, lowered wings and cracked eclipse halo. Phase 3 visual hypothesis only. Identity, hover anchor, sequence and duration not approved. Generated redraw, no scaling."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

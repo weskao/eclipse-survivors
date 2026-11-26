@@ -6,7 +6,8 @@ import { drawHitImpact } from './hit-impact'
 import { drawImpactWaves } from './effects'
 import { createContentRegistry } from '../content/registry'
 import { COMBAT_VFX_PACK } from '../content/packs/combat-vfx'
-import { hit } from '../combat'
+import { hit, damageHero } from '../combat'
+import { healthCriticalVersion } from '../health-impact'
 import type { GameHooks, Mob } from '../types'
 
 describe('directional combat contact', () => {
@@ -51,4 +52,25 @@ describe('directional combat contact', () => {
     drawImpactWaves(f.ctx, s, 0, 0, false, false, 0)
     expect(f.calls).toHaveLength(0)
   })
+})
+
+it('makes heavy contact larger without fabricating a critical hit, and preserves real crit identity', () => {
+  const s = createState(); s.hero = createHero('knight'); s.mode = 'play'
+  const make = (): Mob => ({ x: 40, y: 0, type: 'goblin', hp: 100, max: 100, r: 20, speed: 20, dmg: 5, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 })
+  const hooks: GameHooks = { end() {}, message() {}, offerUpgrades() {}, sfx() {} }
+  const normal = make(), heavy = make(), critical = make()
+  hit(s, normal, 5, hooks)
+  hit(s, heavy, 30, hooks)
+  hit(s, critical, 5, { ...hooks, consumeCriticalHit: () => true })
+  expect(s.impactWaves[1]!.size).toBeGreaterThan(s.impactWaves[0]!.size)
+  expect(s.impactWaves[1]!.life).toBeGreaterThan(s.impactWaves[0]!.life)
+  expect(s.numberFx[1]!.critical).toBe(false)
+  expect(healthCriticalVersion(critical)).toBeGreaterThan(0)
+  expect(healthCriticalVersion(heavy)).toBe(0)
+  expect([normal.hp, heavy.hp, critical.hp]).toEqual([95, 70, 95])
+  const hp = s.hero.hp
+  damageHero(s, hp * .3, hooks)
+  expect(s.hero.hp).toBeCloseTo(hp * .7)
+  expect(s.impactWaves.at(-1)?.contact).toBe('normal')
+  expect(s.numberFx.at(-1)?.severity).toBe('heavy')
 })

@@ -1,6 +1,6 @@
 import { t as translate } from '../../i18n'
 import { BALANCE } from '../config'
-import { DASH_COOLDOWN, LOW_HP_PCT, TAU } from '../constants'
+import { DASH_COOLDOWN, TAU } from '../constants'
 import { easing } from '../math'
 import type { GameState, Hero } from '../types'
 import type { Ctx2D } from './ctx'
@@ -10,6 +10,7 @@ import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
 import { drawEnergyMissile, drawEnergyTrail, drawZoneMotes } from './energy-art'
 import { meleeArtId, type HeroAttackSprites } from './hero-attack-art'
 import { drawHitImpact } from './hit-impact'
+import { drawHeroHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarTarget, type HealthBarMotion } from './health-bars'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -168,7 +169,7 @@ const DASH_READY_FLASH = 0.28
 const STATUS_BAR_WIDTH = 56
 
 /** Foot-level dash and health readouts; a healthy hero with dash ready draws nothing. */
-export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false, healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reduceFlashing = false): void {
   if (s.mode === 'menu' || s.mode === 'result' || hero.hp <= 0) return
   const x = hero.x + ox
   const y = hero.y + oy
@@ -194,24 +195,9 @@ export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number,
     ctx.stroke()
     ctx.restore()
   }
-  if (hero.hp < hero.max) {
-    const pct = hero.hp / hero.max * 100
-    const critical = pct <= LOW_HP_PCT
-    const left = x - STATUS_BAR_WIDTH / 2
-    const top = y + 22
-    ctx.save()
-    ctx.fillStyle = '#070c11d9'
-    ctx.fillRect(left, top, STATUS_BAR_WIDTH, 6)
-    ctx.fillStyle = critical ? '#ff4250' : '#d65854'
-    ctx.fillRect(left, top, STATUS_BAR_WIDTH * pct / 100, 6)
-    if (critical) {
-      // Outline keeps the critical state readable without relying on hue alone.
-      ctx.strokeStyle = '#ffe3d3'
-      ctx.lineWidth = 1
-      ctx.strokeRect(left, top, STATUS_BAR_WIDTH, 6)
-    }
-    ctx.restore()
-  }
+  const motion = sampleHealthBar(hero, s.worldClock, healthBars, reducedMotion)
+  if (shouldShowHealthBar(motion))
+    drawHeroHealthBar(ctx, motion, x, y + 22, STATUS_BAR_WIDTH, reduceFlashing)
 }
 
 // Weapon ribbons: radial gold-to-ivory gradients with trailing sparkle and wave afterglow.
@@ -467,11 +453,12 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     budget--
     const critical = z.critical === true
     const received = z.received === true
-    const life = critical ? 0.82 : received ? 0.7 : 0.62
+    const severity = received ? z.severity : undefined
+    const life = critical || severity ? 0.82 : received ? 0.7 : 0.62
     const progress = Math.max(0, Math.min(1, 1 - z.life / life))
     const opacity = Math.max(0, Math.min(1, z.life / (critical ? 0.28 : 0.4)))
     // A local pop makes confirmed crits readable without another full-screen reaction.
-    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * 0.3
+    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * (severity === 'extreme' ? .5 : severity ? .38 : .3)
     const px = Math.max(48, Math.min(s.W - 48, x))
     const py = Math.max(54, Math.min(s.H - 16, y))
     ctx.save()
@@ -482,16 +469,17 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     if (pop !== 1) ctx.scale(pop, pop)
     ctx.lineWidth = critical ? 6 : received ? 5 : 4
     ctx.strokeStyle = critical ? '#321525' : received ? '#44121c' : '#151019e8'
-    if (critical) {
+    if (critical || severity) {
+      const caption = translate(severity === 'extreme' ? (critical ? '極重暴擊!' : '極重擊!') : critical ? '暴擊!' : '重擊!')
       ctx.font = '900 12px system-ui'
-      ctx.strokeText(translate('暴擊!'), 0, -29)
+      ctx.strokeText(caption, 0, -29)
       ctx.fillStyle = '#fff4bf'
-      ctx.fillText(translate('暴擊!'), 0, -29)
+      ctx.fillText(caption, 0, -29)
     }
-    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss || z.kind ? 21 : 16)}px system-ui`
+    ctx.font = `900 ${severity === 'extreme' ? 33 : severity ? 28 : critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss || z.kind ? 21 : 16)}px system-ui`
     const label = received ? `−${z.value}` : z.kind === 'heal' ? `+${z.value}` : String(z.value)
     ctx.strokeText(label, 0, 0)
-    ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.kind === 'heal' ? '#9be9b6' : z.kind === 'elemental' ? '#9ae7ff' : z.kind === 'evolved' ? '#c6a0ff' : z.kind === 'hero' ? '#ffe49b' : z.boss || z.kind === 'heavy' ? '#ffca7c' : '#fff1d0'
+    ctx.fillStyle = severity ? '#ffd29b' : received ? '#ff737b' : critical ? '#ffba45' : z.kind === 'heal' ? '#9be9b6' : z.kind === 'elemental' ? '#9ae7ff' : z.kind === 'evolved' ? '#c6a0ff' : z.kind === 'hero' ? '#ffe49b' : z.boss || z.kind === 'heavy' ? '#ffca7c' : '#fff1d0'
     ctx.fillText(label, 0, 0)
     ctx.restore()
     }

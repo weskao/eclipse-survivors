@@ -54,9 +54,10 @@ export function sampleHeroAnimation(s: GameState, hero: Hero, reducedMotion = fa
   const count = FRAMES[pose]
   const old = entered.get(hero)
   const attacking = pose === 'attack' || pose === 'cast'
-  // Shadowblade uses authored locomotion clips in every octant. A dash can
-  // start before a new run sample; use actual travel rather than stale facing.
-  const running = (pose === 'run' || (s.heroId === 'shadowblade' && pose === 'dash')) &&
+  // ES2 directional locomotion must follow actual dash travel, not stale facing.
+  const directionalDash = pose === 'dash' && (s.heroId === 'shadowblade' ||
+    s.heroId === 'spirit-summoner' || s.heroId === 'crimson-paladin')
+  const running = (pose === 'run' || directionalDash) &&
     (hero.vx * hero.vx + hero.vy * hero.vy > 1)
   const direction = attacking ? octant(hero.aimAngle)
     : running ? octant(Math.atan2(hero.vy, hero.vx))

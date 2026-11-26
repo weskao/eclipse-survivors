@@ -62,7 +62,7 @@ const levelActive = computed(() => props.screen === 'level' && !props.specialCho
 const specialActive = computed(() => !!props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
   id: upgrade.id, title: upgrade.title, description: upgrade.desc, icon: upgrade.icon,
-  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, props.upgradeEffect === 'still'),
+  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, props.upgradeEffect === 'still' || props.accessibilityPreferences?.reducedMotion === 'on' || !!props.accessibilityPreferences?.reducedFlashing),
   rarity: upgrade.rarity, level: upgrade.level, maxLevel: upgrade.maxLevel,
   requirements: upgrade.requirements, evolution: upgrade.isEvolution,
   statChanges: upgradeStatPreview(upgrade.id, upgrade.level, upgrade.maxLevel),
@@ -72,7 +72,7 @@ const specialCards = computed(() => {
   if (!offer) return offer
   if (offer.kind === 'evolution') return { ...offer, items: offer.items.map(item => ({
     ...item,
-    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, props.upgradeEffect === 'still'),
+    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, props.upgradeEffect === 'still' || props.accessibilityPreferences?.reducedMotion === 'on' || !!props.accessibilityPreferences?.reducedFlashing),
     statChanges: item.statChanges ?? upgradeStatPreview(item.id, item.level ?? 0, item.maxLevel ?? 1),
   })) }
   return { ...offer, items: offer.items.map(item => ({

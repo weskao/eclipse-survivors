@@ -8,7 +8,6 @@ const diagonalCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction ===
 const northernCount = HERO_CANDIDATE_ATLASES.filter(asset => asset.direction === 'N' || asset.direction === 'NE' || asset.direction === 'NW').length
 document.querySelector<HTMLElement>('#candidate-summary')!.textContent =
   `${HERO_CANDIDATE_ATLASES.length} local WebP candidates: ${eastCount} East-facing, ${southCount} South-facing and ${diagonalCount} diagonal four-frame strips; ${northernCount} northern four-frame strips. Two extra NW comparison panels are review-only.`
-grid.setAttribute('aria-label', `${HERO_CANDIDATE_ATLASES.length} candidate animation strips`)
 
 const pause = document.querySelector<HTMLButtonElement>('#pause')!
 const previous = document.querySelector<HTMLButtonElement>('#step-prev')!
@@ -37,12 +36,43 @@ previewClips.push({
 if (summonerNE) previewClips.push({
   ...summonerNE, direction: 'NW', reviewKind: 'ne-reflected-nw', mirrored: true,
 })
+// Uploaded candidates are displayed here only. They must not enter the
+// gameplay atlas registry until the explicit manifest admission gate passes.
+const pendingAtlases = [
+  ['spirit-summoner', 'run', 'W', 'w-2026-11-25-batch-13'],
+  ['spirit-summoner', 'run', 'NW', 'nw-2026-11-25-batch-12'],
+  ['crimson-paladin', 'run', 'W', 'w-2026-11-25-batch-10'],
+  ['crimson-paladin', 'run', 'NW', 'nw-2026-11-25-batch-10'],
+  ['crimson-paladin', 'run', 'NE', 'ne-2026-11-25-batch-11'],
+  ['shadowblade', 'hurt', 'SE', 'hurt-se-2026-11-26-batch-17'],
+  ['shadowblade', 'death', 'SE', 'death-se-2026-11-26-batch-18'],
+  ['shadowblade', 'victory', 'SE', 'victory-se-2026-11-26-batch-19'],
+  ['spirit-summoner', 'hurt', 'SE', 'hurt-se-2026-11-26-batch-17'],
+  ['spirit-summoner', 'death', 'SE', 'death-se-2026-11-26-batch-19'],
+  ['spirit-summoner', 'victory', 'SE', 'victory-se-2026-11-26-batch-19'],
+  ['crimson-paladin', 'hurt', 'SE', 'hurt-se-2026-11-25-batch-14'],
+  ['crimson-paladin', 'death', 'SE', 'death-se-2026-11-25-batch-14'],
+  ['crimson-paladin', 'victory', 'SE', 'victory-se-2026-11-26-batch-19'],
+  ['crimson-paladin', 'special', 'SE', 'special-se-2026-11-26-batch-20'],
+  ['spirit-summoner', 'idle', 'NW', 'idle-nw-2026-11-25-batch-16'],
+] as const
+for (const [hero, pose, direction, folder] of pendingAtlases) {
+  previewClips.push({
+    hero, pose, direction, cellPixels: 768, reviewKind: 'pending-atlas',
+    url: import.meta.env.BASE_URL + `src/assets/es2/production/heroes/${hero}/candidates/${folder}/${pose}-${direction.toLowerCase()}-4frames@3x.webp`,
+  })
+}
+grid.setAttribute('aria-label', `${previewClips.length} candidate animation strips`)
+document.querySelector<HTMLElement>('#candidate-summary')!.textContent +=
+  ` ${pendingAtlases.length} additional pending atlases (review only).`
+
 const decodedSources = new Map<string, HTMLImageElement>()
 const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, reviewKind, mirrored = false }) => {
   const article = document.createElement('article')
   const label = document.createElement('h2')
   const reviewLabel = reviewKind === 'batch-6-nw' ? ' · authored NW (review only)'
-    : reviewKind === 'ne-reflected-nw' ? ' · reflected NE (review only)' : ''
+    : reviewKind === 'ne-reflected-nw' ? ' · reflected NE (review only)'
+    : reviewKind === 'pending-atlas' ? ' · pending atlas (review only)' : ''
   label.textContent = `${hero} · ${pose.toUpperCase()} · ${direction} (4 frames)${reviewLabel}`
   if (reviewKind) article.dataset.reviewKind = reviewKind
   const canvas = document.createElement('canvas')
@@ -55,7 +85,9 @@ const tiles = previewClips.map(({ hero, pose, direction, url, cellPixels, review
   grid.append(article)
   const existing = decodedSources.get(url)
   const image = existing ?? new Image()
-  const readyText = reviewKind
+  const readyText = reviewKind === 'pending-atlas'
+    ? 'QA_PENDING · preview only · not admitted to gameplay'
+    : reviewKind
     ? 'QA_PENDING · comparison only · verify staff handedness before gameplay'
     : `QA_PENDING · ${direction} direction only · not release art`
   image.addEventListener('load', () => {

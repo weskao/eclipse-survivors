@@ -94,6 +94,21 @@ describe('ES2 combat HUD', () => {
     expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d35048')
   })
 
+  it('snaps the hero health layers when reduced motion is enabled', async () => {
+    const { wrapper } = render({ healthMotion: 'on' })
+    const meter = wrapper.get('.es2-hud__track--health')
+    const value = (name: string) => (meter.element as HTMLElement).style.getPropertyValue(name)
+    await wrapper.setProps({ hud: { ...equipped, hpPct: 19 } })
+    expect(meter.attributes('aria-valuenow')).toBe('19')
+    expect(value('--hero-hp-front')).toBe('0.19')
+    expect(value('--hero-hp-trail')).toBe('0.19')
+    expect(meter.attributes('data-hero-hp-damage')).toBeUndefined()
+    await wrapper.setProps({ hud: { ...equipped, hpPct: 88 } })
+    expect(value('--hero-hp-front')).toBe('0.88')
+    expect(value('--hero-hp-trail')).toBe('0.88')
+    expect(meter.attributes('aria-valuenow')).toBe('88')
+  })
+
   it('tracks an offscreen boss with actual distance, direction and artwork, then hides when visible', async () => {
     const offscreen = { left: 184, top: 278, angle: 47, distance: 524, artSrc: '/boss-phases@3x.webp', atlas: true }
     const { wrapper } = render({
@@ -250,4 +265,15 @@ describe('ES2 combat HUD', () => {
     await wrapper.setProps({ canReturnHome: false })
     expect(wrapper.find('[data-es2-info-toggle]').exists()).toBe(false)
   })
+})
+
+it('uses the same sampled health variables for the fixed boss HUD', async () => {
+  const { wrapper } = render({ healthMotion: 'on', hud: { ...equipped, bossPct: 90 } })
+  const meter = wrapper.get('.es2-hud__track--boss')
+  const value = (name: string) => (meter.element as HTMLElement).style.getPropertyValue(name)
+  await wrapper.setProps({ hud: { ...equipped, bossPct: 30, bossCriticalVersion: 3 } })
+  expect(meter.attributes('aria-valuenow')).toBe('30')
+  expect(value('--hero-hp-front')).toBe('0.3')
+  expect(value('--hero-hp-trail')).toBe('0.3')
+  expect(meter.attributes('data-hp-impact')).toBeUndefined()
 })

@@ -8,6 +8,7 @@ from PIL import Image
 
 CELL = 768
 MARGIN = 8
+MIN_CORE = 441
 
 
 def pack(source: Path, output: Path, hero='shadowblade', pose='run', direction='S') -> dict:
@@ -28,6 +29,12 @@ def pack(source: Path, output: Path, hero='shadowblade', pose='run', direction='
             bounds = tile.getchannel('A').point(lambda a: 255 if a > 1 else 0).getbbox()
             if not bounds or min(bounds[0], bounds[1], cw-bounds[2], ch-bounds[3]) < MARGIN:
                 raise ValueError(f'frame {i}: insufficient original alpha margin')
+            # A large transparent cell or faint glow is not native character detail.
+            # This bounding-box proxy includes solid equipment/effects; visual QA remains required.
+            core = tile.getchannel('A').point(lambda a: 255 if a >= 128 else 0).getbbox()
+            extent = (core[2]-core[0], core[3]-core[1]) if core else (0, 0)
+            if min(extent) < MIN_CORE:
+                raise ValueError(f'frame {i}: solid-alpha core must be at least {MIN_CORE}x{MIN_CORE}px')
             sha = hashlib.sha256(tile.tobytes()).hexdigest()
             if sha in seen:
                 raise ValueError(f'frame {i}: duplicate source pixels')
@@ -43,6 +50,7 @@ def pack(source: Path, output: Path, hero='shadowblade', pose='run', direction='
                         cleared += 1
             atlas.paste(tile, (x*CELL+(CELL-cw)//2, y*CELL+(CELL-ch)//2))
             frames.append({'index': i, 'originalAlphaBounds': list(bounds), 'rgbaSHA256': sha,
+                           'coreAlphaBounds': list(core), 'coreExtent': list(extent),
                            'clearedMarginPixels': cleared,
                            'outputRGBA256': hashlib.sha256(tile.tobytes()).hexdigest()})
     output.mkdir(parents=True, exist_ok=False)

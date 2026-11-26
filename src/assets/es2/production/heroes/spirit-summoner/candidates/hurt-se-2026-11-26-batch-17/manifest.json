@@ -1,0 +1,309 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "hurt",
+  "direction": "SE",
+  "sourceDirection": "SE",
+  "directionStatus": "proposed SE; verify against live camera",
+  "mirrorAllowed": false,
+  "native3x": "core_extent_threshold_pass_visual_unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1312,
+    1199
+  ],
+  "sourceResolution": [
+    1312,
+    1199
+  ],
+  "sourceCellPixels": [
+    [
+      656,
+      599
+    ],
+    [
+      656,
+      599
+    ],
+    [
+      656,
+      600
+    ],
+    [
+      656,
+      600
+    ]
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    654,
+    653,
+    657,
+    661
+  ],
+  "footBottomsStatus": "alpha>=128 bottom proxy; anatomical foot placement and timing not approved",
+  "alphaBounds": [
+    [
+      56,
+      84,
+      712,
+      683
+    ],
+    [
+      56,
+      84,
+      711,
+      683
+    ],
+    [
+      56,
+      84,
+      712,
+      684
+    ],
+    [
+      56,
+      84,
+      711,
+      684
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRect": [
+        0,
+        0,
+        656,
+        599
+      ],
+      "sourceCellPixels": [
+        656,
+        599
+      ],
+      "coreAlphaBounds": [
+        94,
+        13,
+        543,
+        570
+      ],
+      "coreExtent": [
+        449,
+        557
+      ],
+      "sourceBoundaryMaxAlpha": 6,
+      "paddingOffset": [
+        56,
+        84
+      ],
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "footBottomProxy": 654,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        56,
+        84,
+        712,
+        683
+      ]
+    },
+    {
+      "index": 1,
+      "sourceRect": [
+        656,
+        0,
+        1312,
+        599
+      ],
+      "sourceCellPixels": [
+        656,
+        599
+      ],
+      "coreAlphaBounds": [
+        93,
+        23,
+        563,
+        569
+      ],
+      "coreExtent": [
+        470,
+        546
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "paddingOffset": [
+        56,
+        84
+      ],
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "footBottomProxy": 653,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        56,
+        84,
+        711,
+        683
+      ]
+    },
+    {
+      "index": 2,
+      "sourceRect": [
+        0,
+        599,
+        656,
+        1199
+      ],
+      "sourceCellPixels": [
+        656,
+        600
+      ],
+      "coreAlphaBounds": [
+        88,
+        28,
+        562,
+        573
+      ],
+      "coreExtent": [
+        474,
+        545
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "paddingOffset": [
+        56,
+        84
+      ],
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "footBottomProxy": 657,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        56,
+        84,
+        712,
+        684
+      ]
+    },
+    {
+      "index": 3,
+      "sourceRect": [
+        656,
+        599,
+        1312,
+        1199
+      ],
+      "sourceCellPixels": [
+        656,
+        600
+      ],
+      "coreAlphaBounds": [
+        107,
+        22,
+        555,
+        577
+      ],
+      "coreExtent": [
+        448,
+        555
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "paddingOffset": [
+        56,
+        84
+      ],
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "footBottomProxy": 661,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        56,
+        84,
+        711,
+        684
+      ]
+    }
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "b118159586480180969cf0826483d9af21c6885f14c55e02044a783ffffe4b92",
+  "originalPNGSHA256": "1eaaa0af6deef60c45ee3bee841c1e8bf85aee436b69777024d757f5667d1b8b",
+  "atlasFile": "hurt-se-4frames@3x.webp",
+  "webpSHA256": "10428a472aaddd327b3420e56bfeebe14ab50cb33953552c692f7bb8edb72055",
+  "bytes": 973106,
+  "sourceProvenance": {
+    "generationId": "a1843cd8-24dd-4bce-84d2-9396342589d8",
+    "canonicalPortraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "canonicalPortraitPath": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "referenceCommit": "909b0b3af8b8ec1641e8d9429da188a493eacfb1",
+    "inputName": "a_high_resolution_game_style_sprite_sheet_a_singl.png",
+    "generationTiming": "previously generated; not previously delivered"
+  },
+  "encoding": "Pillow WebP quality=100 method=3; review only; official Polytool not executed; decoded alpha verified exact",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "No resampling, no horizontal reflection, no alpha removal. Transparent padding only.",
+    "Direction is provisional; verify same identity, anatomical weapon handedness, frame continuity, gray translucent haze, and anchors at actual game scale.",
+    "Core extents are alpha>=128 bounds; they do not alone establish native fine detail or approval.",
+    "Polytool install blocked by GitHub DNS failure; cwebp missing and apt cannot locate webp package. Do not promote or wire before official conversion and QA."
+  ]
+}

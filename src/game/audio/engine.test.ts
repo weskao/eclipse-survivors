@@ -243,7 +243,7 @@ describe('playSfx', () => {
     expect(ctx.oscillators).toHaveLength(3)
   })
 
-  it('adds the noise burst only for knight, dash, hurt, boss', () => {
+  it('adds a single noise or sampled source for knight, dash, hurt, boss', () => {
     const audio = make()
     audio.wake()
     ctx.currentTime = 100
@@ -767,3 +767,28 @@ it('plays five different claim signatures through the real audio scheduler', () 
   })
   expect(new Set(signatures).size).toBe(5)
 })
+
+describe('sampled hero hurt feedback', () => {
+  it('uses one finite cached sample, no overlapping generic tone, and respects mute', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    ctx.currentTime = 10
+    audio.playSfx('hurt-heavy')
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const first = ctx.sources[0]!.buffer
+    ctx.currentTime = 11
+    audio.playSfx('hurt-heavy')
+    expect(ctx.sources[1]!.buffer).toBe(first)
+    ctx.currentTime = 12
+    audio.playSfx('hurt-critical')
+    expect(ctx.sources[2]!.buffer).not.toBe(first)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 13
+    audio.playSfx('hurt-extreme')
+    expect(ctx.sources).toHaveLength(3)
+  })
+})
+

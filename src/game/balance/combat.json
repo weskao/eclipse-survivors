@@ -60,5 +60,35 @@
   "chainDischargeRank": 5,
   "chainDischargeRadius": 220,
   "chainDischargeDamageMultiplier": 0.65,
-  "treasureRushXpMultiplier": 1.5
+  "treasureRushXpMultiplier": 1.5,
+  "incomingCritical": {
+    "ordinary": {
+      "chance": 0.03,
+      "multiplier": 1.35
+    },
+    "elite": {
+      "chance": 0.06,
+      "multiplier": 1.4
+    },
+    "boss": {
+      "chance": 0.08,
+      "multiplier": 1.5
+    }
+  },
+  "heroHitFeedback": {
+    "heavyLossFraction": 0.22,
+    "extremeLossFraction": 0.35,
+    "heavy": {
+      "shakePx": 2.5,
+      "seconds": 0.12
+    },
+    "critical": {
+      "shakePx": 3.2,
+      "seconds": 0.16
+    },
+    "extreme": {
+      "shakePx": 4,
+      "seconds": 0.18
+    }
+  }
 }

@@ -218,3 +218,21 @@ body [contenteditable]:not([contenteditable="false"]) * {
 
 /* Match the compact fixed boss HUD without changing its world-space health bar. */
 @media (orientation:landscape) and (max-height:520px){.boss-wrap{width:min(330px,38vw)}}
+
+/* Legacy hero HUD shares the same sampled transform values; XP is unchanged. */
+#hudHealthMeter{position:relative;isolation:isolate}
+#hudHealthMeter>i{position:absolute;inset:0;transform-origin:left center;transition:none}
+#hudHealthMeter>#hpBar{z-index:1;transform:scaleX(var(--hero-hp-front,var(--es2-progress,0)))}
+#hudHealthMeter>.hero-hp-trail{z-index:0;transform:scaleX(var(--hero-hp-trail,var(--es2-progress,0)));background:linear-gradient(180deg,#ffdfaa,#f2c37e 48%,#a87944);opacity:0;box-shadow:none}
+#hudHealthMeter[data-hero-hp-damage]>.hero-hp-trail{opacity:1}
+#hudHealthMeter[data-hero-hp-damage]>#hpBar{box-shadow:inset -3px 0 #fff3cf,inset 0 1px #fff8}
+
+/* The legacy boss meter consumes the same DOM sampler as the hero. */
+.boss-track:has(>#bossHealth){position:relative;isolation:isolate;overflow:hidden}
+.boss-track:has(>#bossHealth)>i{position:absolute;inset:0;transform-origin:left center;transition:none}
+.boss-track>#bossHealth{z-index:1;transform:scaleX(var(--hero-hp-front,var(--es2-progress,0)))}
+.boss-track>.hero-hp-trail{z-index:0;transform:scaleX(var(--hero-hp-trail,var(--es2-progress,0)));background:linear-gradient(180deg,#ffcfaa,#c78058 50%,#895043);opacity:0}
+.boss-track[data-hero-hp-damage]>.hero-hp-trail{opacity:.95}
+:is(#hudHealthMeter,.boss-track)[data-hp-impact]>:is(#hpBar,#bossHealth){box-shadow:inset -5px 0 #ffc27f,inset 0 1px #fff8}
+:is(#hudHealthMeter,.boss-track)[data-hp-impact="critical"]>:is(#hpBar,#bossHealth){box-shadow:inset -7px 0 #ffdc92,inset 0 1px #fff8}
+[data-es2-reduce-flashing="true"] :is(#hudHealthMeter,.boss-track)[data-hp-impact]>:is(#hpBar,#bossHealth){box-shadow:inset 0 1px #fff8}

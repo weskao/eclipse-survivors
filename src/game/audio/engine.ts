@@ -8,6 +8,7 @@ import type { BossId } from '../content/bosses/definitions'
 import { ATTACK_PRESENTATION } from '../content/bosses/attack-presentation'
 import { createBossAttackAudio } from './boss-attacks'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones, treasureTones, treasureClaimTones } from './sfx'
+import { isHurtCue, renderHurtSample, type HurtCue } from './hurt-samples'
 import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
@@ -93,7 +94,7 @@ const clampVolume = (value: number, fallback: number): number =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
 const HERO_CAST_CUES = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'] as const
 const MAX_SFX_PER_100MS = 8
-const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'boss', 'bossStagger', 'bossDefeat', 'victory', 'defeat', 'killStreak', 'evolution',
+const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'hurt-heavy', 'hurt-critical', 'hurt-extreme', 'boss', 'bossStagger', 'bossDefeat', 'victory', 'defeat', 'killStreak', 'evolution',
   'shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'])
 
 export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
@@ -113,6 +114,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let intensity: CombatIntensity = 'calm'
   let warningMix = false
   let noiseBuffer: BufferLike | null = null
+  const hurtBuffers = new Map<HurtCue, BufferLike>()
   const heroCastBuffers = new Map<SfxCue, BufferLike>()
   // A cast belongs to the expedition, not the transient gameplay screen. Track both
   // decoded one-shots and finite synth fallback notes so Home can cancel either path.
@@ -273,6 +275,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         if (!created) { playScore(); return }
         ac = created
         noiseBuffer = null
+        hurtBuffers.clear()
         master = ac.createGain()
         master.gain.value = sfxOn ? SFX_GAIN * sfxVolume / 100 : 0
         master.connect(ac.destination)
@@ -386,6 +389,23 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
       recentSfx.push(now)
       sfxLast.set(cue, now)
+      if (isHurtCue(cue) && master) {
+        try {
+          let buffer = hurtBuffers.get(cue)
+          if (!buffer) {
+            const pcm = renderHurtSample(cue, ctx.sampleRate)
+            buffer = ctx.createBuffer(1, pcm.length, ctx.sampleRate)
+            buffer.getChannelData(0).set(pcm)
+            hurtBuffers.set(cue, buffer)
+          }
+          const source = ctx.createBufferSource()
+          source.buffer = buffer
+          source.loop = false
+          source.connect(master)
+          source.start(now)
+          return // Never layer generic tones/noise on the authored impact.
+        } catch { /* use finite synth fallback only if PCM rendering/playback fails */ }
+      }
       const heroCast = HERO_CAST_CUES.some(special => special === cue)
       if (heroCast) pruneHeroCasts(now)
       const cast = heroCastBuffers.get(cue)
@@ -529,6 +549,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       stopHeroCast()
       bossAttacks.prepare(null)
       heroCastBuffers.clear()
+      hurtBuffers.clear()
       ac?.close().catch(() => {})
       ac = null
       master = null

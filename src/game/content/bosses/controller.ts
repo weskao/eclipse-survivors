@@ -265,10 +265,10 @@ function clearTransient(e: Encounter): void {
   e.state.content.effects = e.state.content.effects.filter(fx => !fx.id.startsWith('bosses:'))
 }
 
-function strike(state: GameState, t: BossTelegraph, hooks: GameHooks): void {
+function strike(state: GameState, t: BossTelegraph, hooks: GameHooks, direct = true): void {
   const hero = state.hero
   if (!hero || t.harmless || state.mode !== 'play') return
-  if (intersectsTelegraph(t, hero.x, hero.y, HERO_HIT_RADIUS)) damageHero(state, t.damage, hooks)
+  if (intersectsTelegraph(t, hero.x, hero.y, HERO_HIT_RADIUS)) damageHero(state, t.damage, hooks, undefined, { rank: direct ? 'boss' : undefined, angle: Math.atan2(hero.y - t.y, hero.x - t.x) })
 }
 
 function advanceProjectiles(e: Encounter, dt: number, hooks: GameHooks): void {
@@ -286,7 +286,7 @@ function advanceProjectiles(e: Encounter, dt: number, hooks: GameHooks): void {
       ((hero.x - sx) * dx + (hero.y - sy) * dy) / distance2)) : 0
     const ox = hero.x - (sx + dx * t), oy = hero.y - (sy + dy * t)
     if (ox * ox + oy * oy <= (p.radius + HERO_HIT_RADIUS) ** 2) {
-      damageHero(state, p.damage, hooks)
+      damageHero(state, p.damage, hooks, undefined, { rank: 'boss', angle: Math.atan2(dy, dx) })
       p.life = 0 // Swept collision and exactly one hit for this projectile.
     }
   }
@@ -298,7 +298,7 @@ function advanceHazards(e: Encounter, dt: number, hooks: GameHooks): void {
     // A stationary zone has a warning and a visible 0.8-second damage pulse.
     h.pulse -= dt
     if (h.pulse <= 0 && h.remaining > 0) {
-      strike(e.state, h.telegraph, hooks)
+      strike(e.state, h.telegraph, hooks, false)
       h.pulse = 0.8
     }
     h.remaining -= dt
