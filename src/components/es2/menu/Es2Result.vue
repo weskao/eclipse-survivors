@@ -33,19 +33,27 @@ const stats = computed(() => props.result ? [
 ] : [])
 </script>
 <template>
-  <Es2Dialog :active="active" :title="t(ending)" :subtitle="subtitle" wide :dismissible="false" :tone="victory ? 'victory' : 'defeat'">
+  <Es2Dialog :active="active" :title="t(ending)" :subtitle="subtitle" wide variant="result" :dismissible="false" :tone="victory ? 'victory' : 'defeat'">
     <div class="es2-result" :class="{ 'es2-result--victory': victory }">
       <div v-if="active && victory" class="es2-victory-celebration" data-es2-victory-celebration aria-hidden="true">
         <span class="es2-victory-halo"></span>
         <span v-for="index in 16" :key="index" class="es2-victory-spark" data-es2-victory-spark
           :style="{ '--spark-angle': `${(index - 1) * 22.5}deg`, '--spark-distance': `${110 + (index % 3) * 23}px`, '--spark-delay': `${(index % 4) * 0.07}s` }"></span>
       </div>
-      <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="t('本次遠征英雄：' + (result.specializationId ?? result.hero))" /><span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span></div>
-      <p class="es2-result-status">{{ t(victory ? '✦ 勝利 · 黎明重現 ✦' : '✧ 戰敗 · 長夜未盡 ✧') }}</p>
-      <p v-if="result">{{ t(MODES[result.mode].label) }}</p>
-      <div class="es2-stat-strip es2-result-stats"><div v-for="stat in stats" :key="stat.title"><b>{{ stat.value }}</b><small>{{ t(stat.title) }}</small></div></div>
-      <div v-if="rewards" class="es2-reward-strip"><strong>✧ +{{ rewards.embers }} {{ t("暮光餘燼") }}</strong><span v-for="id in rewards.newAchievements" :key="id">{{ t("新成就：") }}{{ t(achievementNames.get(id) ?? id) }}</span><span v-for="id in rewards.newCosmetics" :key="id">{{ t("新造型：") }}{{ t(cosmeticNames.get(id) ?? id) }}</span></div>
-      <slot name="cloud" />
+      <div class="es2-result-banner">
+        <span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span>
+        <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="t('本次遠征英雄：' + (result.specializationId ?? result.hero))" /></div>
+        <p class="es2-result-status">{{ t(victory ? '✦ 勝利 · 黎明重現 ✦' : '✧ 戰敗 · 長夜未盡 ✧') }}</p>
+        <p v-if="result" class="es2-result-mode">{{ t(MODES[result.mode].label) }}</p>
+      </div>
+      <div class="es2-result-report">
+        <div class="es2-stat-strip es2-result-stats"><div v-for="stat in stats" :key="stat.title"><b>{{ stat.value }}</b><small>{{ t(stat.title) }}</small></div></div>
+        <div v-if="rewards" class="es2-reward-strip"><strong>✧ +{{ rewards.embers }} {{ t("暮光餘燼") }}</strong>
+          <p v-if="rewards.newAchievements.length" class="es2-reward-group"><small>{{ t("新成就：") }}</small><span v-for="id in rewards.newAchievements" :key="id">{{ t(achievementNames.get(id) ?? id) }}</span></p>
+          <p v-if="rewards.newCosmetics.length" class="es2-reward-group"><small>{{ t("新造型：") }}</small><span v-for="id in rewards.newCosmetics" :key="id">{{ t(cosmeticNames.get(id) ?? id) }}</span></p>
+        </div>
+        <slot name="cloud" />
+      </div>
     </div>
     <template #actions><button type="button" class="es2-primary" data-ui-sfx="managed" @click="emit('again')">{{ t("再次挑戰 ✦") }}</button><button type="button" class="es2-secondary" data-ui-sfx="managed" @click="emit('home')">{{ t("返回主選單") }}</button></template>
   </Es2Dialog>
