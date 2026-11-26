@@ -5,7 +5,8 @@ import { resolve } from 'node:path'
 export const HERO_SFX_DURATION = {
   "shadowblade-special": 1.35,
   "spirit-summoner-special": 2.1,
-  "crimson-paladin-special": 1.85
+  "crimson-paladin-special": 1.85,
+  "crimson-paladin-retribution": 1.3
 }
 export function renderHeroSfx(cue, seconds) {
   const rate=32000, n=Math.round(seconds*rate), left=new Float32Array(n), right=new Float32Array(n);
@@ -32,6 +33,12 @@ export function renderHeroSfx(cue, seconds) {
     sweep(.18,.57,0,.49,101,43,3.2);noise(.15,.42,.25,.48,"air");
     for(const [i,f] of [98,146.83,196,246.94,293.66].entries()){choir(.10+i*.035,1.28-i*.045,i%2?.45:-.45,.18,f)}
     metal(.29,1.38,0,.23,392);
+  } else if(cue==="crimson-paladin-retribution"){
+    // Ward detonation: glass-metal fracture crack, low blast, fire roar, dark D-minor resonance tail.
+    noise(0,.11,0,.95,"air");sweep(0,.78,0,1,170,30,3.0);noise(0,.66,0,.72,"rumble");noise(.004,.30,0,.70,"band");
+    for(const [t,p,f] of [[0,-.5,1175],[.026,.55,1568],[.061,-.2,932],[.094,.35,1318]]){metal(t,.52,p,.34,f)}
+    noise(.05,.82,-.4,.42,"band");noise(.07,.78,.4,.38,"band");sweep(.04,.36,0,.36,560,120,3.8);
+    for(const [i,f] of [73.42,110,146.83,174.61].entries()){choir(.06+i*.02,1.05-i*.06,i%2?.4:-.4,.15,f)}
   } else throw Error("Unknown hero cast");
   // Baked stereo reflections: no live convolution, no extra nodes.
   const dryL=left.slice(),dryR=right.slice();

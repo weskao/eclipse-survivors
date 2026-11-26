@@ -92,10 +92,10 @@ const MUSIC_GAIN = 0.65
 const SFX_GAIN = 0.52
 const clampVolume = (value: number, fallback: number): number =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
-const HERO_CAST_CUES = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'] as const
+const HERO_CAST_CUES = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution'] as const
 const MAX_SFX_PER_100MS = 8
 const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'hurt-heavy', 'hurt-critical', 'hurt-extreme', 'boss', 'bossDefeat', 'victory', 'defeat',
-  'shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'])
+  ...HERO_CAST_CUES])
 
 export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const { bgm, menuBgm } = opts

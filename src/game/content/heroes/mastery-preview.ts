@@ -9,7 +9,7 @@ export interface MasteryStatChange {
 export const HERO_MASTERY_DESCRIPTIONS = {
   shadowblade: '強化暴擊與影襲傷害。',
   'spirit-summoner': '強化靈體攻擊、治療與靈潮集結。',
-  'crimson-paladin': '強化減傷、反擊、低血量增傷與屏障。',
+  'crimson-paladin': '強化減傷、反擊、低血量增傷、屏障與緋紅報復。',
 } as const
 
 const number = (value: number) => String(Number(value.toFixed(2)))
@@ -39,6 +39,7 @@ export function heroMasteryPreview(id: string, level?: number, maxLevel?: number
       row('反擊傷害倍率', rank => paladin.counterDamageBase + rank * paladin.counterDamagePerRank),
       row('低血量傷害倍率', rank => paladin.lowHpDamageBase + rank * paladin.lowHpDamagePerRank),
       row('屏障額外吸收（Q）', rank => rank * paladin.barrierPerRank, bonus),
+      row('緋紅報復傷害倍率（Q）', rank => paladin.retributionAbsorbRatio + rank * paladin.retributionRatioPerRank),
     ]
   }
 }

@@ -11,6 +11,7 @@ Implementation branch: `feature/es2-release-readiness-integration`. One Web Audi
 | Shadowblade — Shadow Assault (影襲), Q / touch | `shadowblade-special` | Successful hero cast; paired blade accents, dark pulse |
 | Spirit Summoner — 靈潮集結, Q / touch | `spirit-summoner-special` | Successful hero cast; rising spectral resonance |
 | Crimson Paladin — 血誓屏障, Q / touch | `crimson-paladin-special` | Successful hero cast; shield impact and protective chord |
+| Crimson Paladin — 緋紅報復 (barrier expires or breaks with ≥ `retributionMinAbsorb` absorbed) | `crimson-paladin-retribution` | Engine tick, once per barrier; silent below the threshold, on death or Home |
 | Start / retry expedition | `start` | Engine |
 | Pause / resume / game-home request | `pause` / `resume` | Engine |
 | Level-up opening | `level` | Engine |
@@ -23,7 +24,7 @@ Implementation branch: `feature/es2-release-readiness-integration`. One Web Audi
 
 ## Cinematic hero cast assets
 
-Original deterministic synthesis and baked stereo reflections: `node scripts/generate-hero-special-sfx.mjs`. No third-party samples or licenses. 32 kHz, 16-bit stereo PCM, normalized peak 0.84. Shadowblade 1.35 s (dual blade, shadow impact), Spirit Summoner 2.10 s (spectral choir-like layers and summoning burst), Crimson Paladin 1.85 s (shield strike, resonant metal, protective chord). Three decoded buffers per context; one active cast voice, no runtime convolution. The previous synth signature is retained only for immediate playback while decoding or if an asset fails to load.
+Original deterministic synthesis and baked stereo reflections: `node scripts/generate-hero-special-sfx.mjs`. No third-party samples or licenses. 32 kHz, 16-bit stereo PCM, normalized peak 0.84. Shadowblade 1.35 s (dual blade, shadow impact), Spirit Summoner 2.10 s (spectral choir-like layers and summoning burst), Crimson Paladin 1.85 s (shield strike, resonant metal, protective chord), Crimson Retribution 1.30 s (glass-metal fracture, low blast, fire roar, D-minor resonance tail). Four decoded buffers per context; one active cast voice, no runtime convolution. The previous synth signature is retained only for immediate playback while decoding or if an asset fails to load.
 
 ## Integration rules
 
