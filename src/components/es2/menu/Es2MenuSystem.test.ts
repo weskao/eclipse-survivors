@@ -342,13 +342,36 @@ describe('ES2 responsive and motion CSS contract', () => {
     expect(css).toContain('@media(max-width:610px)')
     expect(css).toContain('prefers-reduced-motion:reduce')
   })
-  it('uses short, non-blocking page fades with both reduced-motion overrides', () => {
-    expect(css).toContain('animation: es2-page-arrive 160ms')
-    expect(css).toContain('animation:es2-enter 140ms')
-    expect(css).toContain('#game[data-es2-combat-scene]')
-    expect(css).toContain('[data-es2-reduce-motion="true"] :is(')
-    expect(css).toMatch(/@keyframes es2-page-arrive\s*\{\s*from\s*\{\s*opacity:\s*\.82;\s*\}\s*to\s*\{\s*opacity:\s*1;\s*\}/)
-    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*:is\([^}]+animation: none !important;/)
+  describe('shared scene transitions', () => {
+    const block = css.slice(css.indexOf('/* Scene transitions'))
+    const ms = (token: string) => Number(block.match(new RegExp(`--es2-scene-${token}:\\s*(\\d+)ms`))?.[1])
+    it('reuses one arrival keyframe with short, bounded duration tokens', () => {
+      expect(block).toMatch(/@keyframes es2-scene-arrive\s*\{\s*from\s*\{\s*opacity:\s*0;\s*translate:\s*var\(--es2-scene-from, 0 0\);\s*scale:\s*var\(--es2-scene-scale, 1\);\s*\}\s*\}/)
+      for (const token of ['fast', 'base', 'slow']) expect(ms(token)).toBeGreaterThan(0)
+      expect(ms('fast')).toBeLessThan(ms('base'))
+      expect(ms('slow')).toBeLessThanOrEqual(320)
+      const delays = [...block.matchAll(/animation-delay:\s*(\d+)ms/g)].map(match => Number(match[1]))
+      expect(Math.max(...delays) + ms('base')).toBeLessThanOrEqual(360)
+      // Old one-off fades are replaced, not layered.
+      expect(css).not.toMatch(/es2-page-arrive|es2-enter\b/)
+    })
+    it('covers home pages, dialogs, choice cards, loading and combat entry', () => {
+      for (const selector of ['.es2-menu', '.es2-hero-section', '.es2-mode-section', '.es2-archive-page', '.es2-menu-action-bar',
+        '.es2-backdrop', '.es2-dialog', '.es2-choice-grid > .es2-choice', '.es2-loading', '#game[data-es2-combat-scene]',
+        '.es2-hud--active .es2-hud__top', '.es2-hud--active .es2-hud__bottom']) expect(block).toContain(selector)
+      // Hero page slides in from the left, expedition page from the right.
+      expect(block).toMatch(/\.es2-hero-section\s*\{\s*--es2-scene-from:\s*-\d+px 0;/)
+      expect(block).toMatch(/\.es2-mode-section\s*\{\s*--es2-scene-from:\s*\d+px 0;/)
+      expect(block).toMatch(/#game\[data-es2-combat-scene\]\s*\{[^}]*--es2-scene-scale:\s*1\.\d+;[^}]*var\(--es2-scene-slow\)/)
+      // Never uses `transform`, so hover lifts and the centered HUD bottom bar keep working.
+      expect(block.slice(block.indexOf('@keyframes es2-scene-arrive'))).not.toMatch(/transform\s*:/)
+    })
+    it('disables every scene transition for both reduced-motion paths', () => {
+      const reduced = block.match(/\[data-es2-reduce-motion="true"\] :is\(([^)]+(?:\([^)]*\)[^)]*)*)\)/)?.[1] ?? ''
+      for (const selector of ['.es2-menu', '.es2-dialog', '.es2-choice', '#game[data-es2-combat-scene]', '.es2-hud__top', '.es2-hud__bottom'])
+        expect(reduced).toContain(selector)
+      expect(block).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*:is\([^}]+animation: none !important;/)
+    })
   })
   it('never adds gameplay screen-shake animations to upgrade cards', () => {
     expect(css).not.toMatch(/@keyframes\s+.*shake/i)
