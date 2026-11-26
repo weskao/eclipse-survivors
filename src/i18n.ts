@@ -30,6 +30,8 @@ const english = new Map<string, string>([
   ["移動速度", "Move speed"],
   ["攻擊間隔", "Attack interval"],
   ["暴擊!", "CRITICAL!"],
+  ["重擊!", "HEAVY HIT!"],
+  ["極重擊!", "DEVASTATING HIT!"],
   ["英雄類別", "Hero categories"],
   ["經典英雄", "Classic Heroes"],
   ["新增英雄", "New Heroes"],

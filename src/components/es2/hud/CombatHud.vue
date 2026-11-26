@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<{
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
 const healthMeter = shallowRef<HTMLElement | null>(null)
-useHeroHealthMotion(healthMeter, () => view.value.health.percent, () => props.active, () => props.healthMotion ?? 'system')
+useHeroHealthMotion(healthMeter, () => view.value.health.percent, () => props.active, () => props.healthMotion ?? 'system', () => props.hud.heroCriticalVersion ?? 0)
 const bossMeter = shallowRef<HTMLElement | null>(null)
 useHeroHealthMotion(bossMeter, () => view.value.boss?.percent ?? 0, () => props.active && !!view.value.boss, () => props.healthMotion ?? 'system', () => props.hud.bossCriticalVersion ?? 0)
 const lifeTier = computed(() => props.active && props.showHeroLowHealthWarning ? lowHealthTier(view.value.health.percent) : 'normal')

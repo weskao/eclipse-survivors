@@ -71,4 +71,5 @@ it('makes heavy contact larger without fabricating a critical hit, and preserves
   damageHero(s, hp * .3, hooks)
   expect(s.hero.hp).toBeCloseTo(hp * .7)
   expect(s.impactWaves.at(-1)?.contact).toBe('normal')
+  expect(s.numberFx.at(-1)?.severity).toBe('heavy')
 })

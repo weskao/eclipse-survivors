@@ -61,6 +61,7 @@ export interface HudView {
   who: string
   /** 0..100 */
   hpPct: number
+  heroCriticalVersion?: number
   /** `生命 ${ceil(hp)} / ${max}` */
   hpLabel: string
   /** 0..100 */

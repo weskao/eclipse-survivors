@@ -418,11 +418,12 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     if (x < -80 || x > s.W + 80 || y < -80 || y > s.H + 80) continue
     const critical = z.critical === true
     const received = z.received === true
-    const life = critical ? 0.82 : received ? 0.7 : 0.62
+    const severity = received ? z.severity : undefined
+    const life = critical || severity ? 0.82 : received ? 0.7 : 0.62
     const progress = Math.max(0, Math.min(1, 1 - z.life / life))
     const opacity = Math.max(0, Math.min(1, z.life / (critical ? 0.28 : 0.4)))
     // A local pop makes confirmed crits readable without another full-screen reaction.
-    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * 0.3
+    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * (severity === 'extreme' ? .5 : severity ? .38 : .3)
     const px = Math.max(48, Math.min(s.W - 48, x))
     const py = Math.max(54, Math.min(s.H - 16, y))
     ctx.save()
@@ -433,16 +434,17 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     if (pop !== 1) ctx.scale(pop, pop)
     ctx.lineWidth = critical ? 6 : received ? 5 : 4
     ctx.strokeStyle = critical ? '#321525' : received ? '#44121c' : '#151019e8'
-    if (critical) {
+    if (critical || severity) {
+      const caption = translate(severity === 'extreme' ? '極重擊!' : critical ? '暴擊!' : '重擊!')
       ctx.font = '900 12px system-ui'
-      ctx.strokeText(translate('暴擊!'), 0, -29)
+      ctx.strokeText(caption, 0, -29)
       ctx.fillStyle = '#fff4bf'
-      ctx.fillText(translate('暴擊!'), 0, -29)
+      ctx.fillText(caption, 0, -29)
     }
-    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss ? 21 : 16)}px system-ui`
+    ctx.font = `900 ${severity === 'extreme' ? 33 : severity ? 28 : critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss ? 21 : 16)}px system-ui`
     const label = received ? `−${z.value}` : String(z.value)
     ctx.strokeText(label, 0, 0)
-    ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
+    ctx.fillStyle = severity ? '#ffd29b' : received ? '#ff737b' : critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
     ctx.fillText(label, 0, 0)
     ctx.restore()
   }

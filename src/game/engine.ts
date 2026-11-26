@@ -10,7 +10,7 @@ import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
 import { attack, dash as heroDash, hit } from './combat'
-import { healthCriticalVersion } from './health-impact'
+import { clearHeroImpact, healthCriticalVersion, rollIncomingCritical } from './health-impact'
 import { getFiringOrigin } from './weapon-geometry'
 import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
@@ -277,10 +277,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
   restoreMenuSelection()
   let initialEffect: 'soft' | 'still' = 'soft'
-  let initialShake = false
+  let initialShake = true
   try {
     if (settingsStorage?.getItem('eclipseUpgradeEffect') === 'still') initialEffect = 'still'
-    if (settingsStorage?.getItem('eclipseCameraShake') === 'on') initialShake = true
+    if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
     mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
@@ -354,6 +354,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       lastCritical = false
       return critical
     },
+    rollIncomingCritical: rank => rollIncomingCritical(rank, random),
     mitigateIncomingDamage: amount => {
       const modified = heroSpecialization?.mitigateIncomingDamage(amount) ?? amount
       if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
@@ -410,6 +411,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   function screen(name: GameMode): void {
     // A level-up freezes gameplay: discard pending hit recoil before the picker opens.
     if (name === 'level') s.cameraKick = 0
+    if (name !== 'play' && s.hero) clearHeroImpact(s.hero)
     s.mode = name
     ui.mode = name
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
@@ -441,6 +443,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.hud = {
       who: `${isSpecializationId(s.heroId) ? HERO_DEFINITIONS[s.heroId].label : JOB[s.choice].label} · LV.${hero.level}`,
       hpPct: minmax(hero.hp / hero.max * 100, 0, 100),
+      heroCriticalVersion: healthCriticalVersion(hero),
       hpLabel: `生命 ${Math.ceil(hero.hp)} / ${hero.max}`,
       xpPct,
       kill: s.kill,

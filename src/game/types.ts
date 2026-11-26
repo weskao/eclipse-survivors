@@ -20,7 +20,7 @@ export type ArtKey = JobId | Exclude<MobType, 'warlock'> | 'ground' | 'courtyard
 /** Shared gameplay and UI SFX cues, including hero-specific active skills. */
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
-  | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'boss' | 'bossDefeat' | 'hurt' | 'pickup'
+  | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'boss' | 'bossDefeat' | 'hurt' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'pickup'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special'
 
@@ -77,6 +77,7 @@ export interface EnemyBrain {
 export interface EnemyProjectile {
   x: number; y: number; vx: number; vy: number
   radius: number; damage: number; life: number
+  attackRank?: import('./health-impact').IncomingRank
 }
 
 export interface Shot {
@@ -110,7 +111,7 @@ export type ContentEvent =
   | { type: 'run-complete'; win: boolean }
 
 export interface Swipe { x: number; y: number; a: number; life: number; max: number; r: number }
-export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean }
+export interface NumberFx { x: number; y: number; life: number; value: number; boss: boolean; critical?: boolean; received?: boolean; severity?: import('./health-impact').HeroDamageSeverity }
 export interface ImpactWave { x: number; y: number; size: number; color: string; life: number; max: number; contact?: 'normal' | 'critical'; angle?: number }
 export interface Point { x: number; y: number }
 export interface LightningFx { pts: Point[]; life: number; max: number }
@@ -194,6 +195,8 @@ export interface GameHooks {
   modifyOutgoingDamage?(amount: number, target?: Mob): number
   /** One-shot metadata from the authoritative outgoing-damage roll. */
   consumeCriticalHit?(): boolean
+  /** Authoritative seeded roll for direct enemy attacks only. */
+  rollIncomingCritical?(rank: import('./health-impact').IncomingRank): boolean
   mitigateIncomingDamage?(amount: number): number
   afterDamage?(amount: number, source?: Mob): void
   canTargetHero?(): boolean

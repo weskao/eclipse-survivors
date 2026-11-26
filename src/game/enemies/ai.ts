@@ -41,6 +41,7 @@ function projectile(s: GameState, e: Mob, direction: number, speed: number): voi
   const b: EnemyProjectile = {
     x: e.x, y: e.y - 8, vx: Math.cos(base) * speed, vy: Math.sin(base) * speed,
     radius: e.type === 'boss' ? AI.projectileRadius.boss : AI.projectileRadius.default, damage: e.dmg, life: AI.projectileLifetime,
+    attackRank: e.type === 'boss' ? 'boss' : e.elite ? 'elite' : 'ordinary',
   }
   s.enemyShots.push(b)
 }
@@ -177,7 +178,7 @@ export function tickEnemyProjectiles(s: GameState, dt: number, hooks: GameHooks)
     const dot = dx * dx + dy * dy
     const t = Math.max(0, Math.min(1, ((hero.x - x) * dx + (hero.y - y) * dy) / Math.max(0.0001, dot)))
     if (p.life > 0 && hero.hp > 0 && dist(hero.x - (x + dx * t), hero.y - (y + dy * t)) < p.radius + AI.projectileContactMargin) {
-      damageHero(s, p.damage, hooks)
+      damageHero(s, p.damage, hooks, undefined, { rank: p.attackRank, angle: Math.atan2(p.vy, p.vx) })
       p.life = 0
     }
   }

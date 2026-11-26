@@ -14,6 +14,7 @@ import { runVfxPass } from './pixi-vfx/plan'
 import { preloadEnemyReleaseArt } from './enemy-motion'
 import { preloadHitImpactArt } from './hit-impact'
 import type { HealthBarMotion, HealthBarTarget } from './health-bars'
+import { sampleHeroImpact } from '../health-impact'
 import { createHeroSheets, type HeroSheets } from './hero-sheets'
 import type { ProductionHeroArtwork } from './es2/production-heroes'
 import { preloadHeroSpecialVfx } from './es2/hero-special-vfx'
@@ -114,7 +115,10 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   ctx.fillRect(0, 0, W, H)
   let ox = W * 0.5 - (hero ? s.cam.x : 0)
   let oy = H * 0.53 - (hero ? s.cam.y : 0)
-  if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced && assets.cameraShakeEnabled()) {
+  const heroImpact = hero && s.mode === 'play' ? sampleHeroImpact(hero, s.worldClock) : undefined
+  if (heroImpact && !reduced && assets.cameraShakeEnabled()) {
+    ox += heroImpact.offsetX; oy += heroImpact.offsetY
+  } else if (hero && s.mode === 'play' && s.cameraKick > 0 && !reduced && assets.cameraShakeEnabled()) {
     // Cap even externally-triggered recoil; avoid high-frequency screen oscillation.
     const nudge = Math.min(s.cameraKick, 1.6)
     ox += Math.sin(s.worldClock * 19) * nudge
@@ -207,6 +211,14 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
   assets.content?.render(ctx, s, ox, oy)
   if (policy?.showDamageNumbers !== false) drawNumbers(ctx, s, ox, oy, reduced)
   drawVignette(ctx, s)
+  if (heroImpact && !policy?.reduceFlashing && !reduced && (policy?.vfxOpacity ?? 1) > 0) {
+    const p = heroImpact.progress
+    const sideX = Math.cos(heroImpact.angle), sideY = Math.sin(heroImpact.angle)
+    const cx = W / 2 - sideX * W * .44, cy = H / 2 - sideY * H * .44
+    ctx.save(); ctx.globalAlpha = (1 - p) * .65 * (policy?.vfxOpacity ?? 1)
+    ctx.strokeStyle = '#ffd49a'; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.moveTo(cx - sideY * 18, cy + sideX * 18); ctx.lineTo(cx, cy); ctx.lineTo(cx + sideY * 18, cy - sideX * 18); ctx.stroke(); ctx.restore()
+  }
   drawBossPhaseIndicator(ctx, s)
 }
 

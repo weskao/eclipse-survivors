@@ -28,7 +28,7 @@ const props = defineProps<{
 const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; musicVolume: [value: number]; sfxVolume: [value: number]; pause: []; settings: [] }>()
 
 const healthMeter = shallowRef<HTMLElement | null>(null)
-useHeroHealthMotion(healthMeter, () => props.hud.hpPct, () => props.active, () => props.healthMotion ?? 'system')
+useHeroHealthMotion(healthMeter, () => props.hud.hpPct, () => props.active, () => props.healthMotion ?? 'system', () => props.hud.heroCriticalVersion ?? 0)
 const bossMeter = shallowRef<HTMLElement | null>(null)
 useHeroHealthMotion(bossMeter, () => props.hud.bossPct ?? 0, () => props.active && props.hud.bossPct !== null, () => props.healthMotion ?? 'system', () => props.hud.bossCriticalVersion ?? 0)
 const minimap = shallowRef<HTMLCanvasElement | null>(null)

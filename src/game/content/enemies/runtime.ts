@@ -40,6 +40,7 @@ export interface FactionProjectile {
   x: number; y: number; vx: number; vy: number
   radius: number; damage: number; life: number
   sourceId: number; kind: FactionKind; status: FactionStatus
+  attackRank?: 'ordinary' | 'elite'
 }
 
 export interface FactionZone {
@@ -60,6 +61,8 @@ export interface FactionRuntime {
 export interface FactionHit {
   kind: FactionKind
   sourceId: number
+  attackRank?: 'ordinary' | 'elite'
+  angle?: number
   status?: Exclude<FactionStatus, undefined>
   duration?: number
 }
@@ -136,7 +139,8 @@ function hasSight(a: FactionArena, e: FactionEnemy): boolean {
 
 function hitHero(a: FactionArena, e: FactionEnemy, damage = e.damage, status?: Exclude<FactionStatus, undefined>): void {
   const landed = a.onHeroDamage(damage, {
-    kind: e.kind, sourceId: e.id, ...(status ? { status, duration: status === 'freeze' ? 1.2 : 2 } : {}),
+    kind: e.kind, sourceId: e.id, attackRank: e.affix ? 'elite' : 'ordinary',
+    angle: Math.atan2(a.hero.y - e.y, a.hero.x - e.x), ...(status ? { status, duration: status === 'freeze' ? 1.2 : 2 } : {}),
   })
   if (landed && e.affix === 'vampiric') e.hp = Math.min(e.max, e.hp + damage * 0.35)
 }
@@ -160,6 +164,7 @@ function addProjectile(
   r.projectiles.push({
     x: e.x, y: e.y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
     radius: 7, damage: e.damage, life: 2.8, sourceId: e.id, kind: e.kind, status,
+    attackRank: e.affix ? 'elite' : 'ordinary',
   })
 }
 
@@ -307,7 +312,7 @@ function tickProjectiles(a: FactionArena, dt: number): void {
       // The parent may already be dead; projectiles still deliver their own locked payload.
       const landed = a.onHeroDamage(p.damage, {
         kind: p.kind,
-        sourceId: p.sourceId,
+        sourceId: p.sourceId, attackRank: p.attackRank, angle: Math.atan2(p.vy, p.vx),
         ...(p.status ? { status: p.status, duration: 1.2 } : {}),
       })
       if (landed) {

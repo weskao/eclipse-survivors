@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { attack, damageHero, dash, hit, nearestAlive, victoryConditionMet } from './combat'
 import { DURATION, JOB } from './constants'
+import { classifyHeroDamage, rollIncomingCritical, sampleHeroImpact, healthCriticalVersion } from './health-impact'
+import { BALANCE } from './config'
 import { getFiringOrigin } from './weapon-geometry'
 import { seeded, setRandom } from './math'
 import { createHero, createState, resetRun } from './state'
@@ -287,5 +289,50 @@ describe('hitbox-based melee targeting', () => {
     const small = mob(105, 0)
     const boss = mob(130, 0, { type: 'boss', r: 48 })
     expect(nearestAlive([small, boss], hero)[0]).toBe(boss)
+  })
+})
+
+describe('incoming enemy critical hits and hero reaction', () => {
+  it.each([['ordinary', .03, 1.35], ['elite', .06, 1.4], ['boss', .08, 1.5]] as const)('uses the configured %s rate and multiplier', (rank, chance, multiplier) => {
+    expect(rollIncomingCritical(rank, () => chance - .000001)).toBe(true)
+    expect(rollIncomingCritical(rank, () => chance)).toBe(false)
+    const { s, hero } = setup()
+    const hooks = { ...spyHooks(), rollIncomingCritical: () => true }
+    damageHero(s, 20, hooks, undefined, { rank, angle: 0 })
+    expect(hero.hp).toBeCloseTo(hero.max - 20 * multiplier)
+    expect(s.numberFx.at(-1)).toMatchObject({ received: true, critical: true })
+    expect(healthCriticalVersion(hero)).toBeGreaterThan(0)
+    expect(hooks.sfx).toHaveBeenCalledWith('hurt-critical')
+    expect(hooks.sfx).toHaveBeenCalledTimes(1)
+  })
+  it('rolls only direct enemy hits; blocked hits and environment do not roll', () => {
+    const { s, hero } = setup()
+    const roll = vi.fn(() => true)
+    const hooks = { ...spyHooks(), rollIncomingCritical: roll }
+    hero.inv = 1
+    damageHero(s, 20, hooks, mob(10, 0))
+    expect(roll).not.toHaveBeenCalled()
+    hero.inv = 0
+    damageHero(s, 20, hooks)
+    expect(roll).not.toHaveBeenCalled()
+    expect(hero.hp).toBe(hero.max - 20)
+    hero.inv = 0
+    damageHero(s, 20, { ...hooks, mitigateIncomingDamage: () => 0 }, mob(10, 0))
+    expect(hero.hp).toBe(hero.max - 20)
+    expect(hooks.sfx).toHaveBeenCalledTimes(1)
+  })
+  it('classifies actual loss after mitigation and gives a bounded short direction impulse', () => {
+    const { s, hero } = setup()
+    expect(classifyHeroDamage(.219)).toBeUndefined()
+    expect(classifyHeroDamage(.22)).toBe('heavy')
+    expect(classifyHeroDamage(.35)).toBe('extreme')
+    const hooks = spyHooks()
+    damageHero(s, hero.max * .35, hooks, undefined, { angle: 0 })
+    expect(hooks.sfx).toHaveBeenCalledWith('hurt-extreme')
+    const frame = sampleHeroImpact(hero, s.worldClock)!
+    expect(frame.offsetX).toBeCloseTo(4)
+    expect(frame.offsetY).toBeCloseTo(0)
+    expect(sampleHeroImpact(hero, s.worldClock + .181)).toBeUndefined()
+    expect(BALANCE.combat.incomingCritical.ordinary.chance).toBe(.03)
   })
 })
