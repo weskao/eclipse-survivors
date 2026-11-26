@@ -54,7 +54,7 @@ export function sampleHealthBar(
     old.trail = old.front
     old.holdUntil = time + .08
   }
-  const hasDamageTrail = !healing && (target < old.target || old.trail > old.front + .002)
+  const hasDamageTrail = !healing && (target < old.target || old.at < old.holdUntil || old.trail > old.front + .002)
   const trailDt = Math.max(0, Math.min(dt, time - Math.max(old.at, old.holdUntil)))
   old.at = time
   old.target = target

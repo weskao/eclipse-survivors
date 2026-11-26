@@ -136,3 +136,12 @@ describe('boss arrival warning character palette', () => {
     expect(glow.match(/var\(--es2-warning-accent\)/g)).toHaveLength(2)
   })
 })
+
+describe('hero health uses the shared damage/heal sampler', () => {
+  it('uses distinct composited front and trail values', () => {
+    expect(component).toContain('useHeroHealthMotion')
+    expect(css).toContain('scaleX(var(--hero-hp-front, var(--es2-progress, 0)))')
+    expect(css).toContain('scaleX(var(--hero-hp-trail, var(--es2-progress, 0)))')
+    expect(css).toContain('data-hero-hp-damage')
+  })
+})

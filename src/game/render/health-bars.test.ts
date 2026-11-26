@@ -202,3 +202,14 @@ describe('sovereign boss overhead ornament', () => {
     expect(colors).toContain('#eb674d')
   })
 })
+
+it('retains a fresh damage hold when the HP event and previous sample share a timestamp', () => {
+  const mob = enemy(), cache = new WeakMap()
+  sampleHealthBar(mob, 10, cache)
+  mob.hp = 30
+  sampleHealthBar(mob, 10, cache)
+  const first = sampleHealthBar(mob, 10.04, cache)
+  expect(first.front).toBeLessThan(1)
+  expect(first.trail).toBe(1)
+  expect(sampleHealthBar(mob, 10.16, cache).trail).toBeLessThan(1)
+})

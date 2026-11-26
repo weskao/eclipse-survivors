@@ -5,12 +5,14 @@ import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
 import { LOW_HP_PCT } from '../game/constants'
 import { healthBarColor } from '../game/render/health-bars'
+import type { MotionSetting } from '../game/content/accessibility/preferences'
+import { useHeroHealthMotion } from './es2/hud/hero-health-motion'
 import SettingsButton from './SettingsButton.vue'
 import AudioControl from './AudioControl.vue'
 import type { HudView } from '../game/store'
 import type { JobId } from '../game/types'
 
-defineProps<{
+const props = defineProps<{
   active: boolean
   hud: HudView
   choice: JobId
@@ -19,11 +21,14 @@ defineProps<{
   musicVolume?: number
   sfxVolume?: number
   audioActive?: boolean
+  healthMotion?: MotionSetting
   toastText: string
   toastVisible: boolean
 }>()
 const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; musicVolume: [value: number]; sfxVolume: [value: number]; pause: []; settings: [] }>()
 
+const healthMeter = shallowRef<HTMLElement | null>(null)
+useHeroHealthMotion(healthMeter, () => props.hud.hpPct, () => props.active, () => props.healthMotion ?? 'system')
 const minimap = shallowRef<HTMLCanvasElement | null>(null)
 defineExpose({ minimap })
 </script>
@@ -34,7 +39,7 @@ defineExpose({ minimap })
       <div class="status" :class="{ 'status-critical': hud.hpPct <= LOW_HP_PCT }">
         <div class="hud-face" id="hudFace"><img :src="ART_URLS[choice]" :alt="choice" /></div>
         <b id="who">{{ t(hud.who) }}</b>
-        <div id="hudHealthMeter" class="bar" role="progressbar" :aria-label="t('生命值')" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>
+        <div ref="healthMeter" id="hudHealthMeter" class="bar" role="progressbar" :aria-label="t('生命值')" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100" :style="{ '--es2-progress': Math.max(0, Math.min(100, hud.hpPct)) / 100 }"><i class="hero-hp-trail" aria-hidden="true"></i><i id="hpBar" aria-hidden="true"></i></div>
         <div class="sub" id="hpLabel">{{ t(hud.hpLabel) }}</div>
         <div id="hudExperienceMeter" class="bar exp" role="progressbar" :aria-label="t('經驗值')" :aria-valuenow="Math.max(0, Math.min(100, hud.xpPct))" aria-valuemin="0" aria-valuemax="100"><i id="xpBar" :style="{ width: hud.xpPct + '%' }"></i></div>
       </div>
