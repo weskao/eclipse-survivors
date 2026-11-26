@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../state'
-import type { GameState, Mob, MobType } from '../types'
+import type { GameHooks, GameState, Mob, MobType } from '../types'
+import { createBossEncounterController } from '../content/bosses/controller'
+import { hit } from '../combat'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from './fakes'
 import { createRenderAssets, drawFrame, drawMiniMap } from './index'
 import { drawCharacter } from './characters'
@@ -493,5 +495,54 @@ describe('ES3 canonical enemy death presentation', () => {
       return JSON.stringify(first)
     })
     expect(new Set(poses).size).toBe(kinds.length)
+  })
+})
+
+
+describe('ES3 production boss body motion', () => {
+  it('moves the original phase atlas with the live warning pose, holds only the body on hit, and honors reduced motion', () => {
+    const s = busyState(); s.mode = 'play'; s.mobs = []; s.cameraKick = 0
+    s.hero!.x = 0; s.hero!.y = 0; s.hero!.inv = 100
+    const controller = createBossEncounterController()
+    const hooks: GameHooks = { sfx() {}, message() {}, end() {}, offerUpgrades() {},
+      content: (state, event) => controller.onContentEvent(state, event, hooks) }
+    const boss = controller.spawn(s, 'infernal-titan', { x: 150, y: 0 }, hooks)!
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const atlas = { complete: true, naturalWidth: 576, naturalHeight: 192 } as HTMLImageElement
+    assets.productionWorld = { ground: {}, decor: {}, bosses: { 'infernal-titan': atlas } } as unknown as NonNullable<typeof assets.productionWorld>
+    assets.bosses = controller; assets.cameraShakeEnabled = () => false
+    const sample = () => {
+      const { ctx } = createFakeCtx()
+      const transforms: number[][] = []
+      const stack: number[] = []
+      let pose: number[][] | undefined
+      ctx.save = () => { stack.push(transforms.length) }
+      ctx.restore = () => { transforms.length = stack.pop() ?? 0 }
+      ctx.scale = (x, y) => { transforms.push([x, y]) }
+      ctx.rotate = angle => { transforms.push([angle]) }
+      ctx.drawImage = (...args: unknown[]) => { if (args[0] === atlas) pose = transforms.slice() }
+      drawFrame(ctx, s, 1, assets)
+      expect(pose).toBeDefined()
+      return pose
+    }
+    controller.tick(s, .01, hooks)
+    const first = sample()
+    controller.tick(s, .25, hooks)
+    const windup = sample()
+    expect(windup).not.toEqual(first)
+    hit(s, boss, 1, hooks)
+    const held = sample()
+    const warningProgress = controller.snapshot(s).telegraphs[0]!.progress
+    s.time += .02; s.worldClock += .02
+    controller.tick(s, .02, hooks)
+    expect(sample()).toEqual(held)
+    expect(controller.snapshot(s).telegraphs[0]!.progress).toBeGreaterThan(warningProgress)
+    s.time += .08; s.worldClock += .08
+    controller.tick(s, .08, hooks)
+    expect(sample()).not.toEqual(held)
+    assets.prefersReducedMotion = () => true
+    expect(sample()).toEqual(first)
+    expect(boss.x).toBe(150)
+    expect(boss.hp).toBe(boss.max - 1)
   })
 })
