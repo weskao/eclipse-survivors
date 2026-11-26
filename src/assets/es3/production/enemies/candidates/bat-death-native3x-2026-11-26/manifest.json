@@ -1,0 +1,98 @@
+{
+  "id": "bat",
+  "variant": "preferred",
+  "path": "bat-death-preferred@3x.webp",
+  "sourcePath": "bat-death-preferred-source.png",
+  "sourceGenerationId": "0c7dde0f-4a0c-41ab-9b1c-129aa400b3d2",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "nativeSourceCellPixels": 627,
+  "sourceContentBounds": [
+    [
+      11,
+      99,
+      613,
+      524
+    ],
+    [
+      70,
+      227,
+      552,
+      575
+    ],
+    [
+      118,
+      248,
+      514,
+      497
+    ],
+    [
+      84,
+      110,
+      541,
+      493
+    ]
+  ],
+  "runtimeContentBounds": [
+    [
+      23,
+      135,
+      413,
+      412
+    ],
+    [
+      61,
+      185,
+      375,
+      412
+    ],
+    [
+      88,
+      249,
+      347,
+      412
+    ],
+    [
+      53,
+      132,
+      383,
+      412
+    ]
+  ],
+  "sourceSha256": "eb32a3196c04b507b122982fdfa2a56b5d9927df8175d9544407ffa81a5966db",
+  "sha256": "89a9bfda8be493585fdd4cd1606e3fd7bcab75c76ce42739e3378244febc626e",
+  "bytes": 312986,
+  "width": 872,
+  "height": 872,
+  "rows": 2,
+  "columns": 2,
+  "frames": 4,
+  "frameWidth": 436,
+  "frameHeight": 436,
+  "gutter": 8,
+  "contentCellPixels": 420,
+  "scale": 3,
+  "displayMaximumPx": 139,
+  "alpha": true,
+  "native3x": true,
+  "upscaled": false,
+  "status": "QA_PENDING",
+  "visualReview": "pending",
+  "browserReview": "pending",
+  "canonicalReference": {
+    "path": "src/assets/bat.webp",
+    "gitBlobSha": "6228956fabca08a23ceb484edea4ad64e67d3021",
+    "commit": "d16f6e79b8b1c81983948d88dfb28a02df62fa98"
+  },
+  "frameOrder": [
+    "hit",
+    "fold-wings",
+    "collapse",
+    "dissolve"
+  ],
+  "anchor": "bottom center, common tile y=412 baseline",
+  "admission": "candidate only; no runtime replacement",
+  "normalization": "uniform downsampling, 6px source edge alpha feather, final smoke alpha reduced to 68%; no upscaling"
+}
