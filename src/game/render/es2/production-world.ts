@@ -187,7 +187,8 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
       if (!loadSource) continue
       const image = makeImage()
       registerBossNativeKeyframe(image, key)
-      (bossNativeKeyframes ??= {})[key] = image
+      bossNativeKeyframes ??= {}
+      bossNativeKeyframes[key] = image
       void loadSource().then(url => { image.src = url }).catch(() => { /* static fallback */ })
     }
   } else if (import.meta.env.DEV && reviewMotion && reviewMotion !== 'native' && reviewBossId) {
