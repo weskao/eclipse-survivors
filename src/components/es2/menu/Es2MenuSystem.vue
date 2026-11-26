@@ -98,7 +98,7 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')">
       <template #account><slot name="account" /></template>
       <template #archive>
-        <Es2Archive v-if="archiveActive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
+        <Es2Archive v-if="archiveActive" :key="archive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
           :hero="choice" :hero-id="heroId" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"
           @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)"
           @research="emit('research', $event)" @equipment="emit('equipment', $event)"

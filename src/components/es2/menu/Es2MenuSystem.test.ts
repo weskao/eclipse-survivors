@@ -30,6 +30,28 @@ function mounted(props: Record<string, unknown> = {}) {
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount(); document.body.innerHTML = '' })
 
 describe('ES2 main menu integration adapter', () => {
+  it('re-enters archive pages on navigation without delaying or remounting the same page', async () => {
+    mounted()
+    const links = document.querySelectorAll<HTMLButtonElement>('.es2-hall-links button')
+    links[0]!.click()
+    await nextTick()
+    const progression = find('[data-es2-archive-page]')
+    expect(progression.getAttribute('data-es2-archive-page')).toBe('progression')
+    links[1]!.click()
+    await nextTick()
+    const relics = find('[data-es2-archive-page]')
+    expect(relics.getAttribute('data-es2-archive-page')).toBe('relics')
+    expect(relics).not.toBe(progression)
+    expect(progression.isConnected).toBe(false)
+    links[1]!.click()
+    await nextTick()
+    expect(find('[data-es2-archive-page]')).toBe(relics)
+    click('[data-es2-return-lobby]')
+    await nextTick()
+    expect(document.querySelector('[data-es2-archive-page]')).toBeNull()
+    expect(find('[data-es2-lobby-content]').hasAttribute('hidden')).toBe(false)
+  })
+
   it('keeps legacy hero, mode and start action names with original artwork', async () => {
     const wrapper = mounted()
     click('[data-hero="ranger"]')
@@ -319,6 +341,14 @@ describe('ES2 responsive and motion CSS contract', () => {
     expect(css).toContain('100dvh')
     expect(css).toContain('@media(max-width:610px)')
     expect(css).toContain('prefers-reduced-motion:reduce')
+  })
+  it('uses short, non-blocking page fades with both reduced-motion overrides', () => {
+    expect(css).toContain('animation: es2-page-arrive 160ms')
+    expect(css).toContain('animation:es2-enter 140ms')
+    expect(css).toContain('#game[data-es2-combat-scene]')
+    expect(css).toContain('[data-es2-reduce-motion="true"] :is(')
+    expect(css).toMatch(/@keyframes es2-page-arrive\s*\{\s*from\s*\{\s*opacity:\s*\.82;\s*\}\s*to\s*\{\s*opacity:\s*1;\s*\}/)
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*:is\([^}]+animation: none !important;/)
   })
   it('never adds gameplay screen-shake animations to upgrade cards', () => {
     expect(css).not.toMatch(/@keyframes\s+.*shake/i)

@@ -7,6 +7,32 @@ import App from './App.vue'
 import { createEngine } from './game/engine'
 
 describe('App', () => {
+  it('enters combat without replacing the canvas or restarting the scene fade on pause', async () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    try {
+      const canvas = wrapper.get('#game').element
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(false)
+      engine.start()
+      await nextTick()
+      expect(engine.ui.mode).toBe('play')
+      expect(wrapper.get('#game').element).toBe(canvas)
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(true)
+      expect(wrapper.find('.es2-menu').exists()).toBe(false)
+      engine.togglePause()
+      await nextTick()
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(true)
+      engine.togglePause()
+      await nextTick()
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(true)
+      engine.goMenu()
+      await nextTick()
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(false)
+      expect(wrapper.find('.es2-menu').exists()).toBe(true)
+      expect(wrapper.get('#game').element).toBe(canvas)
+    } finally { wrapper.unmount() }
+  })
+
   it('restores the selected new hero and objective mode on a fresh home screen', async () => {
     const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
     const first = mount(App, { props: { engine }, attachTo: document.body })
