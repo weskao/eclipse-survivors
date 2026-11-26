@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "0fd354eb2457d5277170344688d19567679cc71b",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "recoil-key-a",
+      "pose": "hurt",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/recoil-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "134a9250-47c0-4dbb-b457-ddab5e5d7cc0",
+        "originalPngSha256": "e9832f1b323537c36ce3b8fa1fd1c5d0e15ed29974aeed89de5b9002f2d9ceb5",
+        "canonicalReferenceHead": "0fd354eb2457d5277170344688d19567679cc71b"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        80,
+        22,
+        1197,
+        1231
+      ],
+      "alphaAnyBounds": [
+        0,
+        17,
+        1230,
+        1254
+      ],
+      "alphaExtent": [
+        1117,
+        1209
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        80,
+        22,
+        57,
+        23
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "664d5ad8f72b77e3d65c0b56fd85c13841b5fe2e8a691e27bdb72dbcce113a4c",
+      "webpCompressedBytes": 716552,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Backward recoil, tilted halo and raised arm. Phase and anchor unapproved; faint alpha touches edge. Generated redraw referencing canonical abyss-monarch-phases@3x.webp (Git blob 510b8c68092555fac5b73d8f84e8643e28423c6f); identity requires visual approval. No resize."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

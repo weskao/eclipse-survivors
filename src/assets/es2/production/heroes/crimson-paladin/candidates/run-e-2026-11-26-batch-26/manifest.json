@@ -1,0 +1,304 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "run",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    609,
+    612,
+    613,
+    629
+  ],
+  "footBottomsStatus": "Alpha >=128 proxy, not anatomical anchor",
+  "alphaBounds": [
+    [
+      70,
+      70,
+      697,
+      697
+    ],
+    [
+      70,
+      70,
+      696,
+      695
+    ],
+    [
+      70,
+      71,
+      697,
+      697
+    ],
+    [
+      70,
+      71,
+      697,
+      697
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRect": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        20,
+        3,
+        519,
+        539
+      ],
+      "coreExtent": [
+        499,
+        536
+      ],
+      "sourceBoundaryMaxAlpha": 4,
+      "footBottomProxy": 609,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        70,
+        697,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "e7c6b90024cd809a0d1e4abd2c77a1f0d6ec806073760296406551cd4b4ea464"
+    },
+    {
+      "index": 1,
+      "sourceRect": [
+        627,
+        0,
+        627,
+        627
+      ],
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        626,
+        625
+      ],
+      "coreAlphaBounds": [
+        17,
+        1,
+        566,
+        542
+      ],
+      "coreExtent": [
+        549,
+        541
+      ],
+      "sourceBoundaryMaxAlpha": 89,
+      "footBottomProxy": 612,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        70,
+        696,
+        695
+      ],
+      "sourceFrameRGBA_SHA256": "5659a2e6d56cd67d610de15af4ed23a6d0fd886adf1df0fe614c5c7d0bfd1371"
+    },
+    {
+      "index": 2,
+      "sourceRect": [
+        0,
+        627,
+        627,
+        627
+      ],
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        1,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        8,
+        7,
+        618,
+        543
+      ],
+      "coreExtent": [
+        610,
+        536
+      ],
+      "sourceBoundaryMaxAlpha": 4,
+      "footBottomProxy": 613,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        71,
+        697,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "9845efea9499ba2b702c7f067f9b76cbf49373d134d6fab8cee8a45c7a932b42"
+    },
+    {
+      "index": 3,
+      "sourceRect": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        1,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        19,
+        10,
+        565,
+        559
+      ],
+      "coreExtent": [
+        546,
+        549
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 629,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        71,
+        697,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "c5c792566d34e0abc8fa0a9f241907e4e81544faa05da9f1ac945fc25e1121f7"
+    }
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "0a0de22253bb71946ea15bd9b5d62fc326c6c75eee53f958723fa758c8ba2365",
+  "originalPNGSHA256": "cc0a30c72fc2c94bbd9df6e875589099573715f018ea7453f8a251bd72e0a81d",
+  "atlasFile": "run-e-4frames@3x.webp",
+  "webpSHA256": "b10588d07e236f5df66517f3f01098287948a186270abc4803f64dc7b02d7572",
+  "bytes": 750390,
+  "sourceProvenance": {
+    "generationId": "2639bbe6-4f0d-45df-8811-20dd737c60ef",
+    "canonicalPortrait": "src/assets/es2/production/heroes/crimson-paladin-portrait@3x.webp",
+    "portraitBlobSHA": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+    "referenceCommit": "9c1e9c68e6c565bd61d09eea0ba08cdf3bb4b9db"
+  },
+  "encoding": "Pillow WebP quality=100 method=3; review only; Polytool/cwebp unavailable",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "sourceSeamMaxAlpha": 1,
+  "sourceBoundaryMaxAlpha": 89,
+  "reviewNotes": [
+    "Four independent candidate poses, not a complete 10-frame cycle. No resampling or mirroring. Alpha preserved; RGB lossy. Anatomical anchor, identity, handedness and continuity require visual review.",
+    "Official Polytool not executed; no gameplay admission.",
+    "Outer-edge alpha max 89; potential halo clipping; inspect/re-author before promotion."
+  ]
+}

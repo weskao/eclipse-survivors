@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "d9838ac0bed19c761ebbaa038c889af844e44298",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "dissolve-key-a",
+      "pose": "death",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "death/dissolve-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "111b8b5c-9556-44ef-bff2-c089ff902dec",
+        "originalPngSha256": "11b4f5dfa405936f308f53012fe6631cd432f2ee2b6442a2e400cb1a08dbf3ce",
+        "canonicalReferenceHead": "d9838ac0bed19c761ebbaa038c889af844e44298"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        55,
+        60,
+        1210,
+        1217
+      ],
+      "alphaAnyBounds": [
+        0,
+        25,
+        1234,
+        1254
+      ],
+      "alphaExtent": [
+        1155,
+        1157
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        55,
+        60,
+        44,
+        37
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "1701ae6f35a46720d47f063ca476486bd6b9ca0426300dc0b1d24060eec5ac54",
+      "webpCompressedBytes": 667910,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Forward collapse and fractured eclipse halo; proposed death pose. Generated redraw referenced canonical abyss-monarch-phases@3x.webp (Git blob 510b8c68092555fac5b73d8f84e8643e28423c6f). Identity, phase, timing and anchor unapproved. No resampling. Faint alpha may reach the canvas edge; review before runtime."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

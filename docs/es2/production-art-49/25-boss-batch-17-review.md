@@ -1,0 +1,7 @@
+# Boss Batch 17 — hurt and release review
+
+Source: c8223fbe705dc10dcf2c3c569857f792f303cccb. Both original WebPs and manifests are committed. Explicit DEV mode 3 only: phase 1 Abyss hurt (independent of attack ID) and phase 1 Seraph light-ring release (matching latest impact required). Both are single pose hypotheses, not approved sequences or identities. The provisional alpha128 bottom-center anchors (638.5,1231) and (624,1235) are from the manifests. The directional Seraph casting pose is not a verified facing match; evaluate it in review mode only. No new art, combat, hero or production changes. Existing release exclusion already covers both names.
+
+Isolated execution of the fetched selector with its TypeScript signature removed: RED two expected failures, GREEN nine cases passed. Project Vitest assertions cover selection, shared-scale drawing, reduced-motion and wrong-image fallback, and per-boss loader isolation; these full project tests and browser QA have not yet been run in this environment. Batch 17 approval flags remain unchanged.
+
+Remaining: coherent movement and directional mapping, Frost idle/death and safe phase transitions, Abyss death/transitions, Seraph idle/recovery/hurt/transitions, Titan continuity and consistent canonical appearance for all phases. Preserve the actual shipped phase art rather than using previous unapproved redraws as the identity reference.

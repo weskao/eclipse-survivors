@@ -20,7 +20,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(selectBossNativeKeyframe(snapshot('windup', 'ember-line'))).toBeNull()
     expect(selectBossNativeKeyframe(snapshot('recover'))).toBe('recover')
     expect(selectBossNativeKeyframe(snapshot('recover', 'eruption'))).toBeNull()
-    expect(selectBossNativeKeyframe(snapshot('death', 'titan-slam', 'abyss-monarch'))).toBeNull()
+    expect(selectBossNativeKeyframe(snapshot('death', 'titan-slam', 'abyss-monarch'))).toBe('abyssDeath')
     expect(selectBossNativeKeyframe({ ...snapshot('death'), bodyMotion: undefined })).toBeNull()
   })
   it('samples staged death and actual slam candidates at the real encounter progress boundaries', () => {
@@ -196,6 +196,61 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(drawBossNativeKeyframe(ctx, bad, state, 300)).toBe(false)
     expect(calls).toHaveLength(1)
   })
+  it('reviews the committed Batch 17 Abyss hurt and Seraph release poses only in phase 1', () => {
+    const at = (id: BossId, pose: BossBodyPose, attackId = 'light-ring', phase: 1 | 2 | 3 = 1): BossSnapshot => {
+      const base = snapshot(pose, attackId, id)
+      return { ...base, phase, bodyMotion: { ...base.bodyMotion!, phase } }
+    }
+    const hurt = at('abyss-monarch', 'hurt')
+    const release = at('eclipse-seraph', 'attack')
+    expect(selectBossNativeKeyframe(hurt)).toBe('abyssHurt')
+    expect(selectBossNativeKeyframe({ ...hurt, impacts: [] })).toBe('abyssHurt')
+    expect(selectBossNativeKeyframe(release)).toBe('seraphRelease')
+    expect(selectBossNativeKeyframe(at('abyss-monarch', 'hurt', 'shadow-fan', 2))).toBeNull()
+    expect(selectBossNativeKeyframe(at('eclipse-seraph', 'attack', 'light-ring', 2))).toBeNull()
+    expect(selectBossNativeKeyframe(at('eclipse-seraph', 'attack', 'radiant-lance'))).toBeNull()
+    expect(selectBossNativeKeyframe({ ...release, impacts: [] })).toBeNull()
+    expect(selectBossNativeKeyframe(at('eclipse-seraph', 'windup'))).toBe('seraphWindup')
+    expect(selectBossNativeKeyframe(at('eclipse-seraph', 'death', 'light-ring', 3))).toBe('seraphDeath')
+    expect(selectBossNativeKeyframe(at('abyss-monarch', 'recover', 'shadow-fan'))).toBe('abyssRecover')
+    for (const [key, state, dx, dy] of [
+      ['abyssHurt', hurt, -159.625, -303.75],
+      ['seraphRelease', release, -156, -304.75],
+    ] as const) {
+      const image = { complete: true, naturalWidth: 1254, naturalHeight: 1254 } as HTMLImageElement
+      registerBossNativeKeyframe(image, key)
+      const calls: unknown[][] = []
+      const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+      expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+      expect(calls[0]?.slice(1)).toEqual([0, 0, 1254, 1254, dx, dy, 313.5, 313.5])
+      expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+      expect(drawBossNativeKeyframe(ctx, image, key === 'abyssHurt' ? release : hurt, 300)).toBe(false)
+      const bad = { complete: true, naturalWidth: 0, naturalHeight: 1254 } as HTMLImageElement
+      registerBossNativeKeyframe(bad, key)
+      expect(drawBossNativeKeyframe(ctx, bad, state, 300)).toBe(false)
+      expect(calls).toHaveLength(1)
+    }
+  })
+  it('reviews Batch 18 Abyss dissolve only during phase 3 death', () => {
+    const state = snapshot('death', 'shadow-fan', 'abyss-monarch')
+    const earlier = (phase: 1 | 2): BossSnapshot => ({ ...state, phase, bodyMotion: { ...state.bodyMotion!, phase } })
+    expect(selectBossNativeKeyframe({ ...state, impacts: [] })).toBe('abyssDeath')
+    expect(selectBossNativeKeyframe(earlier(1))).toBeNull()
+    expect(selectBossNativeKeyframe(earlier(2))).toBeNull()
+    expect(selectBossNativeKeyframe(snapshot('idle', 'shadow-fan', 'abyss-monarch'))).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: NaN } })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: 1.1 } })).toBeNull()
+    const image = { complete: true, naturalWidth: 1254, naturalHeight: 1254 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'abyssDeath')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1254, 1254, -158.125, -300.25, 313.5, 313.5])
+    expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, earlier(2), 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, snapshot('death', 'light-ring', 'eclipse-seraph'), 300)).toBe(false)
+    expect(calls).toHaveLength(1)
+  })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
     const makeImage = () => ({ complete: false, src: '' }) as HTMLImageElement
     expect(loadWorldRuntimeImages(makeImage).bossNativeKeyframes).toBeUndefined()
@@ -203,7 +258,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     const batch12 = import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-12/*/**/*.webp')
     const present = (path: string) => !path.startsWith('batch-12/') || Object.hasOwn(batch12, '../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path)
     const seraph = loadWorldRuntimeImages(makeImage, 'eclipse-seraph', 'native')
-    const seraphKeys = (['seraphWindup', 'seraphDeath'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
+    const seraphKeys = (['seraphWindup', 'seraphRelease', 'seraphDeath'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
     expect(Object.keys(seraph.bossNativeKeyframes ?? {})).toEqual(seraphKeys)
     await vi.waitFor(() => {
       for (const key of seraphKeys)

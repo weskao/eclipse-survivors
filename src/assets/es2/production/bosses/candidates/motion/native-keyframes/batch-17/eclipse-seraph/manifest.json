@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "0fd354eb2457d5277170344688d19567679cc71b",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "light-ring-release-key-a",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/light-ring-release-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "d7d1459a-8b88-43d5-bbcb-97bc0dbf0121",
+        "originalPngSha256": "dac29f3408b0872a6b2db2773c26bd66fadc85e15f85e808edca1507734d1357",
+        "canonicalReferenceHead": "0fd354eb2457d5277170344688d19567679cc71b"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        24,
+        23,
+        1224,
+        1235
+      ],
+      "alphaAnyBounds": [
+        0,
+        17,
+        1253,
+        1254
+      ],
+      "alphaExtent": [
+        1200,
+        1212
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        24,
+        23,
+        30,
+        19
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "c5535501a6458cf9248d7fa7e748778309739de723f1f1484c8d230c1f6be2f4",
+      "webpCompressedBytes": 864648,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Extended arms casting golden ring; proposed light-ring release. Direction and phase unapproved; faint alpha touches edge. Generated redraw referencing canonical eclipse-seraph-phases@3x.webp (Git blob dc7e6349d687a60491c52375badef62c4935c1ed); identity requires visual approval. No resize."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}
