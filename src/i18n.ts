@@ -1104,7 +1104,7 @@ const english = new Map<string, string>([
 , ["主動技能消耗生命","Active ability consumes health"]
 , ["緋紅聖盾","Crimson Aegis"]
 , ["緋紅韌性：受到傷害減少 14%，受傷時有冷卻的近距離反擊。","Crimson Resilience: take 14% less damage and counterattack at close range with a cooldown when struck."]
-, ["血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；屏障到期或破碎時引爆緋紅報復，依吸收的傷害重創周圍敵人。","Blood Oath Barrier: sacrifice a little health for a 3.5-second absorbing shield; when it expires or breaks, Crimson Retribution detonates, striking nearby enemies based on the damage absorbed."]
+, ["血誓屏障：犧牲少量生命換取 {seconds} 秒的吸收護盾；屏障到期或破碎時引爆緋紅報復，依吸收的傷害重創周圍敵人。","Blood Oath Barrier: sacrifice a little health for a {seconds}-second absorbing shield; when it expires or breaks, Crimson Retribution detonates, striking nearby enemies based on the damage absorbed."]
 , ["· 專精","· Mastery"]
 , ["提升英雄獨有的被動能力","Enhance this hero's unique passive ability"]
 , ["強化暴擊與影襲傷害。","Boost critical hits and Shadow Assault damage."]

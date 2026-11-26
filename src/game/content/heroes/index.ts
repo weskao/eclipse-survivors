@@ -41,7 +41,9 @@ export interface HeroSelectionDefinition {
   readonly startingEquipment: string
   readonly progressionAbility: ContentId
   readonly passive: string
+  /** Translation template; pass `specialParams` to `t()` wherever it is displayed. */
   readonly special: string
+  readonly specialParams?: Readonly<Record<string, number>>
   readonly specialCooldown: number
   readonly animation: Readonly<{ idle: string; attack: string; special: string }>
   readonly audio: Readonly<{ attack: SfxCue; special: SfxCue }>
@@ -85,7 +87,8 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     stats: BALANCE.heroes.special['crimson-paladin'],
     startingAbility: 'heroes:crimson-guard', startingEquipment: '緋紅聖盾', progressionAbility: 'heroes:crimson-vow',
     passive: '緋紅韌性：受到傷害減少 14%，受傷時有冷卻的近距離反擊。',
-    special: '血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；屏障到期或破碎時引爆緋紅報復，依吸收的傷害重創周圍敵人。',
+    special: '血誓屏障：犧牲少量生命換取 {seconds} 秒的吸收護盾；屏障到期或破碎時引爆緋紅報復，依吸收的傷害重創周圍敵人。',
+    specialParams: { seconds: BALANCE.heroes.specialEffects['crimson-paladin'].barrierSeconds },
     specialCooldown: BALANCE.heroes.specialCooldowns['crimson-paladin'],
     animation: { idle: 'shield-vigil', attack: 'shield-counter', special: 'crimson-aegis' },
     audio: { attack: 'knight', special: 'crimson-paladin-special' },
@@ -97,7 +100,7 @@ const HERO_LIST = Object.values(HERO_DEFINITIONS)
 /** The existing registry stores these starting abilities and upgrade levels per run. */
 const abilities: ContentAbility[] = HERO_LIST.flatMap((def): ContentAbility[] => [
   {
-    id: def.startingAbility, kind: 'weapon', icon: '✦', iconSrc: def.specialIconSrc, title: def.label + ' · ' + def.special,
+    id: def.startingAbility, kind: 'weapon', icon: '✦', iconSrc: def.specialIconSrc, title: def.label + ' · ' + def.special.split('：')[0],
     desc: def.passive, rarity: 'rare', maxLevel: 1,
     eligible: () => false, // The adapter grants this at run initialization, never in random rolls.
   },

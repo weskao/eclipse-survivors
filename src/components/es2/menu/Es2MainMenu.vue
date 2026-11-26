@@ -207,7 +207,7 @@ const moveMode = (event: KeyboardEvent, id: RunModeId): void => { void moveChoic
           <div class="es2-hero-detail-special">
             <img :src="detailSpecialization.specialIconSrc" :alt="t('{name} 主動技能圖示', { name: t(detailSpecialization.label) })"
               width="44" height="44" decoding="async" />
-            <span>{{ t('主動技能 ·') }} {{ t(detailSpecialization.special) }}{{ t('（冷卻') }} {{ detailSpecialization.specialCooldown }} {{ t('秒）') }}</span>
+            <span>{{ t('主動技能 ·') }} {{ t(detailSpecialization.special, detailSpecialization.specialParams) }}{{ t('（冷卻') }} {{ detailSpecialization.specialCooldown }} {{ t('秒）') }}</span>
           </div>
           <p>{{ t('優勢 ·') }} {{ t(detailSpecialization.strengths.join(' / ')) }}</p>
           <p>{{ t('弱點 ·') }} {{ t(detailSpecialization.weaknesses.join(' / ')) }}</p>

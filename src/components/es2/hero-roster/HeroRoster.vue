@@ -50,7 +50,7 @@ async function move(event: KeyboardEvent, id: SpecializationId): Promise<void> {
           <img data-hero-skill-icon class="es2-roster__skill-icon" :src="hero.specialIconSrc"
             :alt="t('{name} 主動技能圖示', { name: t(hero.label) })" width="44" height="44"
             loading="lazy" decoding="async" draggable="false" />
-          <span>{{ t("主動技能 ·") }} {{ t(hero.special) }}{{ t("（冷卻") }} {{ hero.specialCooldown }} {{ t("秒）") }}</span>
+          <span>{{ t("主動技能 ·") }} {{ t(hero.special, hero.specialParams) }}{{ t("（冷卻") }} {{ hero.specialCooldown }} {{ t("秒）") }}</span>
         </span>
         <span class="es2-roster__traits">{{ t("優勢 ·") }} {{ t(hero.strengths.join(' / ')) }}</span>
         <span class="es2-roster__traits">{{ t("弱點 ·") }} {{ t(hero.weaknesses.join(' / ')) }}</span>

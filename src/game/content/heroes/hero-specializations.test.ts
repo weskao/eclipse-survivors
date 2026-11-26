@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { setLocale, t } from '../../../i18n'
 import { BALANCE } from '../../config'
 import { createContentRegistry } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
@@ -40,6 +41,26 @@ describe('isolated hero specializations', () => {
       expect(def.animation.attack).toBeTruthy()
       expect(def.audio.special).toBeTruthy()
     }
+  })
+
+  it('fills the Blood Oath Barrier duration from balance data in both locales', () => {
+    const paladin = HERO_DEFINITIONS['crimson-paladin']
+    const seconds = BALANCE.heroes.specialEffects['crimson-paladin'].barrierSeconds
+    const storage = { getItem: () => null, setItem: () => {} }
+    // Numbers come from heroes.json through t() params, never as literals in the copy.
+    for (const def of Object.values(HERO_DEFINITIONS)) expect(def.special).not.toMatch(/\d/)
+    expect(paladin.specialParams).toEqual({ seconds })
+    try {
+      setLocale('zh-TW', storage)
+      expect(t(paladin.special, paladin.specialParams)).toContain(`換取 ${seconds} 秒的吸收護盾`)
+      setLocale('en', storage)
+      expect(t(paladin.special, paladin.specialParams)).toContain(`a ${seconds}-second absorbing shield`)
+    } finally {
+      setLocale('zh-TW', storage)
+    }
+    // The starting-ability card title is translated without params, so it carries the name only.
+    const title = HERO_SPECIALIZATIONS_PACK.abilities?.find(a => a.id === paladin.startingAbility)?.title
+    expect(title).toBe('緋紅聖騎 · 血誓屏障')
   })
 
   it.each(Object.keys(HERO_DEFINITIONS) as SpecializationId[])(
