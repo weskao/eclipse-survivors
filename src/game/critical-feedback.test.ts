@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { hit, damageHero } from './combat'
+import { sampleHeroImpact } from './health-impact'
+import { BALANCE } from './config'
 import { createContentRegistry } from './content/registry'
 import { COMBAT_VFX_PACK } from './content/packs/combat-vfx'
 import { createHeroSpecializationAdapter, type HeroSpecializationAdapter } from './content/heroes'
@@ -63,11 +65,16 @@ describe('authoritative critical feedback', () => {
     const hero = s.hero!
     damageHero(s, hero.max * 0.08, baseHooks())
     expect(s.cameraKick).toBe(0)
+    expect(sampleHeroImpact(hero, s.worldClock)).toBeUndefined()
     expect(s.numberFx.at(-1)).toMatchObject({ received: true, value: Math.round(hero.max * 0.08) })
     hero.inv = 0
     damageHero(s, hero.max * 0.3, baseHooks())
-    expect(s.cameraKick).toBeGreaterThan(0)
-    expect(s.cameraKick).toBeLessThanOrEqual(2)
+    expect(s.cameraKick).toBe(0) // no second/global recoil alongside the directional impact
+    const impact = sampleHeroImpact(hero, s.worldClock)!
+    expect(impact.severity).toBe('heavy')
+    expect(Math.hypot(impact.offsetX, impact.offsetY)).toBeGreaterThan(0)
+    expect(Math.hypot(impact.offsetX, impact.offsetY)).toBeLessThanOrEqual(BALANCE.combat.heroHitFeedback.heavy.shakePx + 1e-9)
+    expect(sampleHeroImpact(hero, s.worldClock + 1)).toBeUndefined()
   })
 
   it('separates player health loss from enemy damage with a clear red minus-number', () => {

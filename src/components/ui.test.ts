@@ -150,11 +150,13 @@ describe('GameHud', () => {
   const hud: HudView = { ...emptyHud(), who: '劍士 · LV.3', hpPct: 40, hpLabel: '生命 40 / 100', xpPct: 25, kill: 7, timer: '01:05', quest: 'Q' }
   const props = { active: true, hud, choice: 'knight' as const, musicOn: true, sfxOn: false, toastText: 'hi', toastVisible: true }
 
-  it('renders values from props', () => {
+  it('renders values from props', async () => {
     const w = mount(GameHud, { props })
     expect(w.find('#hud').classes()).toContain('active')
     expect(w.find('#who').text()).toBe('劍士 · LV.3')
-    expect((w.find('#hpBar').element as HTMLElement).style.width).toBe('40%')
+    await nextTick()
+    expect(w.get('#hudHealthMeter').attributes('aria-valuenow')).toBe('40')
+    expect((w.get('#hudHealthMeter').element as HTMLElement).style.getPropertyValue('--hero-hp-front')).toBe('0.4')
     expect((w.find('#xpBar').element as HTMLElement).style.width).toBe('25%')
     expect((w.find('#xpTrack').element as HTMLElement).style.width).toBe('25%')
     expect(w.find('#hpLabel').text()).toBe('生命 40 / 100')
@@ -203,7 +205,9 @@ describe('GameHud', () => {
     expect(w.find('#bossWrap').classes()).not.toContain('show')
     await w.setProps({ hud: { ...hud, bossPct: 60 } })
     expect(w.find('#bossWrap').classes()).toContain('show')
-    expect((w.find('#bossHealth').element as HTMLElement).style.width).toBe('60%')
+    const meter = w.get('.boss-track').element as HTMLElement
+    expect(meter.style.getPropertyValue('--es2-progress')).toBe('0.6')
+    expect(meter.style.getPropertyValue('--hero-hp-front')).toBe('0.6')
   })
 
   it('emits toggles and pause; exposes minimap canvas', async () => {

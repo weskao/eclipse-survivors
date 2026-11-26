@@ -276,10 +276,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
   restoreMenuSelection()
   let initialEffect: 'soft' | 'still' = 'soft'
-  let initialShake = true
+  let initialShake = false
   try {
     if (settingsStorage?.getItem('eclipseUpgradeEffect') === 'still') initialEffect = 'still'
-    if (settingsStorage?.getItem('eclipseCameraShake') === 'off') initialShake = false
+    if (settingsStorage?.getItem('eclipseCameraShake') === 'on') initialShake = true
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
     mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,

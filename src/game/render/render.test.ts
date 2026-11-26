@@ -444,7 +444,7 @@ describe('ES3 authored legacy enemy dissolution in the live renderer', () => {
 
 describe('hero foot health bar uses the live renderer cache', () => {
   it('animates damage, clears the trail on healing, then hides after reaching full', () => {
-    const s = busyState(); s.mobs = []; s.cameraKick = 0
+    const s = busyState(); s.mode = 'play'; s.mobs = []; s.cameraKick = 0
     const hero = s.hero!; hero.dash = 0; hero.inv = 0; hero.dashCd = -1
     const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
     const { ctx } = createFakeCtx()

@@ -77,6 +77,9 @@ describe('enemy health color tiers', () => {
     expect(motion.front).toBeGreaterThan(.75)
     fills.length = 0
     drawEnemyHealthBar(ctx, motion, 0, 0, 100, true)
+    expect(fills).toEqual(['#f2c37e', '#ef526f', '#ffc27f'])
+    fills.length = 0
+    drawEnemyHealthBar(ctx, motion, 0, 0, 100, true, true)
     expect(fills).toEqual(['#f2c37e', '#ef526f'])
     expect(elite.hp).toBe(200)
   })
