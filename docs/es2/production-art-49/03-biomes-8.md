@@ -17,7 +17,7 @@
 - Owned：src/assets/es2/production/biomes/**
 - 僅供追蹤的既有 consumer（不得在分工分支擅自修改）：src/game/render/es2/production-world.ts、src/game/content/biomes/index.ts
 - 既有測試／契約：src/game/render/es2/production-world.test.ts、src/assets/es2/production/world-art-candidates.test.ts
-- 參考來源：assets/images/imgs1.png、assets/images/imgs9.png（地板含現有程序化修邊成果）
+- 參考來源：assets/images/imgs1.webp、assets/images/imgs9.webp（地板含現有程序化修邊成果）
 
 ## 現有素材清單（全部已入庫；以 manifest 與 HEAD 重新確認）
 

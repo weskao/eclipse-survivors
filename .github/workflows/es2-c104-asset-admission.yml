@@ -28,8 +28,8 @@ jobs:
       - name: Save immutable c104 source sheets for exact pixel-by-pixel crop review
         uses: actions/upload-artifact@v4
         with:
-          name: c104-10-original-source-pngs
-          path: assets/images/img*.png
+          name: c104-10-original-source-webps
+          path: assets/images/imgs*.webp
           if-no-files-found: error
       - run: python scripts/es2/verify_runtime_atlases.py
       - uses: actions/upload-artifact@v4

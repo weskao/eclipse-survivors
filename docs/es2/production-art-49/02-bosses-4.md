@@ -15,7 +15,7 @@
 - Owned：src/assets/es2/production/bosses/**
 - 僅供追蹤的既有 consumer（不得在分工分支擅自修改）：src/game/render/es2/production-world.ts、src/game/content/bosses/definitions.ts
 - 既有測試／契約：src/game/render/es2/production-world.test.ts、src/game/content/bosses/live-integration.test.ts
-- 參考來源：assets/images/imgs7.png、assets/images/imgs8.png
+- 參考來源：assets/images/imgs7.webp、assets/images/imgs8.webp
 
 ## 現有素材清單（全部已入庫；以 manifest 與 HEAD 重新確認）
 

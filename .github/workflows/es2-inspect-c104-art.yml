@@ -28,7 +28,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: c104-raw-png-sources
-          path: assets/images/imgs*.png
+          name: c104-raw-webp-sources
+          path: assets/images/imgs*.webp
           if-no-files-found: error
           compression-level: 0
