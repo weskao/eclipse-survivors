@@ -9,7 +9,7 @@ import { ATTACK_PRESENTATION } from '../content/bosses/attack-presentation'
 import { createBossAttackAudio } from './boss-attacks'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
 import { isHurtCue, renderHurtSample, type HurtCue } from './hurt-samples'
-import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
+import { isBattleMusicMode, type AudioSystem, type BgmElement, type CombatIntensity, type SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
 export interface AudioParamLike {
@@ -155,7 +155,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const bossScore = createBossScore()
   let fallbackBossId: BossId | null = null
   const cinematic = createCinematicMusic(opts, () => ac, () => musicBus,
-    () => (mode === 'play' || mode === 'result') && !interrupted && musicOn && musicVolume > 0)
+    () => (isBattleMusicMode(mode) || mode === 'result') && !interrupted && musicOn && musicVolume > 0)
   let resultScore = createEs2Score()
   let resultScene: 'victory' | 'defeat' | null = null
   const sfxLast = new Map<SfxCue, number>()
@@ -186,15 +186,15 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const menuLevel = (): number => 0.78 * musicVolume / 100
 
   const mp3Level = (): number =>
-    (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0 :
-      warningMix && mode === 'play' ? 0.12 :
-      intensity === 'combat' && mode === 'play' ? 0.35 : 0.38) * musicVolume / 100
+    (intensity === 'boss' && isBattleMusicMode(mode) ? 0 :
+      warningMix && isBattleMusicMode(mode) ? 0.12 :
+      intensity === 'combat' && isBattleMusicMode(mode) ? 0.35 : 0.38) * musicVolume / 100
 
   bgm.volume = mp3Level()
   if (menuBgm) menuBgm.volume = menuLevel()
 
   const activeTrack = (): BgmElement | undefined =>
-    externalScoreActive ? undefined : mode === 'menu' ? menuBgm : mode === 'play' ? bgm : undefined
+    externalScoreActive ? undefined : mode === 'menu' ? menuBgm : isBattleMusicMode(mode) ? bgm : undefined
 
   const playScore = (): void => {
     const track = activeTrack()
@@ -439,7 +439,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         if (resultScene) resultScore.schedule(ctx.currentTime, tone, 0.88)
         return
       }
-      if (mode !== 'play') return
+      if (!isBattleMusicMode(mode)) return
       cinematic.sync()
       if (intensity === 'boss' && !cinematic.playingBoss) {
         if (fallbackBossId) bossScore.schedule(ctx.currentTime, tone)
@@ -467,7 +467,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         cinematic.result(false)
       }
       if (mode !== 'menu') menuBgm?.pause()
-      if (mode !== 'play' && mode !== 'result') cinematic.stop(mode === 'paused' || mode === 'level')
+      if (!isBattleMusicMode(mode) && mode !== 'result') cinematic.stop(mode === 'paused')
       if (mode === 'menu' || mode === 'paused' || mode === 'result') bgm.pause()
       if (mode === 'menu') {
         intensity = 'calm'
@@ -484,8 +484,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       }
       bgm.volume = mp3Level()
       if (menuBgm) menuBgm.volume = menuLevel()
-      if (mode === 'play' || mode === 'menu') playScore()
-      if (mode === 'play' || mode === 'result') cinematic.sync()
+      if (isBattleMusicMode(mode) || mode === 'menu') playScore()
+      if (isBattleMusicMode(mode) || mode === 'result') cinematic.sync()
     },
     resetBattleClock(delay) {
       battle.setClock(ac ? ac.currentTime + delay : 0)
@@ -509,7 +509,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
       if (musicOn) {
         wake()
-        if (screen === 'play') { playScore(); cinematic.sync() }
+        if (isBattleMusicMode(screen)) { playScore(); cinematic.sync() }
         const t = ac ? ac.currentTime + 0.04 : 0
         menu.setClock(t)
         battle.setClock(t)

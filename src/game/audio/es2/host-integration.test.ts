@@ -190,6 +190,40 @@ describe('ES2 final host audio wiring', () => {
     expect(menu.paused).toBe(true)
   })
 
+  it('keeps the actual sampled boss theme uninterrupted while choosing a skill', async () => {
+    const context = new FakeAudioContext()
+    const bgm = new Media()
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => context,
+      bossTracks: { 'abyss-monarch': ['abyss-p1.mp3', 'abyss-p2.mp3', 'abyss-p3.mp3'] },
+      loadMusic: async () => new FakeBuffer(480000, 24000),
+    })
+    const engine = createEngine({ audio, contentPacks: [] })
+    engine.start()
+    engine.state.bossSpawned = true
+    engine.state.mobs = [{ x: 500, y: 0, type: 'boss', hp: 100, max: 100, r: 48,
+      speed: 0, dmg: 32, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }]
+    engine.state.time = 0.24
+    engine.advance(0.033)
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+    const bossLoop = context.sources.find(source => source.loop)!
+    expect(bossLoop).toBeDefined()
+    context.currentTime = 5
+    engine.testApi.level()
+    expect(engine.state.mode).toBe('level')
+    expect(bossLoop.stoppedAt).toBeNull()
+    expect(bgm.volume).toBe(0)
+    context.currentTime = 10
+    audio.tick('level')
+    expect(bossLoop.stoppedAt).toBeNull()
+    engine.chooseUpgrade(engine.ui.upgrades[0]!.id)
+    expect(engine.state.mode).toBe('play')
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+    expect(bossLoop.stoppedAt).toBeNull()
+    expect(context.sources.filter(source => source.loop)).toEqual([bossLoop])
+    audio.dispose()
+  })
+
   it('hands cinematic boss and results scoring to the host and restores ES2 combat', () => {
     const { audio, bgm } = setup()
     const engine = createEngine({ audio, contentPacks: [] })

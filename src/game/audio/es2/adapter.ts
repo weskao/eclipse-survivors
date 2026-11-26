@@ -1,4 +1,5 @@
 import type { GameMode } from '../../types'
+import { isBattleMusicMode } from '../types'
 import type { ToneFn } from '../music'
 import type { AudioSystem } from '../types'
 import { CUE_MAP, type Es2Cue } from './cues'
@@ -74,7 +75,7 @@ export function createEs2AudioAdapter({ audio, now, tone, isRunning }: Es2AudioO
   }
 
   const musicalMode = (mode: GameMode): boolean =>
-    mode === 'menu' || mode === 'play' ||
+    mode === 'menu' || isBattleMusicMode(mode) ||
     (mode === 'result' && (scene === 'victory' || scene === 'defeat'))
 
   const wake = (): void => {
