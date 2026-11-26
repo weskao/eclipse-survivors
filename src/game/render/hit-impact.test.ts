@@ -75,3 +75,32 @@ it('makes heavy contact larger without fabricating a critical hit, and preserves
   expect(s.numberFx.at(-1)?.critical).not.toBe(true)
   expect(s.numberFx.at(-1)?.severity).toBe('heavy')
 })
+
+
+describe('ES3 dedicated contact texture routing', () => {
+  const image = (ready = true) => ({ complete: ready, naturalWidth: ready ? 480 : 0 }) as HTMLImageElement
+  it('draws the dedicated single bitmap for each contact family and prioritizes actual critical hits', () => {
+    const art = { normal: image(), heavy: image(), critical: image(), elemental: image(), evolved: image(), hero: image() }
+    const variants = [
+      ['normal', undefined, 'normal'], ['heavy', undefined, 'heavy'], ['critical', undefined, 'critical'],
+      ['normal', 'elemental', 'elemental'], ['heavy', 'evolved', 'evolved'], ['heavy', 'hero', 'hero'],
+      ['critical', 'elemental', 'critical'], ['critical', 'hero', 'critical'],
+    ] as const
+    for (const [contact, flavor, key] of variants) {
+      const { ctx, drawn, calls } = createFakeCtx()
+      expect(drawHitImpact(ctx, contact, 100, .2, false, false, undefined, flavor, art)).toBe(true)
+      expect(drawn).toEqual([art[key]])
+      expect(calls).not.toContain('stroke')
+    }
+  })
+  it('retains the original cached contact during missing or undecoded optional asset uploads', () => {
+    const art = { normal: image(), critical: image(), elemental: image(false) }
+    const f = createFakeCtx()
+    expect(drawHitImpact(f.ctx, 'normal', 100, .2, false, false, undefined, 'elemental', art)).toBe(false)
+    expect(f.drawn).toEqual([art.normal])
+    const reduced = createFakeCtx()
+    expect(drawHitImpact(reduced.ctx, 'critical', 100, .2, true, true, undefined, 'evolved', art)).toBe(true)
+    expect(reduced.drawn).toEqual([art.critical])
+    expect(reduced.ctx.globalAlpha).toBeLessThanOrEqual(.48)
+  })
+})
