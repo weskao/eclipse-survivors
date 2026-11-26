@@ -1,0 +1,268 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "recovery",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": null,
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    704,
+    704,
+    704,
+    704
+  ],
+  "footBottomsStatus": "Core alpha proxy; not anatomical anchors",
+  "alphaBounds": [
+    [
+      36,
+      247,
+      732,
+      714
+    ],
+    [
+      101,
+      210,
+      667,
+      708
+    ],
+    [
+      137,
+      124,
+      631,
+      710
+    ],
+    [
+      158,
+      101,
+      610,
+      714
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceBounds": [
+        23,
+        94,
+        719,
+        561
+      ],
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        36,
+        247
+      ],
+      "coreAlphaBounds": [
+        42,
+        259,
+        722,
+        704
+      ],
+      "coreExtent": [
+        680,
+        445
+      ],
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        36,
+        247,
+        732,
+        714
+      ]
+    },
+    {
+      "index": 1,
+      "sourceBounds": [
+        646,
+        65,
+        1212,
+        563
+      ],
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        101,
+        210
+      ],
+      "coreAlphaBounds": [
+        111,
+        218,
+        659,
+        704
+      ],
+      "coreExtent": [
+        548,
+        486
+      ],
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        101,
+        210,
+        667,
+        708
+      ]
+    },
+    {
+      "index": 2,
+      "sourceBounds": [
+        55,
+        642,
+        549,
+        1228
+      ],
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        137,
+        124
+      ],
+      "coreAlphaBounds": [
+        144,
+        127,
+        627,
+        704
+      ],
+      "coreExtent": [
+        483,
+        577
+      ],
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        137,
+        124,
+        631,
+        710
+      ]
+    },
+    {
+      "index": 3,
+      "sourceBounds": [
+        706,
+        623,
+        1158,
+        1236
+      ],
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        158,
+        101
+      ],
+      "coreAlphaBounds": [
+        162,
+        105,
+        603,
+        704
+      ],
+      "coreExtent": [
+        441,
+        599
+      ],
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        158,
+        101,
+        610,
+        714
+      ]
+    }
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "8c7ea0d44de4f6a0cff226173a3ca246fc3eb05500c689034cfb5427183e8c27",
+  "originalPNGSHA256": "5a7c773cbf5a636fe6d376a5ec4453ce356787b19440e362962a88d1a45ae3af",
+  "atlasFile": "recovery-e-4frames@3x.webp",
+  "webpSHA256": "ff1555cb34c536e1fcc3af0a7978d671af86420fb8896d278a19c66889490c44",
+  "bytes": 529842,
+  "sourceProvenance": {
+    "generationId": "e8f17586-6019-45bd-8fac-b287e5027c3f",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "071de3d0bdc4ac93183b2524e9ca25f0f313d29e"
+  },
+  "encoding": "Pillow WebP quality=100 method=3; review only; Polytool not executed",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "Four disconnected alpha components extracted individually; bounding rectangles overlap but silhouettes do not. No image resampling or mirror. Pixels beyond 8px of major components excluded in derivative only; source WebP retained.",
+    "Source maximum omitted alpha: 2; count of omitted nonzero alpha pixels: 55526.",
+    "E direction provisional. Verify face, weapon design, scale, foot anchors and actual gameplay continuity before admission.",
+    "Polytool installation did not complete; cwebp unavailable. Review only, no gameplay admission."
+  ]
+}
