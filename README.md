@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://weskao.github.io/eclipse-survivors/" title="Play Eclipse Survivors">
-    <img src="assets/screenshots/gameplay.webp" alt="Actual Eclipse Survivors gameplay captured in the browser: an armored knight facing goblins, slimes, bats, and stone golems in a grassy ruined courtyard" width="100%">
+    <img src="assets/screenshots/start.webp" alt="Eclipse Survivors start page: the Adventurer Hall, six selectable champions and the Enter the Twilight Gate button" width="100%">
   </a>
 </p>
 
@@ -22,20 +22,22 @@
 
 The images below show the current game as it runs in Chromium, not promotional mockups or artwork from another game.
 
+https://github.com/user-attachments/assets/fc71bf59-cd8d-416f-b561-b889cb9e2fa4
+
 <table>
 <tr>
 <td width="66%">
-  <img src="assets/screenshots/gameplay.webp" alt="Real desktop gameplay featuring the in-game knight, goblins, slimes, bats and stone golems on a grassy stone path" width="100%">
+  <img src="assets/screenshots/gameplay.webp?v=2" alt="Real desktop gameplay: the Dawnsteel Knight fighting goblins, slimes, bats and hooded casters in the Dawnfall Courtyard" width="100%">
   <small><strong>Survival combat</strong> — automatic attacks, enemy waves, experience, and HUD.</small>
 </td>
 <td width="34%" rowspan="2">
-  <img src="assets/screenshots/mobile.webp" alt="Real mobile browser gameplay captured at a 390 by 844 pixel viewport" width="100%">
+  <img src="assets/screenshots/mobile.webp?v=2" alt="Real mobile browser gameplay captured at a 390 by 844 pixel viewport" width="100%">
   <small><strong>Mobile play</strong> — the actual touch-screen layout.</small>
 </td>
 </tr>
 <tr>
 <td>
-  <img src="assets/screenshots/upgrade.webp" alt="Actual Eclipse Survivors level-up screen showing three selectable ability cards" width="100%">
+  <img src="assets/screenshots/upgrade.webp?v=2" alt="Actual Eclipse Survivors level-up screen showing three selectable ability cards" width="100%">
   <small><strong>Level-up choices</strong> — select one of three upgrades during a run.</small>
 </td>
 </tr>
