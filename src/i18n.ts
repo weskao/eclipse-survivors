@@ -38,6 +38,8 @@ const english = new Map<string, string>([
   ["節點詳情","Node details"],
   ["目前效果","Current effect"],
   ["下一階效果","Next rank effect"],
+  ["技能說明","Skill description"],
+  ["每階提升","Gain per rank"],
   ["前置條件","Prerequisites"],
   ["可升級","Available"],
   ["餘燼不足","Not enough embers"],
