@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { setLocale, t } from '../../../i18n'
 import { BALANCE } from '../../config'
+import { installHallRun } from '../meta/hall-runtime'
+import hallTuning from '../../balance/hall-effect-tuning.json'
 import { createContentRegistry } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
 import type { GameHooks, Mob } from '../../types'
@@ -362,4 +364,27 @@ describe('isolated hero specializations', () => {
     first.adapter.tick(2)
     expect(first.adapter.snapshot().cooldown).toBeLessThan(remaining)
   })
+})
+
+it('executes Hall phantom only when Shadowblade Q stealth ends and never while paused', () => {
+  const baseline = setup('shadowblade')
+  const improved = setup('shadowblade')
+  improved.state.heroId = 'shadowblade'
+  installHallRun(improved.state, { hero:'shadowblade', ranks:{'shadowblade-phantom':1} })
+  for (const {state,adapter} of [baseline,improved]) {
+    state.mobs.push(mob(35,0,10000))
+    expect(adapter.activate()).toBe(true)
+  }
+  expect(improved.state.mobs[0]!.hp).toBe(baseline.state.mobs[0]!.hp)
+  const before=improved.state.mobs[0]!.hp
+  improved.state.mode='paused'
+  improved.adapter.tick(10)
+  expect(improved.state.mobs[0]!.hp).toBe(before)
+  improved.state.mode='play'
+  improved.state.time=1
+  improved.adapter.tick(1)
+  expect(before-improved.state.mobs[0]!.hp).toBeCloseTo(improved.state.hero!.damage*hallTuning.shadowPhantomDamage)
+  const after=improved.state.mobs[0]!.hp
+  improved.adapter.tick(1)
+  expect(improved.state.mobs[0]!.hp).toBe(after)
 })

@@ -14,7 +14,7 @@ import summonerSpecialIcon from '../../../assets/es2/production/heroes/spirit-su
 import paladinSpecialIcon from '../../../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
 
 export type SpecializationId = 'shadowblade' | 'spirit-summoner' | 'crimson-paladin'
-import { grantShield, hallCritBonus, hallRank, hallSummonCast, hallSummonInterval, withHallSource, type HallDamageSource } from '../meta/hall-runtime'
+import { reserveHallProc, grantShield, hallCritBonus, hallRank, hallSummonCast, hallSummonInterval, withHallSource, type HallDamageSource } from '../meta/hall-runtime'
 import hallTuning from '../../balance/hall-effect-tuning.json'
 
 export type CompanionKind = 'wisp' | 'guardian' | 'reaver'
@@ -239,7 +239,14 @@ export function createHeroSpecializationAdapter(
       cooldown = Math.max(0, cooldown - dt)
       const wasStealth = stealth > 0
       stealth = Math.max(0, stealth - dt)
-      if (wasStealth && stealth === 0 && state.hall && hallRank(state, 'shadowblade-ambush')) state.hall.ambushReady = true
+      if (wasStealth && stealth === 0 && state.hall) {
+        if (hallRank(state, 'shadowblade-ambush')) state.hall.ambushReady = true
+        const phantom = hallRank(state, 'shadowblade-phantom') && state.time >= phantomAt ? nearby(state, SHADOW.specialReach, 1, hooks)[0] : undefined
+        if (phantom && reserveHallProc(state)) {
+          phantomAt = state.time + hallTuning.shadowPhantomCooldown
+          strike(phantom,state.hero!.damage * hallTuning.shadowPhantomDamage,'proc')
+        }
+      }
       counterCooldown = Math.max(0, counterCooldown - dt)
       if (barrierLife > 0) {
         barrierLife = Math.max(0, barrierLife - dt)
@@ -291,8 +298,6 @@ export function createHeroSpecializationAdapter(
         const struck = nearby(state, SHADOW.specialReach, SHADOW.specialHits, hooks)
         lastTargets = strikePoints(struck)
         for (const enemy of struck) strike(enemy,hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank))
-        const phantom = hallRank(state, 'shadowblade-phantom') && state.time >= phantomAt ? nearby(state, SHADOW.specialReach, 1, hooks)[0] : undefined
-        if (phantom) { phantomAt = state.time + hallTuning.shadowPhantomCooldown; strike(phantom,hero.damage * hallTuning.shadowPhantomDamage,'proc') }
       } else if (id === 'spirit-summoner') {
         const struck = nearby(state, SPIRIT.companionRange, 3, hooks)
         lastTargets = strikePoints(struck)

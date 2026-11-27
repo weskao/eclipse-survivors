@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
-import { hallRangerShot, hallWeaponCast, hallBurstProc, hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
+import { reserveHallProc, hallRangerShot, hallWeaponCast, hallBurstProc, hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
 function run(ranks: Record<string, number>) {
   const state = createState()
   resetRun(state)
@@ -123,4 +123,17 @@ it('keeps Storm Hunter armed until the next basic arrow, not just the afterwind 
   expect(hallRangerShot(s).extra).toBe(0)
   tickHall(s,0,true)
   expect(hallRangerShot(s).extra).toBeCloseTo(.35)
+})
+
+it('reserves the shared Hall proc interval once, including delayed hero strikes', () => {
+  const s=run({'shadowblade-phantom':1,'arcana-echo':1})
+  s.time=12
+  expect(reserveHallProc(s)).toBe(true)
+  expect(reserveHallProc(s)).toBe(false)
+  expect(hallExtraHit(s,100,'weapon')).toBe(0)
+  s.time+=.125
+  expect(hallExtraHit(s,100,'weapon')).toBe(35)
+  s.mode='paused'
+  s.time+=1
+  expect(reserveHallProc(s)).toBe(false)
 })

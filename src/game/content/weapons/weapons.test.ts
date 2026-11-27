@@ -5,7 +5,9 @@ import { CONTENT_PACKS } from '../packs'
 import { WEAPONS_PACK } from '../packs/weapons'
 import { seeded } from '../../math'
 import { createHero, createState, resetRun } from '../../state'
+import { BALANCE } from '../../config'
 import { UP } from '../../constants'
+import { installHallRun } from '../meta/hall-runtime'
 import { runtimeOf } from './runtime'
 import type { GameHooks, GameState, JobId, Mob } from '../../types'
 
@@ -293,4 +295,29 @@ describe('ES3 weapon breakthroughs',()=>{
     expect(runtimeOf(s).links.length).toBeGreaterThan(0)
     expect(runtimeOf(s).links.length).toBeLessThanOrEqual(5)
   })
+})
+
+it('extends actual scythe area and beam width with Hall radius, not target body radius', () => {
+  const scythe= (enabled:boolean) => {
+    const {s,registry}=fixture('blood-scythe')
+    const target=s.mobs[0]!
+    target.x=10
+    const edge=mob(100,0,10000)
+    // Place just beyond the original rank-one sweep; inside a 5% expanded sweep.
+    const reach=BALANCE.weapons.scythe.sweepRangeBase+BALANCE.weapons.scythe.sweepRangePerRank
+    edge.x=reach*1.025+edge.r
+    s.mobs.push(edge)
+    if(enabled)installHallRun(s,{hero:s.heroId,ranks:{'arcana-reach':5}})
+    advance(s,registry,.05)
+    return edge.hp
+  }
+  expect(scythe(false)).toBe(10000)
+  expect(scythe(true)).toBeLessThan(10000)
+  const beam=(enabled:boolean) => {
+    const {s,registry}=fixture('solar-beam')
+    if(enabled)installHallRun(s,{hero:s.heroId,ranks:{'arcana-reach':5}})
+    advance(s,registry,1)
+    return runtimeOf(s).beam!.width
+  }
+  expect(beam(true)).toBeCloseTo(beam(false)*1.05)
 })

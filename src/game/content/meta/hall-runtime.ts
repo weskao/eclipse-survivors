@@ -288,3 +288,11 @@ export function hallBurstProc(state: GameState, amount:number, source:HallDamage
   }
   return null
 }
+
+/** Delayed hero effects share the same run-owned extra-hit budget. */
+export function reserveHallProc(state: GameState): boolean {
+  const h=state.hall
+  if (!h || state.mode!=='play' || !state.hero || state.hero.hp<=0 || state.time<h.procAt) return false
+  h.procAt=state.time+tuning.procInterval
+  return true
+}

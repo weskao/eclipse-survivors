@@ -93,7 +93,7 @@ function slash(context: ContentContext, level: number): boolean {
   for (const mob of combatTargets(context.state, context.hooks.factions?.())) {
     if (mob.hp <= 0) continue
     const dx = mob.x - h.x, dy = mob.y - h.y
-    const reach = W.scythe.sweepRangeBase + W.scythe.sweepRangePerRank * level + capstone(level,B.scytheRange) + targetRadius(mob)
+    const reach = (W.scythe.sweepRangeBase + W.scythe.sweepRangePerRank * level + capstone(level,B.scytheRange)) * (context.state.hall?.radius ?? 1) + targetRadius(mob)
     if (dx * dx + dy * dy > reach * reach) continue
     const forward = dx * ux + dy * uy
     if (forward < 0 || forward * forward < (dx * dx + dy * dy) * 0.12) continue
@@ -146,7 +146,7 @@ function tickGravity(context: ContentContext, dt: number, level: number): void {
     for (const e of targets) {
       if (e.hp <= 0) continue
       const dx = ox - e.x, dy = oy - e.y
-      const reach = W.gravity.pullReach + capstone(level,B.gravityReach) + targetRadius(e)
+      const reach = (W.gravity.pullReach + capstone(level,B.gravityReach)) * (context.state.hall?.radius ?? 1) + targetRadius(e)
       const d2 = dx * dx + dy * dy
       if (d2 > reach * reach) continue
       // Smooth attraction without a sqrt; disabled on bosses to preserve boss telegraphs.
@@ -155,7 +155,7 @@ function tickGravity(context: ContentContext, dt: number, level: number): void {
         e.x += dx * factor
         e.y += dy * factor
       }
-      const contact = 18 + targetRadius(e)
+      const contact = 18 * (context.state.hall?.radius ?? 1) + targetRadius(e)
       if (d2 <= contact * contact) {
         const last = r.orbitHits.get(e) ?? -Infinity
         if (context.state.worldClock - last >= 0.32) {
@@ -179,7 +179,7 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
     // Freeze direction at windup: a moving target cannot silently redirect a telegraphed attack.
     const ux = Math.cos(r.beamAngle), uy = Math.sin(r.beamAngle)
     const range = W.solarBeam.rangeBase + W.solarBeam.rangePerRank * level
-    const width = W.solarBeam.widthBase + level * W.solarBeam.widthPerRank + capstone(level,B.beamWidth)
+    const width = (W.solarBeam.widthBase + level * W.solarBeam.widthPerRank + capstone(level,B.beamWidth)) * (context.state.hall?.radius ?? 1)
     r.beam = { x: h.x, y: h.y, ux, uy, range, width, life: 0.4 }
     for (const mob of combatTargets(context.state, context.hooks.factions?.())) {
       if (mob.hp <= 0) continue
