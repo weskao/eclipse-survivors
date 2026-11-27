@@ -45,6 +45,16 @@ describe('ES2 three-hero selection UI', () => {
     }
   })
 
+  it('sizes all six lobby portraits by one shared height so tall and square art match', () => {
+    // A fixed-height, full-width box let width-limited square portraits render shorter than tall ones.
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    const portrait = '.es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{'
+    const rules = css.split(portrait).slice(1).map(rest => rest.slice(0, rest.indexOf('}')))
+    expect(rules.length).toBeGreaterThan(1)
+    expect(rules.some(rule => rule.includes('aspect-ratio:1'))).toBe(true)
+    for (const rule of rules) expect(rule).not.toMatch(/(^|;)\s*height:clamp/)
+  })
+
   it('uses distinct generated art for each hero active skill in character cards', () => {
     const wrapper = render(HeroRoster, { selectedId: 'shadowblade' })
     for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) {
