@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { WORLD_ART, ES3_EPIC_TREASURE_URL, ES3_DEATH_URLS, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame, drawEs3EnemyDeath } from './production-world'
+import { WORLD_ART, ES3_EPIC_TREASURE_URL, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame, drawEs3EnemyDeath } from './production-world'
 import type { Ctx2D } from '../ctx'
 import { cacheBossPhaseLayouts, bossFrameLayout } from './production-world'
 import { BOSS_MAX_DRAW_PX, BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
@@ -43,7 +43,7 @@ describe('ES2 world art live asset mapping', () => {
       expect(assigned).toContain(ES3_EPIC_TREASURE_URL)
     } else expect(runtime.chests?.epic).toBe(runtime.chests?.rare)
     expect(Object.keys(runtime.enemyDeaths ?? {}).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
-    for (const url of Object.values(ES3_DEATH_URLS)) expect(assigned).not.toContain(url)
+    expect(assigned.filter(url => url.includes('-death-dissolve@3x'))).toEqual([])
     expect(assigned).toHaveLength(22 + Number(!!ES3_EPIC_TREASURE_URL))
   })
 
@@ -226,7 +226,7 @@ describe('ES3 native death atlases in normal gameplay', () => {
     expect(Object.keys(runtime.enemyDeaths ?? {}).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
     for (const id of ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const) {
       expect(runtime.enemyDeaths?.[id]?.src).toContain(id + '-death-preferred@3x.webp')
-      expect(runtime.enemyDeaths?.[id]?.src).not.toBe(ES3_DEATH_URLS[id])
+      expect(runtime.enemyDeaths?.[id]?.src).not.toContain('-death-dissolve@3x')
     }
     const failed = runtime.enemyDeaths?.golem!
     expect(failed.onerror).toBeTypeOf('function')

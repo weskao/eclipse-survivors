@@ -452,6 +452,22 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(drawBossNativeKeyframe(ctx, image, base, 300)).toBe(false)
     expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
     expect(calls).toHaveLength(1)
+    // Batch 25 key-b continues the same phase-2 awakening in the second half of the pose.
+    const late: BossSnapshot = { ...state, bodyMotion: { ...state.bodyMotion!, progress: .75 } }
+    expect(selectBossNativeKeyframe(late)).toBe('abyssAwakeningPhase2B')
+    expect(BOSS_NATIVE_KEYFRAMES.abyssAwakeningPhase2B[0]).toBe('batch-25/abyss-monarch/transform/abyss-phase2-awakening-key-b.webp')
+    const imageB = { complete: true, naturalWidth: 1359, naturalHeight: 1278 } as HTMLImageElement
+    registerBossNativeKeyframe(imageB, 'abyssAwakeningPhase2B')
+    expect(drawBossNativeKeyframe(ctx, imageB, state, 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, imageB, late, 300)).toBe(true)
+    expect(calls[1]?.slice(1)).toEqual([0, 0, 1359, 1278, -167.125, -301.75, 339.75, 319.5])
+  })
+  it('keeps QA-blocked Batch 24 frost glide and Batch 26 titan studies out of runtime keyframes', () => {
+    // frost-glide: directional move pose, direction/phase not approved, mirror forbidden.
+    // titan Batch 26: identity mismatch with canonical armor, horns and skirt silhouette.
+    const paths = Object.values(BOSS_NATIVE_KEYFRAMES).map(([path]) => path)
+    expect(paths.some(path => path.startsWith('batch-26/'))).toBe(false)
+    expect(paths.some(path => path.includes('frost-glide'))).toBe(false)
   })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
     // Cold Vite ?url transforms of a dozen 1.2k WebPs exceed waitFor's 1 s default.

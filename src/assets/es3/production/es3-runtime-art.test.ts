@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { ES3_EPIC_TREASURE_URL, ES3_DEATH_URLS, WORLD_ART } from '../../../game/render/es2/production-world'
+import { ES3_EPIC_TREASURE_URL, ES3_DEATH_SHEET_LOADERS, WORLD_ART } from '../../../game/render/es2/production-world'
 import type { MobType } from '../../../game/types'
 
 const root = dirname(fileURLToPath(import.meta.url))
@@ -34,9 +34,11 @@ describe('ES3 imported runtime art', () => {
     expect(manifest.assets.map(a => a.id).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'treasure-epic', 'warlock'])
     expect(ES3_EPIC_TREASURE_URL).toContain('treasure-epic@3x.webp')
     expect(ES3_EPIC_TREASURE_URL).not.toBe(WORLD_ART.ui['treasure-rare'])
-    expect(Object.keys(ES3_DEATH_URLS).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
+    expect(Object.keys(ES3_DEATH_SHEET_LOADERS).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
+  })
+  it('maps each blocked dissolve sheet to its own lazy DEV-only loader', async () => {
     for (const a of manifest.assets) {
-      if (a.id !== 'treasure-epic') expect(ES3_DEATH_URLS[a.id as MobType]).toContain(a.path.split('/').at(-1))
+      if (a.id !== 'treasure-epic') expect(await ES3_DEATH_SHEET_LOADERS[a.id as MobType]!()).toContain(a.path.split('/').at(-1))
     }
   })
   it.each(manifest.assets)('$id has genuine source resolution, fixed geometry, bounded bytes and alpha', a => {

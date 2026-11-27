@@ -80,6 +80,9 @@ const pendingAtlases = [
   ['crimson-paladin', 'victory', 'SE', 'victory-se-2026-11-26-batch-19'],
   ['crimson-paladin', 'special', 'SE', 'special-se-2026-11-26-batch-20'],
   ['spirit-summoner', 'idle', 'NW', 'idle-nw-2026-11-25-batch-16'],
+  ['crimson-paladin', 'recovery', 'SE', 'recovery-se-2026-11-26-batch-23'],
+  ['spirit-summoner', 'recovery', 'SE', 'recovery-se-2026-11-26-batch-23'],
+  ['shadowblade', 'recovery', 'E', 'recovery-e-2026-11-26-batch-23'],
 ] as const
 for (const [hero, pose, direction, folder] of pendingAtlases) {
   previewClips.push({
