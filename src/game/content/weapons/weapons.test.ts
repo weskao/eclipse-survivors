@@ -321,3 +321,15 @@ it('extends actual scythe area and beam width with Hall radius, not target body 
   }
   expect(beam(true)).toBeCloseTo(beam(false)*1.05)
 })
+
+it('grants Soulward at wolf creation and does not refresh it on bites', () => {
+  const {s,registry}=fixture('spirit-wolves')
+  s.mobs=[mob(100,0,100000)]
+  installHallRun(s,{hero:s.heroId,ranks:{'summons-soulward':5}})
+  advance(s,registry,.05)
+  expect(s.hall!.soulwardUntil).toBeGreaterThan(3)
+  const expiry=s.hall!.soulwardUntil
+  advance(s,registry,15)
+  expect(s.hall!.soulwardUntil).toBe(expiry)
+  expect(s.damageDealt).toBeGreaterThan(0)
+})

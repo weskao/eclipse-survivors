@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
-import { reserveHallProc, hallRangerShot, hallWeaponCast, hallBurstProc, hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
+import { hallPersistentCast, hallSummonCast, hallWorldHealing, reserveHallProc, hallRangerShot, hallWeaponCast, hallBurstProc, hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
 function run(ranks: Record<string, number>) {
   const state = createState()
   resetRun(state)
@@ -136,4 +136,28 @@ it('reserves the shared Hall proc interval once, including delayed hero strikes'
   s.mode='paused'
   s.time+=1
   expect(reserveHallProc(s)).toBe(false)
+})
+
+it('triggers Soulward on new persistent activations, not repeated ticks or pause', () => {
+  const s=run({'summons-soulward':5})
+  hallPersistentCast(s,'orb')
+  expect(s.hall!.soulwardUntil).toBe(3)
+  s.time=12
+  hallPersistentCast(s,'orb')
+  expect(s.hall!.soulwardUntil).toBe(3)
+  s.mode='paused'
+  hallPersistentCast(s,'gravity-orbs')
+  hallSummonCast(s)
+  expect(s.hall!.soulwardUntil).toBe(3)
+  s.mode='play'
+  hallPersistentCast(s,'gravity-orbs')
+  expect(s.hall!.soulwardUntil).toBe(15)
+})
+it('boosts only health pickup interactions, not purchased or consolation healing', () => {
+  const s=run({'hunt-sustain':5})
+  expect(hallWorldHealing(s,'events:healing-fountain','drink',45)).toBeCloseTo(49.5)
+  expect(hallWorldHealing(s,'events:divine-shrine','heal',36)).toBeCloseTo(39.6)
+  expect(hallWorldHealing(s,'events:wandering-merchant','restock',24)).toBe(24)
+  expect(hallWorldHealing(s,'events:monster-ambush','decline',8)).toBe(8)
+  expect(hallWorldHealing(run({}),'events:healing-fountain','drink',45)).toBe(45)
 })

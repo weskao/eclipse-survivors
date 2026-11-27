@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createWorldEventDirector } from './director'
+import { installHallRun } from '../meta/hall-runtime'
 import { BALANCE } from '../../config'
 import { WORLD_EVENT_DEFINITIONS } from './definitions'
 import { WORLD_EVENTS_PACK } from '../packs/events'
@@ -268,4 +269,15 @@ describe('world event contract', () => {
     resetRun(s)
     expect(s.hero.hp).toBe(s.hero.max)
   })
+})
+
+it('uses the same Hall pickup modifier in the legacy transaction adapter', () => {
+  const s=createState()
+  s.hero=createHero('knight');s.mode='play';s.hero.hp=20
+  installHallRun(s,{hero:s.heroId,ranks:{'hunt-sustain':5}})
+  const commit=createLegacyEventCommit(s,{sfx:vi.fn(),message:vi.fn(),offerUpgrades:vi.fn(),end:vi.fn()})
+  const tx:WorldEventTransaction={id:'hall-heal',eventId:'1:1',kind:'events:healing-fountain',choiceId:'drink',visualCueId:'events:fountain-light',audioCue:'pickup',effects:[{type:'heal',amount:10}]}
+  expect(commit(tx)).toBe(true)
+  expect(commit(tx)).toBe(true)
+  expect(s.hero.hp).toBeCloseTo(31)
 })

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { installHallRun } from '../meta/hall-runtime'
 import { MAX_MOBS } from '../../constants'
 import { createHero, createState, resetRun } from '../../state'
 import { RELICS } from '../relics/catalog'
@@ -316,4 +317,18 @@ it('dangerous vault pays a legendary relic only after three confirmed guardians 
   expect(RELICS.find(relic => relic.id === item.id)?.rarity).toBe('legendary')
   live.tick()
   expect(inventorySnapshot(state).items).toHaveLength(1)
+})
+
+it('applies Hunt Sustain to a claimed fountain once, not to paid merchant healing', () => {
+  const {state,live,spawn}=setup()
+  installHallRun(state,{hero:state.heroId,ranks:{'hunt-sustain':5}})
+  state.hero!.hp=100
+  const fountain=spawn('events:healing-fountain')
+  expect(live.choose(fountain.id,'drink')).toBe('applied')
+  expect(state.hero!.hp).toBeCloseTo(149.5)
+  expect(live.choose(fountain.id,'drink')).toBe('unavailable')
+  expect(state.hero!.hp).toBeCloseTo(149.5)
+  const merchant=spawn('events:wandering-merchant')
+  expect(live.choose(merchant.id,'restock')).toBe('applied')
+  expect(state.hero!.hp).toBeCloseTo(173.5)
 })

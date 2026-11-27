@@ -1,4 +1,5 @@
 import { MAX_MOBS } from '../../constants'
+import { hallWorldHealing } from '../meta/hall-runtime'
 import { addXp } from '../../progression'
 import type { ContentEvent, GameHooks, GameState, Hero, Mob, Point } from '../../types'
 import { RELICS, type RelicDefinition } from '../relics/catalog'
@@ -254,7 +255,7 @@ export function createLiveWorldEvents(
     }
     for (const buff of grants) applyBuff(buff, tx.id)
     for (const effect of tx.effects) {
-      if (effect.type === 'heal') hero.hp = Math.min(hero.max, hero.hp + effect.amount)
+      if (effect.type === 'heal') hero.hp = Math.min(hero.max, hero.hp + hallWorldHealing(state,tx.kind,tx.choiceId,effect.amount))
     }
     // Mark before emitting potentially reentrant level-up and pickup callbacks.
     markCommitted(tx.id)

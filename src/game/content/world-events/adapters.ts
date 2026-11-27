@@ -1,4 +1,5 @@
 import { BALANCE } from '../../config'
+import { hallWorldHealing } from '../meta/hall-runtime'
 import { addXp } from '../../progression'
 import type { GameHooks, GameState, Point } from '../../types'
 import { clearApproach, pointIsClear } from '../../world'
@@ -63,7 +64,7 @@ export function createLegacyEventCommit(
       for (const effect of transaction.effects) {
         if (effect.type === 'health-cost') hero.hp -= effect.amount
         else if (effect.type === 'xp-cost') hero.xp -= effect.amount
-        else if (effect.type === 'heal') hero.hp = Math.min(hero.max, hero.hp + effect.amount)
+        else if (effect.type === 'heal') hero.hp = Math.min(hero.max, hero.hp + hallWorldHealing(s,transaction.kind,transaction.choiceId,effect.amount))
         else if (effect.type === 'xp') addXp(s, effect.amount, hooks)
       }
     }

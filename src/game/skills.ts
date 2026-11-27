@@ -1,6 +1,6 @@
 // Passive skills ticked every frame (original update() lines for orb..shield).
 import { BALANCE } from './config'
-import { hallSlow, hallWeaponCast, withHallSource } from './content/meta/hall-runtime'
+import { hallPersistentCast, hallSlow, hallWeaponCast, withHallSource } from './content/meta/hall-runtime'
 import { TAU } from './constants'
 import { combatTargets, hitTarget, nearestCombatTargets, slowTarget, targetRadius } from './combat'
 import type { FactionBridge } from './content/enemies/integration'
@@ -25,6 +25,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
   const targets = sk.orb || sk.bolt || sk.frost || sk.meteor || sk.blaze || sk.vortex ? combatTargets(s, factions) : s.mobs
 
   if (sk.orb) {
+    hallPersistentCast(s,'orb')
     const n = Math.min(sk.orb + 1 + (sk.orb >= 5 ? AREA.orb.maxRankBonusBlades : 0) + (hero.evolutions['blade-tempest'] ? 2 : 0), AREA.orb.maxBlades)
     for (let k = 0; k < n; k++) {
       const a = s.worldClock * 2.7 + (k * TAU) / n
@@ -95,6 +96,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
   }
 
   if (sk.blaze) {
+    hallPersistentCast(s,'blaze')
     if (hero.blazeTick <= 0) {
       hero.blazeTick = Math.max(AREA.blaze.cooldownFloor, AREA.blaze.cooldownBase - sk.blaze * AREA.blaze.cooldownPerRank) * cooldown
       const reach = (AREA.blaze.rangeBase + sk.blaze * AREA.blaze.rangePerRank + (sk.blaze >= 5 ? AREA.blaze.maxRankRangeBonus : 0)) * radius

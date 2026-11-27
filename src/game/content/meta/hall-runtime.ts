@@ -29,6 +29,7 @@ export function createHallRuntime(snapshot: HallRunSnapshot) {
     ambushReady: false, assassinAt: 0, legionUntil: 0, legionAt: 0, soulBondAt: 0, sanctuaryUntil: 0,
     markTarget: null as Target | null, markHits: 0,
     salvageReveals: 0, earnedRerolls: 0, spentRerolls: 0,
+    persistentActivations: new Set<string>(),
     ironReady: false, ironAt: 0, piercingAt: 0, stormAt: 0, stormReady: false, starAt: tuning.starCollapseCooldown, sigilCasts: 0, sigilAt: 0, sigilReady: false,
   }
 }
@@ -237,7 +238,7 @@ export function hallEffectDuration(state: GameState): number {
 }
 export function hallSummonCast(state: GameState): void {
   const h = state.hall
-  if (h && h.rank('summons-soulward') && state.time >= h.soulwardAt) {
+  if (h && state.mode==='play' && state.hero && state.hero.hp>0 && h.rank('summons-soulward') && state.time >= h.soulwardAt) {
     h.soulwardAt = state.time + tuning.soulwardCooldown
     h.soulwardUntil = state.time + tuning.soulwardSeconds
   }
@@ -296,4 +297,16 @@ export function reserveHallProc(state: GameState): boolean {
   if (!h || state.mode!=='play' || !state.hero || state.hero.hp<=0 || state.time<h.procAt) return false
   h.procAt=state.time+tuning.procInterval
   return true
+}
+
+/** Indefinite persistent weapons cast on first activation, not every pulse. */
+export function hallPersistentCast(state: GameState, id: string): void {
+  const h=state.hall
+  if(!h || state.mode!=='play' || !state.hero || state.hero.hp<=0 || h.persistentActivations.has(id)) return
+  h.persistentActivations.add(id)
+  hallSummonCast(state)
+}
+/** Only existing healing pickups are boosted, not paid recovery or incidental rewards. */
+export function hallWorldHealing(state: GameState, kind: string, choice: string, amount: number): number {
+  return (kind==='events:healing-fountain' && choice==='drink') || (kind==='events:divine-shrine' && choice==='heal') ? hallPickupHealing(state,amount) : amount
 }

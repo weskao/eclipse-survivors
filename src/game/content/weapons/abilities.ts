@@ -1,5 +1,5 @@
 import { BALANCE } from '../../config'
-import { hallWeaponCast, hallEffectDuration, hallSummonCast, hallSummonInterval, withHallSource } from '../meta/hall-runtime'
+import { hallPersistentCast, hallWeaponCast, hallEffectDuration, hallSummonCast, hallSummonInterval, withHallSource } from '../meta/hall-runtime'
 import type { ContentAbility, ContentContext } from '../contracts'
 import type { SfxCue, SkillRarity } from '../../types'
 import { combatTargets, hitTarget, targetRadius, type CombatTarget } from '../../combat'
@@ -112,8 +112,10 @@ function slash(context: ContentContext, level: number): boolean {
 function tickWolves(context: ContentContext, dt: number, level: number): void {
   const h = context.state.hero!, r = runtimeOf(context.state)
   const limit = Math.min(3, 1 + Math.floor(level / 2))
-  while (r.wolves.length < limit)
-    r.wolves.push({ x: h.x - 22 - r.wolves.length * 14, y: h.y + 22, attackIn: 0 })
+  if (r.wolves.length < limit) {
+    while (r.wolves.length < limit) r.wolves.push({ x: h.x - 22 - r.wolves.length * 14, y: h.y + 22, attackIn: 0 })
+    hallSummonCast(context.state)
+  }
   for (const wolf of r.wolves) {
     wolf.attackIn = Math.max(0, wolf.attackIn - dt)
     const enemy = nearestOne(context.state, wolf.x, wolf.y, 490, undefined, context.hooks.factions?.())
@@ -124,7 +126,6 @@ function tickWolves(context: ContentContext, dt: number, level: number): void {
       if (wolf.attackIn <= 0) {
         hitTarget(context.state, enemy, h.damage * (W.spiritWolves.damageBase + level * W.spiritWolves.damagePerRank), context.hooks, context.hooks.factions?.())
         wolf.attackIn = Math.max(0.52, (W.spiritWolves.attackCooldownBase - W.spiritWolves.attackCooldownPerRank * level - capstone(level,B.wolfCooldownReduction)) * hallSummonInterval(context.state))
-        hallSummonCast(context.state)
         context.hooks.sfx('knight')
       }
     } else if (d2 > 4) {
@@ -354,6 +355,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       tickBeam(context, dt, level)
       break
     case 'gravity-orbs':
+      hallPersistentCast(context.state,'gravity-orbs')
       tickGravity(context, dt, level)
       break
     case 'spectral-bow':
