@@ -515,9 +515,10 @@
   .es2-top-actions [data-es2-cloud-account]{width:44px;min-width:44px;min-height:44px;padding:0;flex:none}
   .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:80px;padding:3px 5px;font-size:.72rem;line-height:1.25;white-space:normal}
   .es2-hall-navigation{padding:4px;gap:3px}
-  /* Tracks never shrink below a whole word; the 3vw cap keeps five labels in one row at large interfaceScale. */
-  .es2-menu .es2-hall-links{gap:2px;grid-template-columns:repeat(5,minmax(min-content,1fr))}
-  .es2-menu .es2-hall-links button{flex-direction:column;gap:1px;padding:3px 0;font-size:max(.6875rem,min(calc(.6875rem * var(--es2-ui-scale,1)),3vw));line-height:1.1;overflow-wrap:break-word}
+  /* Fit five labels within the available width (including safe-area padding).
+     Prefer normal word breaks; split an oversized word only when necessary. */
+  .es2-menu .es2-hall-links{gap:2px;grid-template-columns:repeat(5,minmax(0,1fr))}
+  .es2-menu .es2-hall-links button{flex-direction:column;gap:1px;padding:3px 0;font-size:max(.6875rem,min(calc(.6875rem * var(--es2-ui-scale,1)),3vw));line-height:1.1;overflow-wrap:anywhere}
   .es2-menu .es2-hall-links button span{font-size:.9rem}
   .es2-section-heading>span,.es2-section-heading p{display:none}
   .es2-section-heading h2{font-size:1rem;margin:0}
@@ -528,11 +529,6 @@
   .es2-menu .es2-mode-mark{width:16px;font-size:1rem}
   .es2-menu .es2-objective-choice{min-height:54px}
   .es2-menu-action-bar>.es2-hint{display:none}
-}
-/* Below 360px five whole English words cannot fit one row; break inside words rather than overflow. */
-@media(max-width:359px){
-  .es2-menu .es2-hall-links{grid-template-columns:repeat(5,minmax(0,1fr))}
-  .es2-menu .es2-hall-links button{overflow-wrap:anywhere}
 }
 @media (orientation: landscape) and (max-height: 520px){
   .es2-menu-brand h1{font-size:1.1rem}
