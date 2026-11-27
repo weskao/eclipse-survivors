@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { BALANCE, researchCost } from '../../../game/config'
 import { getLocale, setLocale } from '../../../i18n'
@@ -226,5 +226,51 @@ describe('Hall preview purchase safety', () => {
     await tree.get('[data-hall-confirm]').trigger('click')
     expect(wrapper.emitted('research')).toEqual([['vitality']])
     wrapper.unmount()
+  })
+})
+
+describe('Hall category navigation and touch inspector', () => {
+  it('shows just one category, with keyboard-accessible navigation and preserved research selection', async () => {
+    const wrapper = mount(ProgressionPanel, { props: { state: createMetaState(), hero: 'knight', status: 'ready' } })
+    expect(wrapper.findAll('[data-hall-tab]')).toHaveLength(4)
+    expect(wrapper.get('[data-hall-category="research"]').isVisible()).toBe(true)
+    expect(wrapper.get('[data-hall-category="mastery"]').isVisible()).toBe(false)
+    await wrapper.get('[data-hall-inspect="vitality"]').trigger('click')
+    await wrapper.get('[data-hall-tab="mastery"]').trigger('click')
+    expect(wrapper.get('[data-hall-category="mastery"]').isVisible()).toBe(true)
+    expect(wrapper.get('[data-hall-category="research"]').isVisible()).toBe(false)
+    await wrapper.get('[data-hall-tab="mastery"]').trigger('keydown', { key: 'ArrowLeft' })
+    expect(wrapper.get('[data-hall-tab="research"]').attributes('aria-selected')).toBe('true')
+    expect(wrapper.get('[data-hall-inspect="vitality"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.emitted('research')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('opens a touch inspector without scrolling, closes it when switching categories, and never spends on inspection', async () => {
+    const original = window.matchMedia
+    const scroll = vi.fn()
+    const previousScroll = HTMLElement.prototype.scrollIntoView
+    window.matchMedia = vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })
+    HTMLElement.prototype.scrollIntoView = scroll
+    const wrapper = mount(ProgressionPanel, { attachTo: document.body, props: { state: createMetaState(), hero: 'knight', status: 'ready' } })
+    try {
+      const board = wrapper.get('.hall-growth--tree')
+      await board.get('[data-hall-inspect="insight"]').trigger('click')
+      const detail = document.body.querySelector<HTMLElement>('[data-hall-detail][data-open="true"]')
+      expect(detail).not.toBeNull()
+      expect(detail?.parentElement).toBe(document.body)
+      expect(detail?.textContent).toContain('攻擊研究')
+      expect(detail?.querySelector<HTMLButtonElement>('[data-hall-confirm]')?.disabled).toBe(true)
+      expect(scroll).not.toHaveBeenCalled()
+      expect(wrapper.emitted('research')).toBeUndefined()
+      await wrapper.get('[data-hall-tab="mastery"]').trigger('click')
+      expect(document.body.querySelector('[data-hall-detail][data-open="true"]')).toBeNull()
+      await wrapper.get('[data-hall-tab="research"]').trigger('click')
+      expect(document.body.querySelector('[data-hall-detail][data-open="true"]')).toBeNull()
+    } finally {
+      wrapper.unmount()
+      window.matchMedia = original
+      HTMLElement.prototype.scrollIntoView = previousScroll
+    }
   })
 })

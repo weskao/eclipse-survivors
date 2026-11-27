@@ -198,3 +198,5 @@ Hall sound source implementation and regressions added; waveform checks and full
 Compact topology implementation: one visible confirmation per board; unchanged WebP art; metal bezel, inset, tick marks, moving progress head; destination pulse on true prerequisite unlock. Runtime viewport matrix and aesthetic approval remain pending.
 
 - [x] Hall compact confirmation safety: hover/focus previews never authorize a different node's purchase; only explicit selection enables the single confirmation. Added a behavioral regression; runtime verification pending.
+
+- [ ] Hall UX: one accessible category at a time (research, mastery, equipment/blessings, achievements); touch viewport inspector with close and safe-area handling, no forced scroll; desktop hover stays inline; preserve selection, explicit spend, art, audio and motion. Add regression and viewport checks.
