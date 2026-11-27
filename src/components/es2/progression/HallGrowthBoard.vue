@@ -72,7 +72,7 @@ watch(() => props.nodes, (nodes, previous) => {
             :data-state="node.cost === null ? 'maxed' : node.locked ? 'locked' : node.canBuy ? 'available' : 'poor'"
             :data-selected="String(active?.id === node.id)"
             @pointerenter="isFine() && (hovered = node.id)" @pointerleave="hovered === node.id && (hovered = '')">
-            <button type="button" class="hall-inspect" data-ui-sfx="select" :data-hall-inspect="node.id"
+            <button type="button" class="hall-inspect" data-ui-sfx="hall-inspect" :data-hall-inspect="node.id"
               :aria-pressed="active?.id === node.id" @focus="hovered = node.id" @blur="hovered = ''" @click="inspect(node, true)">
               <span class="hall-ring" role="progressbar" :aria-label="t(node.title)" :aria-valuemin="0" :aria-valuemax="node.maxRank" :aria-valuenow="node.rank"
                 :style="{ '--hall-rank-progress': (node.rank / node.maxRank * 100) + '%' }">

@@ -189,4 +189,6 @@ Browser acceptance now checks actual WebP decode, different-node inspection, bot
 
 - [x] Correct legacy Hall prices, rank caps, and bonuses to match the authoritative research configuration. Display the actual selected specialization's namespaced mastery while retaining existing classic equipment eligibility. Regression coverage added; runtime CI verification pending.
 
-- [ ] Hall sound palette: distinct original hover, inspection, transaction denial, rank, route reveal, max rank, equipment, and blessing Foley; single managed bus, bounded voices and no duplicate generic click. Add waveform and routing regressions; audition final audio in game.
+- [x] Hall sound palette: distinct original hover, inspection, transaction denial, rank, route reveal, max rank, equipment, and blessing Foley; single managed bus, bounded voices and no duplicate generic click. Add waveform and routing regressions; audition final audio in game.
+
+Hall sound source implementation and regressions added; waveform checks and full integration CI recorded separately. Manual listening remains unchecked.

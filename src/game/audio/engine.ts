@@ -9,7 +9,7 @@ import { ATTACK_PRESENTATION } from '../content/bosses/attack-presentation'
 import { createBossAttackAudio } from './boss-attacks'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones, treasureTones, treasureClaimTones } from './sfx'
 import { isHurtCue, renderHurtSample, type HurtCue } from './hurt-samples'
-import { renderHallUpgradeSample } from './hall-upgrade-sample'
+import { hallCueKey, renderHallCue, type HallCue } from './hall-upgrade-sample'
 import { isBattleMusicMode, type AudioSystem, type BgmElement, type CombatIntensity, type SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
@@ -116,7 +116,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let warningMix = false
   let noiseBuffer: BufferLike | null = null
   const hurtBuffers = new Map<HurtCue, BufferLike>()
-  const hallBuffers = new Map<number, BufferLike>()
+  const hallBuffers = new Map<HallCue, BufferLike>()
+  let hallReward: { source: BufferSourceLike; gain: GainLike; endsAt: number } | null = null
   const heroCastBuffers = new Map<SfxCue, BufferLike>()
   // A cast belongs to the expedition, not the transient gameplay screen. Track both
   // decoded one-shots and finite synth fallback notes so Home can cancel either path.
@@ -277,7 +278,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         if (!created) { playScore(); return }
         ac = created
         noiseBuffer = null
-        hurtBuffers.clear(); hallBuffers.clear()
+        hurtBuffers.clear(); hallBuffers.clear(); hallReward = null
         master = ac.createGain()
         master.gain.value = sfxOn ? SFX_GAIN * sfxVolume / 100 : 0
         master.connect(ac.destination)
@@ -408,23 +409,37 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
           return // Never layer generic tones/noise on the authored impact.
         } catch { /* use finite synth fallback only if PCM rendering/playback fails */ }
       }
-      // The menu transaction passes a variant only after its durable purchase succeeds.
-      if (cue === 'upgrade' && (milestone === 1 || milestone === 2) && master) {
+      // Scoped Hall palette: one sample, never layer the generic synth on top.
+      const hall = hallCueKey(cue, milestone)
+      if (hall && master) {
         try {
-          let buffer = hallBuffers.get(milestone)
+          let buffer = hallBuffers.get(hall)
           if (!buffer) {
-            const pcm = renderHallUpgradeSample(ctx.sampleRate, milestone === 2)
+            const pcm = renderHallCue(ctx.sampleRate, hall)
             buffer = ctx.createBuffer(1, pcm.length, ctx.sampleRate)
             buffer.getChannelData(0).set(pcm)
-            hallBuffers.set(milestone, buffer)
+            hallBuffers.set(hall, buffer)
           }
           const source = ctx.createBufferSource()
           source.buffer = buffer
           source.loop = false
-          source.connect(master)
+          if (cue === 'upgrade') {
+            // Rapid purchases keep the latest celebration audible, with a short crossfade.
+            if (hallReward && hallReward.endsAt > now) {
+              try {
+                hallReward.gain.gain.setTargetAtTime(0, now, .008)
+                hallReward.source.stop(now + .035)
+              } catch { /* already ended */ }
+            }
+            const gain = ctx.createGain()
+            gain.gain.value = 1
+            gain.connect(master)
+            source.connect(gain)
+            hallReward = { source, gain, endsAt: now + (buffer.duration ?? buffer.getChannelData(0).length / ctx.sampleRate) }
+          } else source.connect(master)
           source.start(now)
           return
-        } catch { /* Preserve the existing short upgrade fallback if PCM is unavailable. */ }
+        } catch { /* Preserve the finite generic fallback if PCM is unavailable. */ }
       }
       const heroCast = HERO_CAST_CUES.some(special => special === cue)
       if (heroCast) pruneHeroCasts(now)
@@ -569,7 +584,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       stopHeroCast()
       bossAttacks.prepare(null)
       heroCastBuffers.clear()
-      hurtBuffers.clear(); hallBuffers.clear()
+      hurtBuffers.clear(); hallBuffers.clear(); hallReward = null
       ac?.close().catch(() => {})
       ac = null
       master = null

@@ -44,3 +44,20 @@ Original deterministic synthesis and baked stereo reflections: `node scripts/gen
 - Selector `role="option"` also speaks on mouse click; arrows and Enter should not double-play.
 - UI on/off and music on/off remain independent; sliders never chirp per input step.
 - Check desktop, portrait/landscape mobile, tablet, foldable and browser interruption with accessible UI and no stuck sound.
+
+## Adventurer Hall sound palette (ES3)
+
+Original sampled Foley through the existing SFX master; one cached buffer per event per context. No continuous sound for shimmer, progress updates or scrolling. Hover and inspection are delegated; accepted purchases own their complete sound, including the route sweep. Disabled buttons remain silent. A new reward crossfades the previous reward rather than piling up voices.
+
+| Event | Cue variant | Duration | Sound design |
+| --- | --- | --- | --- |
+| Mouse hover | hover / 1 | 0.12 s | soft etched-metal glint |
+| Inspect by click/tap/keyboard | select / 1 | 0.28 s | latch and glass harmonics |
+| Failed transaction | deny / 1 | 0.36 s | muted metal, descending interval |
+| Rank increase | upgrade / 1 | 0.74 s | latch, charge, three chimes |
+| Max rank | upgrade / 2 | 1.05 s | weighty low resonance and five-note bloom |
+| Newly satisfied prerequisite | upgrade / 3 | 0.92 s | ascending sequence synchronized to route sweep |
+| Equipment unlocked | upgrade / 4 | 0.86 s | forged-metal double strike and low chord |
+| Blessing unlocked | upgrade / 5 | 1.02 s | airy charge and luminous harmonic tail |
+
+Normal combat/menu calls without an explicit Hall variant keep their existing sounds. Visual accessibility settings do not override the separate sound volume/mute setting. Manual listening acceptance remains independent of PCM tests.

@@ -1,46 +1,78 @@
-/** Authored one-shot metal latch, rising arcane energy, harmonic chimes and short chamber reflections.
- * Separate rank/milestone variants; deterministic, no gameplay RNG or external recordings. */
-export function renderHallUpgradeSample(rate: number, milestone: boolean): Float32Array {
-  const seconds = milestone ? 1.05 : .74
-  const pcm = new Float32Array(Math.ceil(rate * seconds))
+/** Original one-shot Hall Foley: authored metal, glass, magic, low resonance and chamber reflections.
+ * A finite palette shared by all nodes; no third-party samples, gameplay RNG or extra AudioContext. */
+const PALETTE = {
+  hover:     { seconds: .12, peak: .19, strike: 580, notes: [880, 1320], onset: .009, step: .026, decay: 34, charge: .035, bass: 0, metal: .07, air: .035 },
+  inspect:   { seconds: .28, peak: .34, strike: 340, notes: [523.25, 783.99, 1046.5], onset: .018, step: .043, decay: 17, charge: .095, bass: 196, metal: .12, air: .07 },
+  deny:      { seconds: .36, peak: .34, strike: 110, notes: [293.66, 207.65], onset: .03, step: .09, decay: 15, charge: .065, bass: 98, metal: .17, air: .025 },
+  rank:      { seconds: .74, peak: .65, strike: 143, notes: [261.63, 392, 523.25], onset: .12, step: .065, decay: 7, charge: .32, bass: 130.81, metal: .21, air: .12 },
+  milestone: { seconds: 1.05, peak: .78, strike: 143, notes: [196, 293.66, 392, 493.88, 587.33], onset: .12, step: .075, decay: 5, charge: .36, bass: 98, metal: .25, air: .15 },
+  route:     { seconds: .92, peak: .71, strike: 196, notes: [293.66, 440, 587.33, 880], onset: .11, step: .15, decay: 8, charge: .37, bass: 146.83, metal: .15, air: .19 },
+  equipment: { seconds: .86, peak: .72, strike: 95, notes: [196, 293.66, 392], onset: .18, step: .075, decay: 7, charge: .22, bass: 98, metal: .32, air: .055 },
+  blessing:  { seconds: 1.02, peak: .69, strike: 392, notes: [329.63, 440, 659.25, 880, 1046.5], onset: .11, step: .086, decay: 5.5, charge: .43, bass: 164.81, metal: .08, air: .22 },
+} as const
+
+export type HallCue = keyof typeof PALETTE
+export const HALL_UPGRADE = { rank: 1, milestone: 2, route: 3, equipment: 4, blessing: 5 } as const
+const REWARD_CUES: readonly HallCue[] = ['rank', 'milestone', 'route', 'equipment', 'blessing']
+
+/** Explicitly scoped variants keep ordinary combat upgrades and all generic UI sounds unchanged. */
+export function hallCueKey(cue: string, variant?: number): HallCue | undefined {
+  if (variant === undefined) return undefined
+  if (cue === 'upgrade') return REWARD_CUES[variant - 1]
+  if (variant !== 1) return undefined
+  return cue === 'hover' ? 'hover' : cue === 'select' ? 'inspect' : cue === 'deny' ? 'deny' : undefined
+}
+
+export function renderHallCue(rate: number, kind: HallCue): Float32Array {
+  const p = PALETTE[kind]
+  const pcm = new Float32Array(Math.ceil(rate * p.seconds))
   const tau = 2 * Math.PI
-  const bell = milestone ? [196, 293.66, 392, 493.88, 587.33] : [261.63, 392, 523.25]
-  const delays = [.029, .047, .079, .121].map(t => Math.round(rate * t))
+  const delays = [.019, .037, .067, .113].map(t => Math.max(1, Math.round(rate * t)))
+  const reflections = [.14, -.085, .067, -.035]
+  const lowpass = 1 - Math.exp(-tau * 1700 / rate)
+  const highpass = 1 - Math.exp(-tau * 22 / rate)
+  const direction = kind === 'deny' ? -1 : 1
   let seed = 7193, filtered = 0, dc = 0, peak = 0
   for (let i = 0; i < pcm.length; i++) {
     const t = i / rate
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0
     const noise = seed / 2147483648 - 1
-    filtered += (noise - filtered) * (1 - Math.exp(-tau * 1700 / rate))
-    const latch = (noise - filtered) * .13 * Math.exp(-t * 85)
-      + (Math.sin(tau * 143 * t) * .21 + Math.sin(tau * 937 * t) * .075
-      + Math.sin(tau * 1471 * t) * .04) * Math.exp(-t * 27)
-    const rise = Math.sin(Math.PI * Math.min(1, t / .32)) ** 2 * (t < .32 ? 1 : 0)
-    const charge = (filtered * .12 + Math.sin(tau * (160 * t + 650 * t * t)) * .11
-      + Math.sin(tau * (321 * t + 1300 * t * t)) * .038) * rise
+    filtered += (noise - filtered) * lowpass
+    const ring = Math.sin(tau * p.strike * t) * .7 + Math.sin(tau * p.strike * 6.553 * t) * .22 + Math.sin(tau * p.strike * 10.29 * t) * .12
+    const latch = p.metal * ((noise - filtered) * .63 * Math.exp(-t * 95) + ring * Math.exp(-t * 29))
+    const chargeEnvelope = t < p.charge ? Math.sin(Math.PI * t / p.charge) ** 2 : 0
+    const phase = tau * (190 * t + direction * 630 * t * t)
+    const charge = (filtered * p.air + Math.sin(phase) * .105 + Math.sin(phase * 2.013) * .033) * chargeEnvelope
     let chimes = 0
-    for (let n = 0; n < bell.length; n++) {
-      const u = t - (.12 + n * (milestone ? .075 : .065))
+    for (let n = 0; n < p.notes.length; n++) {
+      const u = t - (p.onset + n * p.step)
       if (u < 0) continue
-      const f = bell[n]!
-      const envelope = (1 - Math.exp(-u * 240)) * Math.exp(-u * (milestone ? 5 : 7))
-      chimes += (Math.sin(tau * f * u) * .10
-        + Math.sin(tau * f * 2.01 * u) * .042 * Math.exp(-u * 5)
-        + Math.sin(tau * f * 3.17 * u) * .021 * Math.exp(-u * 12)) * envelope
+      const frequency = p.notes[n]!
+      const envelope = (1 - Math.exp(-u * 240)) * Math.exp(-u * p.decay)
+      chimes += (Math.sin(tau * frequency * u) * .10
+        + Math.sin(tau * frequency * 2.01 * u) * .042 * Math.exp(-u * 5)
+        + Math.sin(tau * frequency * 3.17 * u) * .021 * Math.exp(-u * 12)) * envelope
     }
-    const v = t - .21
-    const bloom = v > 0 ? Math.sin(tau * (milestone ? 98 : 130.81) * v) * .13 * (1 - Math.exp(-v * 40)) * Math.exp(-v * 8) : 0
-    const room = delays.reduce((sum, delay, n) => sum + (i >= delay ? pcm[i - delay]! * [.13, -.09, .075, -.04][n]! : 0), 0)
-    const mixed = Math.tanh((latch + charge + chimes + bloom) * 1.35 + room)
-    dc += (mixed - dc) * (1 - Math.exp(-tau * 22 / rate))
-    const fade = Math.min(1, t / .003, (pcm.length - 1 - i) / (rate * .07))
+    const v = t - p.onset
+    const bloom = p.bass && v > 0 ? (Math.sin(tau * p.bass * v) + .24 * Math.sin(tau * p.bass * 2 * v)) * .12 * (1 - Math.exp(-v * 40)) * Math.exp(-v * (p.decay + 1)) : 0
+    const k = t - .095
+    const forged = kind === 'equipment' && k > 0 ? (Math.sin(tau * 690 * k) * .095 + (noise - filtered) * .11) * Math.exp(-k * 45) : 0
+    const room = delays.reduce((sum, delay, n) => sum + (i >= delay ? pcm[i - delay]! * reflections[n]! : 0), 0)
+    const mixed = Math.tanh((latch + charge + chimes + bloom + forged) * 1.35 + room)
+    dc += (mixed - dc) * highpass
+    const fade = Math.min(1, t / .003, (pcm.length - 1 - i) / (rate * Math.min(.07, p.seconds * .18)))
     const value = (mixed - dc) * Math.max(0, fade)
     pcm[i] = value
     peak = Math.max(peak, Math.abs(value))
   }
-  const gain = peak > 0 ? (milestone ? .78 : .65) / peak : 0
+  const gain = peak > 0 ? p.peak / peak : 0
   for (let i = 0; i < pcm.length; i++) pcm[i] = pcm[i]! * gain
   pcm[0] = 0
   pcm[pcm.length - 1] = 0
   return pcm
+}
+
+// Compatibility with the existing rank/milestone sample tests.
+export function renderHallUpgradeSample(rate: number, milestone: boolean): Float32Array {
+  return renderHallCue(rate, milestone ? 'milestone' : 'rank')
 }

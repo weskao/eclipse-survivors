@@ -27,6 +27,7 @@ import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objecti
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
 import { RESEARCH } from './content/meta/catalog'
+import { HALL_UPGRADE } from './audio/hall-upgrade-sample'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
@@ -710,14 +711,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   // Sound only after the transaction is accepted, never on a disabled/failed purchase.
-  function finishPurchase(ok: boolean, reason: string, milestone = false): void {
+  function finishPurchase(ok: boolean, reason: string, variant: number = HALL_UPGRADE.rank): void {
     if (ok) {
       refreshMeta()
-      audio.playSfx('upgrade', milestone ? 2 : 1)
+      audio.playSfx('upgrade', variant)
     } else {
       message(reason)
-      audio.playSfx('deny')
+      audio.playSfx('deny', 1)
     }
+  }
+
+  // The rank crossing is the same prerequisite threshold used by the route animation.
+  function researchSound(id: string, rank: number | undefined): number {
+    if (rank === RESEARCH.find(node => node.id === id)?.maxRank && rank !== undefined) return HALL_UPGRADE.milestone
+    return RESEARCH.some(node => node.requires?.some(req => req.id === id && req.rank === rank))
+      ? HALL_UPGRADE.route : HALL_UPGRADE.rank
   }
 
   function advance(dt: number): void {
@@ -1007,14 +1015,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       const cue = control.dataset.uiSfx
       if (cue === 'managed' || cue === 'silent') return
       if (e.detail === 0 || !audio.unlocked) wakeAudio()
-      audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
+      if (cue === 'hall-inspect') audio.playSfx('select', 1)
+      else audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
     }
     const onPointerOver = (e: PointerEvent): void => {
       if (e.pointerType !== 'mouse' || !(e.target instanceof Element)) return
       const button = e.target.closest<HTMLButtonElement>('button:not(:disabled)')
       if (!button || button.dataset.uiSfx === 'silent' ||
           (e.relatedTarget instanceof Node && button.contains(e.relatedTarget))) return
-      audio.playSfx('hover')
+      if (button.closest('.hall-growth')) audio.playSfx('hover', 1)
+      else audio.playSfx('hover')
     }
     win.addEventListener('keydown', onKeyDown)
     win.addEventListener('keyup', onKeyUp)
@@ -1173,24 +1183,26 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     buyPermanentUpgrade(id: PermanentUpgrade) {
       if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore) {
-        finishPurchase(metaStore.purchaseResearch(id).ok, '永久研究未完成：儲存失敗或條件不足')
+        const result = metaStore.purchaseResearch(id)
+        finishPurchase(result.ok, '永久研究未完成：儲存失敗或條件不足', researchSound(id, result.state?.research[id]))
       } else {
-        finishPurchase(profileStore.buyUpgrade(id), '餘燼不足或已達最高階')
+        const ok = profileStore.buyUpgrade(id)
+        const full = profileStore.get().upgrades[id] === BALANCE.meta.research[id].maxRank
+        finishPurchase(ok, '餘燼不足或已達最高階', full ? HALL_UPGRADE.milestone : HALL_UPGRADE.rank)
       }
     },
     purchaseResearch(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       const result = metaStore.purchaseResearch(id)
-      const cap = RESEARCH.find(node => node.id === id)?.maxRank
-      finishPurchase(result.ok, '研究未解鎖或儲存失敗', cap !== undefined && result.state?.research[id] === cap)
+      finishPurchase(result.ok, '研究未解鎖或儲存失敗', researchSound(id, result.state?.research[id]))
     },
     purchaseEquipment(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
-      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗', true)
+      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗', HALL_UPGRADE.equipment)
     },
     purchaseBonus(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
-      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗', true)
+      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗', HALL_UPGRADE.blessing)
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
       if (s.mode !== 'menu') return
