@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 3,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "Downsample longest side to 704 pixels and center-pad to 768; no upscaling or mirroring. Original pixels preserved in source files.",
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "encoding": "Pillow lossless WebP exact=True; decoded RGBA compared; official Polytool not run",
+  "frames": [
+    {
+      "id": "stealth-strike-identity-a",
+      "description": "Right-facing dual-dagger sweep after stealth; added scar and hood ornament differ from portrait; check blade tips.",
+      "sourceFile": "stealth-strike-identity-a-source.webp",
+      "sourceSHA256": "ac09ae9224cafdb5f2f9158c56a77ece0ddf9d2797549d28e782a720a2494a1b",
+      "sourceBytes": 1144394,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "stealth-strike-identity-a@3x.webp",
+      "webpSHA256": "ccff923eed47b2d241d7a44b7e9cc19f1be4c5116e405712368863dcc921569d",
+      "bytes": 416236,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "resizedPixels": [
+        704,
+        704
+      ],
+      "scale": 0.5614035087719298,
+      "sourceAlphaBounds": [
+        0,
+        21,
+        1254,
+        1254
+      ],
+      "coreAlphaBounds": [
+        25,
+        49,
+        1245,
+        1229
+      ],
+      "coreExtent": [
+        1220,
+        1180
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        32,
+        46,
+        736,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        47,
+        60,
+        731,
+        722
+      ],
+      "outputCoreExtent": [
+        684,
+        662
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA per encoded file, output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "e5f9d437-6e1f-4525-9d90-e2221534706a",
+        "originalPNGSHA256": "ff28d661567efa4f518628dfb48424d2444c62b9c13a5cec91643c66858f2dd0",
+        "originalPixels": [
+          1254,
+          1254
+        ],
+        "cropRect": null,
+        "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+        "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+        "referenceCommit": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "referenceMethod": "Canonical GitHub portrait visually inspected; direct image conditioning not independently verified."
+      },
+      "notes": "Right-facing dual-dagger sweep after stealth; added scar and hood ornament differ from portrait; check blade tips."
+    },
+    {
+      "id": "stealth-low-transition-identity-a",
+      "description": "Low crouch between stealth preparation and strike; added facial scar and changed hood ornament.",
+      "sourceFile": "stealth-low-transition-identity-a-source.webp",
+      "sourceSHA256": "71f36b4ea221114b0732c2c51be1f1c63265829f2154efeaab0487ed0a57b31c",
+      "sourceBytes": 1142250,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "stealth-low-transition-identity-a@3x.webp",
+      "webpSHA256": "1dbb08b283304dce911da0ecc2d354e2cb076f35170ae99c85234208bd67fcc1",
+      "bytes": 412880,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "resizedPixels": [
+        704,
+        704
+      ],
+      "scale": 0.5614035087719298,
+      "sourceAlphaBounds": [
+        0,
+        9,
+        1238,
+        1254
+      ],
+      "coreAlphaBounds": [
+        18,
+        196,
+        1195,
+        1109
+      ],
+      "coreExtent": [
+        1177,
+        913
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        32,
+        37,
+        724,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        42,
+        142,
+        703,
+        655
+      ],
+      "outputCoreExtent": [
+        661,
+        513
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA per encoded file, output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "fa424625-12c8-41fd-9d27-1481722e4164",
+        "originalPNGSHA256": "101fa88e4f1346557c99924a5ccf786ef9741c9799c5d6f3b5e60f9d95969196",
+        "originalPixels": [
+          1254,
+          1254
+        ],
+        "cropRect": null,
+        "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+        "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+        "referenceCommit": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "referenceMethod": "Canonical GitHub portrait visually inspected; direct image conditioning not independently verified."
+      },
+      "notes": "Low crouch between stealth preparation and strike; added facial scar and changed hood ornament."
+    },
+    {
+      "id": "stealth-recovery-identity-a",
+      "description": "Standing recovery after stealth; compare face and embroidery to portrait; source file name reused by image generation, final bytes visually inspected.",
+      "sourceFile": "stealth-recovery-identity-a-source.webp",
+      "sourceSHA256": "2110c6b3e133ba2f7eaf5b3dc85cf3f6f09e836f66947aacef93d901521bf2ab",
+      "sourceBytes": 955932,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "stealth-recovery-identity-a@3x.webp",
+      "webpSHA256": "0a96b478024ebe886f29f036a68681682fa05c7486ae10e4d5c17836766cc733",
+      "bytes": 348984,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "resizedPixels": [
+        704,
+        704
+      ],
+      "scale": 0.5614035087719298,
+      "sourceAlphaBounds": [
+        0,
+        0,
+        1228,
+        1254
+      ],
+      "coreAlphaBounds": [
+        67,
+        8,
+        1108,
+        1232
+      ],
+      "coreExtent": [
+        1041,
+        1224
+      ],
+      "sourceBoundaryMaxAlpha": 3,
+      "outputAlphaBounds": [
+        32,
+        32,
+        707,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        70,
+        36,
+        654,
+        723
+      ],
+      "outputCoreExtent": [
+        584,
+        687
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA per encoded file, output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "ca5f4b4e-e38a-4d35-9f5a-627ac3ed0bdc",
+        "originalPNGSHA256": "759d3f0995c3da43276e62b818447990c4948ec02b5e8d06bf7d91c560fecef9",
+        "originalPixels": [
+          1254,
+          1254
+        ],
+        "cropRect": null,
+        "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+        "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+        "referenceCommit": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "referenceMethod": "Canonical GitHub portrait visually inspected; direct image conditioning not independently verified."
+      },
+      "notes": "Standing recovery after stealth; compare face and embroidery to portrait; source file name reused by image generation, final bytes visually inspected."
+    }
+  ],
+  "reviewNotes": [
+    "Independent poses, not an approved sequence.",
+    "Core bounds are alpha-based and include solid equipment/effects; not proof of body detail or identity.",
+    "Do not replace existing art or admit to gameplay before identity, edge, scale, handedness, anchors, continuity and conversion QA."
+  ]
+}
