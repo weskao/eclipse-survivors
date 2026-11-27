@@ -51,7 +51,8 @@ describe('homepage hero stat parity', () => {
     expect(css).toContain('min-width:0')
     expect(css).toContain('.es2-roster__stats')
     expect(css).toContain('object-position:center center')
-    expect(css).toContain('radial-gradient(ellipse at 50% 50%')
+    // 7da0a75f: the portrait glow is one centered card-level radial gradient, not a second per-image backdrop.
+    expect(css).toContain('radial-gradient(ellipse at 50% 36%,var(--es2-hero-glow)')
     expect(css).not.toContain('.es2-classic-details')
   })
 })

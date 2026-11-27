@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { emptyProfile } from '../../../meta/profile'
 import Es2Archive from './Es2Archive.vue'
@@ -25,12 +25,13 @@ describe('c104 applied assets in real game surfaces', () => {
     wrapper.unmount()
   })
 
-  it('renders all four biome scene images in the in-game archives', () => {
+  it('renders all four biome scene images in the in-game archives', async () => {
     const wrapper = mount(Es2Archive, {
       props: {active:true, view:'monsters',hero:'knight',profile:emptyProfile()},
       global: {stubs:{Es2Dialog:fakeDialog}},
     })
-    expect(wrapper.findAll('[data-es2-biome-scene]')).toHaveLength(4)
+    // 1f0948e1: the archive art gallery is a DEV-only async component, so wait for it to resolve.
+    await vi.waitFor(() => expect(wrapper.findAll('[data-es2-biome-scene]')).toHaveLength(4))
     wrapper.unmount()
   })
 

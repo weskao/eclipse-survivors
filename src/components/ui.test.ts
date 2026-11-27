@@ -154,7 +154,8 @@ describe('GameHud', () => {
     const w = mount(GameHud, { props })
     expect(w.find('#hud').classes()).toContain('active')
     expect(w.find('#who').text()).toBe('劍士 · LV.3')
-    expect((w.find('#hpBar').element as HTMLElement).style.width).toBe('40%')
+    // af9d2dce: the hero fill scales from the meter's --es2-progress fraction, not an inline width.
+    expect((w.find('#hudHealthMeter').element as HTMLElement).style.getPropertyValue('--es2-progress')).toBe('0.4')
     expect((w.find('#xpBar').element as HTMLElement).style.width).toBe('25%')
     expect((w.find('#xpTrack').element as HTMLElement).style.width).toBe('25%')
     expect(w.find('#hpLabel').text()).toBe('生命 40 / 100')
@@ -203,7 +204,8 @@ describe('GameHud', () => {
     expect(w.find('#bossWrap').classes()).not.toContain('show')
     await w.setProps({ hud: { ...hud, bossPct: 60 } })
     expect(w.find('#bossWrap').classes()).toContain('show')
-    expect((w.find('#bossHealth').element as HTMLElement).style.width).toBe('60%')
+    // 2b0da2b4: the boss fill shares the hero meter motion and scales from the track's --es2-progress.
+    expect((w.find('#bossWrap .boss-track').element as HTMLElement).style.getPropertyValue('--es2-progress')).toBe('0.6')
   })
 
   it('emits toggles and pause; exposes minimap canvas', async () => {

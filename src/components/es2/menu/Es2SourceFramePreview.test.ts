@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-const archive = readFileSync(resolve(process.cwd(), 'src/components/es2/menu/Es2Archive.vue'), 'utf8')
+// 1f0948e1 moved the archive's art-preview gallery (template + CSS) into the DEV-only Es2DevArtGallery.
+const archive = readFileSync(resolve(process.cwd(), 'src/components/es2/menu/Es2DevArtGallery.vue'), 'utf8')
 const environment = readFileSync(resolve(process.cwd(), 'src/game/render/environment.ts'), 'utf8')
 
 describe('ES2 production sheet previews keep every atlas cell isolated', () => {

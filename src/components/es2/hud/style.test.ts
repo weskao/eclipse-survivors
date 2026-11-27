@@ -69,7 +69,9 @@ describe('responsive ES2 encounter and information rail', () => {
     expect(component).toMatch(/class="es2-hud__counter-row"[\s\S]*?data-es2-info-toggle[\s\S]*?class="es2-hud__counters/)
     expect(component.match(/data-es2-info-toggle/g)).toHaveLength(1)
     expect(css).toContain('min-width: 44px; width: 44px; min-height: 44px; padding: 0')
-    expect(css).toContain('font: 700 0/1.2 system-ui')
+    // b5aa64a6: the toggle's only visual child is a centered SVG; aria-label carries the name, so no hidden-text font.
+    expect(css).toContain('z-index: 2; display: grid; place-items: center;')
+    expect(css).toContain('.es2-hud__info-toggle > svg { display: block; pointer-events: none; }')
     expect(landscape).toContain('bottom: max(108px')
   })
 
