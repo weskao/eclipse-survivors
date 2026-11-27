@@ -280,35 +280,64 @@ it('reveals treasure rarity without delaying or duplicating the claim, and suppo
   expect(wrapper.emitted('choose')).toEqual([['epic']])
 })
 
-it('uses exactly the same card grid and hint layout for level and treasure choices', async () => {
+it('opens the tier chest above the shared card grid and skips it through a hint-row checkbox', async () => {
   const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices })
   await nextTick()
   const bodyShape = () => Array.from(dialog().querySelector('.es2-selection-scene')!.children).map(el => el.className)
   const level = bodyShape()
   expect(level).toEqual(['es2-choice-grid', 'es2-hint'])
+  expect(dialog().querySelector('[data-es3-skip-reveal]')).toBeNull()
   await wrapper.setProps({ kind: 'treasure', tier: 'legendary' })
   await nextTick()
-  expect(bodyShape()).toEqual(level)
+  expect(bodyShape()).toEqual(['es3-chest-open', ...level])
+  const chest = dialog().querySelector<HTMLImageElement>('[data-es3-chest-reveal]')!
+  expect(chest.closest('.es3-chest-open')?.getAttribute('data-tier')).toBe('legendary')
+  expect(chest.getAttribute('src')).toContain('treasure-legendary')
+  expect(chest.closest('[aria-hidden="true"]')).not.toBeNull()
   expect(dialog().querySelectorAll('.es2-choice-grid > .es2-choice')).toHaveLength(choices.length)
-  expect(dialog().querySelector('[data-es3-chest-reveal], .es3-chest-seal')).toBeNull()
-  expect(dialog().querySelector('.es2-dialog-header [data-es3-skip-reveal]')).not.toBeNull()
-  expect(dialog().querySelector('.es2-selection-scene')?.getAttribute('data-tier')).toBe('legendary')
-  dialog().querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!.click()
+  expect(dialog().querySelector('.es2-dialog-header [data-es3-skip-reveal]')).toBeNull()
+  const skip = dialog().querySelector<HTMLButtonElement>('.es2-hint [data-es3-skip-reveal][role="checkbox"]')!
+  expect(skip.getAttribute('aria-checked')).toBe('false')
+  expect(skip.textContent).toContain('跳過揭曉動畫')
+  skip.click()
   await nextTick()
+  expect(skip.getAttribute('aria-checked')).toBe('true')
+  expect(wrapper.emitted('skipReveal')).toEqual([[true]])
   expect(bodyShape()).toEqual(level)
+  expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
   expect(wrapper.emitted('choose')).toBeUndefined()
 })
 
-it.each(['rare', 'epic', 'legendary'] as const)('keeps %s reward rarity and permits a single claim after skip without extra chest art', async tier => {
+it('remembers a checked skip: no chest on open, and unchecking never replays the current reveal', async () => {
+  const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'treasure', tier: 'rare', skipReveal: true,
+    items: [{ id: 'reward', title: 'Reward', rarity: 'rare' }] })
+  await nextTick()
+  expect(dialog().querySelector('[data-es3-chest-reveal]')).toBeNull()
+  expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
+  const skip = dialog().querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!
+  expect(skip.getAttribute('aria-checked')).toBe('true')
+  skip.click()
+  await wrapper.setProps({ skipReveal: false })
+  expect(wrapper.emitted('skipReveal')).toEqual([[false]])
+  expect(skip.getAttribute('aria-checked')).toBe('false')
+  expect(dialog().querySelector('[data-es3-chest-reveal]')).toBeNull()
+  await wrapper.setProps({ active: false })
+  await wrapper.setProps({ active: true })
+  await nextTick()
+  expect(dialog().querySelector('[data-es3-chest-reveal]')).not.toBeNull()
+})
+
+it.each(['rare', 'epic', 'legendary'] as const)('keeps %s reward rarity on the opened chest and permits a single claim after skip', async tier => {
   const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'treasure', tier,
     items: [{ id: 'reward', title: 'Reward', rarity: tier }] })
   await nextTick()
   expect(button('reward').classList.contains('es2-rarity-' + tier)).toBe(true)
   expect(dialog().querySelector('.es2-selection-scene')?.getAttribute('data-tier')).toBe(tier)
-  expect(dialog().querySelector('[data-es3-chest-reveal]')).toBeNull()
+  expect(dialog().querySelector('.es3-chest-open')?.getAttribute('data-tier')).toBe(tier)
   dialog().querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!.click()
   await nextTick()
   expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
+  expect(dialog().querySelector('[data-es3-chest-reveal]')).toBeNull()
   button('reward').click()
   button('reward').click()
   expect(wrapper.emitted('choose')).toEqual([['reward']])

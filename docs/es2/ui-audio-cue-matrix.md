@@ -15,8 +15,10 @@ Implementation branch: `feature/es2-release-readiness-integration`. One Web Audi
 | Crimson Paladin — 緋紅報復 (barrier expires or breaks with ≥ `retributionMinAbsorb` absorbed) | `crimson-paladin-retribution` | Engine tick, once per barrier; silent below the threshold, on death or Home |
 | Start / retry expedition | `start` | Engine |
 | Pause / resume / game-home request | `pause` / `resume` | Engine |
-| Level-up opening | `level` | Engine |
+| Level-up opening (no legendary offer) | `level` | Engine |
+| Level-up opening with a legendary offer (replaces `level`) | `legendaryReveal` (rendered PCM: sub swell, shimmer, bell chord) | Engine |
 | Accepted upgrade/treasure/research/equipment/bonus/world-event choice | `upgrade` | Engine |
+| Accepted legendary level-up choice (replaces `upgrade`; evolutions keep their own `evolution` cue) | `legendaryClaim` (rendered PCM: strike, bloom, ring) | Engine |
 | Successful cosmetic equip | `select` | Engine |
 | Failed transaction or out-of-range world event | `deny` | Engine |
 | World event opening, returning home, irreversible progress reset | `scene` | Engine |

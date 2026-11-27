@@ -21,7 +21,7 @@ import type { MenuView, RelicEntry } from './model'
 import HallGrowthBoard from '../progression/HallGrowthBoard.vue'
 import { legacyHallNodes } from '../progression/hall-model'
 import Es2CardDetails from './Es2CardDetails.vue'
-import Es2CardInfo from './Es2CardInfo.vue'
+import Es2ArchiveCard from './Es2ArchiveCard.vue'
 import type { CardDetail } from './Es2CardDetails.vue'
 import { monsterGroups } from './monster-details'
 const props = defineProps<{
@@ -135,51 +135,50 @@ const achievementArt: Record<string, string> = {
       <button class="es2-danger" type="button" @click="emit('reset')">{{ t("重置永久進度…") }}</button>
     </section>
     <section v-else-if="view === 'relics'" class="es2-archive-section" :aria-label="t('聖物庫')">
-      <div v-if="relics?.length" class="es2-archive-grid"><article v-for="relic in relics" :key="relic.id" class="es2-archive-card" :class="[`es2-rarity-${relic.rarity ?? 'common'}`, { 'es2-context-card': cardDetails['relic:' + relic.id] }]"
-        :data-es2-context-card="cardDetails['relic:' + relic.id] ? 'relic:' + relic.id : undefined" :tabindex="cardDetails['relic:' + relic.id] ? 0 : undefined">
-        <img v-if="relic.imageSrc" :src="relic.imageSrc" :alt="t('{name} 插畫', { name: t(relic.title) })" loading="lazy" /><div v-else class="es2-archive-glyph">{{ relic.icon ?? '✧' }}</div>
-        <strong>{{ t(relic.owned ? relic.title : '未知聖物') }}</strong>
+      <div v-if="relics?.length" class="es2-archive-grid"><Es2ArchiveCard v-for="relic in relics" :key="relic.id" :class="`es2-rarity-${relic.rarity ?? 'common'}`"
+        :title="t(relic.owned ? relic.title : '未知聖物')" :detail-id="cardDetails['relic:' + relic.id] ? 'relic:' + relic.id : undefined" @open="open">
+        <template #art>
+          <img v-if="relic.imageSrc" :src="relic.imageSrc" :alt="t('{name} 插畫', { name: t(relic.title) })" loading="lazy" decoding="async" />
+          <span v-else class="es2-archive-glyph">{{ relic.icon ?? '✧' }}</span>
+        </template>
         <p v-if="!relic.owned">{{ t('尚未發現') }}</p>
-        <Es2CardInfo v-if="cardDetails['relic:' + relic.id]" :id="'relic:' + relic.id" :title="t(relic.title)" @open="open" />
-      </article></div>
+      </Es2ArchiveCard></div>
       <p v-else class="es2-empty">{{ t("遠征中發現的聖物將顯示於此。尚無聖物資料可供展示。") }}</p>
     </section>
     <section v-else-if="view === 'monsters'" class="es2-archive-section" :aria-label="t('魔物圖鑑')">
-      <div class="es2-archive-grid"><article v-for="mob in entries.monsters" :key="mob.id" class="es2-archive-card" :class="{ 'es2-locked': !mob.count, 'es2-context-card': !!mob.count }"
-        :data-monster-entry="mob.id" :data-es2-context-card="mob.count ? 'monster:' + mob.id : undefined" :tabindex="mob.count ? 0 : undefined">
-        <div class="es2-archive-art">
+      <div class="es2-archive-grid"><Es2ArchiveCard v-for="mob in entries.monsters" :key="mob.id" :class="{ 'es2-locked': !mob.count }"
+        :data-monster-entry="mob.id" :title="t(mob.count ? mob.label : '???')" :detail-id="mob.count ? 'monster:' + mob.id : undefined" @open="open">
+        <template #art>
           <span v-if="mob.count && monsterFrames(mob.id) > 1" class="es2-archive-atlas" data-monster-portrait role="img"
             :aria-label="t('{name} 插畫', { name: t(mob.label) })"
             :style="{ backgroundImage: 'url(' + monsterImage(mob.id) + ')', backgroundSize: (monsterFrames(mob.id) * 100) + '% 100%' }" />
           <img v-else-if="mob.count" data-monster-portrait :class="{ 'es2-warlock-portrait': mob.id === 'warlock' }" :src="monsterImage(mob.id)" :alt="t('{name} 插畫', { name: t(mob.label) })" loading="lazy" />
           <span v-else class="es2-archive-glyph" aria-hidden="true">?</span>
-        </div><strong>{{ t(mob.count ? mob.label : '???') }}</strong>
+        </template>
         <p v-if="!mob.count">{{ t('尚未遭遇') }}</p><small v-if="mob.count">{{ t("擊倒") }} {{ mob.count }}</small>
-        <Es2CardInfo v-if="mob.count" :id="'monster:' + mob.id" :title="t(mob.label)" @open="open" />
-      </article></div>
+      </Es2ArchiveCard></div>
     </section>
     <section v-else-if="view === 'skills'" class="es2-archive-section" :aria-label="t('技能圖鑑')">
       <h3 class="es2-archive-active-heading">{{ t('英雄主動技能') }}</h3>
       <div class="es2-archive-active-grid" data-hero-active-catalog>
         <HeroActiveSummary v-for="id in ACTIVE_HERO_IDS" :key="id" :hero-id="id" show-hero />
       </div>
-      <div class="es2-archive-grid"><article v-for="ability in entries.abilities" :key="ability.id" class="es2-archive-card" :class="{ 'es2-locked': !ability.discovered, 'es2-context-card': ability.discovered }"
-        :data-es2-context-card="ability.discovered ? 'skill:' + ability.id : undefined" :tabindex="ability.discovered ? 0 : undefined">
-        <img v-if="ability.discovered" :src="skillImageSrc(ability.id)" :alt="t('{name} 技能插畫', { name: t(ability.title) })" loading="lazy" />
-        <span v-else class="es2-archive-glyph">{{ ability.icon }}</span><strong>{{ t(ability.discovered ? ability.title : '???') }}</strong>
+      <div class="es2-archive-grid"><Es2ArchiveCard v-for="ability in entries.abilities" :key="ability.id" :class="{ 'es2-locked': !ability.discovered }"
+        :title="t(ability.discovered ? ability.title : '???')" :detail-id="ability.discovered ? 'skill:' + ability.id : undefined" @open="open">
+        <template #art>
+          <img v-if="ability.discovered" :src="skillImageSrc(ability.id)" :alt="t('{name} 技能插畫', { name: t(ability.title) })" loading="lazy" decoding="async" />
+          <span v-else class="es2-archive-glyph">{{ ability.icon }}</span>
+        </template>
         <p v-if="!ability.discovered">{{ t('尚未覺醒') }}</p>
-        <Es2CardInfo v-if="ability.discovered" :id="'skill:' + ability.id" :title="t(ability.title)" @open="open" />
-      </article></div>
+      </Es2ArchiveCard></div>
     </section>
     <section v-else class="es2-archive-section" :aria-label="t('成就')">
       <div class="es2-stat-strip"><div><b>{{ profile.achievements.length }} / {{ ACHIEVEMENTS.length }}</b><small>{{ t("已達成") }}</small></div></div>
-      <div class="es2-archive-grid"><article v-for="achievement in ACHIEVEMENTS" :key="achievement.id" class="es2-archive-card es2-context-card" :class="{ 'es2-locked': !profile.achievements.includes(achievement.id) }"
-        :data-es2-context-card="'achievement:' + achievement.id" tabindex="0">
-        <div class="es2-archive-art"><img class="es2-achievement-icon" :src="achievementArt[achievement.id]" :alt="t('{name} 成就徽章', { name: t(achievement.title) })" data-es2-achievement-badge loading="lazy" decoding="async" /></div>
-        <strong>{{ t(achievement.title) }}</strong>
-        <Es2CardInfo :id="'achievement:' + achievement.id" :title="t(achievement.title)" @open="open" />
+      <div class="es2-archive-grid"><Es2ArchiveCard v-for="achievement in ACHIEVEMENTS" :key="achievement.id" :class="{ 'es2-locked': !profile.achievements.includes(achievement.id) }"
+        :title="t(achievement.title)" :detail-id="'achievement:' + achievement.id" @open="open">
+        <template #art><img class="es2-achievement-icon" :src="achievementArt[achievement.id]" :alt="t('{name} 成就徽章', { name: t(achievement.title) })" data-es2-achievement-badge loading="lazy" decoding="async" /></template>
         <small>{{ t(profile.achievements.includes(achievement.id) ? '✓ 已達成' : '尚未達成') }}</small>
-      </article></div>
+      </Es2ArchiveCard></div>
       <component v-if="DevArtGallery" :is="DevArtGallery" view="achievements" />
     </section>
     </Es2CardDetails>
@@ -190,5 +189,4 @@ const achievementArt: Record<string, string> = {
 .es2-archive-active-heading{color:#edcf97;margin:0 0 8px;font-size:1rem}
 .es2-archive-active-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:8px;margin-bottom:18px}
 
-.es2-achievement-icon{display:block;width:64px!important;height:64px;object-fit:contain}
 </style>

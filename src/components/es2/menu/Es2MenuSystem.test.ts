@@ -506,6 +506,19 @@ describe('Adventurer Hall selected mastery integration', () => {
 })
 
 describe('ES3 treasure presentation accessibility', () => {
+  it('reads and persists the chest skip checkbox through the accessibility preferences', async () => {
+    const prefs = { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'off' as const, skipRewardReveal: true }
+    const wrapper = mounted({ screen: 'level', upgradeEffect: 'soft', accessibilityPreferences: prefs,
+      specialChoice: { kind: 'treasure', tier: 'epic', items: [{ id: 'reward', title: 'Reward', rarity: 'epic' }] },
+    })
+    await nextTick()
+    expect(document.querySelector('[data-es3-chest-reveal]')).toBeNull()
+    expect(find('[data-es3-skip-reveal]').getAttribute('aria-checked')).toBe('true')
+    click('[data-es3-skip-reveal]')
+    expect(wrapper.emitted('accessibility')).toEqual([[{ ...prefs, skipRewardReveal: false }]])
+    expect(wrapper.emitted('specialChoose')).toBeUndefined()
+  })
+
   it('uses the actual system motion setting and responds to preference changes without claiming the reward', async () => {
     const media = new EventTarget()
     let matches = true

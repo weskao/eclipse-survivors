@@ -493,7 +493,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     ui.upgrades = choices
     screen('level')
-    audio.playSfx('level')
+    // A legendary offer owns the opening sound; never layer the ordinary level chime under it.
+    audio.playSfx(choices.some(up => up.rarity === 'legendary') ? 'legendaryReveal' : 'level')
   }
 
   function end(win: boolean): void {
@@ -655,11 +656,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function chooseUpgrade(id: AbilityId): void {
     if (s.mode !== 'level' || !s.hero || ui.specialChoice || !ui.upgrades.some(up => up.id === id)) return
-    const evolved = ui.upgrades.some(up => up.id === id && up.isEvolution)
+    const picked = ui.upgrades.find(up => up.id === id)
+    const evolved = picked?.isEvolution === true
     if (!applyUpgrade(s, id, hooks, contentRegistry)) return
     screen('play')
     if (s.levelQueue) offerUpgrades()
-    if (!evolved) audio.playSfx('upgrade')
+    if (!evolved) audio.playSfx(picked?.rarity === 'legendary' ? 'legendaryClaim' : 'upgrade')
     hud()
   }
 

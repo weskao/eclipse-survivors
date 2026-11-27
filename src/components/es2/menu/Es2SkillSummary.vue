@@ -23,17 +23,16 @@ defineProps<{
 </template>
 <style scoped>
 .es2-active-summary { display:grid; grid-template-columns:minmax(0,1fr); align-items:stretch; min-width:0; width:100%; box-sizing:border-box; text-align:start; border:1px solid color-mix(in srgb,var(--es2-special-accent, #bda473) 55%,transparent); border-radius:8px; background:linear-gradient(135deg,var(--es2-special-panel, #172638),#101521); box-shadow:inset 0 1px #ffffff15; }
-.es2-active-summary[data-has-detail] { grid-template-columns:minmax(0,1fr) 5.5rem; }
+.es2-active-summary[data-has-detail] { grid-template-columns:minmax(0,1fr) fit-content(40%); }
 .es2-active-summary__main { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:7px; min-width:0; box-sizing:border-box; }
 .es2-active-summary .es2-active-summary__icon { display:block; flex:0 1 44px; width:44px; max-width:100%; height:auto; aspect-ratio:1; padding:0; object-fit:contain; border-radius:6px; border:1px solid var(--es2-special-accent, #bda473); background:#090e17; }
 .es2-active-summary__copy { display:grid; min-width:0; flex:1 1 4.5rem; gap:3px; }
 .es2-active-summary__head { display:flex; align-items:baseline; min-width:0; color:var(--es2-special-light, #ffe4a6); }
 .es2-active-summary__head strong { font-size:.85rem; line-height:1.2; overflow-wrap:anywhere; hyphens:auto; }
-.es2-active-summary__cooldown { display:flex; flex-direction:column; align-items:center; justify-content:center; align-self:stretch; min-width:0; box-sizing:border-box; gap:4px; padding:6px 5px; border-inline-start:1px solid color-mix(in srgb,var(--es2-special-accent, #bda473) 30%,transparent); border-start-end-radius:7px; border-end-end-radius:7px; background:#090e1740; text-align:center; font:600 .75rem/1.3 system-ui,sans-serif; color:#e5d9c9; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.es2-active-summary__cooldown { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; align-self:stretch; min-width:0; box-sizing:border-box; gap:4px; padding:6px 5px; border-start-end-radius:7px; border-end-end-radius:7px; background:#090e1740; text-align:end; font:600 .75rem/1.3 system-ui,sans-serif; color:#e5d9c9; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
 .es2-active-summary__cooldown > span { min-width:0; max-width:100%; }
 .es2-active-summary__hero { color:var(--es2-special-accent, #bda473); font-size:.72rem; overflow-wrap:anywhere; }
 .es2-active-summary__desc { color:#e8ded3; font-size:.8rem; line-height:1.45; overflow-wrap:anywhere; }
-.es2-active-summary[data-compact="true"][data-has-detail] { grid-template-columns:minmax(0,1fr) 3rem; }
 .es2-active-summary[data-compact="true"] .es2-active-summary__main { gap:4px; padding:4px; }
 .es2-active-summary[data-compact="true"] .es2-active-summary__copy { flex-basis:2.25rem; }
 .es2-active-summary[data-compact="true"] .es2-active-summary__icon { flex-basis:26px; width:26px; }

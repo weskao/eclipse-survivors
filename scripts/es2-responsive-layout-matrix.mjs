@@ -52,9 +52,20 @@ const assertSkillValueColumns = async (scope, label) => {
     .map(row => {
       const main = row.querySelector('.es2-active-summary__main'), value = row.querySelector('[data-active-skill-cooldown]')
       const a = main.getBoundingClientRect(), b = value.getBoundingClientRect(), r = row.getBoundingClientRect()
-      return { title: main.textContent.trim().slice(0, 48), valid: a.right <= b.left + 1
+      const css = getComputedStyle(value), rightPadding = parseFloat(css.paddingRight)
+      const leftPadding = parseFloat(css.paddingLeft)
+      const parts = [...value.children].map(el => {
+        const bounds = el.getBoundingClientRect()
+        return { right: bounds.right, width: bounds.width }
+      })
+      const shortValue = /^\d+(?:\.\d+)?s$/.test(value.textContent.trim())
+      return { title: main.textContent.trim().slice(0, 48), width: b.width,
+        valid: a.right <= b.left + 1
         && Math.abs(r.top - b.top) <= 2 && Math.abs(r.bottom - b.bottom) <= 2
-        && value.scrollWidth <= value.clientWidth + 2 && b.width > 0 }
+        && value.scrollWidth <= value.clientWidth + 2 && b.width > 0
+        && parseFloat(css.borderInlineStartWidth) === 0 && css.textAlign === 'end'
+        && parts.every(part => Math.abs(part.right - (b.right - rightPadding)) <= 1)
+        && (!shortValue || b.width <= Math.max(...parts.map(part => part.width)) + leftPadding + rightPadding + 2) }
     }))
   assert.ok(result.length > 0, label + ': missing shared skill value columns')
   assert.deepEqual(result.filter(row => !row.valid), [], label + ': skill value column overlaps or clips')
@@ -221,6 +232,7 @@ try {
           name + ': unclear or clipped selected hero ' + JSON.stringify(result))
       }
       await verifyHeroSelection()
+      await assertSkillValueColumns(page, name + ': lobby compact skill values')
       const hoverCapable = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
       const cursor = await page.evaluate(() => ({
         body: getComputedStyle(document.body).cursor,
@@ -469,6 +481,17 @@ try {
           name + ': return navigation clips viewport')
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
+        const uncentered = await archivePage.locator('.es2-archive-card').evaluateAll(cards => cards.flatMap(card => {
+          const slot = card.querySelector(':scope > .es2-archive-art')
+          const art = slot?.firstElementChild
+          if (!slot || !art) return [card.textContent.trim().slice(0, 64)]
+          const a = art.getBoundingClientRect(), b = slot.getBoundingClientRect(), r = card.getBoundingClientRect()
+          const centered = Math.abs((a.left + a.right - r.left - r.right) / 2) <= 1.5 &&
+            Math.abs((a.top + a.bottom - b.top - b.bottom) / 2) <= 1.5 &&
+            a.left >= b.left - 1 && a.right <= b.right + 1
+          return centered ? [] : [card.textContent.trim().slice(0, 64)]
+        }))
+        assert.deepEqual(uncentered, [], name + ': archive artwork must be centered')
         if (await archivePage.getAttribute('data-es2-archive-page') === 'progression') {
           const power = page.locator('[data-hall-inspect="power"]')
           await power.waitFor({ state: 'visible' })

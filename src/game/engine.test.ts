@@ -341,6 +341,29 @@ describe('engine commands fire the original cues', () => {
     expect(audio.cues.at(-1)).toBe('upgrade')
   })
 
+  it('legendary offers replace the level cue with one legendary reveal and claim', () => {
+    engine.start()
+    let offered = false
+    for (let i = 0; i < 60 && !offered; i++) {
+      audio.cues = []
+      engine.testApi.level()
+      const legendary = engine.ui.upgrades.find(up => up.rarity === 'legendary' && !up.isEvolution)
+      if (legendary) {
+        offered = true
+        expect(audio.cues.filter(cue => cue === 'legendaryReveal')).toHaveLength(1)
+        expect(audio.cues).not.toContain('level')
+        engine.chooseUpgrade(legendary.id)
+        expect(audio.cues.at(-1)).toBe('legendaryClaim')
+        expect(audio.cues).not.toContain('upgrade')
+      } else {
+        expect(audio.cues).toContain('level')
+        expect(audio.cues).not.toContain('legendaryReveal')
+        engine.chooseUpgrade(engine.ui.upgrades[0]!.id)
+      }
+    }
+    expect(offered).toBe(true)
+  })
+
   it('discards camera impact when the level-up picker opens and after choosing a skill', () => {
     engine.start()
     engine.state.cameraKick = 8

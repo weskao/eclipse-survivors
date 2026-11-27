@@ -7,7 +7,7 @@ export type SfxTone = readonly [number, number, number, number, OscillatorType]
 export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, 'hero-select': .26, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
-  treasureReveal: .35, treasureClaim: .35,
+  treasureReveal: .35, treasureClaim: .35, legendaryReveal: .6, legendaryClaim: .3,
   hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, hitElemental: .22, hitEvolved: .32, hitHero: .35, eliteKill: 0.45,
   hurt: 0.28, 'hurt-heavy': .34, 'hurt-critical': .39, 'hurt-extreme': .48, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
   'knight-special': .65, 'ranger-special': .55, 'wizard-special': .8,
@@ -38,6 +38,9 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   bossDefeat: [[52, 0, 0.4, 0.076, 'triangle'], [59, 0.2, 0.54, 0.055, 'sine'], [64, 0.34, 0.68, 0.05, 'sine']],
   treasureReveal: [[60,0,.18,.035,'triangle'],[72,.08,.32,.028,'sine']],
   treasureClaim: [[67,0,.16,.04,'triangle'],[79,.08,.24,.034,'sine'],[84,.18,.32,.024,'sine']],
+  // Emergency fallbacks for the cached legendary Foley (D major add9 arpeggio / ascending seal).
+  legendaryReveal: [[38,0,.55,.07,'triangle'],[74,.3,.5,.04,'sine'],[78,.37,.5,.035,'sine'],[81,.44,.55,.032,'sine'],[86,.51,.7,.028,'sine'],[88,.58,.75,.02,'sine']],
+  legendaryClaim: [[43,0,.3,.06,'triangle'],[81,.02,.3,.038,'sine'],[88,.07,.4,.032,'sine'],[93,.12,.5,.024,'sine']],
   hitNormal: [[45, 0, .07, .025, 'triangle'], [76, .012, .055, .016, 'sine']],
   hitHeavy: [[31, 0, .14, .055, 'triangle'], [43, .012, .13, .032, 'sawtooth'], [65, .04, .18, .024, 'triangle']],
   hitCritical: [[38, 0, .12, .049, 'triangle'], [77, .015, .11, .035, 'sawtooth'], [89, .05, .2, .028, 'sine'], [96, .12, .22, .016, 'sine']],
