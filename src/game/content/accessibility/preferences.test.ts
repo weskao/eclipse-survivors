@@ -13,6 +13,9 @@ describe('accessibility preferences', () => {
     expect(loadAccessibilityPreferences({ getItem: () => '{}', setItem: vi.fn() }).showFullEnemyHealthBars).toBe(false)
     expect(loadAccessibilityPreferences({ getItem: () => '{"showFullEnemyHealthBars":"true"}', setItem: vi.fn() }).showFullEnemyHealthBars).toBe(false)
     expect(DEFAULT_ACCESSIBILITY_PREFERENCES.joystickSide).toBe('left')
+    expect(DEFAULT_ACCESSIBILITY_PREFERENCES.skipRewardReveal).toBe(false)
+    expect(loadAccessibilityPreferences({ getItem: () => '{"skipRewardReveal":true}', setItem: vi.fn() }).skipRewardReveal).toBe(true)
+    expect(loadAccessibilityPreferences({ getItem: () => '{"skipRewardReveal":"yes"}', setItem: vi.fn() }).skipRewardReveal).toBe(false)
     const broken = { getItem: () => '{broken', setItem: vi.fn() }
     expect(loadAccessibilityPreferences(broken)).toEqual(DEFAULT_ACCESSIBILITY_PREFERENCES)
     expect(loadAccessibilityPreferences({ getItem: () => { throw Error('private mode') }, setItem: vi.fn() })).toEqual(DEFAULT_ACCESSIBILITY_PREFERENCES)

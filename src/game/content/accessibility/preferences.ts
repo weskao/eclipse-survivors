@@ -20,6 +20,8 @@ export interface AccessibilityPreferences {
   showDamageNumbers: boolean
   showFullEnemyHealthBars: boolean
   showHeroLowHealthWarning: boolean
+  /** Remembered "skip reveal" checkbox on treasure/evolution pickers. */
+  skipRewardReveal: boolean
 }
 
 export const DEFAULT_ACCESSIBILITY_PREFERENCES: Readonly<AccessibilityPreferences> = Object.freeze({
@@ -36,6 +38,7 @@ export const DEFAULT_ACCESSIBILITY_PREFERENCES: Readonly<AccessibilityPreference
   showDamageNumbers: true,
   showFullEnemyHealthBars: false,
   showHeroLowHealthWarning: true,
+  skipRewardReveal: false,
 })
 
 export interface PreferencesStorage {
@@ -72,6 +75,7 @@ export function normalizeAccessibilityPreferences(value: unknown): Accessibility
     showDamageNumbers: typeof p.showDamageNumbers === 'boolean' ? p.showDamageNumbers : d.showDamageNumbers,
     showFullEnemyHealthBars: typeof p.showFullEnemyHealthBars === 'boolean' ? p.showFullEnemyHealthBars : d.showFullEnemyHealthBars,
     showHeroLowHealthWarning: typeof p.showHeroLowHealthWarning === 'boolean' ? p.showHeroLowHealthWarning : d.showHeroLowHealthWarning,
+    skipRewardReveal: typeof p.skipRewardReveal === 'boolean' ? p.skipRewardReveal : d.skipRewardReveal,
   }
 }
 

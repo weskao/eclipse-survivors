@@ -6,7 +6,7 @@ import { upgradeStatPreview } from '../../../game/upgrade-preview'
 import { treasureArtUrl } from '../../../game/render/es2/production-world'
 import { RELIC_BY_ID, type RelicId } from '../../../game/content/relics/catalog'
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
-import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES, updateAccessibilityPreferences, type AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
 import type { MetaState } from '../../../game/content/meta/state'
 import type { Profile, PermanentUpgrade, CosmeticId, RunModeId, RunRewards, RunStats } from '../../../meta/types'
@@ -61,6 +61,9 @@ const stillPresentation = computed(() => props.upgradeEffect === 'still' ||
   !!props.accessibilityPreferences?.reducedFlashing ||
   props.accessibilityPreferences?.reducedMotion === 'on' ||
   ((props.accessibilityPreferences?.reducedMotion ?? 'system') === 'system' && systemReducedMotion.value))
+function skipRewardReveal(skip: boolean): void {
+  emit('accessibility', updateAccessibilityPreferences(props.accessibilityPreferences ?? DEFAULT_ACCESSIBILITY_PREFERENCES, { skipRewardReveal: skip }))
+}
 const fallbackProfile = emptyProfile()
 const currentProfile = computed(() => props.profile ?? fallbackProfile)
 const archive = ref<MenuView>('main')
@@ -112,10 +115,11 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
           @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
       </template>
     </Es2MainMenu>
-    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="stillPresentation"
-      @choose="chooseUpgrade" @settings="emit('settings')" />
+    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="stillPresentation" :skip-reveal="accessibilityPreferences?.skipRewardReveal"
+      @choose="chooseUpgrade" @settings="emit('settings')" @skip-reveal="skipRewardReveal" />
     <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :tier="specialCards.tier" :items="specialCards.items"
-      :still="stillPresentation" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
+      :still="stillPresentation" :skip-reveal="accessibilityPreferences?.skipRewardReveal"
+      @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" @skip-reveal="skipRewardReveal" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')">
       <template #cloud><slot name="result-cloud" /></template>
