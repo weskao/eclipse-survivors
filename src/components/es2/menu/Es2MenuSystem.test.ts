@@ -252,7 +252,8 @@ describe('ES2 main menu integration adapter', () => {
     const rewardDialog = find('.es2-dialog-choice')
     expect(rewardDialog.classList.contains('es2-dialog-wide')).toBe(true)
     expect(rewardDialog.querySelector('.es2-dialog-header img')).toBeNull()
-    expect(rewardDialog.querySelectorAll('.es2-selection-scene > :not(.es2-choice-grid):not(.es2-hint)')).toHaveLength(0)
+    expect(rewardDialog.querySelectorAll('.es2-selection-scene > :not(.es2-choice-grid)')).toHaveLength(0)
+    expect(rewardDialog.querySelector('.es2-dialog-actions [data-es3-skip-reveal]')).not.toBeNull()
     expect([...rewardDialog.querySelectorAll('.es2-choice')].map(card => card.classList.contains('es2-skill-card'))).toEqual(upgradeClasses)
     expect(rewardDialog.querySelectorAll('.es2-card-art img')).toHaveLength(3)
     click('[data-choice="relics:guardian-sigil"]')
@@ -536,7 +537,7 @@ describe('ES3 treasure presentation accessibility', () => {
       })
       await nextTick()
       expect(document.querySelector('[data-es3-chest-reveal]')).toBeNull()
-      expect(document.querySelector('[data-es3-skip-reveal]')).toBeNull()
+      expect(document.querySelector('.es2-dialog-actions [data-es3-skip-reveal]')).not.toBeNull()
       matches = false
       media.dispatchEvent(Object.assign(new Event('change'), { matches }))
       await nextTick()

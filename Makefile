@@ -16,7 +16,7 @@ ifdef embers
 dev dev-unlocked phone phone-unlocked: export VITE_ES2_EMBERS := $(embers)
 endif
 
-.PHONY: setup dev dev-unlocked test-unlocked phone phone-unlocked build preview run test typecheck check-release verify deploy deploy-pages help
+.PHONY: setup dev dev-unlocked test-unlocked phone phone-unlocked build preview run test typecheck check-release verify deploy deploy-pages deploy-netlify help
 
 # Install the exact locked dependencies on first use or after a manifest/lockfile change.
 node_modules: package.json pnpm-lock.yaml
@@ -87,6 +87,14 @@ deploy: ## Dispatch the existing GitHub Pages verification/deployment workflow o
 	gh workflow run release.yml --ref main
 
 deploy-pages: deploy ## Alias for make deploy
+
+# Deploys the local working tree (any branch) after the full gate; auth comes from `netlify login`.
+NETLIFY_SITE ?= eclipse-survivors.netlify.app
+# skip_tests=1 drops only the unit tests (e.g. a pending manual art gate); typecheck, build and
+# check-release still run before publishing.
+NETLIFY_GATE := $(if $(filter 1,$(skip_tests)),typecheck build check-release,verify)
+deploy-netlify: $(NETLIFY_GATE) ## Verify, then deploy local dist/ to Netlify production; skip_tests=1
+	$(PNPM) --package=netlify-cli@27.19.0 dlx netlify deploy --prod --dir dist --site $(NETLIFY_SITE) --message "$$(git rev-parse --short HEAD)"
 
 help: ## List available commands
 	@awk -F':.*## ' '/^[a-z-]+:.*## /{printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
