@@ -534,6 +534,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
           modeId: isObjectiveModeId(stats.mode) ? 'modes:' + stats.mode : stats.mode,
           heroId: stats.specializationId ? 'heroes:' + stats.specializationId : stats.hero,
           relicIds: inventorySnapshot(s).items.map(item => item.id),
+          hallEmberBonus: s.hall?.ember,
         }) : null
       const previousCosmetics = new Set(before.state?.cosmetics ?? [])
       ui.rewards = {

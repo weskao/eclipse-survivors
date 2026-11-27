@@ -1,4 +1,5 @@
 import { BALANCE, researchCost, type ResearchId } from '../../config'
+import hallTuning from '../../balance/hall-effect-tuning.json'
 import type { RunStats } from '../../../meta/types'
 import {
   ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT,
@@ -20,6 +21,8 @@ export interface RunReceipt {
   cosmeticIds?: readonly string[]
   modeId?: string
   heroId?: string
+  /** Captured from the immutable Hall run snapshot at run start. */
+  hallEmberBonus?: number
 }
 export interface GrantedReward { type: 'run' | 'achievement' | 'milestone'; id: string; embers: number }
 export interface ProgressResult { accepted: boolean; reason?: 'invalid' | 'duplicate' | 'ledger-full'; state: MetaState; rewards: GrantedReward[] }
@@ -114,6 +117,9 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   const rejected = (reason: ProgressResult['reason']): ProgressResult => ({ accepted: false, reason, state, rewards: [] })
   if (!validateMetaState(state) || !isReceiptValid(receipt)) return rejected('invalid')
   const stats = receipt.stats
+  const hallBonus = receipt.hallEmberBonus ?? 0
+  const maxHallBonus = state.version === 4 ? Math.min(hallTuning.emberCap, (state.hall?.ownership['hunt-fortune'] ?? 0) * hallTuning.fortune) : 0
+  if (!nonnegative(hallBonus, maxHallBonus)) return rejected('invalid')
   if (state.runIds.includes(stats.id)) return rejected('duplicate')
   if (state.runIds.length >= MAX_RUN_IDS) return rejected('ledger-full')
   const next = cloneMetaState(state)
@@ -144,7 +150,7 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   const base = Math.floor(rawBase * BALANCE.meta.runRewards.baseMultiplier)
   const research = RESEARCH.find(x => x.id === 'ember-study')
   const bonus = Math.floor(base * ((research?.benefitPerRank ?? 0) * (next.research['ember-study'] ?? 0)))
-  const rewards: GrantedReward[] = [{ type: 'run', id: stats.id, embers: base + bonus }]
+  const rewards: GrantedReward[] = [{ type: 'run', id: stats.id, embers: base + bonus + Math.floor(base * hallBonus) }]
   // Evaluate in catalog order. A cosmetic unlocked here can satisfy a later collection achievement.
   for (const entry of ACHIEVEMENTS) {
     if (next.achievements.includes(entry.id) || !achievementEligible(entry.id, next, receipt)) continue

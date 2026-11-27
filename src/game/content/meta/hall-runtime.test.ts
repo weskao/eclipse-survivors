@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
-import { hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
+import { hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
 function run(ranks: Record<string, number>) {
   const state = createState()
   resetRun(state)
@@ -63,4 +63,18 @@ it('tracks one elite reward, resonance windows and same-target marks without sta
   s.time=6; hallKill(s,true)
   expect(hallMovement(s)).toBe(1)
   expect(s.hall!.reaperReady).toBe(false)
+})
+
+it('shares five earned rerolls between ordinary chest and elite rewards without affecting rare chests', () => {
+  const s = run({'hunt-salvage':5,'hunt-pathfinder':1,'hunt-sustain':5,'summons-tenacity':5,'summons-duration':5,'summons-command':5,'spirit-summoner-pack':5})
+  hallKill(s,true)
+  for(let i=0;i<6;i++) hallChestRevealed(s,true)
+  expect(hallChestRerolls(s,true)).toBe(5)
+  expect(hallChestRerolls(s,false)).toBe(0)
+  expect(spendHallChestReroll(s,false)).toBe(false)
+  for(let i=0;i<5;i++) expect(spendHallChestReroll(s,true)).toBe(true)
+  expect(spendHallChestReroll(s,true)).toBe(false)
+  expect(hallPickupHealing(s,100)).toBeCloseTo(110)
+  expect(hallEffectDuration(s)).toBeCloseTo(1.075)
+  expect(hallSummonInterval(s)).toBeCloseTo(.94)
 })

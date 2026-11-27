@@ -1,4 +1,5 @@
 import { BALANCE } from './config'
+import { hallSlow, withHallSource } from './content/meta/hall-runtime'
 import { combatTargets, hitTarget, nearestCombatTargets, slowTarget } from './combat'
 import type { FactionBridge } from './content/enemies/integration'
 import { impact, pushDamageNumber, pushParticle, zigzag } from './fx'
@@ -40,11 +41,13 @@ export function tickEvolutions(s: GameState, hooks: GameHooks, factions?: Factio
     // A combat evolution waits for targets, while the sanctuary is useful when injured.
     const targets = nearestCombatTargets(combatTargets(s, factions), hero)
     if (evo.id !== 'guardian-sanctuary' && targets.length === 0) continue
-    hero.evolutionCd[evo.id] = EVOLUTION_COOLDOWN[evo.id]
+    hero.evolutionCd[evo.id] = EVOLUTION_COOLDOWN[evo.id] * (s.hall?.weaponCooldown ?? 1)
+    const attackHooks = withHallSource(s, hooks, 'weapon')
+    const radius = s.hall?.radius ?? 1
     if (evo.id === 'frozen-thunderstorm') {
       for (const target of targets.filter(e => dist(e.x - hero.x, e.y - hero.y) <= 450).slice(0, 5)) {
-        if (!hitTarget(s, target, hero.damage * 1.45, hooks, factions, hero, 'evolved')) continue
-        slowTarget(target, 2.4)
+        if (!hitTarget(s, target, hero.damage * 1.45, attackHooks, factions, hero, 'evolved')) continue
+        slowTarget(target, hallSlow(s, target, 2.4))
         zigzag(s, hero.x, hero.y - 40, target.x, target.y)
         impact(s, target.x, target.y, 65, '#9bf2ff', 1)
       }
@@ -53,10 +56,10 @@ export function tickEvolutions(s: GameState, hooks: GameHooks, factions?: Factio
       impact(s, hero.x, hero.y, 235, '#ff815d', 1.5)
       for (const target of targets) {
         const d = dist(target.x - hero.x, target.y - hero.y)
-        if (d > 250) continue
+        if (d > 250 * radius) continue
         target.x += (hero.x - target.x) * 0.32
         target.y += (hero.y - target.y) * 0.32
-        hitTarget(s, target, hero.damage * 1.9, hooks, factions, hero, 'evolved')
+        hitTarget(s, target, hero.damage * 1.9, attackHooks, factions, hero, 'evolved')
         pushParticle(s, { x: target.x, y: target.y, life: 0.65, max: 0.65, color: '#ff8a50', r: 12, type: 'ember', vy: -30 })
       }
       hooks.sfx('vortex')
@@ -66,7 +69,7 @@ export function tickEvolutions(s: GameState, hooks: GameHooks, factions?: Factio
         pushParticle(s, { x: center.x, y: center.y, life: 0.85, max: 0.85, color: '#ff9369', r: 21, type: 'meteor' })
         impact(s, center.x, center.y, 135, '#ff9864', 1.4)
         for (const target of targets) {
-          if (target.hp > 0 && dist(target.x - center.x, target.y - center.y) < 130) hitTarget(s, target, hero.damage * 2.1, hooks, factions, center, 'evolved')
+          if (target.hp > 0 && dist(target.x - center.x, target.y - center.y) < 130 * radius) hitTarget(s, target, hero.damage * 2.1, attackHooks, factions, center, 'evolved')
         }
       }
       hooks.sfx('meteor')
@@ -76,7 +79,7 @@ export function tickEvolutions(s: GameState, hooks: GameHooks, factions?: Factio
         s.swipes.push({ x: hero.x, y: hero.y, a: i * Math.PI * 2 / 7, life: 0.3, max: 0.3, r: 110 })
       }
       for (const target of targets) {
-        if (dist(target.x - hero.x, target.y - hero.y) < 175) hitTarget(s, target, hero.damage * 1.5, hooks, factions, hero, 'evolved')
+        if (dist(target.x - hero.x, target.y - hero.y) < 175 * radius) hitTarget(s, target, hero.damage * 1.5, attackHooks, factions, hero, 'evolved')
       }
     } else if (evo.id === 'guardian-sanctuary') {
       const before = hero.hp

@@ -27,6 +27,7 @@ export function createHallRuntime(snapshot: HallRunSnapshot) {
     bastionAt: 0, spellwindAt: 0, soulforgeAt: 0, soulwardAt: 0, soulwardUntil: 0,
     ambushReady: false, assassinAt: 0, legionUntil: 0, legionAt: 0, soulBondAt: 0, sanctuaryUntil: 0,
     markTarget: null as Target | null, markHits: 0,
+    salvageReveals: 0, earnedRerolls: 0, spentRerolls: 0,
   }
 }
 export type HallRuntime = ReturnType<typeof createHallRuntime>
@@ -130,6 +131,7 @@ export function hallKill(state: GameState, elite = false): void {
   if (!h) return
   if (elite && !h.firstElite) {
     h.firstElite = true
+    if (h.rank('hunt-pathfinder')) h.earnedRerolls = Math.min(tuning.salvageCap, h.earnedRerolls + 1)
     if (h.rank('synergy-hunter-instinct')) h.hunterUntil = state.time + tuning.synergyHunterSeconds
     if (h.rank('synergy-reaper')) h.reaperReady = true
   }
@@ -227,4 +229,23 @@ export function hallSummonCast(state: GameState): void {
     h.soulwardAt = state.time + tuning.soulwardCooldown
     h.soulwardUntil = state.time + tuning.soulwardSeconds
   }
+}
+
+export function hallChestRevealed(state: GameState, ordinary: boolean): void {
+  const h = state.hall
+  if (!h || !ordinary || h.salvageReveals >= h.rank('hunt-salvage')) return
+  h.salvageReveals++
+  h.earnedRerolls = Math.min(tuning.salvageCap, h.earnedRerolls + 1)
+}
+export function hallChestRerolls(state: GameState, ordinary: boolean): number {
+  const h = state.hall
+  return h && ordinary ? h.earnedRerolls - h.spentRerolls : 0
+}
+export function spendHallChestReroll(state: GameState, ordinary: boolean): boolean {
+  if (!state.hall || hallChestRerolls(state, ordinary) <= 0) return false
+  state.hall.spentRerolls++
+  return true
+}
+export function hallPickupHealing(state: GameState, amount: number): number {
+  return amount * (1 + hallRank(state, 'hunt-sustain') * tuning.sustain)
 }

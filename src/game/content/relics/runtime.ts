@@ -1,4 +1,5 @@
 import { BALANCE } from '../../config'
+import { hallChestRevealed, hallChestRerolls, spendHallChestReroll } from '../meta/hall-runtime'
 import type { ContentEvent, GameState, TreasureTier } from '../../types'
 import { RELIC_BY_ID, RELIC_CUES, RELICS, type RelicBonuses, type RelicDefinition, type RelicId, type RelicStat } from './catalog'
 
@@ -36,7 +37,7 @@ export function inventorySnapshot(state: GameState): Readonly<{ items: readonly 
   capacity: number; rerolls: number; banishes: number; banished: readonly RelicId[]; pending: TreasureOffer | null }> {
   const run = getRun(state)
   return { items: Array.from(run.inventory, ([id, stacks]) => ({ id, stacks })), capacity: RELIC_CAPACITY,
-    rerolls: run.rerolls, banishes: run.banishes, banished: [...run.banished],
+    rerolls: run.rerolls + hallChestRerolls(state, !run.pending?.tier || run.pending.tier === 'common'), banishes: run.banishes, banished: [...run.banished],
     pending: run.pending ? { ...run.pending, options: [...run.pending.options] } : null }
 }
 function recompute(run: RunRelics): void {
@@ -108,6 +109,7 @@ export function openTreasure(state: GameState, chestId: number, rng: () => numbe
   run.lastChestId = chestId
   if (!options.length) return null
   run.pending = { chestId, options, ...(tier ? { tier } : {}) }
+  hallChestRevealed(state, !tier || tier === 'common')
   feedback?.(RELIC_CUES.chestOpen)
   return { ...run.pending, options: [...options] }
 }
@@ -129,12 +131,14 @@ export function declineTreasure(state: GameState, chestId: number): boolean {
 }
 export function rerollTreasure(state: GameState, chestId: number, rng: () => number): TreasureOffer | null {
   const run = getRun(state)
-  if (!run.pending || run.pending.chestId !== chestId || run.rerolls <= 0) return null
+  if (!run.pending || run.pending.chestId !== chestId) return null
+  const ordinary = !run.pending.tier || run.pending.tier === 'common'
+  if (run.rerolls + hallChestRerolls(state, ordinary) <= 0) return null
   const old = new Set(run.pending.options)
   // Prefer new choices; if all remaining items are already shown, a reroll is not charged.
   const options = weightedOptions(run, rng, old, run.pending.tier)
   if (!options.length) return null
-  run.rerolls--
+  if (!spendHallChestReroll(state, ordinary)) run.rerolls--
   run.pending = { ...run.pending, options }
   return { ...run.pending, options: [...options] }
 }

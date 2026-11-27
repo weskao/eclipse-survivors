@@ -108,5 +108,7 @@
   "synergyGuardianDamage": 0.1,
   "synergyGuardianSeconds": 4,
   "synergyReaperDamage": 0.25,
-  "rangerMark": 0.02
+  "rangerMark": 0.02,
+  "salvageCap": 5,
+  "sustain": 0.02
 }

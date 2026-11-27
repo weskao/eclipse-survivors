@@ -1,4 +1,5 @@
 import { BALANCE } from '../../config'
+import { hallEffectDuration, hallSummonCast, hallSummonInterval, withHallSource } from '../meta/hall-runtime'
 import type { ContentAbility, ContentContext } from '../contracts'
 import type { SfxCue, SkillRarity } from '../../types'
 import { combatTargets, hitTarget, targetRadius, type CombatTarget } from '../../combat'
@@ -41,10 +42,10 @@ export const WEAPON_SPECS: readonly WeaponSpec[] = [
   { key: 'thorn-chain', icon: '❈', title: 'Thorn Chain', desc: 'Bind a cluster of foes with spreading, periodic wounds.', rarity: 'rare', interval: W.intervals['thorn-chain'], sound: 'chain' },
 ] as const
 
-function ready(r: ArsenalRuntime, key: WeaponKey, dt: number, interval: number, level: number): boolean {
+function ready(context: ContentContext, r: ArsenalRuntime, key: WeaponKey, dt: number, interval: number, level: number): boolean {
   const left = Math.max(0, (r.timers[key] ?? 0) - dt)
   if (left > 0) { r.timers[key] = left; return false }
-  r.timers[key] = Math.max(W.common.cooldownFloor, interval * (1 - W.common.cooldownReductionPerRank * (level - 1)))
+  r.timers[key] = Math.max(W.common.cooldownFloor, interval * (1 - W.common.cooldownReductionPerRank * (level - 1)) * (context.state.hall?.weaponCooldown ?? 1))
   return true
 }
 
@@ -120,7 +121,8 @@ function tickWolves(context: ContentContext, dt: number, level: number): void {
     if (enemy && d2 < attackRange * attackRange) {
       if (wolf.attackIn <= 0) {
         hitTarget(context.state, enemy, h.damage * (W.spiritWolves.damageBase + level * W.spiritWolves.damagePerRank), context.hooks, context.hooks.factions?.())
-        wolf.attackIn = Math.max(0.52, W.spiritWolves.attackCooldownBase - W.spiritWolves.attackCooldownPerRank * level - capstone(level,B.wolfCooldownReduction))
+        wolf.attackIn = Math.max(0.52, (W.spiritWolves.attackCooldownBase - W.spiritWolves.attackCooldownPerRank * level - capstone(level,B.wolfCooldownReduction)) * hallSummonInterval(context.state))
+        hallSummonCast(context.state)
         context.hooks.sfx('knight')
       }
     } else if (d2 > 4) {
@@ -191,7 +193,7 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
     return
   }
   const next = target(context, 730)
-  if (next && ready(r, 'solar-beam', dt, W.intervals['solar-beam'], level)) {
+  if (next && ready(context, r, 'solar-beam', dt, W.intervals['solar-beam'], level)) {
     r.beamAngle = Math.atan2(next.y - h.y, next.x - h.x)
     r.charge = Math.max(0.42, 0.75 - level * 0.04)
   }
@@ -220,7 +222,7 @@ function tickChain(context: ContentContext, dt: number, level: number): void {
       }
     }
   }
-  if (!ready(r, 'thorn-chain', dt, W.intervals['thorn-chain'], level)) return
+  if (!ready(context, r, 'thorn-chain', dt, W.intervals['thorn-chain'], level)) return
   const nearby = nearest(context.state, h.x, h.y, 420, Math.min(6, 2 + level), undefined, context.hooks.factions?.())
   if (!nearby.length) return
   const firstDamage = h.damage * (W.thornChain.damageBase + W.thornChain.damagePerRank * level)
@@ -228,7 +230,7 @@ function tickChain(context: ContentContext, dt: number, level: number): void {
   r.links.length = 0
   for (let i = 1; i < nearby.length; i++) {
     const from = nearby[i - 1]!, to = nearby[i]!
-    if (from.hp > 0 && to.hp > 0) r.links.push({ from, to, life: 1.75 + capstone(level,B.chainDuration) })
+    if (from.hp > 0 && to.hp > 0) r.links.push({ from, to, life: (1.75 + capstone(level,B.chainDuration)) * hallEffectDuration(context.state) })
   }
   r.chainPulse = 0.42
   context.hooks.sfx('chain')
@@ -254,7 +256,7 @@ function tickBoneVolley(context: ContentContext, dt: number, level: number): voi
       r.volleyInterval = 0.16
     }
   }
-  if (r.volley > 0 || !ready(r, 'bone-spears', dt, W.intervals['bone-spears'], level)) return
+  if (r.volley > 0 || !ready(context, r, 'bone-spears', dt, W.intervals['bone-spears'], level)) return
   const enemy = target(context, 620)
   if (!enemy) return
   r.volley = Math.min(6, 2 + level)
@@ -268,10 +270,14 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
   if (!h || context.state.mode !== 'play') return
   const r = runtimeOf(context.state)
   keepVisual(context, r)
+  if (context.state.hall) {
+    const source = key === 'spirit-wolves' ? 'summon' : key === 'poison-cloud' || key === 'gravity-orbs' || key === 'thorn-chain' ? 'persistent' : 'weapon'
+    context = { ...context, hooks: withHallSource(context.state, context.hooks, source) }
+  }
   switch (key) {
     case 'shadow-daggers':
       moveMissiles(context, 'dagger', dt)
-      if (ready(r, key, dt, W.intervals[key], level)) {
+      if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 510)
         if (enemy) {
           for (let i = 0; i < Math.min(6, 1 + level); i++)
@@ -283,21 +289,21 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'holy-lance':
       moveMissiles(context, 'lance', dt)
-      if (ready(r, key, dt, W.intervals[key], level) && fireStraight(context, r, 'lance', level, 880, 1.12, 2 + level + capstone(level,B.lancePierce), 850))
+      if (ready(context, r, key, dt, W.intervals[key], level) && fireStraight(context, r, 'lance', level, 880, 1.12, 2 + level + capstone(level,B.lancePierce), 850))
         context.hooks.sfx('bolt')
       break
     case 'blood-scythe':
       r.slashLife = Math.max(0, r.slashLife - dt)
-      if (ready(r, key, dt, W.intervals[key], level) && slash(context, level)) context.hooks.sfx('knight')
+      if (ready(context, r, key, dt, W.intervals[key], level) && slash(context, level)) context.hooks.sfx('knight')
       break
     case 'arcane-mines':
       tickZones(context, 'mine', dt)
-      if (ready(r, key, dt, W.intervals[key], level)) {
+      if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 520)
         if (enemy) {
           const jitter = (context.random() - 0.5) * 24
           addZone(r, { kind: 'mine', x: enemy.x + jitter, y: enemy.y - jitter,
-            radius: W.arcaneMines.radiusBase + W.arcaneMines.radiusPerRank * level + capstone(level,B.mineRadius), damage: h.damage * (W.arcaneMines.damageBase + W.arcaneMines.damagePerRank * level),
+            radius: (W.arcaneMines.radiusBase + W.arcaneMines.radiusPerRank * level + capstone(level,B.mineRadius)) * (context.state.hall?.radius ?? 1), damage: h.damage * (W.arcaneMines.damageBase + W.arcaneMines.damagePerRank * level),
             life: 1.2, fuse: 0.85, pulse: 0 })
           context.hooks.sfx('meteor')
         }
@@ -309,19 +315,20 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'poison-cloud':
       tickZones(context, 'poison', dt)
-      if (ready(r, key, dt, W.intervals[key], level)) {
+      if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 500)
         if (enemy) {
           addZone(r, { kind: 'poison', x: enemy.x, y: enemy.y,
-            radius: W.poisonCloud.radiusBase + W.poisonCloud.radiusPerRank * level, damage: h.damage * (W.poisonCloud.damageBase + level * W.poisonCloud.damagePerRank),
-            life: 3.15 + capstone(level,B.poisonDuration), fuse: 0, pulse: 0.17 })
+            radius: (W.poisonCloud.radiusBase + W.poisonCloud.radiusPerRank * level) * (context.state.hall?.radius ?? 1), damage: h.damage * (W.poisonCloud.damageBase + level * W.poisonCloud.damagePerRank),
+            life: (3.15 + capstone(level,B.poisonDuration)) * hallEffectDuration(context.state), fuse: 0, pulse: 0.17 })
+          hallSummonCast(context.state)
           context.hooks.sfx('vortex')
         }
       }
       break
     case 'ricochet-blades':
       moveMissiles(context, 'blade', dt)
-      if (ready(r, key, dt, W.intervals[key], level)) {
+      if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 520)
         if (enemy) {
           fireMissile(r, 'blade', h.x, h.y, enemy, 560,
@@ -341,7 +348,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       break
     case 'spectral-bow':
       moveMissiles(context, 'arrow', dt)
-      if (ready(r, key, dt, W.intervals[key], level) && fireStraight(context, r, 'arrow', level, 640, 1.9, 1 + Math.ceil(level / 2) + capstone(level,B.bowPierce), 720))
+      if (ready(context, r, key, dt, W.intervals[key], level) && fireStraight(context, r, 'arrow', level, 640, 1.9, 1 + Math.ceil(level / 2) + capstone(level,B.bowPierce), 720))
         context.hooks.sfx('ranger')
       break
     case 'thorn-chain':
