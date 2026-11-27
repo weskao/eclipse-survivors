@@ -83,6 +83,8 @@ export interface TestApi {
   forceAttack(): void
   /** DEV art capture only: stage a real East target and invoke normal combat. */
   prepareHeroArtEastAttack(): boolean
+  /** DEV-only capture setup, uses genuine spawned enemies and ordinary Q input. */
+  prepareHeroActiveVideo(): boolean
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
   /** Capture-only biome preview; requires ?showcase=1. */
@@ -880,6 +882,30 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       for (let i = 0; i < 8; i++) spawnMob(s)
       trySpawnEvent(s, index % 2 ? 'shrine' : 'chest')
       hud()
+    },
+    prepareHeroActiveVideo() {
+      const hero = s.hero
+      if (!import.meta.env.DEV || typeof window === 'undefined' ||
+          new URLSearchParams(window.location.search).get('heroActiveVideoQa') !== '1' ||
+          s.mode !== 'play' || !hero || !heroSpecialization || heroSpecialization.snapshot().cooldown > 0) return false
+      // Place real mobs close enough to demonstrate each actual ability. No artificial VFX,
+      // alternate damage routine, immunity or cooldown bypass. Only the capture setup differs.
+      s.mobs = []; s.enemyShots = []; factions?.reset()
+      s.spawnT = 10
+      hero.hp = hero.max
+      hero.inv = 0
+      hero.attack = 1.2
+      for (let i = 0; i < 8; i++) {
+        spawnMob(s)
+        const target = s.mobs[s.mobs.length - 1]
+        if (!target) return false
+        const angle = i * Math.PI / 4 + .18
+        const radius = s.heroId === 'ranger' ? 155 + (i % 3) * 42 : 83 + (i % 3) * 28
+        target.x = hero.x + Math.cos(angle) * radius
+        target.y = hero.y + Math.sin(angle) * radius
+      }
+      hud()
+      return s.mobs.length === 8
     },
     prepareHeroArtEastAttack() {
       const hero = s.hero
