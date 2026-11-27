@@ -481,6 +481,17 @@ try {
           name + ': return navigation clips viewport')
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
+        const uncentered = await archivePage.locator('.es2-archive-card').evaluateAll(cards => cards.flatMap(card => {
+          const slot = card.querySelector(':scope > .es2-archive-art')
+          const art = slot?.firstElementChild
+          if (!slot || !art) return [card.textContent.trim().slice(0, 64)]
+          const a = art.getBoundingClientRect(), b = slot.getBoundingClientRect(), r = card.getBoundingClientRect()
+          const centered = Math.abs((a.left + a.right - r.left - r.right) / 2) <= 1.5 &&
+            Math.abs((a.top + a.bottom - b.top - b.bottom) / 2) <= 1.5 &&
+            a.left >= b.left - 1 && a.right <= b.right + 1
+          return centered ? [] : [card.textContent.trim().slice(0, 64)]
+        }))
+        assert.deepEqual(uncentered, [], name + ': archive artwork must be centered')
         if (await archivePage.getAttribute('data-es2-archive-page') === 'progression') {
           const power = page.locator('[data-hall-inspect="power"]')
           await power.waitFor({ state: 'visible' })

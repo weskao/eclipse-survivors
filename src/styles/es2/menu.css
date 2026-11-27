@@ -821,11 +821,11 @@
 .es2-context-description p{white-space:pre-line;overflow-wrap:anywhere}
 @media (hover:hover) and (pointer:fine){
   .es2-menu .es2-card-info-trigger{display:grid}
-  .es2-context-card>.es2-archive-glyph,.es2-context-card>strong{padding-inline-end:25px}
+  .es2-context-card>strong{padding-inline-end:25px}
   .es2-context-card:hover{border-color:#bba16e}
 }
 @media (hover:none),(pointer:coarse){
-  .es2-context-card>.es2-archive-glyph,.es2-context-card>strong{padding-inline-end:25px}
+  .es2-context-card>strong{padding-inline-end:25px}
 }
 
 /* One wallet surface, one balance; embedded progression uses the hall wallet. */
@@ -1094,11 +1094,11 @@
 }
 
 /* Shared centered archive art slot; atlas previews use the first authentic battle pose. */
-.es2-archive-art{display:grid;place-items:center;width:100%;min-width:0;height:132px}
-.es2-archive-art>img{width:100%;height:100%;max-height:100%;object-fit:contain;object-position:center}
+.es2-archive-art{display:grid;place-items:center;flex:none;width:100%;min-width:0;height:132px;box-sizing:border-box}
+.es2-archive-art>img{display:block;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;object-fit:contain;object-position:center}
 .es2-archive-atlas{display:block;width:min(100%,132px);aspect-ratio:1;background-position:left center;background-repeat:no-repeat}
 .es2-warlock-portrait{filter:hue-rotate(15deg) saturate(1.2)}
-.es2-archive-art>.es2-achievement-icon{margin:auto}
+.es2-archive-art>.es2-achievement-icon{width:64px;height:64px;margin:auto}
 @media(max-width:700px){.es2-archive-art{height:115px}.es2-archive-atlas{width:min(100%,115px)}}
 
 /* ES3 legendary choice: rotating gold foil rim, label shimmer and one shared Pixi aura layer (Es2LegendaryAura). */
