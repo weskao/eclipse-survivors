@@ -159,5 +159,13 @@
       "visualReview": "pending",
       "browserReview": "pending"
     }
-  ]
+  ],
+  "nativeDeathRuntime": {
+    "slime": "enemies/candidates/slime-death-native3x-2026-11-26/slime-death-preferred@3x.webp",
+    "bat": "enemies/candidates/bat-death-native3x-2026-11-26/bat-death-preferred@3x.webp",
+    "goblin": "enemies/candidates/goblin-death-native3x-2026-11-27/goblin-death-preferred@3x.webp",
+    "golem": "enemies/candidates/golem-death-native3x-2026-11-27/golem-death-preferred@3x.webp",
+    "warlock": "enemies/candidates/warlock-death-native3x-2026-11-27/warlock-death-preferred@3x.webp"
+  },
+  "nativeDeathRuntimeNote": "Enabled by owner request for normal gameplay on 2026-11-27. Individual candidate visualReview remains pending; no approval of older mismatched sheets or independent hero art gate."
 }

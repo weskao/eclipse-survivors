@@ -1063,8 +1063,6 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
           : new URLSearchParams(window.location.search).get('es2BossMotionQa') === '2' ? 'sheet'
           : new URLSearchParams(window.location.search).get('es2BossMotionQa') === '1')
         : false,
-      import.meta.env.DEV && typeof window !== 'undefined' &&
-        new URLSearchParams(window.location.search).get('es3EnemyDeathQa') === '1',
     )
     if (factions) {
       assets.factions = factions

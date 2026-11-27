@@ -301,7 +301,7 @@ describe('Hall rank ceremony presentation', () => {
 
 
 it('never compiles a reduced-motion or flashing rule that hides the document root', async () => {
-  const { parse, compileStyle } = await import('@vue/compiler-sfc')
+  const { parse, compileStyle } = await import('vue/compiler-sfc')
   const { readFileSync } = await import('node:fs')
   const source = readFileSync('src/components/es2/progression/ProgressionPanel.vue', 'utf8')
   const { descriptor } = parse(source)

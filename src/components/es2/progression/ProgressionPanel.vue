@@ -149,8 +149,8 @@ const masteryProgress = computed(() => {
 .hall-mastery-track .hall-xp-sheen{position:absolute;inset:0;background:linear-gradient(105deg,transparent 28%,#fff0c7a0 50%,transparent 72%);transform:translateX(-100%);animation:hall-xp-shimmer 1.05s .25s ease-out both}
 @keyframes hall-xp-shimmer{to{transform:translateX(110%)}}
 @media(prefers-reduced-motion:reduce){.hall-mastery-track .hall-xp-sheen{display:none}}
-:global([data-es2-reduce-motion="true"]) .hall-mastery-track i,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track i{transition:none}
-:global([data-es2-reduce-motion="true"]) .hall-mastery-track .hall-xp-sheen,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track .hall-xp-sheen{display:none}
+:global([data-es2-reduce-motion="true"] .hall-mastery-track i),:global([data-es2-reduce-flashing="true"] .hall-mastery-track i){transition:none}
+:global([data-es2-reduce-motion="true"] .hall-mastery-track .hall-xp-sheen),:global([data-es2-reduce-flashing="true"] .hall-mastery-track .hall-xp-sheen){display:none}
 
 .hall-category-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:4px;margin-bottom:12px;border:1px solid #a5885255;border-radius:8px;background:#111c28}
 .hall-category-tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:44px;padding:5px 7px;color:#bfc9d4;background:#1b2a39;border:1px solid #6b7a8545;border-radius:5px;font:600 .8rem/1.3 system-ui;overflow-wrap:anywhere;cursor:pointer}

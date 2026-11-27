@@ -26,12 +26,11 @@ for (const id of LEGACY_DEATH_IDS) {
   if (url) ES3_DEATH_URLS[id] = url
 }
 
-// Native death candidates are never imported into release builds.
-const deathQaLoaders = import.meta.env.DEV
-  ? import.meta.glob('../../../assets/es3/production/enemies/candidates/*/*-death-preferred@3x.webp', {
-    query: '?url', import: 'default',
-  }) as Record<string, () => Promise<string>>
-  : {}
+// The owner requested normal gameplay integration of these five identity-matched
+// atlases. The older mismatched sheets remain blocked by their separate QA gate.
+const nativeDeathUrls = import.meta.glob('../../../assets/es3/production/enemies/candidates/*/*-death-preferred@3x.webp', {
+  eager: true, query: '?url', import: 'default',
+}) as Record<string, string>
 
 /** Preview assets stay out of production; visual QA and explicit opt-in are required. */
 const bossQaLoaders = import.meta.env.DEV
@@ -162,7 +161,7 @@ export interface WorldRuntimeImages {
 }
 
 /** Allocate world and common treasure images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' | 'native' = false, reviewEnemyDeaths = false): WorldRuntimeImages {
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' | 'native' = false, useNativeEnemyDeaths = true): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
@@ -226,20 +225,19 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
     const entry = es3ArtManifest.assets.find(asset => asset.id === id)
     if (url && entry?.status === 'approved' && entry.visualReview === 'approved') enemyDeaths[id] = load(url)
   }
-  if (import.meta.env.DEV && reviewEnemyDeaths) {
+  if (useNativeEnemyDeaths) {
     for (const id of LEGACY_DEATH_IDS) {
-      const matches = Object.keys(deathQaLoaders).filter(path => path.endsWith('/' + id + '-death-preferred@3x.webp'))
-      // Ambiguous or absent candidates must not silently replace canonical art.
-      if (matches.length !== 1) continue
+      const path = es3ArtManifest.nativeDeathRuntime[id]
+      const url = nativeDeathUrls['../../../assets/es3/production/' + path]
+      if (!url) continue
       const fallback = enemyDeaths[id]
       const image = makeImage()
-      const restore = () => {
+      image.onerror = () => {
         if (fallback) enemyDeaths[id] = fallback
         else delete enemyDeaths[id]
       }
-      image.onerror = restore
       enemyDeaths[id] = image
-      void deathQaLoaders[matches[0]!]!().then(url => { image.src = url }).catch(restore)
+      image.src = url
     }
   }
   const legendary = load(WORLD_ART.ui['treasure-legendary'])

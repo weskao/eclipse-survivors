@@ -3,7 +3,7 @@ import { t } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
 import Es2Dialog from './Es2Dialog.vue'
 import Es2ChoiceCards from './Es2ChoiceCards.vue'
-import { WORLD_ART } from '../../../game/render/es2/production-world'
+import { treasureArtUrl } from '../../../game/render/es2/production-world'
 import { CHOICE_ARM_MS, shortcutIndex } from './model'
 import type { ChoiceKind, MenuChoice } from './model'
 const props = defineProps<{ active: boolean; kind: ChoiceKind; items: readonly MenuChoice[]; still?: boolean; tier?: import('../../../game/types').TreasureTier }>()
@@ -13,7 +13,7 @@ const revealSkipped = ref(false)
 const uniqueItems = computed(() => props.items.filter((item, i, all) => all.findIndex(other => other.id === item.id) === i))
 const reveal = computed(() => !props.active || props.still || revealSkipped.value ? undefined : props.kind === 'treasure' ? 'treasure' : props.kind === 'evolution' || uniqueItems.value.some(item => item.evolution && !item.disabled) ? 'evolution' : undefined)
 const revealTier = computed(() => props.tier ?? (uniqueItems.value.some(i => i.cursed) ? 'cursed' : uniqueItems.value.some(i => i.rarity === 'legendary') ? 'legendary' : uniqueItems.value.some(i => i.rarity === 'epic') ? 'epic' : uniqueItems.value.some(i => i.rarity === 'rare') ? 'rare' : 'common'))
-const chestArt = computed(() => WORLD_ART.ui[revealTier.value === 'epic' ? 'treasure-rare' : ('treasure-' + revealTier.value) as keyof typeof WORLD_ART.ui])
+const chestArt = computed(() => treasureArtUrl(revealTier.value))
 const titles: Record<ChoiceKind, string> = { level: '獲得新的命運刻印', evolution: '命運覺醒 · 神兵進化', treasure: '打開遠古秘藏' }
 const captions: Record<ChoiceKind, string> = { level: '選擇一項能力，繼續你的遠征', evolution: '一份傳說之力，改變戰鬥之道', treasure: '選擇並領取一項戰利品' }
 function choose(id: string): void {
@@ -73,9 +73,9 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
 @keyframes es3-seal { from { opacity:.2; transform:translateY(-8px) scale(.82); } to { opacity:1; transform:none; } }
 @media (max-height:480px) { .es3-chest-seal { height:32px; margin-bottom:2px; } }
 @media (prefers-reduced-motion: reduce) { .es3-chest-seal img { animation:none; } }
-:global([data-es2-reduce-motion="true"]) .es3-chest-seal img, :global([data-es2-reduce-flashing="true"]) .es3-chest-seal img { animation:none; filter:none; }
+:global([data-es2-reduce-motion="true"] .es3-chest-seal img), :global([data-es2-reduce-flashing="true"] .es3-chest-seal img) { animation:none; filter:none; }
 .es3-skip-reveal { display: block; margin: .5rem auto 0; }
 @keyframes es3-reveal { from { opacity: .55; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { [data-es3-reveal] :deep(.es2-choice) { animation: none; } .es3-skip-reveal { display: none; } }
-:global([data-es2-reduce-motion="true"]) [data-es3-reveal] :deep(.es2-choice), :global([data-es2-reduce-flashing="true"]) [data-es3-reveal] :deep(.es2-choice) { animation: none; }
+:global([data-es2-reduce-motion="true"] [data-es3-reveal] .es2-choice), :global([data-es2-reduce-flashing="true"] [data-es3-reveal] .es2-choice) { animation: none; }
 </style>
