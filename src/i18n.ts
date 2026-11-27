@@ -1055,6 +1055,7 @@ const english = new Map<string, string>([
 , ["· 速度","· Speed"]
 , ["起始武器 ·","Starting Weapon ·"]
 , ["主動技能 ·","Active Ability ·"]
+, ["主動技能","Active Ability"]
 , ["英雄主動技能","Hero Active Abilities"]
 , ["（冷卻","(Cooldown"]
 , ["秒）","s)"]
