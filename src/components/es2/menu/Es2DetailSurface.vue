@@ -12,6 +12,8 @@ watchPostEffect(onCleanup => {
   if (!el || !anchor) return
   const place = () => {
     const a = anchor.getBoundingClientRect()
+    const board = anchor.closest('.es2-hero-section, .es2-objective-grid, .es2-archive-grid')
+    const boardRect = board?.getBoundingClientRect() ?? a
     const edge = 12, gap = 10
     const vw = document.documentElement.clientWidth
     // A hover dossier must never intercept the fixed expedition action dock.
@@ -28,15 +30,19 @@ watchPostEffect(onCleanup => {
     // Shrink the scrollable panel to the available side before falling back
     // vertically. Clamping a full-size panel after placement can cover its own
     // trigger (especially at 200% zoom), making the card impossible to hover.
-    const side = right >= preferredWidth || (left < preferredWidth && right >= left) ? 'right' : 'left'
-    const sideWidth = side === 'right' ? right : left
+    const outsideRight = Math.max(0, vw - edge - boardRect.right - gap)
+    const outsideLeft = Math.max(0, boardRect.left - gap - edge)
+    const outside = outsideRight >= preferredWidth || outsideLeft >= preferredWidth
+    const side = outside ? (outsideRight >= preferredWidth ? 'right' : 'left') : right >= preferredWidth || (left < preferredWidth && right >= left) ? 'right' : 'left'
+    const sideWidth = outside ? (side === 'right' ? outsideRight : outsideLeft) : side === 'right' ? right : left
     const vertical = sideWidth < Math.min(160, preferredWidth) && Math.max(above, below) > 0
     const useBelow = below >= above
     el.style.boxSizing = 'border-box'
     el.style.maxWidth = Math.max(0, vertical ? preferredWidth : Math.min(preferredWidth, sideWidth)) + 'px'
     el.style.maxHeight = Math.max(0, vertical ? (useBelow ? below : above) : vh - edge * 2) + 'px'
     const p = el.getBoundingClientRect()
-    const x = vertical ? a.left + (a.width - p.width) / 2 : side === 'right' ? a.right + gap : a.left - gap - p.width
+    const boundary = outside ? boardRect : a
+    const x = vertical ? a.left + (a.width - p.width) / 2 : side === 'right' ? boundary.right + gap : boundary.left - gap - p.width
     const y = vertical ? (useBelow ? a.bottom + gap : a.top - p.height - gap) : a.top
     position.value = { left: clamp(x, vw - p.width - edge) + 'px', top: clamp(y, vh - p.height - edge) + 'px', visibility: 'visible' }
   }

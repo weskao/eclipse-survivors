@@ -64,7 +64,6 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
 .es2-objective-chooser h2 { font-size: 1.3rem; margin: 0.35rem 0; }
 .es2-objective-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: 0.7rem; }
 .es2-objective-card-shell { position: relative; display: flex; min-width: 0; }
-@media (hover: hover) and (pointer: fine) { .es2-mode-detail-trigger { display: none; } }
 .es2-objective-choice { width: 100%; display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; padding: 1rem;
   text-align: left; color: inherit; border: 1px solid #6b584c; border-radius: 0.7rem;
   background: #211d2b; cursor: pointer; }

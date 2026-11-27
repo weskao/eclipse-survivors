@@ -717,6 +717,7 @@
 /* One visual language for hero dossiers and expedition briefings. The panel is
    teleported above the lobby but below real modals, never clipped by a card. */
 .es2-hover-details{
+  pointer-events:none; /* Preview only; explicit Info opens the scrollable dialog. */
   position:fixed;z-index:300;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);
   overflow:auto;overscroll-behavior:contain;padding:15px 16px 16px;
   color:#f7e9d1;font-family:Georgia,'Noto Serif TC','PingFang TC',serif;
@@ -735,8 +736,7 @@
 .es2-hover-details .es2-hero-detail-content .es2-hero-stat{border-radius:3px;border-color:#a78d5933;background:#0c1723}
 
 @media (hover:hover) and (pointer:fine){
-  .es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger{display:none}
-  .es2-menu .es2-objective-choice{padding-inline-end:9px}
+  .es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger{display:grid}
 }
 
 /* The hall is a primary destination, not a modal on top of another menu. */
@@ -799,7 +799,8 @@
 .es2-menu .es2-card-info-trigger:focus-visible{position:absolute;outline-offset:-2px}
 .es2-context-description p{white-space:pre-line;overflow-wrap:anywhere}
 @media (hover:hover) and (pointer:fine){
-  .es2-menu .es2-card-info-trigger{display:none}
+  .es2-menu .es2-card-info-trigger{display:grid}
+  .es2-context-card>.es2-archive-glyph,.es2-context-card>strong{padding-inline-end:25px}
   .es2-context-card:hover{border-color:#bba16e}
 }
 @media (hover:none),(pointer:coarse){

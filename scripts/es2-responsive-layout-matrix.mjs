@@ -234,7 +234,7 @@ try {
         delete el.dataset.cursorTestPreviousMotion
       })
       if (hoverCapable) {
-        assert.equal(await page.locator('[data-es2-hero-details]:visible').count(), 0, name + ': desktop detail buttons')
+        assert.equal(await page.locator('[data-es2-hero-details]:visible').count(), 6, name + ': desktop full-detail buttons')
         const card = page.locator('[data-hero="wizard"]')
         const selectedBefore = await page.locator('[data-es2-selected-hero]').getAttribute('data-es2-selected-hero')
         await card.hover()
@@ -248,12 +248,16 @@ try {
         }), name + ': hero tooltip overlaps its own trigger')
         assert.equal(await page.locator('[data-es2-hover-details]').count(), 1)
         assert.equal(await page.locator('[data-es2-selected-hero]').getAttribute('data-es2-selected-hero'), selectedBefore)
-        await page.keyboard.press('Escape')
-        await tip.waitFor({ state: 'hidden' })
+        assert.equal(await tip.evaluate(el => getComputedStyle(el).pointerEvents), 'none', name + ': tooltip must not intercept adjacent cards')
         await page.locator('[data-hero-id="spirit-summoner"]').hover()
         await tip.waitFor({ state: 'visible' })
         assert.match(await tip.innerText(), /靈契召喚師|Spirit Summoner/i)
         assert.ok(inside(await tip.evaluate(rect), width, height), name + ': specialization tooltip clips')
+        await page.locator('[data-es2-hero-details="wizard"]').click()
+        const desktopDetail = page.locator('.es2-dialog[role="dialog"]')
+        await desktopDetail.waitFor({ state: 'visible' })
+        await desktopDetail.locator('.es2-close').click()
+        await desktopDetail.waitFor({ state: 'hidden' })
         await page.keyboard.press('Escape')
         await tip.waitFor({ state: 'hidden' })
         // Keyboard users receive the same details without another tab stop.
@@ -277,7 +281,7 @@ try {
       await page.locator('[data-es2-expedition-navigation]').click()
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
       if (hoverCapable) {
-        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 0)
+        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
         const card = page.locator('[data-objective-mode="boss-rush"]')
         const before = await card.getAttribute('aria-checked')
         await card.hover()
@@ -493,7 +497,7 @@ try {
       const achievement = page.locator('[data-es2-context-card="achievement:first-blood"]')
       const info = achievement.locator('[data-es2-card-info]')
       if (hoverCapable) {
-        assert.equal(await info.isVisible(), false)
+        assert.equal(await info.isVisible(), true)
         await achievement.hover()
         const tip = page.locator('[data-es2-hover-details]')
         await tip.waitFor({ state: 'visible' })

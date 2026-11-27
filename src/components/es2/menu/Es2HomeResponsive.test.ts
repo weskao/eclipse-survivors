@@ -161,7 +161,7 @@ describe('phone homepage viewport-first navigation', () => {
   })
 
   it('provides the accessible per-hero details action', () => {
-    expect(css).toContain('.es2-hero-detail-trigger{display:none}')
+    expect(css).toMatch(/\.es2-hover-details\{[^}]*pointer-events:none/s)
     expect(css).toContain('.es2-menu .es2-hero-detail-trigger')
     expect(css).toContain('.es2-hero-detail-content .es2-hero-stat-strip')
     expect(css).toContain('minmax(0,1fr)')

@@ -296,3 +296,51 @@ Baseline evidence: [ES4 verification 45961478312](https://github.com/weskao/ecli
 ### Hall mastered sound refinement
 - [x] Distinct advanced maximum-rank cue retaining the prior rank's exact musical opening, adding a richer harmonized finale; independent waveform regression verified at 22,050/48,000 Hz, unrelated cues unchanged.
 - [ ] Verify Vitest audio scheduler and full CI; audition the 1.42s mastered cue and 1.60s combined route cue in actual game with music, mobile speakers and headphones.
+
+## Monster / Boss dossier — final 3× WebP art (2026-11-27)
+
+- [ ] Produce 25 boss-specific static WebP dossier icons using the existing `boss-attacks/<id>.svg` as mandatory geometry/palette references. The SVGs remain canonical combat telegraphs; do not replace or resize the combat assets.
+- [ ] Produce 6 dedicated legacy enemy attack WebP icons (currently reuse existing generic skill WebPs). These are a separate improvement, not missing runtime files.
+- [ ] Art QA: preserve the existing dark-fantasy identity, distinct silhouette and phase/attack geometry; transparent alpha, no lettering, no background tile or border, centered subject with ~8–12% transparent padding; high contrast at 44 CSS px; static square 132×132 px (3×44), lossless or high-quality WebP with alpha, no animation. Do not upscale low-resolution source art. Source master may be larger.
+- [ ] Runtime QA: verify each ID resolves to its own new image, image decode succeeds in the actual hover preview and Info dialog, both locales and all viewport profiles. Keep SVG/generic fallback for unproduced art; review images before marking complete.
+
+Boss output directory: `src/assets/es2/production/skills/boss-dossier/`. Each filename is exactly `<id>@3x.webp`; `bossAttackImageSrc` already prefers that path via Vite glob and retains the original SVG fallback. Adding files and rebuilding is sufficient; no combat data, collision, or renderer changes.
+
+| ID / filename stem | Art brief (zh-TW) |
+|---|---|
+| shadow-fan | 紫黑扇形多枚暗影飛刃，亮紫尖端與煙霧軌跡 |
+| darkness-field | 地面深紫腐蝕法陣，暗霧向外擴散 |
+| shadow-cross | 兩道交叉的紫黑能量斬 |
+| abyss-summon | 深淵裂口中冒出暗影爪牙剪影 |
+| abyss-collapse | 紫黑重力核心向內坍縮，碎片被吸入 |
+| shadow-storm | 旋轉暗影風暴，紫色弧線和碎片 |
+| ice-fan | 扇形鋒利冰晶飛矛，冷藍霜霧 |
+| frost-patch | 地面霜凍晶簇與薄冰裂紋 |
+| glacial-ring | 空心冰晶環，中央清楚留空 |
+| rotating-shelter | 冰霜環形危險區與清晰安全扇形缺口 |
+| winter-burst | 冰晶核心向外瞬間爆裂 |
+| ice-storm | 旋轉冰雪暴風，細長冰晶和雪霧 |
+| titan-slam | 熔岩岩拳重擊地面，放射裂紋 |
+| ember-line | 直線橙紅餘燼火浪 |
+| eruption | 熔岩柱從破裂地面噴發 |
+| flame-wave | 弧形橙紅烈焰浪潮 |
+| titan-rage | 怒火包裹的岩石核心，熱浪向外爆發 |
+| radiant-lance | 金白聖光長矛，筆直光束 |
+| light-ring | 金白聖光環，中央留空 |
+| void-fan | 扇形紫黑虛空飛刃與星塵 |
+| shadow-sweep | 寬弧紫黑橫掃斬擊 |
+| twilight-ground | 地面暮光法陣，金紫交錯 |
+| eclipse-wedge | 金紫星蝕扇區，明確楔形邊界 |
+| eclipse-cross | 金紫雙色十字交叉能量 |
+| seraph-finale | 金白與深紫星蝕核心，放射終曲光芒 |
+
+Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`. Each filename is `<id>@3x.webp`. Add a Vite glob URL resolver in `monster-details.ts` before `skillImageSrc(attacks[attack].art)`, preserving the current fallback and the shared original-boss attack IDs. No per-card UI branches. 
+
+| ID / filename stem | Art brief (zh-TW) |
+|---|---|
+| pounce | 史萊姆壓縮彈跳向前撲擊，黏液飛濺 |
+| dive | 蝙蝠收翼高速俯衝，冷色風切線 |
+| jab | 哥布林短兵器向前突刺，銳利斬光 |
+| slam | 巨像岩拳震地，碎石與衝擊環 |
+| bolt | 術士發射單枚紫色魔力彈 |
+| summon | 暗影召喚法陣與爪牙剪影 |
