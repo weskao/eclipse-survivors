@@ -135,6 +135,19 @@ try {
         assert.deepEqual(layout.offenders, [], name + ': choices outside visible menu')
       }
       const verifyDock = async () => {
+        const actionLayout = await page.locator('.es2-expedition-change').evaluate(action => {
+          const label = action.querySelector('.es2-expedition-change-label')
+          const arrow = action.querySelector('.es2-expedition-change-arrow')
+          const a = action.getBoundingClientRect(), l = label.getBoundingClientRect(), r = arrow.getBoundingClientRect()
+          const chunks = [...label.children].map(el => el.getBoundingClientRect())
+          const english = label.matches(':lang(en)')
+          return { center: Math.abs((l.top + l.bottom - r.top - r.bottom) / 2),
+            beside: r.left >= l.right - 1 && r.right <= a.right + 1,
+            aligned: !english || (Math.abs(chunks[0].left - chunks[1].left) <= 1 && chunks[1].top >= chunks[0].bottom - 1),
+            fits: chunks.every(chunk => chunk.right <= l.right + 1) }
+        })
+        assert.ok(actionLayout.center <= 1 && actionLayout.beside && actionLayout.aligned && actionLayout.fits,
+          name + ': dock action alignment ' + JSON.stringify(actionLayout))
         for (const selector of ['[data-es2-expedition-summary]', '[data-es2-mode-summary]', '.es2-start']) {
           const el = page.locator(selector)
           assert.ok(inside(await el.evaluate(rect), width, height), name + ': dock clips ' + selector)

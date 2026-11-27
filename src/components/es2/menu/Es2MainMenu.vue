@@ -73,6 +73,12 @@ const modeBrief = computed(() => t(objectiveSelection.value
 const modeDuration = computed(() => selectedMode.value.duration === null
   ? '∞' : formatDuration(selectedMode.value.duration))
 const page = ref<'heroes' | 'modes'>('heroes')
+// Keep translated phrases intact, but provide semantic wrap points for the dock.
+const expeditionActionLines = computed(() => {
+  const label = t(page.value === 'heroes' ? '變更遠征' : '返回英雄選擇')
+  const space = label.lastIndexOf(' ')
+  return space < 0 ? [label.slice(0, 2), label.slice(2)] : [label.slice(0, space), label.slice(space + 1)]
+})
 function toggleExpeditionPage(): void {
   heroDetails.clear()
   page.value = page.value === 'heroes' ? 'modes' : 'heroes'
@@ -182,7 +188,10 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
               <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
             </span>
           </span>
-          <span class="es2-expedition-change">{{ t(page === 'heroes' ? '變更遠征' : '返回英雄選擇') }} <span aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span></span>
+          <span class="es2-expedition-change">
+            <span class="es2-expedition-change-label"><span v-for="line in expeditionActionLines" :key="line">{{ line }}</span></span>
+            <span class="es2-expedition-change-arrow" aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span>
+          </span>
         </button>
         <button class="es2-primary es2-start es2-portal-start" type="button" data-ui-sfx="managed" @click="emit('start')">
           <span class="es2-portal-sheen" aria-hidden="true"></span>
