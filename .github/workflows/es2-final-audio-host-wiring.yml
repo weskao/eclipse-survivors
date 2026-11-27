@@ -1,7 +1,7 @@
 name: ES2 final audio host TDD verification
 on:
   push:
-    branches: [feature/es2-final-audio-host-wiring, feature/es3-chest-open-reveal]
+    branches: [feature/es2-final-audio-host-wiring, feature/es3-chest-open-reveal, fix/result-background-music]
   workflow_dispatch:
 permissions:
   contents: read
