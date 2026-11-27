@@ -15,10 +15,13 @@ describe('ES2 choice card responsive illustrations', () => {
     expect(picker).toMatch(/@keyframes es3-reveal \{ from \{[^}]*translate:0 8px; scale:\.985;/)
     expect(picker).not.toMatch(/@keyframes es3-reveal[^\n]*transform:/)
   })
-  it('preserves the treasure footer control in reduced motion and short touch landscape', () => {
+  it('reserves a non-shrinking shared reward footer outside the card scrollport, including short touch landscape', () => {
     const picker = readFileSync(resolve(process.cwd(), 'src/components/es2/menu/Es2ChoiceDialog.vue'), 'utf8')
-    expect(picker).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^\n]*\.es2-selection-scene:not\(\.es2-treasure\) \.es3-skip-reveal \{ display: none; \}/)
-    expect(picker).toMatch(/\.es2-selection-scene \.es2-hint:has\(\.es3-skip-reveal\) \{ display:flex;/)
+    expect(picker).toMatch(/<\/div>\s*<template #actions>\s*<p class="es2-hint">/)
+    expect(css).toMatch(/\.es2-dialog-choice > \.es2-dialog-actions\{[^}]*flex:0 0 auto;[^}]*min-width:0/)
+    expect(css).toMatch(/\.es2-dialog-choice > \.es2-dialog-body\{margin-block-end:0\}/)
+    expect(css).toContain('.es2-dialog-choice > .es2-dialog-actions:not(:has(.es3-skip-reveal)){display:none}')
+    expect(picker).not.toMatch(/@media \(prefers-reduced-motion: reduce\)[^\n]*\.es3-skip-reveal/)
   })
   it('reserves image height separately from longer titles and descriptions', () => {
     expect(css).toMatch(/\.es2-card-art\{[^}]*flex:0 0 auto/)
@@ -47,7 +50,7 @@ describe('ES2 choice card responsive illustrations', () => {
       expect(landscape).toMatch(new RegExp(`\\.${cls}[^{]*\\{[^}]*grid-row:${row}[;}]`))
     // Reclaim height for long passive text: flavor subtitle and the keyboard hint (touch) step aside.
     expect(landscape).toMatch(/\.es2-dialog-choice \.es2-dialog-header p\{display:none\}/)
-    expect(css).toMatch(/@media \(orientation:landscape\) and \(max-height:520px\) and \(pointer:coarse\)\{\.es2-dialog-choice \.es2-hint\{display:none\}/)
+    expect(css).toContain('.es2-dialog-choice > .es2-dialog-actions:not(:has(.es3-skip-reveal)){display:none}')
     expect(landscape).not.toContain('height:clamp(50px,16dvh,76px)')
     // Rarity aura spans the whole card; rarity/key badges sit in a reserved band so they never cover the art.
     expect(landscape).toMatch(/\.es2-dialog-choice \.es2-choice\{[^}]*background:[^}]*var\(--es2-card-art-bg\)/)
