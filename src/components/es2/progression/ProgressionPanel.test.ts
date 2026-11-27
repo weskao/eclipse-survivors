@@ -269,6 +269,8 @@ describe('Hall category navigation and touch inspector', () => {
       expect(scroll).not.toHaveBeenCalled()
       expect(wrapper.emitted('research')).toBeUndefined()
       const toggle = dock.get('[data-hall-detail-toggle]')
+      // Same info glyph as the hero/monster card corner button, not a second ring style.
+      expect(toggle.get('.es2-info-glyph').text()).toBe('i')
       expect(toggle.attributes('aria-expanded')).toBe('false')
       await toggle.trigger('click')
       expect(toggle.attributes('aria-expanded')).toBe('true')

@@ -115,7 +115,7 @@ watch(() => props.nodes, (nodes, previous) => {
           </div>
         </div>
         <button type="button" class="hall-detail-toggle" data-hall-detail-toggle data-ui-sfx="select" :aria-controls="bodyId"
-          :aria-expanded="expanded" :aria-label="t(expanded ? '收起節點說明' : '展開節點說明')" @click="expanded = !expanded"><span aria-hidden="true">ⓘ</span></button>
+          :aria-expanded="expanded" :aria-label="t(expanded ? '收起節點說明' : '展開節點說明')" @click="expanded = !expanded"><span class="es2-info-glyph" aria-hidden="true">i</span></button>
       </div>
       <div v-if="active.current !== undefined" class="hall-comparison" :class="{ 'hall-comparison--single': active.next === undefined }">
         <div class="hall-effect" data-hall-current><small>{{ t('目前效果') }}</small><span class="hall-effect-level">Lv. {{ active.rank }}</span><b>{{ active.current }}</b></div>
@@ -295,9 +295,10 @@ watch(() => props.nodes, (nodes, previous) => {
    column where width allows, pinned to the viewport bottom on portrait phones.
    Kept last so these layout rules win over the shared inspector surface above. */
 .hall-detail{z-index:4}
-.hall-detail-toggle{display:none;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid #b99b6566;border-radius:50%;background:#111c28;color:#e9d3ab;font:400 20px/1 system-ui;cursor:pointer}
-.hall-detail-toggle[aria-expanded="true"]{border-color:#e7c58b;background:#2c3540;color:#ffe2ad}
-.hall-detail-toggle:focus-visible{outline:2px solid #ffda94;outline-offset:1px}
+/* 44px transparent hit target around the shared card Info glyph (.es2-info-glyph); no ring of its own. */
+.hall-detail-toggle{display:none;place-items:center;flex:none;width:44px;height:44px;padding:0;margin:0;border:0;background:transparent;cursor:pointer}
+.hall-detail-toggle[aria-expanded="true"] .es2-info-glyph{border-color:#ffe2ad;background:#2c3540}
+.hall-detail-toggle:focus-visible{outline:2px solid #ffda94;outline-offset:-2px;border-radius:6px}
 @media(min-width:600px) and (max-width:739px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(220px,36%)}}
 @media(min-width:600px),(orientation:landscape) and (min-width:560px) and (max-height:520px){
   .hall-detail{position:sticky;top:8px;max-height:calc(100dvh - 16px);overflow-y:auto;overscroll-behavior:contain}

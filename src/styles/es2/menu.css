@@ -837,7 +837,8 @@
   position:absolute;z-index:2;top:0;right:0;width:44px;height:44px;min-height:44px;
   display:grid;place-items:start end;padding:6px;margin:0;border:0;background:transparent;cursor:pointer
 }
-.es2-menu .es2-card-info-trigger>span{
+/* Shared info glyph: card corner Info buttons and the upgrade-hall detail toggle. */
+.es2-info-glyph{
   display:grid;place-items:center;width:24px;height:24px;border:1px solid #bda473;border-radius:50%;
   background:#111d29;color:#ffe5b2;font:italic bold 15px/1 Georgia,serif
 }
