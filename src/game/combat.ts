@@ -37,7 +37,8 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
   const knock = dist(e.x - hero.x, e.y - hero.y) || 1
   e.kx = (e.x - hero.x) / knock
   e.ky = (e.y - hero.y) / knock
-  const impactAngle = Math.atan2(e.ky, e.kx)
+  // Raw delta, not the normalized knockback: dividing first drifts the true force direction by an ULP.
+  const impactAngle = Math.atan2(e.y - hero.y, e.x - hero.x)
   emitHitImpact(s, e.x, e.y - Math.min(30, e.r), e.r, impactAngle, critical, heavy)
   pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical, multiplier: applied / d })
   if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
