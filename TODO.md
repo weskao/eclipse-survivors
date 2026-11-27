@@ -180,5 +180,7 @@ Implementation checkboxes above denote source changes only; actual Chromium matr
 
 Added original deterministic PCM rank (0.74s) and milestone (1.05s) cues using the existing audio context, cached buffer and mute bus; no new audio dependency. Browser matrix now visits the growth board on each existing viewport profile, checks no-spend inspection and captures screenshots. Full runtime verification remains unchecked.
 
-- [ ] Hall motion polish: interpolated rank/XP fill, finite metallic shimmer, newly unlocked route sweep, layered particles and distinct max-rank celebration; respect motion/flashing settings.
+- [x] Hall motion polish: interpolated rank/XP fill, finite metallic shimmer, newly unlocked route sweep, layered particles and distinct max-rank celebration; respect motion/flashing settings.
 - [ ] Fix CI TS2339 in progression regression and confirm typecheck, Hall tests, and responsive gameplay.
+
+Motion polish uses finite CSS-only effects, no continuous animation loop. Added cap, newly revealed connection, rank-progress and cached/muted audio regression tests; type error fixed in test source, CI confirmation pending.

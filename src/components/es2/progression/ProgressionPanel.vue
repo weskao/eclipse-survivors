@@ -108,5 +108,11 @@ const masteryProgress = computed(() => {
 .es2-progression-achievements article strong{font-size:.84rem;flex:1}
 .es2-progression-achievements small{font-size:.75rem}
 @media(prefers-reduced-motion:reduce){.es2-progression-panel *{scroll-behavior:auto;transition:none!important;animation:none!important}}
-.hall-mastery-track{width:100%;height:10px;border:1px solid #90774b;border-radius:8px;background:#0c1722;overflow:hidden}.hall-mastery-track i{display:block;height:100%;background:linear-gradient(90deg,#8b6a3a,#f1d08e)}
+.hall-mastery-track{position:relative;width:100%;height:12px;border:1px solid #90774b;border-radius:8px;background:#0c1722;overflow:hidden}
+.hall-mastery-track i{position:relative;display:block;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,#8b6a3a,#d2a95f 72%,#f1d08e);transition:width .65s cubic-bezier(.17,.76,.23,1)}
+.hall-mastery-track i::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 28%,#fff0c7a0 50%,transparent 72%);transform:translateX(-100%);animation:hall-xp-shimmer 1.05s .25s ease-out both}
+@keyframes hall-xp-shimmer{to{transform:translateX(110%)}}
+@media(prefers-reduced-motion:reduce){.hall-mastery-track i::after{display:none}}
+:global([data-es2-reduce-motion="true"]) .hall-mastery-track i,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track i{transition:none}
+:global([data-es2-reduce-motion="true"]) .hall-mastery-track i::after,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track i::after{display:none}
 </style>

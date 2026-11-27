@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { t } from '../../../i18n'
 import { hallEdges, hallRows, type HallNode } from './hall-model'
 const props = withDefaults(defineProps<{ nodes: readonly HallNode[]; writable?: boolean; tree?: boolean }>(), { writable: true, tree: false })
@@ -10,7 +10,9 @@ const detail = ref<HTMLElement | null>(null)
 const rows = computed(() => props.tree ? hallRows(props.nodes) : [props.nodes])
 const active = computed(() => props.nodes.find(node => node.id === hovered.value)
   ?? props.nodes.find(node => node.id === selected.value) ?? props.nodes[0])
-const upgraded = ref<{ id: string; rank: number } | null>(null)
+const upgraded = ref<{ id: string; rank: number; milestone: boolean; revealed: readonly string[] } | null>(null)
+let celebrationTimer: ReturnType<typeof setTimeout> | undefined
+onBeforeUnmount(() => clearTimeout(celebrationTimer))
 let request: { id: string; rank: number; time: number } | null = null
 let dispatching = false
 const isFine = () => typeof window.matchMedia === 'function' && window.matchMedia('(hover: hover) and (pointer: fine)').matches
@@ -33,11 +35,21 @@ function purchase(node: HallNode) {
   emit('purchase', node)
   void nextTick(() => { dispatching = false })
 }
-watch(() => props.nodes, nodes => {
+watch(() => props.nodes, (nodes, previous) => {
+  if (upgraded.value && nodes.find(node => node.id === upgraded.value?.id)?.rank !== upgraded.value.rank) {
+    upgraded.value = null
+    clearTimeout(celebrationTimer)
+  }
   if (!request) return
   const node = nodes.find(item => item.id === request?.id)
   if (node && node.rank === request.rank + 1 && Date.now() - request.time < 2000) {
-    upgraded.value = { id: node.id, rank: node.rank }
+    const revealed = nodes.flatMap(child => child.requires
+      .filter(req => req.id === node.id && node.rank >= req.rank
+        && (previous.find(parent => parent.id === req.id)?.rank ?? 0) < req.rank)
+      .map(req => req.id + ':' + child.id))
+    upgraded.value = { id: node.id, rank: node.rank, milestone: node.rank === node.maxRank, revealed }
+    clearTimeout(celebrationTimer)
+    celebrationTimer = setTimeout(() => { upgraded.value = null }, 1350)
   }
   request = null
 })
@@ -49,7 +61,7 @@ watch(() => props.nodes, nodes => {
       <template v-for="(row, rowIndex) in rows" :key="rowIndex">
         <div v-if="tree && rowIndex > 0" class="hall-links" aria-hidden="true">
           <div v-for="edge in hallEdges(rows[rowIndex - 1] ?? [], row)" :key="edge.id"
-            :data-hall-edge="edge.id" :data-active="String(edge.active)" class="hall-edge"
+            :data-hall-edge="edge.id" :data-active="String(edge.active)" :data-revealed="String(upgraded?.revealed.includes(edge.id) ?? false)" class="hall-edge"
             :style="{ '--from': edge.from + '%', '--to': edge.to + '%', '--left': Math.min(edge.from, edge.to) + '%', '--width': Math.abs(edge.from - edge.to) + '%' }">
             <i></i><i></i><i></i>
           </div>
@@ -63,7 +75,7 @@ watch(() => props.nodes, nodes => {
             <button type="button" class="hall-inspect" data-ui-sfx="select" :data-hall-inspect="node.id"
               :aria-pressed="active?.id === node.id" @focus="hovered = node.id" @blur="hovered = ''" @click="inspect(node, true)">
               <span class="hall-ring" role="progressbar" :aria-label="t(node.title)" :aria-valuemin="0" :aria-valuemax="node.maxRank" :aria-valuenow="node.rank"
-                :style="{ '--progress': (node.rank / node.maxRank * 100) + '%' }">
+                :style="{ '--hall-rank-progress': (node.rank / node.maxRank * 100) + '%' }">
                 <img :src="node.art" alt="" width="64" height="64" loading="lazy" decoding="async" draggable="false" />
                 <span class="hall-rank">{{ node.rank }} / {{ node.maxRank }}</span>
               </span>
@@ -74,7 +86,10 @@ watch(() => props.nodes, nodes => {
             <button class="hall-buy" type="button" data-ui-sfx="managed" :data-research="node.kind === 'research' ? node.id : undefined"
               :data-equipment="node.kind === 'equipment' ? node.id : undefined" :data-bonus="node.kind === 'bonus' ? node.id : undefined"
               :data-hall-purchase="node.id" :disabled="!canPurchase(node)" @click="purchase(node)">{{ action(node) }}</button>
-            <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" class="hall-upgrade-fx" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" :data-milestone="String(upgraded.milestone)" class="hall-upgrade-fx" aria-hidden="true">
+              <i class="hall-wave"></i><i class="hall-wave"></i><i class="hall-wave"></i>
+              <span class="hall-particles"><i v-for="index in 12" :key="index" :style="{ '--angle': index * 30 + 'deg', '--distance': (index % 3 === 0 ? 62 : 43) + 'px', '--delay': (index % 4) * 22 + 'ms' }"></i></span>
+            </span>
           </article>
         </div>
       </template>
@@ -96,6 +111,7 @@ watch(() => props.nodes, nodes => {
 </template>
 
 <style scoped>
+@property --hall-rank-progress { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
 .hall-growth{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0;font:inherit;color:#ebdfcc}
 .hall-map{min-width:0;padding:clamp(8px,1.5vw,18px);border:1px solid #937a4a66;border-radius:5px 17px;background:radial-gradient(ellipse at 50% 0%,#253747,#101a26 64%);overflow:hidden}
 .hall-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:clamp(6px,1.4vw,18px);align-items:stretch}
@@ -107,7 +123,7 @@ watch(() => props.nodes, nodes => {
 .hall-node[data-selected="true"]{border-color:#e5bd70;box-shadow:inset 0 0 14px #d3a45325}
 .hall-inspect{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;width:100%;min-height:44px;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
 .hall-inspect strong,.hall-node p,.hall-detail{overflow-wrap:anywhere}
-.hall-ring{position:relative;display:grid;place-items:center;width:clamp(62px,9vw,92px);max-width:100%;aspect-ratio:1;border-radius:50%;background:conic-gradient(from 0deg,#f5d28b 0 var(--progress),#46505b var(--progress) 100%);box-shadow:0 0 0 1px #ab946a,0 3px 10px #0008;padding:4px;margin-block:2px 9px}
+.hall-ring{position:relative;display:grid;place-items:center;width:clamp(62px,9vw,92px);max-width:100%;aspect-ratio:1;border-radius:50%;background:conic-gradient(from 0deg,#f5d28b 0 var(--hall-rank-progress),#46505b var(--hall-rank-progress) 100%);box-shadow:0 0 0 1px #ab946a,0 3px 10px #0008;padding:4px;margin-block:2px 9px}
 .hall-ring::before{content:'';position:absolute;inset:4px;background:#0a1521;border:1px solid #9e8656;border-radius:inherit}
 .hall-ring img{position:relative;width:84%;height:84%;object-fit:contain;max-width:64px;max-height:64px}
 .hall-node[data-state="locked"] .hall-ring img{filter:saturate(.35);opacity:.7}
@@ -138,16 +154,34 @@ watch(() => props.nodes, nodes => {
 .hall-comparison div:last-child b{color:#b6e7b7}
 .hall-requirements p{margin-top:4px}
 .hall-success{color:#b6e7b7!important}
+.hall-ring{transition:--hall-rank-progress .62s cubic-bezier(.17,.76,.23,1),box-shadow .25s}
+.hall-ring::after{content:'';position:absolute;inset:4px;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(112deg,transparent 31%,#e7c1841a 43%,#fff0c57a 50%,#e7c1841a 57%,transparent 69%);background-size:240% 100%;background-position:130% 0}
+.hall-node[data-selected="true"] .hall-ring{box-shadow:0 0 0 1px #cfa86c,0 0 15px #d7a85b38}
+.hall-node:has(.hall-upgrade-fx) .hall-ring::after,.hall-inspect:focus-visible .hall-ring::after{animation:hall-shimmer .8s ease-out both}
+@media(hover:hover) and (pointer:fine){.hall-inspect:hover .hall-ring::after{animation:hall-shimmer .78s ease-out both}}
+@keyframes hall-shimmer{0%{opacity:0;background-position:130% 0}20%{opacity:.8}80%{opacity:.65}100%{opacity:0;background-position:-45% 0}}
+.hall-edge[data-revealed="true"] i::after{content:'';position:absolute;inset:0;background:#ffdc94;box-shadow:0 0 8px #f6bd73;transform-origin:top left;animation:hall-route-down .32s ease-out both}
+.hall-edge[data-revealed="true"] i:nth-child(2)::after{animation:hall-route-across .25s .28s ease-out both}
+.hall-edge[data-revealed="true"] i:nth-child(3)::after{animation-delay:.49s}
+@keyframes hall-route-down{0%{transform:scaleY(0);opacity:.85}75%{opacity:.8}100%{transform:scaleY(1);opacity:0}}
+@keyframes hall-route-across{0%{transform:scaleX(0);opacity:.85}75%{opacity:.8}100%{transform:scaleX(1);opacity:0}}
 .hall-upgrade-fx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;border-radius:inherit}
-.hall-upgrade-fx i{position:absolute;left:50%;top:32%;width:72px;aspect-ratio:1;border:2px solid #f7d597;border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:hall-awaken .75s ease-out both}
-.hall-upgrade-fx i:nth-child(2){animation-delay:.1s;border-color:#b9d3db}
-.hall-upgrade-fx i:nth-child(3){width:28px;animation-delay:.16s;border-style:dotted}
+.hall-upgrade-fx::before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#efc98116 47%,#ffe7a94d 50%,transparent 63%);background-size:240% 100%;animation:hall-shimmer .9s ease-out both}
+.hall-wave{position:absolute;left:50%;top:clamp(42px,6vw,65px);width:72px;aspect-ratio:1;border:2px solid #f7d597;border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:hall-awaken .75s ease-out both}
+.hall-wave:nth-child(2){animation-delay:.1s;border-color:#b9d3db}
+.hall-wave:nth-child(3){width:28px;animation-delay:.16s;border-style:dotted}
+.hall-particles{position:absolute;left:50%;top:clamp(42px,6vw,65px);width:0;height:0}
+.hall-particles i{position:absolute;left:0;top:0;width:3px;height:8px;border-radius:2px;background:#ffe4a5;box-shadow:0 0 6px #e9bb76;opacity:0;animation:hall-spark .68s var(--delay) ease-out both}
+.hall-upgrade-fx[data-milestone="true"] .hall-wave{border-width:3px;animation-duration:1.05s}
+.hall-upgrade-fx[data-milestone="true"] .hall-particles i{width:4px;height:11px;--distance:78px!important;animation-duration:.95s}
+.hall-upgrade-fx[data-milestone="true"]::before{animation-duration:1.15s}
 @keyframes hall-awaken{0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}25%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(2.5)}}
+@keyframes hall-spark{0%{opacity:0;transform:rotate(var(--angle)) translateY(-7px) scale(.5)}18%{opacity:.9}100%{opacity:0;transform:rotate(var(--angle)) translateY(calc(-1 * var(--distance))) scale(.15)}}
 @media(hover:hover) and (pointer:fine){.hall-node:hover{border-color:#e5bd70}.hall-buy:hover:not(:disabled){background:linear-gradient(#7a603e,#4d3826)}}
 @media(min-width:900px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(200px,27%)}}
 @media(orientation:landscape) and (min-width:640px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,32%)}.hall-ring{width:60px}.hall-map{padding:6px}.hall-node{padding:6px}.hall-links{height:16px}}
 @media(max-width:360px){.hall-map{padding:5px}.hall-node{padding:5px}.hall-row{gap:5px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
-@media(prefers-reduced-motion:reduce){.hall-upgrade-fx{display:none}.hall-edge i{transition:none}}
-:global([data-es2-reduce-motion="true"]) .hall-upgrade-fx,:global([data-es2-reduce-flashing="true"]) .hall-upgrade-fx{display:none}
-:global([data-es2-reduce-motion="true"]) .hall-edge i,:global([data-es2-reduce-flashing="true"]) .hall-edge i{transition:none}
+@media(prefers-reduced-motion:reduce){.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
+:global([data-es2-reduce-motion="true"]) :is(.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after),:global([data-es2-reduce-flashing="true"]) :is(.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after){display:none!important}
+:global([data-es2-reduce-motion="true"]) :is(.hall-ring,.hall-edge i),:global([data-es2-reduce-flashing="true"]) :is(.hall-ring,.hall-edge i){transition:none!important}
 </style>
