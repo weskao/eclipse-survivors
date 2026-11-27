@@ -16,6 +16,7 @@ import { BALANCE } from './config'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
 import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
+import { createClassicHeroActive, type ClassicHeroActive } from './content/heroes/classic-active'
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
@@ -314,7 +315,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let presentationPolicy: VisualPresentationPolicy | null = null
   let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
-  let heroSpecialization: HeroSpecializationAdapter | null = null
+  let heroSpecialization: HeroSpecializationAdapter | ClassicHeroActive | null = null
   let objectiveRuntime: ObjectiveRuntime | null = null
   const arrivalWarning = () => getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null,
     bosses ? bossIds[bossSequence % bossIds.length]! : null)
@@ -567,7 +568,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       })
       : null
     if (objectiveRuntime) bossSequence = 0
-    heroSpecialization = createHeroRosterAdapter(s, s.heroId, heroHooks, random)
+    heroSpecialization = isSpecializationId(s.heroId)
+      ? createHeroRosterAdapter(s, s.heroId, heroHooks, random)
+      : createClassicHeroActive(s, s.heroId, heroHooks, factions)
     heroSpecialization?.reset()
     // Start decoding the GPU hero pass before the first Q, not on the cast frame.
     if (heroSpecialization) pixiVfx?.warm()

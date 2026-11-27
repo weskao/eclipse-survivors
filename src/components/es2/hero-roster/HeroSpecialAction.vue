@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { HERO_DEFINITIONS, type SpecializationId, type SpecializationSnapshot } from '../../../game/content/heroes'
+import type { SpecializationSnapshot } from '../../../game/content/heroes'
+import { getHeroActiveDefinition } from '../../../game/content/heroes/classic-active'
+import type { HeroId } from '../../../game/types'
 
 const props = withDefaults(defineProps<{
-  heroId: SpecializationId
+  heroId: HeroId
   snapshot: SpecializationSnapshot
   active?: boolean
   joystickSide?: 'left' | 'right'
 }>(), { active: false, joystickSide: 'left' })
 const emit = defineEmits<{ activate: [] }>()
-const hero = computed(() => HERO_DEFINITIONS[props.heroId])
+const hero = computed(() => getHeroActiveDefinition(props.heroId))
 const remaining = computed(() => Number.isFinite(props.snapshot.cooldown) ? Math.max(0, props.snapshot.cooldown) : Infinity)
 const ready = computed(() => props.active && remaining.value === 0)
 const progress = computed(() => Number.isFinite(remaining.value)
@@ -89,6 +91,9 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
   --es2-special-light: #e5dce4;
   --es2-special-panel: #241731;
 }
+.es2-hero-special[data-hero="knight"] { --es2-special-accent: #d8b16d; --es2-special-light: #fff0c0; --es2-special-panel: #35251d; }
+.es2-hero-special[data-hero="ranger"] { --es2-special-accent: #80bd9f; --es2-special-light: #dcf5c0; --es2-special-panel: #17322d; }
+.es2-hero-special[data-hero="wizard"] { --es2-special-accent: #a38ce8; --es2-special-light: #eee0ff; --es2-special-panel: #251b43; }
 .es2-hero-special[data-hero="spirit-summoner"] {
   --es2-special-accent: #85b6b0;
   --es2-special-light: #c3ddd4;
@@ -134,6 +139,8 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 .es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation: es2-special-shadow-slash .55s ease-out 1 both; background: linear-gradient(115deg, transparent 38%, var(--es2-special-accent) 46%, #fff 50%, var(--es2-special-light) 53%, transparent 62%); }
 .es2-hero-special[data-hero="spirit-summoner"] .es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation-name: es2-special-spirit-rise; animation-duration: .7s; background: radial-gradient(ellipse 70% 80% at 50% 100%, var(--es2-special-light), color-mix(in srgb, var(--es2-special-accent) 50%, transparent) 45%, transparent 72%); }
 .es2-hero-special[data-hero="crimson-paladin"] .es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation-name: es2-special-aegis-flare; animation-duration: .6s; background: radial-gradient(ellipse at 50% 50%, transparent 52%, color-mix(in srgb, #e04a5c 45%, transparent) 78%, var(--es2-special-light)); box-shadow: inset 0 0 0 2px var(--es2-special-light); }
+.es2-hero-special[data-hero="knight"] .es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation-name: es2-special-aegis-flare; background: radial-gradient(ellipse, transparent 35%, #d8b16d 75%, #fff0c0); }
+.es2-hero-special[data-hero="wizard"] .es2-hero-special__button[data-flourish] .es2-hero-special__flourish { animation-name: es2-special-spirit-rise; background: radial-gradient(ellipse, #eee0ff, #a38ce8 40%, transparent 75%); }
 .es2-hero-special__button[data-flourish="cast"] .es2-hero-special__flourish { animation-duration: .8s; }
 @keyframes es2-special-shadow-slash { 0% { opacity: 0; transform: translateX(-110%) skewX(-12deg); } 30% { opacity: .95; } 100% { opacity: 0; transform: translateX(110%) skewX(-12deg); } }
 @keyframes es2-special-spirit-rise { 0% { opacity: 0; transform: translateY(45%); } 40% { opacity: .85; } 100% { opacity: 0; transform: translateY(-35%); } }

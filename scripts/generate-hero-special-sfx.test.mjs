@@ -34,7 +34,7 @@ test('all cinematic hero samples are distinct stereo PCM with bounded peaks and 
     rendered.push(file)
   }
   assert.deepEqual(Object.keys(HERO_SFX_DURATION),
-    ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution'])
+    ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution', 'knight-special', 'ranger-special', 'wizard-special'])
   for (let i = 0; i < rendered.length; i++)
     for (let j = i + 1; j < rendered.length; j++) assert.ok(!rendered[i].equals(rendered[j]))
 })

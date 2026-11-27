@@ -8,6 +8,7 @@ export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, 'hero-select': .26, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, boss: 0.8, bossDefeat: 0.8,
   hurt: 0.28, 'hurt-heavy': .34, 'hurt-critical': .39, 'hurt-extreme': .48, pickup: 0.16, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
+  'knight-special': .65, 'ranger-special': .55, 'wizard-special': .8,
   'shadowblade-special': 0.55, 'spirit-summoner-special': 0.9, 'crimson-paladin-special': 0.75, 'crimson-paladin-retribution': 0.6,
 }
 
@@ -44,6 +45,9 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   frost: [[81, 0, 0.3, 0.035, 'sine'], [88, 0.1, 0.46, 0.03, 'triangle']],
   meteor: [[45, 0, 0.39, 0.067, 'sawtooth'], [52, 0.08, 0.34, 0.042, 'triangle']],
   vortex: [[52, 0, 0.5, 0.06, 'triangle'], [59, 0.16, 0.5, 0.033, 'sine']],
+  'knight-special': [[35, 0, .32, .08, 'triangle'], [53, .015, .25, .05, 'sawtooth'], [74, .055, .4, .035, 'triangle'], [60, .16, .55, .03, 'sine']],
+  'ranger-special': [[82, 0, .12, .045, 'triangle'], [86, .075, .17, .04, 'triangle'], [91, .15, .22, .045, 'sine'], [60, .22, .38, .035, 'triangle']],
+  'wizard-special': [[48, 0, .45, .06, 'triangle'], [67, .06, .35, .04, 'sine'], [31, .22, .4, .07, 'sawtooth'], [79, .26, .65, .035, 'sine']],
   // Shadow: sharp paired blade accents and a descending, dark afterimage.
   'shadowblade-special': [[43, 0, 0.22, 0.078, 'triangle'], [88, 0, 0.09, 0.035, 'sawtooth'], [76, 0.075, 0.13, 0.043, 'sawtooth'], [57, 0.14, 0.25, 0.04, 'triangle'], [31, 0.19, 0.3, 0.045, 'sine']],
   // Spirit: rising spectral layers converge into a soft, airy resonance.

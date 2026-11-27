@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { getHeroActiveDefinition } from '../../../game/content/heroes/classic-active'
 import { t } from '../../../i18n'
 import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
 import { PRODUCTION_HERO_POSE_SOURCES } from '../../../game/render/es2/production-heroes'
@@ -20,6 +21,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ select: []; details: []; keydown: [event: KeyboardEvent] }>()
 const specialization = computed(() => isSpecializationId(props.heroId) ? HERO_DEFINITIONS[props.heroId] : null)
+const activeSkill = computed(() => getHeroActiveDefinition(props.heroId))
 const accessibleName = computed(() => {
   const hero = specialization.value
   const parts = [t(props.name), t(props.subtitle)]
@@ -50,12 +52,14 @@ const accessibleName = computed(() => {
         <HeroStats class="es2-roster__stats" :data-es2-classic-preview="specialization ? undefined : ''" :stats="stats" />
         <template v-if="specialization">
           <span class="es2-roster__gear">{{ t("起始武器 ·") }} {{ t(specialization.startingEquipment) }}</span>
-          <span class="es2-roster__skill">
-            <img data-hero-skill-icon class="es2-roster__skill-icon" :src="specialization.specialIconSrc"
+        </template>
+        <span class="es2-roster__skill">
+            <img data-hero-skill-icon class="es2-roster__skill-icon" :src="activeSkill.specialIconSrc"
               :alt="t('{name} 主動技能圖示', { name: t(name) })" width="44" height="44"
               loading="lazy" decoding="async" draggable="false" />
-            <span>{{ t("主動技能 ·") }} {{ t(specialization.special, specialization.specialParams) }}{{ t("（冷卻") }} {{ specialization.specialCooldown }} {{ t("秒）") }}</span>
+            <span>{{ t("主動技能 ·") }} {{ t(activeSkill.special, activeSkill.specialParams) }}{{ t("（冷卻") }} {{ activeSkill.specialCooldown }} {{ t("秒）") }}</span>
           </span>
+        <template v-if="specialization">
           <span class="es2-roster__traits">{{ t("優勢 ·") }} {{ t(specialization.strengths.join(' / ')) }}</span>
           <span class="es2-roster__traits">{{ t("弱點 ·") }} {{ t(specialization.weaknesses.join(' / ')) }}</span>
         </template>

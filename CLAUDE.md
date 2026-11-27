@@ -55,3 +55,7 @@ make verify   # pnpm test, pnpm typecheck, pnpm build, pnpm check-release, on th
 ```
 
 `make help` lists every target; the `##` annotation on each Makefile target is the single source, so describe a new target there, not here.
+
+## Mandatory active skill for every playable hero
+
+Every current or newly added playable hero must define one distinct active skill from day one. Reuse `getHeroActiveDefinition`, engine `activateHeroSpecial`, shared hero selection card, detail surface and `HeroSpecialAction` (Q / touch / cooldown / ready and cast transitions). Keep identity and save compatibility; externalize balance values; validate normal and faction enemies via authoritative hit paths. Require a dedicated role-specific 3× WebP icon, bounded GPU choreography and Canvas fallback, reduced motion/flashing, one original reproducible cinematic SFX via the shared audio owner, bilingual descriptions, success/rejection/cooldown/pause/reset tests, and desktop/mobile gameplay visual/audio QA. Never mark art or audio QA complete without actual inspection. Do not duplicate UI or introduce a new audio/rendering loop.

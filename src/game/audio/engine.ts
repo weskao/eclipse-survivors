@@ -95,7 +95,7 @@ const SFX_GAIN = 0.52
 const BATTLE_GAIN = 1.25
 const clampVolume = (value: number, fallback: number): number =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
-const HERO_CAST_CUES = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution'] as const
+const HERO_CAST_CUES = ['knight-special', 'ranger-special', 'wizard-special', 'shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution'] as const
 const MAX_SFX_PER_100MS = 8
 const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'hurt-heavy', 'hurt-critical', 'hurt-extreme', 'boss', 'bossDefeat', 'victory', 'defeat',
   ...HERO_CAST_CUES])

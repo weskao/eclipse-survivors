@@ -22,6 +22,7 @@ export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'hero-select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'boss' | 'bossDefeat' | 'hurt' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'pickup'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
+  | 'knight-special' | 'ranger-special' | 'wizard-special'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special' | 'crimson-paladin-retribution'
 
 export interface JobDef { label: string; hp: number; speed: number; damage: number; delay: number; range: number }

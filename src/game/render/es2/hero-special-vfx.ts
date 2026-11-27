@@ -6,7 +6,7 @@ import oathWardUrl from '../../../assets/es2/production/skills/oath-ward.svg?url
 import oathRaysUrl from '../../../assets/es2/production/skills/oath-rays.svg?url'
 
 /** Cosmetic world-space texture passes; gameplay hitboxes remain simulation-owned. */
-export type HeroSpecialFxKind = 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin'
+export type HeroSpecialFxKind = 'hero-knight' | 'hero-ranger' | 'hero-wizard' | 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin'
 type Texture = 'rift' | 'flame' | 'guardian' | 'ward' | 'rays'
 const SOURCES: Record<Texture, string> = {
   rift: shadowRiftUrl, flame: spiritFlameUrl, guardian: spiritGuardianUrl, ward: oathWardUrl, rays: oathRaysUrl,
@@ -141,6 +141,36 @@ export function drawHeroSpecialFx(
   // The explicit preload runs when render assets are mounted; keep a visible fallback on decode failures.
   ctx.translate(0, -24)
   switch (kind) {
+    case 'hero-knight': {
+      const a = Math.max(.1, 1 - progress)
+      sprite(ctx, 'rays', 0, -30, 340, 290, a * .6)
+      for (let i = 0; i < (reducedMotion ? 2 : 4); i++) sprite(ctx, 'rift', 0, 20, 180 + bloom * 220, 130 + bloom * 110, a * .85, i * TAU / 4 + bloom * .55)
+      ctx.strokeStyle = '#e8c084'; ctx.lineWidth = 4
+      ctx.beginPath(); ctx.ellipse(0, 24, 30 + bloom * 160, 18 + bloom * 80, 0, 0, TAU); ctx.stroke()
+      dust(ctx, particleCount, 190, bloom, '#e8c084')
+      break
+    }
+    case 'hero-ranger': {
+      const a = Math.max(.12, 1 - progress)
+      for (let i = 0; i < (reducedMotion ? 2 : 3); i++) sprite(ctx, 'rays', 0, -12, 125 + bloom * 55, 145, a * .65, (i - 1) * .5)
+      ctx.strokeStyle = '#c1e7a9'; ctx.lineWidth = 3
+      ctx.beginPath(); ctx.moveTo(-26, 14); ctx.bezierCurveTo(-55, -75, 53, -75, 26, 14); ctx.stroke()
+      dust(ctx, particleCount, 110, bloom, '#c1e7a9')
+      break
+    }
+    case 'hero-wizard': {
+      const a = Math.max(.12, 1 - progress)
+      for (let i = 0; i < (reducedMotion ? 2 : 4); i++) {
+        const angle = i * TAU / 4 + (reducedMotion ? 0 : progress * 2)
+        const radius = 120 * (1 - bloom)
+        sprite(ctx, 'flame', Math.cos(angle) * radius, Math.sin(angle) * radius * .65, 120 + bloom * 120, 160 + bloom * 80, a * .75, angle)
+      }
+      sprite(ctx, 'rays', 0, -10, 180 + bloom * 260, 210 + bloom * 220, a * .7)
+      ctx.strokeStyle = '#b9a2ff'; ctx.lineWidth = 4
+      ctx.beginPath(); ctx.ellipse(0, 10, 15 + bloom * 220, 10 + bloom * 115, 0, 0, TAU); ctx.stroke()
+      dust(ctx, particleCount, 240, bloom, '#b9a2ff')
+      break
+    }
     case 'hero-shadowblade': shadowblade(ctx, progress, bloom, particleCount, reducedMotion); break
     case 'hero-spirit-summoner': summoner(ctx, progress, bloom, particleCount, reducedMotion); break
     case 'hero-crimson-paladin': paladin(ctx, progress, bloom, particleCount, reducedMotion); break

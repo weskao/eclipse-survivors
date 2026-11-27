@@ -17,7 +17,6 @@ import { t, applyDocumentLocale } from './i18n'
 import HeroSpecialAction from './components/es2/hero-roster/HeroSpecialAction.vue'
 import ModeProgress from './components/es2/modes/ModeProgress.vue'
 import WorldEventPanel from './components/es2/world-event-ui/WorldEventPanel.vue'
-import { isSpecializationId } from './game/content/heroes'
 import type { CombatHudActions, CombatHudFeed } from './components/es2/hud/model'
 import Es2MenuSystem from './components/es2/menu/Es2MenuSystem.vue'
 import Es2CloudAccount from './components/es2/menu/Es2CloudAccount.vue'
@@ -184,7 +183,7 @@ onBeforeUnmount(() => {
     </template>
   </CombatHud>
   <HeroSpecialAction
-    v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
+    v-if="ui.heroSpecial"
     :hero-id="ui.heroId"
     :snapshot="ui.heroSpecial"
     :joystick-side="accessibilityPreferences.joystickSide"

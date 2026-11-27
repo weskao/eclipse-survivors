@@ -5,7 +5,7 @@ import type { ParticleKind } from './choreography'
  * (elapsed, life, struck targets) so the GPU pass can rebuild a frame from the simulation clock
  * without retaining particles. Coordinates are relative to the cast centre (hero chest).
  */
-export type HeroSpecialKind = 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin'
+export type HeroSpecialKind = 'hero-knight' | 'hero-ranger' | 'hero-wizard' | 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin'
 export type HeroArtTexture = 'rift' | 'flame' | 'guardian' | 'ward' | 'rays'
 export interface HeroCast {
   kind: HeroSpecialKind
@@ -32,9 +32,10 @@ const ease = (v: number) => { const t = clamp(v); return t * t * (3 - 2 * t) }
 const SHADOW_FIRST = 0.04, SHADOW_STEP = 0.13, CUT_LIFE = 0.45
 const SPIRIT_GATHER = 0.22, SPIRIT_ARRIVE = 0.45
 // Reduced motion freezes each cast on its most readable key pose.
-const STILL: Record<HeroSpecialKind, number> = { 'hero-shadowblade': 0.36, 'hero-spirit-summoner': 0.5, 'hero-crimson-paladin': 1 }
+const STILL: Record<HeroSpecialKind, number> = { 'hero-knight': .32, 'hero-ranger': .27, 'hero-wizard': .48, 'hero-shadowblade': 0.36, 'hero-spirit-summoner': 0.5, 'hero-crimson-paladin': 1 }
 
 export function heroStrikeTime(kind: HeroSpecialKind, i: number): number {
+  if (kind === 'hero-ranger') return .06 + i * .08
   if (kind === 'hero-shadowblade') return SHADOW_FIRST + SHADOW_STEP * i
   return kind === 'hero-spirit-summoner' ? SPIRIT_ARRIVE : 0.35
 }
@@ -129,6 +130,35 @@ export function heroArtPose(out: HeroPose, c: HeroCast, slot: number): boolean {
     }
     return false
   }
+  if (c.kind === 'hero-knight') {
+    const u = ease(e / .3), release = 1 - ease((e - .28) / .65)
+    if (slot === 0) return set(out, 0, 18, 0, 140 + u * 250, 100 + u * 150, .6 * release * fade, 0xffd18b, 'rays', true, r)
+    if (slot < 5) return set(out, 0, 18, slot * TAU / 4 + u * .5, 130 + u * 230, 100 + u * 110, .9 * release * fade, 0xffc078, 'rift', true, r)
+    return false
+  }
+  if (c.kind === 'hero-ranger') {
+    if (slot < 6) {
+      const i = slot >> 1, target = c.targets[i]
+      if (!target) return false
+      const local = e - heroStrikeTime(c.kind, i)
+      if (local < 0 || local > .6) return false
+      const u = ease(local / .24), angle = Math.atan2(target.y, target.x)
+      if (slot % 2 === 0) return set(out, target.x * u, target.y * u, angle + Math.PI / 2, 28, 115, (1 - ease((local - .24) / .36)) * fade, 0xd8ffb0, 'rift', true, r)
+      return set(out, target.x, target.y, angle, 90, 90, Math.sin(Math.PI * ease((local - .15) / .45)) * fade, 0xeaffc7, 'rays', true, r)
+    }
+    if (slot === 6) return set(out, 0, 0, 0, 110, 110, .65 * (1 - ease(e / .6)) * fade, 0xa9e9b5, 'rays', true, r)
+    return false
+  }
+  if (c.kind === 'hero-wizard') {
+    const collapse = ease(e / .42), release = ease((e - .42) / .33), tail = 1 - ease((e - .66) / .7)
+    if (slot === 0) return set(out, 0, 0, 0, 125 + release * 325, 140 + release * 280, .8 * tail * fade, 0xa384ff, 'rays', true, r)
+    if (slot < 5) {
+      const a = slot * TAU / 4 + e * 2, rad = 135 * (1 - collapse) + release * 70
+      return set(out, Math.cos(a) * rad, Math.sin(a) * rad * .65, a, 85 + collapse * 85, 100 + release * 115, .8 * tail * fade, 0xc0a2ff, 'flame', true, r)
+    }
+    if (slot === 5) return set(out, 0, 0, 0, 96 + collapse * 50, 96 + collapse * 50, .8 * tail * fade, 0x2c174f, 'void', false, r)
+    return false
+  }
   // Crimson Paladin: raise → cast → dim hold (ward + orbiting runes) → retribution shatter outward.
   const raise = ease(e / 0.35), shatter = shatterOf(c), level = aegisLevel(c, e)
   const bursting = !r && c.life <= AEGIS_SHATTER
@@ -180,6 +210,15 @@ export function heroMotePose(out: HeroPose, c: HeroCast, slot: number): boolean 
     const rad = (16 + (slot % 5) * 7) * (1 - u * 0.3)
     return set(out, Math.cos(a) * rad, Math.sin(a) * rad * 0.4 - 10 - u * 40, 0, 8, 8,
       Math.sin(Math.PI * u) * 0.9 * fade, 0x8ff0e6, 'mist', true, false)
+  }
+  if (c.kind === 'hero-knight' || c.kind === 'hero-ranger' || c.kind === 'hero-wizard') {
+    const wizard = c.kind === 'hero-wizard', ranger = c.kind === 'hero-ranger'
+    const local = e - (wizard ? .36 : .06) - (slot % 6) * .025, u = local / .7
+    if (u < 0 || u > 1) return false
+    const t = ranger && c.targets.length ? c.targets[slot % c.targets.length] : undefined
+    const rad = u * (ranger ? 40 : wizard ? 220 : 170) * (.55 + (slot % 5) * .1)
+    return set(out, (t?.x ?? 0) + Math.cos(a) * rad, (t?.y ?? 0) + Math.sin(a) * rad * .65 - u * 28,
+      a, 6 + slot % 3, 11 + slot % 4, (1 - u) * .82 * fade, wizard ? 0xc3a5ff : ranger ? 0xcaf7ac : 0xffbd6c, wizard ? 'void' : ranger ? 'feather' : 'ember', true, false)
   }
   const shatter = shatterOf(c)
   const local = (e + slot * 0.137) % 1.2
