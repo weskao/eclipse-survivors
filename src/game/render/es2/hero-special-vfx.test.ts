@@ -18,6 +18,9 @@ const mob = (x: number, y: number): Mob => ({
 })
 
 const specials = [
+  ['knight', 'hero-knight', '#e8c084'],
+  ['ranger', 'hero-ranger', '#c1e7a9'],
+  ['wizard', 'hero-wizard', '#b9a2ff'],
   ['shadowblade', 'hero-shadowblade', '#c3b5c6'],
   ['spirit-summoner', 'hero-spirit-summoner', '#a0d9d6'],
   ['crimson-paladin', 'hero-crimson-paladin', '#d6b580'],
@@ -50,7 +53,7 @@ function canvas() {
   return { ctx, calls }
 }
 
-describe('three hero Q specials cinematic visuals', () => {
+describe('six hero Q specials cinematic visuals', () => {
   it.each(specials)('%s only emits a dedicated bounded effect on a successful Q activation', (hero, kind) => {
     const engine = createEngine({ audio: audio() })
     engine.selectHero(hero)

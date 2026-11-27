@@ -7,7 +7,7 @@ import HeroRoster from './HeroRoster.vue'
 import HeroSpecialAction from './HeroSpecialAction.vue'
 import Es2MainMenu from '../menu/Es2MainMenu.vue'
 import { getLocale, setLocale, t } from '../../../i18n'
-import { HERO_DEFINITIONS } from '../../../game/content/heroes'
+import { getHeroActiveDefinition } from '../../../game/content/heroes/classic-active'
 
 const instances: Array<{ unmount(): void }> = []
 function render(component: Component, props: Record<string, unknown>) {
@@ -175,7 +175,12 @@ describe('ES2 shared homepage hero selection interaction', () => {
 })
 
 describe('ES2 dedicated hero special action', () => {
-  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
+  it('shows a skill icon on every hero card in the shared main menu', () => {
+    const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
+    expect(wrapper.findAll('img[data-hero-skill-icon]')).toHaveLength(6)
+  })
+
+  it.each(['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
     'keeps %s cast content and cooldown decoration in separate stable layout layers', async heroId => {
       const previous = getLocale()
       const snapshot = { cooldown: 0, stealth: 0, barrier: 0, companions: [] }
@@ -207,7 +212,7 @@ describe('ES2 dedicated hero special action', () => {
     },
   )
 
-  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
+  it.each(['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
     '%s plays one silent ready flourish and one cast flourish per real transition',
     async heroId => {
       const snapshot = { cooldown: 3, stealth: 0, barrier: 0, companions: [] }
@@ -219,7 +224,7 @@ describe('ES2 dedicated hero special action', () => {
       expect(button.attributes('data-flourish')).toBe('ready')
       await wrapper.get('.es2-hero-special__flourish').trigger('animationend')
       expect(button.attributes('data-flourish')).toBeUndefined()
-      await wrapper.setProps({ snapshot: { ...snapshot, cooldown: HERO_DEFINITIONS[heroId].specialCooldown } })
+      await wrapper.setProps({ snapshot: { ...snapshot, cooldown: getHeroActiveDefinition(heroId).specialCooldown } })
       expect(button.attributes('data-flourish')).toBe('cast')
       await wrapper.setProps({ snapshot: { ...snapshot, cooldown: 2 } })
       expect(button.attributes('data-flourish')).toBe('cast')

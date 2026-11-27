@@ -83,7 +83,7 @@ describe('hero special GPU choreography', () => {
   })
 
   it('reduced motion keeps a static readable pose, dim alpha and no particles', () => {
-    for (const kind of ['hero-shadowblade', 'hero-spirit-summoner', 'hero-crimson-paladin'] as const) {
+    for (const kind of ['hero-knight', 'hero-ranger', 'hero-wizard', 'hero-shadowblade', 'hero-spirit-summoner', 'hero-crimson-paladin'] as const) {
       expect(heroMoteBudget(true, 'high')).toBe(0)
       const a = art(cast(kind, 0.2, 0.9, true)), b = art(cast(kind, 0.6, 0.6, true))
       expect(a.length).toBeGreaterThan(0)
@@ -95,7 +95,7 @@ describe('hero special GPU choreography', () => {
   it('is bounded and finite for every quality, phase and empty target list', () => {
     expect(heroMoteBudget(false, 'low')).toBeLessThan(heroMoteBudget(false, 'medium'))
     expect(heroMoteBudget(false, 'high')).toBe(HERO_MOTE_SLOTS)
-    for (const kind of ['hero-shadowblade', 'hero-spirit-summoner', 'hero-crimson-paladin'] as const) {
+    for (const kind of ['hero-knight', 'hero-ranger', 'hero-wizard', 'hero-shadowblade', 'hero-spirit-summoner', 'hero-crimson-paladin'] as const) {
       for (let e = 0; e <= 3.5; e += 0.07) {
         for (const list of [[], targets]) {
           const c: HeroCast = { kind, elapsed: e, life: Math.max(0.01, 3.5 - e), targets: list, reduced: false }
