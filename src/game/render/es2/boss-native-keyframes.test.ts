@@ -285,7 +285,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(selectBossNativeKeyframe(death)).toBe('frostDeath')
     for (const state of [awakening, death]) {
       expect(selectBossNativeKeyframe(earlier(state, 1))).toBeNull()
-      expect(selectBossNativeKeyframe(earlier(state, 2))).toBeNull()
+      expect(selectBossNativeKeyframe(earlier(state, 2))).toBe(state === awakening ? 'abyssAwakeningPhase2' : null)
       expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, pose: 'idle' } })).toBeNull()
       expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: NaN } })).toBeNull()
       expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: 1.1 } })).toBeNull()
@@ -369,6 +369,25 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     const failed = { complete: true, naturalWidth: 0, naturalHeight: 1407 } as HTMLImageElement
     registerBossNativeKeyframe(failed, 'frostAwakening')
     expect(drawBossNativeKeyframe(ctx, failed, state, 300)).toBe(false)
+    expect(calls).toHaveLength(1)
+  })
+  it('reviews Batch 25 Abyss phase 2 transformation without replacing phase 3 art', () => {
+    const base = snapshot('transform', 'shadow-fan', 'abyss-monarch')
+    const state: BossSnapshot = { ...base, phase: 2, bodyMotion: { ...base.bodyMotion!, phase: 2 } }
+    expect(selectBossNativeKeyframe(state)).toBe('abyssAwakeningPhase2')
+    expect(selectBossNativeKeyframe(base)).toBe('abyssAwakening')
+    expect(selectBossNativeKeyframe({ ...state, phase: 1, bodyMotion: { ...state.bodyMotion!, phase: 1 } })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, pose: 'idle' } })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, id: 'frost-sovereign' })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: NaN } })).toBeNull()
+    const image = { complete: true, naturalWidth: 1376, naturalHeight: 1263 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'abyssAwakeningPhase2')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1376, 1263, -160.875, -300.5, 344, 315.75])
+    expect(drawBossNativeKeyframe(ctx, image, base, 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
     expect(calls).toHaveLength(1)
   })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
