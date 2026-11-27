@@ -6,7 +6,8 @@ Implementation branch: `feature/es2-release-readiness-integration`. One Web Audi
 | --- | --- | --- |
 | Ordinary click, toggle, dropdown trigger, HUD info open/close, close or cancel dialog | `ui` | Delegated DOM click, including keyboard |
 | Desktop hover across a new button (not its children) | `hover` | Delegated pointerover; limited by shared cooldown |
-| Hero selection (original and special), run mode change | `select` | Engine validated command |
+| Hero selection (original and special) | `hero-select` | Engine validated command; original cached 440 ms bronze/arcane Foley |
+| Run mode change | `select` | Engine validated command |
 | Local archive tabs, dropdown option, and non-gameplay selection | `select` | `data-ui-sfx="select"` |
 | Shadowblade — Shadow Assault (影襲), Q / touch | `shadowblade-special` | Successful hero cast; paired blade accents, dark pulse |
 | Spirit Summoner — 靈潮集結, Q / touch | `spirit-summoner-special` | Successful hero cast; rising spectral resonance |
@@ -21,6 +22,10 @@ Implementation branch: `feature/es2-release-readiness-integration`. One Web Audi
 | World event opening, returning home, irreversible progress reset | `scene` | Engine |
 | Victory / defeat | `victory` / `defeat` | Engine |
 | Volume slider drag, movement joystick, scroll, disabled buttons | Silent | Deliberate restraint |
+
+## Hero selection confirmation
+
+All heroes share one original 440 ms bronze latch, E-minor arcane resonance and damped room tail, rendered deterministically into one cached mono PCM buffer per shared AudioContext (`hero-select-sample.ts`, peak 0.42). Existing short generic selection remains for modes, cosmetics and details. Explicit hero clicks/reselects and keyboard actions use the validated engine command; restoration and rejected commands stay silent. Shared 260 ms cooldown, mute and volume controls apply; bounded synth fallback only if PCM playback fails. Desktop/mobile listening QA is required.
 
 ## Cinematic hero cast assets
 

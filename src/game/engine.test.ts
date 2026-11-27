@@ -207,10 +207,27 @@ describe('home selection persistence', () => {
 })
 
 describe('engine commands fire the original cues', () => {
-  it('select → spotlight choice + select cue', () => {
+  it('select → spotlight choice + dedicated hero-select cue', () => {
     engine.selectJob('ranger')
     expect(engine.ui.choice).toBe('ranger')
-    expect(audio.cues).toEqual(['select'])
+    expect(audio.cues).toEqual(['hero-select'])
+  })
+
+  it.each(['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)('plays one confirmation for %s, including an explicit reselect', hero => {
+    engine.selectHero(hero)
+    expect(engine.ui.heroId).toBe(hero)
+    expect(audio.cues).toEqual(['hero-select'])
+    engine.selectHero(hero)
+    expect(audio.cues).toEqual(['hero-select', 'hero-select'])
+  })
+
+  it('does not confirm an invalid or in-combat hero selection', () => {
+    engine.selectHero('invalid' as never)
+    expect(audio.cues).toEqual([])
+    engine.start()
+    audio.cues.length = 0
+    engine.selectHero('ranger')
+    expect(audio.cues).toEqual([])
   })
 
   it('start → play mode, 12 mobs, start cue, hud filled', () => {
@@ -525,7 +542,7 @@ describe('keyboard and focus', () => {
     b.dataset.uiSfx = 'managed'
     b.addEventListener('click', () => engine.selectJob('ranger'))
     b.click()
-    expect(audio.cues).toEqual(['select'])
+    expect(audio.cues).toEqual(['hero-select'])
     b.remove()
   })
 

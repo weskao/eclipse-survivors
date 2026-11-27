@@ -251,6 +251,30 @@ describe('playSfx', () => {
     expect(ctx.oscillators).toHaveLength(0)
   })
 
+  it('plays one cached hero confirmation sample with no generic tone, and honors cooldown and mute', () => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 10
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const sample = ctx.sources[0]!.buffer
+    expect(sample?.duration).toBeCloseTo(.44, 3)
+    ctx.currentTime = 10.1
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(1)
+    ctx.currentTime = 10.3
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(2)
+    expect(ctx.sources[1]!.buffer).toBe(sample)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 11
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(2)
+    expect(created).toBe(1)
+  })
+
   it('plays one oscillator per tone with the original pitch math', () => {
     const audio = make()
     audio.wake()
