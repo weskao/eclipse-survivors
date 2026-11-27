@@ -320,6 +320,58 @@ describe('ES2 final host audio wiring', () => {
     } finally { audio.dispose() }
   })
 
+  it.each(['victory', 'defeat'] as const)('starts the real %s result BGM on settlement, independently of SFX and rendering', outcome => {
+    const { audio, bgm, context, menu, created } = setup()
+    const engine = createEngine({ audio, contentPacks: [] })
+    const selectTheme = vi.spyOn(audio, 'setResultTheme')
+    const tick = vi.spyOn(audio, 'tick')
+    try {
+      engine.selectRunMode('standard')
+      engine.start()
+      audio.setSfxVolume(0)
+      const state = engine.state
+      state.spawnT = 9999
+      state.mobs = []
+      state.hero!.attack = 10
+      if (outcome === 'victory') {
+        state.time = DURATION - 0.01
+        state.bossSpawned = true
+        state.bossDefeated = true
+      } else {
+        const hero = state.hero!
+        hero.hp = 1
+        state.mobs = [{ x: hero.x, y: hero.y, type: 'slime', hp: 30, max: 30, r: 18,
+          speed: 0, dmg: 50, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
+          ai: { state: 'attack', timer: 0.1, attack: 'pounce', aimX: hero.x, aimY: hero.y, dirX: 0, dirY: 0, cycle: 0 } }]
+      }
+      context.currentTime = 5
+      const before = context.oscillators.length
+      engine.advance(0.016)
+      expect(engine.ui.mode).toBe('result')
+      expect(selectTheme).toHaveBeenCalledWith(outcome)
+      expect(tick).toHaveBeenCalledWith('result')
+      expect(bgm.paused).toBe(true)
+      expect(menu.paused).toBe(true)
+      const notes = context.oscillators.slice(before)
+      expect(notes.length).toBeGreaterThan(0)
+      expect(notes.every(note => context.gains.some(gain => note.targets.includes(gain) && gain.targets.includes(context.gains[1]!)))).toBe(true)
+      const pitches = notes.map(note => Math.round(69 + 12 * Math.log2(note.frequency.value / 440)))
+      expect(pitches).toContain(outcome === 'victory' ? 72 : 55)
+
+      // A subsequent frame must continue the same score, not restart it.
+      const firstNotes = context.oscillators.length
+      context.currentTime += 0.5
+      audio.tick('result')
+      expect(context.oscillators.length).toBeGreaterThan(firstNotes)
+      engine.goMenu()
+      expect(menu.paused).toBe(false)
+      const after = context.oscillators.length
+      audio.tick('result')
+      expect(context.oscillators).toHaveLength(after)
+      expect(created()).toBe(1)
+    } finally { audio.dispose() }
+  })
+
   it('hands cinematic boss and results scoring to the host and restores ES2 combat', () => {
     const { audio, bgm } = setup()
     const engine = createEngine({ audio, contentPacks: [] })
