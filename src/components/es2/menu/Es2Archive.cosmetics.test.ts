@@ -50,6 +50,33 @@ describe('hero cosmetic unlock guidance', () => {
     }
   })
 
+  it.each(cases)('distinguishes equipped, available and locked $hero skins and updates after equip', async ({ hero, skin }) => {
+    const locale = getLocale()
+    setLocale('zh-TW')
+    const profile = emptyProfile()
+    const wrapper = mount(Es2Archive, { props: { view: 'progression', profile, hero } })
+    const current = () => wrapper.get(`[data-es2-cosmetic-option="${hero}-default"]`)
+    const next = () => wrapper.get(`[data-es2-cosmetic-option="${skin}"]`)
+    try {
+      expect(current().get('[data-es2-skin-status="equipped"]').text()).toContain('使用中')
+      expect(current().attributes('aria-pressed')).toBe('true')
+      expect(current().attributes('aria-disabled')).toBe('true')
+      expect(next().find('[data-es2-skin-status]').exists()).toBe(false)
+      await current().trigger('click')
+      expect(wrapper.emitted('cosmetic')).toBeUndefined()
+      const unlocked = { ...profile, unlockedCosmetics: [...profile.unlockedCosmetics, skin] }
+      await wrapper.setProps({ profile: unlocked })
+      expect(next().get('[data-es2-skin-status="available"]').text()).toContain('套用造型')
+      await next().trigger('click')
+      expect(wrapper.emitted('cosmetic')).toEqual([[hero, skin]])
+      await wrapper.setProps({ profile: { ...unlocked, equippedCosmetics: { ...unlocked.equippedCosmetics, [hero]: skin } } })
+      expect(next().get('[data-es2-skin-status="equipped"]').exists()).toBe(true)
+      expect(current().get('[data-es2-skin-status="available"]').exists()).toBe(true)
+      expect(next().attributes('aria-pressed')).toBe('true')
+      expect(current().attributes('aria-disabled')).toBeUndefined()
+    } finally { wrapper.unmount(); setLocale(locale) }
+  })
+
   it('uses the actual portrait for every hero and keeps the existing shared aura entitlement', async () => {
     const profile = emptyProfile()
     const wrapper = mount(Es2Archive, { props: { view: 'progression', profile, hero: 'knight' } })

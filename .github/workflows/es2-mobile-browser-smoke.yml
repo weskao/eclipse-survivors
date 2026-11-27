@@ -1,4 +1,4 @@
-name: ES2 real Chromium mobile browser smoke
+name: ES2 real Chromium and WebKit mobile browser smoke
 on:
   push:
     branches: [feature/es2-release-readiness-integration, feature/es2-responsive-menu-hud-layout]
@@ -29,15 +29,16 @@ jobs:
           path: dist/
           retention-days: 7
           if-no-files-found: error
-      - name: Install isolated Chromium for real layout QA
+      - name: Install isolated Chromium and WebKit for real layout QA
         run: |
           npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
-          ../node_modules/.bin/playwright install --with-deps chromium
+          ../node_modules/.bin/playwright install --with-deps chromium webkit
       - name: Launch production preview and verify responsive game across desktop, tablet and phone
         run: |
           pnpm preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/es2-preview.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node scripts/es2-lobby-dock-webkit.mjs
           node scripts/es2-mobile-browser-smoke.mjs
           node scripts/es2-responsive-layout-matrix.mjs
           node scripts/es2-world-art-browser-qa.mjs

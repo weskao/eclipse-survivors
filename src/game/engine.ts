@@ -561,7 +561,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.heroSpecial = null
     saveSelection('eclipseSelectedHero', id)
     wakeAudio()
-    audio.playSfx('select')
+    audio.playSfx('hero-select')
   }
 
   function start(): void {

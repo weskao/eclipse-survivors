@@ -10,6 +10,7 @@ import { createBossAttackAudio } from './boss-attacks'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones, treasureTones, treasureClaimTones } from './sfx'
 import { isHurtCue, renderHurtSample, type HurtCue } from './hurt-samples'
 import { hallCueKey, renderHallCue, type HallCue } from './hall-upgrade-sample'
+import { renderHeroSelectSample } from './hero-select-sample'
 import { isBattleMusicMode, type AudioSystem, type BgmElement, type CombatIntensity, type SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
@@ -91,6 +92,8 @@ const defaultStorage = (): SettingsStorage | null => {
 
 const MUSIC_GAIN = 0.65
 const SFX_GAIN = 0.52
+// Raise the expedition mix together to preserve the music/SFX balance.
+const BATTLE_GAIN = 1.25
 const clampVolume = (value: number, fallback: number): number =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
 const HERO_CAST_CUES = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution'] as const
@@ -115,7 +118,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let intensity: CombatIntensity = 'calm'
   let warningMix = false
   let noiseBuffer: BufferLike | null = null
-  const hurtBuffers = new Map<HurtCue, BufferLike>()
+  const foleyBuffers = new Map<HurtCue | 'hero-select', BufferLike>()
   const hallBuffers = new Map<HallCue, BufferLike>()
   let hallReward: { source: BufferSourceLike; gain: GainLike; endsAt: number } | null = null
   const heroCastBuffers = new Map<SfxCue, BufferLike>()
@@ -186,12 +189,23 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     }
   }
 
+  const mixGain = (): number => isBattleMusicMode(mode) ? BATTLE_GAIN : 1
+  const musicLevel = (): number => musicOn ? MUSIC_GAIN * mixGain() * musicVolume / 100 : 0
+  const sfxLevel = (): number => sfxOn ? SFX_GAIN * mixGain() * sfxVolume / 100 : 0
+  const setMode = (next: GameMode): void => {
+    const previousGain = mixGain()
+    mode = next
+    if (previousGain === mixGain() || !ac) return
+    musicBus?.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
+    master?.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
+  }
+
   const menuLevel = (): number => 0.78 * musicVolume / 100
 
   const mp3Level = (): number =>
     (intensity === 'boss' && isBattleMusicMode(mode) ? 0 :
       warningMix && isBattleMusicMode(mode) ? 0.12 :
-      intensity === 'combat' && isBattleMusicMode(mode) ? 0.35 : 0.38) * musicVolume / 100
+      intensity === 'combat' && isBattleMusicMode(mode) ? 0.35 : 0.38) * mixGain() * musicVolume / 100
 
   bgm.volume = mp3Level()
   if (menuBgm) menuBgm.volume = menuLevel()
@@ -278,12 +292,12 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         if (!created) { playScore(); return }
         ac = created
         noiseBuffer = null
-        hurtBuffers.clear(); hallBuffers.clear(); hallReward = null
+        foleyBuffers.clear(); hallBuffers.clear(); hallReward = null
         master = ac.createGain()
-        master.gain.value = sfxOn ? SFX_GAIN * sfxVolume / 100 : 0
+        master.gain.value = sfxLevel()
         master.connect(ac.destination)
         musicBus = ac.createGain()
-        musicBus.gain.value = musicOn ? MUSIC_GAIN * musicVolume / 100 : 0
+        musicBus.gain.value = musicLevel()
         musicBus.connect(ac.destination)
         preloadHeroCasts(ac)
       }
@@ -343,7 +357,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
       bgm.volume = mp3Level()
       if (menuBgm) menuBgm.volume = menuLevel()
-      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
       if (!musicVolume) { bgm.pause(); menuBgm?.pause(); cinematic.stop(true) }
       else if (musicOn) { playScore(); cinematic.sync() }
     },
@@ -352,7 +366,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (sfxVolume > 0) previousSfxVolume = sfxVolume
       else { stopHeroCast(); bossAttacks.cancel() }
       try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
-      if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
     },
     wake,
     interrupt,
@@ -392,21 +406,21 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
       recentSfx.push(now)
       sfxLast.set(cue, now)
-      if (isHurtCue(cue) && master) {
+      if ((cue === 'hero-select' || isHurtCue(cue)) && master) {
         try {
-          let buffer = hurtBuffers.get(cue)
+          let buffer = foleyBuffers.get(cue)
           if (!buffer) {
-            const pcm = renderHurtSample(cue, ctx.sampleRate)
+            const pcm = cue === 'hero-select' ? renderHeroSelectSample(ctx.sampleRate) : renderHurtSample(cue, ctx.sampleRate)
             buffer = ctx.createBuffer(1, pcm.length, ctx.sampleRate)
             buffer.getChannelData(0).set(pcm)
-            hurtBuffers.set(cue, buffer)
+            foleyBuffers.set(cue, buffer)
           }
           const source = ctx.createBufferSource()
           source.buffer = buffer
           source.loop = false
           source.connect(master)
           source.start(now)
-          return // Never layer generic tones/noise on the authored impact.
+          return // Never layer generic tones/noise on authored Foley.
         } catch { /* use finite synth fallback only if PCM rendering/playback fails */ }
       }
       // Scoped Hall palette: one sample, never layer the generic synth on top.
@@ -494,7 +508,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     onScreen(nextMode: GameMode) {
       const previous = mode
-      mode = nextMode
+      setMode(nextMode)
       // Level-up, treasure, pause/settings and result overlays must never truncate a cast.
       // Only leaving the expedition for Home cancels it (explicit mute/OS teardown are separate).
       if (mode === 'menu') { stopHeroCast(); bossAttacks.prepare(null) }
@@ -530,14 +544,15 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       battle.setClock(ac ? ac.currentTime + delay : 0)
     },
     toggleMusic(screen) {
-      mode = screen
+      setMode(screen)
+      bgm.volume = mp3Level()
       if (musicVolume === 0) {
         musicVolume = previousMusicVolume
         try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
         bgm.volume = mp3Level()
         if (menuBgm) menuBgm.volume = menuLevel()
         if (musicOn) {
-          if (ac && musicBus) musicBus.gain.setTargetAtTime(MUSIC_GAIN * musicVolume / 100, ac.currentTime, 0.06)
+          if (ac && musicBus) musicBus.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
           wake()
           cinematic.sync()
           return true
@@ -545,7 +560,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       }
       musicOn = !musicOn
       save('starMusic', musicOn)
-      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
       if (musicOn) {
         wake()
         if (isBattleMusicMode(screen)) { playScore(); cinematic.sync() }
@@ -564,14 +579,14 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         sfxVolume = previousSfxVolume
         try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
         if (sfxOn) {
-          if (ac && master) master.gain.setTargetAtTime(SFX_GAIN * sfxVolume / 100, ac.currentTime, 0.06)
+          if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
           wake()
           return true
         }
       }
       sfxOn = !sfxOn
       save('starSfx', sfxOn)
-      if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
       if (sfxOn) wake()
       else { stopHeroCast(); bossAttacks.cancel() }
       return sfxOn
@@ -584,7 +599,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       stopHeroCast()
       bossAttacks.prepare(null)
       heroCastBuffers.clear()
-      hurtBuffers.clear(); hallBuffers.clear(); hallReward = null
+      foleyBuffers.clear(); hallBuffers.clear(); hallReward = null
       ac?.close().catch(() => {})
       ac = null
       master = null

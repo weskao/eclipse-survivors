@@ -54,9 +54,13 @@ The project currently uses **B. GitHub Actions** as its only deployment path. Op
 
 ## Versioned release
 
+**Version progression (mandatory):** Each new published release advances exactly one patch step from the latest published GitHub Release. Use `MAJOR.MINOR.PATCH`, with PATCH limited to 0–99. When PATCH is 99, increment MINOR by one and reset PATCH to 0. Do not skip versions, roll back, or automatically increment MAJOR. For example: `1.2.3 → 1.2.4 → … → 1.2.98 → 1.2.99 → 1.3.0 → 1.3.1`. Existing historical releases are not rewritten. The same version may be redeployed without creating a duplicate Release.
+
+The release workflow verifies this rule against the latest published GitHub Release before building or deploying a main push. If the previous Release cannot be retrieved, the check fails rather than guessing. To check locally, run `node scripts/check-release-version.mjs v1.2.99 1.3.0`. The boundary and rejection cases run as part of `pnpm test`.
+
 1. Confirm that the game features being announced are actually implemented in `src/`.
 2. Update `CHANGELOG.md` to describe only features players can currently experience, in both Traditional Chinese and English.
-   - Set the `version` in `package.json` to the upcoming release version (for example, `0.0.4`). Vite's `define` (`__APP_VERSION__`) displays this value in the version bar on the character selection screen.
+   - Set the `version` in `package.json` to the upcoming release version (for example, `1.2.1` after `1.2.0`), following the mandatory progression above. Vite's `define` (`__APP_VERSION__`) displays this value in the version bar on the character selection screen.
    - The `version` in `package.json` must match the latest `## [x.y.z]` entry in `CHANGELOG.md`. A Vitest test enforces this, and `pnpm check-release` checks the built output in `dist/`.
    - Before committing, run `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` locally in that order, and ensure they all pass.
 3. After the full checks pass, commit the version and changelog updates to `main` when authorized. A regular push to `main` starts the deployment workflow.

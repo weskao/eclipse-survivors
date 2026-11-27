@@ -32,11 +32,14 @@ export const BOSS_NATIVE_KEYFRAMES = {
   frostRelease: ['batch-12/frost-sovereign/attack/ice-fan-release-key-a.webp', 1254, 1254, 639.5, 1245],
   seraphWindup: ['batch-12/eclipse-seraph/windup/light-ring-windup-key-a.webp', 1254, 1254, 628, 1251],
   seraphRelease: ['batch-17/eclipse-seraph/attack/light-ring-release-key-a.webp', 1254, 1254, 624, 1235],
+  seraphHurt: ['batch-21/eclipse-seraph/hurt/seraph-hurt-key-a.webp', 1197, 1452, 597, 1363],
   seraphDeath: ['batch-14/eclipse-seraph/death/fallen-key-a.webp', 1254, 1254, 614.5, 1225],
   // East-facing glides, mirrorAllowed: false.
   abyssMove: ['batch-09-revision-01/abyss-monarch/move/glide-east-key-a.webp', 1313, 1198, 598, 1171],
   seraphMove: ['batch-13/eclipse-seraph/move/glide-east-key-a.webp', 1312, 1199, 652.5, 1179],
   seraphMoveB: ['batch-13/eclipse-seraph/move/glide-east-key-b.webp', 1312, 1199, 650, 1167],
+  abyssAwakening: ['batch-22/abyss-monarch/transform/awakening-key-a.webp', 1318, 1318, 657, 1274],
+  frostDeath: ['batch-22/frost-sovereign/death/shatter-collapse-key-a.webp', 1318, 1318, 662, 1170],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -55,6 +58,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   // Abyss/Seraph glides are east-only (mirrorAllowed: false); other facings keep the phase frame.
   const eastGlide = motion.pose === 'move' && motion.facingX === 1
   if (snapshot.id === 'abyss-monarch') {
+    if (motion.phase === 3 && motion.pose === 'transform') return 'abyssAwakening'
     if (motion.phase === 3 && motion.pose === 'death') return 'abyssDeath'
     if (motion.phase !== 1) return null
     if (motion.pose === 'idle') return 'abyssIdle'
@@ -69,6 +73,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
     return null
   }
   if (snapshot.id === 'frost-sovereign') {
+    if (motion.phase === 3 && motion.pose === 'death') return 'frostDeath'
     if (motion.phase !== 1) return null
     if (motion.pose === 'hurt') return 'frostHurt'
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'ice-fan')) return 'frostWindup'
@@ -81,6 +86,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   if (snapshot.id === 'eclipse-seraph') {
     if (motion.phase === 3 && motion.pose === 'death') return 'seraphDeath'
     if (motion.phase !== 1) return null
+    if (motion.pose === 'hurt') return 'seraphHurt'
     if (motion.pose === 'move') return eastGlide ? (motion.progress < .5 ? 'seraphMove' : 'seraphMoveB') : null
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'light-ring')) return 'seraphWindup'
     if (motion.pose === 'attack' && snapshot.impacts?.at(-1)?.attackId === 'light-ring') return 'seraphRelease'

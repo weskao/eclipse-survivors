@@ -21,7 +21,7 @@ export type ContactSfxCue = 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'hitEleme
 
 /** Shared gameplay and UI SFX cues, including hero-specific active skills. */
 export type SfxCue =
-  | 'ui' | 'hover' | 'select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
+  | 'ui' | 'hover' | 'select' | 'hero-select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'massKill' | 'boss' | 'bossStagger' | 'bossDefeat' | 'hurt' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'pickup' | 'pickupBurst' | 'evolution'
   | ContactSfxCue | 'treasureReveal' | 'treasureClaim'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'

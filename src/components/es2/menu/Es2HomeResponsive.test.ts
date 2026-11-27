@@ -289,10 +289,31 @@ describe('homepage menu layout across devices', () => {
     } finally { setLocale(previous) }
   })
 
-  it('keeps the start dock separate from the scrollable hero or mode page', () => {
-    expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*position:fixed;[^}]*bottom:0/)
-    expect(css).toMatch(/\.es2-menu\s*\{[^}]*bottom:var\(--es2-action-bar-height/)
+  it('keeps both bottom actions outside the scrolling surface in both lobby pages and hides them in the hall', async () => {
+    const wrapper = menu()
+    const root = wrapper.get('.es2-menu').element
+    const scroll = wrapper.get('.es2-menu-scroll').element
+    const dock = wrapper.get('.es2-menu-action-bar').element as HTMLElement
+    expect(scroll.parentElement).toBe(root)
+    expect(dock.parentElement).toBe(root)
+    expect(scroll.contains(dock)).toBe(false)
+    expect(scroll.contains(wrapper.get('.es2-hero-section').element)).toBe(true)
+    expect(scroll.contains(wrapper.get('.es2-mode-section').element)).toBe(true)
+    expect(dock.contains(wrapper.get('.es2-start').element)).toBe(true)
+    expect(dock.contains(wrapper.get('[data-es2-expedition-navigation]').element)).toBe(true)
+    expect(css).toMatch(/\.es2-menu\s*\{[^}]*height:100dvh;[^}]*overflow:hidden/)
+    expect(css).toMatch(/\.es2-menu-scroll\s*\{[^}]*min-height:0;[^}]*overflow-y:auto/)
+    expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*position:relative;[^}]*flex:0 0 auto/)
     expect(css).toMatch(/\.es2-menu-action-bar\s*\{[^}]*env\(safe-area-inset-bottom\)/)
+    expect(css).not.toContain('bottom:var(--es2-action-bar-height')
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    expect(dock.style.display).not.toBe('none')
+    await wrapper.setProps({ archiveView: 'progression' })
+    expect(dock.style.display).toBe('none')
+    await wrapper.setProps({ archiveView: 'main' })
+    expect(dock.style.display).not.toBe('none')
+    await wrapper.get('.es2-start').trigger('click')
+    expect(wrapper.emitted('start')).toHaveLength(1)
   })
 
   it.each([

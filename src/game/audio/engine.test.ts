@@ -148,7 +148,7 @@ describe('independent, persisted audio volumes', () => {
     audio.setSfxVolume(40)
     expect(ctx.gains[0]!.gain.setTargetAtTime).toBeDefined()
     expect(ctx.gains[0]!.gain.value).toBeCloseTo(0.52)
-    expect(bgm.volume).toBeCloseTo(0.19)
+    expect(bgm.volume).toBeCloseTo(0.2375)
     expect(audio.musicOn).toBe(true)
     expect(audio.sfxOn).toBe(true)
     audio.toggleMusic('play')
@@ -157,6 +157,44 @@ describe('independent, persisted audio volumes', () => {
     audio.setSfxVolume(70)
     expect(audio.musicOn).toBe(false)
     expect(audio.sfxOn).toBe(false)
+  })
+
+  it('raises both battle buses by 25% without changing menu or result levels', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    const sfx = ctx.gains[0]!.gain
+    const music = ctx.gains[1]!.gain
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.65)
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.8125)
+    expect(bgm.volume).toBeCloseTo(0.475)
+    audio.onScreen('level')
+    audio.setMusicVolume(50)
+    audio.setSfxVolume(40)
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.40625)
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.26)
+    expect(bgm.volume).toBeCloseTo(0.2375)
+    audio.toggleMusic('level')
+    audio.toggleSfx()
+    expect(music.calls.at(-1)?.args[0]).toBe(0)
+    expect(sfx.calls.at(-1)?.args[0]).toBe(0)
+    audio.toggleMusic('level')
+    audio.toggleSfx()
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.40625)
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.26)
+    audio.onScreen('result')
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.325)
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.208)
+    audio.onScreen('menu')
+    expect(bgm.volume).toBeCloseTo(0.19)
+  })
+
+  it('uses the boosted mix when the first gesture starts in battle', () => {
+    const audio = make()
+    audio.onScreen('play')
+    audio.wake()
+    expect(ctx.gains[0]!.gain.value).toBeCloseTo(0.65)
+    expect(ctx.gains[1]!.gain.value).toBeCloseTo(0.8125)
   })
 
   it('restores the previous audible level from zero when toggling sound on', () => {
@@ -211,6 +249,30 @@ describe('playSfx', () => {
     ctx.state = 'suspended'
     audio.playSfx('ui')
     expect(ctx.oscillators).toHaveLength(0)
+  })
+
+  it('plays one cached hero confirmation sample with no generic tone, and honors cooldown and mute', () => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 10
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const sample = ctx.sources[0]!.buffer
+    expect(sample?.duration).toBeCloseTo(.44, 3)
+    ctx.currentTime = 10.1
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(1)
+    ctx.currentTime = 10.3
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(2)
+    expect(ctx.sources[1]!.buffer).toBe(sample)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 11
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(2)
+    expect(created).toBe(1)
   })
 
   it('plays one oscillator per tone with the original pitch math', () => {
@@ -522,7 +584,7 @@ describe('onScreen', () => {
     audio.onScreen('level')
     await Promise.resolve()
     expect(bgm.paused).toBe(false)
-    expect(bgm.volume).toBe(0.38)
+    expect(bgm.volume).toBeCloseTo(0.475)
     expect(bgm.currentTime).toBe(42)
     audio.onScreen('play')
     expect(bgm.playCalls).toBe(1)
@@ -613,7 +675,7 @@ describe('original boss score replaces battle music', () => {
     audio.setBossTheme?.(null)
     audio.setCombatIntensity('combat')
     for (let i = 0; i < 40; i++) audio.tick('play')
-    expect(bgm.volume).toBeCloseTo(0.35)
+    expect(bgm.volume).toBeCloseTo(0.4375)
   })
 })
 
@@ -638,10 +700,17 @@ describe('cinematic sampled boss music', () => {
     expect(loaded).toContain('warning.mp3')
     const warning = ctx.sources.at(-1)
     expect(warning?.startedAt).not.toBeNull()
+    expect(ctx.gains[1]!.gain.calls.at(-1)?.args[0]).toBeCloseTo(0.8125)
+    for (let i = 0; i < 40; i++) audio.tick('play')
+    expect(bgm.volume).toBeCloseTo(0.15)
     audio.setBossTheme?.('frost-sovereign', 1)
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(loaded).toContain('frost-p1.mp3')
     expect(warning?.stoppedAt).not.toBeNull()
+    const bossVoice = ctx.gains.at(-1)!
+    expect(ctx.sources.at(-1)?.targets[0]).toBe(bossVoice)
+    expect(bossVoice.targets[0]).toBe(ctx.gains[1])
+    expect(bossVoice.gain.calls.at(-1)?.args[0]).toBeCloseTo(0.78)
   })
 
   it('keeps phase changes on the same audio timeline without restarting from zero', async () => {

@@ -5,7 +5,7 @@ export type SfxTone = readonly [number, number, number, number, OscillatorType]
 
 /** Minimum seconds between two plays of the same cue (original `sfxCooldown`). */
 export const SFX_COOLDOWN: Record<SfxCue, number> = {
-  ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
+  ui: 0.07, hover: 0.15, select: 0.09, 'hero-select': .26, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
   treasureReveal: .35, treasureClaim: .35,
   hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, hitElemental: .22, hitEvolved: .32, hitHero: .35, eliteKill: 0.45,
@@ -17,6 +17,8 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   ui: [[72, 0, 0.07, 0.02, 'sine']],
   hover: [[79, 0, 0.06, 0.012, 'sine']],
   select: [[64, 0, 0.13, 0.057, 'triangle'], [76, 0.06, 0.18, 0.039, 'sine']],
+  // Emergency fallback for the cached hero confirmation Foley.
+  'hero-select': [[52, 0, .16, .055, 'triangle'], [59, .035, .23, .035, 'triangle'], [67, .08, .29, .026, 'sine'], [76, .11, .22, .018, 'sine']],
   start: [[48, 0, 0.47, 0.085, 'sawtooth'], [55, 0.11, 0.65, 0.05, 'triangle'], [72, 0.18, 0.77, 0.055, 'sine']],
   pause: [[67, 0, 0.12, 0.041, 'sine'], [55, 0.08, 0.25, 0.035, 'triangle']],
   resume: [[55, 0, 0.12, 0.045, 'triangle'], [67, 0.07, 0.2, 0.044, 'sine']],

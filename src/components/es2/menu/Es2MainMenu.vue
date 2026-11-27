@@ -119,72 +119,74 @@ const classicIds = heroes.map(hero => hero.id)
 const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelection(event, id, classicIds, selectClassic) }
 </script>
 <template>
-  <main ref="menu" class="es2-menu" :class="{ 'es2-menu--archive': archiveView !== 'main' }" :data-es2-menu-page="page"
+  <main class="es2-menu" :class="{ 'es2-menu--archive': archiveView !== 'main' }" :data-es2-menu-page="page"
     :aria-label="t('Eclipse Survivors 主選單')">
     <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
-    <div class="es2-menu-shell">
-      <header class="es2-menu-header">
-        <div class="es2-menu-brand"><span class="es2-eyebrow">{{ t('✦ 天穹星蝕 ✦') }}</span><h1>{{ titleParts[0] }}<em v-if="titleParts.length > 1">{{ ' ' + titleParts.slice(1).join(' ') }}</em></h1><p>{{ t("穿越失落的國度，成為黑夜之後的第一道曙光。") }}</p></div>
-        <div class="es2-top-actions"><span id="gameVersion" class="es2-version menu-version">v{{ version }}</span>
-          <slot name="account" />
-          <button type="button" class="es2-icon-button" data-es2-settings :aria-label="t('開啟遊戲設定')" :title="t('開啟遊戲設定')" @click="emit('settings')"><span aria-hidden="true">⚙</span></button>
-          <button v-if="needsAudioUnlock" type="button" class="es2-icon-button" data-es2-audio-unlock @click="emit('enableAudio')">{{ t("♫ 啟用音樂") }}</button>
-        </div>
-      </header>
-      <nav class="es2-hall-navigation" data-es2-hall-navigation :aria-label="t('冒險者殿堂')">
-        <div class="es2-hall-heading"><div class="es2-hall-heading__title"><button v-if="archiveView !== 'main'" type="button" class="es2-return-lobby" data-es2-return-lobby data-ui-sfx="select" @click="emit('navigate', 'main')"><span aria-hidden="true">‹</span> {{ t('返回主選單') }}</button><strong v-else>{{ t('冒險者殿堂') }}</strong></div><Es2EmberWallet :embers="profile?.embers ?? 0" /></div>
-        <div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" data-ui-sfx="select" :aria-current="archiveView === link.id ? 'page' : undefined" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
-      </nav>
-      <div class="es2-menu-layout" data-es2-lobby-content :hidden="archiveView !== 'main'">
-        <section v-show="page === 'heroes'" id="es2HeroPage" class="es2-hero-section" aria-labelledby="es2HeroTitle" v-on="heroHoverEvents">
-          <div class="es2-section-heading"><span>{{ t('01 / 命運繼承者') }}</span><h2 id="es2HeroTitle">{{ t("選擇命運的繼承者") }}</h2><p>{{ t("每位英雄都擁有專屬的戰鬥風格。") }}</p></div>
-          <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
-            <HeroSelectionCard v-for="hero in heroes" :key="hero.id" :hero-id="hero.id"
-              :name="hero.name" :subtitle="hero.role" :stats="JOB[hero.id]"
-              :selected="(heroId ?? choice) === hero.id" :cosmetic="profile?.equippedCosmetics[hero.id]"
-              @select="selectClassic(hero.id)" @keydown="moveHero($event, hero.id)"
-              @details="heroDetails.openModal(hero.id)" />
+    <div ref="menu" class="es2-menu-scroll">
+      <div class="es2-menu-shell">
+        <header class="es2-menu-header">
+          <div class="es2-menu-brand"><span class="es2-eyebrow">{{ t('✦ 天穹星蝕 ✦') }}</span><h1>{{ titleParts[0] }}<em v-if="titleParts.length > 1">{{ ' ' + titleParts.slice(1).join(' ') }}</em></h1><p>{{ t("穿越失落的國度，成為黑夜之後的第一道曙光。") }}</p></div>
+          <div class="es2-top-actions"><span id="gameVersion" class="es2-version menu-version">v{{ version }}</span>
+            <slot name="account" />
+            <button type="button" class="es2-icon-button" data-es2-settings :aria-label="t('開啟遊戲設定')" :title="t('開啟遊戲設定')" @click="emit('settings')"><span aria-hidden="true">⚙</span></button>
+            <button v-if="needsAudioUnlock" type="button" class="es2-icon-button" data-es2-audio-unlock @click="emit('enableAudio')">{{ t("♫ 啟用音樂") }}</button>
           </div>
-          <HeroRoster :selected-id="heroId ?? choice" @select="selectSpecialization" @details="heroDetails.openModal($event)" />
-        </section>
-        <section v-show="page === 'modes'" id="es2ExpeditionPage" class="es2-mode-section" aria-labelledby="es2ModeTitle">
-          <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
-          <div class="es2-mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
-            <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" class="es2-mode-card" data-ui-sfx="managed"
-              :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
-              @click="emit('mode', id)" @keydown="moveMode($event, id)">
-              <span class="es2-mode-mark" aria-hidden="true">{{ MODE_SIGILS[id] }}</span>
-              <span class="es2-mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
-              <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
-            </button>
-          </div>
-          <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
-        </section>
-      </div>
-      <slot v-if="archiveView !== 'main'" name="archive" />
-      <div v-show="archiveView === 'main'" ref="actionBar" class="es2-menu-action-bar">
-        <div class="es2-menu-actions">
-          <button class="es2-expedition-navigation es2-expedition-brief" type="button"
-            data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"
-            :aria-controls="page === 'heroes' ? 'es2ExpeditionPage' : 'es2HeroPage'"
-            data-ui-sfx="select" @click="toggleExpeditionPage">
-            <span class="es2-expedition-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
-            <span class="es2-mobile-selected-mode" aria-live="polite">
-              <span class="es2-expedition-kicker">{{ t('目前遠征') }} <span class="es2-expedition-duration">{{ modeDuration }}</span></span>
-              <strong class="es2-expedition-name">{{ modeTitle }}</strong>
-              <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
-              <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
-            </span>
-            <span class="es2-expedition-change">{{ t(page === 'heroes' ? '變更遠征' : '返回英雄選擇') }} <span aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span></span>
-          </button>
-          <button class="es2-primary es2-start es2-portal-start" type="button" data-ui-sfx="managed" @click="emit('start')">
-            <span class="es2-portal-sheen" aria-hidden="true"></span>
-            <span class="es2-portal-decoration" data-es2-portal-decoration aria-hidden="true"><span class="es2-portal-core">✦</span></span>
-            <span class="es2-portal-label">{{ t("踏入幽暮之門") }}</span>
-          </button>
+        </header>
+        <nav class="es2-hall-navigation" data-es2-hall-navigation :aria-label="t('冒險者殿堂')">
+          <div class="es2-hall-heading"><div class="es2-hall-heading__title"><button v-if="archiveView !== 'main'" type="button" class="es2-return-lobby" data-es2-return-lobby data-ui-sfx="select" @click="emit('navigate', 'main')"><span aria-hidden="true">‹</span> {{ t('返回主選單') }}</button><strong v-else>{{ t('冒險者殿堂') }}</strong></div><Es2EmberWallet :embers="profile?.embers ?? 0" /></div>
+          <div class="es2-hall-links"><button v-for="link in links" :key="link.id" type="button" data-ui-sfx="select" :aria-current="archiveView === link.id ? 'page' : undefined" @click="emit('navigate', link.id)"><span aria-hidden="true">{{ link.icon }}</span>{{ t(link.name) }}</button></div>
+        </nav>
+        <div class="es2-menu-layout" data-es2-lobby-content :hidden="archiveView !== 'main'">
+          <section v-show="page === 'heroes'" id="es2HeroPage" class="es2-hero-section" aria-labelledby="es2HeroTitle" v-on="heroHoverEvents">
+            <div class="es2-section-heading"><span>{{ t('01 / 命運繼承者') }}</span><h2 id="es2HeroTitle">{{ t("選擇命運的繼承者") }}</h2><p>{{ t("每位英雄都擁有專屬的戰鬥風格。") }}</p></div>
+            <div class="es2-hero-grid" role="group" :aria-label="t('選擇英雄')">
+              <HeroSelectionCard v-for="hero in heroes" :key="hero.id" :hero-id="hero.id"
+                :name="hero.name" :subtitle="hero.role" :stats="JOB[hero.id]"
+                :selected="(heroId ?? choice) === hero.id" :cosmetic="profile?.equippedCosmetics[hero.id]"
+                @select="selectClassic(hero.id)" @keydown="moveHero($event, hero.id)"
+                @details="heroDetails.openModal(hero.id)" />
+            </div>
+            <HeroRoster :selected-id="heroId ?? choice" @select="selectSpecialization" @details="heroDetails.openModal($event)" />
+          </section>
+          <section v-show="page === 'modes'" id="es2ExpeditionPage" class="es2-mode-section" aria-labelledby="es2ModeTitle">
+            <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
+            <div class="es2-mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
+              <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" class="es2-mode-card" data-ui-sfx="managed"
+                :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
+                @click="emit('mode', id)" @keydown="moveMode($event, id)">
+                <span class="es2-mode-mark" aria-hidden="true">{{ MODE_SIGILS[id] }}</span>
+                <span class="es2-mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
+                <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
+              </button>
+            </div>
+            <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
+          </section>
         </div>
-        <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
+        <slot v-if="archiveView !== 'main'" name="archive" />
       </div>
+    </div>
+    <div v-show="archiveView === 'main'" ref="actionBar" class="es2-menu-action-bar">
+      <div class="es2-menu-actions">
+        <button class="es2-expedition-navigation es2-expedition-brief" type="button"
+          data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"
+          :aria-controls="page === 'heroes' ? 'es2ExpeditionPage' : 'es2HeroPage'"
+          data-ui-sfx="select" @click="toggleExpeditionPage">
+          <span class="es2-expedition-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
+          <span class="es2-mobile-selected-mode" aria-live="polite">
+            <span class="es2-expedition-kicker">{{ t('目前遠征') }} <span class="es2-expedition-duration">{{ modeDuration }}</span></span>
+            <strong class="es2-expedition-name">{{ modeTitle }}</strong>
+            <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
+            <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
+          </span>
+          <span class="es2-expedition-change">{{ t(page === 'heroes' ? '變更遠征' : '返回英雄選擇') }} <span aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span></span>
+        </button>
+        <button class="es2-primary es2-start es2-portal-start" type="button" data-ui-sfx="managed" @click="emit('start')">
+          <span class="es2-portal-sheen" aria-hidden="true"></span>
+          <span class="es2-portal-decoration" data-es2-portal-decoration aria-hidden="true"><span class="es2-portal-core">✦</span></span>
+          <span class="es2-portal-label">{{ t("踏入幽暮之門") }}</span>
+        </button>
+      </div>
+      <p class="es2-hint">{{ t("WASD / 方向鍵移動 · SPACE 衝刺 · 手機支援觸控操作") }}</p>
     </div>
     <Es2DetailSurface :active="detailHero !== null" :title="t(detailName)" :subtitle="t(detailRole)"
       :anchor="heroAnchor" :tooltip-id="heroTooltipId" @cancel="heroDetails.clear()" @hold="heroDetails.hold()" @leave="heroDetails.leave()">
