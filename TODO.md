@@ -231,3 +231,19 @@ Design: [spec](docs/superpowers/specs/2026-11-27-es4-skill-ecosystem-design.md);
 - [ ] Wave 6: distinct rank, signature, resonance and unlock ceremonies; audio/VFX/accessibility tests.
 - [ ] Wave 7: balance and performance report, full CI, real device/browser, art/audio review, release readiness.
 No gameplay implementation or asset admission is claimed by the planning checkbox. Existing Hall QA remains open above.
+
+
+### ES4 UI/UX and temporary art (skill-tree scope)
+- [ ] Semantic, bilingual 72-node catalog with validated DAG, price, mastery and art contract.
+- [ ] Compact constellation navigation, medallion controls, shared graph and inspector, clear read-only state until real transactions exist.
+- [ ] 72 temporary SVG icons plus individual future WebP paths and art briefs; asset replacement remains separate.
+- [ ] Real owned/equipped progression, signature/resonance purchase and run effects; enable purchase only after persistence and runtime integration.
+- [ ] Actual responsive matrix, keyboard and touch behavior, motion and audio quality; final art admission and CI.
+
+### Deferred — separate future workstream; do not implement here
+- [ ] Design late-game monster ecology, elite combinations and bosses.
+- [ ] Design new chapter mechanics and distinct progression objectives.
+- [ ] Design additional mode selection, challenge tiers and endgame difficulties matched to mature skill builds.
+- [ ] Balance reward/time/risk and performance with early/mid/late build simulations.
+- [ ] Plan subsequent art, animations, sounds, UI and actual gameplay TDD/QA in separately authorized branches.
+See [deferred endgame scope](docs/es4/deferred-endgame-scope.md). Existing enemy/chapter/mode/difficulty implementation stays unchanged in this skill-tree workstream.
