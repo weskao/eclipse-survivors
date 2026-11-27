@@ -600,7 +600,15 @@
 .es2-menu .es2-expedition-brief::after{inset:1px;z-index:-1;background:linear-gradient(120deg,#22334a,#111b2a 58%,#171f2c)}
 .es2-menu .es2-expedition-brief[data-run-mode="boss-rush"]::after,.es2-menu .es2-expedition-brief[data-run-mode="cursed-expedition"]::after{background:linear-gradient(120deg,#462b31,#251d2d 64%,#1b2431)}
 .es2-menu .es2-expedition-brief[data-run-mode="endless-eclipse"]::after,.es2-menu .es2-expedition-brief[data-run-mode="chaos-arena"]::after{background:linear-gradient(120deg,#39304e,#211b38 64%,#1b2431)}
-.es2-menu .es2-expedition-brief:hover::before{background:#a9c2df}
+/* Secondary button: cool steel rim, fill, chip and arrow respond; it never lifts, scales or turns gold like the gate. */
+.es2-menu .es2-expedition-brief::after{transition:filter .18s ease-out}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::before{background:#a9c2df}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::after{inset:2px;filter:brightness(1.5) saturate(1.2)}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change{border-color:#e3eefb;background:#3a5a84;color:#fff}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(3px)}
+.es2-menu .es2-expedition-brief[aria-controls="es2HeroPage"]:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(-3px)}
+.es2-menu .es2-expedition-brief:focus-visible{outline:2px solid #cfe0f5;outline-offset:2px}
+.es2-menu .es2-expedition-brief:active{filter:brightness(.94)}
 .es2-menu .es2-expedition-sigil{
   display:grid;place-items:center;flex:0 0 42px;width:42px;height:48px;
   background:linear-gradient(145deg,#4a6080,#222b3b 65%,#455a78);
@@ -615,9 +623,9 @@
 .es2-menu .es2-expedition-meta{display:block;margin-top:2px;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif}
 .es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}
 .es2-menu .es2-expedition-hero::before{content:'·';margin-inline:6px;color:#7f94ae;font-weight:700}
-.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;color:#b9cde5;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start}
+.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;padding:5px 7px 5px 10px;border:1px solid #6f87a6;border-radius:999px;background:#0b1422b3;color:#d2e1f3;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start;transition:border-color .18s ease-out,background-color .18s ease-out,color .18s ease-out}
 .es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}
-.es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none}
+.es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none;transition:transform .18s cubic-bezier(.2,.8,.2,1)}
 /* A crimson eclipse door with molten ember light rising from its threshold, framed in bright gold. */
 .es2-menu .es2-portal-start{
   --es2-portal-rim:linear-gradient(100deg,#c8862f,#fff1c2 22%,#ffc960 52%,#b8742a 78%,#fff0bd);
@@ -679,7 +687,9 @@
   .es2-menu .es2-portal-sheen{animation:none;opacity:.75}
   .es2-menu .es2-portal-start .es2-portal-sheen::before{animation:none!important}
   .es2-menu .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+  .es2-menu .es2-expedition-change-arrow{transition:none;transform:none!important}
 }
+[data-es2-reduce-motion="true"] .es2-menu .es2-expedition-change-arrow{transition:none;transform:none!important}
 [data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
 [data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
 [data-es2-reduce-motion="true"] .es2-menu .es2-portal-start{transition:none;transform:none!important}
@@ -693,6 +703,8 @@
   .es2-menu .es2-portal-start:is(:hover,:focus-visible,:active):not(:disabled){background:ButtonFace;text-shadow:none}
   .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after,.es2-menu .es2-portal-sheen{display:none}
   .es2-menu .es2-portal-start:focus-visible:not(:disabled){outline:3px solid Highlight}
+  .es2-menu .es2-expedition-brief{border:1px solid ButtonText}
+  .es2-menu .es2-expedition-change{border-color:ButtonText}
 }
 /* A small pointed-arch doorway with warm light inside; static paint, no idle animation. */
 .es2-menu .es2-portal-decoration{
