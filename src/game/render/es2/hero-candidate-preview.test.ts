@@ -26,17 +26,20 @@ describe('ES2 candidate review inventory', () => {
     expect(m.status).toBe('QA_PENDING')
   })
 
-  it('preserves Batch 24, 25 and 26 East run art as review-only assets', () => {
+  it('preserves Batch 23 recovery and Batch 24, 25 and 26 East run art as review-only assets', () => {
     for (const [hero, folder] of [
       ['shadowblade', 'run-e-2026-11-26-batch-24'],
       ['spirit-summoner', 'run-e-2026-11-26-batch-25'],
       ['shadowblade', 'run-e-2026-11-26-batch-26'],
       ['spirit-summoner', 'run-e-2026-11-26-batch-26'],
       ['crimson-paladin', 'run-e-2026-11-26-batch-26'],
+      ['crimson-paladin', 'recovery-se-2026-11-26-batch-23'],
+      ['spirit-summoner', 'recovery-se-2026-11-26-batch-23'],
+      ['shadowblade', 'recovery-e-2026-11-26-batch-23'],
     ]) {
       const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero!, 'candidates', folder!)
       const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
-      const atlas = readFileSync(resolve(dir, 'run-e-4frames@3x.webp'))
+      const atlas = readFileSync(resolve(dir, folder!.replace(/-2026-.*$/, '') + '-4frames@3x.webp'))
       const source = readFileSync(resolve(dir, 'source.webp'))
       expect(createHash('sha256').update(atlas).digest('hex')).toBe(m.webpSHA256)
       expect(createHash('sha256').update(source).digest('hex')).toBe(m.sourceSHA256)
@@ -110,10 +113,10 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain(`${south} South-facing`)
     expect(summary).toContain('6 diagonal four-frame strips')
     expect(summary).toContain('8 northern and 1 West four-frame strips')
-    expect(summary).toContain('21 additional pending atlases')
+    expect(summary).toContain('24 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 47} candidate review panels`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 47)
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 50} candidate review panels`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 50)
     expect(summary).toContain('24 independent keyframes')
     const keys = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-keyframe"]')]
     expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a', 'cast-windup-identity-b', 'windup-identity-a', 'barrier-guard-identity-a', 'stealth-prepare-identity-a', 'summon-recovery-identity-a', 'stealth-strike-identity-a', 'stealth-low-transition-identity-a', 'stealth-recovery-identity-a', 'summon-release-identity-a', 'barrier-counterstrike-identity-a', 'stealth-kneel-rise-identity-a', 'ready-standing-identity-a', 'summon-forward-identity-b', 'cast-forward-identity-b', 'barrier-release-identity-a', 'barrier-guard-identity-b', 'barrier-brace-identity-a', 'run-launch-identity-a'])
@@ -179,8 +182,8 @@ describe('ES2 candidate review inventory', () => {
     expect(keys.every(article => article.querySelector('h2')?.textContent?.includes('1 frame'))).toBe(true)
     expect(keys.every(article => article.querySelector('canvas')?.dataset.mirrored === 'false')).toBe(true)
     const pending = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-atlas"]')]
-    expect(pending).toHaveLength(21)
-    const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW","shadowblade · RUN · E","spirit-summoner · RUN · E","crimson-paladin · RUN · E"]
+    expect(pending).toHaveLength(24)
+    const expectedPending = ["spirit-summoner · RUN · W","spirit-summoner · RUN · NW","crimson-paladin · RUN · W","crimson-paladin · RUN · NW","crimson-paladin · RUN · NE","shadowblade · HURT · SE","shadowblade · DEATH · SE","shadowblade · VICTORY · SE","spirit-summoner · HURT · SE","spirit-summoner · DEATH · SE","spirit-summoner · VICTORY · SE","crimson-paladin · HURT · SE","crimson-paladin · DEATH · SE","crimson-paladin · VICTORY · SE","crimson-paladin · SPECIAL · SE","spirit-summoner · IDLE · NW","shadowblade · RUN · E","spirit-summoner · RUN · E","crimson-paladin · RUN · E","crimson-paladin · RECOVERY · SE","spirit-summoner · RECOVERY · SE","shadowblade · RECOVERY · E"]
     for (const name of expectedPending) {
       expect(pending.some(article => article.querySelector('h2')?.textContent?.startsWith(name))).toBe(true)
     }
