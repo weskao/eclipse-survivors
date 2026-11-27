@@ -408,6 +408,29 @@ describe('portal start interaction feedback', () => {
 })
 
 describe('lobby dock silhouette and layout', () => {
+  it.each([
+    ['en', ['Change', 'expedition'], ['Back to', 'heroes']],
+    ['zh-TW', ['變更', '遠征'], ['返回', '英雄選擇']],
+  ] as const)('aligns the localized dock action label independently from its arrow in %s', async (locale, forward, back) => {
+    const previous = getLocale()
+    try {
+      setLocale(locale)
+      const wrapper = menu()
+      const action = wrapper.get('.es2-expedition-change')
+      const lines = () => action.findAll('.es2-expedition-change-label > span').map(node => node.text())
+      expect(lines()).toEqual(forward)
+      expect(action.get('.es2-expedition-change-arrow').text()).toBe('›')
+      expect(action.get('.es2-expedition-change-arrow').attributes('aria-hidden')).toBe('true')
+      await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+      expect(lines()).toEqual(back)
+      expect(action.get('.es2-expedition-change-arrow').text()).toBe('‹')
+    } finally { setLocale(previous) }
+  })
+  it('centers a separate arrow beside left-aligned semantic text chunks', () => {
+    expect(css).toMatch(/\.es2-menu \.es2-expedition-change\{[^}]*display:grid;grid-template-columns:minmax\(0,1fr\) auto;align-items:center;[^}]*text-align:start/)
+    expect(css).toMatch(/\.es2-expedition-change-label:lang\(en\)\{[^}]*flex-direction:column;align-items:flex-start/)
+    expect(css).toContain('.es2-expedition-change-label>span{white-space:nowrap}')
+  })
   it('keeps the duration beside the mode name and groups summary and hero into one meta line', () => {
     const mode = menu({ runMode: 'quick' }).get('.es2-mobile-selected-mode').element
     expect(Array.from(mode.children, child => child.className)).toEqual(
