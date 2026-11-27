@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": false,
+  "resampling": "Original cell cropped and padded without resampling",
+  "sourcePixels": [
+    656,
+    599
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "8186b5a9-a30d-4bd3-9a3d-66bb17952191",
+    "originalPNGSHA256": "16ef8125901dfc6ca4629b61d8fd8e4513bce3397a7c8b30bb8de7fb01f16e6c",
+    "canonicalPortrait": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "referenceCommit": "3351c2ee0b716a9803f1b1fbed8a456216401260",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected; direct image conditioning not independently verified.",
+    "originalSheetRelativePath": "src/assets/es2/production/heroes/spirit-summoner/candidates/special-e-keyframes-2026-11-27-batch-38/original-sheet.webp",
+    "originalSheetSHA256": "d982fc712841c49898976c0d842a2817b2b817390ecdecd387260ae40fae1d51",
+    "sourceCropRectLTRB": [
+      0,
+      0,
+      656,
+      599
+    ]
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; full decoded RGBA checked; Polytool not run",
+  "frames": [
+    {
+      "id": "summon-forward-identity-b",
+      "description": "East-facing staff-forward casting preparation alternative",
+      "sourceFile": "summon-forward-identity-b-source.webp",
+      "sourceSHA256": "db2e7df24ce89c0c740a8059ae623ce253fd534166ac16f89edecfa0162b8a50",
+      "sourceBytes": 259614,
+      "sourceCellPixels": [
+        656,
+        599
+      ],
+      "file": "summon-forward-identity-b@3x.webp",
+      "webpSHA256": "3a976ea16bc696b9b4840773c21fc59ffd618adcb53ad60bd9f125a9aef12a80",
+      "bytes": 260038,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        56,
+        84
+      ],
+      "sourceAlphaBounds": [
+        0,
+        41,
+        656,
+        599
+      ],
+      "coreAlphaBounds": [
+        97,
+        120,
+        594,
+        593
+      ],
+      "coreExtent": [
+        497,
+        473
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "outputAlphaBounds": [
+        56,
+        125,
+        712,
+        683
+      ],
+      "outputCoreAlphaBounds": [
+        153,
+        204,
+        650,
+        677
+      ],
+      "outputCoreExtent": [
+        497,
+        473
+      ],
+      "alphaPreserved": true,
+      "sourceFullRGBAExact": true,
+      "outputFullRGBAExact": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Provisional direction and pose. Costume, face, staff and handedness require review. Source contains faint alpha at crop edges; no solid core intersects the edge."
+    }
+  ],
+  "reviewNotes": [
+    "Independent alternative pose only; not a continuous sequence.",
+    "No gameplay admission; identity, pose, timing and foot anchor not approved.",
+    "No original production asset replaced."
+  ]
+}

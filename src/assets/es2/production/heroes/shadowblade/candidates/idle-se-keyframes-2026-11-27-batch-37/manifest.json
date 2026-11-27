@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "idle",
+  "direction": "SE",
+  "sourceDirection": "SE",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "1222x1287 -> 668x704 Lanczos -> 768x768 transparent padding; no upscaling",
+  "sourcePixels": [
+    1222,
+    1287
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "77a656c7-fbec-4cea-bfb2-a33bd54f9f35",
+    "originalPNGSHA256": "f70d54226a5672dbfcc648be816f87a35975597c59240c7f1053c454cd9125d3",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "29daa46744065f6d7f626abac9e33d1b5d6ed373",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected; direct image conditioning not independently verified."
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded alpha and visible RGBA checked; Polytool not run",
+  "frames": [
+    {
+      "id": "ready-standing-identity-a",
+      "description": "Southeast-facing standing ready alternate candidate; two lowered daggers.",
+      "sourceFile": "ready-standing-identity-a-source.webp",
+      "sourceSHA256": "e81855e0a03a47a03d14cd1b187de6c226e30b993e27eaead4af8f801e6c64a3",
+      "sourceBytes": 767262,
+      "sourceCellPixels": [
+        1222,
+        1287
+      ],
+      "file": "ready-standing-identity-a@3x.webp",
+      "webpSHA256": "4e46fcc02971416188596e556d44b4ecb55c5b75bf7036ec62fb2d9d7bd640fc",
+      "bytes": 258690,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        50,
+        32
+      ],
+      "sourceAlphaBounds": [
+        0,
+        9,
+        1208,
+        1287
+      ],
+      "coreAlphaBounds": [
+        171,
+        29,
+        1009,
+        1265
+      ],
+      "coreExtent": [
+        838,
+        1236
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        50,
+        42,
+        708,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        143,
+        48,
+        601,
+        724
+      ],
+      "outputCoreExtent": [
+        458,
+        676
+      ],
+      "alphaPreserved": true,
+      "sourceFullRGBAExact": true,
+      "outputFullRGBAExact": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Scar, pauldron, belt and cloth design differ; alternate ready candidate, not another completed frame."
+    }
+  ],
+  "reviewNotes": [
+    "Independent alternate pose only; identity not approved.",
+    "Do not promote to gameplay. No timing/anchor approved.",
+    "No original production asset replaced."
+  ]
+}
