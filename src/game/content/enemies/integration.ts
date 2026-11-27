@@ -233,7 +233,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     const hero = state.hero
     if (!hero || state.mode !== 'play') return false
     const before = hero.hp
-    damageHero(state, amount, hooks, undefined, { rank: info.attackRank, angle: info.angle })
+    damageHero(state, amount, hooks, undefined, { rank: info.attackRank, angle: info.angle, contact:info.contact })
     if (hero.hp >= before) return false
     if (info.status && info.duration && info.duration > 0) {
       const existing = statuses[info.status]

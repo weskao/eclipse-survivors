@@ -70,6 +70,7 @@ export interface FactionRuntime {
 }
 
 export interface FactionHit {
+  contact?: boolean
   kind: FactionKind
   sourceId: number
   attackRank?: 'ordinary' | 'elite'
@@ -150,7 +151,7 @@ function hasSight(a: FactionArena, e: FactionEnemy): boolean {
 
 function hitHero(a: FactionArena, e: FactionEnemy, damage = e.damage, status?: Exclude<FactionStatus, undefined>): void {
   const landed = a.onHeroDamage(damage, {
-    kind: e.kind, sourceId: e.id, attackRank: e.affix ? 'elite' : 'ordinary',
+    kind: e.kind, sourceId: e.id, attackRank: e.affix ? 'elite' : 'ordinary', contact:true,
     angle: Math.atan2(a.hero.y - e.y, a.hero.x - e.x), ...(status ? { status, duration: status === 'freeze' ? 1.2 : 2 } : {}),
   })
   if (landed && e.affix === 'vampiric') e.hp = Math.min(e.max, e.hp + damage * 0.35)

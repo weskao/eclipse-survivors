@@ -12,7 +12,7 @@ export function healthCriticalVersion(target: object): number { return criticalV
 
 export type IncomingRank = keyof typeof BALANCE.combat.incomingCritical
 export type HeroDamageSeverity = HealthImpact | 'extreme'
-export interface IncomingHit { rank?: IncomingRank; angle?: number }
+export interface IncomingHit { rank?: IncomingRank; angle?: number; contact?: boolean }
 
 /** Only direct hostile attacks call this. The engine injects its seeded RNG. */
 export function rollIncomingCritical(rank: IncomingRank, rng: () => number): boolean {

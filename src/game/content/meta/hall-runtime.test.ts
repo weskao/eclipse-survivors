@@ -101,3 +101,12 @@ it('arms iron counter only after actual riposte and star collapse only on area c
   expect(hallBurstProc(s,100,'weapon',true)).toEqual({damage:40,radius:100,limit:5})
   expect(hallBurstProc(s,100,'proc',true)).toBeNull()
 })
+
+it('shares the global proc budget across burst and echo rather than stacking recursive effects',()=> {
+  const s=run({'wizard-star-collapse':1,'arcana-echo':1})
+  s.time=12
+  expect(hallBurstProc(s,100,'weapon',true)?.damage).toBe(40)
+  expect(hallExtraHit(s,100,'weapon')).toBe(0)
+  s.time+=.125
+  expect(hallExtraHit(s,100,'weapon')).toBe(35)
+})

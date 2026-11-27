@@ -273,7 +273,9 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
   const rank = incoming?.rank ?? (source ? source.type === 'boss' ? 'boss' : source.elite ? 'elite' : 'ordinary' : undefined)
   const critical = !!rank && (hooks.rollIncomingCritical?.(rank) ?? false)
   const raw = critical && rank ? n * BALANCE.combat.incomingCritical[rank].multiplier : n
-  const reduced = hallIncoming(s, raw, !!source, !!source && Math.cos(Math.atan2(source.y - hero.y, source.x - hero.x) - hero.aimAngle) >= 0)
+  const contact = !!source || incoming?.contact===true
+  const attackAngle = source ? Math.atan2(source.y-hero.y,source.x-hero.x) : incoming?.angle===undefined ? undefined : incoming.angle+Math.PI
+  const reduced = hallIncoming(s, raw, contact, contact && attackAngle!==undefined && Math.cos(attackAngle-hero.aimAngle)>=0)
   const mitigated = hallAbsorb(s, hooks.mitigateIncomingDamage?.(reduced) ?? reduced)
   // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
   if (!Number.isFinite(mitigated) || mitigated <= 0) return

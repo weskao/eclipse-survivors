@@ -44,10 +44,11 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
 
   if (sk.bolt && hero.bolt <= 0) {
     hero.bolt = Math.max(AREA.bolt.cooldownFloor, AREA.bolt.cooldownBase - sk.bolt * AREA.bolt.cooldownPerRank) * cooldown
-    hallWeaponCast(s)
+    let castCounted=false
     for (const e of nearestCombatTargets(targets, hero).slice(0, Math.min(AREA.bolt.targetBase + sk.bolt, AREA.bolt.maxTargets))) {
       const dx = e.x - hero.x, dy = e.y - hero.y
       if (dx * dx + dy * dy < AREA.bolt.range * AREA.bolt.range) {
+        if(!castCounted){hallWeaponCast(s);castCounted=true}
         if (!hitTarget(s, e, hero.damage * AREA.bolt.damageRatio, weaponHooks, factions, hero, 'elemental')) continue
         if (sk.bolt >= 5) slowTarget(e, hallSlow(s, e, AREA.bolt.maxRankShockSeconds))
         zigzag(s, e.x + rand(-28, 28), e.y - 160, e.x, e.y)
@@ -80,7 +81,7 @@ export function tickSkills(s: GameState, dt: number, hooks: GameHooks, factions?
 
   if (sk.meteor && hero.meteorCd <= 0) {
     hero.meteorCd = Math.max(AREA.meteor.cooldownFloor, AREA.meteor.cooldownBase - sk.meteor * AREA.meteor.cooldownPerRank) * cooldown
-    hallWeaponCast(s)
+    if(targets.some(e=>e.hp>0))hallWeaponCast(s)
     for (const e of nearestCombatTargets(targets, hero).slice(0, Math.min(AREA.meteor.targetBase + sk.meteor, AREA.meteor.maxTargets))) {
       pushParticle(s, { x: e.x, y: e.y, life: 0.8, max: 0.8, color: '#ffba7c', r: 18, type: 'meteor' })
       impact(s, e.x, e.y, 84 + (sk.meteor >= 5 ? AREA.meteor.maxRankRangeBonus : 0), '#ffb26b', 1.1)

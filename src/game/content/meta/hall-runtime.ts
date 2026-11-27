@@ -150,8 +150,10 @@ export function hallKill(state: GameState, elite = false): void {
 export function grantShield(state: GameState, fraction: number, seconds: number): void {
   const h = state.hall, hero = state.hero
   if (!h || !hero || hero.hp <= 0 || fraction <= 0) return
-  h.shield = Math.max(state.time < h.shieldUntil ? h.shield : 0, hero.max * fraction)
-  h.shieldUntil = state.time + seconds
+  const current=state.time<h.shieldUntil?h.shield:0
+  const incoming=hero.max*fraction
+  if(incoming>=current){h.shield=incoming;h.shieldUntil=state.time+seconds}
+  else h.shieldUntil=Math.max(h.shieldUntil,state.time+seconds)
 }
 export function hallIncoming(state: GameState, amount: number, directContact = false, front = false): number {
   const h = state.hall, hero = state.hero
@@ -275,13 +277,13 @@ export function hallWeaponCast(state: GameState): void {
 }
 export function hallBurstProc(state: GameState, amount:number, source:HallDamageSource|undefined, area:boolean): {damage:number;radius:number;limit:number}|null {
   const h=state.hall
-  if (!h || source==='proc' || amount<=0 || !Number.isFinite(amount)) return null
+  if (!h || source==='proc' || amount<=0 || !Number.isFinite(amount) || state.mode!=='play' || !state.hero || state.hero.hp<=0 || state.time<h.procAt) return null
   if (source==='basic' && h.ironReady) {
-    h.ironReady=false; h.ironAt=state.time+tuning.ironCounterCooldown
+    h.ironReady=false; h.ironAt=state.time+tuning.ironCounterCooldown; h.procAt=state.time+tuning.procInterval
     return {damage:amount*tuning.ironCounterDamage,radius:tuning.ironCounterRadius,limit:tuning.ironCounterTargets}
   }
   if (area && (source==='weapon'||source==='persistent') && h.rank('wizard-star-collapse') && state.time>=h.starAt) {
-    h.starAt=state.time+tuning.starCollapseCooldown
+    h.starAt=state.time+tuning.starCollapseCooldown; h.procAt=state.time+tuning.procInterval
     return {damage:amount*tuning.starCollapseDamage,radius:tuning.starCollapseRadius,limit:tuning.starCollapseTargets}
   }
   return null

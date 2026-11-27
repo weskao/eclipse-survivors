@@ -45,7 +45,6 @@ export const WEAPON_SPECS: readonly WeaponSpec[] = [
 function ready(context: ContentContext, r: ArsenalRuntime, key: WeaponKey, dt: number, interval: number, level: number): boolean {
   const left = Math.max(0, (r.timers[key] ?? 0) - dt)
   if (left > 0) { r.timers[key] = left; return false }
-  hallWeaponCast(context.state)
   r.timers[key] = Math.max(W.common.cooldownFloor, interval * (1 - W.common.cooldownReductionPerRank * (level - 1)) * (context.state.hall?.weaponCooldown ?? 1))
   return true
 }
@@ -76,6 +75,7 @@ function fireStraight(
   const h = context.state.hero!
   const e = target(context, range)
   if (!e) return false
+  hallWeaponCast(context.state)
   fireMissile(r, kind, h.x, h.y, e, speed,
     h.damage * (multiplier + W.common.straightDamagePerRank * (level - 1)), pierce, 0,
     kind === 'lance' ? 14 : kind === 'bone' ? 7 : 9)
@@ -86,6 +86,7 @@ function slash(context: ContentContext, level: number): boolean {
   const h = context.state.hero!
   const e = target(context, W.scythe.targetRangeBase + W.scythe.targetRangePerRank * level + capstone(level,B.scytheRange))
   if (!e) return false
+  hallWeaponCast(context.state)
   const a = Math.atan2(e.y - h.y, e.x - h.x)
   const ux = Math.cos(a), uy = Math.sin(a)
   let stolen = 0
@@ -195,6 +196,7 @@ function tickBeam(context: ContentContext, dt: number, level: number): void {
   }
   const next = target(context, 730)
   if (next && ready(context, r, 'solar-beam', dt, W.intervals['solar-beam'], level)) {
+    hallWeaponCast(context.state)
     r.beamAngle = Math.atan2(next.y - h.y, next.x - h.x)
     r.charge = Math.max(0.42, 0.75 - level * 0.04)
   }
@@ -226,6 +228,8 @@ function tickChain(context: ContentContext, dt: number, level: number): void {
   if (!ready(context, r, 'thorn-chain', dt, W.intervals['thorn-chain'], level)) return
   const nearby = nearest(context.state, h.x, h.y, 420, Math.min(6, 2 + level), undefined, context.hooks.factions?.())
   if (!nearby.length) return
+  hallWeaponCast(context.state)
+  hallSummonCast(context.state)
   const firstDamage = h.damage * (W.thornChain.damageBase + W.thornChain.damagePerRank * level)
   for (const enemy of nearby) hitTarget(context.state, enemy, firstDamage, context.hooks, context.hooks.factions?.())
   r.links.length = 0
@@ -260,6 +264,7 @@ function tickBoneVolley(context: ContentContext, dt: number, level: number): voi
   if (r.volley > 0 || !ready(context, r, 'bone-spears', dt, W.intervals['bone-spears'], level)) return
   const enemy = target(context, 620)
   if (!enemy) return
+  hallWeaponCast(context.state)
   r.volley = Math.min(6, 2 + level)
   r.volleyInterval = 0
   r.volleyAngle = Math.atan2(enemy.y - h.y, enemy.x - h.x)
@@ -281,6 +286,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 510)
         if (enemy) {
+          hallWeaponCast(context.state)
           for (let i = 0; i < Math.min(6, 1 + level); i++)
             fireMissile(r, 'dagger', h.x + (i - level / 2) * 12, h.y,
               enemy, 470, h.damage * (0.42 + level * 0.115), 1, 2 + Math.floor(level / 2) + capstone(level,B.daggerJumps), 7)
@@ -302,6 +308,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 520)
         if (enemy) {
+          hallWeaponCast(context.state)
           const jitter = (context.random() - 0.5) * 24
           addZone(r, { kind: 'mine', x: enemy.x + jitter, y: enemy.y - jitter,
             radius: (W.arcaneMines.radiusBase + W.arcaneMines.radiusPerRank * level + capstone(level,B.mineRadius)) * (context.state.hall?.radius ?? 1), damage: h.damage * (W.arcaneMines.damageBase + W.arcaneMines.damagePerRank * level),
@@ -319,6 +326,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 500)
         if (enemy) {
+          hallWeaponCast(context.state)
           addZone(r, { kind: 'poison', x: enemy.x, y: enemy.y,
             radius: (W.poisonCloud.radiusBase + W.poisonCloud.radiusPerRank * level) * (context.state.hall?.radius ?? 1), damage: h.damage * (W.poisonCloud.damageBase + level * W.poisonCloud.damagePerRank),
             life: (3.15 + capstone(level,B.poisonDuration)) * hallEffectDuration(context.state), fuse: 0, pulse: 0.17 })
@@ -332,6 +340,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
       if (ready(context, r, key, dt, W.intervals[key], level)) {
         const enemy = target(context, 520)
         if (enemy) {
+          hallWeaponCast(context.state)
           fireMissile(r, 'blade', h.x, h.y, enemy, 560,
             h.damage * (0.62 + 0.135 * level), 1, 2 + level + capstone(level,B.bladeJumps), 10)
           context.hooks.sfx('chain')
