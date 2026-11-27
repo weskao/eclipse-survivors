@@ -133,11 +133,11 @@ let unmount: (() => void) | undefined
 let removeTouchGuard: () => void = () => {}
 let removeCursorAccent: () => void = () => {}
 let clearPresentation: () => void = () => {}
+const motionQuery = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : undefined
 function syncPresentation(): void {
   clearPresentation()
   const policy = resolvePresentationPolicy(accessibilityPreferences.value, {
-    prefersReducedMotion: typeof matchMedia === 'function' &&
-      matchMedia('(prefers-reduced-motion: reduce)').matches,
+    prefersReducedMotion: !!motionQuery?.matches,
     hardwareConcurrency: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : undefined,
     coarsePointer: ui.coarsePointer,
   })
@@ -149,12 +149,14 @@ onMounted(() => {
   removeTouchGuard = installGameTouchGuard(document)
   removeCursorAccent = installCursorAccent(document)
   syncPresentation()
+  motionQuery?.addEventListener?.('change', syncPresentation)
   applyDocumentLocale()
   if (canvas.value) unmount = engine.mount(canvas.value, hudRef.value?.minimap ?? null)
 })
 onBeforeUnmount(() => {
   removeTouchGuard()
   removeCursorAccent()
+  motionQuery?.removeEventListener?.('change', syncPresentation)
   clearPresentation()
   unmount?.()
 })

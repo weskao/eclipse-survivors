@@ -299,7 +299,7 @@ export function drawCharacter(
   if (hero && hero.inv > 0 && !reducedMotion) ctx.globalAlpha = 0.75
   // Hit tint takes priority over warlock tint, which takes priority over elite.
   // Reuse a 2x bitmap instead of a Canvas CSS filter on every visible enemy.
-  const tint = mob?.hit && mob.hit > 0 && !reducedMotion ? 'brightness(1.3) sepia(.25)'
+  const tint = mob?.hit && mob.hit > 0 && !reducedMotion && !reduceFlashing ? 'brightness(1.3) sepia(.25)'
     : mob?.type === 'warlock' ? 'hue-rotate(15deg) saturate(1.2)'
       : mob?.elite ? 'hue-rotate(75deg) saturate(1.5) brightness(1.1)' : null
   const im = art[kind === 'warlock' ? 'wizard' : kind]
