@@ -131,6 +131,18 @@ describe('Google OAuth entry points', () => {
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1)
     wrapper.unmount()
   })
+  it('identifies guest OAuth errors as sign-in failures rather than sync failures', async () => {
+    const { cloud, status } = fixture()
+    status.value = 'error'
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 50, result: true, notice: 'error' } })
+    expect(wrapper.get('[data-es2-account-toast]').text()).toContain('登入失敗')
+    expect(wrapper.get('.es2-result-cloud-copy strong').text()).toBe('登入失敗')
+    expect(wrapper.get('[data-es2-result-google-login]').exists()).toBe(true)
+    setLocale('en')
+    await nextTick()
+    expect(wrapper.get('.es2-result-cloud-copy strong').text()).toBe('Sign-in failed')
+    wrapper.unmount()
+  })
   it('shows result sign-in feedback independently of the cloud save and keeps retry available', async () => {
     const { cloud, user, status, confirmed } = fixture()
     user.value = { uid: 'a', displayName: 'Adventurer' } as User

@@ -33,7 +33,8 @@ const statusGlyph = computed(() => {
 })
 const resultState = computed(() => props.cloud.user.value ? accountStatus.value
   : props.cloud.signingIn.value || props.cloud.busy.value ? 'loading' : props.cloud.status.value)
-const resultHeading = computed(() => props.cloud.user.value ? statusLabels[accountStatus.value] : statusLabels[resultState.value])
+const resultHeading = computed(() => !props.cloud.user.value && resultState.value === 'error'
+  ? '登入失敗' : statusLabels[resultState.value])
 const resultMessage = computed(() => {
   if (props.cloud.user.value) {
     if (props.cloud.status.value === 'playtest') return statusLabels.playtest
