@@ -3,6 +3,7 @@ import type { GameMode, SfxCue } from '../types'
 import { createBattleScore, createMenuScore } from './music'
 import { createBossScore } from './boss-score'
 import { createCinematicMusic } from './cinematic'
+import { createResultAudioDiagnostics } from './result-diagnostics'
 import { createEs2Score } from './es2/score'
 import type { BossId } from '../content/bosses/definitions'
 import { ATTACK_PRESENTATION } from '../content/bosses/attack-presentation'
@@ -55,6 +56,7 @@ export interface AudioContextLike {
   createBufferSource(): BufferSourceLike
   decodeAudioData?(data: ArrayBuffer): Promise<BufferLike>
   createBiquadFilter(): FilterLike
+  createAnalyser?(): Pick<AnalyserNode, 'fftSize' | 'getFloatTimeDomainData'>
 }
 
 export interface AudioSystemOptions {
@@ -170,10 +172,23 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const bossScore = createBossScore()
   let fallbackBossId: BossId | null = null
   const cinematic = createCinematicMusic(opts, () => ac, () => musicBus,
-    () => (isBattleMusicMode(mode) || mode === 'result') && !interrupted && musicOn && musicVolume > 0)
+    () => (isBattleMusicMode(mode) || mode === 'result') && !interrupted && musicOn && musicVolume > 0,
+    () => diagnostics?.markMusic())
   let resultScore = createEs2Score()
   let resultScene: 'victory' | 'defeat' | null = null
   const sfxLast = new Map<SfxCue, number>()
+  const diagnostics: ReturnType<typeof createResultAudioDiagnostics> | undefined =
+    import.meta.env.DEV && typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('audioDiagnostics') === '1'
+      ? createResultAudioDiagnostics(() => ({
+        audioContext: ac?.state ?? 'unavailable',
+        interrupted, resumePending: resumePending !== null, externalScoreActive,
+        bgmEnabled: musicOn, bgmVolume: musicVolume,
+        bgmSource: resultScene === 'victory' && opts.victoryTrack && !cinematic.resultFallback
+          ? opts.victoryTrack : 'synth',
+        sfxEnabled: sfxOn, sfxVolume, sfxPending: pendingResultCue !== null,
+      }), () => ({ context: ac, music: musicBus, sfx: master }))
+      : undefined
 
   bgm.volume = 0.38
   try {
@@ -332,8 +347,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
           cinematic.sync()
           for (const [cue, milestone] of cues) system.playSfx(cue, milestone)
           if (mode === 'result') system.tick('result')
-        }, () => {
+        }, error => {
           if (resumePending !== attempt) return
+          diagnostics?.markResumeError(error)
           resumePending = null
           pendingSfx.clear()
         })
@@ -345,7 +361,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         contextWasRunning = true
         if (recovering && mode === 'result') system.tick('result')
       }
-    } catch {
+    } catch (error) {
+      diagnostics?.markResumeError(error)
       ac = null
       resumePending = null
       pendingSfx.clear()
@@ -418,7 +435,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       resultScene = next
       resultScore.dispose()
       resultScore = createEs2Score()
-      if (next) resultScore.change(next, ac ? ac.currentTime + 0.02 : 0)
+      if (next) {
+        resultScore.change(next, ac ? ac.currentTime + 0.02 : 0)
+        diagnostics?.start(next)
+      } else diagnostics?.stop()
       cinematic.result(next)
     },
     setCombatIntensity(next) {
@@ -556,6 +576,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       for (const [pitch, delay, duration, gain, wave] of tones) {
         const source = tone(pitch, now + delay, duration, gain, wave)
         if (heroCast && source) heroCastVoices.push({ source, endsAt: now + delay + duration + 0.03 })
+        if (source && mode === 'result' && cue === resultScene) diagnostics?.markSfx()
       }
       if (NOISE_CUES.has(cue)) noiseBurst(now)
     },
@@ -582,7 +603,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
           cinematic.sync()
           if (!cinematic.resultFallback) return
         }
-        if (resultScene) resultScore.schedule(ctx.currentTime, tone, 0.88)
+        if (resultScene) resultScore.schedule(ctx.currentTime, diagnostics
+          ? (...args) => { if (tone(...args)) diagnostics.markMusic() }
+          : tone, 0.88)
         return
       }
       if (!isBattleMusicMode(mode)) return
@@ -611,6 +634,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       // active media/cinematic score on play ↔ level (including chained rewards).
       if (isBattleMusicMode(previous) && isBattleMusicMode(mode)) return
       if (mode !== 'result') {
+        diagnostics?.stop()
         pendingResultCue = null
         resultRecoveryAttempted = false
         resultScene = null
@@ -691,6 +715,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       return sfxOn
     },
     dispose() {
+      diagnostics?.stop()
       interrupted = true
       resumePending = null
       pendingSfx.clear()

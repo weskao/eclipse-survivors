@@ -22,6 +22,7 @@ export function createCinematicMusic(
   context: () => AudioContextLike | null,
   musicBus: () => GainLike | null,
   allowed: () => boolean,
+  onVictoryScheduled?: () => void,
 ): {
   readonly playingBoss: boolean
   readonly resultFallback: boolean
@@ -123,6 +124,7 @@ export function createCinematicMusic(
         voice = { key: next.key, source, gain, started: now + 0.02,
           offset: startOffset, duration, loop: next.loop }
         paused = null
+        if (next.key === 'result:victory') onVictoryScheduled?.()
       } catch { failed.add(next.url) }
     })
   }
