@@ -28,7 +28,7 @@ export function createHallRuntime(snapshot: HallRunSnapshot) {
     ambushReady: false, assassinAt: 0, legionUntil: 0, legionAt: 0, soulBondAt: 0, sanctuaryUntil: 0,
     markTarget: null as Target | null, markHits: 0,
     salvageReveals: 0, earnedRerolls: 0, spentRerolls: 0,
-    ironReady: false, ironAt: 0, piercingAt: 0, stormAt: 0, stormReadyUntil: 0, starAt: tuning.starCollapseCooldown, sigilCasts: 0, sigilAt: 0, sigilReady: false,
+    ironReady: false, ironAt: 0, piercingAt: 0, stormAt: 0, stormReady: false, starAt: tuning.starCollapseCooldown, sigilCasts: 0, sigilAt: 0, sigilReady: false,
   }
 }
 export type HallRuntime = ReturnType<typeof createHallRuntime>
@@ -198,7 +198,7 @@ export function tickHall(state: GameState, dt: number, dashFinished: boolean): v
   }
   if (dashFinished) {
     h.dashAt = now
-    h.stormReadyUntil = now + tuning.afterwindSeconds
+    if (h.rank('ranger-storm-hunter') && now >= h.stormAt) h.stormReady = true
     h.afterwindUntil = now + tuning.afterwindSeconds
     h.windstepUntil = now + tuning.afterwindSeconds
     if (h.rank('knight-bulwark') && now >= h.bulwarkAt) {
@@ -265,8 +265,8 @@ export function hallRangerShot(state: GameState): {pierce:number;extra:number} {
   const h=state.hall
   let pierce=0,extra=0
   if (h && h.rank('ranger-piercing-moon') && state.time>=h.piercingAt) { pierce=1; h.piercingAt=state.time+tuning.piercingMoonCooldown }
-  if (h && h.rank('ranger-storm-hunter') && state.time<h.stormReadyUntil && state.time>=h.stormAt) {
-    extra=tuning.stormHunterDamage; h.stormAt=state.time+tuning.stormHunterCooldown; h.stormReadyUntil=0
+  if (h && h.rank('ranger-storm-hunter') && h.stormReady && state.time>=h.stormAt) {
+    extra=tuning.stormHunterDamage; h.stormAt=state.time+tuning.stormHunterCooldown; h.stormReady=false
   }
   return {pierce,extra}
 }

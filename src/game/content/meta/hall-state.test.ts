@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { HALL_TALENTS } from './hall-talents'
+import { HALL_GROUPS, HALL_TALENTS } from './hall-talents'
 import { createMetaState, type MetaState } from './state'
 import { emptyHall, purchaseHallTalent, equipHall, resolveHallRunSnapshot, validHall } from './hall-state'
 
@@ -52,5 +52,37 @@ describe('ES4 ownership and attunement', () => {
     const changed = equipHall(equipped,'knight',['offense-war-master'],null,'synergy-blade-and-bastion')!
     expect(resolveHallRunSnapshot(changed,'knight').ranks['synergy-blade-and-bastion']).toBeUndefined()
     expect(snap.ranks['synergy-blade-and-bastion']).toBe(1)
+  })
+})
+
+describe('six heroes, twelve signature builds and six resonance pairs', () => {
+  const heroes = HALL_GROUPS.filter(group => group.kind === 'hero')
+  const resonances = HALL_TALENTS.filter(node => node.group === 'synergy')
+  it.each(heroes.map(group => group.id))('keeps both %s signatures mutually exclusive and excludes other heroes', hero => {
+    const state=allOwned()
+    const signatures=HALL_TALENTS.filter(node=>node.group===hero&&node.maxRank===1)
+    expect(signatures).toHaveLength(2)
+    const before=JSON.stringify(state)
+    for(const signature of signatures) {
+      const selected=equipHall(state,hero,[],signature.id,null)!
+      const snapshot=resolveHallRunSnapshot(selected,hero)
+      expect(snapshot.ranks[signature.id]).toBe(1)
+      for(const other of HALL_TALENTS.filter(node=>heroes.some(group=>group.id===node.group))) {
+        if(other.group!==hero || (other.maxRank===1&&other.id!==signature.id)) expect(snapshot.ranks[other.id],other.id).toBeUndefined()
+        else expect(snapshot.ranks[other.id],other.id).toBe(other.maxRank)
+      }
+    }
+    expect(JSON.stringify(state)).toBe(before)
+  })
+  it.each(resonances.map(node=>node.id))('activates %s only when both required keystones are equipped', id => {
+    const state=allOwned()
+    const node=resonances.find(item=>item.id===id)!
+    const ids=node.requires.map(req=>req.id)
+    const full=equipHall(state,'knight',ids,null,id)!
+    const partial=equipHall(state,'knight',ids.slice(0,1),null,id)!
+    expect(resolveHallRunSnapshot(full,'knight').ranks[id]).toBe(1)
+    expect(resolveHallRunSnapshot(partial,'knight').ranks[id]).toBeUndefined()
+    expect(partial.hall!.ownership[id]).toBe(1)
+    expect(Object.isFrozen(resolveHallRunSnapshot(full,'knight').ranks)).toBe(true)
   })
 })

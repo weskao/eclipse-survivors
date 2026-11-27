@@ -110,3 +110,17 @@ it('shares the global proc budget across burst and echo rather than stacking rec
   s.time+=.125
   expect(hallExtraHit(s,100,'weapon')).toBe(35)
 })
+
+it('keeps Storm Hunter armed until the next basic arrow, not just the afterwind window', () => {
+  const s = run({'ranger-storm-hunter':1})
+  tickHall(s,0,true)
+  s.time=3
+  expect(hallRangerShot(s).extra).toBeCloseTo(.35)
+  expect(hallRangerShot(s).extra).toBe(0)
+  s.time=4
+  tickHall(s,0,true)
+  s.time=14
+  expect(hallRangerShot(s).extra).toBe(0)
+  tickHall(s,0,true)
+  expect(hallRangerShot(s).extra).toBeCloseTo(.35)
+})
