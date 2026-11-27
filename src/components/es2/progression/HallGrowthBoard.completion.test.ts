@@ -79,3 +79,13 @@ it.each(['keystone','signature','resonance'] as const)('plays a distinct %s cere
     expect(wrapper.find('[data-hall-ritual]').exists()).toBe(false)
   }finally{wrapper.unmount();vi.useRealTimers()}
 })
+
+it('keeps the confirmation outside the scrollable detail and long ceremony status inside it',async()=>{
+  const wrapper=mount(HallGrowthBoard,{props:{nodes:[node('power',4)]}})
+  try{
+    await wrapper.get('[data-hall-confirm]').trigger('click')
+    await wrapper.setProps({nodes:[node('power',5)]})
+    expect(wrapper.get('.hall-detail-body').find('.hall-success').exists()).toBe(true)
+    expect(wrapper.get('.hall-detail-body').find('[data-hall-confirm]').exists()).toBe(false)
+  }finally{wrapper.unmount()}
+})

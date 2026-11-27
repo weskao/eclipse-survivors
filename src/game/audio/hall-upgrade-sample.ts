@@ -120,7 +120,7 @@ function renderPalette(rate: number, kind: keyof typeof PALETTE): Float32Array {
       (Math.sin(tau*p.bass*u) + .36*Math.sin(tau*p.bass*2*u)) : 0
     const tailTime = t - p.seconds*.42
     const tail = grand && tailTime > 0 ? .19 * Math.sin(Math.PI*Math.min(1,tailTime/(p.seconds*.58))) *
-      (Math.sin(tau*p.notes[0]*tailTime) + .46*Math.sin(tau*p.notes[p.notes.length-1]*tailTime)) : 0
+      (Math.sin(tau*p.notes[0]*tailTime) + .46*Math.sin(tau*p.notes[p.notes.length-1]!*tailTime)) : 0
     const strikeTime=t-p.onset-.085
     const second=weight*.12*(strikeTime>0?Math.exp(-strikeTime*24)*(Math.sin(tau*p.strike*2.71*strikeTime)+.28*(noise-filtered)):0)
     const mixed = Math.tanh((latch + charge + chimes + bloom + forged + body + tail + second) * 1.35 + room)

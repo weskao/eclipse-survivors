@@ -97,3 +97,13 @@ it('animates only an acknowledged equip or release, never a click or initial hyd
     expect(wrapper.find('[data-hall-attunement-fx]').exists()).toBe(false)
   }finally{wrapper.unmount();vi.useRealTimers()}
 })
+
+it('reserves the feedback region without replacing the attunement buttons or pretending success',()=>{
+  const state=createMetaState()
+  state.version=4;state.hall={ownership:{'offense-war-master':1},attunement:{universal:[],hero:{},resonance:null}}
+  const wrapper=mount(HallTalentExplorer,{props:{state,hero:'knight',writable:true}})
+  expect(wrapper.find('.es4-attune-status').exists()).toBe(true)
+  expect(wrapper.find('[data-hall-attunement-fx]').exists()).toBe(false)
+  expect(wrapper.get('[data-es4-attune="offense-war-master"]').exists()).toBe(true)
+  wrapper.unmount()
+})

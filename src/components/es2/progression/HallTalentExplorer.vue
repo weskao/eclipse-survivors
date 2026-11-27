@@ -166,7 +166,10 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
     <section v-if="live" class="es4-attunement" :aria-label="localized('調律','Attunement')">
       <h4>{{ localized('調律配置','Attunement') }} · {{ equipped?.universal.length ?? 0 }}/2 · {{ selectedSignature ? 1 : 0 }}/1 · {{ equipped?.resonance ? 1 : 0 }}/1</h4>
       <p class="es4-notice">{{ localized('共通終極 2、英雄招牌 1、跨樹共鳴 1。只影響下一場遠征；共鳴需配戴兩個指定終極。','Two universal keystones, one hero signature and one resonance. Next run only; a resonance requires both specified keystones.') }}</p>
+      <div class="es4-attune-status">
       <div v-if="attuneFx" :key="attuneFx.serial" class="es4-attune-feedback" :data-hall-attunement-fx="attuneFx.kind" role="status"><img :src="image(attuneFx.id)" alt="" width="28" height="28"/><span>{{ title(attuneFx.id) }} · {{ attuneFx.kind==='release'?localized('已解除調律','Attunement released'):localized('配置已更新','Attunement updated') }}</span><i aria-hidden="true"></i></div>
+        <span v-else class="es4-attune-idle">{{ localized('調律僅於下一場遠征生效','Attunement applies on the next run') }}</span>
+      </div>
       <div class="es4-slots"><button v-for="id in allSlots" :key="id" type="button" class="es4-equip" :data-es4-active-slot="id" :aria-label="localized('卸下 ','Unequip ')+title(id)" @click="clearSlot(id)">{{ title(id) }} · {{ activeRanks[id] ? localized('生效中','Active') : localized('條件未滿足','Inactive') }} ×</button></div>
       <button v-for="node in selectable" :key="node.id" type="button" class="es4-equip" :data-es4-attune="node.id" :aria-pressed="!!activeChoice(node.id)" :disabled="tree==='discipline' && !activeChoice(node.id) && (equipped?.universal.length ?? 0)>=2" @click="toggleAttunement(node.id)">{{ localized(node.name,node.nameEn) }} · {{ activeChoice(node.id) ? (activeRanks[node.id] ? localized('生效中','Active') : localized('已配置 · 未生效','Equipped · inactive')) : localized('配置','Equip') }}</button>
     </section>
@@ -207,14 +210,14 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
 @media(max-width:480px){.es4-medallions{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.es4-medal{width:44px}.es4-tree-nav button{font-size:.76rem}}
 @keyframes es4-enter{from{opacity:.7;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.es4-constellation,.es4-medal{animation:none!important;transition:none!important;transform:none!important}}
-:global([data-es2-reduce-motion="true"]) .es4-constellation,:global([data-es2-reduce-flashing="true"]) .es4-constellation{animation:none!important}
-:global([data-es2-reduce-motion="true"]) .es4-medal,:global([data-es2-reduce-flashing="true"]) .es4-medal{transition:none!important;transform:none!important}
+:global([data-es2-reduce-motion="true"] .es4-constellation),:global([data-es2-reduce-flashing="true"] .es4-constellation){animation:none!important}
+:global([data-es2-reduce-motion="true"] .es4-medal),:global([data-es2-reduce-flashing="true"] .es4-medal){transition:none!important;transform:none!important}
 
 .es4-slots{display:flex;flex-wrap:wrap;gap:5px}
 .es4-equip{position:relative;max-width:100%;overflow-wrap:anywhere;cursor:pointer;background:linear-gradient(145deg,#263744,#151e29);box-shadow:inset 0 1px #ffffff13,0 2px 5px #0005}
 .es4-equip[aria-pressed=true]{border-color:#e9cf96;background:linear-gradient(145deg,#5c492e,#2d302d);color:#fff0cc}
 .es4-equip:focus-visible{outline:2px solid #fff1bf;outline-offset:2px}
-.es4-attune-feedback{position:relative;isolation:isolate;display:flex;align-items:center;gap:8px;overflow:hidden;min-height:34px;padding:5px 9px;margin:7px 0;color:#e9dbb6;background:linear-gradient(115deg,#302b22,#182a37);border:1px solid #ba9863;border-radius:7px;font-size:.8rem;overflow-wrap:anywhere}
+.es4-attune-feedback{position:relative;isolation:isolate;display:flex;align-items:center;gap:8px;overflow:hidden;min-height:34px;padding:5px 9px;margin:0;color:#e9dbb6;background:linear-gradient(115deg,#302b22,#182a37);border:1px solid #ba9863;border-radius:7px;font-size:.8rem;overflow-wrap:anywhere}
 .es4-attune-feedback img{flex:none;object-fit:contain}
 .es4-attune-feedback i{position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 32%,#ffdf9c55 50%,transparent 68%);animation:es4-attune-sweep .85s ease-out both;z-index:-1}
 .es4-attune-feedback[data-hall-attunement-fx=signature]{border-color:#a4ddd4;color:#c8eee8}
@@ -225,5 +228,12 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
 @keyframes es4-attune-sweep{0%{transform:translateX(-100%);opacity:0}40%{opacity:1}100%{transform:translateX(100%);opacity:0}}
 @keyframes es4-attune-converge{0%{transform:scaleX(2);opacity:0}40%{opacity:1}100%{transform:scaleX(0);opacity:0}}
 @media(prefers-reduced-motion:reduce){.es4-attune-feedback i{display:none!important}}
-:global([data-es2-reduce-motion="true"]) .es4-attune-feedback i,:global([data-es2-reduce-flashing="true"]) .es4-attune-feedback i{display:none!important}
+:global([data-es2-reduce-motion="true"] .es4-attune-feedback i),:global([data-es2-reduce-flashing="true"] .es4-attune-feedback i){display:none!important}
+
+.es4-attune-status{min-height:52px;display:grid;align-items:center;margin-block:7px;min-width:0}
+.es4-attune-idle{font-size:.76rem;color:#b8c3cd;padding-inline:9px}
+.es4-attune-feedback{box-sizing:border-box;width:100%;min-width:0}
+.es4-attune-feedback span{min-width:0}
+.es4-equip{box-sizing:border-box;min-width:0;max-width:calc(100% - 8px)}
+@media(max-width:360px){.es4-attune-status{min-height:64px}.es4-equip{margin:2px;max-width:calc(100% - 4px)}}
 </style>

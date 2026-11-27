@@ -182,12 +182,12 @@ watch(() => props.nodes, (nodes, previous) => {
       </div>
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><div v-for="(requirement,index) in active.requirements" :key="requirement"><button v-if="navigableRequirements && active.requires[index]" type="button" class="hall-prerequisite-link" :data-hall-prerequisite="active.requires[index]?.id" data-ui-sfx="select" @click="followRequirement(index)">{{ requirement }} ↗</button><p v-else>{{ requirement }}</p></div></div>
       <small class="hall-status">{{ active.attunementStatus ?? t(status(active)) }}</small>
-      </div>
-      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview && completion(active) === 'none' ? t('選取節點後升級') : action(active) }}</button>
       <div v-if="upgraded?.id === active.id" role="status" class="hall-success" :key="upgraded.rank">
         <span class="hall-ceremony-label">{{ t(upgraded.milestone ? '最高等階達成' : '升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</span>
         <span v-if="upgraded.arrived.length" data-hall-unlock-notice class="hall-unlock-notice">{{ t('新研究已開啟') }} · {{ nodes.filter(node => upgraded?.arrived.includes(node.id)).map(node => t(node.title)).join(' · ') }}</span>
       </div>
+      </div>
+      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview && completion(active) === 'none' ? t('選取節點後升級') : action(active) }}</button>
     </aside>
     </Teleport>
   </div>
@@ -290,17 +290,17 @@ watch(() => props.nodes, (nodes, previous) => {
 /* One detail template: a side inspector on wide fine-pointer layouts, a viewport
    overlay on touch/narrow screens. Teleport avoids transformed archive ancestors. */
 .hall-growth--floating{grid-template-columns:minmax(0,1fr)!important}
-.hall-detail--floating{position:fixed;z-index:305;inset-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));margin:0 auto;width:auto;max-width:520px;max-height:min(48dvh,390px);box-sizing:border-box;display:flex;flex-direction:column;gap:7px;padding:12px;background:linear-gradient(155deg,#26394b,#111b27 72%);border:1px solid #b99b65;border-top:2px solid #e7c58b;border-radius:15px 15px 8px 8px;box-shadow:0 -8px 32px #0009,inset 0 1px #e7c58b26;color:#ebdfcc;font:inherit;overscroll-behavior:contain;animation:hall-inspector-in .18s ease-out both}
+.hall-detail--floating{position:fixed;z-index:305;inset-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));margin:0 auto;width:auto;max-width:520px;max-height:min(max(48dvh,185px),390px,calc(100dvh - max(8px,env(safe-area-inset-top)) - max(8px,env(safe-area-inset-bottom))));box-sizing:border-box;display:flex;flex-direction:column;gap:7px;padding:12px;background:linear-gradient(155deg,#26394b,#111b27 72%);border:1px solid #b99b65;border-top:2px solid #e7c58b;border-radius:15px 15px 8px 8px;box-shadow:0 -8px 32px #0009,inset 0 1px #e7c58b26;color:#ebdfcc;font:inherit;overscroll-behavior:contain;animation:hall-inspector-in .18s ease-out both}
 .hall-detail--floating:focus{outline:none}
-.hall-detail--floating .hall-detail-heading{padding-right:46px;flex:none}
+.hall-detail--floating .hall-detail-heading{padding-right:46px;flex:none;min-width:0}.hall-detail-heading>div{min-width:0;overflow-wrap:anywhere}
 .hall-detail--floating .hall-detail-body{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding-right:2px}
-.hall-detail--floating .hall-confirm{flex:none}
-.hall-detail--floating .hall-success{flex:none;font-size:.78rem}
+.hall-detail--floating .hall-confirm{flex:none;position:relative;z-index:2}
+.hall-detail--floating .hall-success{font-size:.78rem;margin-block:2px}
 .hall-detail-close{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:44px;height:44px;border:1px solid #b99b6566;border-radius:7px;background:#111c28;color:#e9d3ab;font:400 24px/1 system-ui;cursor:pointer}
 .hall-detail-close:focus-visible{outline:2px solid #ffda94;outline-offset:1px}
 @keyframes hall-inspector-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media(orientation:landscape) and (max-height:600px){
-  .hall-detail--floating{inset-inline:auto max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));width:min(44vw,330px);max-width:calc(100vw - 16px);max-height:none;padding:9px;gap:5px;border-radius:10px;animation-name:hall-inspector-side}
+  .hall-detail--floating{inset-inline:auto max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));width:min(44vw,330px);max-width:calc(100vw - max(8px,env(safe-area-inset-left)) - max(8px,env(safe-area-inset-right)));max-height:none;padding:9px;gap:5px;border-radius:10px;animation-name:hall-inspector-side}
   .hall-detail--floating .hall-detail-heading img{width:36px;height:36px;flex-basis:36px}
 }
 @keyframes hall-inspector-side{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
@@ -375,4 +375,12 @@ watch(() => props.nodes, (nodes, previous) => {
 @keyframes hall-seal{0%{opacity:0;scale:.75}35%{opacity:.9}100%{opacity:0;scale:1.55}}
 @media(prefers-reduced-motion:reduce){.hall-ritual{display:none!important}}
 :global([data-es2-reduce-motion="true"] .hall-ritual),:global([data-es2-reduce-flashing="true"] .hall-ritual){display:none!important}
+
+.hall-growth--floating{grid-template-columns:minmax(0,1fr)}
+.hall-inspect{box-sizing:border-box}
+.hall-ring{box-sizing:border-box}
+.hall-map{isolation:isolate}
+.hall-upgrade-fx,.hall-upgrade-fx *{pointer-events:none}
+.hall-ritual{max-width:100%}
+@media(orientation:landscape) and (max-height:360px){.hall-detail--floating{padding:8px;gap:4px}.hall-detail--floating .hall-detail-heading img{width:30px;height:30px;flex-basis:30px}}
 </style>
