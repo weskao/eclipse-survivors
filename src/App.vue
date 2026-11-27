@@ -241,7 +241,7 @@ onBeforeUnmount(() => {
     @special-choose="engine.chooseTreasure"
     @special-cancel="engine.cancelTreasure"
     @purchase="engine.buyPermanentUpgrade"
-    @research="engine.purchaseResearch"
+    @research="engine.purchaseResearch" @talent="engine.purchaseTalent" @attune="engine.setHallAttunement"
     @equipment="engine.purchaseEquipment"
     @bonus="engine.purchaseBonus"
     @cosmetic="engine.selectCosmetic"

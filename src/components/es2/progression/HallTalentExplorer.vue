@@ -7,7 +7,27 @@ import type { MetaState } from '../../../game/content/meta/state'
 import HallGrowthBoard from './HallGrowthBoard.vue'
 import type { HallNode } from './hall-model'
 
-const props = withDefaults(defineProps<{ state: MetaState; hero: string; visible?: boolean }>(), {visible:true})
+const props = withDefaults(defineProps<{ state: MetaState; hero: string; visible?: boolean; writable?: boolean }>(), {visible:true,writable:false})
+const emit = defineEmits<{ purchase: [id:string, rank:number]; attune: [universal:string[], signature:string|null, resonance:string|null] }>()
+const live = computed(() => props.writable && props.state.version === 4 && !!props.state.hall && !props.state.cloudWallet)
+const ownership = computed(() => props.state.hall?.ownership ?? {})
+const equipped = computed(() => props.state.hall?.attunement)
+const selectedSignature = computed(() => equipped.value?.hero[props.hero] ?? null)
+const selectable = computed(() => hallTalentGroup(group.value.id).filter(n => n.maxRank === 1 && ownership.value[n.id] === 1 && (tree.value !== 'hero' || n.group === props.hero)))
+function toggleAttunement(id:string) {
+  if (!live.value || !selectable.value.some(n=>n.id===id)) return
+  let universal = [...(equipped.value?.universal ?? [])]
+  let signature = selectedSignature.value
+  let resonance = equipped.value?.resonance ?? null
+  if (tree.value === 'discipline') {
+    if (universal.includes(id)) universal = universal.filter(x=>x!==id)
+    else if (universal.length < 2) universal.push(id)
+    else return
+  } else if (tree.value === 'hero') signature = signature === id ? null : id
+  else resonance = resonance === id ? null : id
+  emit('attune', universal, signature, resonance)
+}
+const activeChoice = (id:string) => equipped.value?.universal.includes(id) || selectedSignature.value === id || equipped.value?.resonance === id
 const trees = ['discipline','hero','synergy'] as const
 type Tree = typeof trees[number]
 const tree = ref<Tree>('discipline')
@@ -37,8 +57,9 @@ const nodes = computed<HallNode[]>(() => {
   const term = query.value.trim().toLocaleLowerCase()
   return definitions.value.filter(n=>!term || [n.name,n.nameEn,n.effect,n.effectEn].some(s=>s.toLocaleLowerCase().includes(term))).map(n=>({
     id:n.id, kind:'research', title:localized(n.name,n.nameEn),
-    description:localized(n.effect,n.effectEn), art:image(n.id), rank:0, maxRank:n.maxRank,
-    cost:hallTalentCost(n.id,0), locked:!hallTalentEligible(n.id,props.state,{},props.hero), canBuy:false,
+    description:localized(n.effect,n.effectEn), art:image(n.id), rank:ownership.value[n.id] ?? 0, maxRank:n.maxRank,
+    cost:hallTalentCost(n.id,ownership.value[n.id] ?? 0), locked:!hallTalentEligible(n.id,props.state,ownership.value,props.hero),
+    canBuy:live.value && hallTalentEligible(n.id,props.state,ownership.value,props.hero) && props.state.embers >= (hallTalentCost(n.id,ownership.value[n.id] ?? 0) ?? Infinity),
     requires:n.requires.map(req=>({...req,title:title(req.id)})),
     requirements:[...n.requires.map(req=>title(req.id)+' · Lv. '+req.rank),...(n.masteryGate?[localized('英雄專精','Hero mastery')+' · Lv. '+n.masteryGate]:[])],
   }))
@@ -59,7 +80,7 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
   <section class="es4-constellation" :style="{'--es4-accent':group.color}" :aria-label="localized('暮蝕昇華技能樹','Eclipse Ascendancy talent trees')">
     <header class="es4-heading">
       <div><small>✧ ECLIPSE ASCENDANCY</small><h3>{{ localized('暮蝕昇華','Eclipse Ascendancy') }}</h3></div>
-      <span class="es4-preview">{{ localized('規劃預覽','Design preview') }}</span>
+      <span class="es4-preview">{{ live ? localized('隔離測試','Isolated playtest') : localized('規劃預覽','Design preview') }}</span>
     </header>
     <div ref="treeNav" class="es4-tree-nav" role="tablist" :aria-label="localized('技能分類','Talent category')">
       <button v-for="tab in tabs" :key="tab.id" :data-es4-tree="tab.id" type="button" role="tab" :aria-selected="tree===tab.id" :tabindex="tree===tab.id?0:-1" data-ui-sfx="select" @click="selectTree(tab.id)" @keydown="move($event,trees,tab.id,changeTree,treeNav,'data-es4-tree')">{{ tab.name }}</button>
@@ -77,9 +98,14 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
       </div>
       <input v-if="view==='list'" v-model="query" type="search" :aria-label="localized('搜尋技能','Search talents')" :placeholder="localized('搜尋技能','Search talents')"/>
     </div>
-    <p class="es4-notice">{{ localized('新能力尚未開放購買。預覽不會消耗餘燼，既有研究仍可正常升級。','New talents are not yet purchasable. Preview never spends embers; original research remains available.') }}</p>
-    <HallGrowthBoard v-if="nodes.length" :key="group.id" :nodes="nodes" :tree="view==='graph' && tree!=='synergy'" :writable="false" :visible="visible" preview :class="{'es4-list':view==='list'}"/>
+    <p v-if="!live" class="es4-notice">{{ localized('新能力尚未開放購買。預覽不會消耗餘燼，既有研究仍可正常升級。','New talents are not yet purchasable. Preview never spends embers; original research remains available.') }}</p>
+    <HallGrowthBoard v-if="nodes.length" :key="group.id" :nodes="nodes" :tree="view==='graph' && tree!=='synergy'" :writable="live" :visible="visible" :preview="!live" :class="{'es4-list':view==='list'}" @purchase="emit('purchase',$event.id,$event.rank)"/>
     <p v-else role="status">{{ localized('沒有符合的技能','No matching talents') }}</p>
+    <section v-if="live" class="es4-attunement" :aria-label="localized('調律','Attunement')">
+      <h4>{{ localized('調律配置','Attunement') }} · {{ equipped?.universal.length ?? 0 }}/2 · {{ selectedSignature ? 1 : 0 }}/1 · {{ equipped?.resonance ? 1 : 0 }}/1</h4>
+      <p class="es4-notice">{{ localized('共通終極 2、英雄招牌 1、跨樹共鳴 1。只影響下一場遠征；共鳴需配戴兩個指定終極。','Two universal keystones, one hero signature and one resonance. Next run only; a resonance requires both specified keystones.') }}</p>
+      <button v-for="node in selectable" :key="node.id" type="button" class="es4-equip" :data-es4-attune="node.id" :aria-pressed="!!activeChoice(node.id)" :disabled="tree==='discipline' && !activeChoice(node.id) && (equipped?.universal.length ?? 0)>=2" @click="toggleAttunement(node.id)">{{ localized(node.name,node.nameEn) }} · {{ activeChoice(node.id) ? localized('已配置','Equipped') : localized('配置','Equip') }}</button>
+    </section>
   </section>
 </template>
 <style scoped>
@@ -104,6 +130,7 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
 .es4-view button{min-height:40px;min-width:44px;padding:4px 12px;border:0;border-radius:999px;background:none;color:#bdc6ce;font:600 .76rem system-ui;cursor:pointer}
 .es4-view button[aria-pressed=true]{background:#b18b4b30;color:#f8dca2}
 .es4-tools input{min-height:44px;width:100%;border:1px solid #927b55;border-radius:6px;background:#101923;color:#ebdfcc;padding:8px;font:inherit}
+.es4-attunement{border-top:1px solid #94794e55;padding:10px 0;margin-top:12px}.es4-attunement h4{color:#edcf98;margin:0}.es4-equip{min-height:44px;margin:4px;padding:6px 10px;border:1px solid #927b55;background:#18232e;color:#e8d8bd;border-radius:6px}.es4-equip[aria-pressed=true]{border-color:#f3d69e;background:#54452f}.es4-equip:disabled{opacity:.55}
 .es4-notice{font:400 .76rem/1.45 system-ui;color:#c1b49a;margin:8px 0 10px}
 .es4-constellation :deep(.hall-confirm){border-radius:4px 14px;background:linear-gradient(150deg,#54452f,#252d35);border-color:#8f7850}
 .es4-constellation :deep(.hall-confirm:disabled){color:#b6b9bb;background:#252e35}

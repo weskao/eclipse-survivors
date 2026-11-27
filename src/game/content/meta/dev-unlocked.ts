@@ -20,7 +20,7 @@ function memoryStorage(initial: readonly (readonly [string, string])[]) {
 }
 
 /** Seed only supported v3 unlocks. The real transaction store still validates all writes. */
-export function createUnlockedPlaytestMetaStorage(embers = 100_000) {
+export function createUnlockedPlaytestMetaStorage(embers = 100_000, hall = false) {
   const state = createMetaState()
   state.embers = embers
   state.runs = 20
@@ -34,6 +34,7 @@ export function createUnlockedPlaytestMetaStorage(embers = 100_000) {
   state.cosmetics = [...LEGACY_COSMETICS]
   state.discoveries.weapons = [...LEGACY_WEAPONS]
   state.discoveries.evolutions = [...LEGACY_EVOLUTIONS]
+  if (hall) for (const id of ['shadowblade', 'spirit-summoner', 'crimson-paladin']) state.mastery['heroes:' + id] = { xp: 5_000, level: 6 }
   for (const mastery of Object.values(state.mastery)) {
     mastery.xp = 5_000
     mastery.level = 6

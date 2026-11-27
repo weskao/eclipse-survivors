@@ -46,6 +46,7 @@ const emit = defineEmits<{
   specialChoose: [id: string]; specialCancel: []
   purchase: [upgrade: PermanentUpgrade]; cosmetic: [hero: JobId, skin: CosmeticId]
   research: [id: string]; equipment: [id: string]; bonus: [id: string]
+  talent: [id:string,rank:number]; attune: [universal:string[],signature:string|null,resonance:string|null]
   enableAudio: []; reset: []; again: []; home: []; settings: []; closeSettings: []
   upgradeEffect: [effect: 'soft' | 'still']; cameraShake: [enabled: boolean]
   musicVolume: [value: number]; sfxVolume: [value: number]
@@ -108,7 +109,7 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
         <Es2Archive v-if="archiveActive" :key="archive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
           :hero="choice" :hero-id="heroId" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"
           @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)"
-          @research="emit('research', $event)" @equipment="emit('equipment', $event)"
+          @research="emit('research', $event)" @talent="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)" @equipment="emit('equipment', $event)"
           @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
       </template>
     </Es2MainMenu>

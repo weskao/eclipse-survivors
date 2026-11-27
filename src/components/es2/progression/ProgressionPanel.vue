@@ -25,6 +25,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   research: [id: string]
+  talent: [id:string,rank:number]
+  attune: [universal:string[],signature:string|null,resonance:string|null]
   equipment: [id: string]
   bonus: [id: string]
 }>()
@@ -100,7 +102,7 @@ const masteryProgress = computed(() => {
         <button type="button" data-ui-sfx="select" :aria-pressed="researchView==='ascendancy'" @click="researchView='ascendancy'">{{ t('暮蝕昇華') }} <small>{{ t('預覽') }}</small></button>
       </div>
       <HallGrowthBoard v-show="researchView==='core'" :nodes="research" :writable="writable" :visible="category === 'research' && researchView==='core'" tree @purchase="emit('research', $event.id)" />
-      <HallTalentExplorer v-if="researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'"/>
+      <HallTalentExplorer v-if="researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'" :writable="writable" @purchase="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"/>
     </section>
 
     <section v-show="category === 'mastery'" id="hall-category-mastery" data-hall-category="mastery" role="tabpanel" aria-labelledby="hall-tab-mastery" :aria-label="t('英雄專精')" class="es2-progression-section">

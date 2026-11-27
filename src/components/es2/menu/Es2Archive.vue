@@ -31,6 +31,7 @@ const emit = defineEmits<{
   purchase: [id: PermanentUpgrade]
   reset: []; cosmetic: [hero: JobId, skin: CosmeticId]
   research: [id: string]; equipment: [id: string]; bonus: [id: string]
+  talent: [id:string,rank:number]; attune: [universal:string[],signature:string|null,resonance:string|null]
 }>()
 // Never include the review gallery (its template, CSS or source assets) in release builds.
 const DevArtGallery = import.meta.env.DEV ? defineAsyncComponent(() => import('./Es2DevArtGallery.vue')) : null
@@ -97,7 +98,7 @@ const achievementArt: Record<string, string> = {
     <Es2CardDetails :entries="cardDetails" :scope="view" v-slot="{ open }">
     <section v-if="view === 'progression'" class="es2-archive-section" :aria-label="t('永久強化')">
       <ProgressionPanel v-if="metaStatus" embedded :state="metaState ?? emptyMeta" :hero="hero" :hero-id="selectedHeroId"
-        :status="metaStatus" @research="emit('research', $event)"
+        :status="metaStatus" @research="emit('research', $event)" @talent="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"
         @equipment="emit('equipment', $event)" @bonus="emit('bonus', $event)" />
       <div v-else>
       <div class="es2-stat-strip"><div><b>{{ profile.runs }}</b><small>{{ t("遠征次數") }}</small></div><div><b>{{ profile.wins }}</b><small>{{ t("勝利") }}</small></div></div>

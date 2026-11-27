@@ -170,6 +170,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
   const runtime = cloudRuntime()
   const emulator = runtime.mode === 'emulator'
+  // Deliberately isolated opt-in: unverified Hall effects cannot spend real embers.
+  const hallPlaytest = unlockedPlaytest && !emulator && import.meta.env.VITE_ES4_HALL === '1'
   const namespace = emulator ? 'emulator.' + runtime.projectId : 'account'
   const scopedStorage = (uid: string | null) => {
     if (!uid && !emulator) return undefined
@@ -178,12 +180,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // Unlocked test profiles remain in memory even when authenticated. A dedicated
   // demo project owns their test currency; live phone sign-in is identity-only.
   const guestProfileStorage = unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : scopedStorage(null)
-  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : scopedStorage(null)
+  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage(100_000, hallPlaytest) : scopedStorage(null)
   const unlockedAccounts = new Map<string, { profile: ReturnType<typeof createUnlockedPlaytestProfileStorage>; meta: ReturnType<typeof createUnlockedPlaytestMetaStorage> }>()
   let profileStore = opts.profileStore ?? createProfileStore(guestProfileStorage)
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  let metaStore = opts.profileStore ? null : createMetaProgressionStore(guestMetaStorage)
+  let metaStore = opts.profileStore ? null : createMetaProgressionStore(guestMetaStorage, hallPlaytest ? 4 : 3)
   let walletAccount: string | null = null
   const walletReady = (): boolean => !walletAccount || !!metaStore?.get().state?.cloudWallet
   function displayProfile() {
@@ -1224,6 +1226,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     purchaseResearch(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
       purchaseHallResearch(id, '研究未解鎖或儲存失敗')
+    },
+    purchaseTalent(id: string, expectedRank: number) {
+      if (!hallPlaytest || s.mode !== 'menu' || !metaStore || walletAccount) return
+      const result = metaStore.purchaseTalent(id, s.heroId, expectedRank)
+      finishPurchase(result.ok, '研究未解鎖或儲存失敗')
+    },
+    setHallAttunement(universal: string[], signature: string | null, resonance: string | null) {
+      if (!hallPlaytest || s.mode !== 'menu' || !metaStore || walletAccount) return
+      const result = metaStore.setHallAttunement(s.heroId, universal, signature, resonance)
+      if (result.ok) { refreshMeta(); audio.playSfx('select') }
+      else { message('研究未解鎖或儲存失敗'); audio.playSfx('deny', 1) }
     },
     purchaseEquipment(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return

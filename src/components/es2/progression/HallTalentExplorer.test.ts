@@ -24,3 +24,17 @@ describe('ES4 talent explorer', () => {
     wrapper.unmount()
   })
 })
+
+it('only enables purchase events for a writable isolated V4 state', async () => {
+  const state = createMetaState()
+  state.version = 4; state.hall = {ownership:{},attunement:{universal:[],hero:{},resonance:null}}
+  state.research.power = 1; state.embers = 500
+  const wrapper = mount(HallTalentExplorer,{props:{state,hero:'knight',writable:true}})
+  await wrapper.get('[data-hall-inspect="offense-edge"]').trigger('click')
+  await wrapper.get('[data-hall-confirm]').trigger('click')
+  expect(wrapper.emitted('purchase')).toEqual([['offense-edge',0]])
+  expect(state.embers).toBe(500)
+  await wrapper.setProps({writable:false})
+  expect(wrapper.get('[data-hall-confirm]').attributes('disabled')).toBeDefined()
+  wrapper.unmount()
+})

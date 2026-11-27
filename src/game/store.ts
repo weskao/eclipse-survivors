@@ -135,6 +135,8 @@ export interface GameCommands {
   selectRunMode(mode: RunModeId): void
   buyPermanentUpgrade(upgrade: PermanentUpgrade): void
   purchaseResearch(id: string): void
+  purchaseTalent(id: string, expectedRank: number): void
+  setHallAttunement(universal: string[], signature: string | null, resonance: string | null): void
   purchaseEquipment(id: string): void
   purchaseBonus(id: string): void
   selectCosmetic(hero: JobId, skin: CosmeticId): void
