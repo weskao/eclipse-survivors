@@ -111,7 +111,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     const critical = hooks.consumeCriticalHit?.() ?? false
     const applied = damageFactionEnemy(runtime, enemy, modified, sourceX, sourceY, reward => {
       recordKill(state)
-      hallKill(state)
+      hallKill(state, reward.elite)
       defeated[reward.kind] = (defeated[reward.kind] ?? 0) + 1
       // The legacy XP collection path owns level progression; never award XP twice.
       state.stars.push({ x: reward.x, y: reward.y, value: reward.xp, t: 0 })

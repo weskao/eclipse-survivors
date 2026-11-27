@@ -14,7 +14,8 @@ import summonerSpecialIcon from '../../../assets/es2/production/heroes/spirit-su
 import paladinSpecialIcon from '../../../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
 
 export type SpecializationId = 'shadowblade' | 'spirit-summoner' | 'crimson-paladin'
-import { hallCritBonus, withHallSource, type HallDamageSource } from '../meta/hall-runtime'
+import { grantShield, hallCritBonus, hallRank, hallSummonCast, hallSummonInterval, withHallSource, type HallDamageSource } from '../meta/hall-runtime'
+import hallTuning from '../../balance/hall-effect-tuning.json'
 
 export type CompanionKind = 'wisp' | 'guardian' | 'reaver'
 
@@ -207,6 +208,7 @@ export function createHeroSpecializationAdapter(
   let counterCooldown = 0
   let companionTimer = 0
   let lastTargets = NO_TARGETS
+  let phantomAt = 0, sanctuaryAt = 0, reckoningAt = 0
 
   const alive = () => state.mode === 'play' && !!state.hero && state.hero.hp > 0
   const upgrades = () => state.content.levels[def.progressionAbility] ?? 0
@@ -220,6 +222,7 @@ export function createHeroSpecializationAdapter(
     id,
     reset(): void {
       cooldown = stealth = barrier = barrierLife = absorbed = counterCooldown = companionTimer = 0
+      phantomAt = sanctuaryAt = reckoningAt = 0
       lastTargets = NO_TARGETS
       lastCritical = false
       state.choice = def.legacyArtJob
@@ -233,7 +236,9 @@ export function createHeroSpecializationAdapter(
     tick(dt: number): void {
       if (!alive() || !Number.isFinite(dt) || dt <= 0) return
       cooldown = Math.max(0, cooldown - dt)
+      const wasStealth = stealth > 0
       stealth = Math.max(0, stealth - dt)
+      if (wasStealth && stealth === 0 && state.hall && hallRank(state, 'shadowblade-ambush')) state.hall.ambushReady = true
       counterCooldown = Math.max(0, counterCooldown - dt)
       if (barrierLife > 0) {
         barrierLife = Math.max(0, barrierLife - dt)
@@ -241,12 +246,20 @@ export function createHeroSpecializationAdapter(
         // tick so the burst never re-enters hit() from inside an enemy's damage path.
         if (barrierLife === 0 || barrier <= 0) {
           const stored = absorbed
+          const expired = barrierLife === 0 && barrier > 0
           barrierLife = barrier = absorbed = 0
+          if (expired && state.hall && hallRank(state, 'crimson-paladin-blood-sanctuary') && state.time >= sanctuaryAt) {
+            sanctuaryAt = state.time + hallTuning.paladinSignatureCooldown
+            state.hall.sanctuaryUntil = state.time + hallTuning.paladinSanctuarySeconds
+          }
           if (stored >= PALADIN.retributionMinAbsorb) {
             const hero = state.hero!
-            const damage = stored * (PALADIN.retributionAbsorbRatio + upgrades() * PALADIN.retributionRatioPerRank)
-            for (const enemy of nearby(state, PALADIN.retributionRange, PALADIN.retributionTargets)) hit(state, enemy, damage, hooks)
-            impact(state, hero.x, hero.y, PALADIN.retributionRange, '#ff8a6a', 1.6)
+            const reckoning = hallRank(state, 'crimson-paladin-crimson-reckoning') > 0 && state.time >= reckoningAt
+            if (reckoning) reckoningAt = state.time + hallTuning.paladinSignatureCooldown
+            const reach = PALADIN.retributionRange * (reckoning ? 1 + hallTuning.paladinReckoningRadius : 1)
+            const damage = stored * (PALADIN.retributionAbsorbRatio + upgrades() * PALADIN.retributionRatioPerRank) * (1 + hallRank(state, 'crimson-paladin-vengeance') * hallTuning.paladinVengeance) * (reckoning ? 1 + hallTuning.paladinReckoningDamage : 1)
+            for (const enemy of nearby(state, reach, PALADIN.retributionTargets)) hit(state, enemy, damage, withHallSource(state, hooks, 'hero'))
+            impact(state, hero.x, hero.y, reach, '#ff8a6a', 1.6)
             hooks.sfx('crimson-paladin-retribution')
           }
         }
@@ -254,7 +267,7 @@ export function createHeroSpecializationAdapter(
       if (id !== 'spirit-summoner') return
       companionTimer -= dt
       if (companionTimer > 0) return
-      companionTimer = SPIRIT.companionTickSeconds
+      companionTimer = SPIRIT.companionTickSeconds * hallSummonInterval(state)
       const hero = state.hero!
       const active = companions()
       const nearest = nearby(state, SPIRIT.companionRange, 1)[0]
@@ -272,21 +285,32 @@ export function createHeroSpecializationAdapter(
       const hero = state.hero!
       cooldown = def.specialCooldown
       if (id === 'shadowblade') {
-        stealth = SHADOW.stealthSeconds
+        stealth = SHADOW.stealthSeconds * (1 + hallRank(state, 'shadowblade-vanish') * hallTuning.shadowVanish)
         hero.inv = Math.max(hero.inv, 0.7)
         const struck = nearby(state, SHADOW.specialReach, SHADOW.specialHits)
         lastTargets = strikePoints(struck)
-        for (const enemy of struck) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), hooks)
+        for (const enemy of struck) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), withHallSource(state, hooks, 'hero'))
+        const phantom = hallRank(state, 'shadowblade-phantom') && state.time >= phantomAt ? nearby(state, SHADOW.specialReach, 1)[0] : undefined
+        if (phantom) { phantomAt = state.time + hallTuning.shadowPhantomCooldown; hit(state, phantom, hero.damage * hallTuning.shadowPhantomDamage, withHallSource(state, hooks, 'proc')) }
       } else if (id === 'spirit-summoner') {
         const struck = nearby(state, SPIRIT.companionRange, 3)
         lastTargets = strikePoints(struck)
         for (const enemy of struck) hit(state, enemy, hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank), hooks)
-        hero.hp = Math.min(hero.max, hero.hp + SPIRIT.specialHeal)
+        const before = hero.hp
+        hero.hp = Math.min(hero.max, hero.hp + SPIRIT.specialHeal * (1 + hallRank(state, 'spirit-summoner-mend') * hallTuning.spiritMend))
+        hallSummonCast(state)
+        const hall = state.hall
+        if (hall && hall.rank('spirit-summoner-legion') && state.time >= hall.legionAt) {
+          hall.legionAt = state.time + hallTuning.spiritLegionCooldown; hall.legionUntil = state.time + hallTuning.spiritLegionSeconds
+        }
+        if (hall && hero.hp > before && hall.rank('spirit-summoner-soul-bond') && state.time >= hall.soulBondAt) {
+          hall.soulBondAt = state.time + hallTuning.spiritBondCooldown; grantShield(state, hallTuning.spiritBondShield, hallTuning.spiritBondSeconds)
+        }
       } else {
         const cost = Math.min(Math.max(0, hero.hp - 1), Math.ceil(hero.max * PALADIN.healthCostRatio))
         hero.hp -= cost
         state.damageTaken += cost
-        barrier = PALADIN.barrierBase + hero.level * PALADIN.barrierPerHeroLevel + upgrades() * PALADIN.barrierPerRank
+        barrier = (PALADIN.barrierBase + hero.level * PALADIN.barrierPerHeroLevel + upgrades() * PALADIN.barrierPerRank) * (1 + hallRank(state, 'crimson-paladin-oath') * hallTuning.paladinOath)
         lastTargets = NO_TARGETS
         barrierLife = PALADIN.barrierSeconds
         absorbed = 0
@@ -314,7 +338,7 @@ export function createHeroSpecializationAdapter(
     mitigateIncomingDamage(amount: number): number {
       if (!Number.isFinite(amount) || amount <= 0) return 0
       if (!alive() || id !== 'crimson-paladin' || state.hero!.inv > 0 || state.hero!.dash > 0) return amount
-      const reduced = amount * (1 - PALADIN.baseReduction - Math.min(PALADIN.extraReductionCap, upgrades() * PALADIN.reductionPerRank))
+      const reduced = amount * (1 - PALADIN.baseReduction - Math.min(PALADIN.extraReductionCap, upgrades() * PALADIN.reductionPerRank)) * (1 - (barrierLife > 0 && barrier > 0 ? hallRank(state, 'crimson-paladin-sacrifice') * hallTuning.paladinSacrifice : 0))
       const absorb = barrierLife > 0 ? Math.min(barrier, reduced) : 0
       barrier -= absorb
       absorbed += absorb

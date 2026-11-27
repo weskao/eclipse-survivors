@@ -23,6 +23,10 @@ export function createHallRuntime(snapshot: HallRunSnapshot) {
     chorusAt: tuning.chorusCooldown, procAt: 0, afterwindUntil: 0, windstepUntil: 0, windstepAt: 0,
     shield: 0, shieldUntil: 0, wardAt: tuning.wardPeriod, lastStandAt: 0, bulwarkAt: 0,
     riposteUntil: 0, riposteAt: 0,
+    hurtAt: -Infinity, dashAt: -Infinity, firstElite: false, reaperReady: false, hunterUntil: 0, guardianUntil: 0,
+    bastionAt: 0, spellwindAt: 0, soulforgeAt: 0, soulwardAt: 0, soulwardUntil: 0,
+    ambushReady: false, assassinAt: 0, legionUntil: 0, legionAt: 0, soulBondAt: 0, sanctuaryUntil: 0,
+    markTarget: null as Target | null, markHits: 0,
   }
 }
 export type HallRuntime = ReturnType<typeof createHallRuntime>
@@ -54,6 +58,11 @@ export function hallOutgoing(state: GameState, amount: number, target: Target, s
   if (target.max > 0 && target.hp / target.max < tuning.executionHp) bonus += r('offense-execution') * tuning.execution
   if (source === 'basic') {
     bonus += r('knight-discipline') * tuning.knightDiscipline + r('ranger-aim') * tuning.rangerAim
+    if (r('ranger-mark')) {
+      if (h.markTarget !== target) { h.markTarget = target; h.markHits = 0 }
+      if (h.markHits === 3) { bonus += r('ranger-mark') * tuning.rangerMark; h.markHits = 0 }
+      else h.markHits++
+    }
     if (now < h.windstepUntil && now >= h.windstepAt && r('mobility-windstep')) {
       bonus += tuning.windstepDamage
       h.windstepUntil = 0
@@ -69,6 +78,16 @@ export function hallOutgoing(state: GameState, amount: number, target: Target, s
     if ((target.slow ?? 0) > 0) bonus += r('arcana-resonance') * tuning.resonance
     if (source === 'persistent') bonus += r('summons-bond') * tuning.bond + r('summons-command') * tuning.command
   } else if (source === 'summon') bonus += r('summons-bond') * tuning.bond + r('spirit-summoner-pact') * tuning.spiritPact
+  if (h.ambushReady && source !== 'hero') {
+    h.ambushReady = false
+    bonus += r('shadowblade-ambush') * tuning.shadowAmbush
+    if (r('shadowblade-assassin') && now >= h.assassinAt && target.hp / target.max < tuning.executionHp) {
+      bonus += tuning.shadowAssassinDamage
+      h.assassinAt = now + tuning.shadowAssassinCooldown
+    }
+  }
+  if (source === 'summon' && now < h.legionUntil) bonus += tuning.spiritLegionDamage
+  if ((source === 'summon' || source === 'persistent') && now < h.guardianUntil) bonus += tuning.synergyGuardianDamage
   return amount * (1 + bonus)
 }
 /** Only accepted contact counts; the proc itself never re-enters this handler. */
@@ -83,6 +102,10 @@ export function hallExtraHit(state: GameState, amount: number, source?: HallDama
       h.warHits = 0
       h.warAt = now + tuning.warCooldown
       bonus = tuning.warDamage
+      if (h.rank('synergy-blade-and-bastion') && now - h.hurtAt < tuning.synergyBastionSeconds && now >= h.bastionAt) {
+        bonus *= 1 + tuning.synergyBastionDamage; h.bastionAt = now + tuning.synergyCooldown
+      }
+      if (h.reaperReady) { bonus *= 1 + tuning.synergyReaperDamage; h.reaperReady = false }
     }
   } else {
     const echo = (source === 'weapon' || source === 'persistent') && h.rank('arcana-echo') && now >= h.echoAt
@@ -91,18 +114,30 @@ export function hallExtraHit(state: GameState, amount: number, source?: HallDama
       if (echo) h.echoAt = now + tuning.echoCooldown
       if (chorus) h.chorusAt = now + tuning.chorusCooldown
       bonus = Math.max(echo ? tuning.echoDamage : 0, chorus ? tuning.chorusDamage : 0)
+      if (echo && h.rank('synergy-spellwind') && now - h.dashAt < tuning.synergySpellwindSeconds && now >= h.spellwindAt) {
+        bonus *= 1 + tuning.synergySpellwindDamage; h.spellwindAt = now + tuning.synergyCooldown
+      }
+      if (echo && chorus && h.rank('synergy-soulforge') && now >= h.soulforgeAt) {
+        bonus *= 1 + tuning.synergySoulforgeDamage; h.soulforgeAt = now + tuning.synergyCooldown
+      }
     }
   }
   if (bonus) h.procAt = now + tuning.procInterval
   return amount * bonus
 }
-export function hallKill(state: GameState): void {
+export function hallKill(state: GameState, elite = false): void {
   const h = state.hall
-  if (!h || !h.rank('offense-momentum')) return
+  if (!h) return
+  if (elite && !h.firstElite) {
+    h.firstElite = true
+    if (h.rank('synergy-hunter-instinct')) h.hunterUntil = state.time + tuning.synergyHunterSeconds
+    if (h.rank('synergy-reaper')) h.reaperReady = true
+  }
+  if (!h.rank('offense-momentum')) return
   h.momentum = Math.min(tuning.momentumStacks, (state.time < h.momentumUntil ? h.momentum : 0) + 1)
   h.momentumUntil = state.time + tuning.momentumSeconds
 }
-function grantShield(state: GameState, fraction: number, seconds: number): void {
+export function grantShield(state: GameState, fraction: number, seconds: number): void {
   const h = state.hall, hero = state.hero
   if (!h || !hero || hero.hp <= 0 || fraction <= 0) return
   h.shield = Math.max(state.time < h.shieldUntil ? h.shield : 0, hero.max * fraction)
@@ -113,6 +148,7 @@ export function hallIncoming(state: GameState, amount: number, directContact = f
   if (!h || !hero) return amount
   const r = h.rank
   let reduction = r('defense-armor') * tuning.armor
+  if (state.time < h.soulwardUntil) reduction += r('summons-soulward') * tuning.soulwardReduction
   if (hero.hp / hero.max < tuning.resolveHp) reduction += r('defense-resolve') * tuning.resolve
   if (directContact && hero.moveAmount > .05) reduction += r('mobility-evasion') * tuning.evasion
   if (directContact && front) reduction += r('knight-guard') * tuning.knightGuard
@@ -129,9 +165,11 @@ export function hallDamageTaken(state: GameState, amount: number, previousHp: nu
   const h = state.hall, hero = state.hero
   if (!h || !hero || hero.hp <= 0 || amount <= 0) return
   const now = state.time
+  h.hurtAt = now
   if (h.rank('defense-last-stand') && now >= h.lastStandAt && previousHp / hero.max >= tuning.lastStandHp && hero.hp / hero.max < tuning.lastStandHp) {
     grantShield(state, tuning.lastStandShield, tuning.lastStandSeconds)
     h.lastStandAt = now + tuning.lastStandCooldown
+    if (h.rank('synergy-guardian-spirits')) h.guardianUntil = now + tuning.synergyGuardianSeconds
   }
   if (h.rank('knight-riposte') && now >= h.riposteAt) h.riposteUntil = now + tuning.riposteSeconds
 }
@@ -139,13 +177,15 @@ export function tickHall(state: GameState, dt: number, dashFinished: boolean): v
   const h = state.hall, hero = state.hero
   if (!h || !hero || hero.hp <= 0 || state.mode !== 'play') return
   const now = state.time
-  if (h.regen) hero.hp = Math.min(hero.max, hero.hp + hero.max * h.regen * dt)
+  const regen = h.regen + (now < h.sanctuaryUntil ? tuning.paladinSanctuaryRegen : 0)
+  if (regen) hero.hp = Math.min(hero.max, hero.hp + hero.max * regen * dt)
   if (now >= h.shieldUntil) h.shield = 0
   if (h.rank('defense-ward') && now >= h.wardAt) {
     grantShield(state, h.rank('defense-ward') * tuning.ward, tuning.wardSeconds)
     h.wardAt = now + tuning.wardPeriod
   }
   if (dashFinished) {
+    h.dashAt = now
     h.afterwindUntil = now + tuning.afterwindSeconds
     h.windstepUntil = now + tuning.afterwindSeconds
     if (h.rank('knight-bulwark') && now >= h.bulwarkAt) {
@@ -156,8 +196,10 @@ export function tickHall(state: GameState, dt: number, dashFinished: boolean): v
 }
 export function hallMovement(state: GameState): number {
   const h = state.hall
-  if (!h || state.time >= h.afterwindUntil) return 1
-  return (1 + capped(h.stride + h.rank('mobility-afterwind') * tuning.afterwind, tuning.movementCap)) / (1 + h.stride)
+  if (!h) return 1
+  const wind = state.time < h.afterwindUntil ? h.rank('mobility-afterwind') * tuning.afterwind : 0
+  const hunt = state.time < h.hunterUntil ? tuning.synergyHunterSpeed : 0
+  return (1 + capped(h.stride + wind + hunt, tuning.movementCap)) / (1 + h.stride)
 }
 export function hallAttackDelay(state: GameState): number {
   const h = state.hall
@@ -170,4 +212,19 @@ export function hallAttackRange(state: GameState): number {
 }
 export function hallSlow(state: GameState, target: object, seconds: number): number {
   return state.hall && !('type' in target && target.type === 'boss') ? seconds * (1 + state.hall.rank('arcana-frostbind') * tuning.frostbind) : seconds
+}
+
+export function hallRank(state: GameState, id: string): number { return state.hall?.rank(id) ?? 0 }
+export function hallSummonInterval(state: GameState): number {
+  return 1 - capped(hallRank(state, 'summons-command') * tuning.summonCommand + hallRank(state, 'spirit-summoner-pack') * tuning.spiritPack, tuning.cooldownCap)
+}
+export function hallEffectDuration(state: GameState): number {
+  return 1 + hallRank(state, 'summons-tenacity') * tuning.tenacityDuration + hallRank(state, 'summons-duration') * tuning.summonDuration
+}
+export function hallSummonCast(state: GameState): void {
+  const h = state.hall
+  if (h && h.rank('summons-soulward') && state.time >= h.soulwardAt) {
+    h.soulwardAt = state.time + tuning.soulwardCooldown
+    h.soulwardUntil = state.time + tuning.soulwardSeconds
+  }
 }

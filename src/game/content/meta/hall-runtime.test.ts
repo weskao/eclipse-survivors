@@ -50,3 +50,17 @@ describe('ES4 Hall runtime', () => {
     expect(hallAttackRange(state)).toBeCloseTo(1.05)
   })
 })
+
+it('tracks one elite reward, resonance windows and same-target marks without stacking', () => {
+  const s = run({'synergy-hunter-instinct':1,'synergy-reaper':1,'offense-war-master':1,'ranger-mark':5})
+  const enemy = {hp:100,max:100}
+  hallKill(s,true)
+  expect(hallMovement(s)).toBeCloseTo(1.08)
+  for(let i=0;i<3;i++) expect(hallOutgoing(s,100,enemy,'basic')).toBe(100)
+  expect(hallOutgoing(s,100,enemy,'basic')).toBeCloseTo(110)
+  for(let i=0;i<7;i++) expect(hallExtraHit(s,100,'basic')).toBe(0)
+  expect(hallExtraHit(s,100,'basic')).toBeCloseTo(62.5)
+  s.time=6; hallKill(s,true)
+  expect(hallMovement(s)).toBe(1)
+  expect(s.hall!.reaperReady).toBe(false)
+})

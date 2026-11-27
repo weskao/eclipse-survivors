@@ -95,7 +95,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     recordKill(s)
-    hallKill(s)
+    hallKill(s, !!e.elite && !boss)
     if (s.fallenMobs.length >= 24) {
       // A mob clear must not evict the boss defeat pose before it can be drawn.
       const ordinary = s.fallenMobs.findIndex(mob => mob.type !== 'boss')
