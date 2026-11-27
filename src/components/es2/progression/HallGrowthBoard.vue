@@ -285,12 +285,12 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-detail--floating .hall-success{flex:none;font-size:.78rem}
 .hall-detail-close{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:44px;height:44px;border:1px solid #b99b6566;border-radius:7px;background:#111c28;color:#e9d3ab;font:400 24px/1 system-ui;cursor:pointer}
 .hall-detail-close:focus-visible{outline:2px solid #ffda94;outline-offset:1px}
-@keyframes hall-inspector-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* The fixed inspector must stay inside its safe-area bounds on every animation frame. */
+@keyframes hall-inspector-in{from{opacity:0}to{opacity:1}}
 @media(orientation:landscape) and (max-height:600px){
-  .hall-detail--floating{inset-inline:auto max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));width:min(44vw,330px);max-width:calc(100vw - 16px);max-height:none;padding:9px;gap:5px;border-radius:10px;animation-name:hall-inspector-side}
+  .hall-detail--floating{inset-inline:auto max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));width:min(44vw,330px);max-width:calc(100vw - 16px);max-height:none;padding:9px;gap:5px;border-radius:10px}
   .hall-detail--floating .hall-detail-heading img{width:36px;height:36px;flex-basis:36px}
 }
-@keyframes hall-inspector-side{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.hall-detail--floating{animation:none}}
 :global([data-es2-reduce-motion="true"] .hall-detail--floating){animation:none}
 

@@ -513,7 +513,18 @@ try {
           const details = floating ? page.locator('.hall-detail--floating[data-open="true"]') : growth.locator('.hall-detail')
           await details.waitFor({ state: 'visible' })
           if (floating) {
-            assert.ok(inside(await details.evaluate(rect), width, height), name + ': floating inspector clips viewport')
+            // Check initial animation geometry as well as the final resting rectangle.
+            const initialBounds = await details.evaluate(el => {
+              const animations = el.getAnimations().filter(animation => animation instanceof CSSAnimation)
+              for (const animation of animations) { animation.pause(); animation.currentTime = 0 }
+              const box = el.getBoundingClientRect()
+              const bounds = { x: box.x, y: box.y, right: box.right, bottom: box.bottom }
+              for (const animation of animations) animation.finish()
+              return bounds
+            })
+            assert.ok(inside(initialBounds, width, height), name + ': floating inspector clips viewport at animation start ' + JSON.stringify(initialBounds))
+            const finalBounds = await details.evaluate(rect)
+            assert.ok(inside(finalBounds, width, height), name + ': floating inspector clips viewport ' + JSON.stringify(finalBounds))
             assert.ok(Math.abs(await page.locator('.es2-menu').evaluate(el => el.scrollTop) - scrollBefore) <= 1, name + ': tap must not scroll archive')
           }
           assert.equal((await details.locator('.hall-detail-heading strong').innerText()).trim(), (await node.locator('strong').innerText()).trim(), name + ': inspected node mismatch')
