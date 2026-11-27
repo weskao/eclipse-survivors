@@ -9,6 +9,8 @@ import { cosmeticAura } from '../../../meta/cosmetics'
 import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
+import { BALANCE } from '../../../game/config'
+import { BOSS_DEFINITIONS, BOSS_ATTACKS } from '../../../game/content/bosses/definitions'
 import Es2MenuSystem from './Es2MenuSystem.vue'
 import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../../../game/content/accessibility/preferences'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
@@ -367,6 +369,36 @@ describe('ES2 main menu integration adapter', () => {
     click('.es2-close')
     await nextTick()
     expect(document.querySelector('[role="dialog"]')).toBeNull()
+  })
+
+  it('shows authoritative monster stats and skill icons only after discovery', async () => {
+    const profile = emptyProfile()
+    profile.discoveredMonsters.slime = 2
+    profile.discoveredMonsters.boss = 1
+    mounted({ profile })
+    click('.es2-hall-links button:nth-child(3)')
+    await nextTick()
+    expect(document.querySelector('[data-es2-card-info="monster:bat"]')).toBeNull()
+    click('[data-es2-card-info="monster:slime"]')
+    await nextTick()
+    const dialog = find('[role="dialog"]')
+    expect(dialog.querySelector('[data-monster-stat="HP"]')?.textContent).toContain(String(BALANCE.enemies.baseHp.slime))
+    expect(dialog.querySelector('[data-monster-stat="ATK"]')?.textContent).toContain(String(BALANCE.enemies.baseDamage))
+    expect(dialog.querySelector('[data-monster-stat="SPD"]')?.textContent).toContain(String(BALANCE.enemies.baseSpeed.slime))
+    expect(dialog.querySelector('[data-monster-skill="pounce"] img')?.getAttribute('src')).toContain('@3x.webp')
+    click('.es2-close')
+    await nextTick()
+    click('[data-es2-card-info="monster:boss"]')
+    await nextTick()
+    for (const boss of Object.values(BOSS_DEFINITIONS)) {
+      const section = find('[data-monster-group="' + boss.id + '"]')
+      expect(section.querySelector('[data-monster-stat="HP"]')?.textContent).toContain(String(boss.health))
+      for (const attacks of boss.phases) for (const attack of attacks) {
+        const skill = section.querySelector('[data-monster-skill="' + attack + '"]')
+        expect(skill?.querySelector('img')).not.toBeNull()
+        expect(skill?.textContent).toContain(String(BOSS_ATTACKS[attack].damage))
+      }
+    }
   })
 
   it('uses a single hall navigation, preserves lobby selection and restores the expedition page when returning', async () => {
