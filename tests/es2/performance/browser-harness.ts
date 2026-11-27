@@ -1,8 +1,15 @@
 import { createEngine } from '../../../src/game/engine'
-import { loadArtwork } from '../../../src/game/art'
+import { loadArtwork, type Artwork } from '../../../src/game/art'
+import { createApp, h, nextTick } from 'vue'
+import Es2ChoiceDialog from '../../../src/components/es2/menu/Es2ChoiceDialog.vue'
+import { createState, resetRun } from '../../../src/game/state'
+import { hit } from '../../../src/game/combat'
+import { step } from '../../../src/game/step'
+import type { GameHooks, Mob } from '../../../src/game/types'
+import { inventorySnapshot } from '../../../src/game/content/relics/runtime'
 import { createRenderAssets, drawFrame } from '../../../src/game/render'
 import { drawHitImpact, preloadHitImpactArt } from '../../../src/game/render/hit-impact'
-import { drawEs3EnemyDeath, loadWorldRuntimeImages } from '../../../src/game/render/es2/production-world'
+import { drawEs3EnemyDeath, loadWorldRuntimeImages, type WorldRuntimeImages } from '../../../src/game/render/es2/production-world'
 import { createStressScenario, type StressPreset } from '../../../src/game/performance/es2/scenarios'
 import { distribution } from '../../../src/game/performance/es2/metrics'
 import { resolvePresentationPolicy } from '../../../src/game/content/accessibility/presentation'
@@ -68,7 +75,7 @@ async function verifyContactArt(): Promise<string[]> {
   return results
 }
 // Real decoded native candidate pixels, outside the timed performance workload.
-async function verifyNativeDeathArt(): Promise<Record<string, number>> {
+async function verifyNativeDeathArt(art: Artwork): Promise<Record<string, number>> {
   const canonicalOnly = loadWorldRuntimeImages(undefined, undefined, false, false)
   if (Object.keys(canonicalOnly.enemyDeaths ?? {}).length) throw new Error('Rejected old atlases loaded')
   const qa = loadWorldRuntimeImages()
@@ -123,7 +130,109 @@ async function verifyNativeDeathArt(): Promise<Record<string, number>> {
     result[id] = frameSignatures.size
   }
   atlasCanvas.width = atlasCanvas.height = preview.width = preview.height = 0
+  verifyLiveDeaths(art, qa)
   return result
+}
+
+// Real combat hit -> bounded fallen pool -> production drawFrame -> expiry.
+function verifyLiveDeaths(art: Artwork, world: WorldRuntimeImages): void {
+  const s = createState()
+  resetRun(s)
+  s.mode = 'play'; s.W = 960; s.H = 540; s.spawnT = 100000; s.nextEventAt = Infinity
+  const kinds = ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const
+  const hooks: GameHooks = { sfx() {}, message() {}, end() {}, offerUpgrades() {} }
+  const assets = createRenderAssets(art)
+  assets.productionWorld = world
+  const canvas = document.createElement('canvas')
+  canvas.width = s.W; canvas.height = s.H
+  const ctx = canvas.getContext('2d')!
+  const original = ctx.drawImage.bind(ctx)
+  const frames = new Map(kinds.map(id => [id, new Set<string>()]))
+  let nativeDraws = 0
+  ctx.drawImage = ((...args: Parameters<CanvasRenderingContext2D['drawImage']>) => {
+    const id = kinds.find(kind => args[0] === world.enemyDeaths?.[kind])
+    if (id) {
+      nativeDraws++
+      frames.get(id)!.add(args.slice(1, 5).join(','))
+      const x = args[1], y = args[2]
+      if (x === 444 && y === 444 && ctx.globalAlpha > .550001)
+        throw new Error('Reduced-flashing dissolve exceeded opacity budget: ' + id)
+    }
+    original(...args)
+  }) as CanvasRenderingContext2D['drawImage']
+  const prefs = { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'off' as const, reducedFlashing: true }
+  assets.presentation = () => resolvePresentationPolicy(prefs)
+  const enemies: Mob[] = kinds.map((type, i) => ({
+    type, x: (i - 2) * 140, y: 105, hp: 10, max: 10, r: 20, speed: 50, dmg: 1,
+    phase: 1, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
+  }))
+  s.mobs = enemies.slice()
+  drawFrame(ctx, s, 1, assets)
+  if (nativeDraws) throw new Error('Death atlas replaced a living enemy')
+  for (const enemy of enemies) hit(s, enemy, 10, hooks)
+  if (s.kill !== 5 || s.fallenMobs.length !== 5) throw new Error('Actual hit did not create five death animations')
+  assets.presentation = () => resolvePresentationPolicy({ ...prefs, reducedMotion: 'on' })
+  drawFrame(ctx, s, 1, assets)
+  if (nativeDraws) throw new Error('Reduced Motion painted a death atlas')
+  assets.presentation = () => resolvePresentationPolicy(prefs)
+  for (let i = 0; i < 30; i++) {
+    drawFrame(ctx, s, 1, assets)
+    step(s, 1 / 60, { x: 0, y: 0 }, hooks)
+  }
+  for (const id of kinds) if (frames.get(id)!.size !== 4) throw new Error('Live combat did not draw all four frames: ' + id)
+  if (s.fallenMobs.length !== 0) throw new Error('Death pool did not expire')
+  canvas.width = canvas.height = 0
+}
+
+// Actual engine event/claim, production Vue dialog and decoded reveal images.
+async function verifyTreasureReveals(): Promise<string[]> {
+  const tiers = ['rare', 'epic', 'legendary'] as const
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const results: string[] = []
+  for (const tier of tiers) {
+    const audio = mutedAudio()
+    const cues: string[] = []
+    audio.playSfx = cue => { cues.push(cue) }
+    const engine = createEngine({ audio })
+    engine.start()
+    const s = engine.state, hero = s.hero!
+    s.mobs = []; s.spawnT = 100000; s.nextEventAt = Infinity
+    s.events = [{ id: 1, kind: 'chest', tier, x: hero.x, y: hero.y, expiresAt: s.time + 30 }]
+    engine.advance(.016)
+    if (engine.ui.specialChoice?.tier !== tier) throw new Error('Real chest event did not open: ' + tier)
+    const host = document.createElement('div')
+    document.body.append(host)
+    const app = createApp({ render: () => h(Es2ChoiceDialog, {
+      active: engine.ui.mode === 'level' && !!engine.ui.specialChoice,
+      kind: 'treasure', tier, items: engine.ui.specialChoice?.items ?? [],
+      still: reduced, onChoose: (id: string) => engine.chooseTreasure(id),
+    }) })
+    try {
+      app.mount(host)
+      await nextTick()
+      const seal = document.querySelector<HTMLImageElement>('[data-es3-chest-reveal]')
+      if (reduced) {
+        if (seal || document.querySelector('[data-es3-skip-reveal]')) throw new Error('Reduced Motion displayed a reveal')
+      } else {
+        if (!seal || !new URL(seal.src).pathname.endsWith('treasure-' + tier + '@3x.webp')) throw new Error('Wrong reveal bitmap: ' + tier)
+        await seal.decode()
+        document.querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!.click()
+        await nextTick()
+        if (document.querySelector('[data-es3-chest-reveal]') || inventorySnapshot(s).items.length) throw new Error('Skip did not preserve the unclaimed offer')
+      }
+      const item = engine.ui.specialChoice!.items[0]!
+      const choice = document.querySelector<HTMLButtonElement>('[data-choice="' + item.id + '"]')!
+      choice.click(); choice.click()
+      await nextTick()
+      if (inventorySnapshot(s).items.length !== 1 || cues.filter(cue => cue === 'treasureClaim').length !== 1 || s.mode !== 'play')
+        throw new Error('Chest claim was not atomic: ' + tier)
+      results.push(tier)
+    } finally {
+      app.unmount()
+      host.remove()
+    }
+  }
+  return results
 }
 
 async function run() {
@@ -171,7 +280,8 @@ async function run() {
     return memory?.usedJSHeapSize ?? null
   }
   const contactArt = await verifyContactArt()
-  const nativeDeathArt = await verifyNativeDeathArt()
+  const nativeDeathArt = await verifyNativeDeathArt(art)
+  const treasureReveals = await verifyTreasureReveals()
   const heapBefore = heap()
   for (let i = 0; i < 30; i++) {
     engine.advance(1 / 60)
@@ -197,7 +307,7 @@ async function run() {
     label: 'ES2_REAL_CHROMIUM_CANVAS_PERFORMANCE_NOT_PHYSICAL_DEVICE',
     platform: navigator.userAgent, preset, viewport: [s.W, s.H], dpr,
     initialMobs: 130, liveMobs: s.mobs.length,
-    frames: 120, contactArt, nativeDeathArt,
+    frames: 120, contactArt, nativeDeathArt, liveDeathLifecycle: true, treasureReveals,
     simulationMs: distribution(simMs),
     canvas2dRenderMs: distribution(renderMs),
     requestAnimationFrameIntervalMs: distribution(rafIntervalsMs),
