@@ -93,6 +93,8 @@ export interface TestApi {
   prepareHeroActiveVideo(): boolean
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
+  /** DEV capture only: trigger the real HP-based phase change on the same living boss. */
+  captureBossPhase(phase: 2 | 3): boolean
   /** Capture-only biome preview; requires ?showcase=1. */
   previewBiome(index: number): void
 }
@@ -975,6 +977,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       hero.strike = 0.29
       s.swipes.push({ x: hero.x, y: hero.y, a: 0, life: 0.29, max: 0.29, r: 75 })
       impact(s, hero.x + 80, hero.y, 45)
+    },
+    captureBossPhase(phase: 2 | 3) {
+      if (!import.meta.env.DEV || typeof window === 'undefined' || !s.hero || s.mode !== 'play' || !bosses) return false
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('showcase') !== '1' || params.get('bossPhaseVideoQa') !== '1' || (phase !== 2 && phase !== 3)) return false
+      const boss = s.mobs.find(m => m.type === 'boss' && m.hp > 0 && m.bossArtId === params.get('es2BossArtQa'))
+      if (!boss || boss.bossPhase !== phase - 1) return false
+      s.hero.inv = Math.max(s.hero.inv, 120)
+      s.hero.attack = 10000
+      s.hero.need = Math.max(s.hero.need, 10000)
+      boss.hp = boss.max * (phase === 2 ? .60 : .25)
+      // Same actor, existing controller and normal encounter event/audio/render path.
+      bosses.tick(s, 1 / 60, hooks)
+      hud()
+      return boss.bossPhase === phase
     },
     showcaseBoss(phase: 1 | 2 | 3 = 1) {
       const hero = s.hero

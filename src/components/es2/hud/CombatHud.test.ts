@@ -294,9 +294,11 @@ it('shows a keyed, noninteractive phase reveal only for an explicit encounter ev
 it('uses unique authored phase sigils for all four bosses', async () => {
   const { wrapper } = render({ hud: { ...equipped, bossPct: 30 }, feed: { boss: { name: 'Boss', phase: 3, totalPhases: 3 } } })
   const paths = new Set<string>()
-  for (const [serial,boss] of ['abyss-monarch','frost-sovereign','infernal-titan','eclipse-seraph'].entries()) {
+  for (const [serial,boss] of (['abyss-monarch','frost-sovereign','infernal-titan','eclipse-seraph'] as const).entries()) {
     await wrapper.setProps({ bossPhaseReveal: { boss, phase: 3, serial: serial+1, expiresAt: 10 } })
-    paths.add(wrapper.get('[data-boss-phase-sigil]').attributes('d'))
+    const path = wrapper.get('[data-boss-phase-sigil]').attributes('d')
+    expect(path).toBeTruthy()
+    paths.add(path!)
   }
   expect(paths.size).toBe(4)
 })
