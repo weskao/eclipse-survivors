@@ -852,3 +852,24 @@ describe('Adventurer Hall upgrade Foley', () => {
     expect(ctx.sources).toHaveLength(3)
   })
 })
+
+describe('Hall sampled feedback routing', () => {
+  it('plays one cached sample per Hall event, with no generic oscillators', () => {
+    const audio = make()
+    audio.wake()
+    const events = [['hover',1],['select',1],['deny',1],['upgrade',1],['upgrade',2],['upgrade',3],['upgrade',4],['upgrade',5]] as const
+    for (const [index, [cue, variant]] of events.entries()) {
+      ctx.currentTime = 10 + index * 2
+      audio.playSfx(cue, variant)
+    }
+    expect(ctx.sources).toHaveLength(8)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(new Set(ctx.sources.map(source => source.buffer)).size).toBe(8)
+    expect(ctx.sources.every(source => !source.loop)).toBe(true)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 30
+    audio.playSfx('upgrade', 5)
+    expect(ctx.sources).toHaveLength(8)
+    audio.dispose()
+  })
+})

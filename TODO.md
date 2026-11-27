@@ -188,3 +188,5 @@ Motion polish uses finite CSS-only effects, no continuous animation loop. Added 
 Browser acceptance now checks actual WebP decode, different-node inspection, both game accessibility flags and English/Traditional Chinese screenshots on every existing viewport profile. Latest CI must confirm; no manual art/audio approval claimed.
 
 - [x] Correct legacy Hall prices, rank caps, and bonuses to match the authoritative research configuration. Display the actual selected specialization's namespaced mastery while retaining existing classic equipment eligibility. Regression coverage added; runtime CI verification pending.
+
+- [ ] Hall sound palette: distinct original hover, inspection, transaction denial, rank, route reveal, max rank, equipment, and blessing Foley; single managed bus, bounded voices and no duplicate generic click. Add waveform and routing regressions; audition final audio in game.
