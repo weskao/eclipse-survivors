@@ -73,7 +73,8 @@ const assertSkillValueColumns = async (scope, label) => {
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 await mkdir(destination, { recursive: true })
 try {
-  for (const [name, width, height, mobile] of cases) {
+  const only = process.env.ES2_MATRIX_CASES?.split(",")
+  for (const [name, width, height, mobile] of cases.filter(([id]) => !only || only.includes(id))) {
     const context = await browser.newContext({
       viewport: { width, height }, deviceScaleFactor: mobile ? 2 : 1,
       isMobile: mobile, hasTouch: mobile,
@@ -495,6 +496,8 @@ try {
         if (await archivePage.getAttribute('data-es2-archive-page') === 'progression') {
           const power = page.locator('[data-hall-inspect="power"]')
           await power.waitFor({ state: 'visible' })
+          // Geometry checks need settled layout: late fonts/art shift rows and make Playwright re-scroll on click.
+          await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.querySelectorAll('.hall-growth img')].map(img => img.decode().catch(() => {}))) })
           const rank = await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow')
           const growth = power.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " hall-growth ")][1]')
           assert.equal(await growth.locator('.hall-map .hall-buy, .hall-map p').count(), 0, name + ': redundant node card details')
@@ -505,22 +508,48 @@ try {
           const graph = await page.locator('[data-hall-edge]').count()
           if (await page.locator('.es2-progression-panel').count()) assert.equal(graph, 4, name + ': authoritative research edges missing')
           const node = graph ? page.locator('[data-hall-inspect="insight"]') : page.locator('[data-hall-inspect="vitality"]')
-          const floating = await page.evaluate(() => matchMedia('(max-width: 739px), (hover: none) and (pointer: coarse)').matches)
-          await node.scrollIntoViewIfNeeded()
-          const scrollBefore = await page.locator('.es2-menu').evaluate(el => el.scrollTop)
-          if (hoverCapable && !floating) await node.hover()
-          else await node.click()
-          const details = floating ? page.locator('.hall-detail--floating[data-open="true"]') : growth.locator('.hall-detail')
-          await details.waitFor({ state: 'visible' })
-          if (floating) {
-            assert.ok(inside(await details.evaluate(rect), width, height), name + ': floating inspector clips viewport')
-            assert.ok(Math.abs(await page.locator('.es2-menu').evaluate(el => el.scrollTop) - scrollBefore) <= 1, name + ': tap must not scroll archive')
+          // Upgrade dock: one in-flow inspector + purchase action, never a modal sheet to open and close.
+          const scroller = page.locator('.es2-menu-scroll')
+          const details = growth.locator('[data-hall-detail]')
+          const buy = details.locator('[data-hall-confirm]')
+          const clear = async (ids, label) => {
+            const dock = await details.evaluate(rect)
+            for (const id of ids) {
+              const ring = await growth.locator('[data-hall-node="' + id + '"] .hall-ring').evaluate(rect)
+              assert.ok(inside(ring, width, height), name + ': ' + label + ' node ' + id + ' outside viewport')
+              assert.ok(ring.bottom <= dock.y + 1 || ring.right <= dock.x + 1 || ring.y >= dock.bottom - 1,
+                name + ': ' + label + ' node ' + id + ' hidden under upgrade dock')
+            }
           }
+          const rowIds = await growth.locator('.hall-row').evaluateAll(rows => rows.map(row =>
+            [...row.querySelectorAll('[data-hall-node]')].map(el => el.getAttribute('data-hall-node'))))
+          await scroller.evaluate(el => { el.scrollTop = 0 })
+          assert.equal(await page.locator('[data-hall-close], .hall-detail--floating').count(), 0, name + ': upgrade sheet must not need opening')
+          assert.ok(inside(await buy.evaluate(rect), width, height), name + ': purchase action must be on the first screen')
+          await clear(rowIds[0], 'first-screen')
+          if (height >= 844 || (!mobile && height >= 900)) {
+            await clear(rowIds.flat(), 'tall-screen')
+            // Skins and reset live below the tree; only the tree + dock must fit the first screen.
+            const bottom = await growth.evaluate(el => el.getBoundingClientRect().bottom)
+            assert.ok(bottom <= height + 1, name + ': research hall must not need page scrolling (' + Math.round(bottom - height) + 'px)')
+          }
+          await growth.evaluate(el => el.scrollIntoView({ block: 'end', behavior: 'instant' }))
+          assert.ok(inside(await buy.evaluate(rect), width, height), name + ': purchase action must stay docked while scrolling')
+          await clear(rowIds.at(-1), 'scrolled')
+          await node.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' })) // clear of the bottom dock
+          const scrollBefore = await scroller.evaluate(el => el.scrollTop)
+          // Raw pointer: Playwright's hover/click re-scroll on sub-pixel settling, hiding what a player sees.
+          const box = await node.boundingBox()
+          if (hoverCapable && !mobile) await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+          else await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+          const scrollAfter = await scroller.evaluate(el => el.scrollTop)
+          assert.ok(Math.abs(scrollAfter - scrollBefore) <= 1, name + ': inspection must not scroll archive (' + scrollBefore + ' -> ' + scrollAfter + ')')
+          assert.ok(inside(await buy.evaluate(rect), width, height), name + ': purchase action hidden after inspection')
           assert.equal((await details.locator('.hall-detail-heading strong').innerText()).trim(), (await node.locator('strong').innerText()).trim(), name + ': inspected node mismatch')
           assert.equal(await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow'), rank, name + ': inspection must never spend')
           await power.locator('img').evaluate(img => img.decode())
           assert.ok(await power.locator('img').evaluate(img => img.naturalWidth > 0), name + ': WebP node art missing')
-          if (hoverCapable && motionAllowed && !floating) {
+          if (hoverCapable && motionAllowed && !mobile) {
             await power.hover()
             assert.notEqual(await power.locator('.hall-ring').evaluate(el => getComputedStyle(el, '::after').animationName), 'none', name + ': hover shimmer absent')
           }
@@ -539,10 +568,6 @@ try {
           }
           await assertLocalizedTextFits(page, name, 'en-hall-growth')
           await page.screenshot({ path: destination + '/' + name + '-hall-growth-en.png', animations: 'disabled' })
-          if (floating) {
-            await details.locator('[data-hall-close]').click()
-            await details.waitFor({ state: 'hidden' })
-          }
           if (await page.locator('[data-hall-tab="mastery"]').count()) {
             await page.locator('[data-hall-tab="mastery"]').click()
             assert.equal(await page.locator('[data-hall-category="mastery"]').isVisible(), true)
@@ -558,10 +583,8 @@ try {
           await page.locator('#es2-language').click()
           await page.locator('#es2-language-listbox [data-es2-value="zh-TW"]').click()
           await page.locator('.es2-close').click()
-          if (floating) await node.click()
           await assertLocalizedTextFits(page, name, 'zh-TW-hall-growth')
           await page.screenshot({ path: destination + '/' + name + '-hall-growth-zh-TW.png', animations: 'disabled' })
-          if (floating) await page.locator('.hall-detail--floating[data-open="true"] [data-hall-close]').click()
           await headerSettings.click()
           await page.locator('#es2-language').click()
           await page.locator('#es2-language-listbox [data-es2-value="en"]').click()

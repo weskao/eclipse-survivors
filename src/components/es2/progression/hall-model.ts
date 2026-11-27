@@ -24,6 +24,10 @@ export interface HallNode {
   increment?: string
 }
 
+export type HallNodeState = 'maxed' | 'locked' | 'available' | 'poor'
+export const hallNodeState = (node: HallNode): HallNodeState =>
+  node.cost === null ? 'maxed' : node.locked ? 'locked' : node.canBuy ? 'available' : 'poor'
+
 const icons: Record<string, AbilityId> = {
   power: 'damage', vitality: 'maxhp', insight: 'orb', scavenging: 'magnet', 'ember-study': 'blaze',
   'knight-aegis': 'shield', 'ranger-quiver': 'multi', 'wizard-focus': 'bolt',

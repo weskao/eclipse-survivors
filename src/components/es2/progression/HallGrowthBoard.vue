@@ -1,53 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { t } from '../../../i18n'
-import { hallEdges, hallRows, type HallNode } from './hall-model'
-const props = withDefaults(defineProps<{ nodes: readonly HallNode[]; writable?: boolean; tree?: boolean; visible?: boolean }>(), { writable: true, tree: false, visible: true })
+import { hallEdges, hallNodeState, hallRows, type HallNode } from './hall-model'
+const props = withDefaults(defineProps<{ nodes: readonly HallNode[]; writable?: boolean; tree?: boolean }>(), { writable: true, tree: false })
 const emit = defineEmits<{ purchase: [node: HallNode] }>()
 const selected = ref('')
 const hovered = ref('')
-const detail = ref<HTMLElement | null>(null)
-const root = ref<HTMLElement | null>(null)
-const floating = ref(false)
-const opened = ref(false)
-const floatQuery = '(max-width: 739px), (hover: none) and (pointer: coarse)'
-let media: MediaQueryList | undefined
-let opener: HTMLElement | null = null
-function closeDetail(restoreFocus = false) {
-  if (!opened.value) return
-  opened.value = false
-  hovered.value = ''
-  if (restoreFocus && opener?.isConnected) opener.focus({ preventScroll: true })
-}
-function syncMedia() {
-  floating.value = media?.matches ?? false
-  if (!floating.value) closeDetail()
-}
-function dismissOutside(event: PointerEvent) {
-  if (!floating.value || !opened.value || !(event.target instanceof Node)) return
-  if (!detail.value?.contains(event.target) && !root.value?.contains(event.target)) closeDetail()
-}
-function dismissEscape(event: KeyboardEvent) {
-  if (event.key === 'Escape' && floating.value && opened.value) {
-    event.preventDefault()
-    closeDetail(true)
-  }
-}
-onMounted(() => {
-  if (typeof window.matchMedia === 'function') {
-    media = window.matchMedia(floatQuery)
-    syncMedia()
-    media.addEventListener?.('change', syncMedia)
-  }
-  document.addEventListener('pointerdown', dismissOutside, true)
-  document.addEventListener('keydown', dismissEscape)
-})
-onBeforeUnmount(() => {
-  media?.removeEventListener?.('change', syncMedia)
-  document.removeEventListener('pointerdown', dismissOutside, true)
-  document.removeEventListener('keydown', dismissEscape)
-})
-watch(() => props.visible, visible => { if (!visible) closeDetail() })
+// Long-form copy folds away only where the dock is compact (CSS); state just records the player's choice.
+const expanded = ref(false)
+const bodyId = useId()
 const rows = computed(() => props.tree ? hallRows(props.nodes) : [props.nodes])
 const selectedNode = computed(() => props.nodes.find(node => node.id === selected.value) ?? props.nodes[0])
 const active = computed(() => props.nodes.find(node => node.id === hovered.value) ?? selectedNode.value)
@@ -59,20 +20,17 @@ let request: { id: string; rank: number; time: number } | null = null
 let dispatching = false
 const isFine = () => typeof window.matchMedia === 'function' && window.matchMedia('(hover: hover) and (pointer: fine)').matches
 const canPurchase = (node: HallNode) => props.writable && node.canBuy && node.cost !== null
-const status = (node: HallNode) => node.cost === null ? (node.maxRank === 1 ? '已解鎖' : '已滿階')
-  : node.locked ? '尚未解鎖' : !node.canBuy ? '餘燼不足' : '可升級'
+const statusLabel = { locked: '尚未解鎖', poor: '餘燼不足', available: '可升級' } as const
+const status = (node: HallNode) => {
+  const state = hallNodeState(node)
+  return state === 'maxed' ? (node.maxRank === 1 ? '已解鎖' : '已滿階') : statusLabel[state]
+}
 const action = (node: HallNode) => node.cost === null || node.locked ? t(status(node))
   : t(node.kind === 'research' ? '研究 · {cost} ✧' : node.kind === 'legacy' ? '升級 · {cost} ✧' : '解鎖 · {cost} ✧', { cost: node.cost })
 
-function inspect(node: HallNode, event?: MouseEvent) {
+function inspect(node: HallNode) {
   selected.value = node.id
   hovered.value = ''
-  if (event && floating.value) {
-    opener = event.currentTarget as HTMLElement
-    const wasOpen = opened.value
-    opened.value = true
-    if (!wasOpen && event.detail === 0) void nextTick(() => detail.value?.focus({ preventScroll: true }))
-  }
 }
 function purchase(node: HallNode) {
   if (!canPurchase(node) || node.id !== selectedNode.value?.id || dispatching) return
@@ -104,7 +62,7 @@ watch(() => props.nodes, (nodes, previous) => {
 </script>
 
 <template>
-  <div ref="root" class="hall-growth" :class="{ 'hall-growth--tree': tree, 'hall-growth--floating': floating }">
+  <div class="hall-growth" :class="{ 'hall-growth--tree': tree }">
     <div class="hall-map">
       <template v-for="(row, rowIndex) in rows" :key="rowIndex">
         <div v-if="tree && rowIndex > 0" class="hall-links" aria-hidden="true">
@@ -117,11 +75,11 @@ watch(() => props.nodes, (nodes, previous) => {
         <div class="hall-row" :class="{ 'hall-row--single': tree && row.length === 1 }"
           :style="tree ? { '--columns': row.length } : undefined">
           <article v-for="node in row" :key="node.id" class="hall-node" :data-hall-node="node.id"
-            :data-state="node.cost === null ? 'maxed' : node.locked ? 'locked' : node.canBuy ? 'available' : 'poor'"
+            :data-state="hallNodeState(node)"
             :data-selected="String(active?.id === node.id)" :data-hall-arrived="String(upgraded?.arrived.includes(node.id) ?? false)"
-            @pointerenter="!floating && isFine() && (hovered = node.id)" @pointerleave="hovered === node.id && (hovered = '')">
+            @pointerenter="isFine() && (hovered = node.id)" @pointerleave="hovered === node.id && (hovered = '')">
             <button type="button" class="hall-inspect" data-ui-sfx="hall-inspect" :data-hall-inspect="node.id"
-              :aria-pressed="selectedNode?.id === node.id" @focus="!floating && (hovered = node.id)" @blur="hovered = ''" @click="inspect(node, $event)">
+              :aria-pressed="selectedNode?.id === node.id" @focus="hovered = node.id" @blur="hovered = ''" @click="inspect(node)">
               <span class="hall-ring" role="progressbar" :aria-label="t(node.title)" :aria-valuemin="0" :aria-valuemax="node.maxRank" :aria-valuenow="node.rank"
                 :style="{ '--hall-rank-progress': (node.rank / node.maxRank * 100) + '%', '--hall-tick-step': 360 / node.maxRank + 'deg', '--hall-tip-angle': node.rank / node.maxRank * 360 + 'deg' }">
                 <span class="hall-ring-metal" aria-hidden="true"></span>
@@ -142,9 +100,7 @@ watch(() => props.nodes, (nodes, previous) => {
         </div>
       </template>
     </div>
-    <Teleport to="body" :disabled="!floating">
-    <aside v-if="active" v-show="visible && (!floating || opened)" ref="detail" class="hall-detail" :class="{ 'hall-detail--floating': floating }" :data-hall-detail="tree ? '' : undefined" :data-open="String(floating && opened && visible)" :data-rank-complete="String(active.maxRank > 1 && active.rank === active.maxRank)" tabindex="-1" :aria-label="t('節點詳情')">
-      <button v-if="floating" type="button" class="hall-detail-close" data-hall-close data-ui-sfx="select" :aria-label="t('關閉節點詳情')" @click="closeDetail(true)">×</button>
+    <aside v-if="active" class="hall-detail" data-hall-detail :data-rank-complete="String(active.maxRank > 1 && active.rank === active.maxRank)" :aria-label="t('節點詳情')">
       <div class="hall-detail-heading">
         <div class="hall-detail-emblem"><img :src="active.art" alt="" width="48" height="48" /></div>
         <div class="hall-detail-title">
@@ -158,17 +114,19 @@ watch(() => props.nodes, (nodes, previous) => {
             <i v-for="rank in active.maxRank" :key="rank" class="hall-detail-pip" :data-filled="String(rank <= active.rank)" :data-next="String(rank === active.rank + 1)"></i>
           </div>
         </div>
+        <button type="button" class="hall-detail-toggle" data-hall-detail-toggle data-ui-sfx="select" :aria-controls="bodyId"
+          :aria-expanded="expanded" :aria-label="t(expanded ? '收起節點說明' : '展開節點說明')" @click="expanded = !expanded"><span aria-hidden="true">ⓘ</span></button>
       </div>
-      <div class="hall-detail-body">
-      <div class="hall-description"><small>{{ t('技能說明') }}</small><p>{{ active.description }}</p></div>
       <div v-if="active.current !== undefined" class="hall-comparison" :class="{ 'hall-comparison--single': active.next === undefined }">
         <div class="hall-effect" data-hall-current><small>{{ t('目前效果') }}</small><span class="hall-effect-level">Lv. {{ active.rank }}</span><b>{{ active.current }}</b></div>
         <span v-if="active.next !== undefined" class="hall-effect-arrow" aria-hidden="true">→</span>
         <div v-if="active.next !== undefined" class="hall-effect hall-effect--next" data-hall-next><small>{{ t('下一階效果') }}</small><span class="hall-effect-level">Lv. {{ active.rank + 1 }}</span><b>{{ active.next }}</b></div>
         <div v-if="active.next !== undefined && active.increment !== undefined" class="hall-effect-gain" data-hall-increment><small>{{ t('每階提升') }}</small><b>↑ {{ active.increment }}</b></div>
       </div>
+      <div :id="bodyId" class="hall-detail-body" :data-expanded="String(expanded)" :data-state="hallNodeState(active)">
+      <div class="hall-description"><small>{{ t('技能說明') }}</small><p>{{ active.description }}</p></div>
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><p v-for="requirement in active.requirements" :key="requirement">{{ requirement }}</p></div>
-      <small class="hall-status hall-detail-status" :data-state="active.cost === null ? 'maxed' : active.locked ? 'locked' : active.canBuy ? 'available' : 'poor'">{{ t(status(active)) }}</small>
+      <small class="hall-status hall-detail-status" :data-state="hallNodeState(active)">{{ t(status(active)) }}</small>
       </div>
       <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview ? t('選取節點後升級') : action(active) }}</button>
       <div v-if="upgraded?.id === active.id" role="status" class="hall-success" :key="upgraded.rank">
@@ -176,7 +134,6 @@ watch(() => props.nodes, (nodes, previous) => {
         <span v-if="upgraded.arrived.length" data-hall-unlock-notice class="hall-unlock-notice">{{ t('新研究已開啟') }} · {{ nodes.filter(node => upgraded?.arrived.includes(node.id)).map(node => t(node.title)).join(' · ') }}</span>
       </div>
     </aside>
-    </Teleport>
   </div>
 </template>
 
@@ -257,10 +214,10 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-node[data-hall-arrived="true"] .hall-ring::after{animation:hall-shimmer .63s .68s ease-out both}
 @keyframes hall-destination{0%{filter:saturate(.35);transform:scale(.94)}40%{filter:saturate(1.2) brightness(1.25);transform:scale(1.08);box-shadow:0 0 0 2px #e9c182,0 0 20px #e9c18299}100%{filter:none;transform:none}}
 @media(hover:hover) and (pointer:fine){.hall-inspect:hover{border-color:#b89a6355}.hall-buy:hover:not(:disabled){background:linear-gradient(#7a603e,#4d3826)}}
-@media(min-width:740px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(205px,30%);--hall-medallion:68px}.hall-map{padding:10px 18px}.hall-growth--tree .hall-row{max-width:400px;margin-inline:auto}.hall-growth--tree .hall-links{max-width:400px;margin-inline:auto}}
+@media(min-width:600px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(205px,30%);--hall-medallion:60px}.hall-map{padding:8px 18px}.hall-links{height:10px}.hall-growth--tree .hall-row{max-width:400px;margin-inline:auto}.hall-growth--tree .hall-links{max-width:400px;margin-inline:auto}}
 @media(orientation:landscape) and (min-width:560px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,36%);--hall-medallion:54px}.hall-map{padding:6px}.hall-links{height:10px}.hall-inspect{gap:2px;padding:2px}.hall-inspect strong{font-size:.75rem}.hall-detail{gap:6px;padding:9px}}
 /* Compact tree geometry applies to the entire narrow portrait layout, not just 320px phones. */
-@media(max-width:739px) and (orientation:portrait){.hall-growth{--hall-medallion:56px}.hall-map{padding:6px}.hall-links{height:10px}}
+@media(max-width:739px) and (orientation:portrait){.hall-growth{--hall-medallion:56px;gap:6px}.hall-ring{margin-bottom:4px}.hall-map{padding:6px}.hall-links{height:10px}}
 @media(max-width:360px){.hall-growth{--hall-medallion:56px}.hall-map{padding:6px}.hall-links{height:10px}.hall-row{gap:3px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
 @media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
 :global([data-es2-reduce-motion="true"] .hall-upgrade-fx),
@@ -274,25 +231,6 @@ watch(() => props.nodes, (nodes, previous) => {
 :global([data-es2-reduce-motion="true"] .hall-node[data-hall-arrived="true"] .hall-ring),
 :global([data-es2-reduce-flashing="true"] .hall-node[data-hall-arrived="true"] .hall-ring){animation:none!important}
 
-/* One detail template: a side inspector on wide fine-pointer layouts, a viewport
-   overlay on touch/narrow screens. Teleport avoids transformed archive ancestors. */
-.hall-growth--floating{grid-template-columns:minmax(0,1fr)!important}
-.hall-detail--floating{position:fixed;z-index:305;inset-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));margin:0 auto;width:auto;max-width:520px;max-height:min(48dvh,390px);box-sizing:border-box;display:flex;flex-direction:column;gap:7px;padding:12px;background:linear-gradient(155deg,#26394b,#111b27 72%);border:1px solid #b99b65;border-top:2px solid #e7c58b;border-radius:15px 15px 8px 8px;box-shadow:0 -8px 32px #0009,inset 0 1px #e7c58b26;color:#ebdfcc;font:inherit;overscroll-behavior:contain;animation:hall-inspector-in .18s ease-out both}
-.hall-detail--floating:focus{outline:none}
-.hall-detail--floating .hall-detail-heading{padding-right:46px;flex:none}
-.hall-detail--floating .hall-detail-body{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding-right:2px}
-.hall-detail--floating .hall-confirm{flex:none}
-.hall-detail--floating .hall-success{flex:none;font-size:.78rem}
-.hall-detail-close{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:44px;height:44px;border:1px solid #b99b6566;border-radius:7px;background:#111c28;color:#e9d3ab;font:400 24px/1 system-ui;cursor:pointer}
-.hall-detail-close:focus-visible{outline:2px solid #ffda94;outline-offset:1px}
-@keyframes hall-inspector-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@media(orientation:landscape) and (max-height:600px){
-  .hall-detail--floating{inset-inline:auto max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));width:min(44vw,330px);max-width:calc(100vw - 16px);max-height:none;padding:9px;gap:5px;border-radius:10px;animation-name:hall-inspector-side}
-  .hall-detail--floating .hall-detail-heading img{width:36px;height:36px;flex-basis:36px}
-}
-@keyframes hall-inspector-side{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.hall-detail--floating{animation:none}}
-:global([data-es2-reduce-motion="true"] .hall-detail--floating){animation:none}
 
 /* Rank-dependent bounded ceremony, sized from the same medallion on every device. */
 .hall-upgrade-fx[data-hall-stage="2"] .hall-wave{border-color:#f5ddaa}
@@ -352,10 +290,46 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-detail .hall-confirm:not(:disabled){background:linear-gradient(180deg,#a28149,#674a29);border-color:#edcb89;box-shadow:inset 0 1px #f6dfa966,0 3px 8px #0005;color:#fff4dc;font-weight:750}
 @media(hover:hover) and (pointer:fine){.hall-detail .hall-confirm:hover:not(:disabled){background:linear-gradient(180deg,#b79860,#765735)}}
 .hall-detail .hall-confirm:active:not(:disabled){box-shadow:inset 0 2px 5px #0006}
-.hall-detail--floating{background:radial-gradient(ellipse at 15% 0%,#473a35,transparent 60%),linear-gradient(155deg,#202b38,#101721 85%);max-height:min(60dvh,460px)}
-.hall-detail--floating .hall-detail-emblem{width:46px;height:46px}
-.hall-detail--floating .hall-detail-emblem img{width:100%;height:100%}
-.hall-detail--floating .hall-detail-body{align-content:start}
-@media(orientation:landscape) and (max-height:600px){.hall-detail--floating{max-height:none}.hall-detail--floating .hall-detail-emblem{width:38px;height:38px}.hall-detail--floating .hall-detail-heading{gap:6px}.hall-detail--floating .hall-description{padding-top:4px}.hall-detail--floating .hall-effect{padding:5px 4px}}
 @media(max-width:360px){.hall-detail-heading{gap:7px}.hall-detail-emblem{width:46px;height:46px}.hall-comparison{gap:3px}.hall-comparison .hall-effect{padding:5px 3px}}
+/* One upgrade dock in normal flow, never a modal to open and close: a sticky side
+   column where width allows, pinned to the viewport bottom on portrait phones.
+   Kept last so these layout rules win over the shared inspector surface above. */
+.hall-detail{z-index:4}
+.hall-detail-toggle{display:none;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid #b99b6566;border-radius:50%;background:#111c28;color:#e9d3ab;font:400 20px/1 system-ui;cursor:pointer}
+.hall-detail-toggle[aria-expanded="true"]{border-color:#e7c58b;background:#2c3540;color:#ffe2ad}
+.hall-detail-toggle:focus-visible{outline:2px solid #ffda94;outline-offset:1px}
+@media(min-width:600px) and (max-width:739px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(220px,36%)}}
+@media(min-width:600px),(orientation:landscape) and (min-width:560px) and (max-height:520px){
+  .hall-detail{position:sticky;top:8px;max-height:calc(100dvh - 16px);overflow-y:auto;overscroll-behavior:contain}
+}
+/* Compact dock (phones, touch, screens <=800px tall so the buy action stays on the first screen): one stat line "current → next" beside the
+   title, the action below; long copy folds behind ⓘ. Locked nodes keep their requirement. */
+@media(max-width:739px),(hover:none) and (pointer:coarse),(max-height:800px){
+  .hall-detail{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px 10px;padding:8px 10px}
+  .hall-detail-heading{display:contents}
+  .hall-detail .hall-detail-emblem{grid-row:1/span 2;width:44px;height:44px;padding:4px}
+  .hall-detail-title{grid-column:2;grid-row:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:0 8px}
+  .hall-detail-title strong{margin:0;font-size:1rem;overflow-wrap:break-word}
+  .hall-detail-toggle{display:grid;grid-column:3;grid-row:1/span 2}
+  .hall-detail-title>small,.hall-detail-pips,.hall-comparison .hall-effect-gain,
+  .hall-comparison .hall-effect small,.hall-comparison .hall-effect-level{display:none}
+  .hall-comparison{grid-column:2;grid-row:2;display:flex;align-items:baseline;flex-wrap:wrap;gap:0 6px}
+  .hall-comparison .hall-effect{display:block;padding:0;border:0;background:none;text-align:start}
+  .hall-comparison .hall-effect b{font-size:1rem}
+  .hall-detail-body,.hall-detail .hall-confirm,.hall-detail .hall-success{grid-column:1/-1}
+  .hall-detail-body[data-expanded="false"]:not([data-state="locked"]),
+  .hall-detail-body[data-expanded="false"]>:not(.hall-requirements){display:none}
+  .hall-detail-body[data-expanded="false"] .hall-requirements{display:flex;flex-wrap:wrap;gap:0 6px;padding:4px 8px}
+}
+/* Very short landscape (200% zoom, phones sideways): the side column is too narrow for emblem + title + toggle. */
+@media(orientation:landscape) and (max-height:400px){
+  .hall-detail{grid-template-columns:minmax(0,1fr) auto}
+  .hall-detail .hall-detail-emblem{display:none}
+  .hall-detail-title,.hall-comparison{grid-column:1}
+  .hall-detail-toggle{grid-column:2}
+  .hall-detail-title strong{font-size:.92rem}
+}
+@media(max-width:599px) and (orientation:portrait){
+  .hall-detail{position:sticky;bottom:0;padding-bottom:max(8px,env(safe-area-inset-bottom));border-top:2px solid #e7c58b;border-radius:14px 14px 6px 6px;box-shadow:0 -10px 24px #050a10cc,inset 0 1px #f5d09b22}
+}
 </style>
