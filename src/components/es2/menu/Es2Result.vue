@@ -10,9 +10,13 @@ import type { RunRewards, RunStats } from '../../../meta/types'
 import Es2Dialog from './Es2Dialog.vue'
 import '../../../styles/es2/result-celebration.css'
 import { formatDuration } from './model'
+import { JOB } from '../../../game/constants'
+import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 const props = defineProps<{ active: boolean; ending: string; summary: string; result?: RunStats | null; rewards?: RunRewards | null }>()
 const emit = defineEmits<{ again: []; home: [] }>()
 const victory = computed(() => props.result?.victory === true)
+const heroName = computed(() => !props.result ? '' : t(props.result.specializationId
+  ? HERO_DEFINITIONS[props.result.specializationId].label : JOB[props.result.hero].label))
 const achievementNames = new Map([...LEGACY_ACHIEVEMENTS, ...META_ACHIEVEMENTS].map(item => [item.id, item.title]))
 const cosmeticNames = new Map(COSMETICS.map(item => [item.id, item.name]))
 const subtitle = computed(() => {
@@ -50,7 +54,7 @@ const stats = computed(() => props.result ? [
       </div>
       <div class="es2-result-banner">
         <span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span>
-        <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="t('本次遠征英雄：' + (result.specializationId ?? result.hero))" /></div>
+        <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="t('本次遠征英雄：{name}', { name: heroName })" /></div>
         <p class="es2-result-status">{{ t(victory ? '✦ 勝利 · 黎明重現 ✦' : '✧ 戰敗 · 長夜未盡 ✧') }}</p>
         <p v-if="result" class="es2-result-mode">{{ t(MODES[result.mode].label) }}</p>
       </div>

@@ -41,7 +41,19 @@
 .es2-section-heading p{color:var(--es2-muted);font-size:.85rem;margin:0}
 .es2-hero-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .es2-menu .es2-hero-select-card{position:relative;display:flex;flex-direction:column;width:100%;height:100%;min-width:0;overflow:hidden;padding:0;text-align:left;color:#f6e7cf;--es2-hero-glow:var(--es2-hero-idle-glow);background:radial-gradient(ellipse at 50% 36%,var(--es2-hero-glow) 0%,transparent 72%),linear-gradient(165deg,#1b2c3a,#0a1421 70%);border:1px solid #6f7c895e;border-radius:30px 30px 10px 10px / 18px 18px 10px 10px;cursor:pointer;touch-action:manipulation;transition:border-color .2s,box-shadow .2s,transform .2s}
-@media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px)}}
+@media(hover:hover) and (pointer:fine){
+  .es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px)}
+  .es2-menu .es2-hero-select-card[aria-pressed="false"]:hover:not(:disabled){
+    --es2-hero-glow:color-mix(in srgb,var(--es2-hero-idle-glow) 85%,#aabbd0);
+    border-color:color-mix(in srgb,var(--es2-hero-idle-glow) 55%,#8498ad);
+    box-shadow:0 0 12px var(--es2-hero-glow);
+  }
+  @supports(color:rgb(from red r g b / .30)){
+    .es2-menu .es2-hero-select-card[aria-pressed="false"]:hover:not(:disabled){
+      --es2-hero-glow:rgb(from var(--es2-hero-idle-glow) r g b / .30);
+    }
+  }
+}
 .es2-menu .es2-hero-select-card:active:not(:disabled){transform:translateY(-1px) scale(.99)}
 .es2-hero-card img{width:100%;height:clamp(165px,27vw,360px);object-fit:contain;object-position:center bottom;padding:15px 5px 0}
 .es2-hero-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:13px}

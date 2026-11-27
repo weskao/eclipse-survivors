@@ -65,8 +65,11 @@ describe('ES2 upgrade and reward picker', () => {
     await nextTick()
     const stats = button(mastery.id).querySelectorAll('.es2-mastery-stat')
     expect(stats).toHaveLength(2)
-    expect(stats[0]?.querySelector('.es2-mastery-values')?.textContent).toBe('170%→188%')
-    expect(stats[1]?.querySelector('.es2-mastery-values')?.textContent).toBe('140%→144.5%')
+    // Before, arrow and after are separate elements, so compare each part, not joined text.
+    const values = (stat?: Element) => ['.es2-mastery-before', '.es2-mastery-arrow', '.es2-mastery-after']
+      .map(selector => stat?.querySelector(selector)?.textContent)
+    expect(values(stats[0])).toEqual(['170%', '→', '188%'])
+    expect(values(stats[1])).toEqual(['140%', '→', '144.5%'])
     expect(button('bolt').querySelector('.es2-mastery-stats')).toBeNull()
   })
 

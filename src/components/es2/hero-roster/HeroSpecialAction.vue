@@ -39,13 +39,13 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
   <div class="es2-hero-special" :data-hero="heroId" :data-side="joystickSide" :aria-label="t('{name} 主動技能', { name: t(hero.label) })">
     <button type="button" class="es2-hero-special__button" :data-ready="ready ? 'true' : 'false'" :data-flourish="flourish ?? undefined" data-hero-special data-ui-sfx="managed"
       :style="{ '--es2-special-cooldown': (progress / 100).toFixed(3) }"
-      aria-keyshortcuts="Q" :aria-label="t(hero.special + (ready ? '，可施放，按 Q' : '，尚未就緒'), hero.specialParams)"
+      aria-keyshortcuts="Q" :aria-label="t(ready ? '{special}，可施放，按 Q' : '{special}，尚未就緒', { special: t(hero.special, hero.specialParams) })"
       :disabled="!ready" @click="trigger">
       <span class="es2-hero-special__content">
         <img data-hero-special-icon class="es2-hero-special__icon" :src="hero.specialIconSrc" alt=""
           width="44" height="44" decoding="async" draggable="false" />
         <span class="es2-hero-special__name">{{ t(hero.special.split('：')[0]) }}</span>
-        <span class="es2-hero-special__hint">{{ t(ready ? 'Q · 施放' : !active ? '不可施放' : Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : '不可施放') }}</span>
+        <span class="es2-hero-special__hint">{{ ready ? t('Q · 施放') : active && Number.isFinite(remaining) ? remaining.toFixed(1) + 's' : t('不可施放') }}</span>
       </span>
       <span class="es2-hero-special__flourish" aria-hidden="true" @animationend.self="flourish = null"></span>
       <span class="es2-hero-special__fill" aria-hidden="true" :style="{ width: progress + '%' }"></span>

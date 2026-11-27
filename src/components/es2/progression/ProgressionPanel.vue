@@ -54,7 +54,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
           <small>{{ t("等級") }} {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> {{ t("· 前置研究未解鎖") }}</span></small>
           <button type="button" data-ui-sfx="managed" :data-research="node.id" :disabled="!writable || !node.canBuy"
             @click="emit('research', node.id)">
-            {{ t(node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · ' + node.nextCost + ' ✧') }}
+            {{ t(node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · {cost} ✧', { cost: node.nextCost }) }}
           </button>
         </article>
       </div>
@@ -77,7 +77,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
           <button type="button" data-ui-sfx="managed" :data-equipment="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('equipment', item.id)">
-            {{ t(item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · ' + item.cost + ' ✧') }}
+            {{ t(item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · {cost} ✧', { cost: item.cost }) }}
           </button>
         </article>
         <article v-for="item in bonuses" :key="item.id" class="es2-progression-item">
@@ -86,7 +86,7 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
           <button type="button" data-ui-sfx="managed" :data-bonus="item.id"
             :disabled="!writable || !item.canBuy"
             @click="emit('bonus', item.id)">
-            {{ t(item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · ' + item.cost + ' ✧') }}
+            {{ t(item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · {cost} ✧', { cost: item.cost }) }}
           </button>
         </article>
       </div>

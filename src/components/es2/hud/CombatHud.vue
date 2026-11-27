@@ -252,7 +252,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <section v-if="view.statuses.length" class="es2-hud__statuses es2-hud__plate" :aria-label="t('暫時效果')">
       <span v-for="status in view.statuses" :key="status.id" :data-es2-status="status.id"
         class="es2-hud__status" :class="'es2-hud__status--' + status.kind"
-        :title="t(status.title + (status.remainingSeconds !== undefined ? ' · ' + status.remainingSeconds.toFixed(1) + ' 秒' : ''))">
+        :title="status.remainingSeconds !== undefined ? t('{title} · {seconds} 秒', { title: t(status.title), seconds: status.remainingSeconds.toFixed(1) }) : t(status.title)">
         <span aria-hidden="true">{{ status.icon ?? (status.kind === 'buff' ? '✦' : '◆') }}</span>
         {{ t(status.title) }}
         <small v-if="status.remainingSeconds !== undefined">{{ status.remainingSeconds.toFixed(1) }}s</small>
@@ -310,7 +310,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
         <div v-if="selectedSkill" class="es2-hud__selected" data-es2-skill-detail>
           <strong>{{ t(selectedSkill.title) }} · Lv.{{ selectedSkill.level }}/{{ selectedSkill.maxLevel }}</strong>
-          <span>{{ t(selectedSkill.cooldown > 0 ? '冷卻 ' + selectedSkill.cooldown.toFixed(1) + ' 秒' : '可用') }}</span>
+          <span>{{ selectedSkill.cooldown > 0 ? t('冷卻 {seconds} 秒', { seconds: selectedSkill.cooldown.toFixed(1) }) : t('可用') }}</span>
         </div>
       </div>
     </footer>
