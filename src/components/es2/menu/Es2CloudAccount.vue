@@ -4,6 +4,7 @@ import googleSignInIcon from '../../../assets/ui/google-sign-in.webp'
 import { t, formatNumber } from '../../../i18n'
 import type { useCloudWallet, AccountNotice } from '../../../cloud/use-cloud-wallet'
 import Es2AccountToast from './Es2AccountToast.vue'
+import Es2CloudSymbol from './Es2CloudSymbol.vue'
 import Es2Dialog from './Es2Dialog.vue'
 const props = defineProps<{ cloud: ReturnType<typeof useCloudWallet>; embers: number; result?: boolean; notice?: AccountNotice | null }>()
 const open = ref(false), confirmRestore = ref(false)
@@ -33,8 +34,16 @@ const statusGlyph = computed(() => {
 })
 const resultState = computed(() => props.cloud.user.value ? accountStatus.value
   : props.cloud.signingIn.value || props.cloud.busy.value ? 'loading' : props.cloud.status.value)
-const resultHeading = computed(() => !props.cloud.user.value && resultState.value === 'error'
-  ? '登入失敗' : statusLabels[resultState.value])
+const resultHeading = computed(() => {
+  switch (resultState.value) {
+    case 'synced': return '雲端存檔完成'
+    case 'syncing': return '同步中'
+    case 'error': return props.cloud.user.value ? '同步失敗' : '登入失敗'
+    case 'conflict': return '存檔衝突'
+    case 'playtest': return '測試模式'
+    default: return statusLabels[resultState.value]
+  }
+})
 const resultMessage = computed(() => {
   if (props.cloud.user.value) {
     if (props.cloud.status.value === 'playtest') return statusLabels.playtest
@@ -61,7 +70,7 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
   <div v-if="result" class="es2-result-cloud" data-es2-result-cloud :data-state="resultState">
     <Es2AccountToast v-if="notice" :notice="notice" inline />
     <div class="es2-result-cloud-main">
-      <span class="es2-result-cloud-symbol" aria-hidden="true">{{ cloud.user.value ? statusGlyph : resultState === 'error' ? '!' : resultState === 'loading' ? '…' : '☁' }}</span>
+      <span class="es2-result-cloud-symbol" aria-hidden="true"><Es2CloudSymbol :state="resultState" /></span>
       <div class="es2-result-cloud-copy" role="status" aria-live="polite">
         <strong>{{ t(resultHeading) }}</strong>
         <p data-es2-result-cloud-status :data-confirmed="cloud.confirmed.value">{{ t(resultMessage) }}</p>
@@ -69,7 +78,7 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
       <button v-if="!cloud.user.value" type="button" class="es2-secondary es2-google-signin" data-es2-result-google-login data-ui-sfx="select"
         :disabled="!cloud.available.value || cloud.busy.value" @click="activate"><img :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" />{{ t('使用 Google 登入') }}</button>
       <button v-else-if="cloud.status.value === 'error' || cloud.status.value === 'conflict'" type="button" class="es2-secondary" data-es2-result-cloud-retry data-ui-sfx="select"
-        :disabled="cloud.busy.value" @click="cloud.sync()"><span aria-hidden="true">↻</span> {{ t('立即同步') }}</button>
+        :disabled="cloud.busy.value" @click="cloud.sync()"><Es2CloudSymbol state="syncing" /> {{ t('立即同步') }}</button>
     </div>
   </div>
   <button v-else type="button" class="es2-icon-button es2-cloud-trigger" data-es2-cloud-account data-ui-sfx="select"
@@ -158,19 +167,23 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
   .es2-cloud-status-mark { border-color: CanvasText; background: Canvas; color: CanvasText; }
 }
 .es2-cloud-emblem { display: block; flex: 0 0 auto; width: 1.65rem; height: 1.65rem; object-fit: contain; }
-.es2-result-cloud { --cloud-accent: #c0b5a0; display: grid; gap: 6px; min-width: 0; margin: 8px 0 0; font-size: max(.75rem, calc(.85rem * var(--es2-ui-scale, 1))); }
+.es2-result-cloud { --cloud-accent: #c0b5a0; display: grid; gap: 5px; min-width: 0; margin: 6px 0 0; font-size: max(.75rem, calc(.85rem * var(--es2-ui-scale, 1))); }
 .es2-result-cloud[data-state="synced"] { --cloud-accent: #94d5ad; }
 .es2-result-cloud[data-state="syncing"], .es2-result-cloud[data-state="loading"] { --cloud-accent: #f1cb86; }
 .es2-result-cloud[data-state="error"], .es2-result-cloud[data-state="conflict"] { --cloud-accent: #f6a58f; }
 .es2-result-cloud[data-state="playtest"] { --cloud-accent: #c3b2ed; }
-.es2-result-cloud-main { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-width: 0; padding: 10px; border: 1px solid #9b87604f; border-inline-start: 3px solid var(--cloud-accent); border-radius: 7px; background: linear-gradient(120deg, #253044, #151c2a); text-align: start; }
-.es2-result-cloud-symbol { display: grid; place-items: center; flex: 0 0 34px; height: 34px; border: 1px solid var(--cloud-accent); border-radius: 50%; color: var(--cloud-accent); background: #111b29; font: 700 1.2rem/1 system-ui, sans-serif; }
+.es2-result-cloud-main { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-width: 0; padding: 10px 8px; border-block-start: 1px solid #9b87604f; background: linear-gradient(90deg, #18243190, transparent); text-align: start; }
+.es2-result-cloud-symbol { display: grid; place-items: center; flex: 0 0 36px; height: 36px; color: var(--cloud-accent); background: #111b29; border: 1px solid color-mix(in srgb, var(--cloud-accent) 45%, transparent); border-radius: 10px; }
+.es2-result-cloud-symbol svg { width: 24px; height: 24px; }
 .es2-result-cloud-copy { flex: 1 1 145px; min-width: 0; overflow-wrap: anywhere; }
-.es2-result-cloud-copy strong { display: block; color: var(--cloud-accent); line-height: 1.3; }
-.es2-result-cloud p { margin: 3px 0 0; line-height: 1.4; color: #d2c9ba; }
-.es2-result-cloud button { flex: 0 1 auto; min-height: 44px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; padding: .5rem .75rem; }
+.es2-result-cloud-copy strong { display: block; color: var(--cloud-accent); line-height: 1.3; font-weight: 700; }
+.es2-result-cloud p { margin: 2px 0 0; line-height: 1.4; color: #d2c9ba; }
+.es2-result-cloud button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex: 0 1 auto; min-height: 44px; max-width: 100%; white-space: normal; overflow-wrap: anywhere; padding: .5rem .85rem; border-color: #9b876080; color: #f3dfbc; background: #1e2d3e; }
+.es2-result-cloud button svg, .es2-result-cloud button .es2-cloud-emblem { flex: 0 0 20px; width: 20px; height: 20px; }
+@media (hover: hover) and (pointer: fine) { .es2-result-cloud button:hover:not(:disabled) { border-color: #d6b783; background: #2c3c4d; } }
 @media (max-width: 480px) { .es2-result-cloud button { flex-basis: 100%; } }
-@media (orientation: landscape) and (max-height: 520px) { .es2-result-cloud-main { padding: 6px 8px; gap: 5px 8px; } .es2-result-cloud-symbol { flex-basis: 28px; height: 28px; } }
+@media (orientation: landscape) and (max-height: 520px) { .es2-result-cloud-main { padding: 5px 6px; gap: 5px 8px; } .es2-result-cloud-symbol { flex-basis: 28px; height: 28px; } .es2-result-cloud-symbol svg { width: 20px; height: 20px; } }
+@media (forced-colors: active) { .es2-result-cloud-symbol, .es2-result-cloud-copy strong { color: CanvasText; } }
 .es2-cloud-card { display: grid; gap: 1rem; min-width: 0; overflow-wrap: anywhere; }
 .es2-cloud-card p { margin: 0; }
 .es2-cloud-identity { display: flex; align-items: center; gap: 1rem; min-width: 0; padding: .5rem .4rem 1rem; border-bottom: 1px solid var(--es2-line, #806342); }

@@ -137,10 +137,28 @@ describe('Google OAuth entry points', () => {
     const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 50, result: true, notice: 'error' } })
     expect(wrapper.get('[data-es2-account-toast]').text()).toContain('登入失敗')
     expect(wrapper.get('.es2-result-cloud-copy strong').text()).toBe('登入失敗')
-    expect(wrapper.get('[data-es2-result-google-login]').exists()).toBe(true)
+    expect(wrapper.find('[data-es2-result-google-login]').exists()).toBe(true)
     setLocale('en')
     await nextTick()
     expect(wrapper.get('.es2-result-cloud-copy strong').text()).toBe('Sign-in failed')
+    wrapper.unmount()
+  })
+  it('renders a compact cloud icon and concise result heading for each save state', async () => {
+    const { cloud, user, status, confirmed } = fixture()
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 50, result: true } })
+    expect(wrapper.get('[data-es2-cloud-symbol]').attributes('data-state')).toBe('guest')
+    user.value = { uid: 'a' } as User
+    status.value = 'syncing'
+    await nextTick()
+    expect(wrapper.get('[data-es2-cloud-symbol]').attributes('data-state')).toBe('syncing')
+    expect(wrapper.get('.es2-result-cloud-copy strong').text()).toBe('同步中')
+    status.value = 'synced'
+    confirmed.value = true
+    await nextTick()
+    expect(wrapper.get('[data-es2-cloud-symbol]').attributes('data-state')).toBe('synced')
+    expect(wrapper.get('.es2-result-cloud-copy strong').text()).toBe('雲端存檔完成')
+    expect(wrapper.get('[data-es2-result-cloud-status]').text()).toContain('已儲存至')
+    expect(wrapper.find('[data-es2-result-google-login]').exists()).toBe(false)
     wrapper.unmount()
   })
   it('shows result sign-in feedback independently of the cloud save and keeps retry available', async () => {
