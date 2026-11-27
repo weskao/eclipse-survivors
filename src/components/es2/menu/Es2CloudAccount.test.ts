@@ -53,6 +53,26 @@ describe('Google OAuth entry points', () => {
     expect(button.get('img').attributes('src')).toMatch(/google-sign-in\.webp/)
     wrapper.unmount()
   })
+  it('groups wallet status and sync together while separating sign out and preserving conflict confirmation', async () => {
+    const { cloud, user, status, sync } = fixture()
+    user.value = { uid: 'a', displayName: 'Adventurer' } as User
+    status.value = 'conflict'
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 1250 }, attachTo: document.body })
+    await wrapper.get('[data-es2-cloud-account]').trigger('click')
+    const dialog = document.body.querySelector('[role="dialog"]')!
+    const wallet = dialog.querySelector('[data-es2-cloud-wallet-panel]')!
+    expect(wallet.textContent).toContain('暮光餘燼')
+    expect(wallet.querySelector('[data-es2-cloud-status]')).not.toBeNull()
+    expect(wallet.querySelector('[data-es2-cloud-sync]')).not.toBeNull()
+    expect(wallet.querySelector('[data-es2-cloud-logout]')).toBeNull()
+    expect(dialog.querySelector('.es2-dialog-actions [data-es2-cloud-logout]')).not.toBeNull()
+    ;(wallet.querySelector('[data-es2-cloud-restore]') as HTMLButtonElement).click()
+    await nextTick()
+    expect(sync).not.toHaveBeenCalled()
+    ;(wallet.querySelector('[data-es2-cloud-restore-confirm]') as HTMLButtonElement).click()
+    expect(sync).toHaveBeenCalledWith(true)
+    wrapper.unmount()
+  })
   it('uses a name initial when the photo fails and a new photo when the account changes', async () => {
     const { cloud, user } = fixture()
     user.value = { uid: 'a', displayName: '  星蝕', photoURL: 'https://example.test/broken.png' } as User
