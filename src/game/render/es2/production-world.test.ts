@@ -215,3 +215,23 @@ describe('ES2 world art live asset mapping', () => {
   })
 
 })
+
+
+describe('ES3 native death candidate development review', () => {
+  it('loads isolated native candidates only on explicit opt-in and falls back if decoding fails', async () => {
+    const makeImage = (): HTMLImageElement => ({
+      complete: false, naturalWidth: 0, naturalHeight: 0, src: '', onerror: null,
+    }) as unknown as HTMLImageElement
+    const normal = loadWorldRuntimeImages(makeImage)
+    expect(Object.keys(normal.enemyDeaths ?? {})).toEqual([])
+    const qa = Reflect.apply(loadWorldRuntimeImages, undefined, [makeImage, undefined, false, true]) as ReturnType<typeof loadWorldRuntimeImages>
+    for (const id of ['slime', 'bat', 'goblin', 'golem'] as const) {
+      await vi.waitFor(() => expect(qa.enemyDeaths?.[id]?.src).toContain(id + '-death-preferred@3x.webp'))
+    }
+    const failed = qa.enemyDeaths?.golem!
+    expect(failed.onerror).toBeTypeOf('function')
+    failed.onerror?.call(failed, {} as Event)
+    expect(qa.enemyDeaths?.golem).toBeUndefined()
+    expect(normal.enemyDeaths?.golem).toBeUndefined()
+  })
+})
