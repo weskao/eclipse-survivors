@@ -346,6 +346,31 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
       expect(calls).toHaveLength(1)
     }
   })
+  it('reviews Batch 24 Frost awakening only during phase 3 transformation', () => {
+    const state = snapshot('transform', 'ice-fan', 'frost-sovereign')
+    const at = (pose: BossBodyPose, phase: 1 | 2 | 3): BossSnapshot => ({
+      ...state, phase, bodyMotion: { ...state.bodyMotion!, pose, phase },
+    })
+    expect(selectBossNativeKeyframe(state)).toBe('frostAwakening')
+    expect(selectBossNativeKeyframe(at('transform', 1))).toBeNull()
+    expect(selectBossNativeKeyframe(at('transform', 2))).toBeNull()
+    expect(selectBossNativeKeyframe(at('move', 3))).toBeNull()
+    expect(selectBossNativeKeyframe(at('move', 2))).toBeNull()
+    expect(selectBossNativeKeyframe(at('death', 3))).toBe('frostDeath')
+    const image = { complete: true, naturalWidth: 1235, naturalHeight: 1407 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'frostAwakening')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1235, 1407, -152.5, -332.5, 308.75, 351.75])
+    expect(drawBossNativeKeyframe(ctx, image, at('transform', 2), 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, { ...state, bodyMotion: { ...state.bodyMotion!, progress: NaN } }, 300)).toBe(false)
+    const failed = { complete: true, naturalWidth: 0, naturalHeight: 1407 } as HTMLImageElement
+    registerBossNativeKeyframe(failed, 'frostAwakening')
+    expect(drawBossNativeKeyframe(ctx, failed, state, 300)).toBe(false)
+    expect(calls).toHaveLength(1)
+  })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
     const makeImage = () => ({ complete: false, src: '' }) as HTMLImageElement
     expect(loadWorldRuntimeImages(makeImage).bossNativeKeyframes).toBeUndefined()
@@ -361,7 +386,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     })
     expect(seraph.bosses['eclipse-seraph'].src).toBe(WORLD_ART.bosses['eclipse-seraph'])
     const frost = loadWorldRuntimeImages(makeImage, 'frost-sovereign', 'native')
-    const frostKeys = (['frostWindup', 'frostRecover', 'frostHurt', 'frostRelease', 'frostDeath'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
+    const frostKeys = (['frostWindup', 'frostRecover', 'frostHurt', 'frostRelease', 'frostDeath', 'frostAwakening'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
     expect(Object.keys(frost.bossNativeKeyframes ?? {})).toEqual(frostKeys)
     await vi.waitFor(() => {
       for (const key of frostKeys)

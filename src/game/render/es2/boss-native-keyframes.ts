@@ -39,6 +39,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   seraphRecover: ['batch-23/eclipse-seraph/recover/seraph-recover-key-a.webp', 1197, 1452, 589, 1394],
   seraphIdle: ['batch-23/eclipse-seraph/idle/seraph-eclipse-idle-key-a.webp', 1194, 1456, 597, 1422],
   seraphAscension: ['batch-23/eclipse-seraph/transform/seraph-ascension-key-a.webp', 1263, 1376, 633, 1342],
+  frostAwakening: ['batch-24/frost-sovereign/transform/frost-crystal-awakening-key-a.webp', 1235, 1407, 610, 1346],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -70,6 +71,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   }
   if (snapshot.id === 'frost-sovereign') {
     if (motion.phase === 3 && motion.pose === 'death') return 'frostDeath'
+    if (motion.phase === 3 && motion.pose === 'transform') return 'frostAwakening'
     if (motion.phase !== 1) return null
     if (motion.pose === 'hurt') return 'frostHurt'
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'ice-fan')) return 'frostWindup'
