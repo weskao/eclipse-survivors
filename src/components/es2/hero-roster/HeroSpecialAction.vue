@@ -138,7 +138,7 @@ onUnmounted(() => window.removeEventListener('keydown', keydown))
 @keyframes es2-special-shadow-slash { 0% { opacity: 0; transform: translateX(-110%) skewX(-12deg); } 30% { opacity: .95; } 100% { opacity: 0; transform: translateX(110%) skewX(-12deg); } }
 @keyframes es2-special-spirit-rise { 0% { opacity: 0; transform: translateY(45%); } 40% { opacity: .85; } 100% { opacity: 0; transform: translateY(-35%); } }
 @keyframes es2-special-aegis-flare { 0% { opacity: 0; transform: scale(1.12); } 35% { opacity: .95; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
-:global([data-es2-reduce-motion="true"]) .es2-hero-special__flourish, :global([data-es2-reduce-flashing="true"]) .es2-hero-special__flourish { display: none; }
+:global([data-es2-reduce-motion="true"] .es2-hero-special__flourish), :global([data-es2-reduce-flashing="true"] .es2-hero-special__flourish) { display: none; }
 /* Out of flow so chips appearing after a cast never move the button. */
 .es2-hero-special__statuses { position: absolute; right: calc(100% + .45rem); bottom: 0; display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; white-space: nowrap; pointer-events: none; }
 .es2-hero-special__status { padding: .3rem .55rem; border: 1px solid #947f69; border-radius: 7px; background: #1c1b2a; font-size: .8rem; }
