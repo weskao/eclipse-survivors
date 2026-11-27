@@ -20,7 +20,16 @@ This is a strict allowlist. Do not merge any other branch directly into ES4, inc
 
 ## ES4 rollout switch (temporary until permanent release)
 
-Use the single Vite flag `VITE_ES4_HALL` (only exact `1` enables it; unset or `0` is ES2-compatible). The composition policy is `src/game/content/meta/hall-feature.ts`: UI entry, V3/V4 store selection, run snapshot, commands and new treasure controls all use it. Do not read this env variable anywhere else or add per-frame/skill flag branches. Disabled mode renders only the five original research nodes, keeps legacy progression and never installs an ES4 run snapshot or allows ES4 transactions. Enabled production builds expose preview only until approved release; actual purchases/effects are isolated to existing unlocked DEV mode, with the wallet adapter disabled even under the emulator. No test funds enter a real save. When ES4 is permanently released, remove the flag, preview/legacy routing and the temporary policy after verifying the V4 migration, cloud safety and rollback plan. Preserve the normal ES2 unlock DEV guard and legacy research.
+Use the single Vite flag `VITE_ES4_HALL` (default enabled on this ES4 branch; `1` enables, `0` disables). The composition policy is `src/game/content/meta/hall-feature.ts`: UI entry, V3/V4 store selection, run snapshot, commands and new treasure controls all use it. Do not read this env variable anywhere else or add per-frame/skill flag branches. Disabled mode renders only the five original research nodes, keeps legacy progression and never installs an ES4 run snapshot or allows ES4 transactions. Enabled production builds expose preview only until approved release; actual purchases/effects are isolated to existing unlocked DEV mode, with the wallet adapter disabled even under the emulator. No test funds enter a real save. When ES4 is permanently released, remove the flag, preview/legacy routing and the temporary policy after verifying the V4 migration, cloud safety and rollback plan. Preserve the normal ES2 unlock DEV guard and legacy research.
+
+```sh
+VITE_ES4_HALL=0 make dev            # ES2 research only
+VITE_ES4_HALL=1 make dev-unlocked   # ES4 isolated purchase/combat
+VITE_ES4_HALL=1 make phone-unlocked # ES4 mobile playtest
+VITE_ES4_HALL=0 make build          # public build with original research
+```
+
+Before merging ES4 into `develop`, review the default: retain explicit opt-in or set the public build to `0` until release approval.
 
 ## Mandatory rules — read the owning file before you start
 

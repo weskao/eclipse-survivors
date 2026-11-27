@@ -7,7 +7,7 @@ import type { MetaState } from './state'
  * Remove this switch at permanent rollout, not individual combat checks.
  */
 export function createHallFeature(flag: unknown, development: boolean, unlocked: boolean) {
-  const visible = flag === '1'
+  const visible = flag === undefined || flag === '1'
   const playable = visible && development && unlocked
   const metaVersion = playable ? 4 as const : 3 as const
   const snapshot = playable

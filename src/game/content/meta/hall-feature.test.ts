@@ -3,7 +3,7 @@ import { createHallFeature } from './hall-feature'
 import { createMetaState } from './state'
 
 describe('ES4 Hall feature boundary', () => {
-  it.each([undefined, '', '0', 'false', 'true', 'yes'])('defaults to legacy for %s', flag => {
+  it.each(['', '0', 'false', 'true', 'yes'])('defaults to legacy for %s', flag => {
     const feature = createHallFeature(flag, true, true)
     expect(feature.visible).toBe(false)
     expect(feature.playable).toBe(false)
@@ -15,6 +15,11 @@ describe('ES4 Hall feature boundary', () => {
     state.hall={ownership:{'offense-edge':1},attunement:{universal:[],hero:{},resonance:null}}
     expect(feature.snapshot(state,'knight').ranks).toEqual({})
     expect(feature.treasureControls(7,3)).toEqual({})
+  })
+  it('defaults to enabled on the ES4 branch without bypassing the DEV unlock guard', () => {
+    expect(createHallFeature(undefined, true, true)).toMatchObject({ visible: true, playable: true, metaVersion: 4, allowsWallet: false })
+    expect(createHallFeature(undefined, false, true)).toMatchObject({ visible: true, playable: false, metaVersion: 3, allowsWallet: true })
+    expect(createHallFeature(undefined, true, false)).toMatchObject({ visible: true, playable: false, metaVersion: 3, allowsWallet: true })
   })
   it('enables an isolated V4 strategy only in unlocked development', () => {
     const state = createMetaState()
