@@ -1,0 +1,131 @@
+{
+  "id": "golem",
+  "variant": "preferred",
+  "path": "golem-death-preferred@3x.webp",
+  "sourcePath": "golem-death-preferred-source.png",
+  "sourceGenerationId": "0937fc6e-fce7-4790-b3a0-86eb2a37899e",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "nativeSourceCellPixels": 627,
+  "sourceContentBounds": [
+    [
+      40,
+      49,
+      638,
+      616
+    ],
+    [
+      2,
+      159,
+      575,
+      608
+    ],
+    [
+      36,
+      270,
+      612,
+      561
+    ],
+    [
+      24,
+      230,
+      592,
+      548
+    ]
+  ],
+  "runtimeContentBounds": [
+    [
+      16,
+      29,
+      420,
+      412
+    ],
+    [
+      24,
+      109,
+      411,
+      412
+    ],
+    [
+      23,
+      215,
+      412,
+      412
+    ],
+    [
+      26,
+      197,
+      410,
+      412
+    ]
+  ],
+  "sourceSha256": "12891cee8d8f9ad3cff733d7a8bad351882fb4b2a07215231349ff804022d8ea",
+  "sha256": "7d09d217ada0f368302010541cbefbbfac0b6edca2099dc02847c5960e11304a",
+  "bytes": 222344,
+  "width": 872,
+  "height": 872,
+  "rows": 2,
+  "columns": 2,
+  "frames": 4,
+  "frameWidth": 436,
+  "frameHeight": 436,
+  "gutter": 8,
+  "contentCellPixels": 420,
+  "scale": 3,
+  "displayMaximumPx": 139,
+  "alpha": true,
+  "native3x": true,
+  "upscaled": false,
+  "status": "QA_PENDING",
+  "visualReview": "pending",
+  "browserReview": "pending",
+  "canonicalReference": {
+    "path": "src/assets/golem.webp",
+    "gitBlobSha": "727a55f8bb7bd3b168db42a79fddac3b2e587f8f",
+    "commit": "bea37583c8ebe97dd443239a950bf2c17e60d1f9"
+  },
+  "frameOrder": [
+    "hit",
+    "kneel",
+    "collapse",
+    "rubble-dissolve"
+  ],
+  "anchor": "bottom center, common runtime tile y=412 baseline",
+  "admission": "candidate only; no runtime replacement",
+  "rawSourcePath": "golem-death-generated-original.png",
+  "rawSourceSha256": "ab11fe88472daf67eb2edc970c09a31cda15111176e2d25d32379e8d750e1af9",
+  "rawSourceSize": [
+    1254,
+    1254
+  ],
+  "rawCropRects": [
+    [
+      0,
+      0,
+      640,
+      627
+    ],
+    [
+      640,
+      0,
+      1254,
+      627
+    ],
+    [
+      0,
+      627,
+      627,
+      1254
+    ],
+    [
+      627,
+      627,
+      1254,
+      1254
+    ]
+  ],
+  "rawMinimumCropWidth": 614,
+  "normalization": "Raw first row split at x=640 to preserve hand silhouette; normalized source re-centered on 627px cells without upscaling. Uniform scale and bottom anchor; alpha <=4 removed; last frame alpha 68%. Native source canvas cells are 627px after transparent padding; raw minimum crop width 614px."
+}
