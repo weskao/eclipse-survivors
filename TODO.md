@@ -179,3 +179,6 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 Implementation checkboxes above denote source changes only; actual Chromium matrix and art/audio review remain independent gates below. No balance changes or new prerequisites introduced.
 
 Added original deterministic PCM rank (0.74s) and milestone (1.05s) cues using the existing audio context, cached buffer and mute bus; no new audio dependency. Browser matrix now visits the growth board on each existing viewport profile, checks no-spend inspection and captures screenshots. Full runtime verification remains unchecked.
+
+- [ ] Hall motion polish: interpolated rank/XP fill, finite metallic shimmer, newly unlocked route sweep, layered particles and distinct max-rank celebration; respect motion/flashing settings.
+- [ ] Fix CI TS2339 in progression regression and confirm typecheck, Hall tests, and responsive gameplay.

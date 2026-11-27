@@ -828,3 +828,27 @@ describe('sampled hero hurt feedback', () => {
   })
 })
 
+
+describe('Adventurer Hall upgrade Foley', () => {
+  it('caches finite rank/milestone samples separately and respects the existing mute setting', () => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 10
+    audio.playSfx('upgrade', 1)
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.sources[0]!.buffer?.length).toBe(Math.ceil(48000 * .74))
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const rank = ctx.sources[0]!.buffer
+    ctx.currentTime = 11
+    audio.playSfx('upgrade', 1)
+    expect(ctx.sources[1]!.buffer).toBe(rank)
+    ctx.currentTime = 12
+    audio.playSfx('upgrade', 2)
+    expect(ctx.sources[2]!.buffer?.length).toBe(Math.ceil(48000 * 1.05))
+    expect(ctx.sources[2]!.buffer).not.toBe(rank)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 13
+    audio.playSfx('upgrade', 1)
+    expect(ctx.sources).toHaveLength(3)
+  })
+})

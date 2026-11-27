@@ -120,10 +120,32 @@ describe('Adventurer Hall growth routes', () => {
     const result = buyResearch(state, 'power')
     expect(result.ok).toBe(true)
     await wrapper.setProps({ state: result.state })
-    expect(wrapper.get('[data-hall-upgraded="power"]').exists()).toBe(true)
+    expect(wrapper.find('[data-hall-upgraded="power"]').exists()).toBe(true)
     expect(wrapper.get('[data-hall-edge="power:insight"]').attributes('data-active')).toBe('true')
+    expect(wrapper.get('[data-hall-edge="power:insight"]').attributes('data-revealed')).toBe('true')
+    expect(wrapper.get('[data-hall-node="power"] .hall-ring').attributes('style')).toContain('20%')
+    expect(wrapper.get('[data-hall-upgraded="power"]').attributes('data-milestone')).toBe('false')
+    expect(wrapper.find('[data-hall-edge="vitality:scavenging"][data-revealed="true"]').exists()).toBe(false)
     expect(wrapper.get('[data-research="insight"]').attributes('disabled')).toBeUndefined()
     expect(state.research.power).toBe(0)
+    wrapper.unmount()
+  })
+})
+
+describe('Hall upgrade motion', () => {
+  it('celebrates reaching the cap without replaying unrelated branches or spending on inspection', async () => {
+    const state = createMetaState()
+    state.embers = 50000
+    state.research.power = 4
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    await wrapper.get('[data-hall-inspect="power"]').trigger('click')
+    expect(wrapper.find('[data-hall-upgraded]').exists()).toBe(false)
+    await wrapper.get('[data-research="power"]').trigger('click')
+    await wrapper.setProps({ state: buyResearch(state, 'power').state })
+    expect(wrapper.get('[data-hall-upgraded="power"]').attributes('data-milestone')).toBe('true')
+    expect(wrapper.get('[data-hall-node="power"] .hall-ring').attributes('style')).toContain('100%')
+    expect(wrapper.find('[data-hall-edge][data-revealed="true"]').exists()).toBe(false)
+    expect(wrapper.get('[data-research="power"]').attributes('disabled')).toBeDefined()
     wrapper.unmount()
   })
 })
