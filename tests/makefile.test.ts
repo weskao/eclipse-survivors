@@ -25,7 +25,7 @@ describe('Makefile development and release shortcuts', () => {
 
   it('passes embers=N to the Vite dev server only', () => {
     const makefile = readFileSync(resolve(cwd, 'Makefile'), 'utf8')
-    expect(makefile).toMatch(/ifdef embers\nexport VITE_ES2_EMBERS := \$\(embers\)\nendif/)
+    expect(makefile).toMatch(/ifdef embers\ndev dev-unlocked phone phone-unlocked: export VITE_ES2_EMBERS := \$\(embers\)\nendif/)
     const config = readFileSync(resolve(cwd, 'vite.config.ts'), 'utf8')
     expect(config).toMatch(/command === 'serve' && raw !== undefined/)
   })
