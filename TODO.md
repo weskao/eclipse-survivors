@@ -206,3 +206,28 @@ Hall UX source implemented with one detail template (teleported only for floatin
 - [x] Hall rank ceremonies: distinct rank 1–4 and mastery sounds, combined destination-unlock finale (only complete prerequisites), synchronized sculpted ring and rank-specific particles, unlock notice visible in touch inspector; waveform and transaction regressions, actual audiovisual QA.
 
 Rank-specific source and full-prerequisite destination finale implemented; manual audiovisual acceptance and full CI remain open.
+
+
+## ES4 — Eclipse Ascendancy / 冒險者殿堂技能生態（2026-11-27）
+Target: `feature/es4-adventurer-hall-skill-ecosystem`; base: `54cad2219010381e14ab8db5f2baf87bf5a921ef`.
+Design: [spec](docs/superpowers/specs/2026-11-27-es4-skill-ecosystem-design.md); [implementation plan](docs/superpowers/plans/2026-11-27-es4-skill-ecosystem.md).
+- [x] Draft the proposed 77-node ecosystem, six hero identities, dependency graph, attunement, economy, storage safety, visual/audio direction and staged plan (documentation only).
+- [ ] Wave 0: baseline CI, runtime and economy inventory, migration/cloud risk gate.
+- [ ] Wave 1: 72-node new catalog, validated DAG, v4 migration, purchase transactions, ownership tests.
+- [ ] Wave 2 / offense: six universal nodes with real gameplay effects and TDD.
+- [ ] Wave 2 / defense: six universal nodes with real gameplay effects and TDD.
+- [ ] Wave 2 / arcana: six universal nodes with real gameplay effects and TDD.
+- [ ] Wave 2 / mobility: six universal nodes with real gameplay effects and TDD.
+- [ ] Wave 2 / hunt: six universal nodes with real gameplay effects and TDD.
+- [ ] Wave 2 / summons: six universal nodes with real gameplay effects and TDD.
+- [ ] Wave 3 / knight: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
+- [ ] Wave 3 / ranger: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
+- [ ] Wave 3 / wizard: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
+- [ ] Wave 3 / shadowblade: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
+- [ ] Wave 3 / spirit-summoner: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
+- [ ] Wave 3 / crimson-paladin: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
+- [ ] Wave 4: attunement slots and six cross-tree resonances; immutable run snapshot, conflict tests.
+- [ ] Wave 5: mobile-first graph, categories, inspector, actual 3× WebP assets, bilingual layouts.
+- [ ] Wave 6: distinct rank, signature, resonance and unlock ceremonies; audio/VFX/accessibility tests.
+- [ ] Wave 7: balance and performance report, full CI, real device/browser, art/audio review, release readiness.
+No gameplay implementation or asset admission is claimed by the planning checkbox. Existing Hall QA remains open above.
