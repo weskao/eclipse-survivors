@@ -28,6 +28,7 @@ export function createHallRuntime(snapshot: HallRunSnapshot) {
     ambushReady: false, assassinAt: 0, legionUntil: 0, legionAt: 0, soulBondAt: 0, sanctuaryUntil: 0,
     markTarget: null as Target | null, markHits: 0,
     salvageReveals: 0, earnedRerolls: 0, spentRerolls: 0,
+    ironReady: false, ironAt: 0, piercingAt: 0, stormAt: 0, stormReadyUntil: 0, starAt: tuning.starCollapseCooldown, sigilCasts: 0, sigilAt: 0, sigilReady: false,
   }
 }
 export type HallRuntime = ReturnType<typeof createHallRuntime>
@@ -41,8 +42,8 @@ export function installHallRun(state: GameState, snapshot: HallRunSnapshot): voi
   state.hero.speed *= 1 + h.stride
   state.xpGainMultiplier *= h.xp
 }
-export function withHallSource(state: GameState, hooks: GameHooks, source: HallDamageSource): GameHooks {
-  return state.hall ? { ...hooks, hallSource: source } : hooks
+export function withHallSource(state: GameState, hooks: GameHooks, source: HallDamageSource, area = false): GameHooks {
+  return state.hall ? { ...hooks, hallSource: source, hallArea: area } : hooks
 }
 export function hallCritBonus(state: GameState, source?: HallDamageSource): number {
   const h = state.hall
@@ -73,6 +74,7 @@ export function hallOutgoing(state: GameState, amount: number, target: Target, s
       bonus += r('knight-riposte') * tuning.knightRiposte
       h.riposteUntil = 0
       h.riposteAt = now + tuning.riposteCooldown
+      if (r('knight-iron-counter') && now >= h.ironAt) h.ironReady = true
     }
   } else if (source === 'weapon' || source === 'persistent') {
     bonus += r('arcana-focus') * tuning.focus + r('wizard-study') * tuning.wizardStudy
@@ -122,6 +124,10 @@ export function hallExtraHit(state: GameState, amount: number, source?: HallDama
         bonus *= 1 + tuning.synergySoulforgeDamage; h.soulforgeAt = now + tuning.synergyCooldown
       }
     }
+  }
+  if ((source === 'weapon' || source === 'persistent') && h.sigilReady && now >= h.sigilAt && now >= h.procAt) {
+    h.sigilReady = false; h.sigilAt = now + tuning.doubleSigilCooldown
+    bonus = Math.max(bonus, tuning.doubleSigilDamage)
   }
   if (bonus) h.procAt = now + tuning.procInterval
   return amount * bonus
@@ -188,6 +194,7 @@ export function tickHall(state: GameState, dt: number, dashFinished: boolean): v
   }
   if (dashFinished) {
     h.dashAt = now
+    h.stormReadyUntil = now + tuning.afterwindSeconds
     h.afterwindUntil = now + tuning.afterwindSeconds
     h.windstepUntil = now + tuning.afterwindSeconds
     if (h.rank('knight-bulwark') && now >= h.bulwarkAt) {
@@ -248,4 +255,32 @@ export function spendHallChestReroll(state: GameState, ordinary: boolean): boole
 }
 export function hallPickupHealing(state: GameState, amount: number): number {
   return amount * (1 + hallRank(state, 'hunt-sustain') * tuning.sustain)
+}
+
+export function hallRangerShot(state: GameState): {pierce:number;extra:number} {
+  const h=state.hall
+  let pierce=0,extra=0
+  if (h && h.rank('ranger-piercing-moon') && state.time>=h.piercingAt) { pierce=1; h.piercingAt=state.time+tuning.piercingMoonCooldown }
+  if (h && h.rank('ranger-storm-hunter') && state.time<h.stormReadyUntil && state.time>=h.stormAt) {
+    extra=tuning.stormHunterDamage; h.stormAt=state.time+tuning.stormHunterCooldown; h.stormReadyUntil=0
+  }
+  return {pierce,extra}
+}
+export function hallWeaponCast(state: GameState): void {
+  const h=state.hall
+  if (!h || !h.rank('wizard-double-sigil') || h.sigilReady) return
+  if (++h.sigilCasts>=tuning.doubleSigilCasts) { h.sigilCasts=0; h.sigilReady=true }
+}
+export function hallBurstProc(state: GameState, amount:number, source:HallDamageSource|undefined, area:boolean): {damage:number;radius:number;limit:number}|null {
+  const h=state.hall
+  if (!h || source==='proc' || amount<=0 || !Number.isFinite(amount)) return null
+  if (source==='basic' && h.ironReady) {
+    h.ironReady=false; h.ironAt=state.time+tuning.ironCounterCooldown
+    return {damage:amount*tuning.ironCounterDamage,radius:tuning.ironCounterRadius,limit:tuning.ironCounterTargets}
+  }
+  if (area && (source==='weapon'||source==='persistent') && h.rank('wizard-star-collapse') && state.time>=h.starAt) {
+    h.starAt=state.time+tuning.starCollapseCooldown
+    return {damage:amount*tuning.starCollapseDamage,radius:tuning.starCollapseRadius,limit:tuning.starCollapseTargets}
+  }
+  return null
 }

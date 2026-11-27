@@ -1,6 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
-import { hallAbsorb, hallAttackRange, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallOutgoing, hallSlow, withHallSource } from './content/meta/hall-runtime'
+import { hallBurstProc, hallRangerShot, hallWeaponCast, hallAbsorb, hallAttackRange, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallOutgoing, hallSlow, withHallSource } from './content/meta/hall-runtime'
 import { classifyHealthImpact, classifyHeroDamage, markHealthCritical, recordHeroImpact, type IncomingHit } from './health-impact'
 import { BOSS_DEFINITIONS } from './content/bosses/definitions'
 import { recordKill } from './kill-streak'
@@ -63,6 +63,17 @@ export function emitCombatContact(s: GameState, hooks: GameHooks, x: number, y: 
     : kind === 'evolved' ? 'hitEvolved' : kind === 'hero' ? 'hitHero' : heavy ? 'hitHeavy' : 'hitNormal')
 }
 
+/** Bounded, nonrecursive area proc shared by both actor pools. */
+export function resolveHallBurst(s: GameState, target: CombatTarget, amount: number, hooks: GameHooks): void {
+  const proc=hallBurstProc(s,amount,hooks.hallSource,!!hooks.hallArea)
+  if (!proc || !s.hero || s.mode!=='play') return
+  const factions=hooks.factions?.()
+  const procHooks={...hooks,hallSource:'proc' as const,hallArea:false,modifyOutgoingDamage:undefined,consumeCriticalHit:undefined}
+  const candidates= combatTargets(s,factions).filter(e=>e.hp>0 && (e.x-target.x)**2+(e.y-target.y)**2<=proc.radius**2)
+  candidates.sort((a,b)=>(a.x-target.x)**2+(a.y-target.y)**2-(b.x-target.x)**2-(b.y-target.y)**2)
+  for(const e of candidates.slice(0,proc.limit)) hitTarget(s,e,proc.damage,procHooks,factions,target,'hero')
+  impact(s,target.x,target.y,proc.radius,'#d9b5ff',.65)
+}
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero, kind: ContactKind | undefined = hooks.contactKind): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
@@ -120,6 +131,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
     // Observers see a fully finalized kill, including the boss flag and spawned XP.
     hooks.content?.(s, { type: 'kill', mob: e, damage: dealt })
   }
+  resolveHallBurst(s,e,d,hooks)
   const extra = hallExtraHit(s, d, hooks.hallSource)
   if (extra > 0 && e.hp > 0) hit(s, e, extra, { ...hooks, hallSource: 'proc', modifyOutgoingDamage: undefined, consumeCriticalHit: undefined }, source, kind)
 }
@@ -187,20 +199,24 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
     const originY = hero.y + grip.y
     const shotAngle = Math.atan2(target.y - originY, target.x - originX)
     hero.aimAngle = shotAngle
+    const hallShot = ranger && s.hall ? hallRangerShot(s) : null
     for (let j = 0; j < multi; j++) {
       const a = shotAngle + (j - (multi - 1) / 2) * 0.18
       const speed = ranger ? 540 : 340
       s.shots.push({
         x: originX, y: originY, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
         life: ranger ? 1.2 : 1.7, d: hero.damage, kind: ranger ? 'arrow' : 'magic', r: ranger ? 5 : 9,
+        ...(j===0 && hallShot?.pierce ? {hallPierce:hallShot.pierce,hallVisited:new Set<object>()} : {}),
       })
     }
+    if (hallShot?.extra) s.shots.push({x:originX,y:originY,vx:Math.cos(shotAngle+.07)*540,vy:Math.sin(shotAngle+.07)*540,life:1.2,d:hero.damage*hallShot.extra,kind:'arrow',r:5,hallProc:true})
     if (choice === 'wizard') impact(s, originX, originY, 42, s.heroId === 'spirit-summoner' ? '#a5e8d7' : '#aa91ff', 0.45)
     hooks.sfx(ranger ? 'ranger' : 'wizard')
   }
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
     const weaponHooks = withHallSource(s, hooks, 'weapon')
+    hallWeaponCast(s)
     hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank) * (s.hall?.weaponCooldown ?? 1)
     const limit = BALANCE.combat.chainTargetsByRank[Math.min(chain, BALANCE.combat.chainTargetsByRank.length) - 1]!
     const damage = hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain)

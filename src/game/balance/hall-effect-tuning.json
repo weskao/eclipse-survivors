@@ -110,5 +110,19 @@
   "synergyReaperDamage": 0.25,
   "rangerMark": 0.02,
   "salvageCap": 5,
-  "sustain": 0.02
+  "sustain": 0.02,
+  "ironCounterDamage": 0.45,
+  "ironCounterRadius": 120,
+  "ironCounterTargets": 3,
+  "ironCounterCooldown": 10,
+  "piercingMoonCooldown": 8,
+  "stormHunterDamage": 0.35,
+  "stormHunterCooldown": 10,
+  "starCollapseDamage": 0.4,
+  "starCollapseRadius": 100,
+  "starCollapseTargets": 5,
+  "starCollapseCooldown": 12,
+  "doubleSigilDamage": 0.3,
+  "doubleSigilCasts": 6,
+  "doubleSigilCooldown": 10
 }

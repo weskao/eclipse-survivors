@@ -1,5 +1,5 @@
 import { BALANCE } from '../../config'
-import { hallEffectDuration, hallSummonCast, hallSummonInterval, withHallSource } from '../meta/hall-runtime'
+import { hallWeaponCast, hallEffectDuration, hallSummonCast, hallSummonInterval, withHallSource } from '../meta/hall-runtime'
 import type { ContentAbility, ContentContext } from '../contracts'
 import type { SfxCue, SkillRarity } from '../../types'
 import { combatTargets, hitTarget, targetRadius, type CombatTarget } from '../../combat'
@@ -45,6 +45,7 @@ export const WEAPON_SPECS: readonly WeaponSpec[] = [
 function ready(context: ContentContext, r: ArsenalRuntime, key: WeaponKey, dt: number, interval: number, level: number): boolean {
   const left = Math.max(0, (r.timers[key] ?? 0) - dt)
   if (left > 0) { r.timers[key] = left; return false }
+  hallWeaponCast(context.state)
   r.timers[key] = Math.max(W.common.cooldownFloor, interval * (1 - W.common.cooldownReductionPerRank * (level - 1)) * (context.state.hall?.weaponCooldown ?? 1))
   return true
 }
@@ -272,7 +273,7 @@ export function tickWeapon(context: ContentContext, dt: number, level: number, k
   keepVisual(context, r)
   if (context.state.hall) {
     const source = key === 'spirit-wolves' ? 'summon' : key === 'poison-cloud' || key === 'gravity-orbs' || key === 'thorn-chain' ? 'persistent' : 'weapon'
-    context = { ...context, hooks: withHallSource(context.state, context.hooks, source) }
+    context = { ...context, hooks: withHallSource(context.state, context.hooks, source, ['blood-scythe','arcane-mines','poison-cloud','gravity-orbs','solar-beam'].includes(key)) }
   }
   switch (key) {
     case 'shadow-daggers':

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
-import { hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
+import { hallRangerShot, hallWeaponCast, hallBurstProc, hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
 function run(ranks: Record<string, number>) {
   const state = createState()
   resetRun(state)
@@ -77,4 +77,27 @@ it('shares five earned rerolls between ordinary chest and elite rewards without 
   expect(hallPickupHealing(s,100)).toBeCloseTo(110)
   expect(hallEffectDuration(s)).toBeCloseTo(1.075)
   expect(hallSummonInterval(s)).toBeCloseTo(.94)
+})
+
+it('reserves piercing and storm arrows only once, and counts distinct casts for double sigil', () => {
+  const s=run({'ranger-piercing-moon':1,'ranger-storm-hunter':1,'wizard-double-sigil':1})
+  tickHall(s,0,true)
+  expect(hallRangerShot(s)).toEqual({pierce:1,extra:.35})
+  expect(hallRangerShot(s)).toEqual({pierce:0,extra:0})
+  for(let i=0;i<5;i++) hallWeaponCast(s)
+  expect(hallExtraHit(s,100,'weapon')).toBe(0)
+  hallWeaponCast(s)
+  expect(hallExtraHit(s,100,'weapon')).toBeCloseTo(30)
+  expect(hallExtraHit(s,100,'weapon')).toBe(0)
+})
+it('arms iron counter only after actual riposte and star collapse only on area contact', () => {
+  const s=run({'knight-riposte':5,'knight-iron-counter':1,'wizard-star-collapse':1})
+  hallDamageTaken(s,10,s.hero!.hp)
+  hallOutgoing(s,100,{hp:100,max:100},'basic')
+  expect(hallBurstProc(s,100,'basic',false)).toEqual({damage:45,radius:120,limit:3})
+  expect(hallBurstProc(s,100,'basic',false)).toBeNull()
+  s.time=12
+  expect(hallBurstProc(s,100,'weapon',false)).toBeNull()
+  expect(hallBurstProc(s,100,'weapon',true)).toEqual({damage:40,radius:100,limit:5})
+  expect(hallBurstProc(s,100,'proc',true)).toBeNull()
 })

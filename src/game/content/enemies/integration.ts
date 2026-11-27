@@ -1,4 +1,4 @@
-import { damageHero, emitCombatContact, hit } from '../../combat'
+import { damageHero, emitCombatContact, hit, resolveHallBurst } from '../../combat'
 import { hallExtraHit, hallKill, hallOutgoing } from '../meta/hall-runtime'
 import { BALANCE } from '../../config'
 import { recordKill } from '../../kill-streak'
@@ -136,6 +136,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       emitCombatContact(state, hooks, enemy.x, enemy.y, enemy.radius, angle, critical, heavy, kind)
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)
+      resolveHallBurst(state,enemy,amount,hooks)
       const extra = hallExtraHit(state, amount, hooks.hallSource)
       if (extra > 0 && enemy.hp > 0) hitFaction(state, enemy, extra, sourceX, sourceY, { ...hooks, hallSource: 'proc', modifyOutgoingDamage: undefined, consumeCriticalHit: undefined }, kind)
     }
@@ -150,12 +151,12 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     const dx = shot.x - sx, dy = shot.y - sy
     let nearest: FactionShotContact | null = null
     for (const mob of state.mobs) {
-      if (mob.hp <= 0) continue
+      if (mob.hp <= 0 || shot.hallVisited?.has(mob)) continue
       const t = firstContact(sx, sy, dx, dy, mob.x, mob.y, mob.r + shot.r)
       if (t < (nearest?.fraction ?? Infinity)) nearest = { kind: 'legacy', target: mob, fraction: t }
     }
     for (const enemy of runtime.enemies) {
-      if (enemy.hp <= 0 || enemy.state === 'phase') continue
+      if (enemy.hp <= 0 || enemy.state === 'phase' || shot.hallVisited?.has(enemy)) continue
       const t = firstContact(sx, sy, dx, dy, enemy.x, enemy.y, enemy.radius + shot.r)
       if (t < (nearest?.fraction ?? Infinity)) nearest = { kind: 'faction', target: enemy, fraction: t }
     }
@@ -170,7 +171,8 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     if (!contact) return null
     if (contact.kind === 'legacy') hit(state, contact.target, shot.d, hooks, source)
     else hitFaction(state, contact.target, shot.d, source.x, source.y, hooks)
-    shot.life = 0
+    if (shot.hallPierce) { shot.hallPierce--; shot.hallVisited?.add(contact.target) }
+    else shot.life = 0
     return contact
   }
 

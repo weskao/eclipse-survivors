@@ -46,6 +46,7 @@ function tickTimers(s: GameState, hero: Hero, dt: number): void {
 function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, factions?: FactionBridge): void {
   const shotHooks = withHallSource(s, hooks, 'basic')
   for (const b of s.shots) {
+    const activeHooks = b.hallProc ? {...shotHooks,hallSource:'proc' as const,modifyOutgoingDamage:undefined,consumeCriticalHit:undefined} : shotHooks
     b.prevX = b.x
     b.prevY = b.y
     const travel = Math.min(dt, Math.max(0, b.life))
@@ -55,7 +56,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
     // The bridge owns both target pools, including misses. Resolve before
     // expiring the projectile so its final swept segment can still hit.
     if (factions) {
-      factions.resolveShot(s, b, shotHooks, { x: b.prevX, y: b.prevY })
+      factions.resolveShot(s, b, activeHooks, { x: b.prevX, y: b.prevY })
       b.life -= dt
       continue
     }
@@ -66,7 +67,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
     let closest: typeof s.mobs[number] | null = null
     let firstContact = Infinity
     for (const e of s.mobs) {
-      if (e.hp <= 0) continue
+      if (e.hp <= 0 || b.hallVisited?.has(e)) continue
       const ox = b.prevX - e.x
       const oy = b.prevY - e.y
       const reach = e.r + b.r
@@ -86,8 +87,9 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
       }
     }
     if (closest) {
-      hit(s, closest, b.d, shotHooks, { x: b.prevX, y: b.prevY })
-      b.life = 0
+      hit(s, closest, b.d, activeHooks, { x: b.prevX, y: b.prevY })
+      if (b.hallPierce) { b.hallPierce--; b.hallVisited?.add(closest) }
+      else b.life = 0
     }
   }
   s.shots = s.shots.filter((b) => b.life > 0)

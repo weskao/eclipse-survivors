@@ -95,6 +95,7 @@ export interface EnemyProjectile {
 export interface Shot {
   x: number; y: number; vx: number; vy: number; life: number; d: number
   kind: 'arrow' | 'magic'; r: number; prevX?: number; prevY?: number
+  hallPierce?: number; hallVisited?: Set<object>; hallProc?: boolean
 }
 
 export interface Star { x: number; y: number; value: number; t: number; dead?: boolean; attractionSpeed?: number; mergedReceipts?: Map<number, number> }
@@ -207,6 +208,7 @@ export interface MoveInput { x: number; y: number }
 export interface GameHooks {
   contactKind?: ContactKind
   hallSource?: import('./content/meta/hall-runtime').HallDamageSource
+  hallArea?: boolean
   otherLivingActors?(): number
   /** Same authoritative actors used by legacy, arsenal and evolution combat. */
   factions?(): import('./content/enemies/integration').FactionBridge | undefined
