@@ -255,7 +255,8 @@ describe('ES2 dedicated hero special action', () => {
     for (const motif of ['shadow-slash', 'spirit-rise', 'aegis-flare'])
       expect(source).toMatch(new RegExp('@keyframes es2-special-' + motif))
     expect(source).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*\.es2-hero-special__flourish\s*\{[^}]*display:\s*none/)
-    expect(source).toMatch(/:global\(\[data-es2-reduce-motion="true"\]\)[^{]*\.es2-hero-special__flourish[^{]*\{[^}]*display:\s*none/)
+    // The descendant must sit inside :global(); `:global([attr]) .x` compiles to a bare `[attr]` that hides the game root.
+    expect(source).toMatch(/:global\(\[data-es2-reduce-motion="true"\][^{)]*\.es2-hero-special__flourish\)[^{]*\{[^}]*display:\s*none/)
   })
 
   it('clips decorative overflow without creating a scroll container inside the skill button', () => {
