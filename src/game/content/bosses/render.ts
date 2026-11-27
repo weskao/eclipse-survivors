@@ -33,7 +33,7 @@ let sharedMissiles: BossAttackSprites | undefined
 function loadSprites(sources: Record<string, string>, makeImage: () => HTMLImageElement): BossAttackSprites {
   const result: BossAttackSprites = {}
   for (const [path, url] of Object.entries(sources)) {
-    const id = path.split('/').pop()!.replace('.svg', '') as BossAttackId
+    const id = path.split('/').pop()!.replace(/(@3x\.webp|\.svg)$/, '') as BossAttackId
     const image = makeImage(); image.decoding = 'async'; image.src = url
     result[id] = image
   }

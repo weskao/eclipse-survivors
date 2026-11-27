@@ -122,3 +122,38 @@ Use the ES3 automated gameplay and performance acceptance workflow for Chromium 
 - ES2 run [45951315231](https://github.com/weskao/eclipse-survivors/actions/runs/45951315231): 2199 Vitest tests passed, 1 skipped, only the existing three-hero manual art gate failed. All asset importer checks, typecheck, build and release check passed. No art gate bypass.
 - ES3 run [45951315351](https://github.com/weskao/eclipse-survivors/actions/runs/45951315351): five diagnostic tests, typecheck, build and release check passed. Both real browser performance presets passed all six contact textures, five native enemy atlases (20 frames), actual death lifecycle and rare/epic/legendary treasure flow. Subsequent live danger/HUD and responsive steps failed because the lobby was hidden; do not describe the workflow as green. Wave 1/2 three remaining items marked complete based on their individual acceptance evidence and existing ES3 manual-only waiver. Final Wave 7 gates remain open.
 - Actual RED browser evidence: HTML computed display:none with reduced-motion root attribute; both the live game and compiled preview could not show Start. The earlier compile guard checked only ProgressionPanel.vue. HallGrowthBoard.vue and HeroSpecialAction.vue still contained scoped :global(root) descendant selectors, which Vue's scoped transform can truncate to the root alone. Extend the compiled-style guard to all Vue scoped styles and keep entire root + descendant inside :global(). No change to the intentional reduced-motion/flashing effect suppression, no root-level override, no gate weakening. Exact new HEAD CI pending.
+
+## Exact HEAD 20c21faa and faction runtime audit (2026-11-28)
+
+- [ES2 regression 46024706369](https://github.com/weskao/eclipse-survivors/actions/runs/46024706369): 2340 passed, 1 skipped, 2 failed (unchanged three-hero art gate and stale lobby fade contract). App.test.ts 13/13, production-factions.test.ts 20/20, enemy-motion.test.ts 5/5, accessibility.test.ts 6/6 and preferences.test.ts 7/7 passed.
+- [ES3 diagnostics 46024706253](https://github.com/weskao/eclipse-survivors/actions/runs/46024706253): five simulation tests, typecheck, build, release check, and real Chromium native art/performance diagnostics passed. Live Abyss shadow-fan under Reduced Motion/Flashing and VFX Off: exposed outline samples desktop 451/451, portrait 252/252, landscape 358/455. This is a geometric visibility check for one real attack, not a guarantee every edge is unobscured or every attack browser-tested. Responsive matrix RED at folded-360: floating inspector clips viewport.
+- Fix a240fd1e: keep the fixed inspector within its safe-area rectangle throughout an opacity-only entrance (previous translateY/X could move it outside); browser assertion now explicitly checks initial and resting rectangles without relaxing viewport limits. Preserve opaque lobby shell from the result-to-home flash fix and check the dock opacity-only fade separately. Existing CI RED is observed; new first-frame assertion and full GREEN are not yet observed.
+
+### Ten faction actors: source and production path audit
+
+All ten have committed body and telegraph WebPs under src/assets/es2/production/enemies; the shared renderer uses authored six-pose cells, not a fully authored per-action multi-frame sequence. Only Shadow Assassin and Frost Wraith select a decoded 1536×1024 master (512px cells); other eight render their six-cell WebP strips. All use damageFactionEnemy hitTime/hit direction and weighted procedural recoil, then factionPoseFrame windup cell 2 / release cell 3 (zero-based), recovery cell 4; phase cell 5 when applicable. Death uses existing cell 4 plus applyEnemyDeathPose transforms and opacity, not a dedicated faction death atlas. cleanupFactionEnemies transfers dead actors to bounded fallen storage, tickFactionEnemies expires them; Reduced Motion skips recoil/death cosmetics but preserves attack cues.
+
+| Faction | Live body source | Attack path | Procedural death |
+|---|---|---|---|
+| shadow-assassin | 512 master WebP / strip fallback | Dash, locked line | Weighted fall |
+| necromancer | 6-cell WebP strip | Summon, radial warning | Spirit rise/fade |
+| dark-archer | 6-cell WebP strip | Arrow projectile, locked line | Weighted fall |
+| plague-carrier | 6-cell WebP strip | Poison zone, aimed circle | Weighted fall |
+| shield-guardian | 6-cell WebP strip | Shield bash, radial warning | Heavy collapse |
+| phantom | 6-cell WebP strip | Phase and melee, radial warning | Spirit rise/fade |
+| fire-imp | 6-cell WebP strip | Burn zone, aimed circle | Falling/spinning fade |
+| frost-wraith | 512 master PNG / strip fallback | Freeze projectile, locked line | Spirit rise/fade |
+| berserker | 6-cell WebP strip | Melee, radial warning | Weighted fall |
+| crystal-sentinel | 6-cell WebP strip | Locked beam | Heavy collapse |
+
+Attack release textures are static SVGs animated procedurally; plague/fire use zone art and motes rather than the ordinary release pass. Native body art and geometry/pose transitions are distinct from procedural timing, movement and fade. The five ES3 native four-frame death sheets apply to legacy slime/bat/goblin/golem/warlock only, not these ten factions.
+
+Added parameterized recording-Canvas runtime coverage for all ten: actual damage, windup and release tick, drawn cell, lethal damage, fallen cleanup and expiry, reduced-motion bypass. This is additional regression coverage, not an observed new RED/GREEN pair or pixel/audio/manual art approval. Existing historical RED gaps remain documented; manual-only visual/audio/physical-device review remains WAIVED for ES3, with original three-hero art gate preserved. Wave 7 remains unchecked pending exact-HEAD automated results.
+
+### 2026-11-28 landscape follow-up
+Exact HEAD a4d3f1f3: ES2 run 46041610157, 2366 passed / 1 skipped / 1 failed (only preserved three-hero art gate). ES3 run 46041609920: responsive matrix RED at landscape-844, initial inspector bounds x506 y0 right836 bottom403.546875 on 844×390. Existing strict first-frame regression retained. Landscape inspector now has explicit safe-area-subtracted dynamic viewport height and maximum height, rather than unconstrained intrinsic height; existing scrollable body retained. GREEN pending. No Wave 7 checkbox changed.
+
+### Exact HEAD 2aee037a follow-up: tablet graph budget (2026-11-28)
+- [ES2 46043078758](https://github.com/weskao/eclipse-survivors/actions/runs/46043078758): 2366 passed, 1 skipped, only the preserved three-hero art gate failed. All 30 production faction tests (including ten new real damage/windup/release/fallen/expiry regressions), App 13/13, accessibility 6/6, preferences 7/7, enemy motion 5/5, boss material VFX 31/31 and boss warning UI 6/6 passed. Typecheck, build, release checks passed.
+- [ES3 46043078768](https://github.com/weskao/eclipse-survivors/actions/runs/46043078768): five simulations, typecheck/build/release and Chromium art/performance diagnostics passed. Live shadow-fan exposed samples desktop 451/451, portrait 252/252, landscape 369/466. Responsive RED after six successful profiles (320/390/430 portrait, folded/unfolded, landscape-844): tablet-portrait-768 graph measured 428.234375px vs 405px budget.
+- Fix: compact research tree geometry now applies independent of viewport/inspector breakpoint, preserving the smaller short-landscape nodes and existing legacy non-tree dimensions. No change to test budget, minimum hit target, or art gate. Exact new HEAD GREEN pending. Historical RED omissions remain explicit; no Wave 7 checkbox changes.

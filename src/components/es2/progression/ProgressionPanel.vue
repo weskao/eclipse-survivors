@@ -100,17 +100,15 @@ const masteryProgress = computed(() => {
       </button>
     </div>
     <section v-show="category === 'research'" id="hall-category-research" data-hall-category="research" role="tabpanel" aria-labelledby="hall-tab-research" :aria-label="t('永久研究')" class="es2-progression-section">
-      <h3>{{ t("研究之樹") }}</h3>
       <div v-if="hallFeature.visible" class="hall-research-nav" role="group" :aria-label="t('研究路線')">
         <button type="button" data-ui-sfx="select" :aria-pressed="researchView==='core'" @click="researchView='core'">{{ t('核心研究') }}</button>
         <button type="button" data-es4-entry data-ui-sfx="select" :aria-pressed="researchView==='ascendancy'" @click="researchView='ascendancy'">{{ t('暮蝕昇華') }} <small v-if="!hallFeature.playable">{{ t('預覽') }}</small></button>
       </div>
-      <HallGrowthBoard ref="coreBoard" v-show="researchView==='core'" :nodes="research" :writable="writable" :visible="category === 'research' && researchView==='core'" tree @purchase="emit('research', $event.id)" />
-      <HallTalentExplorer @core-prerequisite="jumpToCore" v-if="hallFeature.visible && researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'" :writable="writable && hallFeature.playable" @purchase="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"/>
+      <HallGrowthBoard ref="coreBoard" v-show="researchView==='core'" :nodes="research" :writable="writable" tree @purchase="emit('research', $event.id)" />
+      <HallTalentExplorer @core-prerequisite="jumpToCore" v-if="hallFeature.visible && researchView==='ascendancy'" :state="state" :hero="masteryHero" :writable="writable && hallFeature.playable" @purchase="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"/>
     </section>
 
     <section v-show="category === 'mastery'" id="hall-category-mastery" data-hall-category="mastery" role="tabpanel" aria-labelledby="hall-tab-mastery" :aria-label="t('英雄專精')" class="es2-progression-section">
-      <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
         <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }} / {{ masteryCap }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
         <div class="hall-mastery-track" role="progressbar" :aria-label="t('英雄專精')" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="Math.round(masteryProgress.value * 100)"><i :style="{ width: masteryProgress.value * 100 + '%' }"><span :key="masteryKey + ':' + mastery.xp" class="hall-xp-sheen" aria-hidden="true"></span></i></div>
@@ -119,9 +117,8 @@ const masteryProgress = computed(() => {
     </section>
 
     <section v-show="category === 'unlocks'" id="hall-category-unlocks" data-hall-category="unlocks" role="tabpanel" aria-labelledby="hall-tab-unlocks" :aria-label="t('起始裝備與祝福')" class="es2-progression-section">
-      <h3>{{ t("起始裝備與祝福") }}</h3>
       <p class="es2-progression-caption">{{ t("已解鎖的效果由遊戲整合層在開局時套用，不會改變進行中的戰鬥。") }}</p>
-      <HallGrowthBoard :nodes="unlocks" :writable="writable" :visible="category === 'unlocks'" @purchase="unlock" />
+      <HallGrowthBoard :nodes="unlocks" :writable="writable" @purchase="unlock" />
     </section>
 
     <section v-show="category === 'achievements'" id="hall-category-achievements" data-hall-category="achievements" role="tabpanel" aria-labelledby="hall-tab-achievements" :aria-label="t('永久成就')" class="es2-progression-section">
@@ -170,10 +167,12 @@ const masteryProgress = computed(() => {
 .hall-category-tabs button[aria-selected="true"]{color:#ffe4ae;border-color:#d6b575;background:linear-gradient(145deg,#594731,#29303a);box-shadow:inset 0 -2px #e5bd79}
 .hall-category-tabs button:focus-visible{outline:2px solid #ffe0a0;outline-offset:1px}
 .hall-category-tabs button>span:first-child{color:#e3c28d;font-size:1rem;flex:none}
-@media(max-width:480px){.hall-category-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-bottom:8px}.hall-category-tabs button{padding:4px 6px}}
 .hall-research-nav{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px;border-bottom:1px solid #a5885255}
 .hall-research-nav button{min-height:44px;flex:1;border:0;border-bottom:2px solid transparent;background:none;color:#b9c1c9;font:600 .85rem system-ui;cursor:pointer;padding:5px}
 .hall-research-nav button[aria-pressed=true]{color:#f5d28e;border-color:#d5ae70;background:linear-gradient(0deg,#d8b16c15,transparent)}
 .hall-research-nav small{font-size:.66rem;color:#c6b391}
 .hall-research-nav button:focus-visible{outline:2px solid #ffde9d;outline-offset:1px}
+/* One row on every width: phones stack the icon over a wrapping label instead of a 2x2 grid. */
+@media(max-width:560px){.hall-category-tabs{gap:3px;padding:3px;margin-bottom:8px}.hall-category-tabs button{flex-direction:column;gap:1px;padding:3px 2px;font-size:max(11px,.72rem);line-height:1.2;text-align:center}.hall-category-tabs button>span:first-child{font-size:.85rem}}
+@media(orientation:landscape) and (max-height:400px){.hall-category-tabs{gap:3px;padding:2px;margin-bottom:6px}.hall-category-tabs button{gap:4px;padding:2px 5px;font-size:max(11px,.7rem);line-height:1.15}}
 </style>

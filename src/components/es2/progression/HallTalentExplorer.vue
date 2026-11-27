@@ -9,7 +9,7 @@ import type { MetaState } from '../../../game/content/meta/state'
 import HallGrowthBoard from './HallGrowthBoard.vue'
 import type { HallNode } from './hall-model'
 
-const props = withDefaults(defineProps<{ state: MetaState; hero: string; visible?: boolean; writable?: boolean }>(), {visible:true,writable:false})
+const props = withDefaults(defineProps<{ state: MetaState; hero: string; writable?: boolean }>(), {writable:false})
 const emit = defineEmits<{ purchase: [id:string, rank:number]; attune: [universal:string[], signature:string|null, resonance:string|null]; corePrerequisite: [id:string] }>()
 const live = computed(() => props.writable && props.state.version === 4 && !!props.state.hall && !props.state.cloudWallet)
 const ownership = computed(() => props.state.hall?.ownership ?? {})
@@ -161,7 +161,7 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
       <input v-if="view==='list'" v-model="query" type="search" :aria-label="localized('搜尋技能','Search talents')" :placeholder="localized('搜尋技能','Search talents')"/>
     </div>
     <p v-if="!live" class="es4-notice">{{ localized('新能力尚未開放購買。預覽不會消耗餘燼，既有研究仍可正常升級。','New talents are not yet purchasable. Preview never spends embers; original research remains available.') }}</p>
-    <HallGrowthBoard v-if="nodes.length" ref="growthBoard" :key="group.id" navigable-requirements @prerequisite="jumpToPrerequisite" :nodes="nodes" :tree="view==='graph' && tree!=='synergy'" :writable="live" :visible="visible" :preview="!live" :class="{'es4-list':view==='list'}" @purchase="emit('purchase',$event.id,$event.rank)"/>
+    <HallGrowthBoard v-if="nodes.length" ref="growthBoard" :key="group.id" navigable-requirements @prerequisite="jumpToPrerequisite" :nodes="nodes" :tree="view==='graph' && tree!=='synergy'" :writable="live" :preview="!live" :class="{'es4-list':view==='list'}" @purchase="emit('purchase',$event.id,$event.rank)"/>
     <p v-else role="status">{{ localized('沒有符合的技能','No matching talents') }}</p>
     <section v-if="live" class="es4-attunement" :aria-label="localized('調律','Attunement')">
       <h4>{{ localized('調律配置','Attunement') }} · {{ equipped?.universal.length ?? 0 }}/2 · {{ selectedSignature ? 1 : 0 }}/1 · {{ equipped?.resonance ? 1 : 0 }}/1</h4>

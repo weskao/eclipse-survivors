@@ -122,7 +122,7 @@ const combatFeed = computed<CombatHudFeed>(() => {
       color: warning.bossId ? BOSS_DEFINITIONS[warning.bossId].color : '#f3b873',
     } : undefined,
     relics: relicCollection.value,
-    notices: ui.toastVisible && ui.toastText
+    notices: ui.toastVisible && ui.toastText && !ui.bossPhaseReveal
       ? [{ id: ui.toastText, kind: 'message', text: ui.toastText }]
       : [],
   }
@@ -177,6 +177,7 @@ onBeforeUnmount(() => {
     :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :actions="combatActions"
     :feed="combatFeed"
+    :boss-phase-reveal="ui.bossPhaseReveal"
     :show-hero-low-health-warning="accessibilityPreferences.showHeroLowHealthWarning"
     :health-motion="accessibilityPreferences.reducedMotion"
   >

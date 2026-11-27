@@ -251,31 +251,53 @@ describe('Hall category navigation and touch inspector', () => {
     wrapper.unmount()
   })
 
-  it('opens a touch inspector without scrolling, closes it when switching categories, and never spends on inspection', async () => {
+  it('keeps one in-place upgrade dock on touch: tap selects without scrolling, the dock buys, nothing opens or closes', async () => {
     const original = window.matchMedia
     const scroll = vi.fn()
     const previousScroll = HTMLElement.prototype.scrollIntoView
     window.matchMedia = vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })
     HTMLElement.prototype.scrollIntoView = scroll
-    const wrapper = mount(ProgressionPanel, { attachTo: document.body, props: { state: createMetaState(), hero: 'knight', status: 'ready' } })
+    const state = createMetaState()
+    state.embers = 10_000
+    const wrapper = mount(ProgressionPanel, { attachTo: document.body, props: { state, hero: 'knight', status: 'ready' } })
     try {
       const board = wrapper.get('.hall-growth--tree')
+      const dock = board.get('[data-hall-detail]')
+      expect(dock.isVisible()).toBe(true)
+      expect(document.body.querySelector('[data-hall-close], .hall-detail--floating')).toBeNull()
+      expect(dock.get('[data-hall-confirm]').attributes('disabled')).toBeUndefined()
       await board.get('[data-hall-inspect="insight"]').trigger('click')
-      const detail = document.body.querySelector<HTMLElement>('[data-hall-detail][data-open="true"]')
-      expect(detail).not.toBeNull()
-      expect(detail?.parentElement).toBe(document.body)
-      expect(detail?.textContent).toContain('攻擊研究')
-      expect(detail?.querySelector<HTMLButtonElement>('[data-hall-confirm]')?.disabled).toBe(true)
+      expect(dock.get('.hall-detail-heading strong').text()).toBe(board.get('[data-hall-node="insight"] strong').text())
+      expect(dock.text()).toContain('攻擊研究')
+      expect(dock.get('[data-hall-confirm]').attributes('disabled')).toBeDefined()
       expect(scroll).not.toHaveBeenCalled()
       expect(wrapper.emitted('research')).toBeUndefined()
+      const toggle = dock.get('[data-hall-detail-toggle]')
+      // Same info glyph as the hero/monster card corner button, not a second ring style.
+      expect(toggle.get('.es2-info-glyph').text()).toBe('i')
+      expect(toggle.attributes('aria-expanded')).toBe('false')
+      await toggle.trigger('click')
+      expect(toggle.attributes('aria-expanded')).toBe('true')
+      expect(dock.get('.hall-detail-body').attributes('data-expanded')).toBe('true')
+      await board.get('[data-hall-inspect="power"]').trigger('click')
+      await dock.get('[data-hall-confirm]').trigger('click')
+      expect(wrapper.emitted('research')).toEqual([['power']])
       await wrapper.get('[data-hall-tab="mastery"]').trigger('click')
-      expect(document.body.querySelector('[data-hall-detail][data-open="true"]')).toBeNull()
       await wrapper.get('[data-hall-tab="research"]').trigger('click')
-      expect(document.body.querySelector('[data-hall-detail][data-open="true"]')).toBeNull()
+      expect(board.get('[data-hall-detail]').isVisible()).toBe(true)
     } finally {
       wrapper.unmount()
       window.matchMedia = original
       HTMLElement.prototype.scrollIntoView = previousScroll
+    }
+  })
+
+  it('names each category once: no section heading repeats its tab label', () => {
+    const wrapper = mount(ProgressionPanel, { props: { state: createMetaState(), hero: 'knight', status: 'ready' } })
+    for (const tab of wrapper.findAll('[data-hall-tab]')) {
+      const section = wrapper.get(`[data-hall-category="${tab.attributes('data-hall-tab')}"]`)
+      const label = tab.findAll('span').at(-1)!.text().trim()
+      for (const heading of section.findAll('h3')) expect(heading.text(), label).not.toBe(label)
     }
   })
 })

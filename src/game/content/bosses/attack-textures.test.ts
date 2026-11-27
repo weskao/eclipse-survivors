@@ -4,7 +4,24 @@ import { ATTACK_PRESENTATION } from './attack-presentation'
 import { loadBossAttackSprites, drawBossImpacts, drawBossTelegraphs } from './render'
 import type { BossTelegraph, BossSnapshot } from './controller'
 import { createFakeCtx } from '../../render/fakes'
+import { ATTACK_ART, bossAttackImageSrc } from './attack-art'
+import { readdirSync, readFileSync } from 'node:fs'
 describe('authored boss combat art', () => {
+  it('ships each combat texture as one transparent 3x WebP sized to its combat display, with no SVG left', () => {
+    const dir = 'src/assets/es2/production/skills/boss-attacks'
+    expect(readdirSync(dir).filter(file => !file.endsWith('@3x.webp'))).toEqual([])
+    expect(Object.keys(ATTACK_ART).every(path => path.endsWith('@3x.webp'))).toBe(true)
+    for (const id of Object.keys(BOSS_ATTACKS) as (keyof typeof BOSS_ATTACKS)[]) {
+      const a = BOSS_ATTACKS[id], bytes = readFileSync(`${dir}/${id}@3x.webp`)
+      expect(bytes.toString('ascii', 12, 16)).toBe('VP8X')
+      expect(bytes[20]! & 0x10).toBe(0x10)
+      const width = bytes.readUIntLE(24, 3) + 1, height = bytes.readUIntLE(27, 3) + 1
+      // Projectile art is only painted on its launch disk (radius <= 55); other shapes fill the telegraph box.
+      const [w, h] = a.kind === 'projectile' ? [330, 330] : a.shape === 'beam' ? [3 * (a.length! + 2 * a.width!), 6 * a.width!] : [6 * a.radius, 6 * a.radius]
+      expect([id, width >= w && height >= h]).toEqual([id, true])
+      expect(bossAttackImageSrc(id)).toMatch(/@3x\.webp$/)
+    }
+  })
   it('loads 25 separate textures and uses exactly one release painting rather than fallback paths', () => {
     const sprites = loadBossAttackSprites(() => ({complete:true,naturalWidth:768}) as HTMLImageElement)
     expect(Object.keys(sprites).sort()).toEqual(Object.keys(BOSS_ATTACKS).sort())

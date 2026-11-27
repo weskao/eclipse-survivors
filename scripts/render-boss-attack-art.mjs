@@ -1,5 +1,7 @@
 // Deterministic original material textures. No external source art.
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 const profiles=JSON.parse(readFileSync(new URL('../src/game/content/bosses/attack-presentation.json',import.meta.url),'utf8'))
 const attacks=JSON.parse(readFileSync(new URL('../src/game/balance/bosses.json',import.meta.url),'utf8')).attacks
 function generate(id,p,a,missile=false){
@@ -37,7 +39,9 @@ function generate(id,p,a,missile=false){
  for(let i=0;i<112;i++){let angle=rnd()*Math.PI*2,r=inner+3+rnd()*(187-inner-3),x=192+Math.cos(angle)*r,y=192+Math.sin(angle)*r,z=1+rnd()*4.1;let dx=Math.cos(angle)*z*(frost?3.3:2.2),dy=Math.sin(angle)*z*(frost?3.3:2.2);s+=`<path d="M${f(x+dx)} ${f(y+dy)} L${f(x-dy*.3)} ${f(y+dx*.3)} ${f(x-dx*.6)} ${f(y-dy*.6)} ${f(x+dy*.3)} ${f(y-dx*.3)}Z" fill="${i%5?edge:core}" opacity="${f(.18+rnd()*.68)}"/>`;if(i%9===0)s+=`<circle cx="${f(x)}" cy="${f(y)}" r="${f(z*2.5)}" fill="url(#spark)" opacity=".6"/>`}
  return `<svg xmlns="http://www.w3.org/2000/svg" width="${fan?384:960}" height="${fan?384:960}" viewBox="0 0 384 384">${defs}<defs><clipPath id="bounds">${clip}</clipPath></defs><g clip-path="url(#bounds)">${s}</g></svg>\n`;
 }
-const dir=new URL('../src/assets/es2/production/skills/boss-attacks/',import.meta.url)
+// Combat textures ship as <id>@3x.webp: these SVG masters go to a staging dir (argv[2]) and are
+// rasterized by scripts/rasterize-boss-attack-art.py. Without argv[2] only missiles are written.
+const dir=process.argv[2]?pathToFileURL(resolve(process.argv[2])+'/'):undefined
 const missiles=new URL('../src/assets/es2/production/skills/boss-projectiles/',import.meta.url)
-mkdirSync(dir,{recursive:true});mkdirSync(missiles,{recursive:true})
-for(const [id,p] of Object.entries(profiles)){writeFileSync(new URL(id+'.svg',dir),generate(id,p,attacks[id]));if(attacks[id].kind==='projectile')writeFileSync(new URL(id+'.svg',missiles),generate(id,p,attacks[id],true))}
+if(dir)mkdirSync(dir,{recursive:true});mkdirSync(missiles,{recursive:true})
+for(const [id,p] of Object.entries(profiles)){if(dir)writeFileSync(new URL(id+'.svg',dir),generate(id,p,attacks[id]));if(attacks[id].kind==='projectile')writeFileSync(new URL(id+'.svg',missiles),generate(id,p,attacks[id],true))}

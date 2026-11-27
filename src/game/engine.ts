@@ -8,6 +8,7 @@ import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/
 import { loadArtwork, BGM_URL, type Artwork } from './art'
 import { mergeMonsterKills, runMonsterKills } from './monster-catalog'
 import { createAudioSystem } from './audio/engine'
+import { BOSS_PHASE_PALETTE } from './audio/boss-phase-sample'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
 import { attack, dash as heroDash, hit } from './combat'
@@ -94,6 +95,8 @@ export interface TestApi {
   prepareHeroActiveVideo(): boolean
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
+  /** DEV capture only: trigger the real HP-based phase change on the same living boss. */
+  captureBossPhase(phase: 2 | 3): boolean
   /** Capture-only biome preview; requires ?showcase=1. */
   previewBiome(index: number): void
 }
@@ -138,9 +141,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const s = createState()
   const requestedPacks = opts.contentPacks ?? CONTENT_PACKS
   const relicsEnabled = requestedPacks.some(pack => pack.id === 'relics')
+  let bossPhaseSerial = 0
   const bosses = requestedPacks.some(pack => pack.id === 'bosses') ? createBossEncounterController({
     emit(event) {
-      if (event.type === 'intro') audio.prepareBossAttackAudio?.(event.boss)
+      if (event.type === 'intro') { ui.bossPhaseReveal = null; audio.prepareBossAttackAudio?.(event.boss) }
+      else if (event.type === 'phase' && event.phase !== 1) {
+        ui.bossPhaseReveal = { boss: event.boss, phase: event.phase, serial: ++bossPhaseSerial, expiresAt: s.time + (event.phase === 3 ? 2.35 : 1.85) }
+        audio.playSfx(event.phase === 3 ? 'boss-phase-3' : 'boss-phase-2', BOSS_PHASE_PALETTE.indexOf(event.boss))
+        hud()
+      } else if (event.type === 'death') ui.bossPhaseReveal = null
       else if (event.type === 'warning' || event.type === 'attack')
         audio.playBossAttack?.(event.attack, event.type === 'warning' ? 'warning' : 'release')
     },
@@ -180,7 +189,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // Unlocked test profiles remain in memory even when authenticated. A dedicated
   // demo project owns their test currency; live phone sign-in is identity-only.
   const guestProfileStorage = unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : scopedStorage(null)
-  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage(100_000, hall.playable) : scopedStorage(null)
+  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage(undefined, hall.playable) : scopedStorage(null)
   const unlockedAccounts = new Map<string, { profile: ReturnType<typeof createUnlockedPlaytestProfileStorage>; meta: ReturnType<typeof createUnlockedPlaytestMetaStorage> }>()
   let profileStore = opts.profileStore ?? createProfileStore(guestProfileStorage)
   // Injected legacy stores are retained for existing compatibility tests.
@@ -292,7 +301,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (settingsStorage?.getItem('eclipseCameraShake') === 'on') initialShake = true
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
+    bossPhaseReveal: null, mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
@@ -438,6 +447,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (name !== 'play' && s.hero) clearHeroImpact(s.hero)
     s.mode = name
     ui.mode = name
+    if (name !== 'play') ui.bossPhaseReveal = null
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
     // Switch back to the host after entering the title screen so the battle track stays paused.
     audio.onScreen(name)
@@ -577,6 +587,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     // when the player starts another run or returns to the menu.
     if (s.mode === 'result') syncMenuSelection()
     ending = false
+    ui.bossPhaseReveal = null
     if (metaStore && typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
       const entropy = new Uint8Array(16)
       crypto.getRandomValues(entropy)
@@ -767,6 +778,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
+    if (ui.bossPhaseReveal && (s.time >= ui.bossPhaseReveal.expiresAt || !s.mobs.some(m => m.hp > 0 && m.bossArtId === ui.bossPhaseReveal?.boss))) ui.bossPhaseReveal = null
     if (s.mode !== 'play') return
     heroSpecialization?.tick(dt)
     if (heroSpecialization?.id === 'crimson-paladin' && s.hero && s.content.effects.length) {
@@ -988,6 +1000,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       s.swipes.push({ x: hero.x, y: hero.y, a: 0, life: 0.29, max: 0.29, r: 75 })
       impact(s, hero.x + 80, hero.y, 45)
     },
+    captureBossPhase(phase: 2 | 3) {
+      if (!import.meta.env.DEV || typeof window === 'undefined' || !s.hero || s.mode !== 'play' || !bosses) return false
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('showcase') !== '1' || params.get('bossPhaseVideoQa') !== '1' || (phase !== 2 && phase !== 3)) return false
+      const boss = s.mobs.find(m => m.type === 'boss' && m.hp > 0 && m.bossArtId === params.get('es2BossArtQa'))
+      if (!boss || boss.bossPhase !== phase - 1) return false
+      s.hero.inv = Math.max(s.hero.inv, 120)
+      s.hero.attack = 10000
+      s.hero.need = Math.max(s.hero.need, 10000)
+      boss.hp = boss.max * (phase === 2 ? .60 : .25)
+      // Same actor, existing controller and normal encounter event/audio/render path.
+      bosses.tick(s, 1 / 60, hooks)
+      hud()
+      return boss.bossPhase === phase
+    },
     showcaseBoss(phase: 1 | 2 | 3 = 1) {
       const hero = s.hero
       if (!hero || s.mode !== 'play' || ![1, 2, 3].includes(phase)) return
@@ -1031,7 +1058,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') wakeAudio()
+      if ((s.mode === 'menu' && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
@@ -1073,8 +1100,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (!control || (control instanceof HTMLButtonElement && control.disabled) ||
           control.getAttribute('aria-disabled') === 'true') return
       const cue = control.dataset.uiSfx
-      if (cue === 'managed' || cue === 'silent') return
+      if (cue === 'silent') return
+      // Keyboard activation of managed controls still needs the trusted wake.
       if (e.detail === 0 || !audio.unlocked) wakeAudio()
+      if (cue === 'managed') return
       if (cue === 'hall-inspect') audio.playSfx('select', 1)
       else audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
     }
@@ -1091,7 +1120,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('blur', onBlur)
     win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
-    doc.addEventListener('pointerdown', onPointerDown)
+    doc.addEventListener('pointerdown', onPointerDown, true)
     doc.addEventListener('click', onUiClick, true)
     doc.addEventListener('pointerover', onPointerOver)
     return () => {
@@ -1100,7 +1129,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('blur', onBlur)
       win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
-      doc.removeEventListener('pointerdown', onPointerDown)
+      doc.removeEventListener('pointerdown', onPointerDown, true)
       doc.removeEventListener('click', onUiClick, true)
       doc.removeEventListener('pointerover', onPointerOver)
     }

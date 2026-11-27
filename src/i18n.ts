@@ -39,7 +39,8 @@ const english = new Map<string, string>([
   ['預計升級成本 · {cost} ✧','Proposed upgrade cost · {cost} ✧'],
   ["最高等階達成","Maximum rank achieved"],
   ["新研究已開啟","New research available"],
-  ["關閉節點詳情","Close node details"],
+  ["展開節點說明","Show node details"],
+  ["收起節點說明","Hide node details"],
   ["成長分類","Growth categories"],
   ["選取節點後升級","Select node to upgrade"],
   ["節點詳情","Node details"],
@@ -1597,6 +1598,8 @@ const english = new Map<string, string>([
 , ["漂浮的奧術遺跡、不穩定的裂隙與帶電的星界氣流","Floating arcane ruins, unstable rifts and charged celestial currents"]
 , ["深淵君王","Abyss Monarch"]
 , ["暮色帷幕","Veil of Dusk"]
+, ["第二階段","Phase II"]
+, ["最終階段","Final phase"]
 , ["召喚王廷","Summoned Court"]
 , ["深淵崩塌","Abyssal Collapse"]
 , ["霜寒君主","Frost Sovereign"]

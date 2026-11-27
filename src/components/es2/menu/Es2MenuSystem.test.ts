@@ -458,17 +458,17 @@ describe('ES2 responsive and motion CSS contract', () => {
       // Old one-off fades are replaced, not layered.
       expect(css).not.toMatch(/es2-page-arrive|es2-enter\b/)
     })
-    it('keeps viewport shell and dock fades opacity-only without persistent compositing layers', () => {
-      // Viewport surfaces must not retain translated or scaled layers.
+    it('keeps the lobby opaque immediately and the dock fade opacity-only without persistent compositing layers', () => {
       const menuRule = block.match(/^\.es2-menu\s*\{([^}]*)\}/m)?.[1] ?? ''
-      const keyframe = menuRule.match(/animation:\s*([\w-]+)/)?.[1] ?? ''
-      expect(keyframe).toBeTruthy()
+      expect(menuRule).toMatch(/animation:\s*none\b/)
+      expect(menuRule).toMatch(/opacity:\s*1\b/)
+      expect(menuRule).not.toMatch(/translate|scale|transform|filter|perspective/)
+      const dockRule = block.match(/^\.es2-menu-action-bar\s*\{([^}]*)\}/m)?.[1] ?? ''
+      const keyframe = dockRule.match(/animation:\s*([\w-]+)/)?.[1] ?? ''
+      expect(keyframe).toBe('es2-scene-fade')
       const frames = block.match(new RegExp(`@keyframes ${keyframe}\\s*\\{([^}]*\\})\\s*\\}`))?.[1] ?? ''
       expect(frames).toContain('opacity')
       expect(frames).not.toMatch(/translate|scale|transform|filter|perspective/)
-      const dockRule = block.match(/^\.es2-menu-action-bar\s*\{([^}]*)\}/m)?.[1] ?? ''
-      expect(dockRule).toContain('animation: ' + keyframe)
-      expect(menuRule).toContain('backwards')
       expect(dockRule).toContain('backwards')
     })
     it('covers home pages, dialogs, choice cards, loading and combat entry', () => {

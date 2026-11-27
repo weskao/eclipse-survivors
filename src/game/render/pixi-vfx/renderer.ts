@@ -1,4 +1,6 @@
 import { Application, CanvasSource, Container, Graphics, ImageSource, Sprite, Texture } from 'pixi.js'
+import { BOSS_PHASE_SLOTS, bossPhasePose, bossPhaseTint, bossPhaseBudget, phaseVisible, type BossPhasePose } from './boss-phase-choreography'
+import { drawPhaseGlyph } from './boss-phase-canvas'
 import { ATTACK_PRESENTATION } from '../../content/bosses/attack-presentation'
 import { bossMaterialKind, bossVfxImages } from '../../content/bosses/render'
 import type { BossAttackId } from '../../content/bosses/definitions'
@@ -13,7 +15,7 @@ import { choreography, particlePose, particleFrame, releaseEnvelope, type Partic
 
 export interface PixiBossRenderer {
   projectiles(frame: VfxFrame): boolean; impacts(frame: VfxFrame): boolean; lastReleaseIds(): readonly BossAttackId[]
-  heroSpecial(frame: HeroVfxFrame): boolean; dispose(): void
+  heroSpecial(frame: HeroVfxFrame): boolean; bossPhase(frame: VfxFrame): boolean; dispose(): void
 }
 type Surface = Pick<VfxFrame, 'ctx' | 'width' | 'height' | 'dpr'>
 // Bound the caster and distant arrow impacts, including their trailing sprites.
@@ -95,7 +97,18 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
   const heroTargetPool = Array.from({ length: HERO_TARGET_SLOTS }, () => ({ x: 0, y: 0 }))
   const heroTargets = [] as { x: number; y: number }[]
   const heroCast: HeroCast = { kind: 'hero-shadowblade', elapsed: 0, life: 0, targets: heroTargets, reduced: false }
-  app.stage.addChild(missileLayer, impactLayer, heroLayer)
+  const phaseLayer = new Container()
+  const phaseSprites = Array.from({ length: BOSS_PHASE_SLOTS }, () => sprite())
+  phaseLayer.addChild(...phaseSprites); phaseLayer.visible = false
+  const phasePose: BossPhasePose = { x:0,y:0,width:0,height:0,rotation:0,alpha:0,texture:'seal',additive:false }
+  const phaseTextures = new Map<'seal'|'halo', Texture>()
+  for (const kind of ['seal','halo'] as const) {
+    const c = document.createElement('canvas'); c.width=c.height=256
+    const ctx=c.getContext('2d')!; ctx.translate(128,128);ctx.scale(123,123);ctx.strokeStyle='#fff';ctx.fillStyle='#fff'
+    ctx.shadowColor='#ffffffbb';ctx.shadowBlur=5; drawPhaseGlyph(ctx,kind)
+    phaseTextures.set(kind,new Texture({source:new CanvasSource({resource:c})}))
+  }
+  app.stage.addChild(missileLayer, impactLayer, heroLayer, phaseLayer)
   function texture(image?: HTMLImageElement): Texture | undefined {
     if (!image?.complete || !image.naturalWidth) return undefined
     let t = owned.get(image)
@@ -244,12 +257,34 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
     missileLayer.visible = false; impactLayer.visible = false; heroLayer.visible = true
     try { return composite(f) } finally { heroLayer.visible = false }
   }
-  return { projectiles, impacts: release, lastReleaseIds: () => lastReleaseIds, heroSpecial, dispose() {
+  function bossPhase(f: VfxFrame): boolean {
+    const strength = f.policy?.vfxOpacity ?? 1
+    if (!strength || !phaseVisible(f.snapshot,f.ox,f.oy,f.width,f.height)) return true
+    if (!prepare(f)) return false
+    const body=f.snapshot.bodyMotion!, reduced=f.reduced || !!f.policy?.reduceFlashing
+    const budget=bossPhaseBudget(reduced,f.policy?.quality), tint=bossPhaseTint(f.snapshot.id!)
+    let count=0
+    for(let i=0;i<BOSS_PHASE_SLOTS;i++) {
+      const s=phaseSprites[i]!;s.visible=false
+      if(i>=budget || !bossPhasePose(phasePose,f.snapshot,i,reduced)) continue
+      const kind=phasePose.texture
+      s.texture=kind==='seal'||kind==='halo'?phaseTextures.get(kind)!:motes[kind]
+      s.position.set(phasePose.x,phasePose.y);s.rotation=phasePose.rotation
+      s.width=phasePose.width;s.height=phasePose.height;s.alpha=phasePose.alpha*strength*(reduced?.6:1)
+      s.tint=tint;s.blendMode=phasePose.additive?'add':'normal';s.visible=true;count++
+    }
+    if(!count)return true
+    phaseLayer.position.set(body.x+f.ox,body.y+f.oy)
+    missileLayer.visible=false;impactLayer.visible=false;heroLayer.visible=false;phaseLayer.visible=true
+    try {return composite(f)} finally {phaseLayer.visible=false}
+  }
+  return { bossPhase, projectiles, impacts: release, lastReleaseIds: () => lastReleaseIds, heroSpecial, dispose() {
     if (disposed) return
     disposed = true
     canvas.removeEventListener('webglcontextlost', onLost)
     app.destroy(false, { children: true })
     for (const t of owned.values()) t.destroy(true)
     owned.clear(); for(const mote of Object.values(motes)) mote.destroy(true)
+    for(const tex of phaseTextures.values()) tex.destroy(true);phaseTextures.clear()
   } }
 }

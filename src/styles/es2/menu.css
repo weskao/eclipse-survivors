@@ -811,6 +811,22 @@
   .es2-archive-page-heading{padding:2px 0 5px}
   .es2-archive-page-heading h2{font-size:calc(1.05rem * var(--es2-ui-scale,1))}
 }
+/* The upgrade hall needs its first screen for the tree and dock: the active hall tab
+   already names the page, so the title stays only for assistive tech; the rule caption stays. */
+@media (max-width:739px) and (orientation:portrait),(orientation:landscape) and (max-height:520px){
+  .es2-archive-page[data-es2-archive-page="progression"]{gap:6px}
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-heading{padding:0 0 4px}
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-heading :is(.es2-eyebrow,h2){
+    position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap
+  }
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-caption{margin:0;font-size:calc(.74rem * var(--es2-ui-scale,1));line-height:1.35}
+}
+/* Very short landscape: the next-expedition hint yields to the tree + buy action; assistive tech keeps it. */
+@media (orientation:landscape) and (max-height:400px){
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-caption{
+    position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
+  }
+}
 
 /* Contextual card information uses the shared hero/mode surface and never
    makes an undiscovered compendium entry reveal its hidden content. */
@@ -821,7 +837,8 @@
   position:absolute;z-index:2;top:0;right:0;width:44px;height:44px;min-height:44px;
   display:grid;place-items:start end;padding:6px;margin:0;border:0;background:transparent;cursor:pointer
 }
-.es2-menu .es2-card-info-trigger>span{
+/* Shared info glyph: card corner Info buttons and the upgrade-hall detail toggle. */
+.es2-info-glyph{
   display:grid;place-items:center;width:24px;height:24px;border:1px solid #bda473;border-radius:50%;
   background:#111d29;color:#ffe5b2;font:italic bold 15px/1 Georgia,serif
 }

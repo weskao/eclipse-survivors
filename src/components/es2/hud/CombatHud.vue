@@ -11,7 +11,9 @@ import { useHeroHealthMotion } from './hero-health-motion'
 import { lowHealthTier } from './low-health'
 import '../../../styles/es2/low-health.css'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
-import type { HudView } from '../../../game/store'
+import type { BossPhaseReveal, HudView } from '../../../game/store'
+import { BOSS_DEFINITIONS } from '../../../game/content/bosses/definitions'
+import BossPhaseRevealBanner from './BossPhaseRevealBanner.vue'
 import type { HeroId, JobId } from '../../../game/types'
 import { projectCombatHud, type CombatHudActions, type CombatHudFeed, type CombatHudSnapshot } from './model'
 import '../../../styles/es2/hud.css'
@@ -32,6 +34,7 @@ const props = withDefaults(defineProps<{
   canReturnHome?: boolean
   showHeroLowHealthWarning?: boolean
   healthMotion?: MotionSetting
+  bossPhaseReveal?: BossPhaseReveal | null
 }>(), { audioActive: true, showHeroLowHealthWarning: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
@@ -196,7 +199,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
               <span :style="{ transform: 'scaleX(' + view.bossWarning.progress + ')' }"></span>
             </div>
           </section>
-          <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss :aria-label="t('首領生命')">
+          <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss :data-phase-revealing="bossPhaseReveal?.phase" :style="bossPhaseReveal ? { '--es2-phase-accent': BOSS_DEFINITIONS[bossPhaseReveal.boss].color } : undefined" :aria-label="t('首領生命')">
             <div class="es2-hud__boss-heading">
               <span>☠ {{ t(view.boss.name) }}</span>
               <span v-if="view.boss.phase !== undefined" class="es2-hud__boss-phase">
@@ -211,6 +214,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
               <span class="es2-hud__track-fill" aria-hidden="true"></span>
             </div>
             </div>
+            <BossPhaseRevealBanner v-if="active && bossPhaseReveal" :key="bossPhaseReveal.serial" :reveal="bossPhaseReveal" />
           </section>
           <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave :aria-label="t('波次')">
             <span class="es2-hud__eyebrow">{{ t('WAVE') }} {{ view.wave.number }}</span>
