@@ -3,6 +3,7 @@ import { t } from '../../../i18n'
 import { computed, nextTick, ref } from 'vue'
 import Es2EmberWallet from '../menu/Es2EmberWallet.vue'
 import HallGrowthBoard from './HallGrowthBoard.vue'
+import HallTalentExplorer from './HallTalentExplorer.vue'
 import { researchHallNodes, unlockHallNodes, type HallNode } from './hall-model'
 import { BALANCE } from '../../../game/config'
 import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
@@ -35,6 +36,7 @@ const categories = [
 ] as const
 type Category = typeof categories[number]['id']
 const category = ref<Category>('research')
+const researchView = ref<'core'|'ascendancy'>('core')
 const tabs = ref<HTMLElement | null>(null)
 function moveCategory(event: KeyboardEvent, id: Category) {
   const index = categories.findIndex(tab => tab.id === id)
@@ -93,7 +95,12 @@ const masteryProgress = computed(() => {
     </div>
     <section v-show="category === 'research'" id="hall-category-research" data-hall-category="research" role="tabpanel" aria-labelledby="hall-tab-research" :aria-label="t('永久研究')" class="es2-progression-section">
       <h3>{{ t("研究之樹") }}</h3>
-      <HallGrowthBoard :nodes="research" :writable="writable" :visible="category === 'research'" tree @purchase="emit('research', $event.id)" />
+      <div class="hall-research-nav" role="group" :aria-label="t('研究路線')">
+        <button type="button" data-ui-sfx="select" :aria-pressed="researchView==='core'" @click="researchView='core'">{{ t('核心研究') }}</button>
+        <button type="button" data-ui-sfx="select" :aria-pressed="researchView==='ascendancy'" @click="researchView='ascendancy'">{{ t('暮蝕昇華') }} <small>{{ t('預覽') }}</small></button>
+      </div>
+      <HallGrowthBoard v-show="researchView==='core'" :nodes="research" :writable="writable" :visible="category === 'research' && researchView==='core'" tree @purchase="emit('research', $event.id)" />
+      <HallTalentExplorer v-if="researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'"/>
     </section>
 
     <section v-show="category === 'mastery'" id="hall-category-mastery" data-hall-category="mastery" role="tabpanel" aria-labelledby="hall-tab-mastery" :aria-label="t('英雄專精')" class="es2-progression-section">
@@ -158,4 +165,9 @@ const masteryProgress = computed(() => {
 .hall-category-tabs button:focus-visible{outline:2px solid #ffe0a0;outline-offset:1px}
 .hall-category-tabs button>span:first-child{color:#e3c28d;font-size:1rem;flex:none}
 @media(max-width:480px){.hall-category-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-bottom:8px}.hall-category-tabs button{padding:4px 6px}}
+.hall-research-nav{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px;border-bottom:1px solid #a5885255}
+.hall-research-nav button{min-height:44px;flex:1;border:0;border-bottom:2px solid transparent;background:none;color:#b9c1c9;font:600 .85rem system-ui;cursor:pointer;padding:5px}
+.hall-research-nav button[aria-pressed=true]{color:#f5d28e;border-color:#d5ae70;background:linear-gradient(0deg,#d8b16c15,transparent)}
+.hall-research-nav small{font-size:.66rem;color:#c6b391}
+.hall-research-nav button:focus-visible{outline:2px solid #ffde9d;outline-offset:1px}
 </style>

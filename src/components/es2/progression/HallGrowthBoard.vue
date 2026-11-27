@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { t } from '../../../i18n'
 import { hallEdges, hallRows, type HallNode } from './hall-model'
-const props = withDefaults(defineProps<{ nodes: readonly HallNode[]; writable?: boolean; tree?: boolean; visible?: boolean }>(), { writable: true, tree: false, visible: true })
+const props = withDefaults(defineProps<{ nodes: readonly HallNode[]; writable?: boolean; tree?: boolean; visible?: boolean; preview?: boolean }>(), { writable: true, tree: false, visible: true, preview: false })
 const emit = defineEmits<{ purchase: [node: HallNode] }>()
 const selected = ref('')
 const hovered = ref('')
@@ -58,10 +58,10 @@ onBeforeUnmount(() => clearTimeout(celebrationTimer))
 let request: { id: string; rank: number; time: number } | null = null
 let dispatching = false
 const isFine = () => typeof window.matchMedia === 'function' && window.matchMedia('(hover: hover) and (pointer: fine)').matches
-const canPurchase = (node: HallNode) => props.writable && node.canBuy && node.cost !== null
-const status = (node: HallNode) => node.cost === null ? (node.maxRank === 1 ? '已解鎖' : '已滿階')
+const canPurchase = (node: HallNode) => !props.preview && props.writable && node.canBuy && node.cost !== null
+const status = (node: HallNode) => props.preview ? '規劃預覽' : node.cost === null ? (node.maxRank === 1 ? '已解鎖' : '已滿階')
   : node.locked ? '尚未解鎖' : !node.canBuy ? '餘燼不足' : '可升級'
-const action = (node: HallNode) => node.cost === null || node.locked ? t(status(node))
+const action = (node: HallNode) => props.preview ? t('尚未開放升級') : node.cost === null || node.locked ? t(status(node))
   : t(node.kind === 'research' ? '研究 · {cost} ✧' : node.kind === 'legacy' ? '升級 · {cost} ✧' : '解鎖 · {cost} ✧', { cost: node.cost })
 
 function inspect(node: HallNode, event?: MouseEvent) {
@@ -148,6 +148,7 @@ watch(() => props.nodes, (nodes, previous) => {
       <div class="hall-detail-heading"><img :src="active.art" alt="" width="48" height="48" /><div><small>{{ t('節點詳情') }}</small><strong>{{ t(active.title) }}</strong></div></div>
       <div class="hall-detail-body">
       <p>{{ active.description }}</p>
+      <p v-if="preview && active.cost !== null" class="hall-preview-price">{{ t('預計升級成本 · {cost} ✧', { cost: active.cost }) }}</p>
       <div v-if="active.current !== undefined" class="hall-comparison">
         <div><small>{{ t('目前效果') }}</small><b>{{ active.current }}</b></div>
         <span v-if="active.next !== undefined" aria-hidden="true">→</span>

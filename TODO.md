@@ -235,7 +235,7 @@ No gameplay implementation or asset admission is claimed by the planning checkbo
 
 ### ES4 UI/UX and temporary art (skill-tree scope)
 - [x] Semantic, bilingual 72-node catalog with validated DAG, price, mastery and art contract.
-- [ ] Compact constellation navigation, medallion controls, shared graph and inspector, clear read-only state until real transactions exist.
+- [x] Compact constellation navigation, medallion controls, shared graph and inspector, clear read-only state until real transactions exist (source implemented; runtime QA pending).
 - [x] 72 temporary SVG icons plus individual future WebP paths and art briefs (source created).
 - [ ] Replace and approve 72 final WebP assets using [individual image paths and briefs](docs/es4/hall-art-manifest.md).
 - [ ] Real owned/equipped progression, signature/resonance purchase and run effects; enable purchase only after persistence and runtime integration.
@@ -250,3 +250,5 @@ No gameplay implementation or asset admission is claimed by the planning checkbo
 See [deferred endgame scope](docs/es4/deferred-endgame-scope.md). Existing enemy/chapter/mode/difficulty implementation stays unchanged in this skill-tree workstream.
 
 Catalog and SVG source created; full CI and runtime transactions are not yet verified. Do not enable talent purchases until the authoritative runtime is ready.
+
+ES4 explorer is explicitly a read-only preview. The original core research remains active. V4 migration, real ownership, typed combat effects and attunement remain unimplemented and unchecked.

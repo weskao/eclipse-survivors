@@ -8,6 +8,13 @@ export interface LocaleStorage { getItem(key: string): string | null; setItem(ke
 export const LOCALE_STORAGE_KEY = 'eclipse-survivors-locale'
 
 const english = new Map<string, string>([
+  ['研究路線','Research paths'],
+  ['核心研究','Core research'],
+  ['暮蝕昇華','Eclipse Ascendancy'],
+  ['預覽','Preview'],
+  ['規劃預覽','Design preview'],
+  ['尚未開放升級','Upgrades not yet available'],
+  ['預計升級成本 · {cost} ✧','Proposed upgrade cost · {cost} ✧'],
   ["最高等階達成","Maximum rank achieved"],
   ["新研究已開啟","New research available"],
   ["關閉節點詳情","Close node details"],
