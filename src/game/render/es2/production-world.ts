@@ -26,6 +26,13 @@ for (const id of LEGACY_DEATH_IDS) {
   if (url) ES3_DEATH_URLS[id] = url
 }
 
+// Native death candidates are never imported into release builds.
+const deathQaLoaders = import.meta.env.DEV
+  ? import.meta.glob('../../../assets/es3/production/enemies/candidates/*/*-death-preferred@3x.webp', {
+    query: '?url', import: 'default',
+  }) as Record<string, () => Promise<string>>
+  : {}
+
 /** Preview assets stay out of production; visual QA and explicit opt-in are required. */
 const bossQaLoaders = import.meta.env.DEV
   ? import.meta.glob('../../../assets/es2/production/bosses/candidates/*-QA-PENDING.webp', {
@@ -148,7 +155,7 @@ export interface WorldRuntimeImages {
 }
 
 /** Allocate world and common treasure images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' | 'native' = false): WorldRuntimeImages {
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' | 'native' = false, reviewEnemyDeaths = false): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
@@ -211,6 +218,22 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
     const url = ES3_DEATH_URLS[id]
     const entry = es3ArtManifest.assets.find(asset => asset.id === id)
     if (url && entry?.status === 'approved' && entry.visualReview === 'approved') enemyDeaths[id] = load(url)
+  }
+  if (import.meta.env.DEV && reviewEnemyDeaths) {
+    for (const id of LEGACY_DEATH_IDS) {
+      const matches = Object.keys(deathQaLoaders).filter(path => path.endsWith('/' + id + '-death-preferred@3x.webp'))
+      // Ambiguous or absent candidates must not silently replace canonical art.
+      if (matches.length !== 1) continue
+      const fallback = enemyDeaths[id]
+      const image = makeImage()
+      const restore = () => {
+        if (fallback) enemyDeaths[id] = fallback
+        else delete enemyDeaths[id]
+      }
+      image.onerror = restore
+      enemyDeaths[id] = image
+      void deathQaLoaders[matches[0]!]!().then(url => { image.src = url }).catch(restore)
+    }
   }
   const legendary = load(WORLD_ART.ui['treasure-legendary'])
   const cursed = load(WORLD_ART.ui['treasure-cursed'])

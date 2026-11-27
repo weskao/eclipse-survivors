@@ -44,3 +44,6 @@ pnpm check-release
 
 ## Canonical character identity
 The five legacy dissolution sheets are retained as QA_PENDING candidates, not automatically loaded. Normal gameplay continues to use the existing canonical actor art and bounded procedural death presentation. Only an owner-reviewed, identity-matched atlas may be activated by setting both `status` and `visualReview` to `approved` in the manifest. The Epic chest remains independent of enemy/hero/boss identity. Do not replace canonical hero, faction or boss art to satisfy this batch.
+
+## Native death atlas review (DEV only)
+Run the existing development server and open its URL with `?es3EnemyDeathQa=1` (or append `&es3EnemyDeathQa=1` to existing query parameters). The four uploaded candidates and Warlock once uploaded are discovered by ID. A failed image import/decode, missing or ambiguous candidate retains canonical rendering. Reduced Motion still bypasses the atlas. Release builds do not import these candidates and no visual approval is implied. Review each actor's transition, scale, anchor and dissolve in a real run before any production admission.
