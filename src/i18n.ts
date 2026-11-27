@@ -22,7 +22,6 @@ const english = new Map<string, string>([
   ["升級成功","Upgrade complete"],
   ["距下一級尚需 {xp} XP","{xp} XP to next level"],
   ["升級 · {cost} ✧","Upgrade · {cost} ✧"],
-=======
   ["攻擊觸發距離","Attack trigger distance"],
   ["原始首領","Original boss"],
   ["技能基礎傷害範圍","Base skill damage range"],
