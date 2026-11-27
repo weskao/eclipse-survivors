@@ -4,6 +4,7 @@ import { nextTick, type Component } from 'vue'
 import Es2ChoiceDialog from './Es2ChoiceDialog.vue'
 import Es2Dialog from './Es2Dialog.vue'
 import { CHOICE_ARM_MS, type MenuChoice } from './model'
+import { setLocale } from '../../../i18n'
 import { heroMasteryPreview } from '../../../game/content/heroes/mastery-preview'
 
 const choices: MenuChoice[] = [
@@ -341,4 +342,49 @@ it.each(['rare', 'epic', 'legendary'] as const)('keeps %s reward rarity on the o
   button('reward').click()
   button('reward').click()
   expect(wrapper.emitted('choose')).toEqual([['reward']])
+})
+
+it.each([false, true])('keeps only the treasure skip checkbox in the footer (still=%s) across dialog changes and locales', async still => {
+  const storage = { getItem: () => null, setItem: () => {} }
+  const footer = () => dialog().querySelector<HTMLElement>('.es2-hint')!
+  const skip = () => footer().querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!
+  setLocale('zh-TW', storage)
+  try {
+    const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'level', items: choices, still, skipReveal: true })
+    await nextTick()
+    expect(footer().textContent).toContain('點選卡牌或按 1–9 選擇')
+    expect(skip()).toBeNull()
+    await wrapper.setProps({ kind: 'treasure', tier: 'rare' })
+    expect(footer().querySelector('.es2-hint-text')).toBeNull()
+    expect(footer().children).toHaveLength(1)
+    expect(skip().getAttribute('aria-checked')).toBe('true')
+    expect(footer().textContent?.trim()).toBe('跳過揭曉動畫')
+    expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
+    setLocale('en', storage)
+    await nextTick()
+    expect(footer().textContent?.trim()).toBe('Skip Reveal')
+    skip().click()
+    await nextTick()
+    expect(skip().getAttribute('aria-checked')).toBe('false')
+    expect(wrapper.emitted('skipReveal')).toEqual([[false]])
+    expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
+    await wrapper.setProps({ items: [] })
+    expect(footer().textContent?.trim()).toBe('Skip Reveal')
+    expect(dialog().querySelector('.es2-dialog-header p')?.textContent).toBe('No options available')
+    await wrapper.setProps({ kind: 'level', items: choices })
+    expect(footer().textContent?.trim()).toBe('Click a card or press 1–9 to select')
+    expect(skip()).toBeNull()
+  } finally {
+    setLocale('zh-TW', storage)
+  }
+})
+
+it('retains the evolution hint and reveal preference without adding the treasure-only footer to ordinary upgrades', async () => {
+  const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'evolution', items: choices })
+  await nextTick()
+  expect(dialog().querySelector('.es2-hint-text')?.textContent).toContain('點選卡牌或按 1–9 選擇')
+  expect(dialog().querySelector('[data-es3-skip-reveal]')).not.toBeNull()
+  await wrapper.setProps({ kind: 'level' })
+  expect(dialog().querySelector('.es2-hint-text')).not.toBeNull()
+  expect(dialog().querySelector('[data-es3-skip-reveal]')).toBeNull()
 })

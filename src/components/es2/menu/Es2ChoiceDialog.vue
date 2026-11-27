@@ -57,16 +57,16 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
 }, { immediate: true })
 </script>
 <template>
-  <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(captions[kind])" :dismissible="kind !== 'level'"
+  <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(kind === 'treasure' && !uniqueItems.length ? '目前沒有可用的選項' : captions[kind])" :dismissible="kind !== 'level'"
     wide variant="choice" :tone="kind === 'evolution' ? 'legendary' : 'neutral'" @cancel="emit('cancel')" @shortcut="shortcut">
     <template #header-actions><button v-if="kind === 'level'" type="button" class="es2-secondary es2-dialog-settings" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></template>
-    <div class="es2-selection-scene" :class="{ 'es2-still': still }" :data-es3-reveal="reveal" :data-tier="kind === 'treasure' ? tier : undefined" @pointerdown.capture="pointerdown">
+    <div class="es2-selection-scene" :class="{ 'es2-still': still, 'es2-treasure': kind === 'treasure' }" :data-es3-reveal="reveal" :data-tier="kind === 'treasure' ? tier : undefined" @pointerdown.capture="pointerdown">
       <div v-if="reveal === 'treasure'" class="es3-chest-open" :data-tier="revealTier" aria-hidden="true">
         <span class="es3-chest-open__burst"></span><img :src="chestArt" data-es3-chest-reveal alt="" decoding="async" draggable="false" />
       </div>
       <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="tap" />
-      <p class="es2-hint"><span class="es2-hint-text">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</span><button
-        v-if="revealKind" type="button" role="checkbox" class="es3-skip-reveal" data-es3-skip-reveal :aria-checked="skipChecked"
+      <p class="es2-hint"><span v-if="kind !== 'treasure'" class="es2-hint-text">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</span><button
+        v-if="kind === 'treasure' || revealKind" type="button" role="checkbox" class="es3-skip-reveal" data-es3-skip-reveal :aria-checked="skipChecked"
         @click="toggleSkip"><span class="es3-skip-reveal__box" aria-hidden="true"></span>{{ t('跳過揭曉動畫') }}</button></p>
     </div>
   </Es2Dialog>
@@ -120,7 +120,7 @@ button.es3-skip-reveal { appearance:none; display:inline-flex; align-items:cente
   .es2-hint:has(.es3-skip-reveal) .es2-hint-text { display:none; }
 }
 
-@media (prefers-reduced-motion: reduce) { [data-es3-reveal] :deep(.es2-choice) { animation: none; } .es3-chest-open, .es3-skip-reveal { display: none; } }
+@media (prefers-reduced-motion: reduce) { [data-es3-reveal] :deep(.es2-choice) { animation: none; } .es3-chest-open, .es2-selection-scene:not(.es2-treasure) .es3-skip-reveal { display: none; } }
 :global([data-es2-reduce-motion="true"] [data-es3-reveal] .es2-choice), :global([data-es2-reduce-flashing="true"] [data-es3-reveal] .es2-choice) { animation: none; }
 :global([data-es2-reduce-motion="true"] .es3-chest-open), :global([data-es2-reduce-flashing="true"] .es3-chest-open) { display: none; }
 </style>

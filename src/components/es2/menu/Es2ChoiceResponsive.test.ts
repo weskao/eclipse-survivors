@@ -15,6 +15,11 @@ describe('ES2 choice card responsive illustrations', () => {
     expect(picker).toMatch(/@keyframes es3-reveal \{ from \{[^}]*translate:0 8px; scale:\.985;/)
     expect(picker).not.toMatch(/@keyframes es3-reveal[^\n]*transform:/)
   })
+  it('preserves the treasure footer control in reduced motion and short touch landscape', () => {
+    const picker = readFileSync(resolve(process.cwd(), 'src/components/es2/menu/Es2ChoiceDialog.vue'), 'utf8')
+    expect(picker).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^\n]*\.es2-selection-scene:not\(\.es2-treasure\) \.es3-skip-reveal \{ display: none; \}/)
+    expect(picker).toMatch(/\.es2-selection-scene \.es2-hint:has\(\.es3-skip-reveal\) \{ display:flex;/)
+  })
   it('reserves image height separately from longer titles and descriptions', () => {
     expect(css).toMatch(/\.es2-card-art\{[^}]*flex:0 0 auto/)
     expect(css).toMatch(/\.es2-card-art img\{[^}]*object-fit:contain/)
