@@ -15,15 +15,23 @@ const urls = import.meta.glob('../../../assets/es2/production/{enemies,bosses,bi
 
 // ES3 additions are separate from the 49 owner-approved ES2 assets. A missing
 // upload never breaks the existing art; Vite resolves supplied WebPs on build.
-const es3Urls = import.meta.glob('../../../assets/es3/production/{ui,enemies}/*.webp', {
+const es3Urls = import.meta.glob('../../../assets/es3/production/ui/*.webp', {
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
 export const ES3_EPIC_TREASURE_URL = es3Urls['../../../assets/es3/production/ui/treasure-epic@3x.webp']
 const LEGACY_DEATH_IDS = ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const
-export const ES3_DEATH_URLS: Partial<Record<MobType, string>> = {}
+// The mismatched dissolve sheets load only once approved (gate below). Lazy DEV-only loaders keep
+// their bytes out of release builds; approving one means lifting this DEV scope and the
+// check-release guard together.
+const es3DeathSheetLoaders = import.meta.env.DEV
+  ? import.meta.glob('../../../assets/es3/production/enemies/*-death-dissolve@3x.webp', {
+    query: '?url', import: 'default',
+  }) as Record<string, () => Promise<string>>
+  : {}
+export const ES3_DEATH_SHEET_LOADERS: Partial<Record<MobType, () => Promise<string>>> = {}
 for (const id of LEGACY_DEATH_IDS) {
-  const url = es3Urls[`../../../assets/es3/production/enemies/${id}-death-dissolve@3x.webp`]
-  if (url) ES3_DEATH_URLS[id] = url
+  const loadSheet = es3DeathSheetLoaders[`../../../assets/es3/production/enemies/${id}-death-dissolve@3x.webp`]
+  if (loadSheet) ES3_DEATH_SHEET_LOADERS[id] = loadSheet
 }
 
 // The owner requested normal gameplay integration of these five identity-matched
@@ -221,9 +229,12 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   const enemyDeaths: NonNullable<WorldRuntimeImages['enemyDeaths']> = {}
   // Never substitute a character's established appearance with an unreviewed atlas.
   for (const id of LEGACY_DEATH_IDS) {
-    const url = ES3_DEATH_URLS[id]
+    const loadSheet = ES3_DEATH_SHEET_LOADERS[id]
     const entry = es3ArtManifest.assets.find(asset => asset.id === id)
-    if (url && entry?.status === 'approved' && entry.visualReview === 'approved') enemyDeaths[id] = load(url)
+    if (!loadSheet || entry?.status !== 'approved' || entry.visualReview !== 'approved') continue
+    const image = makeImage()
+    enemyDeaths[id] = image
+    void loadSheet().then(url => { image.src = url }).catch(() => { delete enemyDeaths[id] })
   }
   if (useNativeEnemyDeaths) {
     for (const id of LEGACY_DEATH_IDS) {

@@ -22,6 +22,12 @@ for (const file of releaseFiles) {
     && !/(?:^|\/)(?:run|attack|special)-(?:east|south|se|sw|ne|nw|n)-4frames@3x(?:-[^/]+)?\.webp$/i.test(file),
     'QA-only asset must not ship: ' + file)
 }
+// Identity-mismatched ES3 dissolve sheets are gated on approval; native candidates replace them in play.
+assert.ok(files.every(file => !/-death-dissolve@3x-.*\.webp$/.test(file)),
+  'Blocked ES3 death-dissolve sheets must not ship until approved')
+// Hashed imports flatten candidates/ paths, so match the provenance file names directly.
+assert.ok(files.every(file => !/-(?:preferred-source|generated-original|latest-authored-\d+px-animated)-[^/]*\.(?:png|webp)$/.test(file)),
+  'Source-only provenance and review-only art must not ship')
 assert.ok(files.every(file => !file.includes('-QA-PENDING')),
   'Unapproved boss QA candidate images must not ship in the production bundle')
 assert.ok(files.every(file => !/^(?:infernal-titan-keyframe-candidates-3x2|idle-stance-[a-d]|windup-key-a|stride-key-[a-d]|ground-slam-key-[ab]|ground-slam-retract-key-a|crouch-key-b|core-dimming-key-b|rubble-key-c|forward-punch-key-a|recoil-key-[ab]|overload-key-a|phase-2-awakening-key-a|collapse-key-a|shadow-orb-windup-key-[ab]|shadow-fan-release-key-[ab]|glide-east-key-[ab]|fallen-key-a|ice-fan-windup-key-a|staff-lower-key-[abc]|eclipse-hover-key-a|ice-fan-release-key-a|light-ring-windup-key-a|shadow-fan-recover-key-a|phase-3-awakening-key-a|light-ring-release-key-a|dissolve-key-a|hover-key-a|seraph-hurt-key-a|awakening-key-a|shatter-collapse-key-a|seraph-recover-key-a|seraph-eclipse-idle-key-a|seraph-ascension-key-a|frost-glide-key-a|frost-crystal-awakening-key-a|abyss-phase2-awakening-key-[ab]|titan-slam-recovery-study-a|titan-stride-transition-study-a)-.*\.webp$/.test(file)),
