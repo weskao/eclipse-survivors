@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { resolveSkillChoiceArt } from '../../../game/ui-art'
-import { WORLD_ART } from '../../../game/render/es2/production-world'
+import { upgradeStatPreview } from '../../../game/upgrade-preview'
+import { treasureArtUrl } from '../../../game/render/es2/production-world'
 import { RELIC_BY_ID, type RelicId } from '../../../game/content/relics/catalog'
 import type { AbilityId, HeroId, JobId, UpgradeDef } from '../../../game/types'
-import type { AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES, updateAccessibilityPreferences, type AccessibilityPreferences } from '../../../game/content/accessibility/preferences'
 import { emptyProfile } from '../../../meta/profile'
 import type { MetaState } from '../../../game/content/meta/state'
 import type { Profile, PermanentUpgrade, CosmeticId, RunModeId, RunRewards, RunStats } from '../../../meta/types'
@@ -31,7 +32,7 @@ const props = withDefaults(defineProps<{
   audioUnlocked?: boolean; musicOn?: boolean; sfxOn?: boolean
   musicVolume?: number; sfxVolume?: number
   accessibilityPreferences?: AccessibilityPreferences
-  specialChoice?: { kind: 'evolution' | 'treasure'; items: readonly MenuChoice[] } | null
+  specialChoice?: { kind: 'evolution' | 'treasure'; tier?: import('../../../game/types').TreasureTier; items: readonly MenuChoice[] } | null
   relics?: readonly RelicEntry[]
   notification?: { title: string; message: string } | null
   loading?: { message?: string; hero?: JobId; progress?: number } | null
@@ -51,33 +52,45 @@ const emit = defineEmits<{
   toggleMusic: []; toggleSfx: []; dismissNotification: []
   accessibility: [next: AccessibilityPreferences]
 }>()
+const systemMotion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : undefined
+const systemReducedMotion = ref(!!systemMotion?.matches)
+function syncSystemMotion(event: MediaQueryListEvent): void { systemReducedMotion.value = event.matches }
+onMounted(() => systemMotion?.addEventListener?.('change', syncSystemMotion))
+onBeforeUnmount(() => systemMotion?.removeEventListener?.('change', syncSystemMotion))
+const stillPresentation = computed(() => props.upgradeEffect === 'still' ||
+  !!props.accessibilityPreferences?.reducedFlashing ||
+  props.accessibilityPreferences?.reducedMotion === 'on' ||
+  ((props.accessibilityPreferences?.reducedMotion ?? 'system') === 'system' && systemReducedMotion.value))
+function skipRewardReveal(skip: boolean): void {
+  emit('accessibility', updateAccessibilityPreferences(props.accessibilityPreferences ?? DEFAULT_ACCESSIBILITY_PREFERENCES, { skipRewardReveal: skip }))
+}
 const fallbackProfile = emptyProfile()
 const currentProfile = computed(() => props.profile ?? fallbackProfile)
 const archive = ref<MenuView>('main')
 const resetOpen = ref(false)
 watch(() => props.screen, screen => { if (screen !== 'menu') { archive.value = 'main'; resetOpen.value = false } })
-const archiveActive = computed(() => props.screen === 'menu' && archive.value !== 'main' && !resetOpen.value && !props.settingsOpen && !props.notification && !props.loading)
+const archiveActive = computed(() => props.screen === 'menu' && archive.value !== 'main' && !props.loading)
 const levelActive = computed(() => props.screen === 'level' && !props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const specialActive = computed(() => !!props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
   id: upgrade.id, title: upgrade.title, description: upgrade.desc, icon: upgrade.icon,
-  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, props.upgradeEffect === 'still'),
+  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, stillPresentation.value),
   rarity: upgrade.rarity, level: upgrade.level, maxLevel: upgrade.maxLevel,
   requirements: upgrade.requirements, evolution: upgrade.isEvolution,
+  statChanges: upgradeStatPreview(upgrade.id, upgrade.level, upgrade.maxLevel),
 })))
 const specialCards = computed(() => {
   const offer = props.specialChoice
   if (!offer) return offer
   if (offer.kind === 'evolution') return { ...offer, items: offer.items.map(item => ({
     ...item,
-    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, props.upgradeEffect === 'still'),
+    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, stillPresentation.value),
+    statChanges: item.statChanges ?? upgradeStatPreview(item.id, item.level ?? 0, item.maxLevel ?? 1),
   })) }
   return { ...offer, items: offer.items.map(item => ({
     ...item,
-    imageSrc: RELIC_BY_ID.get(item.id as RelicId)?.cursed ? WORLD_ART.ui['treasure-cursed']
-      : item.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary']
-        : item.rarity === 'rare' || item.rarity === 'epic' ? WORLD_ART.ui['treasure-rare']
-          : WORLD_ART.ui['treasure-common'],
+    cursed: RELIC_BY_ID.get(item.id as RelicId)?.cursed,
+    imageSrc: treasureArtUrl(item.rarity, RELIC_BY_ID.get(item.id as RelicId)?.cursed),
   })) }
 })
 function chooseUpgrade(id: string): void {
@@ -88,23 +101,29 @@ function navigate(view: MenuView): void { archive.value = view }
 function confirmReset(): void { resetOpen.value = false; emit('reset') }
 </script>
 <template>
-  <div class="es2-system" :class="{ 'es2-system-still': upgradeEffect === 'still' }">
+  <div class="es2-system" :class="{ 'es2-system-still': stillPresentation }">
     <Es2MainMenu v-if="screen === 'menu' && !loading" :choice="choice" :hero-id="heroId" :run-mode="runMode" :version="version"
-      :profile="currentProfile" :needs-audio-unlock="musicOn && !audioUnlocked"
+      :profile="currentProfile" :needs-audio-unlock="musicOn && !audioUnlocked" :archive-view="archive"
       @select="emit('select', $event)" @select-hero="emit('selectHero', $event)" @mode="emit('mode', $event)" @start="emit('start')"
-      @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')" />
-    <Es2Archive :active="archiveActive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
-      :hero="choice" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"
-      @close="archive = 'main'" @navigate="navigate"
-      @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)"
-      @research="emit('research', $event)" @equipment="emit('equipment', $event)"
-      @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
-    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still'"
-      @choose="chooseUpgrade" @settings="emit('settings')" />
-    <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :items="specialCards.items"
-      :still="upgradeEffect === 'still'" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
+      @navigate="navigate" @settings="emit('settings')" @enable-audio="emit('enableAudio')">
+      <template #account><slot name="account" /></template>
+      <template #archive>
+        <Es2Archive v-if="archiveActive" :key="archive" :view="archive === 'main' ? 'progression' : archive" :profile="currentProfile"
+          :hero="choice" :hero-id="heroId" :relics="relics" :meta-state="metaState" :meta-status="metaStatus"
+          @purchase="emit('purchase', $event)" @cosmetic="(hero, skin) => emit('cosmetic', hero, skin)"
+          @research="emit('research', $event)" @equipment="emit('equipment', $event)"
+          @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
+      </template>
+    </Es2MainMenu>
+    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="stillPresentation" :skip-reveal="accessibilityPreferences?.skipRewardReveal"
+      @choose="chooseUpgrade" @settings="emit('settings')" @skip-reveal="skipRewardReveal" />
+    <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :tier="specialCards.tier" :items="specialCards.items"
+      :still="stillPresentation" :skip-reveal="accessibilityPreferences?.skipRewardReveal"
+      @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" @skip-reveal="skipRewardReveal" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
-      :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')" />
+      :summary="summary" :result="runResult" :rewards="rewards" :still="stillPresentation" @again="emit('again')" @home="emit('home')">
+      <template #cloud><slot name="result-cloud" /></template>
+    </Es2Result>
     <Es2Message :active="resetOpen && !settingsOpen" kind="confirmation" :title="t('重置所有遠征紀錄？')"
       :message="t('成就、餘燼、戰績、造型及永久升級將全部刪除。')" :confirm-label="t('永久刪除')" destructive
       @confirm="confirmReset" @cancel="resetOpen = false" />

@@ -1,5 +1,7 @@
 # ES2 既有美術驗收與最小必要修復：4 種場景地板與裝飾（8 項）
 
+> **2026-11-24 執行結果更新：這 8 項已實際完成原生 3×來源製作、Owner 視覺核准及正式分支整合。** [查看已執行的 SHA、源圖及 Runtime QA 證據](12-biomes-8-owner-approval-2026-11-24.md)。以下工作 Prompt 保留為原始規格及後續回歸驗收依據，不應重新生成目前已核准的八張素材。
+
 > **可直接執行的 Agent Prompt｜繁體中文**  
 > GitHub: https://github.com/weskao/eclipse-survivors  
 > 程式整合目標：feature/es2-release-readiness-integration  
@@ -15,7 +17,7 @@
 - Owned：src/assets/es2/production/biomes/**
 - 僅供追蹤的既有 consumer（不得在分工分支擅自修改）：src/game/render/es2/production-world.ts、src/game/content/biomes/index.ts
 - 既有測試／契約：src/game/render/es2/production-world.test.ts、src/assets/es2/production/world-art-candidates.test.ts
-- 參考來源：assets/images/imgs1.png、assets/images/imgs9.png（地板含現有程序化修邊成果）
+- 參考來源：assets/images/imgs1.webp、assets/images/imgs9.webp（地板含現有程序化修邊成果）
 
 ## 現有素材清單（全部已入庫；以 manifest 與 HEAD 重新確認）
 

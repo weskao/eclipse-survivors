@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "d4293910547a7ebf39f7b41230cf96d3d0171907",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "collapse-key-a",
+      "phase": null,
+      "pose": "death",
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "death/collapse-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "c247f6b3-8151-4716-9ba0-6248964b3738",
+        "originalPngSha256": "2f6e5f0c31b9298349364bf7c6325d9e94a708c72db7b512e45bb0d91af1d782",
+        "canonicalReferenceHead": "d4293910547a7ebf39f7b41230cf96d3d0171907"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        40,
+        136,
+        1278,
+        1112
+      ],
+      "alphaAnyBounds": [
+        0,
+        19,
+        1282,
+        1199
+      ],
+      "alphaExtent": [
+        1238,
+        976
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        40,
+        136,
+        34,
+        87
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "21e088ca51b3dce27dca088b8741279ca57a83357cffd7e04caa54ad176cd708",
+      "webpCompressedBytes": 649458,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Single collapse candidate; phase, facing, anchor, edge alpha and canonical identity require review. Not a full death sequence."
+    }
+  ],
+  "missing": [
+    "terminal collapse/debris sequence",
+    "coherent idle and locomotion cycles",
+    "continuous windup/attack/recovery",
+    "phase-specific transform",
+    "direction and runtime QA",
+    "remaining three bosses"
+  ]
+}

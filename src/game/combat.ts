@@ -1,11 +1,15 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
-import { burst, impact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
+import { classifyHealthImpact, classifyHeroDamage, markHealthCritical, recordHeroImpact, type IncomingHit } from './health-impact'
+import { BOSS_DEFINITIONS } from './content/bosses/definitions'
+import { recordKill } from './kill-streak'
+import { burst, impact, emitHitImpact, pushDamageNumber, pushEcho, requestCameraKick, zigzag } from './fx'
 import { getFiringOrigin } from './weapon-geometry'
 import { dist, rand } from './math'
 import { DASH_COOLDOWN, DURATION } from './constants'
-import type { GameHooks, GameState, Hero, Mob } from './types'
+import type { ContactKind, GameHooks, GameState, Hero, Mob } from './types'
 import type { FactionBridge } from './content/enemies/integration'
+import type { FactionEnemy } from './content/enemies/runtime'
 
 /** Living mobs sorted nearest-first (shared by attack, bolt and meteor). */
 export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
@@ -19,37 +23,100 @@ export function nearestAlive(mobs: Mob[], hero: Hero): Mob[] {
   return alive.sort((a, b) => distances.get(a)! - distances.get(b)!)
 }
 
-export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks): void {
+export type CombatTarget = Mob | FactionEnemy
+
+/** Preserve both actor identities and their authoritative damage/reward paths. */
+export function combatTargets(s: GameState, factions?: FactionBridge): CombatTarget[] {
+  if (!factions?.runtime.enemies.length) return s.mobs
+  return [...s.mobs, ...factions.runtime.enemies.filter(e => e.hp > 0 && e.state !== 'phase')]
+}
+
+export function targetRadius(e: CombatTarget): number {
+  return 'radius' in e ? e.radius : e.r
+}
+
+export function nearestCombatTargets(targets: CombatTarget[], hero: Hero): CombatTarget[] {
+  const alive = targets.filter(e => e.hp > 0 && (!('state' in e) || e.state !== 'phase'))
+  const distances = new Map<CombatTarget, number>()
+  for (const e of alive) distances.set(e, dist(e.x - hero.x, e.y - hero.y) - targetRadius(e))
+  return alive.sort((a,b) => distances.get(a)! - distances.get(b)!)
+}
+
+export function hitTarget(s: GameState, e: CombatTarget, damage: number, hooks: GameHooks, factions?: FactionBridge, source: {x: number; y: number} | null = s.hero, kind = hooks.contactKind): boolean {
+  if (!source || e.hp <= 0) return false
+  const before = e.hp
+  if ('radius' in e) factions?.hitFaction(s, e, damage, source.x, source.y, hooks, kind)
+  else hit(s, e, damage, hooks, source, kind)
+  return e.hp < before
+}
+
+export function slowTarget(e: CombatTarget, seconds: number): void {
+  if (e.hp > 0) e.slow = Math.max(e.slow ?? 0, seconds)
+}
+
+/** One contact presentation path for both actor pools; never owns damage or rewards. */
+export function emitCombatContact(s: GameState, hooks: GameHooks, x: number, y: number, radius: number, angle: number, critical: boolean, heavy: boolean, kind?: ContactKind, boss = false): void {
+  if (critical || heavy) requestCameraKick(s, boss ? 1.6 : critical ? 1.25 : .85, angle)
+  emitHitImpact(s, x, y - Math.min(30, radius), radius, angle, critical, heavy, kind)
+  hooks.contactSfx?.(critical ? 'hitCritical' : kind === 'elemental' ? 'hitElemental'
+    : kind === 'evolved' ? 'hitEvolved' : kind === 'hero' ? 'hitHero' : heavy ? 'hitHeavy' : 'hitNormal')
+}
+
+export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero, kind: ContactKind | undefined = hooks.contactKind): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
-  const applied = hooks.modifyOutgoingDamage?.(d, e) ?? d
+  const modified = hooks.modifyOutgoingDamage?.(d, e) ?? d
+  const applied = modified * (e.type === 'boss' && (e.weaknessRemaining ?? 0) > 0 ? BALANCE.bosses.weaknessDamageMultiplier : 1)
   if (!Number.isFinite(applied) || applied <= 0) return
   const critical = hooks.consumeCriticalHit?.() ?? false
   const boss = e.type === 'boss'
   const dealt = Math.min(e.hp, applied)
+  const heavy = boss || e.type === 'golem' || !!e.elite || classifyHealthImpact(dealt / e.max) === 'heavy'
+  if ((critical || heavy) && s.time - (e.lastVisualHoldAt ?? -Infinity) >= BALANCE.combat.hitStopCooldownSeconds) {
+    e.visualPhase ??= e.phase
+    e.visualHold = critical ? BALANCE.combat.hitStopCriticalSeconds : BALANCE.combat.hitStopHeavySeconds
+    e.lastVisualHoldAt = s.time
+  }
+  if (critical && dealt > 0) markHealthCritical(e)
   s.damageDealt += dealt
   e.hp = Math.max(0, e.hp - applied)
   e.hit = 0.16
   e.stagger = Math.min(0.22, e.stagger + (boss ? 0.04 : 0.12))
-  const knock = dist(e.x - hero.x, e.y - hero.y) || 1
-  e.kx = (e.x - hero.x) / knock
-  e.ky = (e.y - hero.y) / knock
-  impact(s, e.x, e.y, boss ? 68 : 30, boss ? '#ffab79' : '#ffe6ab', boss ? 1.5 : 0.3)
-  pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical })
-  burst(s, e.x, e.y, '#fff3c4', 2)
-  if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20 })
+  const origin = source ?? hero
+  const knock = dist(e.x - origin.x, e.y - origin.y) || 1
+  e.kx = (e.x - origin.x) / knock
+  e.ky = (e.y - origin.y) / knock
+  const impactAngle = Math.atan2(e.ky, e.kx)
+  emitCombatContact(s, hooks, e.x, e.y, e.r, impactAngle, critical, heavy, kind, boss)
+  pushDamageNumber(s, { x: e.x + rand(-13, 13), y: e.y - 38, life: critical ? 0.82 : 0.62, value: Math.round(applied), boss, critical, kind: kind ?? (heavy ? 'heavy' : undefined), multiplier: applied / d })
+  if (critical) hooks.content?.(s, { type: 'critical-hit', x: e.x, y: e.y - 20, angle: impactAngle, contactOwned: true })
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
-    s.kill++
+    recordKill(s)
+    if (s.fallenMobs.length >= 24) {
+      // A mob clear must not evict the boss defeat pose before it can be drawn.
+      const ordinary = s.fallenMobs.findIndex(mob => mob.type !== 'boss')
+      if (ordinary >= 0) s.fallenMobs.splice(ordinary, 1)
+      else if (boss) s.fallenMobs.shift()
+    }
+    e.deathVisual = e.deathVisualTotal = boss ? .7 : e.elite ? .46 : e.type === 'golem' ? .36 : .28
+    if (s.fallenMobs.length < 24) s.fallenMobs.push(e)
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
+    if (boss && e.bossArtId) {
+      const counts = s.defeatedBosses ??= {}
+      counts[e.bossArtId] = (counts[e.bossArtId] ?? 0) + 1
+    }
     const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
-    s.stars.push({ x: e.x, y: e.y, value, t: rand(0, 6) })
-    burst(s, e.x, e.y, boss ? '#ffae83' : '#8cebbf', boss ? 35 : 11)
+    s.stars.push({ x: e.x, y: e.y, value: Math.round(value * (e.rewardXpMultiplier ?? 1)), t: rand(0, 6) })
+    const identity = boss && e.bossArtId ? BOSS_DEFINITIONS[e.bossArtId] : undefined
+    burst(s, e.x, e.y, boss ? (identity?.color ?? '#ffae83') : e.elite ? '#dab0ff' : e.type === 'golem' ? '#e3bc92' : e.type === 'bat' ? '#a99ce0' : '#8cebbf', boss ? 35 : e.elite ? 18 : 11)
     hooks.sfx(boss ? 'bossDefeat' : 'kill')
+    if (!boss && e.elite) hooks.contactSfx?.('eliteKill')
     if (boss) {
       s.bossDefeated = true
-      hooks.message('🏆 擊敗森林魔王！')
-      impact(s, e.x, e.y, 210, '#ffdca4', 3)
+      s.enemyShots.length = 0
+      hooks.message(identity ? `🏆 ${identity.title} Defeated!` : '🏆 擊敗森林魔王！')
+      impact(s, e.x, e.y, 210, identity?.color ?? '#ffdca4', 3)
     }
     // Observers see a fully finalized kill, including the boss flag and spawned XP.
     hooks.content?.(s, { type: 'kill', mob: e, damage: dealt })
@@ -87,7 +154,8 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
   hero.aimAngle = angle
   hero.strike = 0.29
-  impact(s, hero.x, hero.y, choice === 'knight' ? 56 : 21, choice === 'wizard' ? '#b49cff' : '#f8dba8', 0.35)
+  // The weapon ribbon owns melee release; ranged casts retain one local muzzle accent.
+  if (choice === 'ranger') impact(s, hero.x, hero.y, 21, '#f8dba8', 0.35)
   if (choice === 'knight') {
     for (let j = 0; j < multi; j++) {
       const a = angle + (j - (multi - 1) / 2) * 0.43
@@ -124,18 +192,42 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
         life: ranger ? 1.2 : 1.7, d: hero.damage, kind: ranger ? 'arrow' : 'magic', r: ranger ? 5 : 9,
       })
     }
-    if (choice === 'wizard') impact(s, hero.x, hero.y, 42, '#aa91ff', 0.45)
+    if (choice === 'wizard') impact(s, originX, originY, 42, s.heroId === 'spirit-summoner' ? '#a5e8d7' : '#aa91ff', 0.45)
     hooks.sfx(ranger ? 'ranger' : 'wizard')
   }
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
     hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank)
-    const chainTargets = close.slice(0, Math.min(BALANCE.combat.chainTargetBase + chain, BALANCE.combat.chainMaxTargets))
-    for (let i = 0; i < chainTargets.length; i++) {
-      const from: Hero | Mob = i ? chainTargets[i - 1]! : hero
-      const to = chainTargets[i]!
-      zigzag(s, from.x || hero.x, (from.y || hero.y) - 25, to.x, to.y)
-      hit(s, to, hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain), hooks)
+    const limit = BALANCE.combat.chainTargetsByRank[Math.min(chain, BALANCE.combat.chainTargetsByRank.length) - 1]!
+    const damage = hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain)
+    const shock = chain >= BALANCE.combat.chainShockRank
+    const chainTargets = factions ? nearestCombatTargets(combatTargets(s, factions), hero) : close
+    let from: {x: number; y: number} = hero
+    let killed: CombatTarget | undefined
+    let count = 0, next = 0
+    for (; next < chainTargets.length && count < limit; next++) {
+      const to = chainTargets[next]!
+      if (!hitTarget(s, to, damage, hooks, factions, from, 'elemental')) continue
+      zigzag(s, from.x, from.y - 25, to.x, to.y)
+      if (shock) slowTarget(to, BALANCE.combat.chainShockSeconds)
+      if (to.hp === 0) killed ??= to
+      from = to
+      count++
+    }
+    // One non-recursive discharge per cast. Only unvisited targets qualify.
+    if (killed && chain >= BALANCE.combat.chainDischargeRank) {
+      let extra: CombatTarget | undefined
+      let nearest = BALANCE.combat.chainDischargeRadius ** 2
+      for (; next < chainTargets.length; next++) {
+        const to = chainTargets[next]!
+        if (to.hp <= 0) continue
+        const d2 = (to.x - killed.x) ** 2 + (to.y - killed.y) ** 2
+        if (d2 < nearest) { nearest = d2; extra = to }
+      }
+      if (extra) {
+        zigzag(s, killed.x, killed.y - 25, extra.x, extra.y)
+        if (hitTarget(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, hooks, factions, killed, 'elemental')) slowTarget(extra, BALANCE.combat.chainShockSeconds)
+      }
     }
     hooks.sfx('chain')
   }
@@ -155,10 +247,13 @@ export function victoryConditionMet(
   return survived && bossDefeated
 }
 
-export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: Mob): void {
+export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: Mob, incoming?: IncomingHit): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play' || hero.hp <= 0 || hero.inv > 0 || hero.dash > 0 || !Number.isFinite(n) || n <= 0) return
-  const mitigated = hooks.mitigateIncomingDamage?.(n) ?? n
+  const rank = incoming?.rank ?? (source ? source.type === 'boss' ? 'boss' : source.elite ? 'elite' : 'ordinary' : undefined)
+  const critical = !!rank && (hooks.rollIncomingCritical?.(rank) ?? false)
+  const raw = critical && rank ? n * BALANCE.combat.incomingCritical[rank].multiplier : n
+  const mitigated = hooks.mitigateIncomingDamage?.(raw) ?? raw
   // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
   if (!Number.isFinite(mitigated) || mitigated <= 0) return
   const shield = hero.skills.shield ?? 0
@@ -167,14 +262,18 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
   hero.hp = Math.max(0, hero.hp - taken)
+  const severity = classifyHeroDamage(actuallyTaken / hero.max, critical)
   if (actuallyTaken > 0) {
-    pushDamageNumber(s, { x: hero.x, y: hero.y - 56, life: 0.7,
-      value: Math.round(actuallyTaken), boss: false, received: true })
+    if (critical) markHealthCritical(hero)
+    pushDamageNumber(s, { x: hero.x, y: hero.y - 56, life: severity ? 0.82 : 0.7,
+      value: Math.round(actuallyTaken), boss: false, received: true, critical, severity })
   }
   hero.inv = 1
-  // Routine chip damage uses local hit feedback; only major HP loss nudges the camera.
-  if (actuallyTaken >= hero.max * 0.22) requestCameraKick(s, 1.6)
-  impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
+  if (severity && actuallyTaken > 0) {
+    const direction = incoming?.angle ?? (source ? Math.atan2(hero.y - source.y, hero.x - source.x) : hero.aimAngle + Math.PI)
+    recordHeroImpact(hero, s.worldClock, direction, severity)
+    emitHitImpact(s, hero.x, hero.y - 22, severity === 'extreme' ? 34 : 24, direction, critical, true)
+  } else impact(s, hero.x, hero.y, 48, '#ff5b69', 1)
   if (shield) {
     impact(s, hero.x, hero.y, 58, '#9ad3ff', 0.4)
     burst(s, hero.x, hero.y, '#bbdcff', 10)
@@ -199,7 +298,7 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
     e.ky = ky
     e.stagger = Math.max(e.stagger, boss ? 0.04 : 0.14)
   }
-  hooks.sfx('hurt')
+  hooks.sfx(severity === 'extreme' ? 'hurt-extreme' : critical ? 'hurt-critical' : severity === 'heavy' ? 'hurt-heavy' : 'hurt')
   hooks.content?.(s, { type: 'damage', amount: actuallyTaken })
   hooks.afterDamage?.(actuallyTaken, source)
   if (hero.hp === 0) hooks.end(false)

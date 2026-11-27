@@ -31,13 +31,13 @@ export function drawMiniMap(p: Ctx2D, s: GameState, art: Artwork): void {
     p.strokeStyle = hazardPhase(s.currentScene, h, s.worldClock) === 'active' ? '#ffd08b' : '#ffca7660'
     p.strokeRect(x - 3, y - 3, 6, 6)
   }
-  const icons = { chest: '◆', shrine: '✦', invasion: '!', blessing: '+', bargain: '◈', challenge: '◎' }
+  const icons = { chest: '◆', shrine: '✦', invasion: '!', blessing: '+', bargain: '◈', challenge: '◎', magnet: '✦' }
   p.font = 'bold 12px sans-serif'; p.textAlign = 'center'
   for (const e of s.events) {
     const x = 76 + (e.x - hero.x) * scale
     const y = 55 + (e.y - hero.y) * scale
     if (x < 5 || x > 147 || y < 5 || y > 105) continue
-    p.fillStyle = e.kind === 'invasion' ? '#ff8b8b' : '#ffe4a8'
+    p.fillStyle = e.kind === 'invasion' ? '#ff8b8b' : e.kind === 'magnet' ? '#8ddfff' : '#ffe4a8'
     p.fillText(icons[e.kind], x, y + 4)
   }
   for (const e of s.mobs) {

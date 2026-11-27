@@ -1,0 +1,301 @@
+{
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "victory",
+  "direction": "SE",
+  "sourceDirection": "SE",
+  "directionStatus": "provisional front/three-quarter view, visual QA required",
+  "mirrorAllowed": false,
+  "status": "QA_PENDING",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "native3x": "unverified",
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": null,
+  "sourceRects": [
+    [
+      0,
+      0,
+      625,
+      573
+    ],
+    [
+      625,
+      0,
+      629,
+      573
+    ],
+    [
+      0,
+      573,
+      625,
+      681
+    ],
+    [
+      625,
+      573,
+      629,
+      681
+    ]
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "columns": 2,
+  "rows": 2,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameCount": 4,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    704,
+    704,
+    704,
+    704
+  ],
+  "footBottomsStatus": "opaque silhouette proxy; not anatomical foot anchors",
+  "alphaBounds": [
+    [
+      71,
+      157,
+      696,
+      716
+    ],
+    [
+      69,
+      153,
+      684,
+      709
+    ],
+    [
+      71,
+      39,
+      696,
+      720
+    ],
+    [
+      69,
+      40,
+      698,
+      721
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRect": [
+        0,
+        0,
+        625,
+        573
+      ],
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        71,
+        143
+      ],
+      "coreAlphaBounds": [
+        34,
+        77,
+        615,
+        562
+      ],
+      "coreExtent": [
+        581,
+        485
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        71,
+        157,
+        696,
+        716
+      ]
+    },
+    {
+      "index": 1,
+      "sourceRect": [
+        625,
+        0,
+        629,
+        573
+      ],
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        69,
+        136
+      ],
+      "coreAlphaBounds": [
+        33,
+        26,
+        595,
+        569
+      ],
+      "coreExtent": [
+        562,
+        543
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        69,
+        153,
+        684,
+        709
+      ]
+    },
+    {
+      "index": 2,
+      "sourceRect": [
+        0,
+        573,
+        625,
+        681
+      ],
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        71,
+        39
+      ],
+      "coreAlphaBounds": [
+        28,
+        7,
+        568,
+        666
+      ],
+      "coreExtent": [
+        540,
+        659
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        71,
+        39,
+        696,
+        720
+      ]
+    },
+    {
+      "index": 3,
+      "sourceRect": [
+        625,
+        573,
+        629,
+        681
+      ],
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        69,
+        40
+      ],
+      "coreAlphaBounds": [
+        38,
+        66,
+        615,
+        665
+      ],
+      "coreExtent": [
+        577,
+        599
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        69,
+        40,
+        698,
+        721
+      ]
+    }
+  ],
+  "resampled": false,
+  "sourceFile": "source.webp",
+  "atlasFile": "victory-se-4frames@3x.webp",
+  "sourceSHA256": "3542815046782f60e536a16ea5487660279e4ba4f06fa5245657b62e5947132d",
+  "webpSHA256": "882cfc5af3da06354dea0e74280b4be9c352967b4cbd34e1742a9402ee919a4d",
+  "originalPNGSHA256": "c9f7f3c2e26f4c5edc685b2300a0e7e3f15ba1c8b6daf48c8359c3fdf8c757df",
+  "bytes": 640756,
+  "encoding": "Pillow WebP quality=100 method=3; review only; Polytool not run",
+  "sourceProvenance": {
+    "generationId": "a7214d6a-df44-481f-8f22-ef4bd4c98aad",
+    "originalFile": "a_high_detail_2d_game_sprite_sheet_concept_art_i.png",
+    "origin": "new",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "b8aa2148d6bac0e4aecccd60320dde1a94ff7e3f"
+  },
+  "reviewNotes": [
+    "4 distinct candidate poses, not the final full animation. No resampling, mirroring or alpha deletion; all original source pixels retained by nonuniform source rectangles.",
+    "Source boundary may have low-alpha glow. Verify actual face, weapons, direction, cloth and VFX against the canonical portrait; victory staff mist and paladin outer glow need review.",
+    "Native 3x unverified: alpha bounds include equipment/effects, not anatomy; low death pose is intentional. Validate at 1x game size.",
+    "Official conversion blocked: GitHub DNS unavailable, no cwebp/towebp installed. Review encoding only, no runtime activation."
+  ]
+}

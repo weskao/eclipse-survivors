@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "392d49999a9fb6953b597361cf6245e6a97273c2",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "phase-3-awakening-key-a",
+      "pose": "transform",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/phase-3-awakening-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "16900285-7076-4237-92e4-5a10a0d90dcd",
+        "originalPngSha256": "e71bdbf8e2f10a0e1e70e3167412e5c4ea64d8c3eeefd775a6f63ecec47d3c3a",
+        "canonicalReferenceHead": "392d49999a9fb6953b597361cf6245e6a97273c2"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        37,
+        4,
+        1242,
+        1249
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "alphaExtent": [
+        1205,
+        1245
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        37,
+        4,
+        12,
+        5
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "86f3789a2e9dfe31c74e78e263323b09656f0e536cf68024112dcc03edc302d2",
+      "webpCompressedBytes": 1004076,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Phase 3 transformation visual hypothesis; generated redraw referenced canonical phase art, not pixel-identical. Original alpha128 margins fail 16px and top/bottom effects may be clipped. No padding, resampling or approved phase/anchor. Do not wire before visual review."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

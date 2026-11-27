@@ -1,0 +1,316 @@
+{
+  "scale": 3,
+  "status": "CANDIDATE_ONLY",
+  "assets": [
+    {
+      "id": "speed",
+      "file": "assets/skill-icons/speed@3x.webp",
+      "target": "assets/skill-icons/speed@3x.webp",
+      "status": "CANDIDATE_NATIVE_3X_PENDING_POLYTOOL_AND_VISUAL_QA",
+      "source_generation": "d30c4161-65a1-4a17-964d-f470ea4da8b7",
+      "source_rect": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "source_size": [
+        512,
+        512
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 140132,
+      "sha256": "c660bad1e77e24daec85858b250298e773bcee0f494109cb175e200592c57bf5",
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "id": "haste",
+      "file": "assets/skill-icons/haste@3x.webp",
+      "target": "assets/skill-icons/haste@3x.webp",
+      "status": "CANDIDATE_NATIVE_3X_PENDING_POLYTOOL_AND_VISUAL_QA",
+      "source_generation": "d30c4161-65a1-4a17-964d-f470ea4da8b7",
+      "source_rect": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "source_size": [
+        512,
+        512
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 130940,
+      "sha256": "d3b8114dd1275f46bdf08e2fc4e22ffcabe1da462415489f5d41bc0b67cfbc81",
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "id": "maxhp",
+      "file": "assets/skill-icons/maxhp@3x.webp",
+      "target": "assets/skill-icons/maxhp@3x.webp",
+      "status": "CANDIDATE_NATIVE_3X_PENDING_POLYTOOL_AND_VISUAL_QA",
+      "source_generation": "d30c4161-65a1-4a17-964d-f470ea4da8b7",
+      "source_rect": [
+        1024,
+        0,
+        1536,
+        512
+      ],
+      "source_size": [
+        512,
+        512
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 127928,
+      "sha256": "2b6b6bf42a5f0db0750dc0115854ce543b29b148b214fadbac164fc64491ddd8",
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "id": "magnet",
+      "file": "assets/skill-icons/magnet@3x.webp",
+      "target": "assets/skill-icons/magnet@3x.webp",
+      "status": "CANDIDATE_NATIVE_3X_PENDING_POLYTOOL_AND_VISUAL_QA",
+      "source_generation": "d30c4161-65a1-4a17-964d-f470ea4da8b7",
+      "source_rect": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "source_size": [
+        512,
+        512
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 126544,
+      "sha256": "7cefc2c949de43702b167af4134c25c64d389cb3520d34157d3e46afe87a2dba",
+      "alpha_range": [
+        0,
+        255
+      ]
+    },
+    {
+      "id": "bolt",
+      "file": "assets/skill-icons/bolt@3x.webp",
+      "target": "assets/skill-icons/bolt@3x.webp",
+      "status": "CANDIDATE_NATIVE_3X_PENDING_POLYTOOL_AND_VISUAL_QA",
+      "source_generation": "d30c4161-65a1-4a17-964d-f470ea4da8b7",
+      "source_rect": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "source_size": [
+        512,
+        512
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 128144,
+      "sha256": "ac62788540ea7504e1e2a8eec64b7cd12d5d1631c8586510f7586944c1e7ff58",
+      "alpha_range": [
+        0,
+        253
+      ]
+    },
+    {
+      "id": "frozen-thunderstorm",
+      "file": "drafts/skill-icons/frozen-thunderstorm@3x.webp",
+      "target": "assets/skill-icons/frozen-thunderstorm@3x.webp",
+      "status": "DRAFT_SOURCE_BELOW_3X_NOT_FOR_PRODUCTION",
+      "source_generation": "8b01e0e2-60fc-4cb1-b7ca-8041f2e8e807",
+      "source_rect": [
+        21,
+        567,
+        304,
+        850
+      ],
+      "source_size": [
+        283,
+        283
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 72906,
+      "sha256": "78359d951f52d71ba0400740560f126288c460cdac8ac3a435409964d1cc0de9",
+      "alpha_range": [
+        0,
+        253
+      ]
+    },
+    {
+      "id": "infernal-singularity",
+      "file": "drafts/skill-icons/infernal-singularity@3x.webp",
+      "target": "assets/skill-icons/infernal-singularity@3x.webp",
+      "status": "DRAFT_SOURCE_BELOW_3X_NOT_FOR_PRODUCTION",
+      "source_generation": "8b01e0e2-60fc-4cb1-b7ca-8041f2e8e807",
+      "source_rect": [
+        326,
+        567,
+        610,
+        850
+      ],
+      "source_size": [
+        284,
+        283
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 69392,
+      "sha256": "2713ba0556d40a2c9cbf8dddae65658d7c1810e159d268e95d8eec9b4621c9fa",
+      "alpha_range": [
+        0,
+        253
+      ]
+    },
+    {
+      "id": "apocalypse-rain",
+      "file": "drafts/skill-icons/apocalypse-rain@3x.webp",
+      "target": "assets/skill-icons/apocalypse-rain@3x.webp",
+      "status": "DRAFT_SOURCE_BELOW_3X_NOT_FOR_PRODUCTION",
+      "source_generation": "8b01e0e2-60fc-4cb1-b7ca-8041f2e8e807",
+      "source_rect": [
+        628,
+        567,
+        912,
+        850
+      ],
+      "source_size": [
+        284,
+        283
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 64780,
+      "sha256": "c891fb4a868b4c65d13a46ceb4bc489690e148f9cb82b54d782f04ccda7b4cd2",
+      "alpha_range": [
+        0,
+        254
+      ]
+    },
+    {
+      "id": "blade-tempest",
+      "file": "drafts/skill-icons/blade-tempest@3x.webp",
+      "target": "assets/skill-icons/blade-tempest@3x.webp",
+      "status": "DRAFT_SOURCE_BELOW_3X_NOT_FOR_PRODUCTION",
+      "source_generation": "8b01e0e2-60fc-4cb1-b7ca-8041f2e8e807",
+      "source_rect": [
+        931,
+        567,
+        1216,
+        850
+      ],
+      "source_size": [
+        285,
+        283
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 69800,
+      "sha256": "c6e583fc246cda21cc9bfbf45913884c14ff64c49a12d30cde3f66a2b509468c",
+      "alpha_range": [
+        0,
+        253
+      ]
+    },
+    {
+      "id": "guardian-sanctuary",
+      "file": "drafts/skill-icons/guardian-sanctuary@3x.webp",
+      "target": "assets/skill-icons/guardian-sanctuary@3x.webp",
+      "status": "DRAFT_SOURCE_BELOW_3X_NOT_FOR_PRODUCTION",
+      "source_generation": "8b01e0e2-60fc-4cb1-b7ca-8041f2e8e807",
+      "source_rect": [
+        1234,
+        567,
+        1518,
+        850
+      ],
+      "source_size": [
+        284,
+        283
+      ],
+      "width": 384,
+      "height": 384,
+      "logical_target": [
+        128,
+        128
+      ],
+      "frames": 1,
+      "encoder": "Pillow WebP quality=100 method=3; Polytool unavailable",
+      "bytes": 59928,
+      "sha256": "0cda251cb2eed42cdf836cc25b1d92a86e25178ce4d7f96a38bde3b841f6cb3b",
+      "alpha_range": [
+        0,
+        253
+      ]
+    }
+  ]
+}

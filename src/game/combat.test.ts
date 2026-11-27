@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { attack, damageHero, dash, hit, nearestAlive, victoryConditionMet } from './combat'
+import { getLocale, setLocale, t } from '../i18n'
 import { DURATION, JOB } from './constants'
+import { classifyHeroDamage, rollIncomingCritical, sampleHeroImpact, healthCriticalVersion } from './health-impact'
+import { BALANCE } from './config'
 import { getFiringOrigin } from './weapon-geometry'
 import { seeded, setRandom } from './math'
 import { createHero, createState, resetRun } from './state'
@@ -79,9 +82,9 @@ describe('attack', () => {
     const hooks = spyHooks()
     attack(s, hooks)
     expect(hero.chainCd).toBeCloseTo(2.55)
-    expect(s.lightningFx).toHaveLength(3)
-    expect(mobs[2]!.hp).toBeCloseTo(100 - 22 * 0.84)
-    expect(mobs[3]!.hp).toBe(100)
+    expect(s.lightningFx).toHaveLength(1)
+    expect(mobs[0]!.hp).toBeCloseTo(100 - 22 * 0.84)
+    expect(mobs.slice(1).every(m => m.hp === 100)).toBe(true)
     expect(hooks.sfx).toHaveBeenCalledWith('chain')
   })
 })
@@ -108,6 +111,31 @@ describe('hit', () => {
     expect(s.stars[0]!.value).toBe(45)
     expect(hooks.sfx).toHaveBeenCalledWith('bossDefeat')
     expect(hooks.message).toHaveBeenCalledWith('🏆 擊敗森林魔王！')
+  })
+  it.each([
+    ['abyss-monarch', 'Abyss Monarch', '深淵君王', '#a58aff'],
+    ['frost-sovereign', 'Frost Sovereign', '霜寒君主', '#9cddff'],
+    ['infernal-titan', 'Infernal Titan', '煉獄泰坦', '#ff9958'],
+    ['eclipse-seraph', 'Eclipse Seraph', '星蝕熾天使', '#ffe8a8'],
+  ] as const)('uses the defeated %s identity for its reward notice and final impact', (id, name, zh, color) => {
+    const { s } = setup()
+    const e = mob(30, 40, { type: 'boss', bossArtId: id, hp: 10 })
+    const hooks = spyHooks()
+    hit(s, e, 20, hooks)
+    hit(s, e, 20, hooks)
+    expect(s.stars.map(star => star.value)).toEqual([45])
+    expect(hooks.sfx).toHaveBeenCalledTimes(1)
+    expect(s.impactWaves.at(-1)).toMatchObject({ size: 210, color })
+    const notice = hooks.message.mock.calls[0]?.[0]
+    const previous = getLocale()
+    try {
+      setLocale('en')
+      expect(t(notice)).toBe(`🏆 ${name} Defeated!`)
+      setLocale('zh-TW')
+      expect(t(notice)).toBe(`🏆 擊敗${zh}！`)
+    } finally {
+      setLocale(previous)
+    }
   })
   it('a non-lethal hit plays no sfx', () => {
     const { s } = setup()
@@ -289,3 +317,114 @@ describe('hitbox-based melee targeting', () => {
     expect(nearestAlive([small, boss], hero)[0]).toBe(boss)
   })
 })
+
+describe('ES3 per-run kill feedback', () => {
+  it('counts actual kills, tracks the highest streak and burst, and never rewards a corpse again', () => {
+    const { s } = setup()
+    const hooks = spyHooks()
+    const first = mob(40, 0, { hp: 1 })
+    hit(s, first, 10, hooks)
+    hit(s, first, 10, hooks)
+    s.time = 0.15; s.worldClock = 0.15
+    hit(s, mob(50, 0, { hp: 1 }), 10, hooks)
+    s.time = 0.3; s.worldClock = 0.3
+    hit(s, mob(60, 0, { hp: 1 }), 10, hooks)
+    expect(s).toMatchObject({ kill: 3, killStreak: { current: 3, best: 3, burst: 3, bestBurst: 3 } })
+    s.time = 4; s.worldClock = 4
+    hit(s, mob(70, 0, { hp: 1 }), 10, hooks)
+    expect(s).toMatchObject({ kill: 4, killStreak: { current: 1, best: 3, burst: 1, bestBurst: 3 } })
+    resetRun(s)
+    expect(s).toMatchObject({ kill: 0, killStreak: { current: 0, best: 0, burst: 0, bestBurst: 0 } })
+  })
+})
+
+describe('ES3 tiered contact feedback', () => {
+  it('distinguishes a heavy hit on a high-mass target from an ordinary hit without duplicating impact ownership', () => {
+    const { s } = setup()
+    const hooks = spyHooks()
+    hit(s, mob(60, 0), 10, hooks)
+    hit(s, mob(70, 0, { type: 'golem', r: 30, hp: 200 }), 10, hooks)
+    expect(s.impactWaves).toHaveLength(2)
+    expect(s.impactWaves[0]?.contact).toBe('normal')
+    expect(s.impactWaves[1]?.contact).toBe('heavy')
+    expect(s.impactWaves[1]!.max).toBeGreaterThan(s.impactWaves[0]!.max)
+  })
+})
+
+describe('ES3 chain lightning breakthroughs', () => {
+  it('applies a real bounded shock to living targets starting at rank four', () => {
+    const { s, hero } = setup('ranger')
+    hero.skills.chain = 4
+    const target = mob(80, 0, { hp: 500 })
+    s.mobs.push(target)
+    attack(s, spyHooks())
+    expect(target.hp).toBeLessThan(500)
+    expect(target.slow).toBeGreaterThan(0)
+    expect(target.slow).toBeLessThanOrEqual(1.5)
+  })
+  it('discharges from one killed rank-five chain target to at most one additional living enemy', () => {
+    const { s, hero } = setup('ranger')
+    hero.skills.chain = 5
+    s.mobs = Array.from({ length: 9 }, (_, i) => mob(80 + i * 18, 0, { hp: i === 0 ? 1 : 500, max: 500 }))
+    attack(s, spyHooks())
+    expect(s.kill).toBe(1)
+    expect(s.mobs[7]!.hp).toBeLessThan(500)
+    expect(s.mobs[8]!.hp).toBe(500)
+    expect(s.lightningFx).toHaveLength(8)
+  })
+})
+
+it('uses the actual impact origin and bounded directional recoil on heavy contact',()=>{
+  const {s}=setup(); const e=mob(50,0,{type:'golem'})
+  hit(s,e,10,spyHooks(),{x:100,y:0})
+  expect(e.kx).toBe(-1)
+  expect(s.cameraKick).toBeGreaterThan(0)
+  expect(s.cameraKickAngle).toBeCloseTo(Math.PI)
+  expect(s.hero!.x).toBe(0)
+})
+
+describe('incoming enemy critical hits and hero reaction', () => {
+  it.each([['ordinary', .03, 1.35], ['elite', .06, 1.4], ['boss', .08, 1.5]] as const)('uses the configured %s rate and multiplier', (rank, chance, multiplier) => {
+    expect(rollIncomingCritical(rank, () => chance - .000001)).toBe(true)
+    expect(rollIncomingCritical(rank, () => chance)).toBe(false)
+    const { s, hero } = setup()
+    const hooks = { ...spyHooks(), rollIncomingCritical: () => true }
+    damageHero(s, 20, hooks, undefined, { rank, angle: 0 })
+    expect(hero.hp).toBeCloseTo(hero.max - 20 * multiplier)
+    expect(s.numberFx.at(-1)).toMatchObject({ received: true, critical: true })
+    expect(healthCriticalVersion(hero)).toBeGreaterThan(0)
+    expect(hooks.sfx).toHaveBeenCalledWith('hurt-critical')
+    expect(hooks.sfx).toHaveBeenCalledTimes(1)
+  })
+  it('rolls only direct enemy hits; blocked hits and environment do not roll', () => {
+    const { s, hero } = setup()
+    const roll = vi.fn(() => true)
+    const hooks = { ...spyHooks(), rollIncomingCritical: roll }
+    hero.inv = 1
+    damageHero(s, 20, hooks, mob(10, 0))
+    expect(roll).not.toHaveBeenCalled()
+    hero.inv = 0
+    damageHero(s, 20, hooks)
+    expect(roll).not.toHaveBeenCalled()
+    expect(hero.hp).toBe(hero.max - 20)
+    hero.inv = 0
+    damageHero(s, 20, { ...hooks, mitigateIncomingDamage: () => 0 }, mob(10, 0))
+    expect(hero.hp).toBe(hero.max - 20)
+    expect(hooks.sfx).toHaveBeenCalledTimes(1)
+  })
+  it('classifies actual loss after mitigation and gives a bounded short direction impulse', () => {
+    const { s, hero } = setup()
+    expect(classifyHeroDamage(.219)).toBeUndefined()
+    expect(classifyHeroDamage(.22)).toBe('heavy')
+    expect(classifyHeroDamage(.35)).toBe('extreme')
+    const hooks = spyHooks()
+    damageHero(s, hero.max * .35, hooks, undefined, { angle: 0 })
+    expect(hooks.sfx).toHaveBeenCalledWith('hurt-extreme')
+    const frame = sampleHeroImpact(hero, s.worldClock)!
+    expect(frame.offsetX).toBeCloseTo(4)
+    expect(frame.offsetY).toBeCloseTo(0)
+    expect(sampleHeroImpact(hero, s.worldClock + .181)).toBeUndefined()
+    expect(BALANCE.combat.incomingCritical.ordinary.chance).toBe(.03)
+  })
+})
+

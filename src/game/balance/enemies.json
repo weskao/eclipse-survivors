@@ -7,6 +7,8 @@
     "warlock": 72,
     "boss": 2000
   },
+  "baseSpeed": {"slime": 77, "bat": 108, "goblin": 69, "golem": 48, "warlock": 66, "boss": 51},
+  "speedPerLevel": {"slime": 3, "bat": 3, "goblin": 3, "golem": 2, "warlock": 2, "boss": 0},
   "hpPerLevel": 9,
   "bossHpPerLevel": 120,
   "levelPeriodSeconds": 22,
@@ -23,6 +25,9 @@
   "intervalBase": 0.75,
   "intervalTimeFactor": 0.003,
   "intervalFloor": 0.18,
+  "factionSpawnInterval": 8,
+  "assaultIntervalMultiplier": 0.78,
+  "rewardIntervalMultiplier": 1.25,
   "sceneSpawnBonuses": [
     0,
     0.05,
@@ -208,5 +213,16 @@
     },
     "hitMargin": 17,
     "projectileContactMargin": 15
+  },
+  "encounterIntervalMultipliers": {
+    "swarm-rush": 0.8,
+    "encirclement": 0.92,
+    "elite-invasion": 1.14,
+    "ranged-assault": 1,
+    "titan-march": 1.5,
+    "treasure-rush": 1.1,
+    "eclipse-surge": 0.72,
+    "mixed": 1,
+    "recovery": 1
   }
 }

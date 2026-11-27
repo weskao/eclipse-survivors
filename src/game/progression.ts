@@ -10,11 +10,14 @@ import type { AbilityId, ContentId, GameHooks, GameState, Hero, SkillRarity, Upg
 export function addXp(s: GameState, n: number, hooks: GameHooks): void {
   const hero = s.hero
   if (!hero) return
-  hero.xp += n * s.xpGainMultiplier
+  const earned = n * s.xpGainMultiplier
+  hero.xp += earned
+  s.combatTelemetry.xpEarned += earned
   while (hero.xp >= hero.need) {
     hero.xp -= hero.need
     hero.level++
-    hero.need = Math.round(hero.need * BALANCE.progression.growthMultiplier + BALANCE.progression.growthFlat)
+    if (hero.level === 2) s.combatTelemetry.firstUpgradeAt = s.time
+    hero.need = Math.round((hero.level === 2 ? BALANCE.progression.initialXp : hero.need) * BALANCE.progression.growthMultiplier + BALANCE.progression.growthFlat)
     s.levelQueue++
     hero.levelAnim = 1.1
     impact(s, hero.x, hero.y, 88, '#ffe1a8', 1.8)
@@ -95,9 +98,11 @@ const MESSAGES: Partial<Record<UpgradeId, string>> = {
 export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks, registry?: ContentRegistry): boolean {
   const hero = s.hero
   if (!hero) return false
+  let evolved = false
   const custom = registry?.getAbility(id)
   if (custom && registry) {
     if (!registry.acquire(s, id as ContentId, hooks)) return false
+    evolved = custom.kind === 'evolution'
     hooks.message(`✦ ${custom.title}`)
   } else if (id.includes(':')) {
     return false
@@ -105,6 +110,7 @@ export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks, regi
     const evolution = EVOLUTIONS.find(e => e.id === id)
     if (evolution) {
       if (!eligibleEvolutions(hero).some(e => e.id === id)) return false
+      evolved = true
       hero.evolutions[evolution.id] = true
       hero.evolutionCd[evolution.id] = 0
       hooks.message(`✦ ${evolution.title} · 傳說進化！`)
@@ -124,6 +130,11 @@ export function applyUpgrade(s: GameState, id: AbilityId, hooks: GameHooks, regi
       const msg = MESSAGES[up.id]
       if (msg) hooks.message(msg)
     }
+  }
+  if (evolved) {
+    hooks.sfx('evolution')
+    impact(s, hero.x, hero.y, 124, '#d5aaff', 2)
+    burst(s, hero.x, hero.y, '#fff0ba', 24)
   }
   s.levelQueue = Math.max(0, s.levelQueue - 1)
   hero.levelAnim = Math.max(hero.levelAnim, 0.8)

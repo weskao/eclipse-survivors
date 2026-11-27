@@ -13,8 +13,9 @@
 .es2-secondary:hover:not(:disabled){background:#2a3c4e}
 .es2-danger,.es2-danger-filled{border:1px solid #aa7470;border-radius:8px;padding:.7rem 1rem;min-height:44px;color:#ffbaac!important;background:transparent}
 .es2-danger-filled{background:#74383d}
-.es2-menu{position:fixed;inset:0;z-index:210;overflow-y:auto;overscroll-behavior:contain;padding:max(22px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));background:var(--es2-bg)}
-.es2-menu-backdrop{position:fixed;inset:0;pointer-events:none;overflow:hidden;background:#0a121d}
+.es2-menu{position:fixed;inset:0;z-index:210;display:flex;flex-direction:column;height:100%;height:100dvh;overflow:hidden;background:var(--es2-bg)}
+.es2-menu-scroll{position:relative;flex:1 1 0;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
+.es2-menu-backdrop{position:absolute;inset:0;pointer-events:none;overflow:hidden;background:#0a121d}
 .es2-menu-backdrop img{width:100%;height:100%;object-fit:cover;opacity:.16;filter:brightness(.55) saturate(.7)}
 .es2-menu-backdrop img.es2-menu-scene{position:absolute;inset:0;opacity:.27;filter:brightness(.72) saturate(.75);object-fit:cover;object-position:center}
 .es2-menu-backdrop:after{content:'';position:absolute;inset:0;background:linear-gradient(#07101aca,#0c1827de 60%,#09111d)}
@@ -23,10 +24,14 @@
 .es2-menu-brand h1{font-size:clamp(2rem,4.3vw,4.4rem);line-height:1.12;letter-spacing:.075em;font-weight:600;margin:5px 0 9px;text-shadow:0 0 45px #dbbd8655}
 .es2-menu-brand h1 em{color:var(--es2-gold);font-style:normal;font-weight:400}
 .es2-menu-brand p{font-size:clamp(.82rem,1.2vw,1rem);color:var(--es2-muted);margin:0}
-.es2-top-actions{display:grid;grid-template-areas:"version settings" "music music";grid-template-columns:max-content max-content;column-gap:10px;row-gap:8px;min-width:0;align-items:center;white-space:nowrap}
+.es2-top-actions{display:grid;grid-template-areas:"version settings";grid-template-columns:max-content max-content;column-gap:8px;row-gap:6px;min-width:0;align-items:center;white-space:nowrap}
+.es2-top-actions:has([data-es2-audio-unlock]){grid-template-areas:"version settings" "music music"}
 .es2-top-actions #gameVersion{grid-area:version}
-.es2-top-actions [data-es2-settings]{grid-area:settings}
+.es2-top-actions [data-es2-settings]{grid-area:settings;display:grid;place-items:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;font-size:1.3rem;line-height:1}
 .es2-top-actions [data-es2-audio-unlock]{grid-area:music;justify-self:start}
+.es2-top-actions:has([data-es2-cloud-account]){grid-template-areas:"version account settings";grid-template-columns:repeat(3,max-content)}
+.es2-top-actions:has([data-es2-cloud-account]):has([data-es2-audio-unlock]){grid-template-areas:"version account settings" "music music music"}
+.es2-top-actions [data-es2-cloud-account]{grid-area:account;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .es2-version{font:600 .72rem system-ui,sans-serif;color:var(--es2-muted)}
 .es2-icon-button{min-height:44px;padding:9px 13px;border-radius:8px;background:#122134d9;border:1px solid var(--es2-line)}
 @media(max-width:610px){.es2-top-actions{width:100%;gap:8px}.es2-top-actions .es2-icon-button{max-width:100%;white-space:normal}}
@@ -36,14 +41,24 @@
 .es2-section-heading h2{font-size:clamp(1.3rem,2vw,1.95rem);margin:7px 0;line-height:1.3}
 .es2-section-heading p{color:var(--es2-muted);font-size:.85rem;margin:0}
 .es2-hero-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.es2-menu .es2-hero-select-card{position:relative;display:flex;flex-direction:column;width:100%;height:100%;min-width:0;overflow:hidden;padding:0;text-align:left;color:#f6e7cf;background:linear-gradient(#263b50,#0b1521);border:1px solid #8292a47d;border-radius:13px;cursor:pointer;touch-action:manipulation;transition:border-color .2s,box-shadow .2s,transform .2s}
-@media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px);border-color:#e7c896}}
+.es2-menu .es2-hero-select-card{position:relative;display:flex;flex-direction:column;width:100%;height:100%;min-width:0;overflow:hidden;padding:0;text-align:left;color:#f6e7cf;--es2-hero-glow:var(--es2-hero-idle-glow);background:radial-gradient(ellipse at 50% 36%,var(--es2-hero-glow) 0%,transparent 72%),linear-gradient(165deg,#1b2c3a,#0a1421 70%);border:1px solid #6f7c895e;border-radius:30px 30px 10px 10px / 18px 18px 10px 10px;cursor:pointer;touch-action:manipulation;transition:border-color .2s,box-shadow .2s,transform .2s}
+@media(hover:hover) and (pointer:fine){
+  .es2-menu .es2-hero-select-card:hover:not(:disabled){transform:translateY(-3px)}
+  .es2-menu .es2-hero-select-card[aria-pressed="false"]:hover:not(:disabled){
+    --es2-hero-glow:color-mix(in srgb,var(--es2-hero-idle-glow) 85%,#aabbd0);
+    border-color:color-mix(in srgb,var(--es2-hero-idle-glow) 55%,#8498ad);
+    box-shadow:0 0 12px var(--es2-hero-glow);
+  }
+  @supports(color:rgb(from red r g b / .30)){
+    .es2-menu .es2-hero-select-card[aria-pressed="false"]:hover:not(:disabled){
+      --es2-hero-glow:rgb(from var(--es2-hero-idle-glow) r g b / .30);
+    }
+  }
+}
 .es2-menu .es2-hero-select-card:active:not(:disabled){transform:translateY(-1px) scale(.99)}
-.es2-menu .es2-hero-select-card[aria-pressed="true"]{border-color:#e7c896;box-shadow:0 0 0 1px #e7c896,0 0 32px #dfbb7055}
-.es2-hero-number{position:absolute;top:12px;left:12px;z-index:1;font:700 .65rem system-ui,sans-serif;color:#eddeb9;text-shadow:0 2px 5px #000}
-.es2-hero-card img{width:100%;height:clamp(165px,27vw,360px);object-fit:contain;object-position:center bottom;background:radial-gradient(ellipse,#ac905348,#091421 72%);padding:15px 5px 0}
-.es2-hero-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:13px;background:linear-gradient(#122033,#0a111b);border-top:1px solid var(--es2-line)}
-.es2-hero-copy strong{font-size:clamp(.83rem,1.3vw,1.12rem)}
+.es2-hero-card > img{width:100%;height:clamp(165px,27vw,360px);object-fit:contain;object-position:center bottom;padding:15px 5px 0}
+.es2-hero-copy{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0;padding:13px}
+.es2-hero-copy > strong{font-size:max(.75rem,calc(clamp(.85rem,1.25vw,1.15rem) * var(--es2-ui-scale,1)));line-height:1.2;font-weight:700;overflow-wrap:anywhere}
 .es2-hero-copy small{font:400 .74rem/1.5 system-ui,sans-serif;color:var(--es2-muted)}
 .es2-hero-selection{font:700 .73rem system-ui,sans-serif;color:var(--es2-gold);padding-top:8px;margin-top:auto}
 .es2-mode-grid{display:grid;gap:10px}
@@ -54,8 +69,8 @@
 .es2-mode-copy{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
 .es2-mode-copy strong{font-size:.97rem}
 .es2-mode-copy small{font:400 .75rem/1.5 system-ui,sans-serif;color:var(--es2-muted)}
-.es2-mode-time{font:700 .66rem system-ui,sans-serif;color:#d4c4a6;white-space:nowrap}
-.es2-start{width:100%;min-height:59px;margin-top:18px;font-size:1.13rem!important}
+.es2-mode-time{font:700 .6875rem system-ui,sans-serif;color:#d4c4a6;white-space:nowrap}
+.es2-start{width:100%;min-height:59px;font-size:1.13rem!important}
 .es2-start span{margin-left:14px}
 .es2-menu-footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-top:auto;padding-top:19px;border-top:1px solid var(--es2-line)}
 .es2-hall-links{display:flex;flex-wrap:wrap;gap:8px}
@@ -64,7 +79,7 @@
 .es2-hall-links button span{margin-right:7px;color:var(--es2-gold)}
 .es2-embers{color:var(--es2-gold);font-size:.84rem;white-space:nowrap}
 .es2-backdrop{position:fixed;inset:0;z-index:320;display:grid;place-items:center;overflow:hidden;overscroll-behavior:contain;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#02060be3;backdrop-filter:blur(8px)}
-.es2-dialog{position:relative;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;width:min(100%,610px);max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:clamp(18px,2.6vw,34px);background:radial-gradient(ellipse at top,#34435666,transparent 56%),linear-gradient(145deg,#15283a,#0a121c);border:1px solid #c3a97d85;border-radius:16px;box-shadow:0 30px 90px #000b,inset 0 1px #d9bb8759;animation:es2-enter .23s ease-out}
+.es2-dialog{position:relative;display:flex;flex-direction:column;overflow:hidden;overscroll-behavior:contain;width:min(100%,610px);max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:clamp(18px,2.6vw,34px);background:radial-gradient(ellipse at top,#34435666,transparent 56%),linear-gradient(145deg,#15283a,#0a121c);border:1px solid #c3a97d85;border-radius:16px;box-shadow:0 30px 90px #000b,inset 0 1px #d9bb8759}
 .es2-dialog-wide{width:min(100%,1050px)}
 .es2-dialog:before{content:'';position:absolute;top:8px;left:26px;right:26px;height:1px;background:linear-gradient(90deg,transparent,#daba81,transparent)}
 .es2-dialog-header{display:flex;flex-shrink:0;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:clamp(8px,2dvh,22px)}
@@ -74,7 +89,20 @@
 .es2-dialog-header h2{font-size:clamp(1.45rem,3vw,2.1rem);line-height:1.25;margin:8px 0 9px}
 .es2-dialog-header p{font-size:.88rem;line-height:1.5;color:var(--es2-muted);margin:0}
 .es2-close{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--es2-line);border-radius:8px;background:#162437;font-size:1.8rem!important}
-.es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-padding-block:8px;touch-action:pan-y}
+.es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:8px;touch-action:pan-y}
+.es2-dialog-choice{overflow:clip}
+.es2-dialog-choice .es2-dialog-body{overflow-x:hidden;overflow-y:auto;overscroll-behavior:none}
+/* Borrow the existing header gap and panel padding for hover paint, not extra layout height.
+   Equal negative margins and padding keep the card grid and outer frame stationary.
+   Keep the scroll container so long choices remain reachable. */
+@media (hover:hover) and (pointer:fine){
+  .es2-dialog-choice{--es2-choice-bleed-top:clamp(8px,2dvh,22px)}
+  .es2-dialog-choice .es2-dialog-body{margin-block:calc(-1 * var(--es2-choice-bleed-top)) -8px;padding-block:var(--es2-choice-bleed-top) 8px;margin-inline:-12px;padding-inline:12px}
+  .es2-dialog-choice .es2-choice:hover:not(:disabled){z-index:2}
+}
+@media (hover:hover) and (pointer:fine) and (orientation:landscape) and (max-height:520px){
+  .es2-dialog-choice{--es2-choice-bleed-top:6px}
+}
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}
@@ -104,7 +132,7 @@
 .es2-card-requirements{color:var(--es2-card-accent)}
 .es2-card-selected-text{font-size:.75rem;color:var(--es2-card-accent);padding:10px 13px 0;margin-top:auto}
 .es2-selection-scene.es2-still *{animation:none!important;transition:none!important}
-.es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;margin-bottom:12px;padding:5px 0 12px;touch-action:pan-x;border-bottom:1px solid var(--es2-line);background:#142538}
+.es2-archive-tabs{position:sticky;top:0;z-index:2;display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;margin-bottom:12px;padding:5px 0 12px;touch-action:pan-x;border-bottom:1px solid var(--es2-line);background:#142538}
 .es2-archive-tabs button{flex-shrink:0;min-height:44px;padding:9px 13px;font-size:.84rem;background:#1b2d40;border:1px solid #96a6b56e;border-radius:8px}
 .es2-archive-tabs .es2-tab-current{border-color:#e9c48d;background:#55402c}
 .es2-archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(195px,100%),1fr));gap:13px}
@@ -128,20 +156,20 @@
 .es2-skins button small{font:.72rem system-ui,sans-serif;color:var(--es2-muted)}
 .es2-archive-section>.es2-danger{margin-top:22px}
 .es2-empty{padding:35px 16px;text-align:center;line-height:1.7;color:var(--es2-muted);border:1px dashed #8d9ba95b;border-radius:12px}
-.es2-result{text-align:center}
-.es2-result-hero{position:relative;width:145px;height:165px;margin:auto}
-.es2-result-hero img{width:100%;height:100%;object-fit:contain}
-.es2-result-crown{position:absolute;right:0;top:-8px;font-size:2.6rem;color:#e7bf80;text-shadow:0 0 20px #e4b26377}
-.es2-result-status{font:700 .72rem system-ui,sans-serif;letter-spacing:.13em;color:#e6c995}
-.es2-result-stats{text-align:left;margin-top:20px}
-.es2-reward-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;padding:15px;border:1px solid #b5a06c7a;border-radius:10px;background:#4d3a2655}
-.es2-reward-strip strong{color:#f9d596}
-.es2-reward-strip span{font-size:.8rem}
+.es2-backdrop-preferences{grid-template-columns:minmax(0,1fr)}
+.es2-dialog-preferences{min-width:0;max-width:100%;overflow:clip}
+.es2-dialog-preferences .es2-dialog-body{overflow-x:hidden;overflow-y:auto;overscroll-behavior-x:none;padding-inline:5px;box-sizing:border-box}
+.es2-dialog-preferences .es2-settings{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.es2-dialog-preferences :is(section,header,.es2-slider-row,.es2-setting-option,.es2-toggle-set){min-width:0;max-width:100%}
+.es2-dialog-preferences :is(button,label,output){max-width:100%;overflow-wrap:anywhere}
+.es2-dialog-preferences input[type=range]{min-width:0;max-width:100%;margin-inline:0;box-sizing:border-box}
+.es2-dialog-preferences .es2-toggle-set button{min-width:0;white-space:normal}
+.es2-dialog-preferences .es2-slider-row label{overflow-wrap:anywhere}
 .es2-settings section+section{margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-settings h3{font-size:1.1rem;color:#f1dcb8;margin:0 0 12px}
 .es2-slider-row{display:flex;align-items:center;gap:14px;padding:12px 0}
 .es2-slider-row>button{flex:none;width:44px;height:44px;border:1px solid #8b9fae;border-radius:8px;background:#283c4f;font-size:1.3rem}
-.es2-slider-row label{display:block;flex:1;font-size:.9rem}
+.es2-slider-row label{display:block;flex:1;min-width:0;font-size:.9rem}
 .es2-slider-row output{float:right;color:#e6c48e}
 .es2-slider-row input[type=range]{display:block;width:100%;min-height:25px;margin:12px 0 0;accent-color:#e5c48e;cursor:pointer}
 .es2-setting-option{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 0;font-size:.9rem}
@@ -155,18 +183,17 @@
 .es2-loading-track{width:min(380px,80vw);height:8px;overflow:hidden;border:1px solid #d2ad8177;border-radius:10px;background:#121e2d;margin:19px auto}
 .es2-loading-track span{display:block;height:100%;background:linear-gradient(90deg,#856340,#f3d593);transition:width .2s}
 .es2-loading-indeterminate span{animation:es2-loading 1.6s ease-in-out infinite alternate}
-@keyframes es2-enter{from{opacity:.15;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes es2-glow{from{opacity:.5;transform:scale(.88)}to{opacity:1;transform:scale(1.1)}}
 @keyframes es2-loading{from{transform:translateX(-110%)}to{transform:translateX(300%)}}
-@media(max-width:1000px){.es2-menu-layout{grid-template-columns:1fr}.es2-hero-card img{height:clamp(145px,29vw,285px)}.es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:610px){.es2-menu{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}.es2-menu-header{flex-direction:column}.es2-menu-brand h1{font-size:clamp(1.8rem,8vw,3rem)}.es2-hero-grid{gap:6px}.es2-hero-card img{height:clamp(115px,34vw,200px);padding:22px 0 0}.es2-hero-number{font-size:.52rem;left:7px;top:7px}.es2-hero-copy{padding:10px 7px}.es2-hero-copy strong{font-size:.8rem}.es2-hero-copy small{font-size:.66rem}.es2-hero-selection{font-size:.67rem}.es2-mode-grid{grid-template-columns:1fr}.es2-menu-footer{align-items:flex-start}.es2-dialog{max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:18px 14px}.es2-dialog-header h2{font-size:1.45rem}.es2-dialog-actions button{flex:1;min-width:0}.es2-choice-grid{grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:10px}.es2-choice{min-height:235px}.es2-card-art{height:clamp(118px,32vw,148px)}.es2-card-name{font-size:.92rem}.es2-card-description{font-size:.72rem}}
-@media(max-width:380px){.es2-choice-grid{grid-template-columns:1fr}.es2-choice{min-height:0}.es2-card-art{height:clamp(142px,44vw,190px)}.es2-hero-copy small{display:none}.es2-mode-card{gap:9px}}
+@media(max-width:1000px){.es2-menu-layout{grid-template-columns:1fr}.es2-hero-card > img{height:clamp(145px,29vw,285px)}.es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:610px){.es2-menu-scroll{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}.es2-menu-header{flex-direction:column}.es2-menu-brand h1{font-size:clamp(1.8rem,8vw,3rem)}.es2-hero-grid{gap:6px}.es2-hero-card > img{height:clamp(115px,34vw,200px);padding:22px 0 0}.es2-hero-copy{padding:10px 7px}.es2-mode-grid{grid-template-columns:1fr}.es2-menu-footer{align-items:flex-start}.es2-dialog{max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));padding:18px 14px}.es2-dialog-header h2{font-size:1.45rem}.es2-dialog-actions button{flex:1;min-width:0}.es2-choice-grid{grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:10px}.es2-choice{min-height:235px}.es2-card-art{height:clamp(118px,32vw,148px)}.es2-card-name{font-size:.92rem}.es2-card-description{font-size:.72rem}}
+@media(max-width:380px){.es2-choice-grid{grid-template-columns:1fr}.es2-choice{min-height:0}.es2-card-art{height:clamp(142px,44vw,190px)}.es2-mode-card{gap:9px}}
 @media(max-height:570px){.es2-dialog{max-height:calc(100dvh - max(6px,env(safe-area-inset-top)) - max(6px,env(safe-area-inset-bottom)));padding:15px}.es2-dialog-header{margin-bottom:12px}}
 @media(prefers-reduced-motion:reduce){.es2-system *, .es2-backdrop *, .es2-loading *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.es2-choice:hover,.es2-hero-card:hover{transform:none}}
 
-/* Eight isolated 448px frames from locally committed 3x WebP strips. */
-.es2-hero-action-preview{position:absolute;right:9px;top:9px;z-index:1;width:64px;height:64px;pointer-events:none;border-radius:10px;background-repeat:no-repeat;background-size:800% 100%;background-position:0 0;background-color:#08101ab8;border:1px solid #dac89c55;box-shadow:0 1px 12px #03050977;animation:es2-hero-action-frames 2.4s steps(8,jump-none) infinite}
-@keyframes es2-hero-action-frames{to{background-position:100% 0}}
+/* Same 448px action cells as gameplay: first 8 run poses in the 4×4 atlas. */
+.es2-hero-action-preview{position:absolute;right:9px;top:9px;z-index:1;width:64px;height:64px;pointer-events:none;border-radius:10px;background-repeat:no-repeat;background-size:400% 400%;background-position:0% 0%;background-color:#08101ab8;border:1px solid #dac89c55;box-shadow:0 1px 12px #03050977;animation:es2-hero-action-frames 2.4s steps(1,end) infinite}
+@keyframes es2-hero-action-frames{0%{background-position:0% 0%}12.5%{background-position:33.333% 0%}25%{background-position:66.667% 0%}37.5%{background-position:100% 0%}50%{background-position:0% 33.333%}62.5%{background-position:33.333% 33.333%}75%{background-position:66.667% 33.333%}87.5%{background-position:100% 33.333%}100%{background-position:0% 0%}}
 @media(max-width:610px){.es2-hero-action-preview{width:42px;height:42px;right:4px;top:5px;border-radius:6px}}
 @media(prefers-reduced-motion:reduce){.es2-hero-action-preview{animation:none}}
 
@@ -190,6 +217,13 @@
   .es2-choice-grid{grid-template-columns:1fr;gap:8px}
   .es2-choice{display:grid;grid-template-columns:clamp(74px,24vw,104px) minmax(0,1fr);grid-auto-rows:min-content;align-content:center;min-height:0;padding:5px 5px 5px 0}
   .es2-choice>.es2-card-art{grid-column:1;grid-row:1/span 7;width:100%;height:100%;min-height:94px;align-self:stretch;border-bottom:0;border-right:1px solid var(--es2-card-border)}
+  .es2-dialog-choice .es2-choice>.es2-card-art{contain:size}
+  /* Stretch the frame to the text rows, but center art against the frame itself. */
+  .es2-dialog-choice .es2-choice>.es2-card-art{height:auto;align-self:stretch;place-items:center}
+  /* Outrank the later skill-polish picture grid; center the intrinsic art without stretching. */
+  .es2-dialog-choice .es2-choice>.es2-card-art>picture{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;width:auto;height:auto}
+  .es2-dialog-choice .es2-choice>.es2-card-art img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center;padding:6px}
+  .es2-dialog-choice .es2-choice .es2-card-meta{min-height:0}
   .es2-choice>:not(.es2-card-art){grid-column:2;min-width:0}
   .es2-choice .es2-card-meta{padding:3px 8px 0}
   .es2-choice .es2-rarity-label{font-size:calc(.91rem * var(--es2-ui-scale,1))}
@@ -198,11 +232,6 @@
   .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 8px 0;font-size:calc(.75rem * var(--es2-ui-scale,1));line-height:1.3}
   .es2-choice .es2-card-selected-text{padding:3px 8px 0}
   .es2-dialog-choice .es2-hint{margin:7px 0 0;line-height:1.3;font-size:.7rem}
-  .es2-result-hero{width:clamp(75px,22vw,110px);height:clamp(85px,24vw,118px)}
-  .es2-result-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0}
-  .es2-result-stats>div{padding:8px 5px;gap:3px}
-  .es2-result-stats b{font-size:1rem}
-  .es2-reward-strip{gap:7px;padding:9px}
 }
 @media (orientation:landscape) and (max-height:520px) {
   .es2-backdrop{padding:max(5px,env(safe-area-inset-top)) max(5px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left))}
@@ -215,32 +244,47 @@
   .es2-dialog-settings{min-height:44px;padding:7px 9px;font-size:.76rem}
   .es2-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .es2-choice{min-height:0;padding:0 0 5px}
-  .es2-choice .es2-card-art{height:clamp(50px,16dvh,76px)}
-  .es2-choice .es2-card-meta{padding:4px 7px 0;gap:4px}
+  /* Full-card art stage: the dialog fills the short screen and the contained art takes all height the
+     text does not need. Cards share subgrid rows so art and text align across all three, even when a
+     hero passive (mastery) card adds several stat rows. Badges sit in a reserved band; art stays whole. */
+  .es2-dialog-choice{height:calc(100dvh - max(5px,env(safe-area-inset-top)) - max(5px,env(safe-area-inset-bottom)))}
+  .es2-dialog-choice .es2-dialog-header p{display:none}
+  .es2-dialog-choice .es2-dialog-body{display:flex;flex-direction:column}
+  .es2-dialog-choice .es2-selection-scene{flex:1 1 auto;min-height:min-content;display:flex;flex-direction:column}
+  .es2-dialog-choice .es2-choice-grid{flex:1 1 auto;min-height:min-content;grid-template-rows:minmax(clamp(64px,22dvh,96px),1fr) repeat(6,auto);row-gap:0}
+  .es2-dialog-choice .es2-choice{display:grid;grid-row:span 7;grid-template-rows:subgrid;align-content:start;background:linear-gradient(180deg,transparent 42%,#050b18e6 100%),var(--es2-card-art-bg)}
+  .es2-dialog-choice .es2-choice .es2-card-art{grid-row:1;height:auto;min-height:clamp(64px,22dvh,96px);contain:size;padding-top:26px;border-bottom:0;box-shadow:none;background:radial-gradient(ellipse 46% 50% at 50% 58%,var(--es2-skill-aura,#d6ac5d40),transparent 100%)}
+  .es2-dialog-choice .es2-choice .es2-card-name{grid-row:2}
+  .es2-dialog-choice .es2-choice .es2-card-level{grid-row:3;justify-self:start}
+  .es2-dialog-choice .es2-choice .es2-card-description{grid-row:4}
+  .es2-dialog-choice .es2-choice .es2-mastery-stats{grid-row:5;gap:1px}
+  .es2-dialog-choice .es2-choice .es2-mastery-stat{line-height:1.25}
+  .es2-dialog-choice .es2-choice .es2-card-requirements{grid-row:6}
+  .es2-dialog-choice .es2-choice .es2-card-selected-text{grid-row:7}
+  .es2-dialog-choice .es2-choice .es2-card-art::before{display:none}
+  .es2-dialog-choice .es2-choice .es2-card-art img{max-height:180px;padding:2px 6px}
+  .es2-dialog-choice .es2-choice .es2-card-meta{position:absolute;top:6px;left:6px;right:6px;z-index:2;justify-content:flex-start;flex-wrap:nowrap;gap:4px;min-height:0;padding:0;pointer-events:none}
+  .es2-dialog-choice .es2-choice .es2-rarity-label{padding:1px 7px;border-radius:999px;background:#050b18b8;line-height:1.3}
+  .es2-dialog-choice .es2-choice .es2-key-hint{margin-left:auto}
+  .es2-dialog-choice .es2-choice:active:not(:disabled){transform:scale(.97)}
   .es2-choice .es2-rarity-label{font-size:calc(.86rem * var(--es2-ui-scale,1))}
   .es2-choice .es2-card-name{padding:4px 7px 0;font-size:calc(.78rem * var(--es2-ui-scale,1));line-height:1.2}
   .es2-choice .es2-card-level{padding:3px 7px 0;font-size:.7rem}
   .es2-choice .es2-card-description,.es2-choice .es2-card-requirements{padding:3px 7px 0;font-size:calc(.75rem * var(--es2-ui-scale,1));line-height:1.25}
   .es2-choice .es2-rarity-icon{width:15px;height:15px}
   .es2-choice .es2-key-hint{width:21px;height:21px}
-  .es2-dialog-choice .es2-hint{margin:4px 0 0;font-size:.66rem;line-height:1.2}
+  .es2-dialog-choice .es2-hint{margin:4px 0 0;font-size:.6875rem;line-height:1.2}
   .es2-archive-tabs{margin-bottom:7px;padding:0 0 6px}
   .es2-archive-grid{gap:7px}
   .es2-archive-card{padding:9px;gap:5px}
   .es2-settings section+section{margin-top:10px;padding-top:8px}
   .es2-settings h3{margin:0 0 6px}
   .es2-slider-row{padding:4px 0}
-  .es2-result-hero{width:70px;height:75px}
-  .es2-result-status,.es2-result>p{margin:4px 0}
-  .es2-result-stats{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin:6px 0}
-  .es2-result-stats>div{padding:5px 3px;gap:2px}
-  .es2-result-stats b{font-size:.88rem}
-  .es2-result-stats small{font-size:.72rem}
-  .es2-reward-strip{gap:5px;padding:7px}
 }
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){.es2-dialog-choice .es2-hint{display:none}}
 
 /* Locale-safe wrapping: longer English and large zh-TW text must not widen cards or dialogs. */
-.es2-menu .es2-hero-copy strong,
+.es2-menu .es2-hero-copy > strong,
 .es2-menu .es2-hero-copy small,
 .es2-menu .es2-hero-selection,
 .es2-menu .es2-mode-copy strong,
@@ -270,134 +314,6 @@
 .es2-backdrop .es2-reward-strip { min-width: 0; }
 .es2-backdrop .es2-reward-strip span { max-width: 100%; }
 
-/* Small-screen homepage: choose one hero family and one expedition family at a time.
-   The underlying six heroes and nine modes are untouched and stay visible on desktop. */
-.es2-mobile-switch,.es2-mobile-archive-toggle,.es2-mobile-selected-mode{display:none}
-@media (orientation: portrait) and (max-width: 700px),
-       (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
-  .es2-menu{height:100dvh;overflow-y:auto;overscroll-behavior:contain;padding:max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
-  .es2-menu-shell{min-height:100%;gap:6px}
-  .es2-menu-header{flex-direction:row;align-items:center;gap:7px;padding-bottom:4px}
-  .es2-menu-brand{flex:1;min-width:0}
-  .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.55rem);line-height:1.1;letter-spacing:.02em;margin:0;overflow-wrap:anywhere}
-  .es2-menu-brand .es2-eyebrow,.es2-menu-brand p{display:none}
-  .es2-top-actions{display:flex;align-items:center;flex:none;width:auto;gap:5px}
-  .es2-top-actions #gameVersion{font-size:.65rem}
-  .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
-  .es2-top-actions [data-es2-settings] span{display:none}
-  .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:105px;padding:3px 6px;font-size:.72rem;line-height:1.25;white-space:normal}
-  .es2-menu-layout{grid-template-columns:1fr;gap:8px}
-  .es2-section-heading{margin-bottom:4px}
-  .es2-section-heading>span,.es2-section-heading p{display:none}
-  .es2-section-heading h2{font-size:clamp(.88rem,3vw,1.1rem);line-height:1.2;margin:0}
-  .es2-hero-section>h3.es2-section-heading{display:none}
-  .es2-mobile-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:5px 0}
-  .es2-mobile-switch button{min-height:44px;padding:5px 8px;border:1px solid #7c90a5;border-radius:8px;background:#1b2d42;color:#e7e0d1;font:700 clamp(.73rem,2.5vw,.9rem)/1.2 system-ui,sans-serif;touch-action:manipulation}
-  .es2-mobile-switch button[aria-pressed="true"]{border-color:#e9c890;background:#54412d;color:#fff1d0}
-  .es2-menu[data-mobile-heroes="new"] .es2-hero-grid{display:none}
-  .es2-menu[data-mobile-heroes="classic"] .es2-roster{display:none}
-  .es2-menu[data-mobile-modes="objective"] .es2-mode-grid{display:none}
-  .es2-menu[data-mobile-modes="classic"] .es2-objective-chooser{display:none}
-  .es2-hero-grid{gap:5px}
-  .es2-hero-card img{height:clamp(62px,10dvh,88px);padding:4px 2px 0}
-  .es2-hero-number{top:3px;left:4px;font-size:.48rem}
-  .es2-hero-copy{align-items:center;text-align:center;padding:4px 3px;gap:1px}
-  .es2-hero-copy strong{font-size:clamp(.67rem,2.6vw,.82rem);line-height:1.18}
-  .es2-hero-copy small{display:none}
-  .es2-hero-selection{font-size:.63rem;padding-top:2px;margin-top:auto}
-  .es2-menu .es2-hero-section .es2-roster{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
-  .es2-menu .es2-hero-section .es2-hero-select-card{min-width:0;border-radius:10px}
-  .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(62px,10dvh,88px);background:transparent}
-  .es2-menu .es2-hero-section .es2-roster__copy{gap:2px;padding:4px 3px;text-align:center}
-  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.66rem,2.5vw,.82rem);line-height:1.18}
-  .es2-menu .es2-hero-section .es2-roster__copy :is(.es2-roster__subtitle,.es2-roster__description,.es2-roster__stats,.es2-roster__gear,.es2-roster__skill,.es2-roster__traits){display:none}
-  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.62rem;padding:0}
-  .es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-  .es2-mode-card{min-height:44px;padding:5px;gap:5px}
-  .es2-mode-mark{width:17px;font-size:1rem}
-  .es2-mode-copy strong{font-size:clamp(.72rem,2.6vw,.85rem);line-height:1.2;overflow-wrap:anywhere}
-  .es2-mode-copy small{display:none}
-  .es2-mode-time{font-size:.58rem}
-  .es2-menu .es2-mode-section .es2-objective-chooser header{display:none}
-  .es2-menu .es2-mode-section .es2-objective-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-  .es2-menu .es2-mode-section .es2-objective-choice{display:grid;align-content:center;gap:0;min-height:44px;padding:6px 8px}
-  .es2-menu .es2-mode-section .es2-objective-choice strong{font-size:clamp(.7rem,2.4vw,.83rem);line-height:1.2;overflow-wrap:anywhere}
-  .es2-menu .es2-mode-section .es2-objective-choice>:not(strong){display:none}
-  .es2-mobile-selected-mode{display:block;min-width:0;margin:5px 0 0;color:var(--es2-muted);font:400 .73rem/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
-  .es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
-  .es2-start{min-height:44px;margin-top:6px;padding:7px;font-size:.95rem!important}
-  .es2-start span{margin-left:5px}
-  .es2-mode-section>.es2-hint{display:none}
-  .es2-menu-footer{gap:6px;align-items:center;justify-content:space-between;min-height:44px;margin-top:auto;padding-top:5px}
-  .es2-mobile-archive-toggle{display:block;min-height:44px;padding:5px 9px;background:#192c3e;border:1px solid #8c9cae;border-radius:8px;color:#f7e4c4;font:.73rem system-ui,sans-serif}
-  .es2-menu:not(.es2-mobile-archive-open) .es2-hall-links{display:none}
-  .es2-menu.es2-mobile-archive-open .es2-menu-footer{flex-wrap:wrap}
-  .es2-menu .es2-hall-links{order:3;width:100%;gap:5px}
-  .es2-menu .es2-hall-links button{min-height:44px;padding:6px;font-size:.74rem}
-  .es2-embers{font-size:.73rem}
-}
-@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
-  .es2-menu-shell{gap:4px}
-  .es2-menu-header{padding-bottom:2px}
-  .es2-menu-brand h1{font-size:clamp(.98rem,2.6vw,1.3rem)}
-  .es2-menu-layout{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:start}
-  .es2-menu .es2-section-heading{display:none}
-  .es2-mobile-switch{margin:0 0 4px}
-  .es2-hero-card img{height:clamp(40px,13dvh,66px)}
-  .es2-menu .es2-hero-section .es2-roster__portrait{height:clamp(40px,13dvh,66px)}
-  .es2-hero-copy{padding:3px 1px}
-  .es2-hero-copy strong,.es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.63rem,1.7vw,.75rem)}
-  .es2-hero-selection,.es2-menu .es2-hero-section .es2-roster__selection{font-size:.59rem}
-  .es2-mobile-selected-mode{display:none}
-  .es2-mode-card{padding:4px}
-  .es2-mode-mark{font-size:.85rem;width:14px}
-  .es2-mode-time{display:none}
-  .es2-mode-copy strong,.es2-objective-choice strong{font-size:clamp(.65rem,1.65vw,.77rem)}
-  .es2-start{margin-top:4px}
-  .es2-menu-footer{padding:0;border-top:0}
-}
-@media (orientation: portrait) and (max-width: 700px) and (max-height: 680px) {
-  .es2-menu-shell{gap:4px}
-  .es2-menu .es2-section-heading{display:none}
-  .es2-mobile-switch{margin:0 0 4px}
-  .es2-mobile-selected-mode{font-size:.7rem}
-  .es2-mobile-mode-desc{display:none}
-  .es2-menu-footer{padding-top:2px}
-}
-
-/* Expand mobile hero artwork into available space, without changing existing
-   card content/selection or sacrificing the main action on short devices. */
-@media (orientation: portrait) and (max-width: 700px) {
-  .es2-menu-shell{height:100%;min-height:0}
-  .es2-menu-layout{flex:1 1 auto;min-height:0;grid-template-rows:minmax(0,1fr) auto;align-items:stretch}
-  .es2-hero-section{display:flex;flex-direction:column;min-height:0}
-  .es2-hero-grid{flex:1 1 auto;min-height:clamp(105px,22dvh,180px);grid-template-rows:minmax(0,1fr);align-items:stretch}
-  .es2-hero-card{min-height:0}
-  .es2-hero-card img{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
-  .es2-hero-copy{flex:0 0 auto}
-  .es2-hero-copy strong{font-size:clamp(.76rem,2.9vw,.95rem)}
-  .es2-hero-selection{font-size:.74rem}
-  .es2-menu .es2-hero-section .es2-roster{flex:1 1 auto;min-height:clamp(105px,22dvh,180px);grid-template-rows:minmax(0,1fr);align-items:stretch}
-  .es2-menu .es2-hero-section .es2-roster__card{display:flex;flex-direction:column;min-height:0}
-  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
-  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto}
-  .es2-menu .es2-hero-section .es2-roster__copy strong{font-size:clamp(.76rem,2.9vw,.95rem)}
-  .es2-menu .es2-hero-section .es2-roster__selection{font-size:.74rem}
-}
-@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
-  .es2-menu-shell{height:100%;min-height:0}
-  .es2-menu-layout{flex:1 1 auto;min-height:0;align-items:stretch}
-  .es2-hero-section{display:flex;flex-direction:column;min-height:0}
-  .es2-hero-grid{flex:1 1 auto;min-height:90px;grid-template-rows:minmax(0,1fr);align-items:stretch}
-  .es2-hero-card{min-height:0}
-  .es2-hero-card img{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
-  .es2-hero-copy{flex:0 0 auto}
-  .es2-menu .es2-hero-section .es2-roster{flex:1 1 auto;min-height:90px;grid-template-rows:minmax(0,1fr);align-items:stretch}
-  .es2-menu .es2-hero-section .es2-roster__card{display:flex;flex-direction:column;min-height:0}
-  .es2-menu .es2-hero-section .es2-roster__portrait{flex:1 1 auto;min-height:0;height:auto;max-height:none;object-fit:contain}
-  .es2-menu .es2-hero-section .es2-roster__copy{flex:0 0 auto}
-}
-
 /* A single stat strip is shared by all three classic and all three new heroes.
    Numeric values come straight from JOB/HERO_DEFINITIONS (never UI copies). */
 .es2-menu .es2-hero-stat-strip{
@@ -412,22 +328,27 @@
   box-shadow:inset 0 1px 0 #fff1;
 }
 .es2-menu .es2-hero-stat-strip .es2-hero-stat-label{
-  color:#d4c5a7;font:800 clamp(.54rem,.76vw,.68rem)/1.15 system-ui,sans-serif;
+  color:#d4c5a7;font:800 .6875rem/1.15 system-ui,sans-serif;
   letter-spacing:.01em;white-space:nowrap;
 }
 .es2-menu .es2-hero-stat-strip .es2-hero-stat-value{
-  color:#ffe4a6;font:800 clamp(.65rem,1vw,.83rem)/1.2 system-ui,sans-serif;
+  color:#ffe4a6;font:800 clamp(.6875rem,1vw,.83rem)/1.2 system-ui,sans-serif;
   white-space:nowrap;min-width:0;
 }
+.es2-menu .es2-hero-copy{container-type:inline-size}
+@container (max-width: 13rem){
+  .es2-menu .es2-hero-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media(max-width:700px),
-       (orientation:landscape) and (max-height:520px) and (max-width:900px){
+       (orientation: portrait) and (min-width: 701px) and (max-width: 999px),
+       (orientation:landscape) and (max-height:520px) and (max-width:900px),
+       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse){
   .es2-menu .es2-hero-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;margin-top:2px}
   .es2-menu .es2-hero-stat-strip .es2-hero-stat{padding:2px 1px;gap:0}
-  .es2-menu .es2-hero-stat-strip .es2-hero-stat-label{font-size:clamp(.5rem,1.7vw,.6rem)}
-  .es2-menu .es2-hero-stat-strip .es2-hero-stat-value{font-size:clamp(.59rem,2vw,.73rem)}
+  .es2-menu .es2-hero-stat-strip .es2-hero-stat-value{font-size:clamp(.6875rem,2vw,.73rem)}
   /* The earlier short-phone rule hides extended roster details, but not the
      same essential four base stats shown for classic heroes. */
-  .es2-menu .es2-hero-section .es2-roster__copy .es2-roster__stats.es2-hero-stat-strip{display:grid}
+  .es2-menu .es2-hero-section .es2-hero-copy .es2-roster__stats.es2-hero-stat-strip{display:grid}
 }
 
 /* One shared character portrait and details treatment for every hero. */
@@ -435,7 +356,6 @@
 .es2-hero-card-shell>.es2-hero-card,.es2-roster__card-shell>.es2-roster__card{width:100%;height:100%}
 .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{
   object-fit:contain;object-position:center center;
-  background:radial-gradient(ellipse at 50% 50%,#ac905348 0%,#091421 72%);
 }
 .es2-hero-detail-trigger{display:none}
 .es2-hero-detail-content{display:grid;gap:12px;font:400 .9rem/1.5 system-ui,sans-serif}
@@ -444,10 +364,10 @@
 .es2-hero-detail-content .es2-hero-stat-label{color:#d4c5a7;font-size:.78rem}
 .es2-hero-detail-content .es2-hero-stat-value{color:#ffe4a6;font-size:1rem}
 .es2-hero-detail-content p{margin:0;color:#e7d2ad}
-.es2-hero-detail-special{display:flex;align-items:center;gap:10px}
-.es2-hero-detail-special img{flex:none;width:44px;height:44px;object-fit:contain}
 @media (orientation:portrait) and (max-width:700px),
-       (orientation:landscape) and (max-height:520px) and (max-width:900px){
+       (orientation: portrait) and (min-width: 701px) and (max-width: 999px),
+       (orientation:landscape) and (max-height:520px) and (max-width:900px),
+       (orientation: landscape) and (max-height: 520px) and (max-width: 1100px) and (pointer: coarse){
   .es2-menu .es2-hero-detail-trigger{
     position:absolute;top:0;right:0;z-index:2;display:grid;place-items:start end;
     width:44px;height:44px;padding:5px;border:0;background:transparent;
@@ -466,7 +386,6 @@
 }
 
 /* Shared pointer, selected and portrait motion for all six homepage heroes. */
-.es2-menu .es2-hero-select-card > :is(.es2-hero-copy,.es2-roster__copy){background:linear-gradient(#122033,#0a111b);border-top:1px solid var(--es2-line)}
 .es2-menu .es2-hero-select-card > img{transition:transform .24s ease-out}
 @media(hover:hover) and (pointer:fine){.es2-menu .es2-hero-select-card:hover:not(:disabled) > img{transform:translateY(-4px)}}
 .es2-menu .es2-hero-select-card[aria-pressed="true"] > img{transform:translateY(-6px)}
@@ -475,3 +394,738 @@
   .es2-menu .es2-hero-select-card:is(:hover,:active):not(:disabled){transform:none}
   .es2-menu .es2-hero-select-card[aria-pressed="true"] > img{transform:none}
 }
+
+
+/* Keep the viewport shell and dock outside the scrolling surface. A fixed child of a
+   shortened overflow container can be hit-testable but clipped by WebKit compositing. */
+.es2-menu-scroll{
+  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left));
+}
+.es2-menu-shell{max-width:1680px;min-height:100%;height:auto;gap:clamp(8px,1.4dvh,18px)}
+.es2-menu-header{align-items:center;flex-direction:row;padding-bottom:8px}
+.es2-menu-brand{min-width:0;flex:1}
+.es2-menu-brand h1{font-size:clamp(1.55rem,4.6dvh,3.5rem);margin:2px 0 4px;overflow-wrap:anywhere}
+.es2-top-actions{flex:none;width:auto}
+.es2-menu-layout{display:block;flex:1;min-width:0}
+.es2-hall-navigation{display:grid;gap:5px;min-width:0;padding:7px 9px;border:1px solid var(--es2-line);border-radius:10px;background:#101e2c}
+.es2-hall-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--es2-gold);font:700 .8rem/1.2 system-ui,sans-serif}
+/* A compact resource emblem, subordinate only to the primary expedition action. */
+.es2-hall-heading>strong{min-width:0;overflow-wrap:anywhere}
+.es2-embers[data-es2-ember-wallet]{
+  display:inline-flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0;max-width:76%;
+  padding:4px 12px 4px 6px;border:1px solid #b08b516b;border-radius:24px 5px 5px 24px;
+  background:linear-gradient(100deg,#3b3026,#1c242d 70%);
+  color:#f6d798;white-space:normal;text-align:start;
+  box-shadow:inset 0 1px 0 #e2bb7730,0 2px 8px #070d164d;
+}
+.es2-embers-icon{
+  display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;
+  border:1px solid #c69b5a;border-radius:50%;
+  background:radial-gradient(circle,#ad78444d,#39291e 75%);
+  color:#ffe7a8;font:700 22px/1 Georgia,serif;
+  text-shadow:0 0 8px #e3b06580;
+}
+.es2-embers-copy{display:flex;align-items:baseline;flex-wrap:wrap;min-width:0;gap:2px 7px}
+.es2-embers-value{
+  color:#ffe2a3;font:800 clamp(calc(1.125rem * var(--es2-ui-scale,1)),2vw,calc(1.6rem * var(--es2-ui-scale,1)))/1.05 system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0;
+}
+.es2-embers-label{
+  color:#dfcba6;font:600 max(.6875rem,calc(.8rem * var(--es2-ui-scale,1)))/1.15 system-ui,sans-serif;
+  overflow-wrap:anywhere;min-width:0;
+}
+@media(max-width:700px),(orientation:landscape) and (max-height:520px){
+  .es2-embers[data-es2-ember-wallet]{gap:5px;padding:3px 7px 3px 4px}
+  .es2-embers-icon{flex-basis:24px;width:24px;height:24px;font-size:19px}
+  .es2-embers-copy{gap:1px 5px}
+  .es2-embers-value{font-size:calc(1.125rem * var(--es2-ui-scale,1))}
+  .es2-embers-label{font-size:max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))}
+}
+.es2-menu .es2-hall-links{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%}
+.es2-menu .es2-hall-links button{display:flex;align-items:center;justify-content:center;gap:6px;padding:5px;min-height:44px;min-width:0;font:700 max(.6875rem,calc(.8rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;overflow-wrap:anywhere;hyphens:auto;text-align:center}
+.es2-menu .es2-hall-links button span{margin:0;font-size:1.1rem;flex:none;color:var(--es2-gold)}
+.es2-hero-section{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1vw,16px);align-items:stretch}
+.es2-hero-section>.es2-section-heading,.es2-mode-section>.es2-section-heading{grid-column:1/-1;margin:0}
+.es2-section-heading h2{margin:3px 0;font-size:clamp(1.1rem,2.8dvh,1.9rem)}
+.es2-hero-grid,.es2-menu .es2-hero-section .es2-roster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(6px,.8vw,12px);min-width:0}
+.es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{
+  /* Square-or-wider box: every portrait (aspect <= 1) fits by height, so all six render equally tall. */
+  width:100%;height:auto;aspect-ratio:1;max-height:clamp(105px,calc(100dvh - var(--es2-action-bar-height,112px) - 320px),540px);padding:6px 4px 2px;object-fit:contain;
+}
+.es2-menu .es2-hero-copy{
+  display:flex;flex:1;flex-direction:column;gap:4px;padding:8px 6px;text-align:center;min-width:0
+}
+.es2-menu .es2-hero-copy small,.es2-menu .es2-roster__subtitle{font-size:.75rem;line-height:1.25;overflow-wrap:anywhere}
+.es2-menu .es2-hero-copy :is(.es2-roster__description,.es2-roster__gear,.es2-roster__traits){display:none}
+.es2-menu :is(.es2-hero-selection,.es2-roster__selection){margin-top:auto;padding-top:3px;font-size:.75rem}
+.es2-menu .es2-hero-stat-strip .es2-hero-stat{padding:3px 1px}
+.es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger{
+  position:absolute;top:0;right:0;z-index:2;display:grid;place-items:start end;
+  width:44px;height:44px;padding:5px;border:0;background:transparent;cursor:pointer
+}
+.es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger) span{
+  display:grid;place-items:center;width:22px;height:22px;border:1px solid #bda473;border-radius:50%;
+  background:#111d29;color:#ffe5b2;font:italic bold 15px/1 Georgia,serif
+}
+.es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger):focus-visible{position:absolute}
+.es2-menu :is(.es2-hero-detail-trigger,.es2-mode-detail-trigger):focus-visible span{outline:2px solid #ffe5b2;outline-offset:2px}
+.es2-menu .es2-hero-section .es2-hero-action-preview{top:5px;left:5px;right:auto;width:min(45%,48px);height:auto;aspect-ratio:1}
+.es2-mode-section{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px;align-items:start}
+.es2-menu .es2-mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.es2-menu .es2-mode-card{min-height:70px;gap:8px;padding:9px}
+.es2-menu .es2-mode-mark{width:24px;font-size:1.2rem}
+.es2-menu .es2-mode-copy strong{font-size:.9rem;line-height:1.25}
+.es2-menu .es2-mode-copy small{font-size:max(.6875rem,calc(.75rem * var(--es2-ui-scale,1)));line-height:1.3}
+.es2-menu .es2-objective-chooser header{margin-bottom:6px}
+.es2-menu .es2-objective-chooser h2{font-size:1.05rem;margin:2px 0}
+.es2-menu .es2-objective-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.es2-menu .es2-objective-choice{min-height:68px;padding:8px 40px 8px 9px;gap:4px;justify-content:center;overflow-wrap:anywhere}
+.es2-menu .es2-objective-choice strong{font-size:.86rem;line-height:1.25}
+.es2-menu .es2-objective-choice .reward{font-size:.7rem;line-height:1.25}
+.es2-menu .es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}
+.es2-menu-action-bar{
+  position:relative;flex:0 0 auto;z-index:5;display:grid;gap:4px;
+  padding:6px max(12px,env(safe-area-inset-right),calc((100% - 760px) / 2)) max(6px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left),calc((100% - 760px) / 2));
+  background:var(--es2-bg);border-top:1px solid var(--es2-line)
+}
+.es2-menu-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:8px}
+.es2-menu-actions button{min-height:44px;min-width:0;padding:7px 9px;line-height:1.25;overflow-wrap:anywhere;font-size:.9rem!important}
+.es2-menu-action-bar .es2-start{width:100%;margin:0}
+.es2-menu-action-bar>.es2-hint{margin:0}
+.es2-mobile-selected-mode{margin:0;text-align:center;color:var(--es2-muted);font:400 max(.6875rem,calc(.82rem * var(--es2-ui-scale,1)))/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
+.es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
+@media (horizontal-viewport-segments: 2){
+  .es2-menu-action-bar{padding-left:max(calc(env(viewport-segment-left 1 0) + 12px),env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  .es2-hero-section,.es2-mode-section{column-gap:max(12px,calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0) + 12px))}
+}
+@media (max-width: 999px) and (orientation: portrait){
+  .es2-hero-section,.es2-mode-section{grid-template-columns:minmax(0,1fr);gap:8px}
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{max-height:clamp(100px,calc((100dvh - var(--es2-action-bar-height,112px) - 300px) / 2),300px);padding:6px 2px 0}
+}
+@media (max-width: 700px), (orientation: landscape) and (max-height: 520px){
+  .es2-menu-scroll{padding:max(7px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) 8px max(8px,env(safe-area-inset-left))}
+  .es2-menu-shell{gap:6px}
+  .es2-menu-header{gap:6px;padding-bottom:4px}
+  .es2-menu-brand h1{font-size:clamp(1.05rem,4.2vw,1.6rem);line-height:1.1;letter-spacing:.02em;margin:0}
+  .es2-menu-brand .es2-eyebrow,.es2-menu-brand p{display:none}
+  .es2-top-actions{display:flex;align-items:center;gap:6px}
+  .es2-top-actions #gameVersion{font-size:.6875rem}
+  .es2-top-actions .es2-icon-button{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;padding:0;font-size:1.1rem}
+  .es2-top-actions .es2-cloud-trigger-label{display:none}
+  .es2-top-actions [data-es2-cloud-account]{width:44px;min-width:44px;min-height:44px;padding:0;flex:none}
+  .es2-top-actions [data-es2-audio-unlock]{width:auto;max-width:80px;padding:3px 5px;font-size:.72rem;line-height:1.25;white-space:normal}
+  .es2-hall-navigation{padding:4px;gap:3px}
+  /* Fit five labels within the available width (including safe-area padding).
+     Prefer normal word breaks; split an oversized word only when necessary. */
+  .es2-menu .es2-hall-links{gap:2px;grid-template-columns:repeat(5,minmax(0,1fr))}
+  .es2-menu .es2-hall-links button{flex-direction:column;gap:1px;padding:3px 0;font-size:max(.6875rem,min(calc(.6875rem * var(--es2-ui-scale,1)),3vw));line-height:1.1;overflow-wrap:anywhere}
+  .es2-menu .es2-hall-links button span{font-size:.9rem}
+  .es2-section-heading>span,.es2-section-heading p{display:none}
+  .es2-section-heading h2{font-size:1rem;margin:0}
+  .es2-menu .es2-hero-copy{gap:2px;padding:4px 3px}
+  .es2-menu .es2-hero-copy small,.es2-menu .es2-roster__subtitle{display:none}
+  .es2-menu .es2-hero-stat-strip .es2-hero-stat{padding:2px 1px}
+  .es2-menu .es2-mode-card{min-height:52px;padding:6px;gap:5px}
+  .es2-menu .es2-mode-mark{width:16px;font-size:1rem}
+  .es2-menu .es2-objective-choice{min-height:54px}
+  .es2-menu-action-bar>.es2-hint{display:none}
+}
+@media (orientation: landscape) and (max-height: 520px){
+  .es2-menu-brand h1{font-size:1.1rem}
+  .es2-menu .es2-hall-links button{flex-direction:row;gap:4px}
+  .es2-hero-section>.es2-section-heading,.es2-mode-section>.es2-section-heading{display:none}
+  .es2-menu .es2-hero-card img,.es2-menu .es2-hero-section .es2-roster__portrait{max-height:clamp(60px,calc(100dvh - var(--es2-action-bar-height,90px) - 180px),180px);padding:6px 3px 0}
+  .es2-menu-action-bar{align-items:center;gap:8px;padding-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right))}
+  .es2-menu-actions{gap:5px}
+}
+
+/* Lobby art direction: architectural silhouettes, restrained brass and a single
+   warm portal focal point. The hit areas stay rectangular; only paint is cut. */
+.es2-menu .es2-menu-backdrop:after{
+  background:radial-gradient(ellipse at 50% 40%,#172b3a55,transparent 70%),linear-gradient(180deg,#07101ad9,#0b1422a8 45%,#080f1bf5)
+}
+.es2-menu .es2-menu-header{border-bottom:0;position:relative}
+.es2-menu .es2-menu-brand h1{letter-spacing:.045em;text-shadow:0 2px 18px #080c13,0 0 26px #c6a26c22}
+.es2-menu .es2-hall-navigation{
+  border:0;border-block:1px solid #a18a5e55;border-radius:0;
+  background:linear-gradient(90deg,transparent,#182839b5 18%,#182839b5 82%,transparent)
+}
+.es2-menu .es2-hall-links button{
+  position:relative;border:0;border-radius:0;background:transparent;color:#d8d5ce
+}
+.es2-menu .es2-hall-links button+button{border-inline-start:1px solid #af9d7040}
+.es2-menu .es2-hall-links button:hover,.es2-menu .es2-hall-links button:focus-visible{color:#fff0c8;background:#d3af6e12}
+.es2-menu .es2-hall-links button span{
+  display:grid;place-items:center;width:26px;height:26px;flex:0 0 26px;
+  background:linear-gradient(150deg,#514733,#111d2a);
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);color:#e9cc92
+}
+/* One panel gradient; hero identity supplies only a muted ambient tint. */
+.es2-menu .es2-hero-select-card[data-hero="knight"]{--es2-hero-idle-glow:#91a9c128}
+.es2-menu .es2-hero-select-card[data-hero="ranger"]{--es2-hero-idle-glow:#65b89128}
+.es2-menu .es2-hero-select-card[data-hero="wizard"]{--es2-hero-idle-glow:#9a79d828}
+.es2-menu .es2-hero-select-card[data-hero-id="shadowblade"]{--es2-hero-idle-glow:#6f80c928}
+.es2-menu .es2-hero-select-card[data-hero-id="spirit-summoner"]{--es2-hero-idle-glow:#62b5bf28}
+.es2-menu .es2-hero-select-card[data-hero-id="crimson-paladin"]{--es2-hero-idle-glow:#cc657728}
+.es2-menu .es2-hero-select-card>.es2-hero-copy{
+  background:linear-gradient(180deg,#172638,#0b1421);border-top:1px solid #9e8d6859
+}
+.es2-menu .es2-hero-stat-strip .es2-hero-stat{background:transparent;border:0;border-radius:0;box-shadow:none}
+.es2-menu .es2-hero-stat-strip .es2-hero-stat+.es2-hero-stat{border-inline-start:1px solid #8d806740}
+.es2-menu .es2-hero-select-card[aria-pressed="true"] :is(.es2-hero-selection,.es2-roster__selection){color:#ffe5ad}
+.es2-menu .es2-mode-card,.es2-menu .es2-objective-choice{border-radius:4px 16px 4px 16px}
+.es2-menu .es2-menu-action-bar{
+  padding-inline:max(12px,env(safe-area-inset-left),calc((100% - 1680px) / 2)) max(12px,env(safe-area-inset-right),calc((100% - 1680px) / 2));
+  background:linear-gradient(180deg,#0b1521,#080e17);border-top:1px solid #a38b5c75
+}
+/* The brief's forward tip nests into the gate's notch: both cuts share one tip width. */
+.es2-menu .es2-menu-actions{--es2-dock-tip:16px;grid-template-columns:minmax(0,1fr) fit-content(52%);gap:6px;align-items:stretch}
+.es2-menu .es2-expedition-brief,.es2-menu .es2-portal-start{
+  position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;
+  border:0;background:none;box-shadow:none;min-width:0;min-height:56px;
+  padding:8px calc(var(--es2-dock-tip) + 8px) 8px 12px;gap:10px;text-align:start
+}
+.es2-menu .es2-expedition-brief::before,.es2-menu .es2-expedition-brief::after,
+.es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{
+  content:'';position:absolute;inset:0;z-index:-2;pointer-events:none;
+}
+.es2-menu .es2-expedition-brief::before,.es2-menu .es2-expedition-brief::after{
+  clip-path:polygon(12px 0,calc(100% - var(--es2-dock-tip)) 0,100% 50%,calc(100% - var(--es2-dock-tip)) 100%,0 100%,0 12px)
+}
+.es2-menu .es2-expedition-brief::before{background:#53677f}
+.es2-menu .es2-expedition-brief::after{inset:1px;z-index:-1;background:linear-gradient(120deg,#22334a,#111b2a 58%,#171f2c)}
+.es2-menu .es2-expedition-brief[data-run-mode="boss-rush"]::after,.es2-menu .es2-expedition-brief[data-run-mode="cursed-expedition"]::after{background:linear-gradient(120deg,#462b31,#251d2d 64%,#1b2431)}
+.es2-menu .es2-expedition-brief[data-run-mode="endless-eclipse"]::after,.es2-menu .es2-expedition-brief[data-run-mode="chaos-arena"]::after{background:linear-gradient(120deg,#39304e,#211b38 64%,#1b2431)}
+/* Secondary button: cool steel rim, fill, chip and arrow respond; it never lifts, scales or turns gold like the gate. */
+.es2-menu .es2-expedition-brief::after{transition:filter .18s ease-out}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::before{background:#a9c2df}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::after{inset:2px;filter:brightness(1.5) saturate(1.2)}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change{border-color:#e3eefb;background:#3a5a84;color:#fff}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(3px)}
+.es2-menu .es2-expedition-brief[aria-controls="es2HeroPage"]:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(-3px)}
+.es2-menu .es2-expedition-brief:focus-visible{outline:2px solid #cfe0f5;outline-offset:2px}
+.es2-menu .es2-expedition-brief:active{filter:brightness(.94)}
+.es2-menu .es2-expedition-sigil{
+  display:grid;place-items:center;flex:0 0 42px;width:42px;height:48px;
+  background:linear-gradient(145deg,#4a6080,#222b3b 65%,#455a78);
+  clip-path:polygon(50% 0,100% 25%,100% 72%,50% 100%,0 72%,0 25%);
+  color:#d8e7fa;font:700 24px/1 Georgia,serif;text-shadow:0 0 9px #8fb6e680
+}
+/* Row 1: name + duration; row 2: summary · hero. Words wrap whole, never ellipsis-clipped. */
+.es2-menu .es2-expedition-brief .es2-mobile-selected-mode{flex:1;min-width:0;display:block;text-align:start;overflow-wrap:break-word}
+.es2-menu .es2-expedition-kicker{display:block;margin-bottom:2px;color:#9bb1cb;font:700 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;letter-spacing:.04em}
+.es2-menu .es2-expedition-duration{margin-inline-start:7px;color:#bccadb;font:700 max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.es2-menu .es2-expedition-name{color:#f1f5fb;font:700 max(.9rem,calc(1.2rem * var(--es2-ui-scale,1)))/1.16 Georgia,'Noto Serif TC',serif}
+.es2-menu .es2-expedition-meta{display:block;margin-top:2px;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif}
+.es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}
+.es2-menu .es2-expedition-hero::before{content:'·';margin-inline:6px;color:#7f94ae;font-weight:700}
+.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;padding:5px 7px 5px 10px;border:1px solid #6f87a6;border-radius:999px;background:#0b1422b3;color:#d2e1f3;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start;transition:border-color .18s ease-out,background-color .18s ease-out,color .18s ease-out}
+.es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}
+.es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none;transition:transform .18s cubic-bezier(.2,.8,.2,1)}
+/* A crimson eclipse door with molten ember light rising from its threshold, framed in bright gold. */
+.es2-menu .es2-portal-start{
+  --es2-portal-rim:linear-gradient(100deg,#c8862f,#fff1c2 22%,#ffc960 52%,#b8742a 78%,#fff0bd);
+  --es2-portal-fill:radial-gradient(ellipse 70% 120% at 50% 125%,#ffcf73,#f0743cd9 38%,#a3283f80 64%,transparent 84%),linear-gradient(180deg,#5b2147,#3a1638 52%,#1d0c24);
+  --es2-portal-shape:polygon(0 0,calc(100% - var(--es2-dock-tip)) 0,100% 50%,calc(100% - var(--es2-dock-tip)) 100%,0 100%,var(--es2-dock-tip) 50%);
+  min-height:56px;padding:8px calc(var(--es2-dock-tip) + 14px);gap:10px;color:#fff4d5!important;text-align:center;
+  filter:drop-shadow(0 0 9px #ff8f4a80);transition:transform .22s cubic-bezier(.2,.8,.2,1),filter .22s ease-out
+}
+.es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{clip-path:var(--es2-portal-shape)}
+.es2-menu .es2-portal-start::before{background:var(--es2-portal-rim)}
+.es2-menu .es2-portal-start::after{inset:2px;z-index:-1;background:var(--es2-portal-fill)}
+.es2-menu .es2-portal-start:hover:not(:disabled){background:none}
+/* The whole gate lifts and brightens, so the strongest action reads as live before the click. */
+.es2-menu .es2-portal-start:is(:hover,:focus-visible):not(:disabled){transform:translateY(-2px) scale(1.035);filter:brightness(1.14) saturate(1.1) drop-shadow(0 0 14px #ffb052d9)}
+.es2-menu .es2-portal-start:is(:hover,:focus-visible):not(:disabled) .es2-portal-sheen{animation:none;opacity:1}
+.es2-menu .es2-portal-start:active:not(:disabled){transform:scale(.98)}
+.es2-menu .es2-portal-start:focus-visible:not(:disabled),
+.es2-menu .es2-portal-start:active:not(:disabled){
+  background:none
+}
+/* A clipped, one-shot light sweep; no pointer tracking, layout changes or animated paint properties. */
+.es2-menu .es2-portal-sheen{
+  position:absolute;inset:3px;margin:0;z-index:0;pointer-events:none;overflow:hidden;
+  clip-path:var(--es2-portal-shape);
+  background:radial-gradient(ellipse 55% 110% at 50% 115%,#ffe2a0b3,#ff9a4a59 45%,transparent 75%);
+  animation:es2-portal-breathe 2.6s ease-in-out infinite
+}
+/* Idle invitation: one opacity-only ember pulse on the single Start gate. */
+@keyframes es2-portal-breathe{0%,100%{opacity:.35}50%{opacity:1}}
+.es2-menu .es2-portal-sheen::before{
+  content:'';position:absolute;inset:0 auto 0 -48%;width:42%;
+  background:linear-gradient(105deg,transparent,#ffe5a636 32%,#fff4cc9e 51%,#ffe5a625 70%,transparent);
+  opacity:0;transform:translateX(0) skewX(-17deg)
+}
+.es2-menu .es2-portal-start .es2-portal-decoration{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.es2-menu .es2-portal-start .es2-portal-core{transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+/* Keep the fully lit metallic finish; hover energizes the seal and plays one shimmer. */
+@media(hover:hover) and (pointer:fine){
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before{animation:es2-portal-sweep .72s ease-out both}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{transform:scale(1.08);box-shadow:0 0 26px #ffda85bf,inset 0 0 16px #ffe9b1c4}
+  .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-core{transform:scale(1.13) rotate(12deg)}
+  [data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:hover:not(:disabled) .es2-portal-decoration{box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399}
+  [data-es2-reduce-motion="true"] .es2-menu .es2-portal-start:hover:not(:disabled),
+  [data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:hover:not(:disabled){outline:2px solid #ffe0a0;outline-offset:2px}
+}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:reduce){
+  .es2-menu .es2-portal-start:hover:not(:disabled){outline:2px solid #ffe0a0;outline-offset:2px}
+}
+.es2-menu .es2-portal-start:active:not(:disabled) .es2-portal-core{transform:scale(.92)}
+.es2-menu .es2-portal-start:active:not(:disabled) .es2-portal-decoration{transform:scale(.96)}
+@keyframes es2-portal-sweep{
+  0%{opacity:0;transform:translateX(0) skewX(-17deg)}
+  20%{opacity:.85}
+  80%{opacity:.75}
+  100%{opacity:0;transform:translateX(370%) skewX(-17deg)}
+}
+@media(prefers-reduced-motion:reduce){
+  .es2-menu .es2-portal-start{transition:none;transform:none!important}
+  .es2-menu .es2-portal-sheen{animation:none;opacity:.75}
+  .es2-menu .es2-portal-start .es2-portal-sheen::before{animation:none!important}
+  .es2-menu .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+  .es2-menu .es2-expedition-change-arrow{transition:none;transform:none!important}
+}
+[data-es2-reduce-motion="true"] .es2-menu .es2-expedition-change-arrow{transition:none;transform:none!important}
+[data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
+[data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
+[data-es2-reduce-motion="true"] .es2-menu .es2-portal-start{transition:none;transform:none!important}
+[data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:is(:hover,:focus-visible):not(:disabled){filter:brightness(1.06) drop-shadow(0 0 10px #ffb05299)}
+[data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen::before,
+[data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen::before{animation:none!important}
+[data-es2-reduce-motion="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core),
+[data-es2-reduce-flashing="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+@media(forced-colors:active){
+  .es2-menu .es2-portal-start{border:2px solid ButtonText;color:ButtonText!important;background:ButtonFace}
+  .es2-menu .es2-portal-start:is(:hover,:focus-visible,:active):not(:disabled){background:ButtonFace;text-shadow:none}
+  .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after,.es2-menu .es2-portal-sheen{display:none}
+  .es2-menu .es2-portal-start:focus-visible:not(:disabled){outline:3px solid Highlight}
+  .es2-menu .es2-expedition-brief{border:1px solid ButtonText}
+  .es2-menu .es2-expedition-change{border-color:ButtonText}
+}
+/* A small pointed-arch doorway with warm light inside; static paint, no idle animation. */
+.es2-menu .es2-portal-decoration{
+  position:relative;display:grid;place-items:center;flex:0 0 30px;width:30px;height:38px;
+  border-radius:15px 15px 3px 3px;margin:0;border:1px solid #fff2bc;
+  background:radial-gradient(ellipse 90% 70% at 50% 100%,#ffd58ae6,#e2873f80 48%,transparent 78%),linear-gradient(180deg,#2c1f45,#150f28);
+  box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399;pointer-events:none
+}
+.es2-menu .es2-portal-decoration::before{
+  content:'';position:absolute;inset:4px 4px 0;border:1px solid #f9d39470;border-bottom:0;border-radius:11px 11px 0 0;pointer-events:none
+}
+.es2-menu .es2-portal-core{margin:0;color:#fff1c4;font-size:18px;text-shadow:0 0 10px #fff1c4,0 0 18px #eab86c;line-height:1}
+/* At least 17px and one line at normal scale; large interfaceScale wraps balanced, never clipped. */
+.es2-menu .es2-portal-label{
+  position:relative;margin:0;min-width:0;color:#fff8df;text-shadow:0 2px 3px #120a1e,0 0 10px #f6c66e;
+  font:800 max(1.0625rem,calc(min(5vw,1.25rem) * var(--es2-ui-scale,1)))/1.2 Georgia,'Noto Serif TC',serif;letter-spacing:.03em;overflow-wrap:break-word;text-wrap:balance
+}
+@media(max-width:1023px),(orientation:landscape) and (max-height:520px){
+  .es2-menu .es2-hall-links button span{width:22px;height:22px;flex:0 0 22px}
+  .es2-menu .es2-menu-action-bar{padding-inline:max(8px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-right))}
+  .es2-menu .es2-expedition-brief{padding:6px calc(var(--es2-dock-tip) + 6px) 6px 9px;gap:8px}
+  .es2-menu .es2-expedition-kicker{display:none}
+  .es2-menu .es2-expedition-sigil{flex-basis:28px;width:28px;height:32px;font-size:17px}
+  .es2-menu .es2-expedition-name{font-size:max(.875rem,calc(1rem * var(--es2-ui-scale,1)))}
+  .es2-menu .es2-expedition-meta{font-size:max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))}
+}
+@media(max-width:700px) and (orientation:portrait){
+  .es2-menu .es2-menu-actions{grid-template-columns:minmax(0,1fr)}
+}
+@media(orientation:landscape) and (max-height:520px){
+  .es2-menu .es2-menu-action-bar{padding-block:4px max(4px,env(safe-area-inset-bottom))}
+  .es2-menu .es2-expedition-change{max-width:25%}
+  .es2-menu .es2-portal-start{padding-inline:calc(var(--es2-dock-tip) + 6px)}
+}
+/* Small landscape phones: a two-line gate label buys the brief room; the floor keeps the zh-TW label on one line. */
+@media(orientation:landscape) and (max-height:520px) and (max-width:700px){
+  .es2-menu .es2-menu-actions{grid-template-columns:minmax(0,1fr) fit-content(max(40%,14.5rem))}
+}
+@media(horizontal-viewport-segments:2){
+  .es2-menu .es2-menu-action-bar{padding-left:max(calc(env(viewport-segment-left 1 0) + 12px),env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+}
+
+/* One visual language for hero dossiers and expedition briefings. The panel is
+   teleported above the lobby but below real modals, never clipped by a card. */
+.es2-hover-details{
+  pointer-events:none; /* Preview only; explicit Info opens the scrollable dialog. */
+  position:fixed;z-index:300;width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);
+  overflow:auto;overscroll-behavior:contain;padding:15px 16px 16px;
+  color:#f7e9d1;font-family:Georgia,'Noto Serif TC','PingFang TC',serif;
+  border:1px solid #a98a55;border-radius:5px 19px 5px 19px;
+  background:radial-gradient(ellipse at 0 0,#51432e66,transparent 50%),linear-gradient(155deg,#1b2938,#0b1420 80%);
+  box-shadow:0 15px 36px #000a,inset 0 0 0 3px #bca27816;
+}
+.es2-hover-details__header{display:flex;gap:11px;align-items:center;padding-bottom:10px;margin-bottom:11px;border-bottom:1px solid #a78d5955}
+.es2-hover-details__header>div{min-width:0}
+.es2-hover-details__seal{flex:0 0 36px;width:36px;height:36px;display:grid;place-items:center;background:#493b29;color:#ffe2a0;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);font-size:23px}
+.es2-hover-details__header h2{margin:0;color:#ffe1a6;font-size:calc(1.2rem * var(--es2-ui-scale,1));line-height:1.25;overflow-wrap:anywhere}
+.es2-hover-details__header p{margin:4px 0 0;color:#bfcad3;font:500 calc(.78rem * var(--es2-ui-scale,1))/1.4 system-ui,sans-serif}
+.es2-hover-details .es2-hero-detail-content{gap:9px;font-size:calc(.84rem * var(--es2-ui-scale,1));overflow-wrap:anywhere}
+.es2-hover-details .es2-hero-detail-content p{padding-block-end:6px;border-bottom:1px solid #a78d5926}
+.es2-hover-details .es2-hero-detail-content p:last-child{border:0;padding-block-end:0}
+.es2-hover-details .es2-hero-detail-content .es2-hero-stat{border-radius:3px;border-color:#a78d5933;background:#0c1723}
+
+@media (hover:hover) and (pointer:fine){
+  .es2-menu .es2-hero-detail-trigger,.es2-menu .es2-mode-detail-trigger{display:grid}
+}
+
+/* The hall is a primary destination, not a modal on top of another menu. */
+.es2-menu--archive .es2-menu-scroll{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.es2-menu [data-es2-lobby-content][hidden]{display:none}
+.es2-menu--archive .es2-hall-navigation{
+  position:sticky;top:0;z-index:8;background:linear-gradient(110deg,#121e2c,#152334 65%,#0f1925);
+  box-shadow:0 7px 18px #050a1266;backdrop-filter:none
+}
+.es2-hall-heading__title{min-width:0;flex:1;overflow-wrap:anywhere}
+.es2-menu .es2-return-lobby{
+  min-height:44px;padding:4px 12px;display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(110deg,#352e27,#172330);border:1px solid #b2986770;
+  border-radius:4px 13px 4px 13px;color:#f2d9a7;text-align:start;font-weight:700;
+  font-size:calc(.8rem * var(--es2-ui-scale,1));overflow-wrap:anywhere;line-height:1.2
+}
+.es2-return-lobby>span{font-size:1.4rem;line-height:1}
+.es2-menu .es2-hall-links button[aria-current="page"]{
+  color:#ffe6b2;background:linear-gradient(0deg,#bc92532b,transparent);
+  box-shadow:inset 0 -2px #e8bb77
+}
+.es2-menu .es2-hall-links button[aria-current="page"] span{background:linear-gradient(150deg,#9b7043,#4c392b);color:#fff0bc}
+.es2-archive-page{min-width:0;max-width:100%;width:100%;flex:1;display:grid;align-content:start;gap:clamp(10px,2vw,22px);padding:clamp(4px,1vw,14px)}
+.es2-archive-page-heading{position:relative;padding:6px 0 12px;border-bottom:1px solid #b89a6055}
+.es2-archive-page-heading::after{content:'';position:absolute;bottom:-1px;left:0;width:100px;height:2px;background:linear-gradient(90deg,#d3b176,transparent)}
+.es2-archive-page-heading h2{font-size:clamp(1.25rem,3vw,2.1rem);line-height:1.25;margin:4px 0 0;color:#f7e4bd;overflow-wrap:anywhere}
+.es2-archive-page .es2-archive-section{min-width:0}
+.es2-archive-page .es2-archive-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:clamp(8px,1.2vw,18px)}
+.es2-archive-page .es2-archive-card{border-radius:5px 16px 5px 16px;border-color:#aa94654d;background:linear-gradient(150deg,#1b2b3c,#0c1723);min-width:0}
+.es2-archive-page .es2-archive-card strong,.es2-archive-page .es2-archive-card p{overflow-wrap:anywhere}
+.es2-archive-page .es2-archive-card img{max-height:160px}
+.es2-archive-page .es2-archive-section h3{color:#e6c78d}
+@media (max-width:700px){
+  .es2-menu .es2-return-lobby{padding:3px 6px;font-size:calc(.75rem * var(--es2-ui-scale,1))}
+  .es2-archive-page{padding:3px 0}
+  .es2-archive-page .es2-archive-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,136px),1fr));gap:8px}
+  .es2-archive-page .es2-archive-card{padding:10px;gap:6px}
+  .es2-archive-page .es2-archive-card img{max-height:115px}
+  .es2-archive-page-heading h2{font-size:calc(1.2rem * var(--es2-ui-scale,1))}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .es2-archive-page{gap:8px;padding:0 3px}
+  .es2-archive-page-heading{padding:2px 0 5px}
+  .es2-archive-page-heading h2{font-size:calc(1.05rem * var(--es2-ui-scale,1))}
+}
+/* The upgrade hall needs its first screen for the tree and dock: the active hall tab
+   already names the page, so the title stays only for assistive tech; the rule caption stays. */
+@media (max-width:739px) and (orientation:portrait),(orientation:landscape) and (max-height:520px){
+  .es2-archive-page[data-es2-archive-page="progression"]{gap:6px}
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-heading{padding:0 0 4px}
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-heading :is(.es2-eyebrow,h2){
+    position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap
+  }
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-caption{margin:0;font-size:calc(.74rem * var(--es2-ui-scale,1));line-height:1.35}
+}
+/* Very short landscape: the next-expedition hint yields to the tree + buy action; assistive tech keeps it. */
+@media (orientation:landscape) and (max-height:400px){
+  .es2-archive-page[data-es2-archive-page="progression"] .es2-archive-page-caption{
+    position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap
+  }
+}
+
+/* Contextual card information uses the shared hero/mode surface and never
+   makes an undiscovered compendium entry reveal its hidden content. */
+.es2-context-board{min-width:0}
+.es2-context-card{position:relative;min-width:0}
+.es2-context-card:focus-visible{outline:2px solid #f1d29b;outline-offset:2px}
+.es2-menu .es2-card-info-trigger{
+  position:absolute;z-index:2;top:0;right:0;width:44px;height:44px;min-height:44px;
+  display:grid;place-items:start end;padding:6px;margin:0;border:0;background:transparent;cursor:pointer
+}
+/* Shared info glyph: card corner Info buttons and the upgrade-hall detail toggle. */
+.es2-info-glyph{
+  display:grid;place-items:center;width:24px;height:24px;border:1px solid #bda473;border-radius:50%;
+  background:#111d29;color:#ffe5b2;font:italic bold 15px/1 Georgia,serif
+}
+.es2-menu .es2-card-info-trigger:focus-visible{position:absolute;outline-offset:-2px}
+.es2-context-description p{white-space:pre-line;overflow-wrap:anywhere}
+@media (hover:hover) and (pointer:fine){
+  .es2-menu .es2-card-info-trigger{display:grid}
+  .es2-context-card>strong{padding-inline-end:25px}
+  .es2-context-card:hover{border-color:#bba16e}
+}
+@media (hover:none),(pointer:coarse){
+  .es2-context-card>strong{padding-inline-end:25px}
+}
+
+/* One wallet surface, one balance; embedded progression uses the hall wallet. */
+.es2-embers[data-es2-ember-wallet]{
+  border-radius:30px 6px 16px 30px;border-color:#bda16a9c;
+  background:linear-gradient(110deg,#473624,#27313a 54%,#14212d);
+  box-shadow:inset 0 1px 0 #e9c98c44,0 2px 8px #070d164d;
+}
+.es2-menu--archive .es2-embers[data-es2-ember-wallet]{padding-inline-end:13px}
+.es2-archive-page-caption{color:#bfc9d4;font:400 calc(.82rem * var(--es2-ui-scale,1))/1.5 system-ui,sans-serif;margin:6px 0 0;overflow-wrap:anywhere}
+/* Equipped non-default skins tint the idle panel without competing with selection. */
+.es2-menu .es2-hero-select-card:is([data-es2-cosmetic="knight-gilded"],[data-es2-cosmetic="ranger-moonlit"],[data-es2-cosmetic="wizard-astral"]){
+  --es2-hero-idle-glow:color-mix(in srgb,var(--es2-skin-glow) 30%,transparent);
+}
+.es2-skins{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),220px));gap:12px}
+.es2-skins button{min-width:0;overflow:hidden;padding:8px;gap:6px;border-radius:20px 6px 16px 6px;text-align:center;align-items:center}
+.es2-skin-preview{position:relative;display:grid;place-items:center;width:100%;height:clamp(100px,16vw,164px);isolation:isolate;background:radial-gradient(ellipse at 50% 72%,var(--es2-skin-glow),transparent 70%);overflow:hidden}
+.es2-skin-preview img{height:100%;max-width:100%;width:auto;object-fit:contain;z-index:1;min-height:0}
+.es2-skin-ring{position:absolute;width:67%;height:17%;bottom:5%;border:2px solid var(--es2-skin-ring);border-radius:50%;box-shadow:0 0 9px var(--es2-skin-glow);pointer-events:none}
+.es2-skins button[aria-pressed=true]{border:2px solid #f3d58c;background:linear-gradient(160deg,#544126,#231e22 72%);box-shadow:inset 0 0 0 2px #f3d58c30,0 0 18px #e6b35a55;cursor:default}
+.es2-skins button[aria-pressed=true]>strong{color:#ffe8ac;text-shadow:0 1px 8px #e5bc6955}
+.es2-skin-equipped-mark{position:absolute;z-index:2;right:4px;top:4px;display:grid;place-items:center;width:30px;height:30px;border:1px solid #f9e2a5;border-radius:50%;background:linear-gradient(145deg,#f8dda0,#ba873d);color:#30200e;box-shadow:0 2px 8px #0009,0 0 9px #eac48666;font:900 20px/1 system-ui,sans-serif}
+.es2-skins .es2-skin-status{display:flex;align-items:center;justify-content:center;gap:.4em;width:100%;box-sizing:border-box;min-height:44px;margin-top:auto;padding:7px 5px;border:1px solid #cfaf72;border-radius:5px 11px 5px 11px;font:800 clamp(.9rem,2.5vw,1rem)/1.25 system-ui,sans-serif;letter-spacing:.025em;text-align:center;overflow-wrap:anywhere;transition:filter .16s,transform .16s}
+.es2-skins .es2-skin-status-icon{flex:none;display:grid;place-items:center;width:20px;height:20px;font:900 16px/1 system-ui,sans-serif}
+.es2-skins .es2-skin-status[data-es2-skin-status=available]{color:#2c1b0b;background:linear-gradient(180deg,#ffe5a6 0%,#edc278 47%,#cb9450 52%,#e0af67 100%);border-color:#ffe6a6;box-shadow:inset 0 1px 0 #fff8e5,0 3px 0 #5a3c22,0 4px 10px #0007;text-shadow:0 1px #fff1c566}
+.es2-skins .es2-skin-status[data-es2-skin-status=equipped]{color:#efffe4;background:linear-gradient(180deg,#32694f,#173b2c);border:1px solid #9bddaa;box-shadow:inset 0 0 0 2px #091d1666,0 0 9px #6ad89235;text-shadow:0 1px 2px #0b2117}
+.es2-skins .es2-skin-status[data-es2-skin-status=equipped] .es2-skin-status-icon{border-radius:50%;background:#baf3c6;color:#17442b}
+.es2-skins button:not(:disabled):focus-visible{outline:2px solid #ffe0a5;outline-offset:3px}
+@media(hover:hover) and (pointer:fine){
+  .es2-skins button:not(:disabled):not([aria-pressed=true]):hover .es2-skin-status{filter:brightness(1.15);transform:translateY(-1px)}
+}
+.es2-skins button:not(:disabled):not([aria-pressed=true]):active .es2-skin-status{transform:translateY(2px);box-shadow:inset 0 2px 5px #68401b66}
+@media(prefers-reduced-motion:reduce){.es2-skins .es2-skin-status{transition:none}}
+.es2-skins button:disabled{opacity:1;border-color:#8496a755}
+.es2-skins button:disabled .es2-skin-preview{opacity:.72;filter:saturate(.65)}
+.es2-skins .es2-skin-locked{color:var(--es2-gold);font-size:max(11px,.75rem);font-weight:600}
+.es2-skins .es2-skin-unlock{display:block;width:100%;box-sizing:border-box;padding:6px 4px;border-top:1px solid var(--es2-line);color:var(--es2-text);font-size:max(11px,.75rem);line-height:1.45;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:540px){.es2-skins{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+/* Native cursor images preserve real OS hit testing; no Pixi/canvas loop. */
+@media (hover:hover) and (pointer:fine){
+  body{cursor:url('../../assets/ui/cursor-bronze.svg') 4 3,auto}
+  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),[role="option"]:not([aria-disabled="true"]),input[type="range"]){
+    cursor:url('../../assets/ui/cursor-action.svg') 13 3,pointer!important
+  }
+  body :is(button:disabled,[aria-disabled="true"]){cursor:not-allowed!important}
+}
+@media (forced-colors:active){
+  body{cursor:auto!important}
+  body :is(button:not(:disabled),a[href],[role="button"]:not([aria-disabled="true"]),[role="option"]:not([aria-disabled="true"]),input[type="range"]){cursor:pointer!important}
+}
+
+/* A single brief star glint beside the OS cursor, never a cursor replacement.
+   Only transform/opacity animate. It never participates in hit testing. */
+.es2-cursor-accent{
+  position:fixed;z-index:2147483000;left:0;top:0;width:19px;height:19px;
+  opacity:0;pointer-events:none;user-select:none;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,#f0ca8666,transparent 72%)
+}
+.es2-cursor-accent::before{
+  content:'';position:absolute;inset:3px;
+  background:linear-gradient(140deg,#fff8dc,#e8b764 64%,#9f7041);
+  clip-path:polygon(50% 0,59% 40%,100% 50%,59% 60%,50% 100%,41% 60%,0 50%,41% 40%)
+}
+.es2-cursor-accent::after{
+  content:'';position:absolute;top:1px;right:1px;width:2px;height:2px;
+  border-radius:50%;background:#f4d9a4;box-shadow:-12px 10px #e6be7d80
+}
+@media(hover:none),(pointer:coarse),(prefers-reduced-motion:reduce),(forced-colors:active){
+  .es2-cursor-accent{display:none!important}
+}
+[data-es2-reduce-motion="true"] .es2-cursor-accent,
+[data-es2-reduce-flashing="true"] .es2-cursor-accent{display:none!important}
+
+/* Selected hero: one outer gold rim and status ribbon for all six cards.
+   Never dim the other portraits, alter image bounds, or occupy the detail-button corner. */
+.es2-menu .es2-hero-select-card[aria-pressed="true"]{
+  --es2-hero-glow:#ffd16b80;
+  border-color:#ffe3a3;
+  box-shadow:inset 0 0 0 2px #e9c27e,0 0 0 1px #b58a4a,0 0 18px #e7b56465;
+}
+.es2-menu .es2-hero-select-card[aria-pressed="true"]>.es2-hero-copy{
+  background:linear-gradient(180deg,#342d28,#171f2b 62%);
+  border-top-color:#e6bf7a;
+}
+.es2-menu .es2-hero-select-card[aria-pressed="true"]>.es2-hero-copy>strong{
+  color:#fff0c5;text-shadow:0 1px 5px #b87e4460;
+}
+.es2-menu .es2-hero-select-card .es2-hero-selection-status{
+  display:block;align-self:stretch;box-sizing:border-box;min-width:0;
+  padding:3px 6px;line-height:1.25;text-align:center;overflow-wrap:anywhere;
+  border:1px solid transparent;color:#aebac8;
+}
+.es2-menu .es2-hero-select-card[aria-pressed="true"] .es2-hero-selection-status{
+  background:linear-gradient(105deg,#8a602d,#f3d69b 23%,#ffe9b4 50%,#dab071 77%,#8a602d);
+  border-color:#f2d79c;
+  color:#38261d;font-weight:800;text-shadow:none;
+  clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);
+}
+@media(max-width:610px),(max-height:520px){
+  .es2-menu .es2-hero-select-card .es2-hero-selection-status{padding:2px 4px;font-size:max(.6875rem,calc(.75rem * var(--es2-ui-scale,1)))}
+}
+@media(forced-colors:active){
+  .es2-menu .es2-hero-select-card[aria-pressed="true"]{outline:2px solid Highlight;outline-offset:-3px}
+  .es2-menu .es2-hero-select-card[aria-pressed="true"] .es2-hero-selection-status{background:Highlight;color:HighlightText;clip-path:none}
+}
+
+/* Fit the actual remaining hero-page area, including localized header and dock height. */
+@media (min-width:1000px) and (min-height:700px) {
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-menu-shell{height:100%;min-height:0}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-menu-header,.es2-hall-navigation){flex:0 0 auto}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-menu-layout{flex:1 1 0;min-height:0}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-hero-section{height:100%;grid-template-rows:auto minmax(0,1fr)}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-grid,.es2-roster){min-height:0;grid-template-rows:minmax(0,1fr)}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-card,.es2-roster__card){min-height:0}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) :is(.es2-hero-card > img,.es2-roster__portrait){flex:1 1 0;min-height:0;height:0;max-height:none;object-fit:contain;padding:4px 2px}
+  .es2-menu[data-es2-menu-page="heroes"]:not(.es2-menu--archive) .es2-hero-copy{flex:0 0 auto}
+}
+
+/* Keep the nine expedition choices above the fixed dock on compact wide screens. */
+@media (min-width:1000px) and (min-height:700px) and (max-height:800px) {
+  .es2-menu[data-es2-menu-page="modes"] .es2-menu-shell{gap:6px}
+  .es2-menu[data-es2-menu-page="modes"] .es2-objective-grid{gap:6px}
+  .es2-menu[data-es2-menu-page="modes"] .es2-objective-choice{min-height:64px;padding-block:4px}
+}
+
+/* Scene transitions — one shared arrival keyframe, tuned per surface by two custom properties.
+   Destination-only: no outgoing overlay, JS timers, layout changes or blocked input, so every
+   click/keypress acts immediately. Uses `translate`/`scale` (not `transform`) so hover lifts and
+   the centered HUD bar keep their own transforms. Audio ownership is unchanged. */
+:root {
+  --es2-scene-fast: 140ms;
+  --es2-scene-base: 220ms;
+  --es2-scene-slow: 320ms;
+  --es2-scene-ease: cubic-bezier(.2, .75, .25, 1);
+}
+@keyframes es2-scene-arrive {
+  from { opacity: 0; translate: var(--es2-scene-from, 0 0); scale: var(--es2-scene-scale, 1); }
+}
+/* Home: fade interactive selection grids in place so their hit targets stay inside
+   the viewport even on the first animation frame. Archive content still rises.
+   Do not retain a compositor animation layer after the fade completes. */
+@keyframes es2-scene-fade { from { opacity: 0; } }
+/* The lobby shell must be opaque on its first paint; fade only its children. */
+.es2-menu { animation:none; opacity:1; }
+.es2-hero-section, .es2-mode-section { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
+.es2-archive-page { --es2-scene-from: 0 12px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
+.es2-menu-action-bar { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
+/* Dialogs (settings/pause, level-up, treasure, result, confirmations) and loading. */
+.es2-backdrop, .es2-loading { animation: es2-scene-arrive var(--es2-scene-fast) ease-out both; }
+.es2-dialog { --es2-scene-from: 0 14px; --es2-scene-scale: .97; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
+.es2-choice-grid > .es2-choice { --es2-scene-from: 0 18px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
+.es2-choice-grid > .es2-choice:nth-child(2) { animation-delay: 40ms; }
+.es2-choice-grid > .es2-choice:nth-child(3) { animation-delay: 80ms; }
+.es2-choice-grid > .es2-choice:nth-child(n+4) { animation-delay: 120ms; }
+/* Combat entry: the world settles in from a slight zoom, then the HUD slides into place. */
+#game[data-es2-combat-scene] { --es2-scene-scale: 1.04; animation: es2-scene-arrive var(--es2-scene-slow) var(--es2-scene-ease) both; }
+.es2-hud--active .es2-hud__top { --es2-scene-from: 0 -16px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) 60ms both; }
+.es2-hud--active .es2-hud__bottom { --es2-scene-from: 0 16px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) 60ms both; }
+[data-es2-reduce-motion="true"] :is(.es2-menu, .es2-hero-section, .es2-mode-section, .es2-archive-page, .es2-menu-action-bar, .es2-loading, .es2-backdrop, .es2-dialog, .es2-choice, #game[data-es2-combat-scene], .es2-hud__top, .es2-hud__bottom) {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.es2-menu, .es2-hero-section, .es2-mode-section, .es2-archive-page, .es2-menu-action-bar, .es2-loading, .es2-backdrop, .es2-dialog, .es2-choice, #game[data-es2-combat-scene], .es2-hud__top, .es2-hud__bottom) {
+    animation: none !important;
+  }
+}
+
+/* Expedition result (victory/defeat): compact report fits when possible; allow overflow fallback.
+   The portrait is the only flexible element: it grows into spare height and yields it to rewards.
+   Narrow portrait stacks banner over report; wide or landscape screens use banner | report. */
+.es2-dialog-result .es2-dialog-body{display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain}
+.es2-dialog-result .es2-dialog-actions{justify-content:center;margin-top:clamp(8px,1.8dvh,18px);padding-top:clamp(8px,1.8dvh,16px)}
+.es2-dialog-result .es2-dialog-actions button{flex:0 1 220px}
+.es2-dialog-result .es2-result{position:relative;display:flex;flex-direction:column;flex:1 1 auto;gap:clamp(8px,1.5dvh,14px);min-height:min-content;text-align:center}
+.es2-dialog-result .es2-result-banner{position:relative;display:flex;flex-direction:column;align-items:center;flex:1 1 clamp(136px,31dvh,300px);gap:2px;padding:clamp(6px,1.2dvh,12px) 10px;border:1px solid #c3a97d40;border-radius:12px;background:radial-gradient(ellipse 58% 52% at 50% 40%,#e4b26324,transparent 72%),#08121ecc;box-shadow:inset 0 1px #d9bb8726}
+.es2-tone-defeat .es2-result-banner{background:radial-gradient(ellipse 58% 52% at 50% 40%,#9d454536,transparent 72%),#08121ecc}
+/* Preferred size lives on the banner; a zero-basis portrait keeps the banner floor at portrait-min + status + mode. */
+.es2-dialog-result .es2-result-hero{position:relative;flex:1 1 0;width:100%;min-height:56px}
+.es2-dialog-result .es2-result-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 10px 18px #000a)}
+.es2-dialog-result .es2-result-crown{position:absolute;top:6px;right:10px;z-index:2;font-size:clamp(1.6rem,4dvh,2.4rem);line-height:1;color:#e7bf80;text-shadow:0 0 20px #e4b26377}
+.es2-dialog-result .es2-result-status{flex:none;margin:4px 0 0;font:700 .75rem system-ui,sans-serif;letter-spacing:.13em;color:#e6c995}
+.es2-dialog-result .es2-result-mode{flex:none;margin:0;font-size:.85rem;color:var(--es2-muted)}
+.es2-dialog-result .es2-result-report{display:flex;flex:none;flex-direction:column;justify-content:safe center;gap:clamp(8px,1.5dvh,12px);min-width:0}
+.es2-dialog-result .es2-result-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(5px,1dvh,10px);margin:0;text-align:left}
+.es2-dialog-result .es2-result-stats>div{gap:3px;padding:clamp(6px,1.2dvh,12px) clamp(7px,1vw,14px)}
+.es2-dialog-result .es2-result-stats b{font-size:clamp(.95rem,2.2dvh,1.25rem);white-space:nowrap}
+.es2-dialog-result .es2-result-stats small{min-width:0;font-size:.72rem}
+.es2-reward-strip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:clamp(5px,1.1dvh,12px) 8px;border:1px solid #b5a06c7a;border-radius:10px;background:#4d3a2655}
+.es2-reward-strip strong{color:#f9d596}
+.es2-reward-group{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 6px;margin:0}
+.es2-reward-group small{font:700 .72rem system-ui,sans-serif;color:var(--es2-muted)}
+.es2-reward-strip span{padding:1px 8px;border:1px solid #b5a06c55;border-radius:999px;background:#0e1b2bcc;font-size:.75rem;line-height:1.4}
+.es2-dialog-result .es2-result-cloud{margin:0}
+@media (min-width:640px){
+  .es2-dialog-result .es2-result{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-rows:minmax(min-content,1fr);gap:clamp(10px,1.8vw,22px)}
+  .es2-dialog-result .es2-result-hero{flex-basis:clamp(96px,38dvh,340px)}
+  .es2-dialog-result .es2-victory-celebration{grid-column:1;grid-row:1}
+}
+/* Short or narrow screens: scoreboard ledger rows (label … value) instead of tall tiles. */
+@media (max-width:480px),(orientation:landscape) and (max-height:520px){
+  .es2-dialog-result .es2-result{gap:6px}
+  .es2-dialog-result .es2-result-report{gap:5px}
+  .es2-dialog-result .es2-result-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 6px}
+  .es2-dialog-result .es2-result-stats>div{flex-direction:row-reverse;justify-content:space-between;align-items:baseline;gap:6px;padding:1px 8px;border-radius:7px}
+  .es2-dialog-result .es2-result-stats b{font-size:.9rem;text-align:right}
+  .es2-dialog-result .es2-reward-strip{gap:3px;padding:4px 8px}
+  .es2-dialog-result .es2-reward-strip span{line-height:1.3}
+  .es2-dialog-result .es2-dialog-actions{margin-top:5px;padding-top:5px}
+  .es2-dialog-result .es2-result-hero{min-height:44px}
+  .es2-dialog-result .es2-result-banner{padding:4px 8px}
+  .es2-dialog-result .es2-result-status{margin-top:2px;letter-spacing:.08em}
+  .es2-dialog-result .es2-result-mode{font-size:.75rem}
+  .es2-dialog-result .es2-dialog-actions button{flex:1 1 0;min-width:0;padding:.5rem .75rem}
+}
+@media (max-width:480px){
+  .es2-dialog-result .es2-dialog-header .es2-eyebrow{display:none}
+  .es2-dialog-result .es2-dialog-header h2{margin:0 0 4px;font-size:calc(1.2rem * var(--es2-ui-scale,1))}
+  .es2-dialog-result .es2-dialog-header p{font-size:.78rem;line-height:1.35}
+}
+/* 320-class phones: a long value plus a one-word label overflow a ledger row, so stack value over label. The header summary repeats time, kills and level from the stats, so drop it here. */
+@media (max-width:360px){
+  .es2-dialog-result .es2-dialog-header h2{font-size:calc(1.05rem * var(--es2-ui-scale,1))}
+  .es2-dialog-result .es2-dialog-header p{display:none}
+  .es2-dialog-result .es2-result-stats>div{flex-direction:column;align-items:stretch;gap:0;padding:2px 8px}
+  .es2-dialog-result .es2-result-stats b{text-align:left}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .es2-dialog-result .es2-dialog-header>div:first-child{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:12px}
+  .es2-dialog-result .es2-dialog-header h2{margin:0}
+  .es2-dialog-result .es2-result{grid-template-columns:minmax(110px,.8fr) minmax(0,2.6fr)}
+  /* One flowing chip line: ember total, kind labels and unlock names share rows. */
+  .es2-dialog-result .es2-reward-strip{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:3px 6px}
+  .es2-dialog-result .es2-reward-group{display:contents}
+  .es2-dialog-result .es2-result-cloud{font-size:.75rem}
+  .es2-dialog-result .es2-result-cloud button{min-height:44px;padding:.3rem .8rem}
+}
+
+/* Monster dossiers share the hero stat tiles and the existing scrollable detail surface. */
+.es2-menu [data-es2-archive-page="monsters"] .es2-card-info-trigger{display:grid}
+.es2-menu [data-es2-archive-page="monsters"] .es2-context-card>strong{padding-inline-end:25px}
+.es2-monster-dossier{display:grid;gap:9px;min-width:0;container-type:inline-size;padding:12px;border:1px solid #a78d594d;border-radius:8px;background:#0b172577}
+.es2-monster-dossier h3,.es2-monster-dossier h4{margin:0;color:#ffe4a6;overflow-wrap:anywhere}
+.es2-monster-dossier h3{font-size:1.08em}
+.es2-monster-dossier h4{font-size:.9em;letter-spacing:.03em}
+.es2-monster-stat-name{color:#bfcad3;font-size:.78rem;text-align:center;overflow-wrap:anywhere}
+.es2-monster-dossier .es2-hero-stat-value{min-width:0;overflow-wrap:anywhere}
+.es2-hero-detail-content .es2-monster-note{color:#bfcad3}
+@container (max-width: 16rem){
+  .es2-monster-dossier .es2-hero-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container (max-width: 9rem){
+  .es2-monster-dossier .es2-hero-stat-strip{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Shared centered archive art slot; atlas previews use the first authentic battle pose. */
+.es2-archive-art{display:grid;place-items:center;flex:none;width:100%;min-width:0;height:132px;box-sizing:border-box}
+.es2-archive-art>img{display:block;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;object-fit:contain;object-position:center}
+.es2-archive-atlas{display:block;width:min(100%,132px);aspect-ratio:1;background-position:left center;background-repeat:no-repeat}
+.es2-warlock-portrait{filter:hue-rotate(15deg) saturate(1.2)}
+.es2-archive-art>.es2-achievement-icon{width:64px;height:64px;margin:auto}
+@media(max-width:700px){.es2-archive-art{height:115px}.es2-archive-atlas{width:min(100%,115px)}}
+
+/* ES3 legendary choice: rotating gold foil rim, label shimmer and one shared Pixi aura layer (Es2LegendaryAura). */
+@property --es3-legend-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
+.es2-choice-grid{position:relative}
+.es3-legend-aura{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.es3-legend-aura-canvas{display:block;pointer-events:none}
+.es3-legend-frame{position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;padding:2px;background:conic-gradient(from var(--es3-legend-angle),#ffe7a6,#c8892f 14%,#fff6d8 26%,#a8682a 40%,#ffd36e 55%,#fffaf0 64%,#b97a30 78%,#ffe7a6);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);animation:es3-legend-spin 5.5s linear infinite,es3-legend-enter .9s cubic-bezier(.2,.8,.2,1) both}
+.es2-choice.es2-rarity-legendary{box-shadow:0 10px 26px #000a,0 0 22px #e8b8674d,inset 0 0 28px #ffcf7a26}
+.es2-choice.es2-rarity-legendary:hover:not(:disabled),.es2-choice.es2-rarity-legendary.es2-choice-focused{box-shadow:0 14px 34px #000c,0 0 0 1px #ffe7a6,0 0 38px #f0bd6a99,inset 0 0 32px #ffcf7a40}
+.es2-choice.es2-rarity-legendary .es2-rarity-label{color:#ffe7a6;text-shadow:0 1px 4px #000c,0 0 10px #ffc96b66;animation:es3-legend-label 2.8s ease-in-out infinite}
+@keyframes es3-legend-spin{to{--es3-legend-angle:360deg}}
+@keyframes es3-legend-enter{0%{opacity:0;filter:brightness(2.4)}35%{opacity:1;filter:brightness(1.8)}100%{opacity:1;filter:none}}
+@keyframes es3-legend-label{50%{color:#fffbea;text-shadow:0 1px 4px #000c,0 0 16px #ffd98acc}}
+[data-es2-reduce-motion="true"] .es3-legend-frame,[data-es2-reduce-motion="true"] .es2-rarity-legendary .es2-rarity-label,.es2-still .es3-legend-frame,.es2-still .es2-rarity-legendary .es2-rarity-label{animation:none}
+[data-es2-reduce-flashing="true"] .es3-legend-frame,[data-es2-reduce-flashing="true"] .es2-rarity-legendary .es2-rarity-label{animation:none}
+@media(prefers-reduced-motion:reduce){.es3-legend-frame,.es2-rarity-legendary .es2-rarity-label{animation:none}}
+@media(forced-colors:active){.es3-legend-frame{display:none}.es2-choice.es2-rarity-legendary .es2-rarity-label{color:CanvasText;text-shadow:none}}

@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import { addXp } from '../../progression'
 import type { GameHooks, GameState, Point } from '../../types'
 import { clearApproach, pointIsClear } from '../../world'
@@ -11,7 +12,7 @@ export function createLegacyEventWorld(s: GameState): EventWorld {
     time: s.time, biome: s.currentScene, playing: s.mode === 'play',
     hero: { x: s.hero.x, y: s.hero.y, hp: s.hero.hp, maxHp: s.hero.max, xp: s.hero.xp },
     canPlace: (at, radius) => pointIsClear(s.currentScene, at, radius),
-    canApproach: (from, to) => clearApproach(s.currentScene, from, to, 28),
+    canApproach: (from, to) => clearApproach(s.currentScene, from, to, BALANCE.events.interactive.approachClearance),
     isOccupied: (at, radius) => occupied(s, at, radius),
   }
 }
@@ -24,7 +25,7 @@ function occupied(s: GameState, at: Point, radius: number): boolean {
   }
   for (const event of s.events) {
     const dx = event.x - at.x, dy = event.y - at.y
-    if (dx * dx + dy * dy < (radius + 48) ** 2) return true
+    if (dx * dx + dy * dy < (radius + BALANCE.events.interactive.legacyMarkerClearance) ** 2) return true
   }
   return false
 }
@@ -80,7 +81,7 @@ export function createLegacyEventCommit(
 
 /** Guidance for engine integration; no shared files are modified by this branch. */
 export const WORLD_EVENT_INTEGRATION = {
-  maxActive: 2,
+  maxActive: BALANCE.events.interactive.maxActive,
   interactionRadius: 64,
   /** Current engine world tick must call director.tick(createLegacyEventWorld(state)) only during play. */
   lifecycle: ['reset', 'scene-change', 'play-tick'] as const,

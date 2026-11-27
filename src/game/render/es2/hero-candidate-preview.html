@@ -11,6 +11,11 @@
     p { line-height: 1.55; color: #adb7cc; max-width: 84ch; }
     button { background: #3d315f; color: white; border: 1px solid #8a7bba; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
     button:focus-visible { outline: 3px solid #f0cb86; outline-offset: 3px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .controls output { min-width: 84px; color: #f0d6a5; font-variant-numeric: tabular-nums; }
+    .grid[data-contrast="light"] canvas { background: repeating-conic-gradient(#fff 0 25%, #dedfe5 0 50%) 50% / 24px 24px; }
+    .grid[data-scale="1x"] canvas { width: 147px; max-width: 100%; }
+    .grid[data-scale="1x"] article { align-content: start; }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
     article { min-width: 0; background: #1c2130; border: 1px solid #434b61; border-radius: 10px; padding: 10px; }
     article h2 { font-size: .93rem; font-weight: 600; margin: 4px 0 10px; overflow-wrap: anywhere; }
@@ -23,8 +28,16 @@
 <body>
   <h1>ES2 Character Action Art — Candidate Review</h1>
   <p id="candidate-summary" aria-live="polite">Loading committed candidate inventory…</p>
-  <p>These are <strong>real committed local WebP assets</strong>, not gameplay screenshots. QA_PENDING: missing directions, missing unique frames, incomplete native-3× approval and original-edge clipping risks. The production game is unchanged.</p>
-  <button id="pause" type="button" aria-pressed="false">Pause frames</button>
+  <p>These are <strong>real committed local WebP assets</strong>, not gameplay screenshots. QA_PENDING: missing directions, missing unique frames, incomplete native-3× approval and original-edge clipping risks. The production game is unchanged. Pause, step individual frames, inspect on light/dark backgrounds, then switch to 147px game-size display to check alpha fringes and foot alignment.</p>
+  <p>Spirit Summoner NW comparison: compare the independent batch-6 source with the horizontally reflected NE source. Both comparison panels are review-only; check staff hand, silhouette and alpha fringes before selecting either for gameplay.</p>
+  <div class="controls" role="group" aria-label="Animation frame inspection">
+    <button id="pause" type="button" aria-pressed="false">Pause frames</button>
+    <button id="step-prev" type="button" aria-label="Previous frame">Previous frame</button>
+    <output id="frame-status" aria-live="polite">Frame 1 / 4</output>
+    <button id="step-next" type="button" aria-label="Next frame">Next frame</button>
+    <button id="background-toggle" type="button" aria-pressed="false">Light background</button>
+    <button id="scale-toggle" type="button" aria-pressed="false">1× game-size preview</button>
+  </div>
   <main id="grid" class="grid" aria-label="Candidate animation strips"></main>
   <script type="module" src="./hero-candidate-preview.ts"></script>
 </body>

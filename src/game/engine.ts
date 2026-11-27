@@ -1,48 +1,62 @@
 import { shallowReactive } from 'vue'
+import { accountStorage } from '../cloud/account-storage'
+import { cloudRuntime } from '../cloud/cloud-runtime'
+import type { CloudWallet } from '../cloud/wallet-policy'
 import { createProfileStore, type ProfileStore } from '../meta/profile'
-import { getMode, isObjectiveModeId } from '../meta/modes'
+import { MODES, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
+import { mergeMonsterKills, runMonsterKills } from './monster-catalog'
 import { createAudioSystem } from './audio/engine'
+import { BOSS_PHASE_PALETTE } from './audio/boss-phase-sample'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
-import { dash as heroDash, hit } from './combat'
+import { attack, dash as heroDash, hit } from './combat'
+import { clearHeroImpact, healthCriticalVersion, rollIncomingCritical } from './health-impact'
+import { getFiringOrigin } from './weapon-geometry'
 import { BALANCE } from './config'
+import { countLivingEnemies } from './combat-telemetry'
 import { JOB, SCENE_SECONDS } from './constants'
 import { createContentRegistry, type ContentRegistry } from './content/registry'
 import { createHeroRosterAdapter, HERO_DEFINITIONS, isSpecializationId, type HeroSpecializationAdapter } from './content/heroes'
+import { createClassicHeroActive, type ClassicHeroActive } from './content/heroes/classic-active'
 import type { VisualPresentationPolicy } from './content/accessibility/presentation'
 import { CONTENT_PACKS } from './content/packs'
 import { BOSS_DEFINITIONS, type BossId } from './content/bosses/definitions'
-import { getBossArrivalWarning } from './bosses/countdown'
+import { getBossArrivalWarning, type BossArrivalWarning } from './bosses/countdown'
 import { createBossEncounterController } from './content/bosses/controller'
 import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
+import { HALL_UPGRADE, hallRankVariant } from './audio/hall-upgrade-sample'
+import { researchCelebrationVariant } from './audio/hall-research-cue'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
 import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
-import { impact } from './fx'
+import { burst, impact } from './fx'
+import { emitCombatVfx, followHeroSpecialFx } from './content/packs/combat-vfx'
 import { EVOLUTIONS } from './evolutions'
 import { moveVector, PREVENT_DEFAULT_KEYS, upgradeKeyIndex, type KeyState } from './input'
 import { minmax, random } from './math'
 import { addXp, applyUpgrade, pickUpgrades } from './progression'
 import { createRenderAssets, drawFrame, drawMiniMap, type RenderAssets } from './render'
+import { createPixiVfxBridge, type PixiVfxBridge, type PixiVfxStats } from './render/pixi-vfx/bridge'
 import { createFactionBridge } from './content/enemies/integration'
-import { ENEMY_DEFINITIONS, type FactionKind } from './content/enemies/definitions'
 import { loadProductionFactionArt } from './render/es2/production-factions'
 import { loadProductionHeroes } from './render/es2/production-heroes'
 import { markHeroSpecialAnimation } from './render/animation'
 import { loadWorldRuntimeImages } from './render/es2/production-world'
 import { setScene } from './scene'
-import { spawnMob } from './spawn'
+import { spawnOpeningWave, spawnMob } from './spawn'
 import { actorPose, createState, currentSceneInfo, resetRun, type Pose } from './state'
 import { step } from './step'
 import { emptyHud, equippedSkillHud, type GameCommands, type UiState } from './store'
 import type { AbilityId, ContentEvent, ContentId, EvolutionId, GameHooks, GameMode, GameState, HeroId, JobId, MoveInput, Point, UpgradeId } from './types'
+
+const TREASURE_AUDIO_TIERS = ['common', 'rare', 'epic', 'legendary', 'cursed'] as const
 
 /** Debug/automation API kept name-for-name from the original (`scripts/export-brand-assets.py` uses it). */
 export interface TestApi {
@@ -65,6 +79,7 @@ export interface TestApi {
   readonly pose: Pose
   readonly attackAnimation: boolean
   readonly vfxCount: number
+  readonly pixiVfx?: PixiVfxStats
   readonly frames: number
   readonly scene: string
   /** Live encounter identity and phase for browser QA; not a player setting. */
@@ -72,8 +87,14 @@ export interface TestApi {
   /** Dev capture reads which real boss attack is currently telegraphing. */
   readonly bossAttackPreview: { id: string | null; activeImpacts: number }
   forceAttack(): void
+  /** DEV art capture only: stage a real East target and invoke normal combat. */
+  prepareHeroArtEastAttack(): boolean
+  /** DEV-only capture setup, uses genuine spawned enemies and ordinary Q input. */
+  prepareHeroActiveVideo(): boolean
   /** Browser-capture scenario, isolated from normal play. */
   showcaseBoss(phase?: 1 | 2 | 3): void
+  /** DEV capture only: trigger the real HP-based phase change on the same living boss. */
+  captureBossPhase(phase: 2 | 3): boolean
   /** Capture-only biome preview; requires ?showcase=1. */
   previewBiome(index: number): void
 }
@@ -83,6 +104,10 @@ declare global {
 }
 
 export interface Engine extends GameCommands {
+  readonly cloudWallet?: {
+    select(uid: string | null): boolean
+    apply(wallet: CloudWallet, expectedBalance: number, preserveBalance: boolean): boolean
+  }
   readonly contentRegistry: ContentRegistry
   setVisualPresentationPolicy(policy: VisualPresentationPolicy): void
   /** Only active in development with ?content-showcase=1. */
@@ -90,6 +115,7 @@ export interface Engine extends GameCommands {
   showcaseEmit(event: ContentEvent): void
   readonly ui: UiState
   readonly state: GameState
+  readonly bossArrivalWarning: BossArrivalWarning | null
   readonly testApi: TestApi
   /** Original `update()` tail run by `frame()`: clock, step, toast, 8 Hz hud. */
   advance(dt: number): void
@@ -113,16 +139,26 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const s = createState()
   const requestedPacks = opts.contentPacks ?? CONTENT_PACKS
   const relicsEnabled = requestedPacks.some(pack => pack.id === 'relics')
-  const bosses = requestedPacks.some(pack => pack.id === 'bosses') ? createBossEncounterController() : null
+  let bossPhaseSerial = 0
+  const bosses = requestedPacks.some(pack => pack.id === 'bosses') ? createBossEncounterController({
+    emit(event) {
+      if (event.type === 'intro') { ui.bossPhaseReveal = null; audio.prepareBossAttackAudio?.(event.boss) }
+      else if (event.type === 'phase' && event.phase !== 1) {
+        ui.bossPhaseReveal = { boss: event.boss, phase: event.phase, serial: ++bossPhaseSerial, expiresAt: s.time + (event.phase === 3 ? 2.35 : 1.85) }
+        audio.playSfx(event.phase === 3 ? 'boss-phase-3' : 'boss-phase-2', BOSS_PHASE_PALETTE.indexOf(event.boss))
+        hud()
+      } else if (event.type === 'death') ui.bossPhaseReveal = null
+      else if (event.type === 'warning' || event.type === 'attack')
+        audio.playBossAttack?.(event.attack, event.type === 'warning' ? 'warning' : 'release')
+    },
+    cancelAttackAudio: () => audio.cancelBossAttackAudio?.(),
+  }) : null
   const contentRegistry = createContentRegistry(
     bosses ? requestedPacks.map(pack => pack.id === 'bosses' ? createBossEncounterPack(bosses) : pack) : requestedPacks,
     random,
   )
   const bossIds = Object.keys(BOSS_DEFINITIONS) as BossId[]
-  const factionIds = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
   const factions = requestedPacks.some(pack => pack.id === 'factions') ? createFactionBridge({ random }) : null
-  let factionSequence = 0
-  let factionWindow = 0
   let bossSequence = 0
   const bossAdapter = bosses ? {
     spawn(state: GameState, hooks: GameHooks): void {
@@ -140,19 +176,30 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // The unlocked mode exists only in Vite dev, and uses disposable saves.
   // Even a build with VITE_ES2_UNLOCKED=1 cannot enable it in production.
   const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
-  const profileStore = opts.profileStore ?? createProfileStore(
-    unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : undefined,
-  )
+  const runtime = cloudRuntime()
+  const emulator = runtime.mode === 'emulator'
+  const namespace = emulator ? 'emulator.' + runtime.projectId : 'account'
+  const scopedStorage = (uid: string | null) => {
+    if (!uid && !emulator) return undefined
+    return accountStorage(localStorage, uid ?? 'guest', namespace + (emulator ? (uid ? '.uid' : '.guest') : ''))
+  }
+  // Unlocked test profiles remain in memory even when authenticated. A dedicated
+  // demo project owns their test currency; live phone sign-in is identity-only.
+  const guestProfileStorage = unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : scopedStorage(null)
+  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : scopedStorage(null)
+  const unlockedAccounts = new Map<string, { profile: ReturnType<typeof createUnlockedPlaytestProfileStorage>; meta: ReturnType<typeof createUnlockedPlaytestMetaStorage> }>()
+  let profileStore = opts.profileStore ?? createProfileStore(guestProfileStorage)
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  const metaStore = opts.profileStore ? null : createMetaProgressionStore(
-    unlockedPlaytest ? createUnlockedPlaytestMetaStorage() : undefined,
-  )
+  let metaStore = opts.profileStore ? null : createMetaProgressionStore(guestMetaStorage)
+  let walletAccount: string | null = null
+  const walletReady = (): boolean => !walletAccount || !!metaStore?.get().state?.cloudWallet
   function displayProfile() {
     const legacy = profileStore.get()
     const persisted = metaStore?.get()
     if (persisted?.status === 'ready' && persisted.state) {
       const v3 = persisted.state
+      legacy.discoveredMonsters = mergeMonsterKills(persisted.legacyProfile?.discoveredMonsters ?? legacy.discoveredMonsters, v3.monsterKills ?? {})
       legacy.runs = v3.runs
       legacy.wins = v3.wins
       legacy.embers = v3.embers
@@ -207,6 +254,43 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       },
     }) : null
   const settingsStorage = (() => { try { return localStorage } catch { return null } })()
+  type SelectionKey = 'eclipseSelectedHero' | 'eclipseSelectedRunMode'
+  const pendingSelectionWrites = new Set<SelectionKey>()
+  // A failed write must not replace a newer in-memory choice with stale storage on Home.
+  function readSelection(key: SelectionKey, fallback: string): string {
+    if (pendingSelectionWrites.has(key)) return fallback
+    try { return settingsStorage?.getItem(key) ?? fallback } catch { return fallback }
+  }
+  function saveSelection(key: SelectionKey, value: string): void {
+    try {
+      if (!settingsStorage) throw new Error('Storage unavailable')
+      settingsStorage.setItem(key, value)
+      pendingSelectionWrites.delete(key)
+    } catch { pendingSelectionWrites.add(key) }
+  }
+  // The current roster has no account-specific hero/mode entitlements.
+  // Keep restoration and explicit selection on the same availability checks.
+  function canSelectHero(id: unknown): id is HeroId {
+    return isSpecializationId(id)
+      ? !!contentRegistry.getAbility(HERO_DEFINITIONS[id].startingAbility)
+      : typeof id === 'string' && Object.prototype.hasOwnProperty.call(JOB, id)
+  }
+  function isRunModeId(id: unknown): id is RunModeId {
+    return typeof id === 'string' && Object.prototype.hasOwnProperty.call(MODES, id)
+  }
+  function applyHeroChoice(id: HeroId): void {
+    s.heroId = id
+    s.choice = isSpecializationId(id) ? HERO_DEFINITIONS[id].legacyArtJob : id
+    s.cosmetic = displayProfile().equippedCosmetics[s.choice]
+  }
+  // Restore silently: reopening the page is not a player gesture or a new selection.
+  function restoreMenuSelection(): void {
+    const hero = readSelection('eclipseSelectedHero', s.heroId)
+    const mode = readSelection('eclipseSelectedRunMode', s.runMode)
+    applyHeroChoice(canSelectHero(hero) ? hero : 'knight')
+    s.runMode = isRunModeId(mode) ? mode : 'quick'
+  }
+  restoreMenuSelection()
   let initialEffect: 'soft' | 'still' = 'soft'
   let initialShake = false
   try {
@@ -214,14 +298,20 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (settingsStorage?.getItem('eclipseCameraShake') === 'on') initialShake = true
   } catch { /* private browsing may block settings */ }
   const ui = shallowReactive<UiState>({
-    mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
+    bossPhaseReveal: null, mode: 'menu', choice: s.choice, heroId: s.heroId, heroSpecial: null, musicOn: audio.musicOn, audioUnlocked: audio.unlocked, sfxOn: audio.sfxOn,
     musicVolume: audio.musicVolume, sfxVolume: audio.sfxVolume,
     settingsOpen: false, upgradeEffect: initialEffect, cameraShake: initialShake, hud: emptyHud(),
     upgrades: [], specialChoice: null, toastText: '', toastVisible: false, ending: '冒險結束', summary: '', coarsePointer: false,
-    runMode: 'quick', objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
+    runMode: s.runMode, objectiveProgress: null, worldEventMarkers: [], worldEventChoice: null,
     profile: displayProfile(), metaState: metaStore?.get().state ?? null,
     metaStatus: metaStore?.get().status ?? null, runResult: null, rewards: null,
   })
+  function syncMenuSelection(): void {
+    restoreMenuSelection()
+    ui.heroId = s.heroId
+    ui.choice = s.choice
+    ui.runMode = s.runMode
+  }
   function refreshMeta(): void {
     const snapshot = metaStore?.get()
     ui.metaState = snapshot?.state ?? null
@@ -235,13 +325,18 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   let runSequence = 0
   let runReceiptId: string | null = null
   let frameDrawn = 0
+  let pixiVfx: PixiVfxBridge | undefined
   let presentationPolicy: VisualPresentationPolicy | null = null
+  let lastHapticAt = -Infinity
   let resizeRenderer: () => void = () => {}
   let art: Artwork | null = null
-  let heroSpecialization: HeroSpecializationAdapter | null = null
+  let heroSpecialization: HeroSpecializationAdapter | ClassicHeroActive | null = null
   let objectiveRuntime: ObjectiveRuntime | null = null
+  const arrivalWarning = () => getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null,
+    bosses ? bossIds[bossSequence % bossIds.length]! : null)
   let worldEvents: LiveWorldEvents | null = null
   let ending = false
+  let lastCritical = false
 
   function wakeAudio(): void {
     if (es2Audio) es2Audio.wakeFromGesture()
@@ -250,22 +345,43 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   const hooks: GameHooks = {
-    sfx: cue => audio.playSfx(cue),
+    otherLivingActors: () => factions?.runtime.enemies.length ?? 0,
+    factions: () => factions ?? undefined,
+    contactSfx: cue => audio.playSfx(cue),
+    sfx: (cue, milestone) => {
+      if (milestone === undefined) audio.playSfx(cue)
+      else audio.playSfx(cue, milestone)
+      if (s.mode !== 'play' || !presentationPolicy?.haptics || !ui.coarsePointer || s.time - lastHapticAt < 0.65) return
+      const duration = cue === 'bossDefeat' ? 45 : cue === 'bossStagger' || cue === 'killStreak' ? 30 : cue === 'massKill' || cue.endsWith('-special') ? 18 : 0
+      if (!duration || typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return
+      lastHapticAt = s.time
+      try { navigator.vibrate(duration) } catch { /* unsupported or blocked by browser */ }
+    },
     message,
     offerUpgrades,
     end,
     modifyOutgoingDamage: (amount, target) => {
+      lastCritical = false
       const modified = heroSpecialization?.modifyOutgoingDamage(amount) ?? amount
-      if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
+      if (!s.hero || s.mode !== 'play' || !Number.isFinite(modified) || modified <= 0) return modified
       const result = calculateRelicAttack(s, modified, {
+        relicsEnabled,
+        baseCritChance: s.heroId === 'shadowblade' ? 0 : BALANCE.combat.baseCriticalChance,
         moving: s.hero.moveAmount > 0,
         boss: target?.type === 'boss',
         targetHp: target?.hp,
         targetHpFraction: target && target.max > 0 ? target.hp / target.max : undefined,
       }, random)
+      lastCritical = result.critical
       return result.execute && target ? Math.max(result.damage, target.hp) : result.damage
     },
-    consumeCriticalHit: () => heroSpecialization?.consumeCriticalHit() ?? false,
+    consumeCriticalHit: () => {
+      const heroCritical = heroSpecialization?.consumeCriticalHit() ?? false
+      const critical = heroCritical || lastCritical
+      lastCritical = false
+      return critical
+    },
+    rollIncomingCritical: rank => rollIncomingCritical(rank, random),
     mitigateIncomingDamage: amount => {
       const modified = heroSpecialization?.mitigateIncomingDamage(amount) ?? amount
       if (!relicsEnabled || !s.hero || s.mode !== 'play' || modified <= 0) return modified
@@ -279,7 +395,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (reflect > 0) {
         // Only the original colliding Mob receives reflected damage.
         // Do not roll relic critical hits a second time for the reflected strike.
-        hit(s, source, amount * reflect, { ...hooks, modifyOutgoingDamage: undefined, consumeCriticalHit: undefined })
+        hit(s, source, amount * reflect, { ...hooks, contactKind: 'hero', modifyOutgoingDamage: undefined, consumeCriticalHit: undefined })
       }
     },
     canTargetHero: () => heroSpecialization?.canBeTargeted() ?? true,
@@ -288,30 +404,36 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ? (state, event) => {
         contentRegistry.emit(state, event, hooks)
         if (state === s) worldEvents?.onContentEvent(event)
+        if (state === s && event.type === 'kill' && event.mob.type === 'boss' && factions) {
+          factions.runtime.projectiles.length = 0
+          factions.runtime.zones.length = 0
+        }
         // Only an actual finalized kill can advance an objective. The existing
         // boss controller gets first chance to account for its original XP/reward.
         if (state === s && event.type === 'kill' && objectiveRuntime) {
-          const accepted = objectiveRuntime.defeatMob(event.mob)
-          if (accepted && event.mob.type === 'boss') bosses?.reset(state)
+          objectiveRuntime.defeatMob(event.mob)
+          // The controller retains the defeated pose and accepts the next scheduled boss.
         }
       }
       : undefined,
-    openTreasure: relicsEnabled ? (state, chestId) => {
-      const offer = openTreasure(state, chestId, random)
+    openTreasure: relicsEnabled ? (state, chestId, tier) => {
+      const offer = openTreasure(state, chestId, random, undefined, tier)
       if (!offer) return false
-      ui.specialChoice = { kind: 'treasure', items: offer.options.map(id => {
+      ui.specialChoice = { kind: 'treasure', tier: offer.tier, items: offer.options.map(id => {
         const relic = RELIC_BY_ID.get(id)!
-        return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity }
+        return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity, cursed: relic.cursed }
       }) }
       ui.upgrades = []
       screen('level')
+      const reveal = TREASURE_AUDIO_TIERS.indexOf(offer.tier ?? 'common')
+      audio.playSfx('treasureReveal', reveal)
       return true
     } : undefined,
   }
 
   // All 12 world events use the existing HP/XP, relic and combat writers.
   // The adapter owns the per-run transaction ledger, never another game loop.
-  worldEvents = createLiveWorldEvents(s, hooks, { random })
+  worldEvents = createLiveWorldEvents(s, hooks, { random, otherActors: () => factions?.runtime.enemies.length ?? 0 })
 
   // Special attacks and companion hits already own their damage; do not apply the normal
   // attack critical/modifier hook a second time when they call legacy hit().
@@ -322,15 +444,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   function screen(name: GameMode): void {
     // A level-up freezes gameplay: discard pending hit recoil before the picker opens.
     if (name === 'level') s.cameraKick = 0
+    if (name !== 'play' && s.hero) clearHeroImpact(s.hero)
     s.mode = name
     ui.mode = name
+    if (name !== 'play') ui.bossPhaseReveal = null
     ui.coarsePointer = typeof matchMedia === 'function' && matchMedia('(pointer:coarse)').matches
     // Switch back to the host after entering the title screen so the battle track stays paused.
     audio.onScreen(name)
     if (name === 'menu' || (name === 'result' && audio.setResultTheme)) setAdaptiveScore(false)
     else if (name === 'result') setAdaptiveScore(true)
     if (name === 'menu') es2Audio?.setScene('menu')
-    else if (name === 'play') es2Audio?.setScene('exploration')
     if (name !== 'play') {
       keys = {}
       stick = { x: 0, y: 0 }
@@ -347,17 +470,22 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const hero = s.hero
     if (!hero) return
     const sc = currentSceneInfo(s)
+    const sceneTitle = `${sc.name} · ${sc.label}`
     const boss = s.mobs.find(e => e.type === 'boss' && e.hp > 0)
     const xpPct = minmax(hero.xp / hero.need * 100, 0, 100)
     ui.hud = {
       who: `${isSpecializationId(s.heroId) ? HERO_DEFINITIONS[s.heroId].label : JOB[s.choice].label} · LV.${hero.level}`,
       hpPct: minmax(hero.hp / hero.max * 100, 0, 100),
+      heroCriticalVersion: healthCriticalVersion(hero),
       hpLabel: `生命 ${Math.ceil(hero.hp)} / ${hero.max}`,
       xpPct,
       kill: s.kill,
+      combo: s.killStreak.current > 1 ? { count: s.killStreak.current } : undefined,
       timer: `${pad2(Math.floor(s.time / 60))}:${pad2(Math.floor(s.time % 60))}`,
       bossPct: boss ? Math.max(0, boss.hp / boss.max * 100) : null,
-      quest: boss ? `最終決戰 · ${sc.name}` : `${sc.name} · ${sc.label}`,
+      bossCriticalVersion: boss ? healthCriticalVersion(boss) : 0,
+      sceneTitle,
+      quest: boss ? `最終決戰 · ${sc.name}` : sceneTitle,
       skills: equippedSkillHud(hero, contentRegistry, s),
     }
     ui.heroSpecial = heroSpecialization?.snapshot() ?? null
@@ -375,7 +503,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
     ui.upgrades = choices
     screen('level')
-    audio.playSfx('level')
+    // A legendary offer owns the opening sound; never layer the ordinary level chime under it.
+    audio.playSfx(choices.some(up => up.rarity === 'legendary') ? 'legendaryReveal' : 'level')
   }
 
   function end(win: boolean): void {
@@ -394,9 +523,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       mode: s.runMode, hero: s.choice,
       specializationId: isSpecializationId(s.heroId) ? s.heroId : undefined,
       victory: win, seconds: Math.floor(s.time),
+      bestKillStreak: s.killStreak.best, bestMultiKill: s.killStreak.bestBurst,
+      xpEarned: Math.round(s.combatTelemetry.xpEarned), firstUpgradeSeconds: s.combatTelemetry.firstUpgradeAt ?? undefined,
       kills: s.kill, level: h?.level ?? 1, remainingHp: Math.max(0, Math.ceil(h?.hp ?? 0)),
       damageDealt: Math.round(s.damageDealt), damageTaken: Math.round(s.damageTaken),
       bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
+      monsterKills: runMonsterKills(s.defeatedTypes, factions?.defeated ?? {}, s.defeatedBosses ?? {}),
       abilities: [
         ...(Object.keys(h?.skills ?? {}) as UpgradeId[]),
         ...(Object.keys(s.content.levels) as ContentId[]),
@@ -438,20 +570,23 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   function selectHero(id: HeroId): void {
-    if (s.mode !== 'menu' || ( !isSpecializationId(id) && !Object.prototype.hasOwnProperty.call(JOB, id))) return
-    const fallback = isSpecializationId(id) ? HERO_DEFINITIONS[id].legacyArtJob : id as JobId
-    s.heroId = id
-    ui.heroId = id
-    s.choice = fallback
-    ui.choice = fallback
-    s.cosmetic = displayProfile().equippedCosmetics[fallback]
+    if (s.mode !== 'menu' || !canSelectHero(id)) return
+    applyHeroChoice(id)
+    ui.heroId = s.heroId
+    ui.choice = s.choice
     ui.heroSpecial = null
+    saveSelection('eclipseSelectedHero', id)
     wakeAudio()
-    audio.playSfx('select')
+    audio.playSfx('hero-select')
   }
 
   function start(): void {
+    if (!walletReady()) return
+    // Account changes at results must not rewrite a completed run. Restore only
+    // when the player starts another run or returns to the menu.
+    if (s.mode === 'result') syncMenuSelection()
     ending = false
+    ui.bossPhaseReveal = null
     if (metaStore && typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
       const entropy = new Uint8Array(16)
       crypto.getRandomValues(entropy)
@@ -462,17 +597,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     ui.worldEventChoice = null
     ui.worldEventMarkers = []
     resetRun(s)
+    s.directorSeed = Math.floor(random() * 0x100000000)
+    lastHapticAt = -Infinity
     factions?.reset()
-    factionSequence = 0
-    factionWindow = 0
     objectiveRuntime = isObjectiveModeId(ui.runMode)
       ? createObjectiveRuntime(ui.runMode, (_state, evaluation) => {
         if (s.mode === 'play') end(evaluation.status === 'victory')
       })
       : null
     if (objectiveRuntime) bossSequence = 0
-    heroSpecialization = createHeroRosterAdapter(s, s.heroId, heroHooks, random)
+    heroSpecialization = isSpecializationId(s.heroId)
+      ? createHeroRosterAdapter(s, s.heroId, heroHooks, random)
+      : createClassicHeroActive(s, s.heroId, heroHooks, factions)
     heroSpecialization?.reset()
+    // Start decoding the GPU hero pass before the first Q, not on the cast frame.
+    if (heroSpecialization) pixiVfx?.warm()
     hooks.content?.(s, { type: 'reset' })
     s.runMode = ui.runMode
     s.cosmetic = displayProfile().equippedCosmetics[s.choice]
@@ -482,6 +621,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ? { power: unlocked?.research.power ?? 0, vitality: unlocked?.research.vitality ?? 0 }
       : profileStore.get().upgrades
     if (s.hero) {
+      s.hero.need = BALANCE.progression.initialXpByMode[s.runMode]
       const bonusHp = BALANCE.meta.research.vitality.benefitPerRank * permanent.vitality
       s.hero.damage *= 1 + BALANCE.meta.research.power.benefitPerRank * permanent.power
       s.hero.max += bonusHp
@@ -510,29 +650,27 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     audio.setBossWarning?.(null)
     setAdaptiveScore(true) // before wake: never restart the overture
     wakeAudio()
+    if (bosses) audio.prepareBossAttackAudio?.(bossIds[bossSequence % bossIds.length]!)
+    // Initialize exploration only for a new expedition, never on picker close/resume.
+    es2Audio?.setScene('exploration')
     screen('play')
     hooks.content?.(s, { type: 'start' })
     audio.playSfx('start')
     audio.resetBattleClock(0.06)
     message('幽暮之門已開啟')
     setScene(s, 0, false, hooks)
-    for (let i = 0; i < 12; i++) spawnMob(s)
-    if (factions && s.hero) {
-      for (let i = 0; i < 4 && factions.availableSpawnSlots(s) > 0; i++) {
-        const theta = i * Math.PI / 2
-        factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
-          s.hero.x + Math.cos(theta) * 320, s.hero.y + Math.sin(theta) * 230)
-      }
-    }
+    spawnOpeningWave(s, factions ?? undefined)
     hud()
   }
 
   function chooseUpgrade(id: AbilityId): void {
     if (s.mode !== 'level' || !s.hero || ui.specialChoice || !ui.upgrades.some(up => up.id === id)) return
+    const picked = ui.upgrades.find(up => up.id === id)
+    const evolved = picked?.isEvolution === true
     if (!applyUpgrade(s, id, hooks, contentRegistry)) return
     screen('play')
     if (s.levelQueue) offerUpgrades()
-    audio.playSfx('upgrade')
+    if (!evolved) audio.playSfx(picked?.rarity === 'legendary' ? 'legendaryClaim' : 'upgrade')
     hud()
   }
 
@@ -542,9 +680,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         !ui.specialChoice.items.some(item => item.id === id)) return
     if (!claimTreasure(s, offer.chestId, id as RelicId)) return
     ui.specialChoice = null
-    audio.playSfx('upgrade')
-    message('✦ 已獲得聖物：' + RELIC_BY_ID.get(id as RelicId)!.title)
+    const relic = RELIC_BY_ID.get(id as RelicId)!
+    audio.playSfx('treasureClaim', TREASURE_AUDIO_TIERS.indexOf(relic.cursed ? 'cursed' : relic.rarity))
+    message('✦ 已獲得聖物：' + relic.title)
     screen('play')
+    if (s.hero) {
+      const color = relic.cursed ? '#ef8db5' : relic.rarity === 'legendary' ? '#ffdb86' : relic.rarity === 'epic' ? '#c5a1ff' : '#8fc7ff'
+      impact(s, s.hero.x, s.hero.y, relic.rarity === 'legendary' ? 160 : 96, color, .8)
+      burst(s, s.hero.x, s.hero.y, color, relic.rarity === 'legendary' ? 24 : 12)
+    }
     if (s.levelQueue) offerUpgrades()
     hud()
   }
@@ -589,14 +733,21 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   // Sound only after the transaction is accepted, never on a disabled/failed purchase.
-  function finishPurchase(ok: boolean, reason: string): void {
+  function finishPurchase(ok: boolean, reason: string, variant: number = HALL_UPGRADE.rank): void {
     if (ok) {
       refreshMeta()
-      audio.playSfx('upgrade')
+      audio.playSfx('upgrade', variant)
     } else {
       message(reason)
-      audio.playSfx('deny')
+      audio.playSfx('deny', 1)
     }
+  }
+
+  function purchaseHallResearch(id: string, reason: string): void {
+    if (!metaStore) return
+    const before = metaStore.get().state
+    const result = metaStore.purchaseResearch(id)
+    finishPurchase(result.ok, reason, researchCelebrationVariant(id, before, result.state))
   }
 
   function advance(dt: number): void {
@@ -607,20 +758,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     s.worldClock += s.mode === 'play' || (s.mode === 'level' && ui.upgradeEffect === 'still') ? 0 : dt * 0.3
     if (s.mode !== 'play') return
     step(s, dt, moveVector(keys, stick), hooks, contentRegistry, bossAdapter, factions ?? undefined)
-    if (factions && s.mode === 'play' && s.hero) {
-      const window = Math.floor(s.time / 8)
-      if (window > factionWindow) {
-        factionWindow = window
-        if (factions.availableSpawnSlots(s) > 0) {
-          const theta = factionSequence * 2.399963229728653
-          factions.spawn(s, factionIds[factionSequence++ % factionIds.length]!,
-            s.hero.x + Math.cos(theta) * 315, s.hero.y + Math.sin(theta) * 230)
-        }
-      }
-    }
+    if (ui.bossPhaseReveal && (s.time >= ui.bossPhaseReveal.expiresAt || !s.mobs.some(m => m.hp > 0 && m.bossArtId === ui.bossPhaseReveal?.boss))) ui.bossPhaseReveal = null
     if (s.mode !== 'play') return
     heroSpecialization?.tick(dt)
+    if (heroSpecialization?.id === 'crimson-paladin' && s.hero && s.content.effects.length) {
+      followHeroSpecialFx(s.content.effects, 'hero-crimson-paladin', s.hero.x, s.hero.y, heroSpecialization.snapshot().barrier > 0)
+    }
     worldEvents?.tick()
+    // A reward may have opened during this tick; leave the existing score untouched.
+    if (s.mode !== 'play') return
     if (objectiveRuntime) {
       objectiveRuntime.tick(dt, true)
       if (s.mode !== 'play') return
@@ -646,10 +792,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (relicsEnabled && s.mode === 'play') tickRelicRecovery(s, dt)
     if (Math.floor(s.time * 4) !== Math.floor((s.time - dt) * 4)) {
       const liveBoss = s.mobs.find(m => m.type === 'boss' && m.hp > 0)
-      const upcoming = getBossArrivalWarning(s, objectiveRuntime?.snapshot() ?? null)
+      const upcoming = arrivalWarning()
       audio.setBossWarning?.(upcoming?.seconds ?? null)
+      if (liveBoss?.bossArtId) audio.prepareBossAttackAudio?.(liveBoss.bossArtId)
+      else if (upcoming?.bossId && bosses) audio.prepareBossAttackAudio?.(upcoming.bossId)
       audio.setBossTheme?.(liveBoss ? (liveBoss.bossArtId ?? 'abyss-monarch') : null, liveBoss?.bossPhase ?? 1)
-      const phase = liveBoss ? 'boss' : s.mobs.length >= 16 ? 'combat' : 'calm'
+      const phase = liveBoss ? 'boss' : countLivingEnemies(s.mobs, factions?.runtime.enemies) >= 16 ? 'combat' : 'calm'
       audio.setCombatIntensity(phase)
       setAdaptiveScore(
         !(liveBoss && audio.setBossTheme) && !(upcoming && audio.setBossWarning),
@@ -745,6 +893,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     get attackAnimation() { return !!s.hero && s.hero.strike > 0 },
     get vfxCount() { return s.impactWaves.length + s.lightningFx.length + s.swipes.length + s.fx.length },
     get frames() { return frameDrawn },
+    get pixiVfx() { return pixiVfx?.stats() },
     get scene() { return currentSceneInfo(s).name },
     get bossPreview() {
       const boss = bosses?.snapshot(s)
@@ -773,12 +922,78 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       trySpawnEvent(s, index % 2 ? 'shrine' : 'chest')
       hud()
     },
+    prepareHeroActiveVideo() {
+      const hero = s.hero
+      if (!import.meta.env.DEV || typeof window === 'undefined' ||
+          new URLSearchParams(window.location.search).get('heroActiveVideoQa') !== '1' ||
+          s.mode !== 'play' || !hero || !heroSpecialization || heroSpecialization.snapshot().cooldown > 0) return false
+      // Place real mobs close enough to demonstrate each actual ability. No artificial VFX,
+      // alternate damage routine, immunity or cooldown bypass. Only the capture setup differs.
+      s.mobs = []; s.enemyShots = []; factions?.reset()
+      s.spawnT = 10
+      hero.hp = hero.max
+      hero.inv = 0
+      hero.attack = 1.2
+      // Prevent the evidence-only encounter from opening an upgrade dialog mid-cast.
+      // XP, damage, enemy death and audio still use their actual runtime paths.
+      hero.need = Math.max(hero.need, 10000)
+      for (let i = 0; i < 8; i++) {
+        spawnMob(s)
+        const target = s.mobs[s.mobs.length - 1]
+        if (!target) return false
+        const angle = i * Math.PI / 4 + .18
+        const radius = s.heroId === 'ranger' ? 155 + (i % 3) * 42 : 83 + (i % 3) * 28
+        target.x = hero.x + Math.cos(angle) * radius
+        target.y = hero.y + Math.sin(angle) * radius
+      }
+      hud()
+      return s.mobs.length === 8
+    },
+    prepareHeroArtEastAttack() {
+      const hero = s.hero
+      if (!import.meta.env.DEV || typeof window === 'undefined' ||
+          new URLSearchParams(window.location.search).get('es2HeroArtQA') !== '1' ||
+          s.mode !== 'play' || !hero || !isSpecializationId(s.heroId)) return false
+      // Isolate a real target in this explicit QA scenario. No fabricated pose,
+      // altered skill implementation, production cheat, or renderer override.
+      s.mobs = []
+      s.enemyShots = []
+      factions?.reset()
+      s.spawnT = 999
+      spawnMob(s)
+      const target = s.mobs[0]
+      if (!target) return false
+      // Ranged aim starts at the real weapon grip, not at ground contact.
+      const grip = s.choice === 'knight' ? { x: 0, y: 0 } : getFiringOrigin(s.choice, 1)
+      target.x = hero.x + Math.min(140, Math.max(64, hero.range * 0.75))
+      target.y = hero.y + grip.y
+      target.speed = 0
+      hero.attack = 2
+      hero.inv = 0
+      attack(s, hooks, factions ?? undefined)
+      return hero.strike > 0 && Math.abs(hero.aimAngle) < Math.PI / 8
+    },
     forceAttack() {
       const hero = s.hero
       if (!hero) return
       hero.strike = 0.29
       s.swipes.push({ x: hero.x, y: hero.y, a: 0, life: 0.29, max: 0.29, r: 75 })
       impact(s, hero.x + 80, hero.y, 45)
+    },
+    captureBossPhase(phase: 2 | 3) {
+      if (!import.meta.env.DEV || typeof window === 'undefined' || !s.hero || s.mode !== 'play' || !bosses) return false
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('showcase') !== '1' || params.get('bossPhaseVideoQa') !== '1' || (phase !== 2 && phase !== 3)) return false
+      const boss = s.mobs.find(m => m.type === 'boss' && m.hp > 0 && m.bossArtId === params.get('es2BossArtQa'))
+      if (!boss || boss.bossPhase !== phase - 1) return false
+      s.hero.inv = Math.max(s.hero.inv, 120)
+      s.hero.attack = 10000
+      s.hero.need = Math.max(s.hero.need, 10000)
+      boss.hp = boss.max * (phase === 2 ? .60 : .25)
+      // Same actor, existing controller and normal encounter event/audio/render path.
+      bosses.tick(s, 1 / 60, hooks)
+      hud()
+      return boss.bossPhase === phase
     },
     showcaseBoss(phase: 1 | 2 | 3 = 1) {
       const hero = s.hero
@@ -823,7 +1038,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') wakeAudio()
+      if ((s.mode === 'menu' && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
@@ -865,23 +1080,27 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (!control || (control instanceof HTMLButtonElement && control.disabled) ||
           control.getAttribute('aria-disabled') === 'true') return
       const cue = control.dataset.uiSfx
-      if (cue === 'managed' || cue === 'silent') return
+      if (cue === 'silent') return
+      // Keyboard activation of managed controls still needs the trusted wake.
       if (e.detail === 0 || !audio.unlocked) wakeAudio()
-      audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
+      if (cue === 'managed') return
+      if (cue === 'hall-inspect') audio.playSfx('select', 1)
+      else audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
     }
     const onPointerOver = (e: PointerEvent): void => {
       if (e.pointerType !== 'mouse' || !(e.target instanceof Element)) return
       const button = e.target.closest<HTMLButtonElement>('button:not(:disabled)')
       if (!button || button.dataset.uiSfx === 'silent' ||
           (e.relatedTarget instanceof Node && button.contains(e.relatedTarget))) return
-      audio.playSfx('hover')
+      if (button.closest('.hall-growth')) audio.playSfx('hover', 1)
+      else audio.playSfx('hover')
     }
     win.addEventListener('keydown', onKeyDown)
     win.addEventListener('keyup', onKeyUp)
     win.addEventListener('blur', onBlur)
     win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
-    doc.addEventListener('pointerdown', onPointerDown)
+    doc.addEventListener('pointerdown', onPointerDown, true)
     doc.addEventListener('click', onUiClick, true)
     doc.addEventListener('pointerover', onPointerOver)
     return () => {
@@ -890,7 +1109,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('blur', onBlur)
       win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
-      doc.removeEventListener('pointerdown', onPointerDown)
+      doc.removeEventListener('pointerdown', onPointerDown, true)
       doc.removeEventListener('click', onUiClick, true)
       doc.removeEventListener('pointerover', onPointerOver)
     }
@@ -902,11 +1121,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const mini = minimap?.getContext('2d') ?? null
     art = loadArtwork()
     const assets: RenderAssets = createRenderAssets(art)
+    assets.pixiVfx = pixiVfx = createPixiVfxBridge()
     assets.productionHeroes = loadProductionHeroes()
     const bossArtQaId = import.meta.env.DEV && typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('es2BossArtQa') : null
     assets.productionWorld = loadWorldRuntimeImages(
       undefined, bossArtQaId && Object.hasOwn(BOSS_DEFINITIONS, bossArtQaId) ? bossArtQaId as BossId : undefined,
+      import.meta.env.DEV && typeof window !== 'undefined'
+        ? (new URLSearchParams(window.location.search).get('es2BossMotionQa') === '3' ? 'native'
+          : new URLSearchParams(window.location.search).get('es2BossMotionQa') === '2' ? 'sheet'
+          : new URLSearchParams(window.location.search).get('es2BossMotionQa') === '1')
+        : false,
     )
     if (factions) {
       assets.factions = factions
@@ -948,6 +1173,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     raf = requestAnimationFrame(frame)
     return () => {
       cancelAnimationFrame(raf)
+      assets.pixiVfx?.dispose()
+      if (pixiVfx === assets.pixiVfx) pixiVfx = undefined
       resizeRenderer = () => {}
       removeEventListener('resize', resize)
       unlisten()
@@ -961,6 +1188,39 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     new URLSearchParams(window.location.search).get('content-showcase') === '1'
 
   return {
+    ...(!opts.profileStore && (!unlockedPlaytest || emulator) ? { cloudWallet: {
+      select(uid: string | null) {
+        if (s.mode !== 'menu' && s.mode !== 'result') return false
+        if (uid === walletAccount) return true
+        try {
+          let profileStorage = uid ? scopedStorage(uid) : guestProfileStorage
+          let metaStorage = uid ? profileStorage : guestMetaStorage
+          if (uid && unlockedPlaytest) {
+            let saved = unlockedAccounts.get(uid)
+            if (!saved) {
+              saved = { profile: createUnlockedPlaytestProfileStorage(), meta: createUnlockedPlaytestMetaStorage(0) }
+              unlockedAccounts.set(uid, saved)
+            }
+            profileStorage = saved.profile
+            metaStorage = saved.meta
+          }
+          const nextMeta = createMetaProgressionStore(metaStorage)
+          if (uid && nextMeta.get().status !== 'ready') return false
+          profileStore = createProfileStore(profileStorage)
+          metaStore = nextMeta
+          walletAccount = uid
+          refreshMeta()
+          if (s.mode === 'menu') syncMenuSelection()
+          return true
+        } catch { return false }
+      },
+      apply(wallet: CloudWallet, expectedBalance: number, preserveBalance: boolean) {
+        if (!walletAccount || !metaStore) return false
+        const result = metaStore.applyCloudWallet(wallet, expectedBalance, preserveBalance)
+        refreshMeta()
+        return result.ok
+      },
+    } } : {}),
     contentRegistry,
     setVisualPresentationPolicy(policy) { presentationPolicy = policy; resizeRenderer() },
     showcaseGrant(id) {
@@ -972,36 +1232,42 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     showcaseEmit(event) { if (devShowcase() && s.mode === 'play') hooks.content?.(s, event) },
     ui,
     state: s,
+    get bossArrivalWarning() { return arrivalWarning() },
     testApi,
     advance,
     listen,
     mount,
     enableMenuAudio() { if (s.mode === 'menu' && audio.musicOn) wakeAudio() },
     selectRunMode(mode: RunModeId) {
-      if (!getMode(mode) || ui.runMode === mode) return
+      if (s.mode !== 'menu' || !isRunModeId(mode)) return
+      saveSelection('eclipseSelectedRunMode', mode)
+      s.runMode = mode
+      if (ui.runMode === mode) return
       ui.runMode = mode
       wakeAudio()
       audio.playSfx('select')
     },
     buyPermanentUpgrade(id: PermanentUpgrade) {
-      if (s.mode !== 'menu') return
+      if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore) {
-        finishPurchase(metaStore.purchaseResearch(id).ok, '永久研究未完成：儲存失敗或條件不足')
+        purchaseHallResearch(id, '永久研究未完成：儲存失敗或條件不足')
       } else {
-        finishPurchase(profileStore.buyUpgrade(id), '餘燼不足或已達最高階')
+        const ok = profileStore.buyUpgrade(id)
+        const rank = profileStore.get().upgrades[id]
+        finishPurchase(ok, '餘燼不足或已達最高階', hallRankVariant(rank, BALANCE.meta.research[id].maxRank, false))
       }
     },
     purchaseResearch(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
-      finishPurchase(metaStore.purchaseResearch(id).ok, '研究未解鎖或儲存失敗')
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
+      purchaseHallResearch(id, '研究未解鎖或儲存失敗')
     },
     purchaseEquipment(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
-      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗')
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
+      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗', HALL_UPGRADE.equipment)
     },
     purchaseBonus(id: string) {
-      if (s.mode !== 'menu' || !metaStore) return
-      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗')
+      if (s.mode !== 'menu' || !walletReady() || !metaStore) return
+      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗', HALL_UPGRADE.blessing)
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
       if (s.mode !== 'menu') return
@@ -1016,7 +1282,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       }
     },
     resetProgress() {
-      if (s.mode !== 'menu') return
+      if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore && !metaStore.reset().ok) {
         message('永久資料無法安全重置，原有紀錄已保留')
         return
@@ -1030,7 +1296,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     activateHeroSpecial() {
       if (s.mode !== 'play' || ui.settingsOpen || !heroSpecialization) return false
       const activated = heroSpecialization.activate()
-      if (activated && s.hero) markHeroSpecialAnimation(s.hero, s.worldClock)
+      if (activated && s.hero) {
+        markHeroSpecialAnimation(s.hero, s.worldClock)
+        // Snapshot the authoritative cast position; a dash/movement cannot drag the effect.
+        emitCombatVfx(effect => contentRegistry.addEffect(s, effect),
+          `hero-${heroSpecialization.id}`, s.hero.x, s.hero.y, { targets: heroSpecialization.castTargets() })
+      }
       if (activated) hud()
       return activated
     },
@@ -1074,6 +1345,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       worldEvents?.reset()
       heroSpecialization = null
       ui.heroSpecial = null
+      syncMenuSelection()
       screen('menu')
     },
     setStick(v) { stick = v ?? { x: 0, y: 0 } },

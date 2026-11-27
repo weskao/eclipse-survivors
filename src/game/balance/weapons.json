@@ -68,5 +68,21 @@
   "limits": {
     "maxProjectiles": 64,
     "maxZones": 12
+  },
+  "breakthrough": {
+    "rank": 5,
+    "daggerJumps": 1,
+    "lancePierce": 1,
+    "scytheRange": 18,
+    "mineRadius": 18,
+    "bonePierce": 1,
+    "poisonDuration": 0.65,
+    "bladeJumps": 1,
+    "wolfCooldownReduction": 0.1,
+    "wolfAttackRange": 10,
+    "beamWidth": 7,
+    "gravityReach": 20,
+    "bowPierce": 1,
+    "chainDuration": 0.75
   }
 }

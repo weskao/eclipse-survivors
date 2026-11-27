@@ -1,0 +1,109 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "pose": "run",
+  "direction": "NW",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "sourceSHA256": "6a0b173740bfa50c7d5231f5f5cb86dd82b4e97bf324f9cb40fe8ccdb8e21098",
+  "frameCount": 4,
+  "sourceClippingRisk": false,
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        72,
+        30,
+        529,
+        598
+      ],
+      "coreAlphaBounds": [
+        101,
+        33,
+        526,
+        596
+      ],
+      "rgbaSHA256": "af36e457f693937386929c8756cec1a96751e1f08edb48763bc7f9ecbc49aa27",
+      "originalMargin": 29
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        66,
+        30,
+        542,
+        584
+      ],
+      "coreAlphaBounds": [
+        95,
+        33,
+        540,
+        581
+      ],
+      "rgbaSHA256": "54a887d5dc6989734fb7da4f7f5c83bb0ade8a25e7c73f29b2bc1cf687e2c83e",
+      "originalMargin": 30
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        73,
+        30,
+        547,
+        518
+      ],
+      "coreAlphaBounds": [
+        99,
+        33,
+        545,
+        516
+      ],
+      "rgbaSHA256": "4f03adee812ee3bc94508cb750729f4e505dfbf2c3c64ad0d88d073aa0b0f9ca",
+      "originalMargin": 30
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        71,
+        30,
+        539,
+        605
+      ],
+      "coreAlphaBounds": [
+        95,
+        32,
+        523,
+        602
+      ],
+      "rgbaSHA256": "ac439cdbbe17ce82c42d9a987cfac1e9378483f5bbcb7982a95eb4a538993d04",
+      "originalMargin": 22
+    }
+  ],
+  "reviewNotes": [],
+  "eligibleForDevWiring": true,
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "footBottoms": [
+    666,
+    651,
+    586,
+    672
+  ],
+  "webpSHA256": "109769b45973018e9308517797ddc66bfd5982543956ac3f5f390cb870b97fc3",
+  "bytes": 856944
+}

@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "attack",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "output only 1254×1254 to 704×704 Lanczos then pad to 768×768; never upscale",
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "050bfe5a-1b41-400e-a30c-a65939719521",
+    "originalPNGSHA256": "f88bd59bed2a79f535b0b5aa410b1938cdd2753747ef14fae8c94d7695dc20d5",
+    "canonicalPortrait": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "referenceCommit": "ec84bb21660927d45e6729a148616e3390e78e86",
+    "referenceMethod": "Canonical portrait was retrieved and visually inspected; direct image conditioning by generation backend is not independently verified."
+  },
+  "encoding": "Pillow lossless WebP exact=True; decoded RGBA verified; Polytool/cwebp unavailable",
+  "frames": [
+    {
+      "id": "cast-windup-identity-b",
+      "description": "Alternative east-facing casting windup, revised portrait fidelity",
+      "sourceFile": "cast-windup-identity-b-source.webp",
+      "sourceSHA256": "6d2557b2e0dc0b02cb736e8b4e39dfc6193f1612545c93324fd18299784e3888",
+      "sourceBytes": 1214798,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "cast-windup-identity-b@3x.webp",
+      "webpSHA256": "1172b4bbdd83d08c291a55c9095d867e46fe26655c291ea7e2f2c1fc0efcca2f",
+      "bytes": 430384,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        1228,
+        1254
+      ],
+      "coreAlphaBounds": [
+        93,
+        17,
+        1134,
+        1230
+      ],
+      "coreExtent": [
+        1041,
+        1213
+      ],
+      "outputCoreAlphaBounds": [
+        84,
+        41,
+        668,
+        723
+      ],
+      "outputCoreExtent": [
+        584,
+        682
+      ],
+      "outputAlphaBounds": [
+        32,
+        32,
+        716,
+        736
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "staged RGBA of each file; output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Visual likeness improved, not exact identity approval. Compare facial features, crown, staff, garment trim, handedness and VFX against actual canonical portrait; slight faint alpha touches original top boundary."
+    }
+  ],
+  "reviewNotes": [
+    "Alternative to Batch 30 windup, not an additional sequential frame. Do not combine as continuous animation.",
+    "Do not delete or overwrite Batch 28–30 before manual identity review.",
+    "No gameplay admission."
+  ]
+}

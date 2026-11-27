@@ -38,7 +38,7 @@ export const RELICS: readonly RelicDefinition[] = Object.freeze([
   make('storm-crown', 'Storm Crown', 'Lightning attacks deal +24% damage per stack.', '⚡', 'epic', BALANCE.relics.items['storm-crown'].maxStacks, BALANCE.relics.items['storm-crown'].bonuses),
   make('guardian-sigil', 'Guardian Sigil', 'Take 25% less damage below 35% HP.', '🛡', 'rare', BALANCE.relics.items['guardian-sigil'].maxStacks, BALANCE.relics.items['guardian-sigil'].bonuses),
   make('phantom-boots', 'Phantom Boots', '+9% chance to dodge incoming hits per stack.', '👢', 'rare', BALANCE.relics.items['phantom-boots'].maxStacks, BALANCE.relics.items['phantom-boots'].bonuses),
-  make('celestial-lens', 'Celestial Lens', 'Projectiles pierce one extra target.', '🔮', 'epic', BALANCE.relics.items['celestial-lens'].maxStacks, BALANCE.relics.items['celestial-lens'].bonuses),
+  make('celestial-lens', 'Celestial Lens', 'Projectiles pierce one extra target.', '🔮', 'legendary', BALANCE.relics.items['celestial-lens'].maxStacks, BALANCE.relics.items['celestial-lens'].bonuses),
   make('wolf-totem', 'Wolf Totem', 'Summons deal +28% damage per stack.', '🐺', 'rare', BALANCE.relics.items['wolf-totem'].maxStacks, BALANCE.relics.items['wolf-totem'].bonuses),
   make('frost-rune', 'Frost Rune', 'Frost damage +22% per stack.', '❄', 'common', BALANCE.relics.items['frost-rune'].maxStacks, BALANCE.relics.items['frost-rune'].bonuses),
   make('ember-ring', 'Ember Ring', 'Fire damage +20% per stack.', '🔥', 'common', BALANCE.relics.items['ember-ring'].maxStacks, BALANCE.relics.items['ember-ring'].bonuses),

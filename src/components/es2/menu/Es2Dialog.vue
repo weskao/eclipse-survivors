@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
+import { upgradeKeyIndex } from '../../../game/input'
 import { nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 const props = withDefaults(defineProps<{
   active: boolean; title: string; subtitle?: string; dismissible?: boolean
-  wide?: boolean; variant?: 'default' | 'choice'; tone?: 'neutral' | 'legendary' | 'victory' | 'defeat'
+  wide?: boolean; variant?: 'default' | 'choice' | 'settings' | 'result'; tone?: 'neutral' | 'legendary' | 'victory' | 'defeat'
 }>(), { dismissible: true, wide: false, variant: 'default', tone: 'neutral' })
 const emit = defineEmits<{ cancel: []; shortcut: [event: KeyboardEvent] }>()
 const headingId = useId()
@@ -21,19 +22,19 @@ function restoreFocus(): void {
   if (previousFocus?.isConnected) previousFocus.focus()
   previousFocus = null
 }
-// Choice cards accept pointer clicks and 1–9 shortcuts only; Space/Enter must
-// not synthesize a native click on whichever button happens to have focus.
-function suppressChoiceActivation(event: KeyboardEvent): boolean {
-  if (!props.active || props.variant !== 'choice' ||
-      !(event.code === 'Space' || event.code === 'Enter' || event.code === 'NumpadEnter' ||
-        event.key === ' ' || event.key === 'Enter')) return false
-  event.preventDefault()
-  event.stopPropagation()
-  return true
+// Choice dialogs allow physical number shortcuts only. Suppress browser activation,
+// scrolling and focus navigation, but let keyup reach the engine to release held controls.
+function onKeyup(event: KeyboardEvent): void {
+  if (props.active && props.variant === 'choice') event.preventDefault()
 }
-function onKeyup(event: KeyboardEvent): void { suppressChoiceActivation(event) }
 function onKeydown(event: KeyboardEvent): void {
-  if (!props.active || suppressChoiceActivation(event)) return
+  if (!props.active) return
+  if (props.variant === 'choice') {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    if (upgradeKeyIndex(event.code) >= 0) emit('shortcut', event)
+    return
+  }
   if (event.key === 'Escape') {
     event.preventDefault()
     event.stopImmediatePropagation()
@@ -83,8 +84,8 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <Teleport to="body">
-    <div v-if="active" class="es2-backdrop" @pointerdown.self="onOutside" @click.stop>
-      <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice' }]"
+    <div v-if="active" class="es2-backdrop" :class="{ 'es2-backdrop-preferences': variant === 'settings' }" @pointerdown.self="onOutside" @click.stop>
+      <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice', 'es2-dialog-preferences': variant === 'settings', 'es2-dialog-result': variant === 'result' }]"
         role="dialog" aria-modal="true" :aria-labelledby="headingId" tabindex="-1" @pointerdown.stop>
         <header class="es2-dialog-header">
           <div><span class="es2-eyebrow">✦ ECLIPSE SURVIVORS ✦</span><h2 :id="headingId">{{ title }}</h2><p v-if="subtitle">{{ subtitle }}</p></div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveSkillChoiceArt } from './ui-art'
+import { hasGeneratedSkillArt, resolveSkillChoiceArt } from './ui-art'
 
 describe('all battle skill choice illustrations', () => {
   it('selects the animated 3x painting for each authored weapon and evolution', () => {
@@ -13,8 +13,8 @@ describe('all battle skill choice illustrations', () => {
   })
   it('keeps native skill SVG and generated animated icon behavior', () => {
     expect(resolveSkillChoiceArt('damage', undefined, false).imageSrc).toContain('damage@3x-animated.webp')
-    expect(resolveSkillChoiceArt('speed', undefined, false).imageSrc).toContain('speed.svg')
-    expect(resolveSkillChoiceArt('speed', undefined, true).imageSrc).toContain('speed.svg')
+    expect(resolveSkillChoiceArt('speed', undefined, false).imageSrc).toContain('speed@3x-animated.webp')
+    expect(resolveSkillChoiceArt('speed', undefined, true).imageSrc).toContain('speed@3x.webp')
   })
   it('provides an illustrated 3x icon for every hero specialization and its passive progression', () => {
     const owned = [
@@ -25,9 +25,18 @@ describe('all battle skill choice illustrations', () => {
     for (const [hero, starting, progression] of owned) {
       for (const id of [starting, progression]) {
         const art = resolveSkillChoiceArt(`heroes:${id}`, undefined, false)
-        expect(art.imageSrc).toContain(`${hero}-special@3x.webp`)
+        expect(art.imageSrc).toContain(`${hero}-${id === starting ? 'special' : 'portrait'}@3x.webp`)
         expect(art.reducedMotionSrc).toBe(art.imageSrc)
       }
+    }
+  })
+
+  it('resolves each new illustration to animated and still art without adding it to the HUD atlas', () => {
+    const ids = ['speed', 'haste', 'maxhp', 'magnet', 'bolt', 'frozen-thunderstorm', 'infernal-singularity', 'apocalypse-rain', 'blade-tempest', 'guardian-sanctuary'] as const
+    for (const id of ids) {
+      expect(resolveSkillChoiceArt(id).imageSrc).toContain(id + '@3x-animated.webp')
+      expect(resolveSkillChoiceArt(id, undefined, true).imageSrc).toContain(id + '@3x.webp')
+      expect(hasGeneratedSkillArt(id)).toBe(false)
     }
   })
 

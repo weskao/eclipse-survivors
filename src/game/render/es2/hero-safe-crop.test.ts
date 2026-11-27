@@ -9,10 +9,10 @@ const animation = (overrides: Partial<HeroAnimation> = {}): HeroAnimation => ({
   ...overrides,
 })
 
-function render(anim: HeroAnimation) {
+function renderAll(anim: HeroAnimation) {
   const calls: unknown[][] = []
   const ctx = {
-    save: () => {}, restore: () => {}, scale: () => {},
+    save: () => {}, restore: () => {}, scale: () => {}, translate: () => {}, rotate: () => {},
     drawImage: (...args: unknown[]) => calls.push(args),
   } as unknown as Ctx2D
   const direction = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
@@ -24,6 +24,11 @@ function render(anim: HeroAnimation) {
     poseAtlases: { direction, action, special },
   } as unknown as HTMLImageElement
   expect(drawProductionHeroFrame(ctx, portrait, anim, 120, 140)).toBe(true)
+  return calls
+}
+
+function render(anim: HeroAnimation) {
+  const calls = renderAll(anim)
   expect(calls).toHaveLength(1)
   return calls[0]!
 }
@@ -41,11 +46,18 @@ describe('ES2 hero atlas safe-crop contract', () => {
       animation({ pose: 'idle', direction: 6, reducedMotion: true }),
     ]) {
       const frame = productionHeroPoseRect(anim)
-      const draw = render(anim)
-      expect(draw.slice(1, 5), `${anim.pose}/${anim.direction}`)
+      // A held guard cell walks through the shared gait: several crops of the same cell.
+      const gait = anim.pose === 'run' && frame.sheet === 'direction'
+      const draws = gait ? renderAll(anim) : [render(anim)]
+      if (gait) expect(draws.length).toBeGreaterThan(1)
+      else expect(draws[0]!.slice(1, 5), `${anim.pose}/${anim.direction}`)
         .toEqual([frame.x + 8, frame.y + 8, 432, 432])
-      expect(Number(draw[1]) + Number(draw[3])).toBeLessThanOrEqual(frame.x + 448 - 8)
-      expect(Number(draw[2]) + Number(draw[4])).toBeLessThanOrEqual(frame.y + 448 - 8)
+      for (const draw of draws) {
+        expect(Number(draw[1])).toBeGreaterThanOrEqual(frame.x + 8 - 1e-6)
+        expect(Number(draw[2])).toBeGreaterThanOrEqual(frame.y + 8 - 1e-6)
+        expect(Number(draw[1]) + Number(draw[3])).toBeLessThanOrEqual(frame.x + 448 - 8 + 1e-6)
+        expect(Number(draw[2]) + Number(draw[4])).toBeLessThanOrEqual(frame.y + 448 - 8 + 1e-6)
+      }
     }
   })
 

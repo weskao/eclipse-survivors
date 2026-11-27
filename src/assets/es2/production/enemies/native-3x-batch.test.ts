@@ -18,7 +18,7 @@ describe('six authored ES2 enemy bodies at runtime native three-times detail', (
     expect(asset).toMatchObject({
       native3x: true, alpha: true,
       frames: 6, columns: 6, rows: 1,
-      status: 'needs-human-approval',
+      status: 'approved',
       sourceMasterWidth: 2172, sourceMasterHeight: 724,
       sourceMasterFrameWidth: 362, sourceMasterFrameHeight: 724,
     })

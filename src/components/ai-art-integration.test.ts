@@ -35,7 +35,7 @@ describe('generated WebP art integration', () => {
     const wrapper = mount(LevelUpOverlay, { props: { active: true, upgrades } })
     expect(wrapper.find('[data-up="damage"] .skill-art').attributes('src')).toContain('damage@3x-animated.webp')
     expect(wrapper.find('[data-up="damage"] source[media="(prefers-reduced-motion: reduce)"]').attributes('srcset')).toContain('damage@3x.webp')
-    expect(wrapper.find('[data-up="speed"] .skill-art').attributes('src')).toContain('speed.svg')
+    expect(wrapper.find('[data-up="speed"] .skill-art').attributes('src')).toContain('speed@3x-animated.webp')
   })
 
   it('renders generated HUD skills from the atlas without fetching duplicate images', () => {
@@ -48,7 +48,7 @@ describe('generated WebP art integration', () => {
       choice: 'knight', musicOn: true, sfxOn: true, toastText: '', toastVisible: false,
     } })
     expect(wrapper.find('[data-skill="frost"] .skill-art').exists()).toBe(false)
-    expect(wrapper.find('[data-skill="speed"] .skill-art').attributes('src')).toContain('speed.svg')
+    expect(wrapper.find('[data-skill="speed"] .skill-art').attributes('src')).toContain('speed@3x.webp')
   })
 
   it('keeps game UI states readable and supports reduced motion and narrow screens', () => {

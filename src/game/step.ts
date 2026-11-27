@@ -1,5 +1,9 @@
 // One simulation tick: the original update(dt) minus toast timer and HUD refresh (the engine does those).
+import { sampleCombat } from './combat-telemetry'
 import { BALANCE } from './config'
+import { expireKillStreak, flushKillMilestone } from './kill-streak'
+import { burst } from './fx'
+import { compactXpGems } from './xp-gems'
 import { attack, hit, victoryConditionMet } from './combat'
 import type { ContentRegistry } from './content/registry'
 import type { FactionBridge } from './content/enemies/integration'
@@ -17,6 +21,7 @@ import type { GameHooks, GameState, Hero, MoveInput } from './types'
 
 function tickTimers(s: GameState, hero: Hero, dt: number): void {
   s.time += dt
+  expireKillStreak(s)
   s.worldClock += dt
   hero.attack -= dt
   hero.inv -= dt
@@ -44,11 +49,15 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
     const travel = Math.min(dt, Math.max(0, b.life))
     b.x += b.vx * travel
     b.y += b.vy * travel
+    if (travel <= 0) { b.life -= dt; continue }
+    // The bridge owns both target pools, including misses. Resolve before
+    // expiring the projectile so its final swept segment can still hit.
+    if (factions) {
+      factions.resolveShot(s, b, hooks, { x: b.prevX, y: b.prevY })
+      b.life -= dt
+      continue
+    }
     b.life -= dt
-    if (travel <= 0) continue
-    // The faction bridge computes first contact against both legacy and new
-    // actors, preventing double hits and keeping existing XP ownership.
-    if (factions && factions.resolveShot(s, b, hooks, { x: b.prevX!, y: b.prevY! })) continue
     const dx = b.x - b.prevX
     const dy = b.y - b.prevY
     const lengthSquared = dx * dx + dy * dy
@@ -75,7 +84,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
       }
     }
     if (closest) {
-      hit(s, closest, b.d, hooks)
+      hit(s, closest, b.d, hooks, { x: b.prevX, y: b.prevY })
       b.life = 0
     }
   }
@@ -90,29 +99,68 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
 }
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
+  let collected = 0
+  const reach = s.magnetUntil > s.time ? Infinity : BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
+  const pickupSquared = BALANCE.combat.starPickupDistance ** 2
   for (const star of s.stars) {
+    if (star.dead) continue
     star.t += dt
     const dx = hero.x - star.x
     const dy = hero.y - star.y
-    const squared = dx * dx + dy * dy
-    const reach = BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
+    let squared = dx * dx + dy * dy
     if (squared < reach * reach) {
-      // Only crystal attraction needs a true distance for normalization.
-      const d = Math.max(1, Math.sqrt(squared))
-      star.x += (dx / d) * Math.min(d, BALANCE.combat.starPickupSpeed * dt)
-      star.y += (dy / d) * Math.min(d, 450 * dt)
+      // Normalize once, keep acceleration per gem and clamp at the hero.
+      const d = Math.sqrt(squared)
+      const speed = star.attractionSpeed ?? BALANCE.combat.starPickupSpeed
+      const travel = Math.min(d, speed * dt)
+      if (d > 0) {
+        star.x += dx * travel / d
+        star.y += dy * travel / d
+      }
+      star.attractionSpeed = Math.min(BALANCE.combat.starPickupMaxSpeed, speed + BALANCE.combat.starPickupAcceleration * dt)
+      squared = (d - travel) ** 2
+    } else {
+      star.attractionSpeed = undefined
     }
-    if (squared < BALANCE.combat.starPickupDistance * BALANCE.combat.starPickupDistance) {
+    if (squared < pickupSquared) {
       star.dead = true
-      addXp(s, star.value * s.pickupGainMultiplier, hooks)
-      hooks.sfx('pickup')
-      hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
+      // Keep one receipt per original drop, including pickup-triggered relic effects.
+      if (star.mergedReceipts) {
+        for (const [amount, count] of star.mergedReceipts) {
+          collected += count
+          for (let i = 0; i < count; i++) {
+            addXp(s, amount * s.pickupGainMultiplier, hooks)
+            hooks.content?.(s, { type: 'pickup', kind: 'xp', amount })
+          }
+        }
+      } else {
+        collected++
+        addXp(s, star.value * s.pickupGainMultiplier, hooks)
+        hooks.content?.(s, { type: 'pickup', kind: 'xp', amount: star.value })
+      }
     }
   }
-  s.stars = s.stars.filter((star) => !star.dead).slice(-BALANCE.combat.starKeepLimit)
+  if (collected >= BALANCE.combat.xpBurstThreshold) {
+    hooks.sfx('pickupBurst')
+    burst(s, hero.x, hero.y - 10, '#8ddfff', BALANCE.combat.xpBurstParticles)
+  } else if (collected > 0) hooks.sfx('pickup')
+  compactXpGems(s.stars)
+}
+
+/** Stable in-place cosmetic compaction: no per-frame filter arrays. */
+function compactEffects<T extends {life: number}>(items: T[]): void {
+  let write = 0
+  for (let i = 0; i < items.length; i++) if (items[i]!.life > 0) items[write++] = items[i]!
+  items.length = write
 }
 
 function ageEffects(s: GameState, hero: Hero, dt: number): void {
+  let fallenWrite = 0
+  for (const mob of s.fallenMobs) {
+    mob.deathVisual = Math.max(0, (mob.deathVisual ?? 0) - dt)
+    if (mob.deathVisual > 0) s.fallenMobs[fallenWrite++] = mob
+  }
+  s.fallenMobs.length = fallenWrite
   for (const f of s.fx) {
     f.x += (f.vx ?? 0) * dt
     f.y += (f.vy ?? 0) * dt
@@ -136,16 +184,16 @@ function ageEffects(s: GameState, hero: Hero, dt: number): void {
     z.y -= (z.critical ? 42 : 34) * dt
     z.life -= dt
   }
-  s.numberFx = s.numberFx.filter((z) => z.life > 0)
-  s.fx = s.fx.filter((f) => f.life > 0)
+  compactEffects(s.numberFx)
+  compactEffects(s.fx)
   for (const z of s.impactWaves) z.life -= dt
-  s.impactWaves = s.impactWaves.filter((z) => z.life > 0)
+  compactEffects(s.impactWaves)
   for (const z of s.lightningFx) z.life -= dt
-  s.lightningFx = s.lightningFx.filter((z) => z.life > 0)
+  compactEffects(s.lightningFx)
   for (const z of s.motionEchoes) z.life -= dt
-  s.motionEchoes = s.motionEchoes.filter((z) => z.life > 0)
+  compactEffects(s.motionEchoes)
   for (const w of s.swipes) w.life -= dt
-  s.swipes = s.swipes.filter((w) => w.life > 0)
+  compactEffects(s.swipes)
 }
 
 export interface BossStepAdapter {
@@ -160,7 +208,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
-  tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0)
+  tickSpawning(s, dt, hooks, bosses?.spawn, factions?.runtime.enemies.length ?? 0, factions)
   moveHero(s, input, dt, factions?.movementMultiplier ?? 1)
   const free = resolveObstacleCollision(s.currentScene, hero.x, hero.y, 17)
   hero.x = free.x; hero.y = free.y
@@ -178,10 +226,12 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   tickEnemyProjectiles(s, dt, hooks)
   factions?.tick(s, dt, hooks)
   if (hero.hp <= 0 || s.mode !== 'play') return
-  tickSkills(s, dt, hooks)
+  tickSkills(s, dt, hooks, factions)
   moveShots(s, hero, dt, hooks, factions)
+  flushKillMilestone(s, hooks)
   collectStars(s, hero, dt, hooks)
   tickWorld(s, dt, hooks)
+  sampleCombat(s, factions?.runtime.enemies)
   if (hero.hp <= 0 || s.mode !== 'play') return
   if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * BALANCE.skills.passive.regenPerRank * dt)
   ageEffects(s, hero, dt)

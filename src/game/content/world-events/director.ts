@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import { random as gameRandom } from '../../math'
 import { WORLD_EVENT_DEFINITIONS, validEffects } from './definitions'
 import type {
@@ -6,9 +7,9 @@ import type {
 } from './types'
 
 const DEFINITIONS = new Map(WORLD_EVENT_DEFINITIONS.map(def => [def.id, def]))
-const MAX_ACTIVE = 2
+const SETTINGS = BALANCE.events.interactive
 const REACH = 64
-const SPAWN_ATTEMPTS = 12
+const SPAWN_ATTEMPTS = BALANCE.events.placementRetries
 const TAU = Math.PI * 2
 
 interface PendingObjective extends Omit<ActiveWorldObjective, 'count'> {
@@ -27,9 +28,10 @@ interface PendingObjective extends Omit<ActiveWorldObjective, 'count'> {
 export function createWorldEventDirector({ commit, random = gameRandom }: WorldEventDirectorOptions) {
   let generation = 0
   let serial = 0
-  let nextAt = 7
+  let nextAt = BALANCE.events.firstSpawnAt
   let lastBiome: EventWorld['biome'] | undefined
   let lastKind: WorldEventId | undefined
+  const seenKinds = new Set<WorldEventId>()
   let active: ActiveWorldEvent[] = []
   let pending: PendingObjective[] = []
   const resolving = new Set<string>()
@@ -42,9 +44,10 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
   function reset(): void {
     generation++
     serial = 0
-    nextAt = 7
+    nextAt = BALANCE.events.firstSpawnAt
     lastBiome = undefined
     lastKind = undefined
+    seenKinds.clear()
     active = []
     pending = []
     resolving.clear()
@@ -56,28 +59,28 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
     active = []
     pending = []
     resolving.clear()
-    nextAt = Number.isFinite(time) ? time + 6 : 7
+    nextAt = Number.isFinite(time) ? time + BALANCE.events.sceneSpawnDelay : BALANCE.events.firstSpawnAt
   }
 
   function spawn(kind: WorldEventId, world: EventWorld, position?: { x: number; y: number }): ActiveWorldEvent | null {
     const hero = world.hero
     if (lastBiome === undefined) lastBiome = world.biome
-    if (!world.playing || !hero || hero.hp <= 0 || active.length >= MAX_ACTIVE || !DEFINITIONS.has(kind) ||
+    if (!world.playing || !hero || hero.hp <= 0 || active.length >= SETTINGS.maxActive || !DEFINITIONS.has(kind) ||
       !Number.isFinite(world.time) || !Number.isFinite(hero.x) || !Number.isFinite(hero.y) ||
       !Number.isFinite(hero.hp) || !Number.isFinite(hero.xp)) return null
     let target = position
     if (!target) {
-      const angle = roll() * TAU, radius = 210 + roll() * 120
+      const angle = roll() * TAU, radius = SETTINGS.minRadius + roll() * (SETTINGS.maxRadius - SETTINGS.minRadius)
       target = { x: hero.x + Math.cos(angle) * radius, y: hero.y + Math.sin(angle) * radius }
     }
     if (!Number.isFinite(target.x) || !Number.isFinite(target.y) ||
-        !world.canPlace(target, 42) || !world.canApproach(hero, target) || world.isOccupied(target, 52)) return null
+        !world.canPlace(target, SETTINGS.terrainClearance) || !world.canApproach(hero, target) || world.isOccupied(target, SETTINGS.mobClearance)) return null
     for (const e of active) {
       const dx = e.x - target.x, dy = e.y - target.y
-      if (dx * dx + dy * dy < 150 * 150) return null
+      if (dx * dx + dy * dy < SETTINGS.minSeparation ** 2) return null
     }
     const event: ActiveWorldEvent = { id: `${generation}:${++serial}`, kind,
-      x: target.x, y: target.y, expiresAt: world.time + 24 }
+      x: target.x, y: target.y, expiresAt: world.time + SETTINGS.lifetime }
     active.push(event)
     return event
   }
@@ -167,7 +170,7 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
     }
     const before = active.length
     active = active.filter(e => e.expiresAt > world.time)
-    if (before !== active.length) nextAt = Math.max(nextAt, world.time + 2)
+    if (before !== active.length) nextAt = Math.max(nextAt, world.time + SETTINGS.expiryRetryDelay)
 
     let processedObjective = false
     for (const obj of pending.slice()) {
@@ -197,13 +200,20 @@ export function createWorldEventDirector({ commit, random = gameRandom }: WorldE
       }
     }
 
-    if (processedObjective || world.time < nextAt || active.length >= MAX_ACTIVE) return
-    nextAt = world.time + 11 + roll() * 5
-    const candidates = WORLD_EVENT_DEFINITIONS.filter(def => def.id !== lastKind)
+    if (processedObjective || world.time < nextAt || active.length >= SETTINGS.maxActive) return
+    nextAt = world.time + SETTINGS.spawnIntervalBase + roll() * SETTINGS.spawnIntervalVariation
+    const available = WORLD_EVENT_DEFINITIONS.filter(def =>
+      def.id !== lastKind && !active.some(event => event.kind === def.id))
+    // Prefer unseen kinds across the run; keep the roll seeded and never duplicate a live marker kind.
+    const unseen = available.filter(def => !seenKinds.has(def.id))
+    const candidates = unseen.length ? unseen : available
+    if (!candidates.length) return
     const definition = candidates[Math.floor(roll() * candidates.length)]!
     for (let i = 0; i < SPAWN_ATTEMPTS; i++) {
       const candidate = spawn(definition.id, world)
       if (candidate) {
+        if (seenKinds.size === DEFINITIONS.size) seenKinds.clear()
+        seenKinds.add(definition.id)
         lastKind = definition.id
         break
       }

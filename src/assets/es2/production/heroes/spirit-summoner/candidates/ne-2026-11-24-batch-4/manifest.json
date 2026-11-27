@@ -1,0 +1,103 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "NE",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "sourceSHA256": "f04f565dfb7536ae5fab7262ad1fbe987f97cbe46d95bd560258c9e74a71e381",
+  "frameCount": 4,
+  "sourceClippingRisk": true,
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        95,
+        7,
+        573,
+        598
+      ],
+      "coreAlphaBounds": [
+        98,
+        10,
+        567,
+        596
+      ],
+      "rgbaSHA256": "9965ed0ca91b7ddd5ceef6f561010c5fd0ac1bd929132e42870770dd1287386d",
+      "originalMargin": 7
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        76,
+        0,
+        545,
+        592
+      ],
+      "coreAlphaBounds": [
+        79,
+        8,
+        540,
+        586
+      ],
+      "rgbaSHA256": "e8b05c1316b29cf4d5c04b379d03704f8101efbb0785e3bd9a2bb79b1c74ebaa",
+      "originalMargin": 0
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        66,
+        2,
+        548,
+        521
+      ],
+      "coreAlphaBounds": [
+        69,
+        5,
+        545,
+        518
+      ],
+      "rgbaSHA256": "11a39a65ddd4bb69d892fcc3a9bae15376eb81ea1afe7e2acd66fbc6fd056694",
+      "originalMargin": 2
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        69,
+        2,
+        551,
+        595
+      ],
+      "coreAlphaBounds": [
+        74,
+        6,
+        548,
+        593
+      ],
+      "rgbaSHA256": "9b7c3f36aaf436d631142d7fa8f70946f6ef7f9840006d5e3a43181a97301d85",
+      "originalMargin": 2
+    }
+  ],
+  "reviewNotes": [
+    "Original alpha margin below 8px; source clipping risk, requires remediation.",
+    "Rejected source retired from working tree; historical provenance retained in retiredSource."
+  ],
+  "eligibleForDevWiring": false,
+  "retiredSource": {
+    "reason": "Rejected edge contact; superseded by batch-5 NE.",
+    "commit": "8d6b9ded3e374792f5c17278f62bd04bf19fbca4",
+    "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-4/source.png",
+    "gitBlob": "a0f563bdcb68afacc3802a069442492f3fccfae1",
+    "bytes": 1555277,
+    "sha256": "f04f565dfb7536ae5fab7262ad1fbe987f97cbe46d95bd560258c9e74a71e381"
+  }
+}

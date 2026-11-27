@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "light-ring-windup-key-a",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/light-ring-windup-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "97bb7691-c03c-4629-bca8-b1849c2d25fe",
+        "originalPngSha256": "10c85f99b041a13b05be6a81564bb768095684fec88ba35953fa312576366904",
+        "canonicalReferenceHead": "4935db6d8015b63e31264973edb49d196d3dee7e"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1254,
+      "cellHeight": 1254,
+      "frameRects": [
+        [
+          0,
+          0,
+          1254,
+          1254
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        627.0,
+        627.0
+      ],
+      "alphaBounds": [
+        10,
+        3,
+        1246,
+        1251
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "alphaExtent": [
+        1236,
+        1248
+      ],
+      "actualSourceResolution": [
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        10,
+        3,
+        8,
+        3
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "72b10f799f5fe303782ed27c572ffded626e6a2ff43a0361be30ec66f926c0b0",
+      "webpCompressedBytes": 1079792,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Provisional Phase 1 light-ring windup. Facial details and armor differ from canonical art; edge clipping needs review."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

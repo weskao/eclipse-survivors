@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { seeded, setRandom } from './math'
+import { BALANCE } from './config'
 import { createHero, createState } from './state'
-import { rollEventKind, trySpawnEvent, tickWorld } from './events'
+import { rollChestTier, rollEventKind, trySpawnEvent, tickWorld } from './events'
 import { nearbyHazards, nearbyObstacles } from './world'
 import type { GameHooks, GameState } from './types'
 
@@ -26,12 +27,17 @@ describe('controlled random events', () => {
   it('places events away from the hero, hazards, scenery and other rewards, even on narrow phones', () => {
     const s = make()
     setRandom(seeded(91))
-    for (let i = 0; i < 4; i++) trySpawnEvent(s, 'chest')
+    for (let i = 0; i < BALANCE.events.maxActive; i++) trySpawnEvent(s, 'chest')
+    expect(s.events.length).toBeGreaterThan(0)
+    const placement = BALANCE.events.legacyPlacement
+    const maxRadius = placement.minRadius + Math.min(placement.maxExtraRadius,
+      Math.max(placement.minExtraRadius, s.W * placement.viewportWidthFactor))
     for (const e of s.events) {
-      expect(Math.hypot(e.x, e.y)).toBeGreaterThanOrEqual(200)
-      expect(nearbyObstacles(0, e.x, e.y, 80).every(o => Math.hypot(e.x-o.x, e.y-o.y) > o.r + 30)).toBe(true)
-      expect(nearbyHazards(0, e.x, e.y, 100).every(h => Math.hypot(e.x-h.x, e.y-h.y) > h.r + 26)).toBe(true)
-      expect(s.events.filter(other => other !== e).every(other => Math.hypot(e.x-other.x, e.y-other.y) > 110)).toBe(true)
+      expect(Math.hypot(e.x, e.y)).toBeGreaterThanOrEqual(placement.minRadius - 1e-6)
+      expect(Math.hypot(e.x, e.y)).toBeLessThanOrEqual(maxRadius + 1e-6)
+      expect(nearbyObstacles(0, e.x, e.y, 80).every(o => Math.hypot(e.x-o.x, e.y-o.y) > o.r + placement.terrainClearance)).toBe(true)
+      expect(nearbyHazards(0, e.x, e.y, 100).every(h => Math.hypot(e.x-h.x, e.y-h.y) > h.r + placement.terrainClearance)).toBe(true)
+      expect(s.events.filter(other => other !== e).every(other => Math.hypot(e.x-other.x, e.y-other.y) >= placement.minSeparation)).toBe(true)
     }
   })
   it('is reproducible with the same seed', () => {
@@ -43,23 +49,34 @@ describe('controlled random events', () => {
     }
     expect(sequence()).toEqual(sequence())
   })
-  it('leaves chests and healing shrines reachable for 20 seconds', () => {
+  it('leaves chests and healing shrines reachable for the configured lifetime', () => {
     const s = make()
     const spawned = trySpawnEvent(s, 'shrine', seeded(91))
     expect(spawned).toBe(true)
-    expect(s.events[0]?.expiresAt).toBe(20)
+    expect(s.events[0]?.expiresAt).toBe(BALANCE.events.lifetime)
   })
-  it('permits a 70% event-roll opportunity while keeping placement rules', () => {
+  it('permits a 90% event-roll opportunity while keeping placement rules', () => {
     const s = make()
     s.nextEventAt = 0
     const position = seeded(91)
     let draws = 0
     setRandom(() => {
       draws++
-      return draws === 1 ? 0 : draws === 2 ? 0.70 : draws === 3 ? 0.1 : position()
+      return draws === 1 ? 0 : draws === 2 ? 0.90 : draws === 3 ? 0.1 : position()
     })
     tickWorld(s, .016, hooks())
     expect(s.events).toHaveLength(1)
+  })
+  it('allows a third scattered reward but respects the configured active cap', () => {
+    const s = make()
+    s.events = Array.from({ length: BALANCE.events.maxActive - 1 }, (_, i) => ({
+      id: i + 1, kind: 'chest' as const, x: 2000 + i * 200, y: 2000, expiresAt: 100,
+    }))
+    s.eventSerial = s.events.length
+    expect(BALANCE.events.maxActive).toBeGreaterThanOrEqual(3)
+    expect(trySpawnEvent(s, 'shrine', seeded(91))).toBe(true)
+    expect(s.events).toHaveLength(BALANCE.events.maxActive)
+    expect(trySpawnEvent(s, 'chest', seeded(91))).toBe(false)
   })
   it('awards a chest exactly once and expires unused events', () => {
     const s = make()
@@ -145,4 +162,14 @@ describe('visible danger bounds', () => {
     expect(s.events).toHaveLength(0)
     expect(s.nextEventAt).toBe(0)
   })
+})
+
+it('uses deterministic chest rarity buckets and passes the advertised tier to the actual pickup transaction', () => {
+  expect([.1,.75,.9,.98,.999].map(x=>rollChestTier(()=>x))).toEqual(['common','rare','epic','legendary','cursed'])
+  const s=make()
+  const openTreasure=vi.fn(()=>true)
+  s.events.push({id:1,kind:'chest',tier:'legendary',x:0,y:0,expiresAt:30})
+  tickWorld(s,.016,{...hooks(),openTreasure})
+  expect(openTreasure).toHaveBeenCalledWith(s,1,'legendary')
+  expect(s.events).toHaveLength(0)
 })

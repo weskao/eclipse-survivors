@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { BALANCE } from './game/config'
 
 /** Two production catalogs. Chinese display copy is the canonical lookup key. */
 export const SUPPORTED_LOCALES = ['en', 'zh-TW'] as const
@@ -7,15 +8,123 @@ export interface LocaleStorage { getItem(key: string): string | null; setItem(ke
 export const LOCALE_STORAGE_KEY = 'eclipse-survivors-locale'
 
 const english = new Map<string, string>([
+  ["暗影突襲","Shadow dash"],
+  ["迂迴接近後快速突進攻擊。","Strafes before rapidly dashing into attack range."],
+  ["死靈召喚","Raise minions"],
+  ["召喚爪牙加入戰鬥。","Summons minions into combat."],
+  ["暗影箭矢","Shadow arrow"],
+  ["保持距離並發射遠程箭矢。","Keeps distance and fires ranged arrows."],
+  ["疫病蔓延","Plague spill"],
+  ["在瞄準位置留下持續毒傷區域。","Leaves a damaging poison zone at the aimed position."],
+  ["盾牌猛擊","Shield bash"],
+  ["近距離盾擊，正面防禦可減少承受傷害。","Bashes nearby targets and reduces damage from the front."],
+  ["幽影突擊","Phantom strike"],
+  ["短暫相位移動後進行近身攻擊。","Briefly phases before striking nearby targets."],
+  ["烈焰爆破","Flame burst"],
+  ["在瞄準位置形成燃燒區域。","Creates a burning zone at the aimed position."],
+  ["寒霜飛彈","Frost missile"],
+  ["發射可造成冰凍效果的投射物。","Fires a projectile that can inflict freeze."],
+  ["狂暴重擊","Berserker strike"],
+  ["近身重擊，低生命時移動更快。","Strikes at close range and moves faster at low health."],
+  ["晶體射線","Crystal beam"],
+  ["鎖定方向並蓄力發射直線攻擊。","Locks its aim and releases a charged line attack."],
+  ["擁有多階段招式的遠征首領。","An expedition boss with multiple attack phases."],
+  ["歷史紀錄可能包含未區分的首領擊倒數。","Historical records may contain unidentified boss kills."],
+  ["最高等階達成","Maximum rank achieved"],
+  ["新研究已開啟","New research available"],
+  ["展開節點說明","Show node details"],
+  ["收起節點說明","Hide node details"],
+  ["成長分類","Growth categories"],
+  ["選取節點後升級","Select node to upgrade"],
+  ["節點詳情","Node details"],
+  ["目前效果","Current effect"],
+  ["下一階效果","Next rank effect"],
+  ["技能說明","Skill description"],
+  ["每階提升","Gain per rank"],
+  ["前置條件","Prerequisites"],
+  ["可升級","Available"],
+  ["餘燼不足","Not enough embers"],
+  ["升級成功","Upgrade complete"],
+  ["距下一級尚需 {xp} XP","{xp} XP to next level"],
+  ["升級 · {cost} ✧","Upgrade · {cost} ✧"],
+  ["攻擊觸發距離","Attack trigger distance"],
+  ["原始首領","Original boss"],
+  ["技能基礎傷害範圍","Base skill damage range"],
+  ["階段數","Phases"],
+  ["魔物基礎數值","Base monster stats"],
+  ["魔物招式","Monster abilities"],
+  ["基礎數值不含遠征難度、時間成長及菁英加成。","Base stats exclude expedition difficulty, time scaling and elite bonuses."],
+  ["首領紀錄為共用擊殺數；以下為各首領的基礎資料，並非個別遭遇紀錄。","Boss kills are tracked collectively; the following are base reference profiles, not individual encounter records."],
+  ["躍擊","Pounce"],
+  ["瞄準旅人後向前撲擊。","Lunges forward after targeting the adventurer."],
+  ["俯衝","Dive"],
+  ["蓄勢後高速俯衝，穿越攻擊路徑。","Dives at high speed along the attack path after a windup."],
+  ["突刺","Jab"],
+  ["向預先瞄準的位置發動近身突刺。","Jabs toward a previously targeted position."],
+  ["震地重擊","Ground slam"],
+  ["蓄力後對周圍範圍造成傷害。","Charges up and damages the surrounding area."],
+  ["魔力彈幕","Arcane barrage"],
+  ["朝旅人發射魔法投射物。","Fires magical projectiles toward the adventurer."],
+  ["召喚爪牙","Summon minions"],
+  ["召喚魔物加入戰鬥。","Summons monsters to join the fight."],
+  ["蓄力 {seconds} 秒","Windup {seconds}s"],
+  ["傷害 {damage} · 蓄力 {seconds} 秒","Damage {damage} · Windup {seconds}s"],
+  ["投射物","Projectile"],
+  ["持續傷害區域","Persistent damage zone"],
+  ["瞬間範圍攻擊","Instant area attack"],
+  ["召喚魔物","Summon monsters"],
+  ["直線","Line"],
+  ["環形","Ring"],
+  ["圓形","Circle"],
+  ["戰場區域","Arena zone"],
+  ["暗影扇射","Shadow Fan"],
+  ["黑暗領域","Darkness Field"],
+  ["暗影交錯","Shadow Cross"],
+  ["深淵召喚","Abyss Summon"],
+  ["深淵塌陷","Abyss Collapse"],
+  ["暗影風暴","Shadow Storm"],
+  ["寒冰扇射","Ice Fan"],
+  ["寒霜地帶","Frost Patch"],
+  ["冰川之環","Glacial Ring"],
+  ["旋轉庇護區","Rotating Shelter"],
+  ["凜冬爆發","Winter Burst"],
+  ["冰晶風暴","Ice Storm"],
+  ["泰坦重擊","Titan Slam"],
+  ["餘燼直擊","Ember Line"],
+  ["熔岩噴發","Eruption"],
+  ["烈焰浪潮","Flame Wave"],
+  ["泰坦之怒","Titan Rage"],
+  ["聖光之矛","Radiant Lance"],
+  ["聖光之環","Light Ring"],
+  ["虛空扇射","Void Fan"],
+  ["暗影橫掃","Shadow Sweep"],
+  ["暮光領域","Twilight Ground"],
+  ["星蝕扇區","Eclipse Wedge"],
+  ["星蝕交錯","Eclipse Cross"],
+  ["熾天終曲","Seraph Finale"],
+  ['解鎖條件：{condition}', 'Unlock requirement: {condition}'],
+  ['暮境遠征', 'Eclipse Survivors'],
   ['血量偏低', 'Low health'],
   ['生命危急', 'Critical health'],
   ['瀕死', 'Near death'],
   ["查看英雄詳情", "View hero details"],
+  ["目前為光環造型 · 不影響戰鬥數值", "Aura cosmetics for now · no combat stat changes"],
+  ["查看詳情：{name}", "View details: {name}"],
+  ["返回英雄選擇", "Back to heroes"],
+  ["目前遠征", "Current expedition"],
+  ["變更遠征", "Change expedition"],
+  ["模式", "Modes"],
+  ["英雄", "Heroes"],
+  ["依序挑戰五位首領，敵人逐戰增強。", "Challenge five increasingly powerful bosses."],
+  ["無盡求生，迎戰週期性星蝕事件。", "Survive endlessly through recurring eclipse events."],
+  ["回收四件聖物，擊敗守護首領。", "Recover four relics and defeat the guardian boss."],
+  ["承受輪替詛咒，擊敗兩位守衛。", "Endure rotating curses and defeat two guardians."],
+  ["突破八波遭遇戰，挑戰混沌首領。", "Clear eight waves and challenge the chaos boss."],
+  ["查看模式詳情：{name}", "View mode details: {name}"],
   ["英雄初始數值", "Base hero stats"],
   ["攻擊力", "Attack"],
   ["移動速度", "Move speed"],
   ["攻擊間隔", "Attack interval"],
-  ["暴擊!", "CRITICAL!"],
   ["英雄類別", "Hero categories"],
   ["經典英雄", "Classic Heroes"],
   ["新增英雄", "New Heroes"],
@@ -39,6 +148,8 @@ const english = new Map<string, string>([
     "音訊",
     "Audio"
   ],
+  ["音樂", "Music"],
+  ["音效", "Sound effects"],
   [
     "背景音樂",
     "Background music"
@@ -76,32 +187,8 @@ const english = new Map<string, string>([
     "Combat camera shake"
   ],
   [
-    "已開啟",
-    "Enabled"
-  ],
-  [
-    "已關閉",
-    "Disabled"
-  ],
-  [
     "完成設定",
     "Done"
-  ],
-  [
-    "將背景音樂靜音",
-    "Mute background music"
-  ],
-  [
-    "開啟背景音樂",
-    "Enable background music"
-  ],
-  [
-    "將遊戲音效靜音",
-    "Mute game sound effects"
-  ],
-  [
-    "開啟遊戲音效",
-    "Enable game sound effects"
   ],
   [
     "設定",
@@ -707,6 +794,12 @@ const english = new Map<string, string>([
     "魔物擊殺",
     "Monsters Defeated"
   ],
+  ["最高連殺", "Best kill streak"],
+  ["經驗值獲得", "XP earned"],
+  ["平均每秒傷害", "Average DPS"],
+  ["每分鐘擊殺", "Kills per minute"],
+  ["首次升級時間", "First upgrade"],
+  ["最高瞬間多殺", "Best multikill"],
   [
     "英雄等級",
     "Hero Level"
@@ -986,14 +1079,16 @@ const english = new Map<string, string>([
 , [" / 3 階"," / 3 ranks"]
 , ["/ 3 階","/ 3 ranks"]
 , ["只影響外觀 · 不影響戰鬥數值","Appearance only · no change to combat stats"]
-, ["暗蝕敵軍 · 美術圖鑑","Eclipse Factions · Art Compendium"]
-, ["以下為實際入庫的 WebP 動畫及攻擊預警示意，尚待美術驗收；命中判定仍以遊戲規則為準。","These in-project WebP animations and telegraphs await final art review; hit detection always follows gameplay rules."]
-, ["四位首領 · 三階段視覺預覽","Four Bosses · Three-Phase Preview"]
-, ["暗蝕之地 · 地板與場景裝飾","Eclipsed Lands · Terrain & Decorations"]
-, ["c104 原始美術圖集（10 張 PNG · 待逐格驗收）","c104 source art atlas (10 PNGs · pending frame review)"]
-, ["原圖已存入專案並由本介面直接引用；尚未通過精靈邊界審核的接觸圖不得當成遊戲動作影格。","Source art is stored in this project. Unverified contact sheets cannot be used as live animation frames."]
-, ["寶箱、稀有度、HUD 與成就裝飾 · 美術預覽","Chest, Rarity, HUD & Achievement Art Preview"]
-, ["以下 17 張圖尚待美術驗收，展示不會增加成就或變更存檔。","These 17 images await art review. Viewing them does not award achievements or change save data."]
+, ...(import.meta.env.DEV ? [
+  ["暗蝕敵軍 · 美術圖鑑","Eclipse Factions · Art Compendium"],
+  ["以下為實際入庫的 WebP 動畫及攻擊預警示意，尚待美術驗收；命中判定仍以遊戲規則為準。","These in-project WebP animations and telegraphs await final art review; hit detection always follows gameplay rules."],
+  ["四位首領 · 三階段視覺預覽","Four Bosses · Three-Phase Preview"],
+  ["暗蝕之地 · 地板與場景裝飾","Eclipsed Lands · Terrain & Decorations"],
+  ["c104 原始美術圖集（10 張 PNG · 待逐格驗收）","c104 source art atlas (10 PNGs · pending frame review)"],
+  ["原圖已存入專案並由本介面直接引用；尚未通過精靈邊界審核的接觸圖不得當成遊戲動作影格。","Source art is stored in this project. Unverified contact sheets cannot be used as live animation frames."],
+  ["寶箱、稀有度、HUD 與成就裝飾 · 美術預覽","Chest, Rarity, HUD & Achievement Art Preview"],
+  ["以下 17 張圖尚待美術驗收，展示不會增加成就或變更存檔。","These 17 images await art review. Viewing them does not award achievements or change save data."]
+] as [string, string][] : [])
 , ["新成就：","New Achievement:"]
 , ["新造型：","New Cosmetic:"]
 , ["再次挑戰 ✦","Try Again ✦"]
@@ -1007,6 +1102,8 @@ const english = new Map<string, string>([
 , ["· 速度","· Speed"]
 , ["起始武器 ·","Starting Weapon ·"]
 , ["主動技能 ·","Active Ability ·"]
+, ["主動技能","Active Ability"]
+, ["英雄主動技能","Hero Active Abilities"]
 , ["（冷卻","(Cooldown"]
 , ["秒）","s)"]
 , ["優勢 ·","Strengths ·"]
@@ -1053,8 +1150,12 @@ const english = new Map<string, string>([
 , ["避免頻繁閃爍；保留必要攻擊警示","Avoid frequent flashes while preserving essential attack warnings"]
 , ["色覺輔助","Color Vision Support"]
 , ["以符號及文字區分狀態，不只靠顏色","Use symbols and text, not color alone, to distinguish states"]
+, ["英雄低血量警示","Low Health Warning"]
+, ["血量偏低時顯示畫面邊緣、英雄資訊框及危急警示","Highlight screen edges and the hero HUD when health is low"]
 , ["傷害數字","Damage Numbers"]
 , ["顯示或隱藏戰鬥傷害浮字","Show or hide floating combat damage numbers"]
+, ["滿血時顯示怪物血條","Show full-health enemy bars"]
+, ["關閉時僅隱藏滿血怪物頭頂的血條；首領 HUD 保持顯示","When off, hide overhead bars for full-health enemies only; the boss HUD stays visible."]
 , ["即時預覽 ·","Live Preview ·"]
 , ["預覽左右控制鈕位置","Preview left and right controls"]
 , ["● 狀態正常","● Status Normal"]
@@ -1082,7 +1183,7 @@ const english = new Map<string, string>([
 , ["短射程","Short range"]
 , ["須掌握突襲時機","Requires precise ambush timing"]
 , ["影鋒雙匕","Shadowfang Daggers"]
-, ["暗影精準：24% 暴擊機率，造成 170% 傷害；升級增強暴擊倍率。","Shadow Precision: 24% critical-hit chance at 170% damage; upgrades raise critical damage."]
+, [`暗影精準：${Math.round(BALANCE.heroes.specialEffects.shadowblade.critChance * 100)}% 暴擊機率，造成 ${Math.round(BALANCE.heroes.specialEffects.shadowblade.critMultiplier * 100)}% 傷害；升級增強暴擊倍率。`,`Shadow Precision: ${Math.round(BALANCE.heroes.specialEffects.shadowblade.critChance * 100)}% critical-hit chance at ${Math.round(BALANCE.heroes.specialEffects.shadowblade.critMultiplier * 100)}% damage; upgrades raise critical damage.`]
 , ["影襲：突襲周圍最多三名敵人，短暫潛行並取得閃避保護。","Shadow Assault: strike up to three nearby enemies, briefly enter stealth, and gain evasion protection."]
 , ["與靈體協同作戰，逐步提升召喚數量與支援能力。","Fight alongside spirits, gradually gaining more summons and stronger support."]
 , ["持續召喚傷害","Sustained summon damage"]
@@ -1103,9 +1204,43 @@ const english = new Map<string, string>([
 , ["主動技能消耗生命","Active ability consumes health"]
 , ["緋紅聖盾","Crimson Aegis"]
 , ["緋紅韌性：受到傷害減少 14%，受傷時有冷卻的近距離反擊。","Crimson Resilience: take 14% less damage and counterattack at close range with a cooldown when struck."]
-, ["血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；生命低時反擊更強。","Blood Oath Barrier: sacrifice a little health for a 3.5-second absorbing shield; counterattacks are stronger at low health."]
+, ["血誓屏障：犧牲少量生命換取 {seconds} 秒的吸收護盾；屏障到期或破碎時引爆緋紅報復，依吸收的傷害重創周圍敵人。","Blood Oath Barrier: sacrifice a little health for a {seconds}-second absorbing shield; when it expires or breaks, Crimson Retribution detonates, striking nearby enemies based on the damage absorbed."]
 , ["· 專精","· Mastery"]
 , ["提升英雄獨有的被動能力","Enhance this hero's unique passive ability"]
+, ["強化暴擊與影襲傷害。","Boost critical hits and Shadow Assault damage."]
+, ["強化靈體攻擊、治療與靈潮集結。","Boost spirit attacks, healing and Spectral Convergence."]
+, ["強化減傷、反擊、低血量增傷、屏障與緋紅報復。","Boost mitigation, counters, low-HP damage, barriers and Crimson Retribution."]
+, ["暴擊傷害倍率","Crit damage multiplier"]
+, ["技能攻擊倍率","Skill attack multiplier"]
+, ["技能移動倍率","Skill movement multiplier"]
+, ["技能攻擊間隔倍率","Skill attack interval multiplier"]
+, ["技能生命上限加成","Skill max HP bonus"]
+, ["同時攻擊數","Simultaneous attacks"]
+, ["技能射程倍率","Skill range multiplier"]
+, ["飛刃數量","Orbiting blades"]
+, ["經驗吸取範圍","XP pickup radius"]
+, ["每秒生命恢復","HP regeneration / s"]
+, ["目標數量","Targets"]
+, ["技能冷卻時間","Skill cooldown"]
+  , ["效果持續時間", "Effect Duration"]
+, ["技能傷害倍率","Skill damage multiplier"]
+, ["技能作用範圍","Skill reach"]
+, ["減速持續時間","Slow duration"]
+, ["投射物數量","Projectiles"]
+, ["彈跳次數","Bounces"]
+, ["穿透數量","Pierce count"]
+, ["吸血上限","Lifesteal cap"]
+, ["召喚物數量","Summons"]
+, ["光束寬度","Beam width"]
+, ["法球數量","Orbs"]
+, ["主動傷害倍率（Q）","Active damage (Q)"]
+, ["夥伴傷害倍率","Companion damage multiplier"]
+, ["守護靈每次治療","Guardian heal per tick"]
+, ["受到傷害減免","Damage reduction"]
+, ["反擊傷害倍率","Counter damage multiplier"]
+, ["低血量傷害倍率","Low-HP damage multiplier"]
+, ["屏障額外吸收（Q）","Extra barrier absorption (Q)"]
+, ["緋紅報復傷害倍率（Q）","Crimson Retribution damage multiplier (Q)"]
 , ["依序迎戰五位首領，每次擊敗後迎接更強的對手；闖關與獎勵均依實際擊殺進度結算。","Face five bosses in order, each stronger than the last. Progression and rewards follow confirmed defeats."]
 , ["於 480 秒內，依序擊敗五位已正式登場的首領才算勝利。","Defeat all five encountered bosses in order within 480 seconds to win."]
 , ["角色死亡、放棄挑戰或 480 秒截止仍未擊敗五名首領即失敗。","Fail if your hero dies, you withdraw, or five bosses remain unbeaten at 480 seconds."]
@@ -1213,6 +1348,12 @@ const english = new Map<string, string>([
 , ["向目標射出一列扇形穿雲靈箭，由既有投射物系統處理命中","Fire a fan of spirit arrows; the existing projectile system resolves hits"]
 , ["在三名敵人位置引爆骨焰爆裂區，造成範圍火傷","Detonate bonefire zones at three enemy positions to deal area fire damage"]
 , ["藤蔓圍捕最多八名敵人，重創並長時間限制移動","Vines ensnare up to eight enemies, dealing heavy damage and restricting movement"]
+, ["曙鋼裂地","Dawn Breaker"]
+, ["星痕穿矢","Starfall Volley"]
+, ["虛空坍縮","Void Collapse"]
+, ["曙鋼裂地：震擊周圍最多八名敵人，並短暫免疫傷害。","Dawn Breaker: strike up to eight nearby enemies and briefly become immune to damage."]
+, ["星痕穿矢：鎖定射程內最近三名敵人，發射高傷害星矢。","Starfall Volley: unleash high-damage astral arrows against the three nearest enemies in range."]
+, ["虛空坍縮：引爆身旁奧術能量，重創周圍最多六名敵人。","Void Collapse: detonate arcane energy around you, heavily damaging up to six nearby enemies."]
 , ["影襲","Shadow Assault"]
 , ["靈潮集結","Spirit Rally"]
 , ["血誓屏障","Blood Oath Barrier"]
@@ -1259,7 +1400,7 @@ const english = new Map<string, string>([
 , ["獲得秘庫獎勵憑證","Receive a vault cache token"]
 , ["強行突破秘庫","Force the vault"]
 , ["在 18 秒內召喚並擊敗 3 名守衛","Summon 3 guardians and defeat them in 18 seconds"]
-, ["成功後獲得稀有秘藏","Receive a rare cache on success"]
+, ["成功後獲得傳說秘藏","Receive a legendary cache on success"]
 , ["魔物伏擊","Monster Ambush"]
 , ["正面迎戰","Stand and fight"]
 , ["18 秒內擊敗 3 名召喚的襲擊者","Defeat 3 summoned attackers within 18 seconds"]
@@ -1448,6 +1589,8 @@ const english = new Map<string, string>([
 , ["漂浮的奧術遺跡、不穩定的裂隙與帶電的星界氣流","Floating arcane ruins, unstable rifts and charged celestial currents"]
 , ["深淵君王","Abyss Monarch"]
 , ["暮色帷幕","Veil of Dusk"]
+, ["第二階段","Phase II"]
+, ["最終階段","Final phase"]
 , ["召喚王廷","Summoned Court"]
 , ["深淵崩塌","Abyssal Collapse"]
 , ["霜寒君主","Frost Sovereign"]
@@ -1501,6 +1644,22 @@ const english = new Map<string, string>([
 , ["聖光障壁","Holy Barrier"]
 , ["每級減少 13% 受到的傷害（上限 52%），立即恢復最多 28 生命","Reduce damage taken by 13% per rank (max 52%); restore up to 28 HP"]
 , ["連鎖雷擊","Chain Lightning"]
+, ["殺戮序曲","Killing Spree"]
+, ["狂暴殺戮","Rampage"]
+, ["全場磁吸","Global Magnet"]
+, ["✦ 全場磁吸 · 吸引所有經驗水晶","✦ Global Magnet · Attract All XP Crystals"]
+, ["詛咒 · 有代價","Cursed · Comes at a Cost"]
+, ["跳過揭曉動畫","Skip Reveal"], ["跳過結算動畫","Skip Results Animation"]
+, ["無盡屠戮","Massacre"]
+, ["毀滅狂潮","Annihilation"]
+, ["暮光浩劫","Eclipse Massacre"]
+, ["神之殲滅","Godlike"]
+, ["瞬間多殺","Multikill"]
+, ["首領破防 · 傷害提升","Boss staggered · Damage increased"]
+, ["戰鬥震動","Combat haptics"]
+, ["僅支援震動的觸控裝置，減少動態時停用","Supported touch devices only; disabled with reduced motion"]
+, ["感電減速時間","Shock slow duration"]
+, ["擊殺額外放電目標","Kill discharge targets"]
 , ["定期在敵群間彈跳更強的閃電","Stronger lightning periodically chains between enemies"]
 , ["黎明遺庭","Dawnfall Courtyard"]
 , ["晨光薄霧","Dawn Mist"]
@@ -1511,6 +1670,10 @@ const english = new Map<string, string>([
 , ["灰燼戰線","Ashen Front"]
 , ["熾焰灰燼","Burning Embers"]
 , ["🏆 擊敗森林魔王！","🏆 Forest Boss Defeated!"]
+, ["🏆 擊敗深淵君王！","🏆 Abyss Monarch Defeated!"]
+, ["🏆 擊敗霜寒君主！","🏆 Frost Sovereign Defeated!"]
+, ["🏆 擊敗煉獄泰坦！","🏆 Infernal Titan Defeated!"]
+, ["🏆 擊敗星蝕熾天使！","🏆 Eclipse Seraph Defeated!"]
 , ["✦ 古代寶箱 · 選擇一件聖物","✦ Ancient Chest · Choose a Relic"]
 , ["✦ 開啟古代寶箱 · 獲得經驗","✦ Ancient Chest Opened · Experience Gained"]
 , ["✦ 魔法祭壇 · 回復生命","✦ Magic Shrine · Health Restored"]
@@ -1683,6 +1846,7 @@ const english = new Map<string, string>([
   , ['存活 {seconds} 秒 · 擊敗 {kills} 隻魔物 · 等級 {level}', 'Survived {seconds}s · Defeated {kills} enemies · Lv.{level}']
   , ["普通寶箱", "Common Chest"]
   , ["稀有寶箱", "Rare Chest"]
+  , ["史詩寶箱", "Epic Chest"]
   , ["傳說寶箱", "Legendary Chest"]
   , ["詛咒寶箱", "Cursed Chest"]
   , ["普通品質徽記", "Common Rarity Badge"]
@@ -1699,6 +1863,59 @@ const english = new Map<string, string>([
   , ["收藏家徽章", "Collector Badge"]
   , ["完美挑戰徽章", "Flawless Badge"]
   , ["{name} 裝飾圖案", "{name} decorative artwork"]
+  , ["{name} 原始角色插畫", "{name} original character illustration"]
+  , ["{name} 主動技能圖示", "{name} active ability icon"]
+  , ["{name} 主動技能", "{name} active ability"]
+  , ["本次遠征英雄：{name}", "Expedition Hero: {name}"]
+  , ["{name} 插畫", "{name} illustration"]
+  , ["{name} 角色插畫", "{name} character illustration"]
+  , ["{name} 技能插畫", "{name} skill artwork"]
+  , ["{name} 成就徽章", "{name} achievement badge"]
+  , ["{name} 攻擊預警示意", "{name} attack telegraph preview"]
+  , ["{name} 場景插畫", "{name} scene illustration"]
+  , ["{name} 地板材質", "{name} ground texture"]
+  , ["{category} 原始圖板 {id}", "{category} source board {id}"]
+  , ["互動世界事件 {kind}", "Interact with world event {kind}"]
+  , ["領取 {title}，{description}", "Claim {title}, {description}"]
+  , ["放逐 {title}", "Banish {title}"]
+  , ["{special}，可施放，按 Q", "{special} Ready — press Q."]
+  , ["{special}，尚未就緒", "{special} Not ready."]
+  , ["{title} · {seconds} 秒", "{title} · {seconds} sec"]
+  , ["冷卻 {seconds} 秒", "Cooldown {seconds} sec"]
+  , ["每 3 分鐘 +{embers} 餘燼（最高 1500）", "+{embers} Embers every 3 min (max 1500)"]
+  , ["勝利獎勵 {embers} 餘燼", "Victory reward: {embers} Embers"]
+  , ["研究 · {cost} ✧", "Research · {cost} ✧"]
+  , ["解鎖 · {cost} ✧", "Unlock · {cost} ✧"]
+  , ["🔒 {desc}", "🔒 {desc}"]
+  , ["{description} · {count} 擊倒", "{description} · {count} defeated"]
+  , ["雲端存檔尚未設定","Cloud save is not configured"]
+  , ["正在連線","Connecting"]
+  , ["訪客・本機存檔","Guest · Local save"]
+  , ["正在同步暮光餘燼","Syncing Twilight Embers"]
+  , ["暮光餘燼已同步","Twilight Embers synced"]
+  , ["無法同步，請重試","Unable to sync. Please retry."]
+  , ["雲端餘燼已在其他裝置變更","Cloud balance changed on another device"]
+  , ["Google 帳號與雲端存檔","Google account and cloud save"]
+  , ["帳號","Account"]
+  , ["Google 登入","Google sign-in"]
+  , ["目前僅同步暮光餘燼，其他進度與設定保存在此裝置。","Only Twilight Embers sync. Other progress and settings stay on this device."]
+  , ["Google 帳號","Google account"]
+  , ["不登入也能遊玩。訪客餘燼與 Google 帳號分開保存。","Play without signing in. Guest and Google account balances are saved separately."]
+  , ["本機未同步餘燼仍保留。重試或明確選擇使用雲端餘燼。","Unsynced local embers are retained. Retry or explicitly use the cloud balance."]
+  , ["使用雲端餘燼將捨棄本機未同步的餘燼變更，其他本機進度不會重置。","Using the cloud balance discards unsynced local ember changes without resetting other local progress."]
+  , ["確認使用雲端餘燼","Confirm cloud balance"]
+  , ["使用 Google 登入","Sign in with Google"]
+  , ["立即同步","Sync now"]
+  , ["使用雲端餘燼","Use cloud balance"]
+  , ["登出","Sign out"]
+  , ["暮光餘燼已儲存至 Google 帳號。","Twilight Embers saved to your Google account."]
+  , ["雲端餘燼發生衝突，尚未同步。","Cloud balance conflict. Not synced yet."]
+  , ["暮光餘燼尚未同步，請重試。","Twilight Embers not synced yet. Please retry."]
+  , ["正在同步暮光餘燼…","Syncing Twilight Embers…"]
+  , ["正在連線 Google 帳號…","Connecting to your Google account…"]
+  , ["Google 登入失敗，請重試。","Google sign-in failed. Please retry."]
+  , ["測試模式：餘燼僅保存在本次測試。","Playtest mode: Embers stay in this test session."]
+  , ["訪客餘燼保存在本機；登入後可跨裝置同步帳號餘燼。","Guest Embers stay on this device. Sign in to sync account Embers across devices."]
 ])
 const chinese = new Map<string, string>([
   ['TIME', '時間'], ['KILLS', '擊殺'], ['COMBO', '連擊'], ['RELICS', '遺物'],
@@ -1735,7 +1952,8 @@ export const getLocale = (): Locale => currentLocale.value
 function syncDocument(): void {
   if (typeof document === 'undefined') return
   document.documentElement.lang = currentLocale.value
-  document.title = currentLocale.value === 'en' ? 'Eclipse Survivors' : '暮境遠征｜ECLIPSE SURVIVORS'
+  const gameTitle = t('暮境遠征')
+  document.title = currentLocale.value === 'en' ? gameTitle : `${gameTitle}｜${english.get('暮境遠征')!.toUpperCase()}`
   document.querySelector('meta[name="description"]')?.setAttribute('content', currentLocale.value === 'en'
     ? 'A fantasy survival action game featuring evolving skills, bosses and mobile controls.'
     : '奇幻生存動作遊戲：英雄、武器進化、首領挑戰與行動裝置操控。')

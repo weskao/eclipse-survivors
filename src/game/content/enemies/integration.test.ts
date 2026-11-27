@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { step } from '../../step'
 import { createHero, createState } from '../../state'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ENEMY_DEFINITIONS, ELITE_AFFIXES } from './definitions'
 import { createFactionBridge } from './integration'
+import { healthCriticalVersion } from '../../health-impact'
 
 const hooks: GameHooks = {
   sfx() {}, message() {}, offerUpgrades() {}, end() {},
@@ -172,3 +174,67 @@ describe('faction runtime integration boundary', () => {
     expect(bridge.runtime.zones.length).toBeLessThanOrEqual(64)
   })
 })
+
+it('keeps previously dropped XP when a faction death crosses the gem budget', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => 0 })
+  s.stars = Array.from({ length: 220 }, (_, i) => ({ x: 500 + i, y: 0, value: 3, t: 0 }))
+  const enemy = bridge.spawn(s, 'berserker', 250, 0)!
+  bridge.hitFaction(s, enemy, 10000, 0, 0, hooks)
+  expect(s.kill).toBe(1)
+  expect(s.stars.length).toBeLessThanOrEqual(220)
+  expect(s.stars.reduce((sum, star) => sum + star.value, 0)).toBe(660 + ENEMY_DEFINITIONS.berserker.xp)
+})
+
+it('resolves final-lifetime swept contact with a faction enemy before removing a projectile', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => 0.2, lineOfSight: () => true })
+  s.hero!.attack = 999
+  s.spawnT = 999
+  s.nextEventAt = Infinity
+  const e = bridge.spawn(s, 'berserker', 60, 0)!
+  e.speed = 0
+  const hp = e.hp
+  s.shots.push({ x: 0, y: 0, vx: 540, vy: 0, life: 0.1, d: 10, r: 5, kind: 'arrow' })
+  step(s, 0.15, { x: 0, y: 0 }, hooks, undefined, undefined, bridge)
+  expect(e.hp).toBeLessThan(hp)
+  expect(s.shots).toHaveLength(0)
+})
+
+it('holds only the faction visual frame on heavy contact and keeps its gameplay timer advancing', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => .2, lineOfSight: () => true })
+  const e = bridge.spawn(s, 'shield-guardian', 100, 0)!
+  e.state = 'recover'; e.timer = .4
+  bridge.hitFaction(s, e, 5, 0, 0, hooks)
+  expect(e.visualHold).toBeGreaterThan(0)
+  expect(e.visualFrame).toBe(4)
+  bridge.tick(s, .02, hooks)
+  expect(e.timer).toBeLessThan(.4)
+  expect(e.visualFrame).toBe(4)
+  bridge.tick(s, .1, hooks)
+  expect(e.visualHold).toBe(0)
+})
+
+it('does not roll outgoing modifiers on phased actors and forwards real health for valid faction targets',()=>{
+  const s=game(), bridge=createFactionBridge({random:()=>0})
+  const e=bridge.spawn(s,'phantom',100,0)!
+  let calls=0
+  const h={...hooks,modifyOutgoingDamage:(amount:number,target?:{hp:number;max:number})=>{calls++;expect(target).toBe(e);return amount}}
+  e.state='phase'
+  expect(bridge.hitFaction(s,e,10,0,0,h)).toBe(0)
+  expect(calls).toBe(0)
+  e.state='recover'
+  bridge.hitFaction(s,e,10,0,0,h)
+  expect(calls).toBe(1)
+  const before=e.x; e.speed=0; e.timer=.3
+  bridge.tick(s,.05,h)
+  expect(e.x).toBeGreaterThan(before)
+})
+
+it('marks only landed faction crits and preserves actual HP loss', () => {
+  const s = game(), bridge = createFactionBridge({ random: () => .2, lineOfSight: () => true })
+  const enemy = bridge.spawn(s, 'fire-imp', 250, 0)!
+  const before = enemy.hp
+  expect(bridge.hitFaction(s, enemy, 1, 0, 0, { ...hooks, consumeCriticalHit: () => true })).toBe(1)
+  expect(enemy.hp).toBe(before - 1)
+  expect(healthCriticalVersion(enemy)).toBeGreaterThan(0)
+})
+

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+<linearGradient id="iron" x1=".04" y1="0" x2=".89" y2="1"><stop stop-color="#ffebb8" stop-opacity=".89"/><stop offset=".17" stop-color="#a47a54" stop-opacity=".83"/><stop offset=".42" stop-color="#3f2931" stop-opacity=".8"/><stop offset=".68" stop-color="#782f3a" stop-opacity=".69"/><stop offset=".89" stop-color="#e6ac71" stop-opacity=".9"/><stop offset="1" stop-color="#241b23" stop-opacity=".9"/></linearGradient>
+<radialGradient id="heart" cx=".41" cy=".27" r=".82"><stop stop-color="#f9c58d" stop-opacity=".54"/><stop offset=".4" stop-color="#812d37" stop-opacity=".55"/><stop offset="1" stop-color="#2a1723" stop-opacity=".58"/></radialGradient>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#f6d7a2"/><stop offset=".25" stop-color="#936c53"/><stop offset=".49" stop-color="#fff0b9"/><stop offset=".8" stop-color="#957356"/><stop offset="1" stop-color="#dfb477"/></linearGradient>
+<filter id="wear"><feTurbulence type="fractalNoise" baseFrequency=".16" numOctaves="3" seed="17" result="noise"/><feComposite in="noise" in2="SourceAlpha" operator="in"/><feColorMatrix values="0 0 0 0 .72  0 0 0 0 .57  0 0 0 0 .47  0 0 0 .18 0"/></filter>
+<filter id="sheen"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<path d="M256 42c66 42 126 41 170 46l-10 181c-7 101-71 157-160 201C168 425 103 374 96 269L86 89c70-8 117-17 170-47Z" fill="url(#iron)" opacity=".49" filter="url(#sheen)"/>
+<path d="M256 56c65 36 116 43 156 47l-9 169c-6 89-67 145-147 184-81-43-141-94-147-184L100 103c54-6 104-14 156-47Z" fill="url(#heart)" stroke="url(#metal)" stroke-width="16" stroke-linejoin="round"/>
+<path d="M256 77c58 32 91 37 130 43l-8 148c-8 73-53 116-122 157-72-45-112-89-122-157l-8-148c46-8 88-19 130-43Z" fill="url(#iron)" opacity=".55" stroke="#f1bc7f" stroke-opacity=".47" stroke-width="3"/>
+<path d="M256 84c-2 84 0 182 0 313M164 146c65 6 125 13 187-5M150 254c83 14 131 13 204-8" fill="none" stroke="#f9d8a0" stroke-opacity=".3" stroke-width="4"/>
+<path d="M160 149 256 117 349 148M191 352l65 58 65-58" fill="none" stroke="#301c29" stroke-opacity=".59" stroke-width="8"/>
+<path d="M256 67c-23 34-40 87-51 139 36-17 80-21 130-15" fill="none" stroke="#fff0c1" stroke-width="13" opacity=".14" filter="url(#sheen)"/>
+<path d="M256 61c65 36 116 40 153 43l-9 163c-6 88-66 142-144 180-80-40-136-91-145-180L103 104c56-5 100-14 153-43Z" fill="transparent" filter="url(#wear)"/>
+<g fill="none" stroke="#f9d5a2" stroke-opacity=".32" stroke-width="1.2"><path d="m177 192 19 16-8 27 24 12"/><path d="m327 236-22 26 12 17-14 26"/><path d="m203 315 13 22 20-5"/></g>
+</svg>

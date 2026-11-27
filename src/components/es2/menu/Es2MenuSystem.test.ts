@@ -1,12 +1,18 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { emptyProfile } from '../../../meta/profile'
+import { createMetaState } from '../../../game/content/meta/state'
+import { cosmeticAura } from '../../../meta/cosmetics'
+import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { RunStats } from '../../../meta/types'
 import { UP } from '../../../game/constants'
+import { BALANCE } from '../../../game/config'
+import { BOSS_DEFINITIONS, BOSS_ATTACKS } from '../../../game/content/bosses/definitions'
 import Es2MenuSystem from './Es2MenuSystem.vue'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../../../game/content/accessibility/preferences'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 
 const base = {
@@ -26,9 +32,44 @@ function mounted(props: Record<string, unknown> = {}) {
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount(); document.body.innerHTML = '' })
 
 describe('ES2 main menu integration adapter', () => {
+  it('lists all six hero actives in the skill archive using the shared full summary', async () => {
+    mounted()
+    document.querySelectorAll<HTMLButtonElement>('.es2-hall-links button')[3]!.click()
+    await nextTick()
+    const catalog = find('[data-hero-active-catalog]')
+    expect(catalog).toBeTruthy()
+    const skills = [...catalog.querySelectorAll('[data-hero-active-summary="full"]')]
+    expect(skills.map(el => el.getAttribute('data-active-hero'))).toEqual(['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'])
+    expect(skills.every(el => el.querySelector('[data-active-skill-name]') && el.querySelector('[data-active-skill-cooldown]'))).toBe(true)
+  })
+
+  it('re-enters archive pages on navigation without delaying or remounting the same page', async () => {
+    mounted()
+    const links = document.querySelectorAll<HTMLButtonElement>('.es2-hall-links button')
+    links[0]!.click()
+    await nextTick()
+    const progression = find('[data-es2-archive-page]')
+    expect(progression.getAttribute('data-es2-archive-page')).toBe('progression')
+    links[1]!.click()
+    await nextTick()
+    const relics = find('[data-es2-archive-page]')
+    expect(relics.getAttribute('data-es2-archive-page')).toBe('relics')
+    expect(relics).not.toBe(progression)
+    expect(progression.isConnected).toBe(false)
+    links[1]!.click()
+    await nextTick()
+    expect(find('[data-es2-archive-page]')).toBe(relics)
+    click('[data-es2-return-lobby]')
+    await nextTick()
+    expect(document.querySelector('[data-es2-archive-page]')).toBeNull()
+    expect(find('[data-es2-lobby-content]').hasAttribute('hidden')).toBe(false)
+  })
+
   it('keeps legacy hero, mode and start action names with original artwork', async () => {
     const wrapper = mounted()
     click('[data-hero="ranger"]')
+    click('[data-es2-expedition-navigation]')
+    await nextTick()
     click('[data-mode="challenge"]')
     click('.es2-start')
     expect(wrapper.emitted('select')).toEqual([['ranger']])
@@ -37,12 +78,60 @@ describe('ES2 main menu integration adapter', () => {
     expect(find('[data-hero="knight"] img').getAttribute('src')).toBeTruthy()
   })
 
+  it('uses a single progression heading and authoritative hall wallet without redundant inner chrome', async () => {
+    const profile = emptyProfile()
+    profile.embers = 184
+    const state = createMetaState()
+    state.embers = 184
+    mounted({ profile, metaState: state, metaStatus: 'ready' })
+    click('.es2-hall-links button')
+    await nextTick()
+    const archive = find('[data-es2-archive-page]')
+    expect(archive.querySelectorAll('h2')).toHaveLength(1)
+    expect(archive.querySelector('.es2-progression-wallet')).toBeNull()
+    expect(document.querySelectorAll('[data-es2-ember-wallet]')).toHaveLength(1)
+    expect(find('[data-es2-ember-value]').textContent).toBe('184')
+    expect(archive.querySelector('[data-research="power"]')).not.toBeNull()
+  })
+
+  it('previews the actual equipped cosmetic palette and forwards unlocked selection without mutating the profile', async () => {
+    const profile = emptyProfile()
+    profile.unlockedCosmetics.push('knight-gilded')
+    const wrapper = mounted({ profile })
+    click('.es2-hall-links button')
+    await nextTick()
+    const skin = find('[data-es2-cosmetic-option="knight-gilded"]')
+    expect(skin.querySelector('img')?.getAttribute('src')).toBeTruthy()
+    expect(skin.style.getPropertyValue('--es2-skin-ring')).toBe(cosmeticAura('knight-gilded')[1])
+    skin.click()
+    expect(wrapper.emitted('cosmetic')).toEqual([['knight', 'knight-gilded']])
+    expect(profile.equippedCosmetics.knight).toBe('knight-default')
+    await wrapper.setProps({ profile: { ...profile, equippedCosmetics: { ...profile.equippedCosmetics, knight: 'knight-gilded' } } })
+    expect(skin.getAttribute('aria-pressed')).toBe('true')
+    expect(find('[data-hero="knight"]').getAttribute('data-es2-cosmetic')).toBe('knight-gilded')
+    expect(find('[data-hero="knight"]').style.getPropertyValue('--es2-skin-ring')).toBe(cosmeticAura('knight-gilded')[1])
+    expect(cosmeticAura('knight-default')).not.toEqual(cosmeticAura('knight-gilded'))
+  })
+
+  it('passes the actual selected specialization into its cosmetic cards', async () => {
+    const profile = emptyProfile()
+    const wrapper = mounted({ profile, choice: 'knight', heroId: 'shadowblade' })
+    click('.es2-hall-links button')
+    await nextTick()
+    expect(find('[data-es2-cosmetic-option="knight-gilded"] img').getAttribute('src')).toBe(HERO_DEFINITIONS.shadowblade.portraitSrc)
+    await wrapper.setProps({ choice: 'wizard', heroId: 'spirit-summoner' })
+    expect(find('[data-es2-cosmetic-option="wizard-astral"] img').getAttribute('src')).toBe(HERO_DEFINITIONS['spirit-summoner'].portraitSrc)
+    await wrapper.setProps({ choice: 'knight', heroId: 'crimson-paladin' })
+    expect(find('[data-es2-cosmetic-option="knight-default"] img').getAttribute('src')).toBe(HERO_DEFINITIONS['crimson-paladin'].portraitSrc)
+  })
+
   it('opens progression, spends nothing without funds, and confirms reset safely', async () => {
     const wrapper = mounted()
     click('.es2-hall-links button')
     await nextTick()
-    expect(find('.es2-dialog')?.textContent).toContain('永久強化')
-    const buy = find('.es2-archive-card .es2-secondary') as HTMLButtonElement
+    expect(find('[data-es2-archive-page]')?.textContent).toContain('永久強化')
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+    const buy = find('[data-hall-purchase="power"]') as HTMLButtonElement
     expect(buy.disabled).toBe(true)
     click('.es2-danger')
     await nextTick()
@@ -75,6 +164,44 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('home')).toHaveLength(1)
   })
 
+  it('renders ordinary, weapon and hero upgrades with the same before/after emphasis', async () => {
+    mounted({ screen: 'level', upgrades: [
+      { ...UP[0]!, level: 1 },
+      { id: 'weapons:shadow-daggers', title: 'Shadow Daggers', desc: '', icon: '✦', rarity: 'common', level: 1, maxLevel: 5 },
+      { id: 'heroes:shadow-precision', title: 'Shadow Precision', desc: '', icon: '✦', rarity: 'rare', level: 0, maxLevel: 3 },
+    ] })
+    await nextTick()
+    for (const [id, expected] of [
+      ['damage', '163.84%'], ['weapons:shadow-daggers', '65%'], ['heroes:shadow-precision', '188%'],
+    ]) {
+      const card = find('[data-choice="' + id + '"]')
+      const values = card.querySelector('.es2-mastery-values')
+      expect(values?.textContent).toContain('→')
+      expect(values?.querySelector('strong')?.textContent).toBe(expected)
+    }
+  })
+
+  it('aligns distinct old and new values and omits inactive placeholders on first unlock', async () => {
+    mounted({ screen: 'level', upgrades: [
+      { id: 'weapons:bone-spears', title: 'Bone Spears', desc: '', icon: '✦', rarity: 'common', level: 0, maxLevel: 5 },
+      { ...UP[0]!, level: 1 },
+    ] })
+    await nextTick()
+    const fresh = find('[data-choice="weapons:bone-spears"] .es2-mastery-stat')
+    expect(fresh.querySelector('.es2-mastery-label')?.textContent?.trim()).toBeTruthy()
+    expect(fresh.querySelector('.es2-mastery-before')).toBeNull()
+    expect(fresh.querySelector('.es2-mastery-arrow')).toBeNull()
+    expect(fresh.querySelector('.es2-mastery-after')?.textContent).toBe('76%')
+    const projectile = find('[data-choice="weapons:bone-spears"] .es2-mastery-stat:nth-child(2)')
+    expect(projectile.querySelector('.es2-mastery-before')?.textContent).toBe('0')
+    expect(projectile.querySelector('.es2-mastery-arrow')?.textContent).toBe('→')
+    expect(projectile.querySelector('.es2-mastery-after')?.textContent).toBe('3')
+    const learned = find('[data-choice="damage"] .es2-mastery-stat')
+    expect(learned.querySelector('.es2-mastery-before')?.textContent).toBe('128%')
+    expect(learned.querySelector('.es2-mastery-arrow')?.textContent).toBe('→')
+    expect(learned.querySelector('.es2-mastery-after')?.textContent).toBe('163.84%')
+  })
+
   it('forwards both legacy level-up and independently supplied treasure choices', async () => {
     const wrapper = mounted({ screen: 'level' })
     await nextTick()
@@ -96,6 +223,53 @@ describe('ES2 main menu integration adapter', () => {
     expect(image.closest('picture')?.querySelector('source')?.getAttribute('srcset')).toContain('solar-tempest@3x.webp')
     await wrapper.setProps({ upgradeEffect: 'still' })
     expect(image.getAttribute('src')).toContain('solar-tempest@3x.webp')
+  })
+
+  it('uses animated skill art normally and still art for accessibility preferences', async () => {
+    const wrapper = mounted({ screen: 'level', upgradeEffect: 'soft', upgrades: [UP.find(u => u.id === 'speed')!],
+      accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES } })
+    const image = () => find('[data-choice="speed"] .es2-card-art img').getAttribute('src')
+    expect(image()).toContain('speed@3x-animated.webp')
+    await wrapper.setProps({ accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedFlashing: true } })
+    expect(image()).toContain('speed@3x.webp')
+    await wrapper.setProps({ accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'on' } })
+    expect(image()).toContain('speed@3x.webp')
+  })
+
+  it('uses the same three-choice layout for treasure and upgrades with no extra chest header art', async () => {
+    const wrapper = mounted({ screen: 'level' })
+    await nextTick()
+    const upgradeDialog = find('.es2-dialog-choice')
+    const upgradeClasses = [...upgradeDialog.querySelectorAll('.es2-choice')].map(card => card.classList.contains('es2-skill-card'))
+    expect(upgradeClasses).toEqual([true, true, true])
+
+    await wrapper.setProps({ specialChoice: { kind: 'treasure', items: [
+      { id: 'relics:frost-rune', title: 'Frost Rune', rarity: 'common' },
+      { id: 'relics:guardian-sigil', title: 'Guardian Sigil', rarity: 'rare' },
+      { id: 'relics:fragile-crown', title: 'Fragile Crown', rarity: 'legendary' },
+    ] } })
+    await nextTick()
+    const rewardDialog = find('.es2-dialog-choice')
+    expect(rewardDialog.classList.contains('es2-dialog-wide')).toBe(true)
+    expect(rewardDialog.querySelector('.es2-dialog-header img')).toBeNull()
+    expect(rewardDialog.querySelectorAll('.es2-selection-scene > :not(.es2-choice-grid):not(.es2-hint)')).toHaveLength(0)
+    expect([...rewardDialog.querySelectorAll('.es2-choice')].map(card => card.classList.contains('es2-skill-card'))).toEqual(upgradeClasses)
+    expect(rewardDialog.querySelectorAll('.es2-card-art img')).toHaveLength(3)
+    click('[data-choice="relics:guardian-sigil"]')
+    expect(wrapper.emitted('specialChoose')).toEqual([['relics:guardian-sigil']])
+  })
+
+  it('uses the uploaded independent Epic artwork in the live three-choice reward dialog', async () => {
+    mounted({ screen: 'hidden', specialChoice: { kind: 'treasure', items: [
+      { id: 'relic:qa-epic', title: 'Epic reward', rarity: 'epic' },
+      { id: 'relic:qa-rare', title: 'Rare reward', rarity: 'rare' },
+    ] } })
+    await nextTick()
+    const epic = find('[data-choice="relic:qa-epic"] .es2-card-art img').getAttribute('src')
+    const rare = find('[data-choice="relic:qa-rare"] .es2-card-art img').getAttribute('src')
+    expect(epic).toContain('treasure-epic@3x.webp')
+    expect(rare).toBe(WORLD_ART.ui['treasure-rare'])
+    expect(epic).not.toBe(rare)
   })
 
   it('renders every cursed relic with the cursed chest artwork, independent of its ID and rarity', async () => {
@@ -140,7 +314,34 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('musicVolume')).toEqual([[32]])
     click('.es2-toggle-set button:last-child')
     expect(wrapper.emitted('upgradeEffect')).toEqual([['still']])
-    click('.es2-setting-option > .es2-secondary')
+    const audioButtons = document.querySelectorAll<HTMLButtonElement>('.es2-slider-row > button')
+    expect(audioButtons).toHaveLength(2)
+    expect(document.querySelectorAll('.es2-slider-row [role="switch"]')).toHaveLength(0)
+    expect(audioButtons[0]?.textContent).toBe('♫')
+    expect(audioButtons[1]?.textContent).toBe('♬')
+    expect(audioButtons[0]?.getAttribute('aria-pressed')).toBe('false')
+    expect(audioButtons[1]?.getAttribute('aria-pressed')).toBe('false')
+    expect(find('.es2-slider-row label').textContent?.trim()).toBe('音樂 70%')
+    expect(document.querySelectorAll('.es2-slider-row label')[1]?.textContent?.trim()).toBe('音效 50%')
+    expect(find('.es2-setting-option > [role="switch"]').getAttribute('aria-checked')).toBe('false')
+    audioButtons[0]!.click()
+    audioButtons[1]!.click()
+    await wrapper.setProps({ musicOn: false, sfxOn: false })
+    expect(audioButtons[0]?.querySelector('svg[data-audio-icon="music-muted"] path[data-mute-mark]')).not.toBeNull()
+    expect(audioButtons[1]?.querySelector('svg[data-audio-icon="sfx-muted"] path[data-mute-mark]')).not.toBeNull()
+    expect(audioButtons[0]?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    expect(audioButtons[1]?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    expect(audioButtons[0]?.textContent).toBe('')
+    expect(audioButtons[1]?.textContent).toBe('')
+    expect(audioButtons[0]?.getAttribute('aria-pressed')).toBe('true')
+    expect(audioButtons[1]?.getAttribute('aria-pressed')).toBe('true')
+    expect(wrapper.emitted('toggleMusic')).toHaveLength(1)
+    expect(wrapper.emitted('toggleSfx')).toHaveLength(1)
+    await wrapper.setProps({ musicOn: true })
+    expect(audioButtons[0]?.textContent).toBe('♫')
+    expect(audioButtons[0]?.querySelector('svg')).toBeNull()
+    expect(audioButtons[1]?.querySelector('[data-audio-icon="sfx-muted"]')).not.toBeNull()
+    click('.es2-setting-option > [role="switch"]')
     expect(wrapper.emitted('cameraShake')).toEqual([[true]])
     click('.es2-close')
     expect(wrapper.emitted('closeSettings')).toHaveLength(1)
@@ -152,10 +353,87 @@ describe('ES2 main menu integration adapter', () => {
     await nextTick()
     expect(find('.es2-empty').textContent).toContain('尚無聖物資料')
     for (const index of [3, 4, 5]) {
-      click(`.es2-archive-tabs button:nth-child(${index})`)
+      click(`.es2-hall-links button:nth-child(${index})`)
       await nextTick()
       expect(find('.es2-archive-section')).not.toBeNull()
+      expect(find(`.es2-hall-links button:nth-child(${index})`).getAttribute('aria-current')).toBe('page')
+      expect(document.querySelector('[role="dialog"]')).toBeNull()
     }
+  })
+
+  it('shows unlocked archive details on request, with no disclosure of undiscovered entries', async () => {
+    const wrapper = mounted({ relics: [
+      { id: 'known', title: 'Known relic', owned: true, description: 'Known effect', effect: 'Known effect' },
+      { id: 'secret', title: 'Secret relic', owned: false, effect: 'Secret effect' },
+    ] })
+    click('.es2-hall-links button:nth-child(2)')
+    await nextTick()
+    expect(find('[data-es2-archive-page]').textContent).not.toContain('Known effect')
+    expect(find('[data-es2-card-info="relic:known"]')).not.toBeNull()
+    expect(document.querySelector('[data-es2-card-info="relic:secret"]')).toBeNull()
+    expect(find('[data-es2-archive-page]').textContent).not.toContain('Secret effect')
+    click('[data-es2-card-info="relic:known"]')
+    await nextTick()
+    expect(find('[role="dialog"]').textContent).toContain('Known effect')
+    expect(find('[role="dialog"]').textContent).not.toContain('Secret effect')
+    expect(wrapper.emitted('purchase')).toBeUndefined()
+    click('.es2-close')
+    await nextTick()
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+  })
+
+  it('shows authoritative monster stats and skill icons only after discovery', async () => {
+    const profile = emptyProfile()
+    profile.discoveredMonsters.slime = 2
+    profile.discoveredMonsters.boss = 1
+    for (const boss of Object.values(BOSS_DEFINITIONS)) profile.discoveredMonsters[boss.id] = 1
+    mounted({ profile })
+    click('.es2-hall-links button:nth-child(3)')
+    await nextTick()
+    expect(document.querySelector('[data-es2-card-info="monster:bat"]')).toBeNull()
+    click('[data-es2-card-info="monster:slime"]')
+    await nextTick()
+    const dialog = find('[role="dialog"]')
+    expect(dialog.querySelector('[data-monster-stat="HP"]')?.textContent).toContain(String(BALANCE.enemies.baseHp.slime))
+    expect(dialog.querySelector('[data-monster-stat="ATK"]')?.textContent).toContain(String(BALANCE.enemies.baseDamage))
+    expect(dialog.querySelector('[data-monster-stat="SPD"]')?.textContent).toContain(String(BALANCE.enemies.baseSpeed.slime))
+    expect(dialog.querySelector('[data-monster-skill="pounce"] img')?.getAttribute('src')).toContain('@3x.webp')
+    click('.es2-close')
+    await nextTick()
+    for (const boss of Object.values(BOSS_DEFINITIONS)) {
+      click('[data-es2-card-info="monster:' + boss.id + '"]')
+      await nextTick()
+      const section = find('[data-monster-group="' + boss.id + '"]')
+      expect(section.querySelector('[data-monster-stat="HP"]')?.textContent).toContain(String(boss.health))
+      for (const attacks of boss.phases) for (const attack of attacks) {
+        const skill = section.querySelector('[data-monster-skill="' + attack + '"]')
+        expect(skill?.querySelector('img')).not.toBeNull()
+        expect(skill?.textContent).toContain(String(BOSS_ATTACKS[attack].damage))
+      }
+      click('.es2-close')
+      await nextTick()
+    }
+  })
+
+  it('uses a single hall navigation, preserves lobby selection and restores the expedition page when returning', async () => {
+    const wrapper = mounted({ heroId: 'shadowblade', runMode: 'boss-rush' })
+    click('[data-es2-expedition-navigation]')
+    await nextTick()
+    click('.es2-hall-links button')
+    await nextTick()
+    expect(document.querySelectorAll('[data-es2-hall-navigation]')).toHaveLength(1)
+    expect(document.querySelector('.es2-archive-tabs')).toBeNull()
+    expect(find('[data-es2-archive-page]').getAttribute('data-es2-archive-page')).toBe('progression')
+    expect(find('[data-es2-lobby-content]').getAttribute('hidden')).not.toBeNull()
+    expect(find('.es2-menu-action-bar').style.display).toBe('none')
+    expect(wrapper.emitted('start')).toBeUndefined()
+    click('[data-es2-return-lobby]')
+    await nextTick()
+    expect(document.querySelector('[data-es2-archive-page]')).toBeNull()
+    expect(find('.es2-menu').getAttribute('data-es2-menu-page')).toBe('modes')
+    expect(find('[data-es2-expedition-summary]').getAttribute('data-run-mode')).toBe('boss-rush')
+    expect(find('[data-es2-selected-hero]').getAttribute('data-es2-selected-hero')).toBe('shadowblade')
+    expect(find('.es2-menu-action-bar').style.display).not.toBe('none')
   })
 })
 
@@ -167,7 +445,111 @@ describe('ES2 responsive and motion CSS contract', () => {
     expect(css).toContain('@media(max-width:610px)')
     expect(css).toContain('prefers-reduced-motion:reduce')
   })
+  describe('shared scene transitions', () => {
+    const block = css.slice(css.indexOf('/* Scene transitions'))
+    const ms = (token: string) => Number(block.match(new RegExp(`--es2-scene-${token}:\\s*(\\d+)ms`))?.[1])
+    it('reuses one arrival keyframe with short, bounded duration tokens', () => {
+      expect(block).toMatch(/@keyframes es2-scene-arrive\s*\{\s*from\s*\{\s*opacity:\s*0;\s*translate:\s*var\(--es2-scene-from, 0 0\);\s*scale:\s*var\(--es2-scene-scale, 1\);\s*\}\s*\}/)
+      for (const token of ['fast', 'base', 'slow']) expect(ms(token)).toBeGreaterThan(0)
+      expect(ms('fast')).toBeLessThan(ms('base'))
+      expect(ms('slow')).toBeLessThanOrEqual(320)
+      const delays = [...block.matchAll(/animation-delay:\s*(\d+)ms/g)].map(match => Number(match[1]))
+      expect(Math.max(...delays) + ms('base')).toBeLessThanOrEqual(360)
+      // Old one-off fades are replaced, not layered.
+      expect(css).not.toMatch(/es2-page-arrive|es2-enter\b/)
+    })
+    it('keeps the lobby opaque immediately and the dock fade opacity-only without persistent compositing layers', () => {
+      const menuRule = block.match(/^\.es2-menu\s*\{([^}]*)\}/m)?.[1] ?? ''
+      expect(menuRule).toMatch(/animation:\s*none\b/)
+      expect(menuRule).toMatch(/opacity:\s*1\b/)
+      expect(menuRule).not.toMatch(/translate|scale|transform|filter|perspective/)
+      const dockRule = block.match(/^\.es2-menu-action-bar\s*\{([^}]*)\}/m)?.[1] ?? ''
+      const keyframe = dockRule.match(/animation:\s*([\w-]+)/)?.[1] ?? ''
+      expect(keyframe).toBe('es2-scene-fade')
+      const frames = block.match(new RegExp(`@keyframes ${keyframe}\\s*\\{([^}]*\\})\\s*\\}`))?.[1] ?? ''
+      expect(frames).toContain('opacity')
+      expect(frames).not.toMatch(/translate|scale|transform|filter|perspective/)
+      expect(dockRule).toContain('backwards')
+    })
+    it('covers home pages, dialogs, choice cards, loading and combat entry', () => {
+      for (const selector of ['.es2-menu', '.es2-hero-section', '.es2-mode-section', '.es2-archive-page', '.es2-menu-action-bar',
+        '.es2-backdrop', '.es2-dialog', '.es2-choice-grid > .es2-choice', '.es2-loading', '#game[data-es2-combat-scene]',
+        '.es2-hud--active .es2-hud__top', '.es2-hud--active .es2-hud__bottom']) expect(block).toContain(selector)
+      // Interactive selection grids fade in place: first-frame hit targets must not shift.
+      const selectionRule = block.match(/\.es2-hero-section,\s*\.es2-mode-section\s*\{([^}]*)\}/)?.[1] ?? ''
+      expect(selectionRule).toContain('animation: es2-scene-fade')
+      expect(selectionRule).toContain('backwards')
+      expect(selectionRule).not.toMatch(/translate|--es2-scene-from|scale/)
+      expect(block).toMatch(/#game\[data-es2-combat-scene\]\s*\{[^}]*--es2-scene-scale:\s*1\.\d+;[^}]*var\(--es2-scene-slow\)/)
+      // Never uses `transform`, so hover lifts and the centered HUD bottom bar keep working.
+      expect(block.slice(block.indexOf('@keyframes es2-scene-arrive'))).not.toMatch(/transform\s*:/)
+    })
+    it('disables every scene transition for both reduced-motion paths', () => {
+      const reduced = block.match(/\[data-es2-reduce-motion="true"\] :is\(([^)]+(?:\([^)]*\)[^)]*)*)\)/)?.[1] ?? ''
+      for (const selector of ['.es2-menu', '.es2-dialog', '.es2-choice', '#game[data-es2-combat-scene]', '.es2-hud__top', '.es2-hud__bottom'])
+        expect(reduced).toContain(selector)
+      expect(block).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{\s*:is\([^}]+animation: none !important;/)
+    })
+  })
   it('never adds gameplay screen-shake animations to upgrade cards', () => {
     expect(css).not.toMatch(/@keyframes\s+.*shake/i)
+  })
+})
+
+describe('Adventurer Hall selected mastery integration', () => {
+  it('forwards the actual selected specialization instead of displaying its legacy job mastery', async () => {
+    const state = createMetaState()
+    state.mastery['heroes:shadowblade'] = { xp: 900, level: 3 }
+    const wrapper = mounted({ metaState: state, metaStatus: 'ready', choice: 'knight', heroId: 'shadowblade' })
+    click('.es2-hall-links button')
+    await nextTick()
+    expect(find('.es2-progression-mastery').textContent).toContain('影刃行者')
+    expect(find('.es2-progression-mastery strong').textContent).toContain('Lv. 3')
+    await wrapper.setProps({ heroId: 'crimson-paladin' })
+    expect(find('.es2-progression-mastery strong').textContent).toContain('Lv. 1')
+  })
+})
+
+describe('ES3 treasure presentation accessibility', () => {
+  it('reads and persists the chest skip checkbox through the accessibility preferences', async () => {
+    const prefs = { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'off' as const, skipRewardReveal: true }
+    const wrapper = mounted({ screen: 'level', upgradeEffect: 'soft', accessibilityPreferences: prefs,
+      specialChoice: { kind: 'treasure', tier: 'epic', items: [{ id: 'reward', title: 'Reward', rarity: 'epic' }] },
+    })
+    await nextTick()
+    expect(document.querySelector('[data-es3-chest-reveal]')).toBeNull()
+    expect(find('[data-es3-skip-reveal]').getAttribute('aria-checked')).toBe('true')
+    click('[data-es3-skip-reveal]')
+    expect(wrapper.emitted('accessibility')).toEqual([[{ ...prefs, skipRewardReveal: false }]])
+    expect(wrapper.emitted('specialChoose')).toBeUndefined()
+  })
+
+  it('uses the actual system motion setting and responds to preference changes without claiming the reward', async () => {
+    const media = new EventTarget()
+    let matches = true
+    vi.stubGlobal('matchMedia', vi.fn(() => Object.assign(media, { matches })))
+    let wrapper: VueWrapper | undefined
+    try {
+      wrapper = mounted({ screen: 'level', upgradeEffect: 'soft',
+        accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'system' },
+        specialChoice: { kind: 'treasure', tier: 'legendary', items: [{ id: 'reward', title: 'Reward', rarity: 'legendary' }] },
+      })
+      await nextTick()
+      expect(document.querySelector('[data-es3-chest-reveal]')).toBeNull()
+      expect(document.querySelector('[data-es3-skip-reveal]')).toBeNull()
+      matches = false
+      media.dispatchEvent(Object.assign(new Event('change'), { matches }))
+      await nextTick()
+      expect(document.querySelector('[data-es3-chest-reveal]')).not.toBeNull()
+      await wrapper.setProps({ accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedFlashing: true } })
+      expect(document.querySelector('[data-es3-chest-reveal]')).toBeNull()
+      expect(wrapper.emitted('specialChoose')).toBeUndefined()
+      click('[data-choice="reward"]')
+      click('[data-choice="reward"]')
+      expect(wrapper.emitted('specialChoose')).toEqual([['reward']])
+    } finally {
+      if (wrapper) { wrappers.splice(wrappers.indexOf(wrapper), 1); wrapper.unmount() }
+      vi.unstubAllGlobals()
+    }
   })
 })

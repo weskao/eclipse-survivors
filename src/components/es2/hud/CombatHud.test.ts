@@ -53,6 +53,13 @@ describe('ES2 combat HUD', () => {
 
 
 
+  it('shows and clears the engine-owned combo without a synthetic feed', async () => {
+    const { wrapper } = render({ hud: { ...equipped, combo: { count: 12 } } })
+    expect(wrapper.get('[data-es2-combo]').text()).toContain('12×')
+    await wrapper.setProps({ hud: { ...equipped } })
+    expect(wrapper.find('[data-es2-combo]').exists()).toBe(false)
+  })
+
   it('smoothly presents damage and healing without delaying authoritative HP, XP, boss or wave values', async () => {
     const { wrapper } = render({
       hud: { ...equipped, bossPct: 40 },
@@ -63,6 +70,7 @@ describe('ES2 combat HUD', () => {
     expect(fraction('生命值')).toBe('0.75')
     expect(fraction('經驗值')).toBe('0.42')
     expect(fraction('首領生命值')).toBe('0.4')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d35048')
     expect(fraction('波次進度')).toBe('0.22')
     expect(meter('生命值').findAll('span')).toHaveLength(2)
     expect(meter('生命值').get('.es2-hud__track-trail').attributes('aria-hidden')).toBe('true')
@@ -75,6 +83,7 @@ describe('ES2 combat HUD', () => {
     expect(meter('生命值').classes()).toContain('es2-hud__track--critical')
     expect(fraction('經驗值')).toBe('0.8')
     expect(fraction('首領生命值')).toBe('0.18')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#eb674d')
     expect(fraction('波次進度')).toBe('0.63')
     await wrapper.setProps({ hud: { ...equipped, hpPct: 94, xpPct: 15, bossPct: 48 } })
     expect(meter('生命值').attributes('aria-valuenow')).toBe('94')
@@ -82,6 +91,22 @@ describe('ES2 combat HUD', () => {
     expect(meter('生命值').classes()).not.toContain('es2-hud__track--critical')
     expect(fraction('經驗值')).toBe('0.15')
     expect(fraction('首領生命值')).toBe('0.48')
+    expect((meter('首領生命值').element as HTMLElement).style.getPropertyValue('--es2-boss-hp-color')).toBe('#d35048')
+  })
+
+  it('snaps the hero health layers when reduced motion is enabled', async () => {
+    const { wrapper } = render({ healthMotion: 'on' })
+    const meter = wrapper.get('.es2-hud__track--health')
+    const value = (name: string) => (meter.element as HTMLElement).style.getPropertyValue(name)
+    await wrapper.setProps({ hud: { ...equipped, hpPct: 19 } })
+    expect(meter.attributes('aria-valuenow')).toBe('19')
+    expect(value('--hero-hp-front')).toBe('0.19')
+    expect(value('--hero-hp-trail')).toBe('0.19')
+    expect(meter.attributes('data-hero-hp-damage')).toBeUndefined()
+    await wrapper.setProps({ hud: { ...equipped, hpPct: 88 } })
+    expect(value('--hero-hp-front')).toBe('0.88')
+    expect(value('--hero-hp-trail')).toBe('0.88')
+    expect(meter.attributes('aria-valuenow')).toBe('88')
   })
 
   it('tracks an offscreen boss with actual distance, direction and artwork, then hides when visible', async () => {
@@ -240,4 +265,40 @@ describe('ES2 combat HUD', () => {
     await wrapper.setProps({ canReturnHome: false })
     expect(wrapper.find('[data-es2-info-toggle]').exists()).toBe(false)
   })
+})
+
+it('uses the same sampled health variables for the fixed boss HUD', async () => {
+  const { wrapper } = render({ healthMotion: 'on', hud: { ...equipped, bossPct: 90 } })
+  const meter = wrapper.get('.es2-hud__track--boss')
+  const value = (name: string) => (meter.element as HTMLElement).style.getPropertyValue(name)
+  await wrapper.setProps({ hud: { ...equipped, bossPct: 30, bossCriticalVersion: 3 } })
+  expect(meter.attributes('aria-valuenow')).toBe('30')
+  expect(value('--hero-hp-front')).toBe('0.3')
+  expect(value('--hero-hp-trail')).toBe('0.3')
+  expect(meter.attributes('data-hp-impact')).toBeUndefined()
+})
+
+it('shows a keyed, noninteractive phase reveal only for an explicit encounter event', async () => {
+  const { wrapper } = render({ hud: { ...equipped, bossPct: 60 }, feed: { boss: { name: 'Abyss Monarch', phase: 2, totalPhases: 3 } } })
+  expect(wrapper.find('[data-boss-phase-reveal]').exists()).toBe(false)
+  await wrapper.setProps({ bossPhaseReveal: { boss: 'abyss-monarch', phase: 2, serial: 1, expiresAt: 10 } })
+  const p2 = wrapper.get('[data-boss-phase-reveal]')
+  expect(p2.attributes('data-phase')).toBe('2')
+  expect(p2.attributes('role')).toBe('status')
+  await wrapper.setProps({ bossPhaseReveal: { boss: 'abyss-monarch', phase: 3, serial: 2, expiresAt: 12 } })
+  expect(wrapper.get('[data-boss-phase-reveal]').attributes('data-phase')).toBe('3')
+  await wrapper.setProps({ bossPhaseReveal: null })
+  expect(wrapper.find('[data-boss-phase-reveal]').exists()).toBe(false)
+})
+
+it('uses unique authored phase sigils for all four bosses', async () => {
+  const { wrapper } = render({ hud: { ...equipped, bossPct: 30 }, feed: { boss: { name: 'Boss', phase: 3, totalPhases: 3 } } })
+  const paths = new Set<string>()
+  for (const [serial,boss] of (['abyss-monarch','frost-sovereign','infernal-titan','eclipse-seraph'] as const).entries()) {
+    await wrapper.setProps({ bossPhaseReveal: { boss, phase: 3, serial: serial+1, expiresAt: 10 } })
+    const path = wrapper.get('[data-boss-phase-sigil]').attributes('d')
+    expect(path).toBeTruthy()
+    paths.add(path!)
+  }
+  expect(paths.size).toBe(4)
 })

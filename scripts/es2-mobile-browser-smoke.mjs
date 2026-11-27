@@ -9,11 +9,88 @@ const viewports = [
   { name: 'portrait-375', width: 375, height: 812 },
   { name: 'landscape-640', width: 640, height: 320 },
   { name: 'landscape-812', width: 812, height: 375 },
+  { name: 'landscape-932', width: 932, height: 430 },
 ]
 
 await mkdir(directory, { recursive: true })
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 try {
+  // Run the real fine-pointer interaction before mobile-only scenarios.
+  const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'no-preference' })
+  try {
+    const page = await desktop.newPage()
+    await page.goto(target, { waitUntil: 'domcontentloaded' })
+    const portal = page.locator('.es2-portal-start')
+    await portal.waitFor({ state: 'visible', timeout: 30000 })
+    const paint = () => portal.evaluate(el => {
+      const rect = el.getBoundingClientRect()
+      return { frame: getComputedStyle(el, '::before').backgroundImage,
+        fill: getComputedStyle(el, '::after').backgroundImage,
+        width: rect.width, height: rect.height, x: rect.x, y: rect.y,
+        sweep: getComputedStyle(el.querySelector('.es2-portal-sheen'), '::before').animationName,
+        menu: !!el.closest('.es2-menu'),
+        core: getComputedStyle(el.querySelector('.es2-portal-core')).transform,
+        ring: getComputedStyle(el.querySelector('.es2-portal-decoration')).transform,
+        glow: getComputedStyle(el.querySelector('.es2-portal-decoration')).boxShadow,
+        outline: getComputedStyle(el).outlineStyle,
+      }
+    })
+    await page.mouse.move(0, 0)
+    const idle = await paint()
+    await portal.screenshot({ path: directory + '/portal-start-idle.png', animations: 'disabled' })
+    await portal.hover()
+    const hover = await paint()
+    assert.equal(idle.sweep, 'none', 'Idle must not shimmer')
+    assert.equal(hover.frame, idle.frame, 'The metallic rim is already illuminated at rest')
+    assert.equal(hover.fill, idle.fill, 'The dimensional interior is already illuminated at rest')
+    assert.notEqual(hover.glow, idle.glow, 'Hover intensifies the already visible magical glow')
+    assert.equal(hover.sweep, 'es2-portal-sweep')
+    assert.deepEqual([hover.x, hover.y, hover.width, hover.height], [idle.x, idle.y, idle.width, idle.height], 'Hover must not move the hit area')
+    assert.equal(hover.menu, true)
+    const expectTransform = async (selector, scale, angle = 0) => {
+      await page.waitForFunction(({ selector, scale, angle }) => {
+        const value = getComputedStyle(document.querySelector(selector)).transform
+        const matrix = value === 'none' ? new DOMMatrix() : new DOMMatrix(value)
+        return Math.abs(Math.hypot(matrix.a, matrix.b) - scale) < .005
+          && Math.abs(Math.atan2(matrix.b, matrix.a) * 180 / Math.PI - angle) < .2
+      }, { selector, scale, angle })
+    }
+    await expectTransform('.es2-portal-decoration', 1.08)
+    await expectTransform('.es2-portal-core', 1.13, 12)
+    await portal.screenshot({ path: directory + '/portal-start-hover.png' })
+    await page.mouse.down()
+    await expectTransform('.es2-portal-decoration', .96)
+    await expectTransform('.es2-portal-core', .92)
+    await page.mouse.move(0, 0)
+    await page.mouse.up()
+    await expectTransform('.es2-portal-decoration', 1)
+    await expectTransform('.es2-portal-core', 1)
+    assert.equal((await paint()).frame, idle.frame, 'Leaving the portal preserves its idle rim')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await portal.hover()
+    assert.equal((await paint()).sweep, 'none', 'Reduced motion disables the sweep')
+    assert.equal((await paint()).ring, 'none', 'Reduced motion disables ring scaling')
+    assert.equal((await paint()).core, 'none', 'Reduced motion disables core scaling and rotation')
+    assert.equal((await paint()).frame, idle.frame, 'Reduced motion preserves the metallic rim')
+    assert.equal((await paint()).outline, 'solid', 'Reduced motion retains a static hover indicator')
+    await page.mouse.move(0, 0)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.evaluate(() => document.documentElement.dataset.es2ReduceFlashing = 'true')
+    await portal.hover()
+    assert.equal((await paint()).sweep, 'none', 'Reduced flashing disables the sweep')
+    assert.equal((await paint()).ring, 'none', 'Reduced flashing disables ring scaling')
+    assert.equal((await paint()).core, 'none', 'Reduced flashing disables core scaling and rotation')
+    assert.equal((await paint()).glow, idle.glow, 'Reduced flashing keeps a constant magical glow')
+    await page.mouse.move(0, 0)
+    await page.keyboard.press('Tab')
+    await portal.focus()
+    assert.equal(await portal.evaluate(el => el.matches(':focus-visible')), true, 'Expected keyboard focus')
+    assert.equal((await paint()).frame, idle.frame, 'Keyboard focus preserves the metallic rim')
+    assert.equal((await paint()).outline, 'solid', 'Keyboard focus retains a visible outline')
+    await page.screenshot({ path: directory + '/portal-start-focus.png', animations: 'disabled' })
+    console.log('PASS desktop: portal hover, leave, focus, stable hit area and accessibility')
+  } finally { await desktop.close() }
+
   for (const viewport of viewports) {
     const context = await browser.newContext({
       viewport: { width: viewport.width, height: viewport.height },
@@ -31,12 +108,17 @@ try {
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
       assert.match(await page.locator('#gameVersion').innerText(), /^v[0-9]/)
       const assertHomepage = async (section) => {
-        await page.locator('.es2-menu').evaluate(element => { element.scrollTop = 0 })
+        await page.locator('.es2-menu-scroll').evaluate(element => { element.scrollTop = 0 })
         const layout = await page.evaluate(() => {
           const start = document.querySelector('.es2-start')
           const rect = start.getBoundingClientRect()
-          const root = document.querySelector('.es2-menu')
+          const root = document.querySelector('.es2-menu-scroll')
+          const bar = document.querySelector('.es2-menu-action-bar')
+          const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
           return {
+            startHeight: rect.height, startHit: start.contains(hit),
+            menuBottom: root.getBoundingClientRect().bottom, barTop: bar.getBoundingClientRect().top,
+            menuOverflowX: root.scrollWidth - root.clientWidth,
             startTop: rect.top, startBottom: rect.bottom,
             viewportHeight: window.visualViewport?.height ?? window.innerHeight,
             documentWidth: document.documentElement.scrollWidth,
@@ -49,42 +131,68 @@ try {
         assert.ok(layout.documentWidth <= layout.viewportWidth + 2,
           `${viewport.name}: ${section}: horizontal overflow ${JSON.stringify(layout)}`)
         assert.equal(layout.menuScroll, 0, `${viewport.name}: ${section}: homepage auto-scrolled`)
+        assert.ok(layout.startHeight >= 44 && layout.startHit, `${viewport.name}: ${section}: Start is obscured or too small ${JSON.stringify(layout)}`)
+        assert.ok(layout.menuOverflowX <= 2, `${viewport.name}: ${section}: menu scrolls horizontally ${JSON.stringify(layout)}`)
+        assert.ok(layout.menuBottom <= layout.barTop + 2, `${viewport.name}: ${section}: selection area overlaps Start dock ${JSON.stringify(layout)}`)
+        const scrolled = await page.locator('.es2-menu-scroll').evaluate(root => {
+          root.scrollTop = root.scrollHeight
+          const start = document.querySelector('.es2-start'), rect = start.getBoundingClientRect()
+          const visible = rect.top >= 0 && rect.bottom <= innerHeight + 2 && start.contains(document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2))
+          root.scrollTop = 0
+          return visible
+        })
+        assert.ok(scrolled, `${viewport.name}: ${section}: Start becomes inaccessible when scrolling`)
       }
       const assertHeroArtUsesSpace = async (family) => {
         const selector = family === 'new'
           ? '.es2-hero-section .es2-roster__portrait'
           : '.es2-hero-section .es2-hero-card img'
-        const art = await page.locator(selector).first().evaluate(element => {
+        const portraits = await page.locator(selector).evaluateAll(elements => elements.map(element => {
           const rect = element.getBoundingClientRect()
-          return { height:rect.height, width:rect.width, top:rect.top, bottom:rect.bottom }
-        })
+          const card = element.closest('.es2-hero-select-card').getBoundingClientRect()
+          const copy = element.nextElementSibling.getBoundingClientRect()
+          return { height:rect.height, width:rect.width, top:rect.top, bottom:rect.bottom, copyTop:copy.top, copyBottom:copy.bottom, cardBottom:card.bottom }
+        }))
         // Prior small, fixed 10dvh images wasted most of the portrait viewport.
         // Landscape remains bounded by 44px navigation and compact action controls.
         const minimum = viewport.height >= viewport.width
           ? Math.min(120, viewport.height * 0.15)
           : Math.min(60, viewport.height * 0.18)
-        assert.ok(art.height >= minimum,
-          `${viewport.name}: ${family} art wastes available space: ${JSON.stringify({art, minimum})}`)
+        assert.equal(portraits.length, 3)
+        for (const art of portraits) {
+          assert.ok(art.height >= minimum,
+            `${viewport.name}: ${family} art wastes available space: ${JSON.stringify({art, minimum})}`)
+          assert.ok(art.bottom <= art.copyTop + 2 && art.copyBottom <= art.cardBottom + 2,
+            `${viewport.name}: ${family} art or stats clipped: ${JSON.stringify(art)}`)
+        }
       }
-      await assertHomepage('classic hero / classic mode')
+      await assertHomepage('all heroes')
       await assertHeroArtUsesSpace('classic')
-      await page.locator('[data-es2-mobile-hero-tab="new"]').click()
-      assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-heroes'), 'new')
-      assert.ok(await page.locator('[data-hero-id="shadowblade"]').isVisible(),
-        `${viewport.name}: new heroes are hidden`)
-      await assertHomepage('new heroes')
       await assertHeroArtUsesSpace('new')
-      await page.screenshot({ path: `${directory}/${viewport.name}-menu-new-heroes.png`, animations: 'disabled' })
-      await page.locator('[data-es2-mobile-mode-tab="objective"]').click()
-      assert.equal(await page.locator('.es2-menu').getAttribute('data-mobile-modes'), 'objective')
-      assert.ok(await page.locator('[data-objective-mode="boss-rush"]').isVisible(),
-        `${viewport.name}: objective modes are hidden`)
-      await assertHomepage('new heroes / objective modes')
-      await page.screenshot({ path: `${directory}/${viewport.name}-menu-objectives.png`, animations: 'disabled' })
-      await page.locator('[data-es2-mobile-mode-tab="classic"]').click()
-      await page.locator('[data-es2-mobile-hero-tab="classic"]').click()
-      await assertHomepage('return to classic')
+      assert.equal(await page.locator('[data-hero]:visible, [data-hero-id]:visible').count(), 6)
+      assert.equal(await page.locator('[data-es2-hall-navigation] button:visible').count(), 5)
       await page.screenshot({ path: `${directory}/${viewport.name}-menu.png`, animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      assert.equal(await page.locator('.es2-mode-section').isVisible(), true)
+      assert.equal(await page.locator('[data-mode]:visible, [data-objective-mode]:visible').count(), 9)
+      const objectiveIcons = await page.locator('[data-objective-mode] .es2-objective-sigil:visible').evaluateAll(icons =>
+        icons.map(icon => {
+          const a = icon.getBoundingClientRect()
+          const b = icon.closest('button').getBoundingClientRect()
+          const title = icon.nextElementSibling.getBoundingClientRect()
+          return { glyph: icon.textContent.trim(), width: a.width, height: a.height,
+            contained: a.left >= b.left && a.right <= b.right && a.top >= b.top && a.bottom <= b.bottom,
+            separate: a.right <= title.left + 1 }
+        }))
+      assert.equal(objectiveIcons.length, 5, viewport.name + ': all objective mode icons must be visible')
+      assert.equal(new Set(objectiveIcons.map(icon => icon.glyph)).size, 5)
+      assert.ok(objectiveIcons.every(icon => icon.width >= 18 && icon.height >= 18 && icon.contained && icon.separate),
+        viewport.name + ': objective mode icon clipped or overlapping title ' + JSON.stringify(objectiveIcons))
+      assert.equal(await page.locator('.es2-hero-section').isVisible(), false)
+      await assertHomepage('expedition selection')
+      await page.screenshot({ path: `${directory}/${viewport.name}-menu-objectives.png`, animations: 'disabled' })
+      await page.locator('[data-es2-expedition-navigation]').click()
+      await assertHomepage('return to all heroes')
 
       // Exercise the actual in-game Settings listbox across both phone orientations.
       await page.locator('.es2-top-actions [data-es2-settings]').click()
@@ -157,10 +265,19 @@ try {
       `${viewport.name}: joystick and dash controls overlap`)
       assert.equal(layout.dashDisabled, false, `${viewport.name}: dash must be enabled during gameplay`)
       if (viewport.name === 'portrait-320') assert.equal(layout.reducedMotion, true)
-      if (viewport.width < viewport.height || (viewport.height <= 520 && viewport.width <= 900)) {
+      if (viewport.width < viewport.height || (viewport.height <= 520 && viewport.width <= 1100)) {
         const toggle = page.locator('[data-es2-info-toggle]')
         const panel = page.locator('[data-es2-info-panel]')
         await toggle.waitFor({ state: 'visible' })
+        const iconOffset = await toggle.evaluate(button => {
+          const icon = button.querySelector('svg')
+          if (!icon) return null
+          const b = button.getBoundingClientRect(), i = icon.getBoundingClientRect()
+          return { x: Math.abs((b.left + b.right - i.left - i.right) / 2),
+            y: Math.abs((b.top + b.bottom - i.top - i.bottom) / 2) }
+        })
+        assert.ok(iconOffset && iconOffset.x <= 1 && iconOffset.y <= 1,
+          `${viewport.name}: battle information icon is not centered: ${JSON.stringify(iconOffset)}`)
         assert.equal(await toggle.getAttribute('aria-expanded'), 'false', `${viewport.name}: drawer must start collapsed`)
         assert.equal(await panel.isVisible(), false, `${viewport.name}: optional panels occupy battlefield`)
         assert.equal(await page.locator('.es2-hud__bottom').isVisible(), false,
@@ -238,6 +355,8 @@ try {
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
     try {
+      const side = heroId === 'spirit-summoner' ? 'right' : 'left'
+      await page.addInitScript(side => localStorage.setItem('eclipse-survivors.accessibility.v1', JSON.stringify({ joystickSide: side })), side)
       await page.goto(target, { waitUntil: 'domcontentloaded' })
       const card = page.locator(`button[data-hero-id="${heroId}"]`)
       await card.waitFor({ state: 'visible', timeout: 30000 })
@@ -255,9 +374,9 @@ try {
         const style = getComputedStyle(element)
         return { source: style.backgroundImage, size: style.backgroundSize }
       })
-      assert.ok(preview.source.includes(heroId + '-run-attack@3x'),
+      assert.ok(preview.source.includes('run-attack@3x') && !preview.source.includes(heroId + '-run-attack@3x'),
         `${heroId}: no real 8-frame action preview`)
-      assert.equal(preview.size, '800% 100%', `${heroId}: preview is not divided into 8 cells`)
+      assert.equal(preview.size, '400% 400%', `${heroId}: preview must use the gameplay 4×4 atlas`)
       await page.screenshot({ path: `${directory}/portrait-375-${heroId}-selection.png`, animations: 'disabled' })
       await page.locator('.es2-start').click()
       // Newly selected specializations can enter a real level-up dialog at
@@ -273,7 +392,8 @@ try {
         if (await page.locator('.es2-hud--active').isVisible()) break
         const offered = page.locator('.es2-backdrop button[data-choice]:visible:not(:disabled)').first()
         await offered.waitFor({ state: 'visible', timeout: 30000 })
-        await offered.click()
+        const index = await offered.evaluate(button => Array.from(button.parentElement.children).indexOf(button))
+        await page.keyboard.press(String(index + 1))
       }
       const mode = await page.evaluate(() => window.__test?.mode)
       assert.equal(mode, 'play', `${heroId}: still in ${mode} after ${picks} real upgrade picks`)
@@ -308,6 +428,75 @@ try {
       assert.ok(!overlaps(specialBounds.special, specialBounds.infoToggle),
         `${heroId}: special action overlaps information toggle: ${JSON.stringify(specialBounds)}`)
       await page.screenshot({ path: `${directory}/portrait-375-${heroId}-game.png`, animations: 'disabled' })
+      // Rotate the real running game; cover narrow, standard and wide phone landscape,
+      // and both joystick sides without duplicating any in-game controls.
+      const landscape = heroId === 'shadowblade' ? { width: 640, height: 320 }
+        : heroId === 'spirit-summoner' ? { width: 932, height: 430 } : { width: 812, height: 375 }
+      await page.setViewportSize(landscape)
+      await page.locator(`[data-hero-special]`).waitFor({ state: 'visible' })
+      const landscapeBounds = await page.evaluate(() => {
+        const rect = selector => {
+          const el = document.querySelector(selector), b = el.getBoundingClientRect()
+          return { x: b.x, y: b.y, right: b.right, bottom: b.bottom }
+        }
+        return { toggle: rect('[data-es2-info-toggle]'), special: rect('[data-hero-special]'),
+          dash: rect('[data-testid="es2-dash"]'), joystick: rect('[data-testid="es2-stick"]'),
+          timer: rect('.es2-hud__counters'), controls: rect('.es2-hud__controls'),
+          side: document.querySelector('.es2-mobile-controls').dataset.side,
+          position: getComputedStyle(document.querySelector('[data-es2-info-toggle]')).position }
+      })
+      assert.equal(landscapeBounds.side, side, `${heroId}: joystick side not restored`)
+      assert.equal(landscapeBounds.position, 'static', `${heroId}: landscape toggle must be in the timer row`)
+      for (const key of ['special', 'dash', 'joystick', 'timer', 'controls']) {
+        assert.ok(!overlaps(landscapeBounds.toggle, landscapeBounds[key]),
+          `${heroId}: ${side} landscape info toggle overlaps ${key}: ${JSON.stringify(landscapeBounds)}`)
+      }
+      await page.screenshot({ path: `${directory}/landscape-${landscape.width}-${heroId}-${side}-game.png`, animations: 'disabled' })
+      // Exercise desktop-width layout during a real cast, not only before Q.
+      await page.setViewportSize({ width: 1440, height: 900 })
+      const action = page.locator('[data-hero-special]')
+      await action.waitFor({ state: 'visible' })
+      await page.waitForFunction(() => document.querySelector('[data-hero-special]')?.dataset.ready === 'true')
+      const geometry = () => action.evaluate(button => {
+        const rect = el => {
+          const b = el.getBoundingClientRect()
+          return { x: b.x, y: b.y, width: b.width, height: b.height, right: b.right, bottom: b.bottom }
+        }
+        return { button: rect(button),
+          icon: rect(button.querySelector('.es2-hero-special__icon')),
+          name: rect(button.querySelector('.es2-hero-special__name')),
+          hint: rect(button.querySelector('.es2-hero-special__hint')),
+          fill: rect(button.querySelector('.es2-hero-special__fill')),
+          border: parseFloat(getComputedStyle(button).borderBottomWidth) }
+      })
+      const assertUnscrollable = async () => {
+        const result = await action.evaluate(button => {
+          const css = getComputedStyle(button)
+          // Hidden scrollbars alone are insufficient: attempt both axes.
+          button.scrollLeft = 100
+          button.scrollTop = 100
+          return { x: button.scrollLeft, y: button.scrollTop, overflowX: css.overflowX, overflowY: css.overflowY }
+        })
+        assert.deepEqual(result, { x: 0, y: 0, overflowX: 'clip', overflowY: 'clip' },
+          `${heroId}: skill button must not be a scroll container`)
+      }
+      await assertUnscrollable()
+      const readyGeometry = await geometry()
+      await page.keyboard.press('KeyQ')
+      await page.waitForFunction(() => document.querySelector('[data-hero-special]')?.dataset.ready === 'false')
+      await assertUnscrollable()
+      const cooldownGeometry = await geometry()
+      for (const key of ['button', 'icon', 'name', 'hint']) {
+        const before = readyGeometry[key], after = cooldownGeometry[key]
+        assert.ok(['x', 'y', 'width', 'height'].every(k => Math.abs(before[k] - after[k]) < 1),
+          `${heroId}: ${key} shifted during cooldown: ${JSON.stringify({ before, after })}`)
+        assert.ok(after.x >= cooldownGeometry.button.x && after.y >= cooldownGeometry.button.y &&
+          after.right <= cooldownGeometry.button.right && after.bottom <= cooldownGeometry.button.bottom,
+          `${heroId}: ${key} clipped during cooldown`)
+      }
+      assert.ok(Math.abs(cooldownGeometry.fill.bottom - (cooldownGeometry.button.bottom - cooldownGeometry.border)) < 1,
+        `${heroId}: cooldown fill detached from the bottom border`)
+      await page.screenshot({ path: `${directory}/desktop-1440-${heroId}-cooldown.png`, animations: 'disabled' })
       assert.deepEqual(errors, [], `${heroId}: uncaught browser errors`)
       console.log(`PASS ${heroId}: committed portrait and action preview, same hero on in-game HUD`)
     } catch (error) {

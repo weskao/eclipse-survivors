@@ -1,3 +1,4 @@
+import { createFactionBridge } from '../enemies/integration'
 import { describe, expect, it, vi } from 'vitest'
 import { createContentRegistry } from '../registry'
 import { CONTENT_PACKS } from '../packs'
@@ -246,5 +247,50 @@ describe('density, simultaneity, lifecycle and determinism', () => {
       return { damage: s.damageDealt, mobs: s.mobs.map(e => [e.hp, e.x, e.y]), kills: s.kill }
     }
     expect(play()).toEqual(play())
+  })
+})
+
+it.each(['shadow-daggers','holy-lance','blood-scythe','arcane-mines','bone-spears','poison-cloud','ricochet-blades','spirit-wolves','solar-beam','gravity-orbs','spectral-bow','thorn-chain'])('rank-five %s can damage real faction-only targets', id => {
+  const s = createState(); s.mode='play'; s.hero=createHero('knight')
+  const factions=createFactionBridge({random:seeded(3)})
+  const target=factions.spawn(s,'berserker',75,0)!
+  target.hp=target.max=10000; target.speed=0
+  const registry=createContentRegistry([WEAPONS_PACK],seeded(12))
+  const h={...hooks,factions:()=>factions}
+  for(let rank=0;rank<5;rank++) expect(registry.acquire(s,`weapons:${id}`,h)).toBe(true)
+  for(let i=0;i<420;i++){s.time+=1/60;s.worldClock+=1/60;registry.tick(s,1/60,h)}
+  expect(target.hp).toBeLessThan(10000)
+  expect(s.mobs).toHaveLength(0)
+  expect(s.damageDealt).toBeGreaterThan(0)
+})
+
+describe('ES3 weapon breakthroughs',()=>{
+  const rank5=(key:string)=>{
+    const {s,registry}=fixture(key)
+    for(let i=1;i<5;i++) registry.acquire(s,`weapons:${key}`,hooks)
+    registry.tick(s,.016,hooks)
+    return {s,r:runtimeOf(s),registry}
+  }
+  it('adds capped extra piercing and bouncing at rank five',()=>{
+    expect(rank5('shadow-daggers').r.projectiles[0]?.jumps).toBe(5)
+    expect(rank5('holy-lance').r.projectiles[0]?.pierce).toBe(8)
+    expect(rank5('ricochet-blades').r.projectiles[0]?.jumps).toBe(8)
+    expect(rank5('spectral-bow').r.projectiles[0]?.pierce).toBe(5)
+    const bone=rank5('bone-spears')
+    bone.registry.tick(bone.s,.016,hooks)
+    expect(bone.r.projectiles[0]?.pierce).toBe(4)
+  })
+  it('extends mine reach and toxin lifetime using actual zone data',()=>{
+    expect(rank5('arcane-mines').r.zones[0]?.radius).toBe(148)
+    expect(rank5('poison-cloud').r.zones[0]?.life).toBeCloseTo(3.8)
+  })
+  it('extends maximum thorn link duration without exceeding target cap',()=>{
+    const {s,registry}=fixture('thorn-chain')
+    s.mobs.push(mob(125),mob(150))
+    for(let i=1;i<5;i++)registry.acquire(s,'weapons:thorn-chain',hooks)
+    registry.tick(s,.016,hooks)
+    expect(runtimeOf(s).links.every(link=>link.life===2.5)).toBe(true)
+    expect(runtimeOf(s).links.length).toBeGreaterThan(0)
+    expect(runtimeOf(s).links.length).toBeLessThanOrEqual(5)
   })
 })

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "1254×1254 to 704×704 Lanczos, 32px transparent padding, no upscaling",
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "1ad61908-9dec-4253-875f-42660abc706e",
+    "originalPNGSHA256": "8f559d0fd52f699a8e9b46e2d5556f5bc0a14faf01b8e9feec8a03afd074157c",
+    "canonicalPortrait": "src/assets/es2/production/heroes/crimson-paladin-portrait@3x.webp",
+    "portraitBlobSHA": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+    "referenceCommit": "658f7a7c1726247ae1dec5f9b7b470d54f836c61",
+    "referenceMethod": "Canonical portrait fetched and visually inspected. Direct image conditioning by generation backend not independently verified."
+  },
+  "encoding": "Pillow lossless WebP exact=True; decoded RGBA verified; Polytool/cwebp unavailable",
+  "frames": [
+    {
+      "id": "barrier-guard-identity-a",
+      "description": "East-facing shield brace candidate for barrier activation; no gameplay admission",
+      "sourceFile": "barrier-guard-identity-a-source.webp",
+      "sourceSHA256": "789d7168d8d5b1b7aaf933e5a1e84ef5442d5bb8177656b8c12631d9f8504465",
+      "sourceBytes": 1549978,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "barrier-guard-identity-a@3x.webp",
+      "webpSHA256": "f649353ed935a54e35d72634d33e2078579e8e0a2d2b23dfd6be6c3815a535f3",
+      "bytes": 526988,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "sourceAlphaBounds": [
+        0,
+        10,
+        1232,
+        1254
+      ],
+      "coreAlphaBounds": [
+        12,
+        14,
+        1209,
+        1239
+      ],
+      "coreExtent": [
+        1197,
+        1225
+      ],
+      "outputCoreAlphaBounds": [
+        39,
+        40,
+        710,
+        727
+      ],
+      "outputCoreExtent": [
+        671,
+        687
+      ],
+      "outputAlphaBounds": [
+        32,
+        37,
+        716,
+        736
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA of each file; output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Compare crown, red hair, armor, shield sunburst and sword with canonical portrait; shield gem and shoulder design differ; identity, facing, timing, foot anchor and continuity not approved."
+    }
+  ],
+  "reviewNotes": [
+    "One independent guard pose, not an eight-frame Q animation. Existing special sheets are retained. Do not overwrite any approved art.",
+    "No mirror or upscale. Official converter unavailable. No gameplay admission."
+  ]
+}

@@ -2,6 +2,8 @@
 
 **Mandatory for any game logic, rendering, effects, terrain, AI, skills, physics, and performance change.** These rules apply to Vue 3 + TypeScript + Vite + Canvas 2D; do not replace the architecture or add dependencies simply for optimization.
 
+**Preference order:** eliminate work → precompute immutable data → reuse bounded/valid caches → reject out-of-range work cheaply → optimize only measured bottlenecks. Never trade correctness, determinism, mobile, readability or fairness for speed. Write concise notes on why any necessary real-time computation cannot be precomputed and what invalidates each new cache; favor the simplest correct optimization over speculative abstractions.
+
 ## 1. Minimize calculations inside each simulation tick and animation frame
 
 - **Do not recompute an invariant on every frame.** Precompute deterministic world geometry, cell contents, hazard positions, weather and ambient particle seeds, static trigonometric tables, icon/sprite geometry, and reusable gradients when initialized or first requested.
@@ -59,16 +61,6 @@ For any new loop inside `src/game/step.ts`, `src/game/enemies/`, `src/game/skill
 - Preserve test coverage for changed gameplay contracts and provide measured before/after evidence when making a performance claim.
 - Prefer deleting unnecessary work to adding an elaborate optimization framework.
 
-## 8. Visual fidelity with bounded Canvas work
+## 8–9. Visual fidelity and single-owner rendering
 
-**Applies to every gameplay VFX and skill artwork update.** Higher fidelity must not silently reduce runtime effects, actor counts, resolution, attack timings, collision precision, or existing feedback. Optimize *how* visuals are drawn rather than disabling them.
-
-1. **Measure actual work:** Record a representative baseline and after-change Canvas operation counts for the same deterministic scene (visible actors, sprites, images, paths, save/restore, shadows, canvas allocations, and retained cache entries). Use browser performance recording on a real desktop and mobile where possible; **drawImage count is not a GPU draw-call count** in Canvas 2D. Never promise a GPU batching benefit without profiling an actual GPU renderer.
-2. **Art decode and lifespan:** Use Vite-owned local assets; instantiate/decode image sources once per renderer or session, never once per actor, hit, animation frame or render call. Avoid redownloading/recreating identical image assets. Prefer an existing signed-off 3× WebP or scalable source; don't deliberately downsample below the device's presentation requirement.
-3. **Cache costly painting:** Prepaint reusable blur/glow/core geometry into a bounded, clear 3× offscreen sprite; reuse via drawImage instead of repeating shadowBlur/path/gradient work for hundreds of identical sparks. A cached entry must be keyed by its visual inputs (color, effective radius, quality or DPR when those affect the raster). Use bounded caches, clear on renderer disposal/asset invalidation, and inspect memory after long Endless sessions.
-4. **Cull before work:** Discard purely decorative elements outside a conservative visible margin **before** allocating sprites, opening a Canvas state stack, calculating angles, drawing paths, or applying shadows. Never use decorative culling to disable AI, hitboxes, projectile collision, boss tells or offscreen attacks that overlap the visible screen.
-5. **Minimize state transitions:** Avoid save/restore and shadow/filter/gradient setup for each object when simple alpha + a shared sprite gives equivalent output. Group effects with the same style where visually equivalent; use as few beginPath/stroke/fill calls as possible without changing silhouettes. Never replace real art with crude circles as a purported performance optimization.
-6. **Animation only where meaningful:** Static/locked skill-collection art does not need to decode and animate every WebP simultaneously. Prioritize live, selected and actionable cards. Show pristine stills for inactive cards, use reduced-motion still fallbacks and avoid continuous background CSS filters, backdrop-filter, giant blurred panels and idle transforms on dozens of elements.
-7. **Don't add a renderer lightly:** Canvas 2D drawImage has no cross-object GPU sprite batching contract. If profiling proves it insufficient, propose a measured single-renderer PixiJS v8 transition with proper batching, textures/atlases, texture reuse, explicit culling, hitbox parity, mobile WebGL fallback and TDD; **never** layer redundant Pixi render loops over current Canvas simply to gain an API.
-8. **Evidence gate:** Before completing VFX refactors, test 130 enemies, repeated weapon volleys, diverse sprite kinds, large bosses, mobile portrait/landscape, DPR 1/2/3, paused modal, visibility loss and scene transition. Verify asset presence, one-time loading, stable geometry and cache bounds; use Chrome Performance and screenshots to assess actual GPU, CPU, memory and readability. CI passing alone is not a mobile performance benchmark.
-
+§8 (VFX performance gate) and §9 (single-owner rendering, duplicate work and draw-operation budgets) live in `rendering-budget.md`. Read it before adding or changing any effect, projectile, particle, skill card, HUD treatment or character/BOSS visual.

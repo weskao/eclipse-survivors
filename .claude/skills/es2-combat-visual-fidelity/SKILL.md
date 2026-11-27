@@ -37,3 +37,23 @@ Write RED tests for every new sprite mapping, missing-image fallback, illustrati
 PixiJS v8 is a viable **future** GPU renderer if browser/device profiling proves Canvas draw overhead is a bottleneck. Do **not** introduce a second renderer for a visual-only task when existing cached Canvas drawImage handles it. An actual Pixi migration requires an approved renderer boundary, measured gains on mobile, matching hitbox/telegraph behavior and isolated integration tests. Official references: https://pixijs.com/versions and https://pixijs.com/8.x/guides/components/scene-objects/particle-container. PixiJS ships dedicated agent guidance in recent v8 releases, but installing Pixi for its AI skills alone is not a sound dependency.
 
 Official, currently maintained PixiJS v8 agent-skills catalog (consult only when a measured renderer migration is approved): https://github.com/pixijs/pixijs-skills ; official performance guidance: https://github.com/pixijs/pixijs-skills/blob/main/skills/pixijs-performance/SKILL.md . The current project instead uses this native `es2-combat-visual-fidelity` skill plus the repository's Canvas performance rule, so PixiJS and its peer skills are not additional production dependencies.
+
+
+## Character-specific art direction and audiovisual choreography
+
+Study mature action games for principles, not for copied assets: Diablo IV's readable skill intensity and grounded material/light interaction; Hades' weapon-specific silhouettes, clear anticipation and short expressive attack accents. Preserve Eclipse Survivors' realistic dark-fantasy identity. Use original owned artwork/audio. Normal attacks, sustained passives, active casts, evolutions and BOSS ultimates require distinct visual intensity tiers, not simply more particles or brighter colors.
+
+| Hero | Required identity |
+|---|---|
+| Knight | Weighty gold/steel blade arcs, tapered metallic sparks and physical follow-through |
+| Ranger | Directional actual arrows, restrained feather/air trails, clear piercing contact |
+| Wizard | Violet/blue arcane cores, shaped spell energy, magical convergence and release |
+| Shadowblade | Paired dark-violet slashes, staggered cuts, shadow afterimages and precise impacts |
+| Spirit Summoner | Teal spectral flame, recognizable spirit bodies, convergence and flowing soul trails |
+| Crimson Paladin | Crimson/gold metal, shield geometry, protective runes and forceful counterattacks |
+
+These are art direction requirements, not claims of implementation or approval. For future heroes, specify material, attack silhouette, motion cadence, contact and sound identity in the same way. Review every normal attack, passive, active, summon, weapon and evolution; replace simplistic debug dots, lines, uniform circles, generic glyphs and icon-as-world-VFX. Keep accurate danger/safe boundaries separately readable. For each cast, choreograph anticipation → release/contact → residual fade, with audio bound to actual simulation events. Do not fake impacts before projectile collision. Distinct silhouettes and movement must survive reduced-motion mode.
+
+For three-choice upgrades, inventory every reachable ability ID, still/animated art, rank and rarity. Preserve approved 3× WebP art, use distinct skill-specific illustrations (including passive mastery), and replace simplistic placeholders with production art. Static vector art may be appropriate for some icons but is not automatic approval of a painting-quality requirement. Test actual rendered choices across all form factors and accessibility modes.
+
+Follow realtime-performance §9: **one owner per visual event and layer.** Before adding any new effect, trace existing emitters, render passes, sprite caches and fallbacks across legacy/content paths; remove redundant painting rather than stacking another implementation. Batch bounded particles, precompose stable layers and use exclusive asset/fallback rendering. Apply §9 for batching, overdraw, cache ownership and comparable operation budgets. Do not use a second renderer just to add sparkle. 

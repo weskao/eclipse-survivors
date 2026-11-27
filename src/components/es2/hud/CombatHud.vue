@@ -5,10 +5,15 @@ import { WORLD_ART } from '../../../game/render/es2/production-world'
 import AudioControl from '../../AudioControl.vue'
 import { t } from '../../../i18n'
 import { LOW_HP_PCT } from '../../../game/constants'
+import { healthBarColor } from '../../../game/render/health-bars'
+import type { MotionSetting } from '../../../game/content/accessibility/preferences'
+import { useHeroHealthMotion } from './hero-health-motion'
 import { lowHealthTier } from './low-health'
 import '../../../styles/es2/low-health.css'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
-import type { HudView } from '../../../game/store'
+import type { BossPhaseReveal, HudView } from '../../../game/store'
+import { BOSS_DEFINITIONS } from '../../../game/content/bosses/definitions'
+import BossPhaseRevealBanner from './BossPhaseRevealBanner.vue'
 import type { HeroId, JobId } from '../../../game/types'
 import { projectCombatHud, type CombatHudActions, type CombatHudFeed, type CombatHudSnapshot } from './model'
 import '../../../styles/es2/hud.css'
@@ -27,10 +32,17 @@ const props = withDefaults(defineProps<{
   sfxVolume?: number
   audioActive?: boolean
   canReturnHome?: boolean
-}>(), { audioActive: true })
+  showHeroLowHealthWarning?: boolean
+  healthMotion?: MotionSetting
+  bossPhaseReveal?: BossPhaseReveal | null
+}>(), { audioActive: true, showHeroLowHealthWarning: true })
 
 const view = computed(() => projectCombatHud(props.hud, props.choice, props.feed, props.expectedFeed))
-const lifeTier = computed(() => props.active ? lowHealthTier(view.value.health.percent) : 'normal')
+const healthMeter = shallowRef<HTMLElement | null>(null)
+useHeroHealthMotion(healthMeter, () => view.value.health.percent, () => props.active, () => props.healthMotion ?? 'system', () => props.hud.heroCriticalVersion ?? 0)
+const bossMeter = shallowRef<HTMLElement | null>(null)
+useHeroHealthMotion(bossMeter, () => view.value.boss?.percent ?? 0, () => props.active && !!view.value.boss, () => props.healthMotion ?? 'system', () => props.hud.bossCriticalVersion ?? 0)
+const lifeTier = computed(() => props.active && props.showHeroLowHealthWarning ? lowHealthTier(view.value.health.percent) : 'normal')
 const lifeMessage = computed(() => lifeTier.value === 'warning' ? '血量偏低' : lifeTier.value === 'critical' ? '生命危急' : '瀕死')
 const selectedId = ref<string | null>(null)
 const hudRoot = shallowRef<HTMLElement | null>(null)
@@ -111,11 +123,12 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
         <div class="es2-hud__vitals">
           <div class="es2-hud__identity">
-            <span class="es2-hud__eyebrow">{{ t('ECLIPSE · 英雄') }}</span>
+            <span v-if="lifeTier === 'warning' || lifeTier === 'critical' || lifeTier === 'emergency'" class="es2-hud__eyebrow es2-hud__life-message" data-es2-life-message>{{ t(lifeMessage) }}</span>
+            <span v-else class="es2-hud__eyebrow">{{ t('ECLIPSE · 英雄') }}</span>
             <strong>{{ t(view.identity) }}</strong>
           </div>
           <div class="es2-hud__health-head"><span><img class="es2-world-hud-icon" :src="WORLD_ART.ui['hud-health']" alt="" />{{ t("生命值") }}</span><span>{{ t(view.health.label) }}</span></div>
-          <div class="es2-hud__track es2-hud__track--health" :class="{ 'es2-hud__track--critical': view.health.percent <= LOW_HP_PCT }"
+          <div ref="healthMeter" class="es2-hud__track es2-hud__track--health" :class="{ 'es2-hud__track--critical': showHeroLowHealthWarning && view.health.percent <= LOW_HP_PCT }"
             role="progressbar" :aria-label="t('生命值')" :aria-valuenow="view.health.percent"
             aria-valuemin="0" aria-valuemax="100" :style="{ '--es2-progress': view.health.percent / 100 }">
             <span class="es2-hud__track-trail" aria-hidden="true"></span>
@@ -130,12 +143,22 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
       </div>
       <div class="es2-hud__top-right">
+        <div class="es2-hud__counter-row">
+          <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
+            data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
+            :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+              <path d="M4 6h2m4 0h10M4 12h2m4 0h10M4 18h2m4 0h10" />
+            </svg>
+          </button>
         <div class="es2-hud__counters es2-hud__plate" :aria-label="t('戰鬥統計')">
           <div class="es2-hud__counter"><span aria-hidden="true">◷</span><span>{{ view.timer }}</span><small>{{ t('TIME') }}</small></div>
           <div class="es2-hud__counter"><span aria-hidden="true">☠</span><span>{{ view.kills }}</span><small>{{ t('KILLS') }}</small></div>
           <div v-if="view.combo && view.combo.count > 1" class="es2-hud__counter es2-hud__counter--combo" data-es2-combo>
             <span aria-hidden="true">✦</span><span>{{ view.combo.count }}×</span><small>{{ t('COMBO') }}</small>
           </div>
+        </div>
         </div>
         <nav class="es2-hud__controls es2-hud__plate" :aria-label="t('戰鬥操作')">
           <AudioControl v-if="actions.toggleMusic && actions.toggleSfx && actions.setMusicVolume && actions.setSfxVolume && musicOn !== undefined && sfxOn !== undefined && musicVolume !== undefined && sfxVolume !== undefined"
@@ -155,6 +178,55 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
           <canvas ref="minimap" width="152" height="110" :aria-label="t('戰場小地圖')"></canvas>
         </div>
       </div>
+      <div class="es2-hud__encounter-stack">
+        <div v-if="hud.sceneTitle" class="es2-hud__scene-title" data-es2-scene-title>{{ t(hud.sceneTitle) }}</div>
+        <div v-if="view.boss || view.wave || view.bossWarning" class="es2-hud__encounter" data-es2-encounter>
+          <section v-if="!view.boss && view.bossWarning" class="es2-hud__boss-warning es2-hud__plate"
+            data-es2-boss-warning :class="{ 'es2-hud__boss-warning--urgent': view.bossWarning.urgent }"
+            :style="{ '--es2-warning-accent': view.bossWarning.color }"
+            :aria-label="t('首領即將降臨') + ' · ' + t(view.bossWarning.name) + ' · ' + view.bossWarning.seconds + ' ' + t('秒')">
+            <div class="es2-hud__boss-warning-row">
+              <span class="es2-hud__boss-warning-sigil" aria-hidden="true">⚠</span>
+              <div class="es2-hud__boss-warning-text">
+                <span>{{ t('首領即將降臨') }}</span>
+                <strong>{{ t(view.bossWarning.name) }}</strong>
+              </div>
+              <div class="es2-hud__boss-warning-count" aria-hidden="true">
+                <b>{{ String(view.bossWarning.seconds).padStart(2, '0') }}</b><small>SEC</small>
+              </div>
+            </div>
+            <div class="es2-hud__boss-warning-track" aria-hidden="true">
+              <span :style="{ transform: 'scaleX(' + view.bossWarning.progress + ')' }"></span>
+            </div>
+          </section>
+          <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss :data-phase-revealing="bossPhaseReveal?.phase" :style="bossPhaseReveal ? { '--es2-phase-accent': BOSS_DEFINITIONS[bossPhaseReveal.boss].color } : undefined" :aria-label="t('首領生命')">
+            <div class="es2-hud__boss-heading">
+              <span>☠ {{ t(view.boss.name) }}</span>
+              <span v-if="view.boss.phase !== undefined" class="es2-hud__boss-phase">
+                {{ t('PHASE') }} {{ view.boss.phase }}<template v-if="view.boss.totalPhases !== undefined"> / {{ view.boss.totalPhases }}</template>
+              </span>
+            </div>
+            <div class="boss-meter-frame">
+            <div ref="bossMeter" class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
+              :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100"
+              :style="{ '--es2-progress': view.boss.percent / 100, '--es2-boss-hp-color': healthBarColor(view.boss.percent / 100, 'boss') }">
+              <span class="es2-hud__track-trail" aria-hidden="true"></span>
+              <span class="es2-hud__track-fill" aria-hidden="true"></span>
+            </div>
+            </div>
+            <BossPhaseRevealBanner v-if="active && bossPhaseReveal" :key="bossPhaseReveal.serial" :reveal="bossPhaseReveal" />
+          </section>
+          <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave :aria-label="t('波次')">
+            <span class="es2-hud__eyebrow">{{ t('WAVE') }} {{ view.wave.number }}</span>
+            <strong v-if="view.wave.announcement">{{ t(view.wave.announcement) }}</strong>
+            <div v-if="view.wave.progressPct !== undefined" class="es2-hud__wave-track" role="progressbar" :aria-label="t('波次進度')"
+              :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100"
+              :style="{ '--es2-progress': view.wave.progressPct / 100 }">
+              <span aria-hidden="true"></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
     <div v-if="active && view.boss?.offscreen && !infoOpen" class="es2-hud__boss-pointer" data-es2-boss-pointer
       role="img" :aria-label="t(view.boss.name) + ' · ' + t('距離') + ' ' + view.boss.offscreen.distance"
@@ -172,56 +244,8 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         :style="{ backgroundImage: 'url(' + view.boss.offscreen.artSrc + ')' }"></span>
       <span class="es2-hud__boss-pointer-distance" aria-hidden="true">{{ t('距離') }} {{ view.boss.offscreen.distance }}</span>
     </div>
-    <button v-if="active && canReturnHome" ref="infoButton" type="button" class="es2-hud__info-toggle"
-      data-es2-info-toggle aria-controls="es2-combat-info-panel" :aria-expanded="infoOpen"
-      :aria-label="t('戰鬥資訊')" @click="infoOpen = !infoOpen">
-      <span aria-hidden="true">☷</span> {{ t('戰鬥資訊') }}
-    </button>
     <div v-if="view.notices.some(notice => notice.kind === 'critical')" class="es2-hud__urgent-notice" aria-hidden="true">
       {{ t(view.notices.find(notice => notice.kind === 'critical')?.text ?? '') }}
-    </div>
-    <div v-if="view.boss || view.wave || view.bossWarning" class="es2-hud__encounter" data-es2-encounter>
-      <section v-if="!view.boss && view.bossWarning" class="es2-hud__boss-warning es2-hud__plate"
-        data-es2-boss-warning :class="{ 'es2-hud__boss-warning--urgent': view.bossWarning.urgent }"
-        :style="{ '--es2-warning-accent': view.bossWarning.color }"
-        :aria-label="t('首領即將降臨') + ' · ' + t(view.bossWarning.name) + ' · ' + view.bossWarning.seconds + ' ' + t('秒')">
-        <div class="es2-hud__boss-warning-row">
-          <span class="es2-hud__boss-warning-sigil" aria-hidden="true">⚠</span>
-          <div class="es2-hud__boss-warning-text">
-            <span>{{ t('首領即將降臨') }}</span>
-            <strong>{{ t(view.bossWarning.name) }}</strong>
-          </div>
-          <div class="es2-hud__boss-warning-count" aria-hidden="true">
-            <b>{{ String(view.bossWarning.seconds).padStart(2, '0') }}</b><small>SEC</small>
-          </div>
-        </div>
-        <div class="es2-hud__boss-warning-track" aria-hidden="true">
-          <span :style="{ transform: 'scaleX(' + view.bossWarning.progress + ')' }"></span>
-        </div>
-      </section>
-      <section v-if="view.boss" class="es2-hud__boss es2-hud__plate" data-es2-boss :aria-label="t('首領生命')">
-        <div class="es2-hud__boss-heading">
-          <span>☠ {{ t(view.boss.name) }}</span>
-          <span v-if="view.boss.phase !== undefined" class="es2-hud__boss-phase">
-            {{ t('PHASE') }} {{ view.boss.phase }}<template v-if="view.boss.totalPhases !== undefined"> / {{ view.boss.totalPhases }}</template>
-          </span>
-        </div>
-        <div class="es2-hud__track es2-hud__track--boss" role="progressbar" :aria-label="t('首領生命值')"
-          :aria-valuenow="view.boss.percent" aria-valuemin="0" aria-valuemax="100"
-          :style="{ '--es2-progress': view.boss.percent / 100 }">
-          <span class="es2-hud__track-trail" aria-hidden="true"></span>
-          <span class="es2-hud__track-fill" aria-hidden="true"></span>
-        </div>
-      </section>
-      <div v-if="view.wave" class="es2-hud__wave es2-hud__plate" data-es2-wave :aria-label="t('波次')">
-        <span class="es2-hud__eyebrow">{{ t('WAVE') }} {{ view.wave.number }}</span>
-        <strong v-if="view.wave.announcement">{{ t(view.wave.announcement) }}</strong>
-        <div v-if="view.wave.progressPct !== undefined" class="es2-hud__wave-track" role="progressbar" :aria-label="t('波次進度')"
-          :aria-valuenow="view.wave.progressPct" aria-valuemin="0" aria-valuemax="100"
-          :style="{ '--es2-progress': view.wave.progressPct / 100 }">
-          <span aria-hidden="true"></span>
-        </div>
-      </div>
     </div>
     <div id="es2-combat-info-panel" ref="infoPanel" class="es2-hud__info-drawer"
       data-es2-info-panel :aria-label="t('戰鬥資訊')">
@@ -232,7 +256,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
     <section v-if="view.statuses.length" class="es2-hud__statuses es2-hud__plate" :aria-label="t('暫時效果')">
       <span v-for="status in view.statuses" :key="status.id" :data-es2-status="status.id"
         class="es2-hud__status" :class="'es2-hud__status--' + status.kind"
-        :title="t(status.title + (status.remainingSeconds !== undefined ? ' · ' + status.remainingSeconds.toFixed(1) + ' 秒' : ''))">
+        :title="status.remainingSeconds !== undefined ? t('{title} · {seconds} 秒', { title: t(status.title), seconds: status.remainingSeconds.toFixed(1) }) : t(status.title)">
         <span aria-hidden="true">{{ status.icon ?? (status.kind === 'buff' ? '✦' : '◆') }}</span>
         {{ t(status.title) }}
         <small v-if="status.remainingSeconds !== undefined">{{ status.remainingSeconds.toFixed(1) }}s</small>
@@ -290,7 +314,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
         </div>
         <div v-if="selectedSkill" class="es2-hud__selected" data-es2-skill-detail>
           <strong>{{ t(selectedSkill.title) }} · Lv.{{ selectedSkill.level }}/{{ selectedSkill.maxLevel }}</strong>
-          <span>{{ t(selectedSkill.cooldown > 0 ? '冷卻 ' + selectedSkill.cooldown.toFixed(1) + ' 秒' : '可用') }}</span>
+          <span>{{ selectedSkill.cooldown > 0 ? t('冷卻 {seconds} 秒', { seconds: selectedSkill.cooldown.toFixed(1) }) : t('可用') }}</span>
         </div>
       </div>
     </footer>

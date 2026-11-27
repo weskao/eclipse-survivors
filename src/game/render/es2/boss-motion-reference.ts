@@ -1,0 +1,87 @@
+import type { BossSnapshot } from '../../content/bosses/controller'
+import type { BossId } from '../../content/bosses/definitions'
+import type { Ctx2D } from '../ctx'
+import { bossPhaseVisualScale } from './production-world'
+import { sampleBossSheetFrame } from './boss-sheet-reference'
+import { drawBossNativeKeyframe, isBossNativeKeyframe } from './boss-native-keyframes'
+
+type SourceRect = readonly [left: number, top: number, right: number, bottom: number]
+type Reference = { readonly source: 'imgs7.webp' | 'imgs8.webp'; readonly phases: readonly (readonly SourceRect[])[] }
+
+// Original 1448x1086 concept-sheet pose pixels, not newly authored native-3x art.
+// The ranges were visually inspected and extracted without enlarging the source.
+const rows = (xs: readonly (readonly [number, number])[], y: readonly [number, number]): SourceRect[] =>
+  xs.map(([left, right]) => [left, y[0], right, y[1]])
+const casterXs = [
+  [[427,478],[478,530],[530,581],[581,632],[632,684],[684,735]],
+  [[766,818],[818,869],[869,920],[920,972],[972,1023],[1023,1075]],
+  [[1095,1147],[1147,1198],[1198,1250],[1250,1301],[1301,1352],[1363,1414]],
+] as const
+const titanXs = [[29,108],[111,190],[276,355],[356,436],[521,600],[603,682]] as const
+const seraphXs = [[29,106],[104,182],[256,333],[336,413],[502,580],[584,661]] as const
+
+export const BOSS_MOTION_REFERENCES: Readonly<Record<BossId, Reference>> = {
+  'abyss-monarch': { source: 'imgs7.webp', phases: casterXs.map(x => rows(x, [323,381])) },
+  'frost-sovereign': { source: 'imgs7.webp', phases: casterXs.map(x => rows(x, [848,909])) },
+  'infernal-titan': { source: 'imgs8.webp', phases: ([[328,389],[392,458],[463,533]] as const).map(y => rows(titanXs, y)) },
+  'eclipse-seraph': { source: 'imgs8.webp', phases: ([[848,914],[918,985],[990,1063]] as const).map(y => rows(seraphXs, y)) },
+}
+// Packed lossless reference cells are centered on x=56 and end at y=107.
+const REFERENCE_CELL = 112
+const REFERENCE_FOOT = 107
+const REFERENCE_EXTENT: Readonly<Record<BossId, number>> = {
+  'abyss-monarch': 53, 'frost-sovereign': 59, 'infernal-titan': 80, 'eclipse-seraph': 78,
+}
+const clamp = (n: number): number => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0))
+
+/** Drive QA pose playback from the real combat clock, never a separate animation timer. */
+export function sampleBossAttackReference(snapshot: BossSnapshot): SourceRect | null {
+  if (!snapshot.id || !snapshot.phase) return null
+  const row = BOSS_MOTION_REFERENCES[snapshot.id].phases[snapshot.phase - 1]
+  if (!row) return null
+  const warning = snapshot.telegraphs.find(t => t.stage === 'warning')
+  if (warning) return row[Math.min(2, Math.floor(clamp(warning.progress ?? 0) * 3))] ?? null
+  const impact = snapshot.impacts?.[snapshot.impacts.length - 1]
+  if (impact && impact.max > 0) {
+    const progress = clamp(1 - impact.life / impact.max)
+    return row[3 + Math.min(2, Math.floor(progress * 3))] ?? null
+  }
+  return null
+}
+
+/** DEV review only. Preserve aspect ratio and phase size; keep static fallback for unavailable art. */
+export function drawBossAttackReference(ctx: Ctx2D, image: HTMLImageElement, snapshot: BossSnapshot,
+  displaySize: number, reducedMotion = false): boolean {
+  if (reducedMotion || !image.complete || !Number.isFinite(displaySize) || displaySize <= 0
+      || !snapshot.id || !snapshot.phase) return false
+  if (isBossNativeKeyframe(image)) return import.meta.env.DEV && drawBossNativeKeyframe(ctx, image, snapshot, displaySize * bossPhaseVisualScale(snapshot.phase), reducedMotion)
+  // Explicit DEV sheet review only; these raw reference frames still have alpha/identity defects.
+  if (image.naturalWidth === 948 && image.naturalHeight === 1659) {
+    if (!import.meta.env.DEV || !snapshot.bodyMotion) return false
+    const frame = sampleBossSheetFrame(snapshot.bodyMotion.pose, snapshot.bodyMotion.progress)
+    if (!frame) return false
+    const side = displaySize * bossPhaseVisualScale(snapshot.phase)
+    ctx.drawImage(image, ...frame, -side / 2, 4 - side, side, side)
+    return true
+  }
+  const rect = sampleBossAttackReference(snapshot)
+  if (!rect) return false
+  if (image.naturalWidth === REFERENCE_CELL * 6 && image.naturalHeight === REFERENCE_CELL * 3) {
+    const slot = BOSS_MOTION_REFERENCES[snapshot.id].phases[snapshot.phase - 1]?.indexOf(rect) ?? -1
+    if (slot < 0) return false
+    // Constant per-boss source scale avoids resizing the body when a weapon or wing extends.
+    const scale = displaySize * bossPhaseVisualScale(snapshot.phase) / REFERENCE_EXTENT[snapshot.id]
+    const side = REFERENCE_CELL * scale
+    ctx.drawImage(image, slot * REFERENCE_CELL, (snapshot.phase - 1) * REFERENCE_CELL,
+      REFERENCE_CELL, REFERENCE_CELL, -side / 2, 4 - REFERENCE_FOOT * scale, side, side)
+    return true
+  }
+  // Legacy source geometry remains supported for offline comparison only.
+  if (image.naturalWidth !== 1448 || image.naturalHeight !== 1086) return false
+  const [x, y, right, bottom] = rect
+  const sw = right - x, sh = bottom - y
+  const ratio = displaySize * bossPhaseVisualScale(snapshot.phase) / Math.max(sw, sh)
+  const w = sw * ratio, h = sh * ratio
+  ctx.drawImage(image, x, y, sw, sh, -w / 2, 4 - h, w, h)
+  return true
+}

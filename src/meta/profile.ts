@@ -1,5 +1,6 @@
 import { BALANCE, researchCost } from '../game/config'
-import type { AbilityId, JobId, MobType } from '../game/types'
+import type { AbilityId, JobId } from '../game/types'
+import { MONSTER_IDS, type MonsterKills } from '../game/monster-catalog'
 import { EVOLUTIONS } from '../game/evolutions'
 import { isContentId } from '../game/content/registry'
 import { ACHIEVEMENTS, newlyEarned } from './achievements'
@@ -8,7 +9,7 @@ import type { CosmeticId, PermanentUpgrade, Profile, RunBest, RunRewards, RunSta
 
 export const SAVE_KEY = 'eclipse-survivors.profile.v2'
 const jobs: JobId[] = ['knight', 'ranger', 'wizard']
-const monsters: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'warlock', 'boss']
+const monsters = MONSTER_IDS
 const abilities: AbilityId[] = ['damage', 'speed', 'haste', 'maxhp', 'multi', 'orb', 'magnet', 'heal', 'bolt', 'frost', 'meteor', 'blaze', 'vortex', 'shield', 'chain', ...EVOLUTIONS.map(e => e.id)]
 const validAbility = (id: unknown): id is AbilityId => typeof id === 'string' && (abilities.includes(id as AbilityId) || isContentId(id))
 const cosmetics: CosmeticId[] = ['knight-default', 'ranger-default', 'wizard-default', 'knight-gilded', 'ranger-moonlit', 'wizard-astral']
@@ -116,7 +117,7 @@ export function createProfileStore(storage: Store | null = defaultStorage()): Pr
       if (stats.victory) profile.wins++
       if (!profile.heroesPlayed.includes(stats.hero)) profile.heroesPlayed.push(stats.hero)
       for (const type of monsters) {
-        const count = stats.enemies[type] ?? 0
+        const count = ((stats.monsterKills ?? stats.enemies) as MonsterKills)[type] ?? 0
         if (nonNegative(count) && count) profile.discoveredMonsters[type] = (profile.discoveredMonsters[type] ?? 0) + Math.floor(count)
       }
       for (const skill of stats.abilities) if (validAbility(skill) && !profile.discoveredAbilities.includes(skill)) profile.discoveredAbilities.push(skill)

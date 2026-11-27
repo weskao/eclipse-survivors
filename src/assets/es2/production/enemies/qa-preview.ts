@@ -1,5 +1,8 @@
 /** Browser-only inspection view; does not change production rendering or gameplay. */
 import { ENEMY_DEFINITIONS } from '../../../../game/content/enemies/definitions'
+import { FACTION_VISUAL_SIZE } from '../../../../game/render/es2/production-factions'
+import assassinMasterUrl from './masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp?url'
+import frostWraithMasterUrl from './masters/frost-wraith-6poses-3x2-master-1536x1024.png?url'
 import manifest from './manifest.json'
 import crystalSentinelCandidate from './candidates/crystal-sentinel-native3x-QA.json'
 import { inspectAtlasPixels } from './frame-qa'
@@ -22,12 +25,13 @@ function load(path: string, previewOnly = false): Promise<HTMLImageElement> {
   })
 }
 
-function frameCanvas(image: HTMLImageElement, index: number, source: number, display: number): HTMLCanvasElement {
+function frameCanvas(image: HTMLImageElement, index: number, source: number, display: number, columns = 6): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = display
   canvas.height = display
   canvas.title = 'Frame ' + (index + 1) + ': ' + display + 'x' + display + ' rendered pixels'
-  canvas.getContext('2d')!.drawImage(image, index * source, 0, source, source, 0, 0, display, display)
+  canvas.getContext('2d')!.drawImage(image, (index % columns) * source,
+    Math.floor(index / columns) * source, source, source, 0, 0, display, display)
   return canvas
 }
 
@@ -58,17 +62,38 @@ async function inspectCandidate(body: (typeof manifest.assets)[number]): Promise
         warning.naturalWidth !== cue.width || warning.naturalHeight !== cue.height) {
       throw new Error('Actual decoded image dimensions differ from the manifest')
     }
-    const display = Math.max(70, ENEMY_DEFINITIONS[kind].radius * 4)
+    const display = FACTION_VISUAL_SIZE[kind]
+    // Two live actors sample the authentic 512px master; their strips remain decode fallbacks.
+    let sourceImage = sprite
+    let sourceWidth = body.frameWidth
+    let sourceColumns = body.columns
+    let sourcePath = body.path
+    const masterUrl = kind === 'shadow-assassin' ? assassinMasterUrl :
+      kind === 'frost-wraith' ? frostWraithMasterUrl : null
+    if (masterUrl) {
+      const master = new Image()
+      master.src = masterUrl
+      await master.decode()
+      if (master.naturalWidth !== 1536 || master.naturalHeight !== 1024) {
+        throw new Error(kind + ' gameplay master geometry is not 3×2 × 512px')
+      }
+      sourceImage = master
+      sourceWidth = 512
+      sourceColumns = 3
+      sourcePath = kind === 'shadow-assassin'
+        ? 'masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp'
+        : 'masters/frost-wraith-6poses-3x2-master-1536x1024.png'
+    }
     const info = document.createElement('p')
-    info.textContent = 'World size: ' + display + 'px · body cell: ' + body.frameWidth +
-      'px · native 3× target: ' + (display * 3) + 'px · warning: 40px / 120px source target'
+    info.textContent = 'Actual combat size: ' + display + 'px · displayed frame source: ' + sourceWidth +
+      'px · 3× minimum: ' + (display * 3) + 'px · warning source: ' + cue.frameWidth + 'px'
     section.append(info)
 
     const frames = document.createElement('div')
     frames.className = 'frames'
     for (let i = 0; i < body.frames; i++) {
       const figure = document.createElement('figure')
-      figure.append(frameCanvas(sprite, i, body.frameWidth, display))
+      figure.append(frameCanvas(sourceImage, i, sourceWidth, display, sourceColumns))
       const caption = document.createElement('figcaption')
       caption.textContent = ['Ready A', 'Ready B', 'Windup', 'Attack', 'Recover', 'Phase'][i] ?? ('Frame ' + i)
       figure.append(caption)
@@ -122,7 +147,15 @@ async function inspectCandidate(body: (typeof manifest.assets)[number]): Promise
       '; edge-contact frames ' + (bodyQa.borderRiskFrames.join(', ') || 'none') +
       '. Warning: edge-contact ' + (cueQa.borderRiskFrames.join(', ') || 'none') + '. Human review required.'
     section.append(status)
-    findings.push(buildEnemyQaFinding(kind, display, body, cue, bodyQa, cueQa))
+    const sampledBody = { ...body, path: sourcePath, frameWidth: sourceWidth, frameHeight: sourceWidth }
+    const finding = buildEnemyQaFinding(kind, display, sampledBody, cue, bodyQa, cueQa)
+    if (!finding.bodyNative3x) {
+      const notice = document.createElement('p')
+      notice.className = 'warnings'
+      notice.textContent = 'Active frame source is below 3× gameplay detail. Existing genuine master and authored runtime art need remediation; human approval remains pending.'
+      section.append(notice)
+    }
+    findings.push(finding)
   } catch (error) {
     const failure = document.createElement('p')
     failure.className = 'error'

@@ -4,16 +4,39 @@ import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atla
 describe('ES2 staged hero candidate atlas contract (QA only)', () => {
   it('has one committed local source for every new hero and East-facing action, not runtime art', () => {
     const ids = new Set(HERO_CANDIDATE_ATLASES.map(x => `${x.hero}:${x.pose}:${x.direction}`))
-    expect(ids.size).toBe(12)
+    expect(ids.size).toBe(27)
     expect([...ids].sort()).toEqual([
       'shadowblade:run:E', 'shadowblade:attack:E', 'shadowblade:special:E',
       'spirit-summoner:run:E', 'spirit-summoner:attack:E', 'spirit-summoner:special:E',
       'crimson-paladin:run:E', 'crimson-paladin:attack:E', 'crimson-paladin:special:E',
       'shadowblade:run:S', 'spirit-summoner:run:S', 'crimson-paladin:run:S',
+      'shadowblade:run:SE', 'shadowblade:run:SW', 'spirit-summoner:run:SE', 'spirit-summoner:run:SW', 'crimson-paladin:run:SE', 'crimson-paladin:run:SW',
+      'shadowblade:run:NE', 'shadowblade:run:NW', 'spirit-summoner:run:N', 'crimson-paladin:run:N',
+      'shadowblade:run:N', 'spirit-summoner:run:NE',
+      'crimson-paladin:run:W', 'crimson-paladin:run:NE', 'crimson-paladin:run:NW',
     ].sort())
     for (const { url, direction, cellPixels } of HERO_CANDIDATE_ATLASES) {
-      expect(url).toContain(`${direction === 'E' ? 'east' : 'south'}-4frames`)
+      expect(url).toContain(`${direction === 'E' ? 'east' : direction === 'S' ? 'south' : direction.toLowerCase()}-4frames`)
       expect(cellPixels).toBe(direction === 'E' ? 704 : 768)
+    }
+  })
+
+
+  it('includes eight eligible northern run atlases and excludes the remaining blocked sources', () => {
+    const keys = HERO_CANDIDATE_ATLASES.map(c => c.hero + ':' + c.direction + ':' + c.pose)
+    expect(keys.filter(key => /:(N|NE|NW):run$/.test(key)).sort()).toEqual([
+      'shadowblade:NE:run', 'shadowblade:NW:run',
+      'spirit-summoner:N:run', 'crimson-paladin:N:run',
+      'shadowblade:N:run', 'spirit-summoner:NE:run',
+      'crimson-paladin:NE:run', 'crimson-paladin:NW:run',
+    ].sort())
+  })
+
+
+  it('uses the two uploaded batch-5 atlases in their own directions, never the rejected batch-4 sources', () => {
+    for (const [hero, direction] of [['shadowblade', 'N'], ['spirit-summoner', 'NE']]) {
+      const clip = HERO_CANDIDATE_ATLASES.find(c => c.hero === hero && c.direction === direction && c.pose === 'run')
+      expect(clip?.url).toContain(`/${hero}/candidates/${direction.toLowerCase()}-2026-11-24-batch-5/run-${direction.toLowerCase()}-4frames@3x.webp`)
     }
   })
 

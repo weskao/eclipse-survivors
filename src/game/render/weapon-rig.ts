@@ -1,6 +1,7 @@
 import type { Hero, JobId, Point } from '../types'
 import { getFiringOrigin } from '../weapon-geometry'
 import type { HeroAnimation } from './animation'
+import { sampleGait } from './gait'
 
 export interface WeaponRig {
   shoulder: Point
@@ -17,6 +18,14 @@ export interface WeaponRig {
 
 const clamp = (v: number): number => Math.max(0, Math.min(1, v))
 const ease = (v: number): number => { const t = clamp(v); return t * t * (3 - 2 * t) }
+const WEAPON_ARM_SWING = 0.45
+
+/** Rotate a hand about its shoulder (canvas sense: + turns clockwise). */
+function swingAbout(pivot: Point, p: Point, angle: number): Point {
+  const c = Math.cos(angle), s = Math.sin(angle)
+  const x = p.x - pivot.x, y = p.y - pivot.y
+  return { x: pivot.x + x * c - y * s, y: pivot.y + x * s + y * c }
+}
 
 /** Solve the elbow geometrically, retaining both rigid bone lengths. */
 function elbowFor(shoulder: Point, hand: Point, upper: number, fore: number, bend: 1 | -1): Point {
@@ -67,11 +76,21 @@ export function sampleWeaponRig(job: JobId, hero: Hero, anim: HeroAnimation): We
   }
 
   const supportShoulder: Point = { x: rightHandWeapon ? -13 : 12, y: -82 + pulse * 2 }
-  const supportHand: Point = job === 'ranger'
+  let supportHand: Point = job === 'ranger'
     ? { x: -18 - load * 7 + release * 3, y: -60 - load * 13 - release * 8 }
     : job === 'wizard'
       ? getFiringOrigin('wizard', 1)
       : { x: 29 - pulse * 5, y: -63 - pulse * 7 }
+  // Locomotion: arms counter-swing the legs from the shoulder; the weapon arm
+  // swings less because it carries the rigid weapon, which turns with the hand.
+  const gait = action ? null : sampleGait(anim, true)
+  if (gait) {
+    const main = rightHandWeapon ? 1 : 0
+    const swing = -gait.arm[main]! * WEAPON_ARM_SWING
+    hand = swingAbout(shoulder, hand, swing)
+    bladeAngle += swing
+    supportHand = swingAbout(supportShoulder, supportHand, -gait.arm[1 - main]!)
+  }
   return {
     shoulder, elbow: elbowFor(shoulder, hand, upperLength, foreLength, rightHandWeapon ? -1 : 1), hand,
     supportShoulder, supportElbow: elbowFor(supportShoulder, supportHand, 24, 27, rightHandWeapon ? 1 : -1), supportHand,

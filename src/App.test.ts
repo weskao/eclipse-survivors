@@ -7,6 +7,53 @@ import App from './App.vue'
 import { createEngine } from './game/engine'
 
 describe('App', () => {
+  it('enters combat without replacing the canvas or restarting the scene fade on pause', async () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    try {
+      const canvas = wrapper.get('#game').element
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(false)
+      engine.start()
+      await nextTick()
+      expect(engine.ui.mode).toBe('play')
+      expect(wrapper.get('#game').element).toBe(canvas)
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(true)
+      expect(wrapper.find('.es2-menu').exists()).toBe(false)
+      engine.togglePause()
+      await nextTick()
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(true)
+      engine.togglePause()
+      await nextTick()
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(true)
+      engine.goMenu()
+      await nextTick()
+      expect(canvas.hasAttribute('data-es2-combat-scene')).toBe(false)
+      expect(wrapper.find('.es2-menu').exists()).toBe(true)
+      expect(wrapper.get('#game').element).toBe(canvas)
+    } finally { wrapper.unmount() }
+  })
+
+  it('restores the selected new hero and objective mode on a fresh home screen', async () => {
+    const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const first = mount(App, { props: { engine }, attachTo: document.body })
+    try {
+      await first.get('[data-hero-id="spirit-summoner"]').trigger('click')
+      await first.get('[data-es2-expedition-navigation]').trigger('click')
+      await first.get('[data-objective-mode="relic-hunt"]').trigger('click')
+    } finally { first.unmount() }
+
+    const reopened = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+    const second = mount(App, { props: { engine: reopened }, attachTo: document.body })
+    try {
+      expect(second.get('.es2-menu').attributes('data-es2-menu-page')).toBe('heroes')
+      expect(second.get('[data-es2-expedition-summary]').attributes('data-run-mode')).toBe('relic-hunt')
+      expect(second.get('[data-es2-mode-summary]').text()).toBeTruthy()
+      expect(second.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('true')
+      expect(second.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
+      expect(second.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('spirit-summoner')
+    } finally { second.unmount() }
+  })
+
   it('mounts the engine on canvas#game and labels the menu with the CHANGELOG version', () => {
     const latest = readFileSync(resolve(process.cwd(), 'CHANGELOG.md'), 'utf8').match(/^## \[([0-9.]+)\]/m)?.[1]
     const stop = vi.fn()
@@ -203,4 +250,41 @@ describe('App', () => {
     expect(touch(document.body)).toBe(false)
   })
 
+})
+
+it('updates live Canvas and root presentation when system motion changes, then releases the listener', async () => {
+  const key = 'eclipse-survivors.accessibility.v1'
+  const saved = localStorage.getItem(key)
+  localStorage.setItem(key, JSON.stringify({ reducedMotion: 'system' }))
+  const motion = Object.assign(new EventTarget(), { matches: false, media: '(prefers-reduced-motion: reduce)' })
+  vi.stubGlobal('matchMedia', (query: string) => query === motion.media ? motion :
+    Object.assign(new EventTarget(), { matches: false, media: query }))
+  const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+  const policy = vi.spyOn(engine, 'setVisualPresentationPolicy')
+  let wrapper: ReturnType<typeof mount> | undefined
+  try {
+    wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    engine.start()
+    await nextTick()
+    expect(document.documentElement.dataset.es2ReduceMotion).toBe('false')
+    motion.matches = true
+    motion.dispatchEvent(Object.assign(new Event('change'), { matches: true }))
+    await nextTick()
+    expect(document.documentElement.dataset.es2ReduceMotion).toBe('true')
+    expect(policy).toHaveBeenLastCalledWith(expect.objectContaining({ reduceMotion: true }))
+    motion.matches = false
+    motion.dispatchEvent(Object.assign(new Event('change'), { matches: false }))
+    await nextTick()
+    expect(document.documentElement.dataset.es2ReduceMotion).toBe('false')
+    expect(policy).toHaveBeenLastCalledWith(expect.objectContaining({ reduceMotion: false }))
+    wrapper.unmount(); wrapper = undefined
+    const calls = policy.mock.calls.length
+    motion.dispatchEvent(new Event('change'))
+    expect(policy.mock.calls).toHaveLength(calls)
+  } finally {
+    wrapper?.unmount()
+    vi.unstubAllGlobals()
+    if (saved === null) localStorage.removeItem(key)
+    else localStorage.setItem(key, saved)
+  }
 })

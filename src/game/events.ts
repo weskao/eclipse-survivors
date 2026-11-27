@@ -3,7 +3,7 @@ import { MAX_MOBS } from './constants'
 import { damageHero } from './combat'
 import { random } from './math'
 import { addXp } from './progression'
-import type { GameHooks, GameState, WorldEventKind } from './types'
+import type { GameHooks, GameState, TreasureTier, WorldEventKind } from './types'
 import { clearApproach, hazardPhase, nearbyHazards, pointIsClear, radialPoint } from './world'
 
 const WEIGHTS: readonly [WorldEventKind, number][] = Object.entries(BALANCE.events.weights) as [WorldEventKind, number][]
@@ -18,27 +18,38 @@ export function rollEventKind(rng: () => number = random): WorldEventKind {
   return 'challenge'
 }
 
-/** Twelve retries, never infinite loops or unreachable/offscreen rewards. */
+const CHEST_TIERS = Object.entries(BALANCE.events.chestRarityWeights) as [TreasureTier, number][]
+export function rollChestTier(rng: () => number = random): TreasureTier {
+  let sample = rng()
+  for (const [tier, weight] of CHEST_TIERS) { sample -= weight; if (sample < 0) return tier }
+  return 'cursed'
+}
+
+/** Bounded placement retries with terrain and occupancy checks. */
 export function trySpawnEvent(s: GameState, kind: WorldEventKind, rng: () => number = random): boolean {
   const hero = s.hero
   if (!hero || s.events.length >= BALANCE.events.maxActive || (kind === 'bargain' && hero.hp <= BALANCE.events.bargainMinHp)) return false
+  const placement = BALANCE.events.legacyPlacement
+  const extraRadius = Math.min(placement.maxExtraRadius,
+    Math.max(placement.minExtraRadius, s.W * placement.viewportWidthFactor))
   for (let i = 0; i < BALANCE.events.placementRetries; i++) {
-    const point = radialPoint(hero, rng(), 220 + rng() * Math.min(280, Math.max(190, s.W * 0.55)))
-    if (!pointIsClear(s.currentScene, point, 35) || !clearApproach(s.currentScene, hero, point)) continue
-    if (s.events.some(e => Math.hypot(e.x - point.x, e.y - point.y) < 120)) continue
-    if (s.mobs.some(e => e.hp > 0 && Math.hypot(e.x - point.x, e.y - point.y) < e.r + 42)) continue
-    s.events.push({ id: ++s.eventSerial, kind, ...point, expiresAt: s.time + BALANCE.events.lifetime })
+    const point = radialPoint(hero, rng(), placement.minRadius + rng() * extraRadius)
+    if (!pointIsClear(s.currentScene, point, placement.terrainClearance) || !clearApproach(s.currentScene, hero, point)) continue
+    if (s.events.some(e => Math.hypot(e.x - point.x, e.y - point.y) < placement.minSeparation)) continue
+    if (s.mobs.some(e => e.hp > 0 && Math.hypot(e.x - point.x, e.y - point.y) < e.r + placement.mobClearance)) continue
+    s.events.push({ id: ++s.eventSerial, kind, ...point, expiresAt: s.time + BALANCE.events.lifetime,
+      ...(kind === 'chest' ? { tier: rollChestTier(rng), spawnedAt: s.time } : {}) })
     return true
   }
   return false
 }
 
-function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eventId?: number): boolean {
+function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eventId?: number, tier?: TreasureTier): boolean {
   const hero = s.hero
   if (!hero) return false
   switch (kind) {
     case 'chest':
-      if (eventId !== undefined && hooks.openTreasure?.(s, eventId)) {
+      if (eventId !== undefined && (tier ? hooks.openTreasure?.(s, eventId, tier) : hooks.openTreasure?.(s, eventId))) {
         hooks.message('✦ 古代寶箱 · 選擇一件聖物')
       } else {
         addXp(s, BALANCE.events.chestXp, hooks)
@@ -50,16 +61,21 @@ function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eve
       hooks.message('✦ 魔法祭壇 · 回復生命')
       break
     case 'invasion': {
-      const count = Math.min(BALANCE.events.invasionCount, MAX_MOBS - s.mobs.length)
+      const count = Math.min(BALANCE.events.invasionCount, MAX_MOBS - s.mobs.length - (hooks.otherLivingActors?.() ?? 0))
+      if (count <= 0) return false
+      let spawned = 0
       for (let i = 0; i < count; i++) {
         const a = i * Math.PI * 2 / 3
         const x = hero.x + Math.cos(a) * 245
         const y = hero.y + Math.sin(a) * 245
+        if (!pointIsClear(s.currentScene, { x, y }, 32)) continue
+        spawned++
         s.mobs.push({
           x, y, type: 'golem', hp: BALANCE.events.invasionHp, max: BALANCE.events.invasionHp, r: 30, speed: 68, dmg: 17,
           phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
         })
       }
+      if (!spawned) return false
       hooks.message('⚠ 菁英入侵 · 遺跡守衛現身')
       break
     }
@@ -72,6 +88,10 @@ function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eve
       hero.hp -= BALANCE.events.bargainHpCost
       addXp(s, BALANCE.events.bargainXp, hooks)
       hooks.message('✦ 禁忌契約 · 以生命換取力量')
+      break
+    case 'magnet':
+      s.magnetUntil = s.time + BALANCE.events.magnetSeconds
+      hooks.message('✦ 全場磁吸 · 吸引所有經驗水晶')
       break
     case 'challenge':
       s.challengeUntil = s.time + BALANCE.events.challengeSeconds
@@ -95,7 +115,7 @@ export function tickWorld(s: GameState, dt: number, hooks: GameHooks): void {
   }
   for (const event of s.events) {
     if (Math.hypot(event.x - hero.x, event.y - hero.y) > 39) continue
-    if (activateEvent(s, event.kind, hooks, event.id)) event.expiresAt = -1
+    if (activateEvent(s, event.kind, hooks, event.id, event.tier)) event.expiresAt = -1
     if (s.mode !== 'play') break
   }
   s.events = s.events.filter(e => e.expiresAt > s.time)

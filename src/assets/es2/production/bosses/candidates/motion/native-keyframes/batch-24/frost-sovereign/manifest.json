@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "230df956433b150c3a4cae2aaf6455911ad29f77",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-glide-key-a",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/frost-glide-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "e47447ad-628e-4ab7-ad0a-d6ee1d61eb8d",
+        "originalPngSha256": "ae7f5ff7b7da3ad14ef13d54c3ac416e765d041d5e811f3137830ac73c0cec81",
+        "canonicalReferenceHead": "230df956433b150c3a4cae2aaf6455911ad29f77",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        46,
+        40,
+        1333,
+        1209
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1344,
+        1231
+      ],
+      "alphaExtent": [
+        1287,
+        1169
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        14,
+        8,
+        1301,
+        1177
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        46,
+        40,
+        43,
+        54
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "b843a4a0d6e72838da75af83cd78accb80f703e34ae66ad5f3987a5280a1bb03",
+      "webpCompressedBytes": 887434,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100 (Polytool unavailable)",
+      "notes": "Hovering forward, trailing robes; direction and phase not approved. Reference-based redraw; exact edit and identity unverified. Original alpha touches edges; transparent padding does not restore missing content. No upscaling. 949px provisional extent passes; conservative 1898px production gate fails."
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-crystal-awakening-key-a",
+      "pose": "transform",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/frost-crystal-awakening-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "a00859a4-4c63-4fee-85fb-c80a14c140aa",
+        "originalPngSha256": "0d05a26025bd94b0f56130994ea2dd731593abea304af3ac116a53681fb51171",
+        "canonicalReferenceHead": "230df956433b150c3a4cae2aaf6455911ad29f77",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1235,
+      "cellHeight": 1407,
+      "frameRects": [
+        [
+          0,
+          0,
+          1235,
+          1407
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        617.5,
+        703.5
+      ],
+      "alphaBounds": [
+        42,
+        34,
+        1178,
+        1346
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1202,
+        1375
+      ],
+      "alphaExtent": [
+        1136,
+        1312
+      ],
+      "actualSourceResolution": [
+        1235,
+        1407
+      ],
+      "originalGeneratedResolution": [
+        1171,
+        1343
+      ],
+      "originalAlpha128Bounds": [
+        10,
+        2,
+        1146,
+        1314
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1170,
+        1343
+      ],
+      "sourceEdgeMargins": [
+        42,
+        34,
+        57,
+        61
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "c5974d15b4f684cf2f85712b5ec834fa0315941d7dcf13e3bf7269daab910c09",
+      "webpCompressedBytes": 944148,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100 (Polytool unavailable)",
+      "notes": "Awakening pose study, not a verified transition frame or approved phase assignment. Reference-based redraw; exact edit and identity unverified. Original alpha touches edges; transparent padding does not restore missing content. No upscaling. 949px provisional extent passes; conservative 1898px production gate fails."
+    }
+  ],
+  "missing": [
+    "character identity and clipping review",
+    "phase and direction approval",
+    "hover anchor and coherent animation sequence",
+    "browser visual QA",
+    "1898px production extent"
+  ]
+}

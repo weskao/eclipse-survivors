@@ -1,0 +1,5 @@
+# Abyss Monarch Batch 16 — recovery review
+
+Source 0fd354eb2457d5277170344688d19567679cc71b contains the committed recovery WebP and manifest. Explicit DEV mode 3 only, with phase 1 and matching shadow-fan impact gating. This is a provisional single recovery pose, not approved identity, phase, anchor or sequence. Alpha128 margins pass; faint alpha touches the source edge. Canonical fallbacks and reduced motion remain unchanged. Batch 15 Frost transformation remains unsequenced due to clipping/identity concerns. Batch 17 newly generated Seraph attack and Abyss hurt PNGs are supplied separately; neither is added or wired here. No combat, hero or production art changes.
+
+Isolated JavaScript execution of the fetched selector after removing its TypeScript signature: RED one expected failure (recovery mapping missing), GREEN five cases passed including wrong phase, wrong attack, missing impact and existing release. Corresponding Vitest assertions updated; full project CI and real visual approval remain unverified.

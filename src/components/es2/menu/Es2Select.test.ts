@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import Es2Select from './Es2Select.vue'
 
 const options = [
@@ -22,6 +24,15 @@ afterEach(() => {
 })
 
 describe('shared in-game dropdown', () => {
+  it('uses the shared action cursor for enabled options, including the forced-colors fallback', () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    const rules = [...css.matchAll(/body :is\(([^{}]+)\)\s*\{\s*cursor:(?:url\([^)]*cursor-action\.svg[^)]*\)\s+13 3,\s*)?pointer!important/g)]
+    expect(rules).toHaveLength(2)
+    for (const [, selector] of rules) {
+      expect(selector).toContain('[role="option"]:not([aria-disabled="true"])')
+    }
+  })
+
   it('renders a game listbox, not a browser-native select', async () => {
     const wrapper = setup()
     expect(wrapper.find('select').exists()).toBe(false)

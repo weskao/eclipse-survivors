@@ -2,15 +2,18 @@ import type { AbilityId } from './types'
 import shadowSpecialIcon from '../assets/es2/production/heroes/shadowblade-special@3x.webp'
 import summonerSpecialIcon from '../assets/es2/production/heroes/spirit-summoner-special@3x.webp'
 import paladinSpecialIcon from '../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
+import shadowMastery from '../assets/es2/production/heroes/shadowblade-portrait@3x.webp'
+import spiritMastery from '../assets/es2/production/heroes/spirit-summoner-portrait@3x.webp'
+import paladinMastery from '../assets/es2/production/heroes/crimson-paladin-portrait@3x.webp'
 
 /** Hero starting skills and passive rank-ups share their authored identity. */
 const heroChoiceArt: Readonly<Record<string, string>> = {
   'heroes:shadow-daggers': shadowSpecialIcon,
-  'heroes:shadow-precision': shadowSpecialIcon,
+  'heroes:shadow-precision': shadowMastery,
   'heroes:spirit-orb': summonerSpecialIcon,
-  'heroes:spirit-bond': summonerSpecialIcon,
+  'heroes:spirit-bond': spiritMastery,
   'heroes:crimson-guard': paladinSpecialIcon,
-  'heroes:crimson-vow': paladinSpecialIcon,
+  'heroes:crimson-vow': paladinMastery,
 }
 
 
@@ -20,17 +23,22 @@ const generatedIcons = new Set<AbilityId>([
   'vortex', 'meteor', 'orb', 'shield', 'heal',
 ])
 
+const additionalIcons = new Set<AbilityId>([
+  'speed', 'haste', 'maxhp', 'magnet', 'bolt', 'frozen-thunderstorm',
+  'infernal-singularity', 'apocalypse-rain', 'blade-tempest', 'guardian-sanctuary',
+])
+
 export function hasGeneratedSkillArt(id: AbilityId): boolean {
   return generatedIcons.has(id)
 }
 
 export function skillImageSrc(id: AbilityId): string {
-  return `./assets/skill-icons/${id}${hasGeneratedSkillArt(id) ? '@3x.webp' : '.svg'}`
+  return `./assets/skill-icons/${id}${(hasGeneratedSkillArt(id) || additionalIcons.has(id)) ? '@3x.webp' : '.svg'}`
 }
 
 /** Browser-native animated WebP; static art is kept for reduced-motion fallback. */
 export function animatedSkillImageSrc(id: AbilityId): string {
-  return hasGeneratedSkillArt(id) ? `./assets/skill-icons/${id}@3x-animated.webp` : skillImageSrc(id)
+  return (hasGeneratedSkillArt(id) || additionalIcons.has(id)) ? `./assets/skill-icons/${id}@3x-animated.webp` : skillImageSrc(id)
 }
 
 /** Canonical ES2 stills remain the source of truth; animated WebP is presentation-only. */
@@ -70,4 +78,16 @@ export function resolveSkillChoiceArt(
   const animated = animatedEs2ImageSrc(id) ??
     (builtIn ? animatedSkillImageSrc(id) : undefined)
   return { imageSrc: still ? reducedMotionSrc : (animated ?? reducedMotionSrc), reducedMotionSrc }
+}
+
+/** Fall back to the still, then the original legacy SVG if an image cannot load. */
+export function fallbackSkillImage(event: Event, id: string, still?: string): void {
+  const img = event.target as HTMLImageElement
+  img.parentElement?.querySelector('source')?.remove()
+  const current = img.getAttribute('src')
+  if (still && !img.dataset.fallbackStill && current !== still) {
+    img.dataset.fallbackStill = 'true'
+    img.src = still
+  } else if (!id.includes(':') && current !== `./assets/skill-icons/${id}.svg`) img.src = `./assets/skill-icons/${id}.svg`
+  else img.style.display = 'none'
 }

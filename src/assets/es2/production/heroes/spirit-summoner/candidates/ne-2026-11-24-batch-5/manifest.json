@@ -1,0 +1,137 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "NE",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": true,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "sourceFile": "source.png",
+  "atlasFile": "run-ne-4frames@3x.webp",
+  "sourceSHA256": "97a8f892e5592cab2f5feb78087eb819061b59c21a084220f7f91587ec5a9ee6",
+  "webpSHA256": "b97b3564b7697e446a4eec29d4252d2418b3f6c2a620122888190f5a0aa69079",
+  "bytes": 1065120,
+  "frameCount": 4,
+  "footBottoms": [
+    681,
+    670,
+    663,
+    665
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        55,
+        30,
+        582,
+        614
+      ],
+      "coreAlphaBounds": [
+        85,
+        33,
+        579,
+        611
+      ],
+      "rgbaSHA256": "ce8017ad169725ccccde042503890f3c6f49fbc92c48a4e2f73aa522bc3e6271",
+      "outputAlphaBounds": [
+        125,
+        100,
+        652,
+        684
+      ]
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        55,
+        20,
+        563,
+        603
+      ],
+      "coreAlphaBounds": [
+        73,
+        23,
+        560,
+        600
+      ],
+      "rgbaSHA256": "f23e93595e98359d9ca270ef8366872933f7b8b3be662e96b44d028c51052efd",
+      "outputAlphaBounds": [
+        125,
+        90,
+        633,
+        673
+      ]
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        72,
+        4,
+        579,
+        595
+      ],
+      "coreAlphaBounds": [
+        77,
+        8,
+        576,
+        593
+      ],
+      "rgbaSHA256": "c612b4961568c74a20708d4254bc8aa9e4a2de1e2a88f3f1ecd93e721f4e4842",
+      "outputAlphaBounds": [
+        142,
+        74,
+        649,
+        665
+      ]
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        51,
+        6,
+        563,
+        597
+      ],
+      "coreAlphaBounds": [
+        56,
+        10,
+        560,
+        595
+      ],
+      "rgbaSHA256": "8b0466ca69e0b6395ccb5380c365895ed6d87b72c355617602087c9f0fa3086d",
+      "outputAlphaBounds": [
+        121,
+        76,
+        633,
+        667
+      ]
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "reviewNotes": [
+    "New authored candidate; positive visible alpha margin; identity and alpha-fringe human review still required.",
+    "Original art remains unapproved; padding does not restore missing source detail."
+  ]
+}

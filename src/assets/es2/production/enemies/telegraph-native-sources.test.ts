@@ -21,7 +21,7 @@ describe('ES2 faction telegraph source and runtime mappings', () => {
         path: kind + '-telegraph@3x.webp',
         width: 150, height: 150, frameWidth: 150, frameHeight: 150,
         frames: 1, columns: 1, rows: 1,
-        native3x: true, alpha: true, status: 'needs-human-approval',
+        native3x: true, alpha: true, status: 'approved',
         sourceMaster: 'masters/telegraphs-10-4x3-master-1448x1086.png',
         sourceMasterWidth: 1448, sourceMasterHeight: 1086,
         sourceMasterFrameWidth: 362, sourceMasterFrameHeight: 362,

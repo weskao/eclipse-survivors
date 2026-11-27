@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "887x887 -> 704x704 Lanczos -> 768x768 transparent padding; no upscaling",
+  "sourcePixels": [
+    887,
+    887
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "8c823afd-2f5c-4cae-ad37-2cc15c640414",
+    "originalPNGSHA256": "f85a399b312b55a5c80351a7f304421fd25112f83dd7c8b6ee35b1a9319a40a1",
+    "canonicalPortrait": "src/assets/es2/production/heroes/crimson-paladin-portrait@3x.webp",
+    "portraitBlobSHA": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+    "referenceCommit": "a1db0a6e4a8856178c81cf306904d7fd52a03b62",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected; direct image conditioning not independently verified.",
+    "originalSheet": "../special-e-keyframes-2026-11-27-batch-39/original-sheet.webp",
+    "sourceCropRect": [
+      0,
+      0,
+      887,
+      887
+    ],
+    "originalSheetSHA256": "2e5cffde2915bf455c8bb75d6f3160497e7f34dd09bc0f1dda4cdb1fbbbd18aa",
+    "originalSheetFullRGBAExact": true
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded alpha and visible RGBA checked; Polytool not run",
+  "frames": [
+    {
+      "id": "barrier-release-identity-a",
+      "description": "Right-facing shield lowered, sword down; provisional barrier release pose.",
+      "sourceFile": "barrier-release-identity-a-source.webp",
+      "sourceSHA256": "c964472608a0d1a5999ac4031bc154ccfb71aafc098fcf15a2a1802c8e09286d",
+      "sourceBytes": 520472,
+      "sourceCellPixels": [
+        887,
+        887
+      ],
+      "file": "barrier-release-identity-a@3x.webp",
+      "webpSHA256": "ebfc3b33e8c7be102da7d887602f0aac1c53c89202218109ea139cab70eae460",
+      "bytes": 346322,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "sourceAlphaBounds": [
+        27,
+        0,
+        887,
+        887
+      ],
+      "coreAlphaBounds": [
+        52,
+        12,
+        621,
+        854
+      ],
+      "coreExtent": [
+        569,
+        842
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        53,
+        32,
+        736,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        73,
+        43,
+        525,
+        710
+      ],
+      "outputCoreExtent": [
+        452,
+        667
+      ],
+      "alphaPreserved": true,
+      "sourceFullRGBAExact": true,
+      "outputFullRGBAExact": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Armor ornaments, tabard, facial details, shield handedness, halo/weapon boundary and continuity require comparison with canonical portrait."
+    }
+  ],
+  "reviewNotes": [
+    "Independent pose only; not an approved frame sequence.",
+    "No gameplay admission; no mirroring performed in packaging.",
+    "Original halo and sword edge need review; source boundary alpha is low but not proof of no clipping."
+  ]
+}

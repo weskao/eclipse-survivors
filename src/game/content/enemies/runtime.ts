@@ -1,3 +1,4 @@
+import { BALANCE } from '../../config'
 import { ENEMY_DEFINITIONS, type FactionAffix, type FactionKind } from './definitions'
 
 export const MAX_FACTION_ENEMIES = 130
@@ -19,6 +20,7 @@ export interface FactionEnemy {
   damage: number
   affix?: FactionAffix
   summonedBy?: number
+  rewardXpMultiplier?: number
   summonsMade: number
   state: FactionAiState
   timer: number
@@ -29,12 +31,26 @@ export interface FactionEnemy {
   facingX: number
   facingY: number
   hitThisAttack: boolean
+  /** Pure presentation: never changes position, range or the FSM. */
+  hitTime?: number
+  hitX?: number
+  hitY?: number
+  knockRemaining?: number
+  releaseFx?: number
+  visualHold?: number
+  visualFrame?: number
+  lastVisualHoldAt?: number
+  deathVisual?: number
+  deathVisualTotal?: number
+  slow?: number
+  orbCooldown?: number
 }
 
 export interface FactionProjectile {
   x: number; y: number; vx: number; vy: number
   radius: number; damage: number; life: number
   sourceId: number; kind: FactionKind; status: FactionStatus
+  attackRank?: 'ordinary' | 'elite'
 }
 
 export interface FactionZone {
@@ -45,6 +61,7 @@ export interface FactionZone {
 
 export interface FactionRuntime {
   enemies: FactionEnemy[]
+  fallen: FactionEnemy[]
   projectiles: FactionProjectile[]
   zones: FactionZone[]
   nextId: number
@@ -55,6 +72,8 @@ export interface FactionRuntime {
 export interface FactionHit {
   kind: FactionKind
   sourceId: number
+  attackRank?: 'ordinary' | 'elite'
+  angle?: number
   status?: Exclude<FactionStatus, undefined>
   duration?: number
 }
@@ -83,7 +102,7 @@ export interface FactionArena {
 }
 
 export function createFactionRuntime(): FactionRuntime {
-  return { enemies: [], projectiles: [], zones: [], nextId: 1, legacyMobCount: 0 }
+  return { enemies: [], fallen: [], projectiles: [], zones: [], nextId: 1, legacyMobCount: 0 }
 }
 
 /** Spawn is explicit: ContentPack registration never calls this function. */
@@ -92,7 +111,7 @@ export function spawnFactionEnemy(
   kind: FactionKind,
   x: number,
   y: number,
-  options: { affix?: FactionAffix; summonedBy?: number } = {},
+  options: { affix?: FactionAffix; summonedBy?: number; rewardXpMultiplier?:number } = {},
 ): FactionEnemy | null {
   if (!Number.isFinite(x) || !Number.isFinite(y) || runtime.enemies.length + runtime.legacyMobCount >= MAX_FACTION_ENEMIES) return null
   const def = ENEMY_DEFINITIONS[kind]
@@ -102,7 +121,7 @@ export function spawnFactionEnemy(
   const enemy: FactionEnemy = {
     id: runtime.nextId++, kind, x, y, hp: max, max,
     radius: def.radius, speed: def.speed, damage: Math.round(def.damage * (elite ? 1.2 : 1)),
-    affix: options.affix, summonedBy: options.summonedBy,
+    affix: options.affix, summonedBy: options.summonedBy, rewardXpMultiplier:options.rewardXpMultiplier,
     summonsMade: 0, state: 'approach', timer: 0, phaseCooldown: 0, cycle: 0,
     aimX: x, aimY: y, facingX: -1, facingY: 0, hitThisAttack: false,
   }
@@ -131,7 +150,8 @@ function hasSight(a: FactionArena, e: FactionEnemy): boolean {
 
 function hitHero(a: FactionArena, e: FactionEnemy, damage = e.damage, status?: Exclude<FactionStatus, undefined>): void {
   const landed = a.onHeroDamage(damage, {
-    kind: e.kind, sourceId: e.id, ...(status ? { status, duration: status === 'freeze' ? 1.2 : 2 } : {}),
+    kind: e.kind, sourceId: e.id, attackRank: e.affix ? 'elite' : 'ordinary',
+    angle: Math.atan2(a.hero.y - e.y, a.hero.x - e.x), ...(status ? { status, duration: status === 'freeze' ? 1.2 : 2 } : {}),
   })
   if (landed && e.affix === 'vampiric') e.hp = Math.min(e.max, e.hp + damage * 0.35)
 }
@@ -155,7 +175,14 @@ function addProjectile(
   r.projectiles.push({
     x: e.x, y: e.y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
     radius: 7, damage: e.damage, life: 2.8, sourceId: e.id, kind: e.kind, status,
+    attackRank: e.affix ? 'elite' : 'ordinary',
   })
+}
+
+/** Shared pose selection for the renderer and hit-stop snapshot. */
+export function factionPoseFrame(e: FactionEnemy, clock: number): number {
+  return e.state === 'phase' ? 5 : e.state === 'windup' ? 2 : e.state === 'attack' ? 3
+    : e.state === 'recover' ? ((e.releaseFx ?? 0) > .16 ? 3 : 4) : (Math.floor(clock * 6 + e.id) & 1)
 }
 
 /** Damage accounting lives here, not in legacy hit(); reward ownership stays with integration. */
@@ -177,10 +204,17 @@ export function damageFactionEnemy(
   }
   const actual = Math.min(e.hp, damage * multiplier)
   e.hp = Math.max(0, e.hp - actual)
+  const dx = e.x - sourceX, dy = e.y - sourceY
+  const distance = Math.hypot(dx, dy)
+  e.hitTime = 0.24
+  e.hitX = distance > 0.001 ? dx / distance : 0
+  e.hitY = distance > 0.001 ? dy / distance : 0
+  if (e.hp > 0 && (e.state === 'approach' || e.state === 'recover')) e.knockRemaining = .10
   if (e.hp === 0) {
+    e.deathVisual = e.deathVisualTotal = e.affix ? .46 : e.radius >= 24 ? .36 : .28
     const def = ENEMY_DEFINITIONS[e.kind]
     onReward?.({ kind: e.kind, x: e.x, y: e.y,
-      xp: Math.round(def.xp * (e.affix ? 1.7 : 1)), elite: !!e.affix })
+      xp: Math.round(def.xp * (e.affix ? 1.7 : 1) * (e.rewardXpMultiplier ?? 1)), elite: !!e.affix })
     if (e.affix === 'explosive') addZone(runtime, e, e.x, e.y, 75, e.damage, 'burn', 0.45, 0.8)
     if (e.affix === 'frozen') addZone(runtime, e, e.x, e.y, 75, e.damage * 0.4, 'freeze', 0.4, 1.3)
   }
@@ -195,7 +229,7 @@ function move(e: FactionEnemy, hero: FactionArena['hero'], dt: number): void {
   const kind = e.kind
   const rage = kind === 'berserker' && e.hp <= e.max * 0.5 ? 1.75 : 1
   const swift = e.affix === 'swift' ? 1.45 : 1
-  const step = Math.min(length, e.speed * rage * swift * dt)
+  const step = Math.min(length, e.speed * rage * swift * ((e.slow ?? 0) > 0 ? BALANCE.enemies.ai.slowedSpeedMultiplier : 1) * dt)
   let toward = 1, strafe = 0
   if (kind === 'shadow-assassin') { toward = 0.6; strafe = e.cycle % 2 ? -1.05 : 1.05 }
   if (kind === 'dark-archer') { toward = length < 170 ? -0.7 : length > 290 ? 0.75 : 0; strafe = 0.6 }
@@ -214,6 +248,7 @@ function telegraph(a: FactionArena, e: FactionEnemy): void {
   e.facingY = dy / length
   e.aimX = a.hero.x; e.aimY = a.hero.y
   e.state = 'windup'
+  e.releaseFx = 0
   e.timer = def.windup * (e.affix === 'swift' ? 0.8 : 1)
   e.cycle++
   a.onTelegraph?.(e)
@@ -296,7 +331,7 @@ function tickProjectiles(a: FactionArena, dt: number): void {
       // The parent may already be dead; projectiles still deliver their own locked payload.
       const landed = a.onHeroDamage(p.damage, {
         kind: p.kind,
-        sourceId: p.sourceId,
+        sourceId: p.sourceId, attackRank: p.attackRank, angle: Math.atan2(p.vy, p.vx),
         ...(p.status ? { status: p.status, duration: 1.2 } : {}),
       })
       if (landed) {
@@ -342,6 +377,12 @@ function tickZones(a: FactionArena, dt: number): void {
 export function tickFactionEnemies(a: FactionArena, dt: number): void {
   if (!Number.isFinite(dt) || dt <= 0) return
   const { runtime: r, hero } = a
+  let fallenWrite = 0
+  for (const e of r.fallen) {
+    e.deathVisual = Math.max(0, (e.deathVisual ?? 0) - dt)
+    if (e.deathVisual > 0) r.fallen[fallenWrite++] = e
+  }
+  r.fallen.length = fallenWrite
   if (a.legacyMobCount !== undefined && Number.isFinite(a.legacyMobCount))
     r.legacyMobCount = Math.max(0, Math.floor(a.legacyMobCount))
   // Snapshot length: necromancer summons start acting on the following tick.
@@ -350,6 +391,21 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
     const e = r.enemies[i]!
     if (!e || e.hp <= 0) continue
     e.phaseCooldown = Math.max(0, e.phaseCooldown - dt)
+    if (e.slow) e.slow = Math.max(0, e.slow - dt)
+    if (e.orbCooldown) e.orbCooldown = Math.max(0, e.orbCooldown - dt)
+    if (e.visualHold) e.visualHold = Math.max(0, e.visualHold - dt)
+    if (e.hitTime) e.hitTime = Math.max(0, e.hitTime - dt)
+    if (e.releaseFx) e.releaseFx = Math.max(0, e.releaseFx - dt)
+    // Mass-scaled, bounded contact motion; never relocate a committed telegraph or attack.
+    if (e.knockRemaining) {
+      const duration = Math.min(dt, e.knockRemaining)
+      e.knockRemaining = Math.max(0, e.knockRemaining - dt)
+      if (e.state === 'approach' || e.state === 'recover') {
+        const strength = 115 * Math.min(1, 16 / Math.max(1, e.radius)) * (e.affix === 'armored' ? .6 : 1)
+        e.x += (e.hitX ?? 0) * duration * strength
+        e.y += (e.hitY ?? 0) * duration * strength
+      }
+    }
     if (e.state === 'phase') {
       e.timer -= dt
       if (e.timer <= 0) e.state = 'approach'
@@ -367,6 +423,7 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
       }
       e.timer -= dt
       if (e.timer <= 0) {
+        e.releaseFx = 0.32
         if (e.kind === 'shadow-assassin') {
           e.state = 'attack'; e.timer = 0.34; e.hitThisAttack = false
         } else {
@@ -412,7 +469,13 @@ export function tickFactionEnemies(a: FactionArena, dt: number): void {
 /** Integrator invokes after resolving damage and on run reset to release per-run memory. */
 export function cleanupFactionEnemies(runtime: FactionRuntime): void {
   let write = 0
-  for (const enemy of runtime.enemies) if (enemy.hp > 0) runtime.enemies[write++] = enemy
+  for (const enemy of runtime.enemies) {
+    if (enemy.hp > 0) runtime.enemies[write++] = enemy
+    else if (enemy.deathVisual) {
+      if (runtime.fallen.length >= 24) runtime.fallen.shift()
+      runtime.fallen.push(enemy)
+    }
+  }
   runtime.enemies.length = write
   // Live projectiles/zones intentionally finish their brief, bounded lifetimes.
 }

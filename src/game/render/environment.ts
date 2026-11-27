@@ -86,29 +86,41 @@ export function paintEnvironment(ctx: Ctx2D, s: GameState, art: Artwork, props: 
   }
 }
 
-export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number, world?: WorldRuntimeImages): void {
-  const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎' }
+export function drawWorldMarkers(ctx: Ctx2D, s: GameState, ox: number, oy: number, world?: WorldRuntimeImages, reduced = false, flashing = false): void {
+  const symbols = { chest: '◆', shrine: '✦', invasion: '⚔', blessing: '✧', bargain: '◈', challenge: '◎', magnet: '✦' }
   const titles = { chest: '古代寶箱', shrine: '魔法祭壇', invasion: '菁英入侵',
-    blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉' }
+    blessing: '短暫祝福', bargain: '契約 -14HP', challenge: '危險試煉', magnet: '全場磁吸' }
   const colors = { chest: '#ffcc75', shrine: '#b9d9ff', invasion: '#ff8176',
-    blessing: '#a8ffc9', bargain: '#d6a9ff', challenge: '#ffc288' }
+    blessing: '#a8ffc9', bargain: '#d6a9ff', challenge: '#ffc288', magnet: '#8ddfff' }
+  const tierColors = { common:'#ffcc75', rare:'#8fc7ff', epic:'#c5a1ff', legendary:'#ffdb86', cursed:'#f38cb9' }
+  const tierTitles = { common:'普通寶箱', rare:'稀有寶箱', epic:'史詩寶箱', legendary:'傳說寶箱', cursed:'詛咒寶箱' }
   for (const e of s.events) {
     const x = e.x + ox
     const y = e.y + oy
     if (x < -45 || x > s.W + 45 || y < -45 || y > s.H + 45) continue
-    const glow = colors[e.kind]
+    const tier = e.kind === 'chest' ? e.tier : undefined
+    const glow = tier ? tierColors[tier] : colors[e.kind]
     softGlow(ctx, x, y - 11, 46, glow, .43)
+    if (tier && tier !== 'common') {
+      ctx.save(); ctx.translate(x, y - 47); ctx.scale(.34, 1.8)
+      softGlow(ctx, 0, 0, 36, glow, flashing || reduced ? .24 : .46)
+      ctx.restore()
+    }
     ctx.save()
     ctx.strokeStyle = glow; ctx.lineWidth = 3
-    ctx.beginPath(); ctx.ellipse(x, y, 27 + Math.sin(s.worldClock * 3) * 3, 10, 0, 0, TAU); ctx.stroke()
+    ctx.beginPath(); ctx.ellipse(x, y, 27 + (reduced ? 0 : Math.sin(s.worldClock * 3) * 3), 10, 0, 0, TAU); ctx.stroke()
     ctx.textAlign = 'center'; ctx.font = 'bold 25px Georgia'; ctx.fillStyle = '#fff6e2'
-    if (e.kind === 'chest' && world?.chest && ready(world.chest)) {
+    const chest = tier ? world?.chests?.[tier] ?? world?.chest : world?.chest
+    if (e.kind === 'chest' && chest && ready(chest)) {
       // 192px authored WebP at 48px: 4x source detail, no new bitmap.
-      ctx.drawImage(world.chest, x - 24, y - 40, 48, 48)
+      const drop = reduced || e.spawnedAt === undefined ? 0 : 45 * Math.max(0, 1 - (s.time - e.spawnedAt) / .35) ** 2
+      ctx.drawImage(chest, x - 24, y - 40 - drop, 48, 48)
+    } else if (e.kind === 'magnet' && world?.magnet && ready(world.magnet)) {
+      ctx.drawImage(world.magnet, x - 24, y - 40, 48, 48)
     } else ctx.fillText(symbols[e.kind], x, y - 14)
     ctx.fillStyle = '#101a23db'; ctx.fillRect(x - 49, y + 11, 98, 20)
     ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = glow
-    ctx.fillText(t(titles[e.kind]), x, y + 25)
+    ctx.fillText(t(tier ? tierTitles[tier] : titles[e.kind]), x, y + 25)
     ctx.restore()
   }
   if (!s.challengePoint) return

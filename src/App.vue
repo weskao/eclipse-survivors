@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { createEngine, type Engine } from './game/engine'
 import { ART_URLS } from './game/art'
 import { WORLD_ART } from './game/render/es2/production-world'
 import { BOSS_DEFINITIONS } from './game/content/bosses/definitions'
-import { getBossArrivalWarning } from './game/bosses/countdown'
 import { locateOffscreenBoss } from './components/es2/hud/boss-pointer'
 import { installGameTouchGuard } from './ios-touch-guard'
+import { installCursorAccent } from './cursor-accent'
 import { applyPresentation, resolvePresentationPolicy } from './game/content/accessibility/presentation'
 import './game/content/accessibility/presentation.css'
 import { inventorySnapshot } from './game/content/relics/runtime'
@@ -17,16 +17,16 @@ import { t, applyDocumentLocale } from './i18n'
 import HeroSpecialAction from './components/es2/hero-roster/HeroSpecialAction.vue'
 import ModeProgress from './components/es2/modes/ModeProgress.vue'
 import WorldEventPanel from './components/es2/world-event-ui/WorldEventPanel.vue'
-import { isSpecializationId } from './game/content/heroes'
 import type { CombatHudActions, CombatHudFeed } from './components/es2/hud/model'
 import Es2MenuSystem from './components/es2/menu/Es2MenuSystem.vue'
+import Es2CloudAccount from './components/es2/menu/Es2CloudAccount.vue'
+import { useCloudWallet } from './cloud/use-cloud-wallet'
 import MobileControls from './components/es2/accessibility/MobileControls.vue'
 import {
   createAccessibilityPreferencesController,
   type AccessibilityPreferences,
 } from './game/content/accessibility/preferences'
 import PauseOverlay from './components/PauseOverlay.vue'
-import ContentShowcase from './components/ContentShowcase.vue'
 import './meta/ui.css'
 import './visual-polish.css'
 import './settings.css'
@@ -35,7 +35,9 @@ import './ui-fidelity.css'
 const props = defineProps<{ engine?: Engine }>()
 const engine = props.engine ?? createEngine()
 const ui = engine.ui
+const cloud = useCloudWallet(engine)
 const version = __APP_VERSION__
+const ContentShowcase = import.meta.env.DEV ? defineAsyncComponent(() => import('./components/ContentShowcase.vue')) : null
 const devShowcase = import.meta.env.DEV && typeof location !== 'undefined' &&
   new URLSearchParams(location.search).get('content-showcase') === '1'
 
@@ -103,7 +105,7 @@ const combatFeed = computed<CombatHudFeed>(() => {
   const offscreen = boss && ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
     ? locateOffscreenBoss(state, boss) : null
   const warning = ui.mode === 'play' && !ui.settingsOpen && !ui.worldEventChoice
-    ? getBossArrivalWarning(state, ui.objectiveProgress) : null
+    ? engine.bossArrivalWarning : null
   return {
     boss: boss ? {
       name: boss.bossArtId ? BOSS_DEFINITIONS[boss.bossArtId].title : '首領',
@@ -120,7 +122,7 @@ const combatFeed = computed<CombatHudFeed>(() => {
       color: warning.bossId ? BOSS_DEFINITIONS[warning.bossId].color : '#f3b873',
     } : undefined,
     relics: relicCollection.value,
-    notices: ui.toastVisible && ui.toastText
+    notices: ui.toastVisible && ui.toastText && !ui.bossPhaseReveal
       ? [{ id: ui.toastText, kind: 'message', text: ui.toastText }]
       : [],
   }
@@ -128,12 +130,13 @@ const combatFeed = computed<CombatHudFeed>(() => {
 
 let unmount: (() => void) | undefined
 let removeTouchGuard: () => void = () => {}
+let removeCursorAccent: () => void = () => {}
 let clearPresentation: () => void = () => {}
+const motionQuery = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : undefined
 function syncPresentation(): void {
   clearPresentation()
   const policy = resolvePresentationPolicy(accessibilityPreferences.value, {
-    prefersReducedMotion: typeof matchMedia === 'function' &&
-      matchMedia('(prefers-reduced-motion: reduce)').matches,
+    prefersReducedMotion: !!motionQuery?.matches,
     hardwareConcurrency: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : undefined,
     coarsePointer: ui.coarsePointer,
   })
@@ -143,19 +146,23 @@ function syncPresentation(): void {
 watch(accessibilityPreferences, syncPresentation)
 onMounted(() => {
   removeTouchGuard = installGameTouchGuard(document)
+  removeCursorAccent = installCursorAccent(document)
   syncPresentation()
+  motionQuery?.addEventListener?.('change', syncPresentation)
   applyDocumentLocale()
   if (canvas.value) unmount = engine.mount(canvas.value, hudRef.value?.minimap ?? null)
 })
 onBeforeUnmount(() => {
   removeTouchGuard()
+  removeCursorAccent()
+  motionQuery?.removeEventListener?.('change', syncPresentation)
   clearPresentation()
   unmount?.()
 })
 </script>
 
 <template>
-  <canvas id="game" ref="canvas" :aria-label="t('奇幻生存戰遊戲畫面')"></canvas>
+  <canvas id="game" ref="canvas" :data-es2-combat-scene="ui.mode !== 'menu' && ui.mode !== 'result' ? '' : undefined" :aria-label="t('奇幻生存戰遊戲畫面')"></canvas>
   <CombatHud
     ref="hud"
     :active="ui.mode !== 'menu'"
@@ -170,13 +177,16 @@ onBeforeUnmount(() => {
     :sfx-on="ui.sfxOn && ui.sfxVolume > 0"
     :actions="combatActions"
     :feed="combatFeed"
+    :boss-phase-reveal="ui.bossPhaseReveal"
+    :show-hero-low-health-warning="accessibilityPreferences.showHeroLowHealthWarning"
+    :health-motion="accessibilityPreferences.reducedMotion"
   >
     <template v-if="ui.mode === 'play' && ui.objectiveProgress" #mode-progress>
       <ModeProgress :state="ui.objectiveProgress" />
     </template>
   </CombatHud>
   <HeroSpecialAction
-    v-if="isSpecializationId(ui.heroId) && ui.heroSpecial"
+    v-if="ui.heroSpecial"
     :hero-id="ui.heroId"
     :snapshot="ui.heroSpecial"
     :joystick-side="accessibilityPreferences.joystickSide"
@@ -186,7 +196,7 @@ onBeforeUnmount(() => {
   <div v-if="ui.mode === 'play' && !ui.settingsOpen" class="es2-world-markers" :aria-label="t('世界事件標記')">
     <button v-for="marker in worldMarkerButtons" :key="marker.event.id" type="button"
       class="es2-world-marker" data-ui-sfx="managed" :style="{ left: marker.left, top: marker.top }"
-      :aria-label="t('互動世界事件 ' + marker.event.kind.slice(7))"
+      :aria-label="t('互動世界事件 {kind}', { kind: marker.event.kind.slice(7) })"
       @click="engine.openWorldEvent(marker.event.id)">✧</button>
   </div>
   <WorldEventPanel :event="ui.worldEventChoice?.event ?? null"
@@ -249,7 +259,10 @@ onBeforeUnmount(() => {
     @music-volume="engine.setMusicVolume"
     @sfx-volume="engine.setSfxVolume"
     @accessibility="changeAccessibility"
-  />
+  >
+    <template #account><Es2CloudAccount :cloud="cloud" :embers="ui.profile.embers" /></template>
+    <template #result-cloud><Es2CloudAccount :cloud="cloud" :embers="ui.profile.embers" result /></template>
+  </Es2MenuSystem>
   <PauseOverlay :active="ui.mode === 'paused' && !homeConfirmOpen && !ui.settingsOpen" @resume="engine.togglePause" @leave="requestHome" @settings="engine.openSettings" />
   <Es2Dialog :active="homeConfirmOpen" :title="t('返回主選單？')"
     :subtitle="t('戰鬥已暫停。返回主選單將結束本次遠征，未結算的戰鬥進度不會保留。確定要離開嗎？')"
@@ -260,7 +273,7 @@ onBeforeUnmount(() => {
       <button type="button" data-es2-home-accept data-ui-sfx="managed" class="es2-secondary es2-home-exit" @click="confirmHome">{{ t('結束遠征並返回') }}</button>
     </template>
   </Es2Dialog>
-  <ContentShowcase v-if="devShowcase" :engine="engine" />
+  <component v-if="devShowcase && ContentShowcase" :is="ContentShowcase" :engine="engine" />
 </template>
 
 <style scoped>

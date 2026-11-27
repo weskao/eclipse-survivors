@@ -223,3 +223,41 @@ describe('commit slot verification', () => {
     expect(result).toMatchObject({ ok: false, reason: 'storage-failure', rewards: [] })
   })
 })
+
+
+describe('cloud wallet uses the existing durable v3 writer', () => {
+  it('restores only the wallet and keeps local research and receipt history', () => {
+    const storage = memoryStorage()
+    const store = createMetaProgressionStore(storage)
+    expect(store.settle({ stats: run('cloud-local-run') }).ok).toBe(true)
+    const before = store.get().state!
+    expect(store.applyCloudWallet({ embers: 250, revision: 2 }, before.embers, false).ok).toBe(true)
+    const after = createMetaProgressionStore(storage).get().state!
+    expect(after).toEqual({ ...before, embers: 250, cloudWallet: { embers: 250, revision: 2 } })
+  })
+  it('acknowledges the uploaded balance without losing a subsequent local transaction', () => {
+    const storage = memoryStorage()
+    const store = createMetaProgressionStore(storage)
+    expect(store.applyCloudWallet({ embers: 100, revision: 1 }, 0, false).ok).toBe(true)
+    expect(store.settle({ stats: run('while-syncing') }).ok).toBe(true)
+    const local = store.get().state!.embers
+    expect(local).toBeGreaterThan(100)
+    expect(store.applyCloudWallet({ embers: 100, revision: 2 }, 100, false).ok).toBe(false)
+    expect(store.applyCloudWallet({ embers: 100, revision: 2 }, 100, true).ok).toBe(true)
+    expect(store.get().state).toMatchObject({ embers: local, cloudWallet: { embers: 100, revision: 2 } })
+  })
+  it('retains the last cloud revision after resetting the local balance', () => {
+    const store = createMetaProgressionStore(memoryStorage())
+    expect(store.applyCloudWallet({ embers: 100, revision: 3 }, 0, false).ok).toBe(true)
+    expect(store.reset().ok).toBe(true)
+    expect(store.get().state).toMatchObject({ embers: 0, cloudWallet: { embers: 100, revision: 3 } })
+  })
+  it('does not acknowledge a failed local cloud restore', () => {
+    const storage = memoryStorage()
+    const store = createMetaProgressionStore(storage)
+    storage.failOn(META_V3_HEAD_KEY)
+    expect(store.applyCloudWallet({ embers: 100, revision: 1 }, 0, false).ok).toBe(false)
+    expect(store.get().state?.embers).toBe(0)
+    expect(store.get().state?.cloudWallet).toBeUndefined()
+  })
+})

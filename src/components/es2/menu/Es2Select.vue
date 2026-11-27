@@ -160,7 +160,7 @@ onBeforeUnmount(() => {
 .es2-select-trigger:focus-visible { outline: 3px solid #ffe0a0; outline-offset: 2px; }
 .es2-select-trigger:disabled { opacity: .5; cursor: not-allowed; }
 .es2-select-listbox { position: fixed; z-index: 360; box-sizing: border-box; margin: 0; padding: 5px;
-  overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #caa878 #192432;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
   list-style: none; background: linear-gradient(155deg,#263648,#111b29);
   border: 1px solid #dabd86; border-radius: 10px; color: #f8e8ce;
   box-shadow: 0 12px 36px #000e,inset 0 1px 0 #ffffff1b; font: 650 13px/1.4 system-ui,sans-serif;
@@ -168,7 +168,8 @@ onBeforeUnmount(() => {
 .es2-select-listbox [role="option"] { display: flex; align-items: center; justify-content: space-between;
   gap: 8px; min-height: 44px; padding: 9px 11px; border-radius: 6px;
   cursor: pointer; overflow-wrap: anywhere; }
-.es2-select-listbox [role="option"] span:last-child { flex-shrink: 0; }
+.es2-select-listbox [role="option"] span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.es2-select-listbox [role="option"] span[aria-hidden="true"] { flex-shrink: 0; }
 .es2-select-listbox [role="option"]:is(:hover,.is-active) { background: #45526a; color: #fff5dc; }
 .es2-select-listbox [role="option"][aria-selected="true"] { color: #ffdb95; background: #453c33; }
 @media (prefers-reduced-motion: no-preference) {

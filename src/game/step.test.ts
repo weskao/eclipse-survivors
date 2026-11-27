@@ -224,3 +224,157 @@ describe('projectile collision precision', () => {
     expect(target.hp).toBe(78)
   })
 })
+
+describe('ES3 reward feedback', () => {
+
+  it('accelerates a magnetized XP gem during consecutive simulation ticks', () => {
+    const { s } = setup()
+    const star = { x: 100, y: 0, value: 3, t: 0 }
+    s.stars.push(star)
+    step(s, 0.05, still, spyHooks())
+    const first = 100 - star.x
+    expect(first).toBeGreaterThan(0)
+    const previous = star.x
+    step(s, 0.05, still, spyHooks())
+    expect(previous - star.x).toBeGreaterThan(first)
+  })
+
+  it('collects a gem that crosses the pickup radius during the current tick exactly once', () => {
+    const { s, hero } = setup()
+    const content = vi.fn()
+    const hooks = { ...spyHooks(), content }
+    s.stars.push({ x: 30, y: 0, value: 3, t: 0 })
+    step(s, 0.05, still, hooks)
+    expect(hero.xp).toBe(3)
+    expect(s.stars).toHaveLength(0)
+    step(s, 0.05, still, hooks)
+    expect(hero.xp).toBe(3)
+    expect(content.mock.calls.filter(([, event]) => event.type === 'pickup')).toHaveLength(1)
+    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickup')).toHaveLength(1)
+  })
+  it('aggregates same-tick pickup audio without losing individual XP or pickup receipts', () => {
+    const { s, hero } = setup()
+    const content = vi.fn()
+    const hooks = { ...spyHooks(), content }
+    s.stars.push({ x: 10, y: 0, value: 2, t: 0 }, { x: 0, y: 10, value: 3, t: 0 }, { x: -10, y: 0, value: 4, t: 0 })
+    step(s, 0.016, still, hooks)
+    expect(hero.xp).toBe(9)
+    expect(s.stars).toHaveLength(0)
+    expect(content.mock.calls.filter(([, event]) => event.type === 'pickup').map(([, event]) => event.amount)).toEqual([2, 3, 4])
+    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickup')).toHaveLength(1)
+  })
+})
+
+describe('ES3 bounded XP conservation', () => {
+  it('preserves all uncollected XP when the live gem budget is exceeded', () => {
+    const { s, hero } = setup()
+    hero.need = 1000000
+    s.stars = Array.from({ length: 250 }, (_, i) => ({ x: 500 + i, y: 0, value: i + 1, t: 0 }))
+    const total = s.stars.reduce((sum, star) => sum + star.value, 0)
+    const content = vi.fn()
+    const hooks = { ...spyHooks(), content }
+    step(s, 0.016, still, hooks)
+    expect(s.stars.length).toBeLessThanOrEqual(220)
+    expect(s.stars.reduce((sum, star) => sum + star.value, 0)).toBe(total)
+    for (const star of s.stars) { star.x = hero.x; star.y = hero.y }
+    step(s, 0.016, still, hooks)
+    expect(hero.xp).toBe(total)
+    expect(s.stars).toHaveLength(0)
+    const receipts = content.mock.calls.filter(([, event]) => event.type === 'pickup').map(([, event]) => event.amount)
+    expect(receipts.sort((a, b) => a - b)).toEqual(Array.from({ length: 250 }, (_, i) => i + 1))
+    expect(hooks.sfx.mock.calls.filter(([name]) => name === 'pickupBurst')).toHaveLength(1)
+    step(s, 0.016, still, hooks)
+    expect(hero.xp).toBe(total)
+  })
+})
+
+describe('ES3 local animation and milestone feedback', () => {
+  it('holds only the struck actor visual phase for a heavy impact without freezing simulation', () => {
+    const { s, hero } = setup()
+    const enemy = mob(200, 0, { type: 'golem', r: 30, phase: 2, hp: 500, speed: 40 })
+    s.mobs.push(enemy)
+    hit(s, enemy, 10, spyHooks())
+    expect(enemy).toMatchObject({ visualPhase: 2 })
+    const attackTimer = hero.attack
+    step(s, 0.02, { x: 1, y: 0 }, spyHooks())
+    expect(s.time).toBeCloseTo(0.02)
+    expect(hero.x).toBeGreaterThan(0)
+    expect(hero.attack).toBeLessThan(attackTimer)
+    expect(enemy.phase).toBeGreaterThan(2)
+    expect(enemy).toMatchObject({ visualPhase: 2 })
+    step(s, 0.1, still, spyHooks())
+    expect(enemy.visualPhase).toBeGreaterThan(2)
+  })
+  it('coalesces multiple crossed kill milestones into the highest actual milestone once per tick', () => {
+    const { s, hero } = setup()
+    hero.need = 1000000
+    const hooks = spyHooks()
+    for (let i = 0; i < 25; i++) hit(s, mob(200, i, { hp: 1 }), 10, hooks)
+    step(s, 0.016, still, hooks)
+    expect(s.killStreak).toMatchObject({ current: 25, milestone: 25 })
+    expect(hooks.message.mock.calls.filter(([message]) => message === '狂暴殺戮')).toHaveLength(1)
+    expect(hooks.message.mock.calls.filter(([message]) => message === '殺戮序曲')).toHaveLength(0)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'killStreak')).toHaveLength(1)
+    step(s, 0.016, still, hooks)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'killStreak')).toHaveLength(1)
+  })
+})
+
+ describe('ES3 reward feedback', () => {
+  it('collects a global magnet and attracts distant XP only while active', () => {
+    const { s, hero } = setup()
+    s.nextEventAt = Infinity
+    s.events.push({ id: 1, kind: 'magnet', x: hero.x, y: hero.y, expiresAt: 30 })
+    s.stars.push({ x: 700, y: 0, value: 3, t: 0 })
+    const hooks = spyHooks()
+    step(s, 0.016, still, hooks)
+    expect(s.events).toHaveLength(0)
+    expect(s.magnetUntil).toBeGreaterThan(s.time)
+    step(s, 0.1, still, hooks)
+    expect(s.stars[0]!.x).toBeLessThan(700)
+    s.time = s.magnetUntil + 0.1
+    const x = s.stars[0]!.x
+    step(s, 0.1, still, hooks)
+    expect(s.stars[0]!.x).toBe(x)
+  })
+  it('plays a single enhanced pickup cue and bounded absorption particles for many gems', () => {
+    const { s, hero } = setup()
+    hero.need = 1000000
+    s.stars = Array.from({ length: 12 }, () => ({ x: 0, y: 0, value: 1, t: 0 }))
+    const hooks = spyHooks()
+    step(s, 0.016, still, hooks)
+    expect(hero.xp).toBe(12)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'pickupBurst')).toHaveLength(1)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'pickup')).toHaveLength(0)
+    expect(s.fx.length).toBeGreaterThan(0)
+    expect(s.fx.length).toBeLessThanOrEqual(12)
+  })
+})
+
+it('keeps dead visual actors out of collision and rewards and expires them on gameplay time', () => {
+  const {s,hero}=setup(); hero.need=9999
+  const enemy=mob(180,0,{hp:1})
+  s.mobs.push(enemy)
+  hit(s,enemy,5,spyHooks())
+  step(s,.016,still,spyHooks())
+  expect(s.mobs).not.toContain(enemy)
+  expect(s.fallenMobs).toContain(enemy)
+  expect(s.kill).toBe(1)
+  for(let i=0;i<20;i++) step(s,.02,still,spyHooks())
+  expect(s.fallenMobs).toHaveLength(0)
+  expect(s.kill).toBe(1)
+})
+
+describe('ES3 multikill feedback', () => {
+  it('coalesces a same-tick burst into one distinct cue without adding rewards', () => {
+    const s = createState(); s.mode = 'play'; s.hero = createHero('knight'); s.spawnT = 999
+    const hooks = spyHooks()
+    for (let i = 0; i < 5; i++) hit(s, mob(200, i, { hp: 1 }), 10, hooks)
+    step(s, 0.016, still, hooks)
+    expect(s.kill).toBe(5)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'massKill')).toHaveLength(1)
+    expect(hooks.message).toHaveBeenCalledWith('瞬間多殺 · 5×')
+    step(s, 0.016, still, hooks)
+    expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'massKill')).toHaveLength(1)
+  })
+})

@@ -1,0 +1,98 @@
+{
+  "id": "goblin",
+  "variant": "preferred",
+  "path": "goblin-death-preferred@3x.webp",
+  "sourcePath": "goblin-death-preferred-source.png",
+  "sourceGenerationId": "2708cec7-7f1f-400a-b43d-e58ca73f0cea",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "nativeSourceCellPixels": 627,
+  "sourceContentBounds": [
+    [
+      15,
+      66,
+      604,
+      609
+    ],
+    [
+      29,
+      191,
+      609,
+      613
+    ],
+    [
+      21,
+      331,
+      626,
+      605
+    ],
+    [
+      1,
+      97,
+      625,
+      626
+    ]
+  ],
+  "runtimeContentBounds": [
+    [
+      26,
+      59,
+      409,
+      412
+    ],
+    [
+      29,
+      138,
+      406,
+      412
+    ],
+    [
+      21,
+      234,
+      414,
+      412
+    ],
+    [
+      15,
+      68,
+      421,
+      412
+    ]
+  ],
+  "sourceSha256": "6446bd95d11448bd9f45674ac2418b94324756dce21e70510b1a3aec1d18c281",
+  "sha256": "f4132fa3e9e6de747167722442c0ef06f768201df10323e8cb87719484cfafdb",
+  "bytes": 188710,
+  "width": 872,
+  "height": 872,
+  "rows": 2,
+  "columns": 2,
+  "frames": 4,
+  "frameWidth": 436,
+  "frameHeight": 436,
+  "gutter": 8,
+  "contentCellPixels": 420,
+  "scale": 3,
+  "displayMaximumPx": 139,
+  "alpha": true,
+  "native3x": true,
+  "upscaled": false,
+  "status": "QA_PENDING",
+  "visualReview": "pending",
+  "browserReview": "pending",
+  "canonicalReference": {
+    "path": "src/assets/goblin.webp",
+    "gitBlobSha": "1392da8439ea8c146b91f728698a16859ca6c25e",
+    "commit": "1aa7ecbf431521fd8dd6d5886c3f699e43b1da3f"
+  },
+  "frameOrder": [
+    "hit",
+    "kneel",
+    "collapse",
+    "dissolve"
+  ],
+  "anchor": "bottom center, common tile y=412 baseline",
+  "admission": "candidate only; no runtime replacement",
+  "normalization": "uniform 0.65 downsampling; alpha <8 noise removed; 6px edge feather; last frame right smoke feather 20px and opacity 72%; no upscaling"
+}

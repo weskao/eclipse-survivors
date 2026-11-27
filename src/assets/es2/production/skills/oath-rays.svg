@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+ <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff4c5" stop-opacity="0"/><stop offset=".16" stop-color="#fbd39a" stop-opacity=".6"/><stop offset=".56" stop-color="#dc9c5f" stop-opacity=".21"/><stop offset="1" stop-color="#cf7250" stop-opacity="0"/></linearGradient>
+ <radialGradient id="flare"><stop stop-color="#f8e4b3" stop-opacity=".69"/><stop offset=".35" stop-color="#e7b072" stop-opacity=".35"/><stop offset="1" stop-color="#b5654e" stop-opacity="0"/></radialGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="19"/></filter>
+ <filter id="wear"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="4" seed="23" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="10"/></filter>
+</defs>
+<g filter="url(#wear)" opacity=".7"><path d="M190 12 220 0 275 473 196 492Z" fill="url(#sun)"/><path d="m291 0 43 0-17 489-67-5Z" fill="url(#sun)"/><path d="m99 0 27 0 131 483-68-9Z" fill="url(#sun)"/><path d="m409 0 25 0-120 478-60 5Z" fill="url(#sun)"/></g>
+<ellipse cx="255" cy="335" rx="208" ry="124" fill="url(#flare)" filter="url(#blur)"/>
+<g fill="#f5d1a2" opacity=".64"><circle cx="130" cy="302" r="2.7"/><circle cx="363" cy="285" r="2"/><circle cx="210" cy="410" r="1.6"/><circle cx="288" cy="355" r="3.2"/><circle cx="377" cy="399" r="1.2"/></g>
+</svg>

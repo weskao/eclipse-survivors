@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
+import { setLocale, t } from '../../../i18n'
+import { BALANCE } from '../../config'
 import { createContentRegistry } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
 import type { GameHooks, Mob } from '../../types'
@@ -41,6 +43,26 @@ describe('isolated hero specializations', () => {
     }
   })
 
+  it('fills the Blood Oath Barrier duration from balance data in both locales', () => {
+    const paladin = HERO_DEFINITIONS['crimson-paladin']
+    const seconds = BALANCE.heroes.specialEffects['crimson-paladin'].barrierSeconds
+    const storage = { getItem: () => null, setItem: () => {} }
+    // Numbers come from heroes.json through t() params, never as literals in the copy.
+    for (const def of Object.values(HERO_DEFINITIONS)) expect(def.special).not.toMatch(/\d/)
+    expect(paladin.specialParams).toEqual({ seconds })
+    try {
+      setLocale('zh-TW', storage)
+      expect(t(paladin.special, paladin.specialParams)).toContain(`換取 ${seconds} 秒的吸收護盾`)
+      setLocale('en', storage)
+      expect(t(paladin.special, paladin.specialParams)).toContain(`a ${seconds}-second absorbing shield`)
+    } finally {
+      setLocale('zh-TW', storage)
+    }
+    // The starting-ability card title is translated without params, so it carries the name only.
+    const title = HERO_SPECIALIZATIONS_PACK.abilities?.find(a => a.id === paladin.startingAbility)?.title
+    expect(title).toBe('緋紅聖騎 · 血誓屏障')
+  })
+
   it.each(Object.keys(HERO_DEFINITIONS) as SpecializationId[])(
     'initializes %s with fair stats and one owned starting ability',
     id => {
@@ -68,6 +90,16 @@ describe('isolated hero specializations', () => {
     expect(registry.acquire(state, def.progressionAbility, hooks)).toBe(true)
     expect(adapter.modifyOutgoingDamage(20)).toBeGreaterThan(base)
     expect(registry.acquire(state, 'heroes:spirit-bond', hooks)).toBe(false)
+  })
+
+  it('raises Shadowblade critical chance while retaining the original damage multiplier', () => {
+    const { adapter } = setup('shadowblade', () => 0.26)
+    expect(adapter.modifyOutgoingDamage(20)).toBe(34)
+    expect(adapter.consumeCriticalHit()).toBe(true)
+    expect(adapter.consumeCriticalHit()).toBe(false)
+    const normal = setup('shadowblade', () => 0.29).adapter
+    expect(normal.modifyOutgoingDamage(20)).toBe(20)
+    expect(normal.consumeCriticalHit()).toBe(false)
   })
 
   it('shadowblade has deterministic crits, short stealth, shadow strikes, and cooldown gating', () => {
@@ -160,6 +192,106 @@ describe('isolated hero specializations', () => {
     expect(adapter.snapshot().barrier).toBeLessThan(initialBarrier)
   })
 
+  describe('Crimson Retribution (barrier burst)', () => {
+    const PALADIN = BALANCE.heroes.specialEffects['crimson-paladin']
+    const bursts = () => vi.mocked(hooks.sfx).mock.calls.filter(([cue]) => cue === 'crimson-paladin-retribution').length
+    const armed = () => {
+      const ctx = setup('crimson-paladin')
+      const hero = ctx.state.hero!
+      const near = mob(hero.x + 60, hero.y, 900)
+      const far = mob(hero.x + PALADIN.retributionRange + 60, hero.y, 900)
+      ctx.state.mobs.push(near, far)
+      expect(ctx.adapter.activate()).toBe(true)
+      vi.mocked(hooks.sfx).mockClear()
+      return { ...ctx, near, far }
+    }
+
+    it('detonates once when the barrier expires, dealing damage scaled by the absorbed amount', () => {
+      const { adapter, near, far } = armed()
+      const absorbed = 40 * (1 - PALADIN.baseReduction)
+      expect(adapter.mitigateIncomingDamage(40)).toBe(0)
+      adapter.tick(PALADIN.barrierSeconds - 0.5)
+      expect(near.hp).toBe(900)
+      expect(bursts()).toBe(0)
+      adapter.tick(0.6)
+      expect(900 - near.hp).toBeCloseTo(absorbed * PALADIN.retributionAbsorbRatio, 5)
+      expect(far.hp).toBe(900)
+      expect(bursts()).toBe(1)
+      expect(adapter.snapshot()).toMatchObject({ barrier: 0, barrierSeconds: 0 })
+      const after = near.hp
+      adapter.tick(5)
+      expect(near.hp).toBe(after)
+      expect(bursts()).toBe(1)
+    })
+
+    it('detonates on the next tick once the barrier breaks, ending the ward early', () => {
+      const { adapter, near } = armed()
+      const capacity = adapter.snapshot().barrier
+      expect(adapter.mitigateIncomingDamage(1000)).toBeGreaterThan(0)
+      expect(adapter.snapshot().barrier).toBe(0)
+      adapter.tick(0.016)
+      expect(900 - near.hp).toBeCloseTo(capacity * PALADIN.retributionAbsorbRatio, 5)
+      expect(bursts()).toBe(1)
+      expect(adapter.snapshot().barrierSeconds).toBe(0)
+    })
+
+    it('strikes at most the configured number of nearest enemies and scales with mastery rank', () => {
+      const plain = armed()
+      const hero = plain.state.hero!
+      plain.state.mobs.length = 0
+      for (let i = 0; i < PALADIN.retributionTargets + 3; i++) plain.state.mobs.push(mob(hero.x + 20 + i * 10, hero.y, 900))
+      plain.adapter.mitigateIncomingDamage(30)
+      plain.adapter.tick(PALADIN.barrierSeconds)
+      expect(plain.state.mobs.filter(m => m.hp < 900)).toHaveLength(PALADIN.retributionTargets)
+      const base = 900 - plain.state.mobs[0]!.hp
+
+      const ranked = armed()
+      for (let i = 0; i < 3; i++) ranked.registry.acquire(ranked.state, 'heroes:crimson-vow', hooks)
+      ranked.state.hero!.inv = 0
+      // Same absorbed amount: feed the pre-mitigation hit that reduces to the same value.
+      const reduction = PALADIN.baseReduction + Math.min(PALADIN.extraReductionCap, 3 * PALADIN.reductionPerRank)
+      ranked.adapter.mitigateIncomingDamage(30 * (1 - PALADIN.baseReduction) / (1 - reduction))
+      ranked.adapter.tick(PALADIN.barrierSeconds)
+      expect(900 - ranked.near.hp).toBeCloseTo(base * (PALADIN.retributionAbsorbRatio + 3 * PALADIN.retributionRatioPerRank) / PALADIN.retributionAbsorbRatio, 5)
+    })
+
+    it('stays silent without enough absorbed damage, after death, or after reset', () => {
+      const quiet = armed()
+      quiet.adapter.tick(PALADIN.barrierSeconds + 0.1)
+      expect(quiet.near.hp).toBe(900)
+      expect(bursts()).toBe(0)
+
+      const dead = armed()
+      dead.adapter.mitigateIncomingDamage(40)
+      dead.state.hero!.hp = 0
+      dead.adapter.tick(PALADIN.barrierSeconds + 0.1)
+      expect(dead.near.hp).toBe(900)
+
+      const restarted = armed()
+      restarted.adapter.mitigateIncomingDamage(40)
+      restarted.adapter.reset()
+      restarted.state.mobs.push(restarted.near)
+      restarted.adapter.tick(PALADIN.barrierSeconds + 0.1)
+      expect(restarted.adapter.activate()).toBe(true)
+      restarted.adapter.tick(PALADIN.barrierSeconds + 0.1)
+      expect(restarted.near.hp).toBe(900)
+      expect(bursts()).toBe(0)
+    })
+
+    it('keeps burst numbers finite, bounded and centralized in heroes.json', () => {
+      expect(PALADIN.retributionMinAbsorb).toBeGreaterThan(0)
+      expect(PALADIN.retributionRange).toBeGreaterThan(PALADIN.counterRange)
+      expect(Number.isInteger(PALADIN.retributionTargets)).toBe(true)
+      expect(PALADIN.retributionTargets).toBeGreaterThan(PALADIN.counterTargets)
+      expect(PALADIN.retributionTargets).toBeLessThanOrEqual(8)
+      // The absorbed amount can never exceed the barrier, so the burst is bounded by it (level 30 = late run).
+      const maxBarrier = PALADIN.barrierBase + 30 * PALADIN.barrierPerHeroLevel + 3 * PALADIN.barrierPerRank
+      const maxHit = maxBarrier * (PALADIN.retributionAbsorbRatio + 3 * PALADIN.retributionRatioPerRank)
+      expect(Number.isFinite(maxHit)).toBe(true)
+      expect(maxHit).toBeLessThan(400)
+    })
+  })
+
   it('preserves the original three hero constructors and rejects invalid damage inputs', () => {
     const original = (['knight', 'ranger', 'wizard'] as const).map(id => createHero(id))
     setup('shadowblade')
@@ -169,6 +301,39 @@ describe('isolated hero specializations', () => {
     expect(adapter.modifyOutgoingDamage(Infinity)).toBe(0)
     expect(adapter.mitigateIncomingDamage(-10)).toBe(0)
   })
+
+  it('records the struck enemy positions of a cast for the VFX and nothing for the barrier', () => {
+    for (const id of ['shadowblade', 'spirit-summoner'] as const) {
+      const { state, adapter } = setup(id)
+      const hero = state.hero!
+      state.mobs.push(mob(hero.x + 40, hero.y), mob(hero.x - 70, hero.y + 30), mob(hero.x, hero.y - 100),
+        mob(hero.x + 120, hero.y + 2), mob(hero.x + 9000, hero.y))
+      expect(adapter.castTargets()).toEqual([])
+      expect(adapter.activate()).toBe(true)
+      const targets = adapter.castTargets()
+      expect(targets).toHaveLength(3)
+      expect(targets[0]).toEqual({ x: hero.x + 40, y: hero.y })
+      expect(targets.every(t => Math.hypot(t.x - hero.x, t.y - hero.y) < 1000)).toBe(true)
+      expect(Object.isFrozen(targets)).toBe(true)
+      adapter.reset()
+      expect(adapter.castTargets()).toEqual([])
+    }
+    const paladin = setup('crimson-paladin')
+    paladin.state.mobs.push(mob(paladin.state.hero!.x + 30, paladin.state.hero!.y))
+    expect(paladin.adapter.activate()).toBe(true)
+    expect(paladin.adapter.castTargets()).toEqual([])
+  })
+
+  it.each(['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
+    '%s leaves the cast visuals to the dedicated hero VFX instead of legacy impact rings',
+    id => {
+      const { state, adapter } = setup(id)
+      const waves = state.impactWaves.length, sparks = state.fx.length
+      expect(adapter.activate()).toBe(true)
+      expect(state.impactWaves).toHaveLength(waves)
+      expect(state.fx).toHaveLength(sparks)
+    },
+  )
 
   it('reset clears per-run timers, companion state, barrier and content upgrades', () => {
     const { state, registry, adapter } = setup('crimson-paladin')

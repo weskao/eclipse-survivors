@@ -3,11 +3,11 @@ import { C104_SOURCES, C104_SURFACES, cropC104Cell, type C104Rect } from './c104
 import type { Ctx2D } from '../ctx'
 
 describe('c104 original ten-sheet production runtime coverage', () => {
-  it('references all ten immutable authored PNGs without leaving any as orphan files', () => {
+  it('uses the ten pixel-exact WebP masters (PNG originals retired)', () => {
     expect(Object.keys(C104_SOURCES)).toEqual(['imgs1','imgs2','imgs3','imgs4','imgs5','imgs6','imgs7','imgs8','imgs9','imgs10'])
     const used = new Set(Object.values(C104_SURFACES).flatMap(x => x.sources))
     expect(used).toEqual(new Set(Object.keys(C104_SOURCES)))
-    for (const source of Object.values(C104_SOURCES)) expect(source).toMatch(/\.png(?:\?|$)/)
+    for (const source of Object.values(C104_SOURCES)) expect(source).toMatch(/\.webp(?:\?|$)/)
   })
   it('has semantic mappings for heroes, enemies, bosses, environments and UI', () => {
     expect(C104_SURFACES.heroes.sources).toEqual(['imgs2','imgs3','imgs4'])

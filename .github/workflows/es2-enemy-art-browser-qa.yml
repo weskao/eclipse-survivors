@@ -5,6 +5,8 @@ on:
       - feature/es2-release-readiness-integration
     paths:
       - 'src/assets/es2/production/enemies/**'
+      - 'src/game/render/es2/production-factions.ts'
+      - 'src/game/render/es2/production-factions.test.ts'
       - '.github/workflows/es2-enemy-art-browser-qa.yml'
   workflow_dispatch:
 permissions:
@@ -36,6 +38,7 @@ jobs:
             src/assets/es2/production/enemies/frost-wraith-native-source.test.ts \
             src/assets/es2/production/enemies/crystal-sentinel-native-source.test.ts \
             src/assets/es2/production/enemies/telegraph-native-sources.test.ts \
+            src/game/render/es2/production-factions.test.ts \
             src/assets/es2/production/world-art-candidates.test.ts
       - name: Install isolated Chromium for actual decoded-pixel QA
         run: |

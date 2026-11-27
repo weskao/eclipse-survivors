@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "attack",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "1254x1254 source preserved; output 704x704 Lanczos, then 32px transparent padding. No upscaling.",
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "9683ad18-bf22-4266-ab34-d39b961676b5",
+    "originalPNGSHA256": "09f93d9dd17a42ef620e16b1fead55093e86a8a6f92de5dec7f4209d666df238",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "a41e5626bdfe0a5afe0511ad13e1511a533957b1",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected. Direct image conditioning not independently verified."
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded RGBA verified; Polytool/cwebp unavailable",
+  "frames": [
+    {
+      "id": "windup-identity-a",
+      "description": "East-facing dual-dagger attack windup; raised rear dagger, forward dagger in guard",
+      "sourceFile": "windup-identity-a-source.webp",
+      "sourceSHA256": "c66a60d06adb6f8ffea20f2531791d22b0ee49c3e0271d59f7d278a52391097c",
+      "sourceBytes": 1066666,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "windup-identity-a@3x.webp",
+      "webpSHA256": "f853834830b280f3f28565d46083dab575673e940401b050a45e7e75a519591e",
+      "bytes": 371046,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "sourceAlphaBounds": [
+        18,
+        19,
+        1244,
+        1254
+      ],
+      "coreAlphaBounds": [
+        25,
+        75,
+        1169,
+        1221
+      ],
+      "coreExtent": [
+        1144,
+        1146
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        43,
+        43,
+        730,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        46,
+        75,
+        688,
+        717
+      ],
+      "outputCoreExtent": [
+        642,
+        642
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "staged RGBA of each file; output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Check exact facial identity, shoulder armor, dagger geometry, ornament differences, scale, foot anchor and continuity against canonical portrait and Batch 27."
+    }
+  ],
+  "reviewNotes": [
+    "Independent windup keyframe, not a complete attack animation.",
+    "No mirroring or upscaling. Identity still requires manual approval.",
+    "Do not admit to gameplay before visual and conversion QA."
+  ]
+}

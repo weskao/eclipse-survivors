@@ -61,15 +61,20 @@ export interface HudView {
   who: string
   /** 0..100 */
   hpPct: number
+  heroCriticalVersion?: number
   /** `生命 ${ceil(hp)} / ${max}` */
   hpLabel: string
   /** 0..100 */
   xpPct: number
   kill: number
+  combo?: { readonly count: number }
   /** `mm:ss` */
   timer: string
   /** 0..100 when a live boss exists, else null (hides `#bossWrap`). */
   bossPct: number | null
+  /** Last real critical hit on the current boss; presentation only. */
+  bossCriticalVersion?: number
+  sceneTitle: string
   quest: string
   /** All currently owned skills and evolutions, refreshed at the normal 8 Hz HUD cadence. */
   skills: HudSkill[]
@@ -77,12 +82,21 @@ export interface HudView {
 
 export interface UiTreasureChoice {
   readonly kind: 'treasure'
+  readonly tier?: import('./types').TreasureTier
   readonly items: readonly { id: string; title: string; description?: string; icon?: string;
-    rarity: SkillRarity | 'epic' }[]
+    rarity: SkillRarity | 'epic'; cursed?: boolean }[]
 }
 
 /** Reactive UI snapshot (engine owns it as a `shallowReactive`; replace nested objects, don't mutate). */
+export interface BossPhaseReveal {
+  readonly boss: import('./content/bosses/definitions').BossId
+  readonly phase: 2 | 3
+  readonly serial: number
+  readonly expiresAt: number
+}
+
 export interface UiState {
+  bossPhaseReveal?: BossPhaseReveal | null
   mode: GameMode
   choice: JobId
   heroId: HeroId
@@ -155,5 +169,6 @@ export interface GameCommands {
 }
 
 export const emptyHud = (): HudView => ({
-  who: '', hpPct: 100, hpLabel: '生命', xpPct: 0, kill: 0, timer: '00:00', bossPct: null, quest: '', skills: [],
+  who: '', hpPct: 100, hpLabel: '生命', xpPct: 0, kill: 0, timer: '00:00', bossPct: null,
+  sceneTitle: '', quest: '', skills: [],
 })

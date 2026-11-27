@@ -1,0 +1,100 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "S",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "frameCount": 4,
+  "sourceSHA256": "86ecab074314a20c2cdb0de15dc67c0428f9292b329cf342d4a23efa8434f5e2",
+  "webpSHA256": "86b442e187c042c42f10b8e9f8cf5b101bb20d4a6c5a48337e56599f2e63f422",
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        66,
+        23,
+        553,
+        557
+      ],
+      "rgbaSHA256": "8862ba0dd82834f6153868773a57177ea70f9c5e9152b045c4d78482cfd4cfcc",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "8862ba0dd82834f6153868773a57177ea70f9c5e9152b045c4d78482cfd4cfcc"
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        35,
+        8,
+        559,
+        581
+      ],
+      "rgbaSHA256": "8bdb1ad1c700ca1540d90c0fb45c564056d4efcba70448ce8a5af510c3ee622c",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "8bdb1ad1c700ca1540d90c0fb45c564056d4efcba70448ce8a5af510c3ee622c"
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        64,
+        31,
+        588,
+        608
+      ],
+      "rgbaSHA256": "28099f3b0a34a649b3a1be6ffaccba46b652e51c2ec29d6e86eb45a8db0f5e8d",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "28099f3b0a34a649b3a1be6ffaccba46b652e51c2ec29d6e86eb45a8db0f5e8d"
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        25,
+        28,
+        559,
+        579
+      ],
+      "rgbaSHA256": "a895ea87119715af497e635e4eacec8fcafecfd3aa0cc846314609224ff0f30f",
+      "clearedMarginPixels": 0,
+      "outputRGBA256": "a895ea87119715af497e635e4eacec8fcafecfd3aa0cc846314609224ff0f30f"
+    }
+  ],
+  "originalSourceSHA256": "24b43f51c7487b208871926e4cb1f762a6692a005d3ff4631f5d051372ab9d6b",
+  "originalSourceFile": "../south-2026-11-24-batch-2/source.png",
+  "sourceFile": "source.png",
+  "atlasFile": "run-south-4frames@3x.webp",
+  "bytes": 1757180,
+  "footBottoms": [
+    606,
+    630,
+    659,
+    629
+  ],
+  "footAnchorMethod": "opaque alpha >=128 bottom exclusive per 768px cell",
+  "maxDisplayCSSPixels": 147,
+  "sourceResolutionRatio": 4.26530612244898,
+  "grid": [
+    2,
+    2
+  ],
+  "qaGameplayApplied": true,
+  "frameTiming": "four distinct poses; not a complete 10-frame run cycle",
+  "repair": "attenuate outer mist only; preserve RGB and all alpha >=64 pixels; no resampling"
+}

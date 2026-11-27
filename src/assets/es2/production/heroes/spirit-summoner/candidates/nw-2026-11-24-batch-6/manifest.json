@@ -1,0 +1,150 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "pose": "run",
+  "direction": "NW",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "completeEightDirections": false,
+  "eligibleForDevWiring": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "sourceFile": "source.webp",
+  "sourceSHA256": "c3be06c71ad208ebbc06ae03eb576ee321ee6f991a5a473f1df5de0d86ace4b7",
+  "originalPNGSHA256": "b7f571ba108ab71ee29497481ed4227e7dc00612de5aa775fb7f066c4b2a6f26",
+  "sourceDecodedRGBASHA256": "6657e4472d2ca5fdba4d0809c86cf79e1ee7d9fae95dd0d03074922d61a6153e",
+  "sourceEncoding": "lossless-webp-exact-rgba",
+  "atlasFile": "run-nw-4frames@3x.webp",
+  "webpSHA256": "bfb09bb4feb60056b8b1238c20b6f29c59cd21793fef6e560b1eb822bbc849cb",
+  "bytes": 1019980,
+  "frameCount": 4,
+  "footBottoms": [
+    643,
+    621,
+    642,
+    610
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        60,
+        45,
+        526,
+        573
+      ],
+      "rgbaSHA256": "7011cc84faf277cee2b3e72373504bb0a27e51b88a54addb25363c3505e2e15c",
+      "outputAlphaBounds": [
+        78,
+        78,
+        689,
+        689
+      ],
+      "clearedMarginPixels": 2355,
+      "outputRGBA256": "df560a56790745650c44a31892c7fd78ec17ded37cb67ab6bfa2d9e574b867d4"
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        57,
+        44,
+        494,
+        551
+      ],
+      "rgbaSHA256": "df129a8fc3e1c03c907b7e3c84e0cabb73ff693aa386de173d4dc14681eac29a",
+      "outputAlphaBounds": [
+        78,
+        78,
+        689,
+        695
+      ],
+      "clearedMarginPixels": 2743,
+      "outputRGBA256": "3450808b1801da59fd58ea014c53ece92827d1c5521b3bd7e96d2f1a0ccc9f65"
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        58,
+        40,
+        522,
+        572
+      ],
+      "rgbaSHA256": "ff1928493e1a6b60db8f836ffd952cba54d63d0094131b0bf2f0f81f39eb981e",
+      "outputAlphaBounds": [
+        78,
+        77,
+        689,
+        681
+      ],
+      "clearedMarginPixels": 3975,
+      "outputRGBA256": "7de79bfa21d498d248e2a2cd623031fb535507cb1c3e02b2dfa79911708e9fa7"
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        0,
+        0,
+        626,
+        627
+      ],
+      "coreAlphaBounds": [
+        57,
+        39,
+        542,
+        540
+      ],
+      "rgbaSHA256": "a2531e6b3c65c710c55c2e244a4c4f4189d08b7b9dd307ff76f6fa4a3f5db299",
+      "outputAlphaBounds": [
+        78,
+        78,
+        687,
+        689
+      ],
+      "clearedMarginPixels": 3028,
+      "outputRGBA256": "baff20932c53c6dce0833750d8cb6755edb8b31e58ed668c9cb9975b07dd18b9"
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "reviewNotes": [
+    "Four new full-size NW candidate frames; opaque and visible-alpha bounds are clear of original cell edges.",
+    "Only alpha=1 pixels in the outer 8px source margin were cleared in the derivative; no resampling.",
+    "Staff handedness remains unverified; do not promote or automatically wire until visual review."
+  ]
+}

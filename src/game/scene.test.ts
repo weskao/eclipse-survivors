@@ -1,3 +1,4 @@
+import { BALANCE } from './config'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { sceneIndexAt, setScene } from './scene'
 import { seeded, setRandom } from './math'
@@ -22,7 +23,7 @@ describe('setScene', () => {
     const hooks = spyHooks()
     setScene(s, 1, true, hooks)
     expect(s.currentScene).toBe(1)
-    expect(s.nextEventAt).toBe(6)
+    expect(s.nextEventAt).toBe(BALANCE.events.sceneSpawnDelay)
     expect(s.events).toHaveLength(0)
     expect(hooks.sfx).toHaveBeenCalledWith('scene')
     expect(hooks.message).toHaveBeenCalledWith('✦ 場景轉換：蒼雷聖域 · 暴風雷雨')

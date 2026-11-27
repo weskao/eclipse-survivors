@@ -3,7 +3,7 @@ import { DASH_COOLDOWN, TAU } from '../constants'
 import { createState, resetRun } from '../state'
 import type { GameMode, Hero } from '../types'
 import { createFakeCtx, fakeCanvasFactory } from './fakes'
-import { createParticleSpriteCache, drawFx, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
+import { buildGemSprites, createParticleSpriteCache, drawFx, drawNumbers, drawHeroStatus, drawLightning, drawShots, drawStars } from './effects'
 import { loadProjectileSprites } from './projectile-art'
 
 function scene() {
@@ -185,4 +185,64 @@ describe('hero foot status', () => {
   it('stays visible while paused so the state can be read', () => {
     expect(readout({ hp: 10, dashCd: 1 }, { mode: 'paused' }).calls).toContain('stroke')
   })
+})
+
+describe('ES3 magnetized gem trail', () => {
+  it('draws bounded cached energy behind a moving gem, but never for resting, reduced-motion or offscreen gems', () => {
+    const s = scene()
+    resetRun(s)
+    s.hero!.x = 150; s.hero!.y = 100
+    const factory = fakeCanvasFactory()
+    const gems = buildGemSprites(factory.make)
+    s.stars = [{ x: 100, y: 100, value: 3, t: 1, attractionSpeed: 600 }]
+    const moving = createFakeCtx()
+    drawStars(moving.ctx, s, 0, 0, false, gems)
+    expect(moving.drawn.length).toBeGreaterThan(1)
+    expect(moving.drawn.length).toBeLessThanOrEqual(3)
+    const reduced = createFakeCtx()
+    drawStars(reduced.ctx, s, 0, 0, true, gems)
+    expect(reduced.drawn).toHaveLength(1)
+    s.stars[0]!.attractionSpeed = undefined
+    const resting = createFakeCtx()
+    drawStars(resting.ctx, s, 0, 0, false, gems)
+    expect(resting.drawn).toHaveLength(1)
+    s.stars[0]!.x = 4000; s.stars[0]!.attractionSpeed = 600
+    const offscreen = createFakeCtx()
+    drawStars(offscreen.ctx, s, 0, 0, false, gems)
+    expect(offscreen.drawn).toHaveLength(0)
+    expect(factory.made).toHaveLength(2)
+  })
+})
+
+it('paints incoming damage and critical text after ordinary labels without exceeding the visible label budget', () => {
+  const s=scene(); resetRun(s)
+  s.numberFx=Array.from({length:80},(_,i)=>({x:100,y:100,life:.6,value:i+1,boss:false}))
+  s.numberFx.unshift({x:100,y:100,life:.6,value:999,boss:false,critical:true},{x:100,y:100,life:.6,value:888,boss:false,received:true})
+  const {ctx}=createFakeCtx()
+  const labels:string[]=[]
+  ctx.fillText=(label)=>{labels.push(label)}
+  drawNumbers(ctx,s,0,0,true)
+  expect(labels.length).toBeLessThanOrEqual(49)
+  expect(labels.slice(-2)).toContain('−888')
+  expect(labels).toContain('999')
+})
+
+it('culls lightning wholly outside the viewport but preserves crossing bolts', () => {
+  const s = scene()
+  s.lightningFx = [
+    { pts: [{ x: -500, y: -500 }, { x: -400, y: -400 }], life: 0.2, max: 0.23 },
+    { pts: [{ x: -100, y: 300 }, { x: 900, y: 300 }], life: 0.2, max: 0.23 },
+  ]
+  const f = createFakeCtx(); drawLightning(f.ctx, s, 0, 0)
+  expect(f.calls.filter(x => x === 'stroke')).toHaveLength(3)
+})
+
+it('distinguishes elemental, evolution, hero, heavy and actual healing labels', () => {
+  const s=scene()
+  s.numberFx=(['elemental','evolved','hero','heavy','heal'] as const).map((kind,i)=>({x:100+i*20,y:100,life:.6,value:25+i,boss:false,kind}))
+  const {ctx}=createFakeCtx(), colors=new Map<string,string>()
+  ctx.fillText=(label)=>{colors.set(label,String(ctx.fillStyle))}
+  drawNumbers(ctx,s,0,0,true)
+  expect(colors.has('+29')).toBe(true)
+  expect(new Set(colors.values()).size).toBe(5)
 })

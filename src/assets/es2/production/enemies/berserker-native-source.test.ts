@@ -18,7 +18,7 @@ describe('Berserker native three-times source contract', () => {
       sourceMasterWidth: 1536, sourceMasterHeight: 1024,
       sourceMasterFrameWidth: 512, sourceMasterFrameHeight: 512,
       sourceMasterSha256: 'ab4057f9b82d4153d9d469c5e9d0b121781446321312eb45ec4baf0ebbad248b',
-      status: 'needs-human-approval',
+      status: 'approved',
     })
     const png = readFileSync(join(directory, 'masters/berserker-6-poses-3x2-master-1536x1024.png'))
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))

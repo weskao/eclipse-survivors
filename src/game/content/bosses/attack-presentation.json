@@ -1,0 +1,252 @@
+{
+  "shadow-fan": {
+    "boss": "abyss-monarch",
+    "pitch": 73,
+    "weight": 0.62,
+    "pulses": 3,
+    "shake": 0,
+    "visual": "fan",
+    "windup": 0.95,
+    "offset": 0
+  },
+  "darkness-field": {
+    "boss": "abyss-monarch",
+    "pitch": 45,
+    "weight": 0.41,
+    "pulses": 2,
+    "shake": 0,
+    "visual": "vortex",
+    "windup": 1.3,
+    "offset": 3.25
+  },
+  "shadow-cross": {
+    "boss": "abyss-monarch",
+    "pitch": 64,
+    "weight": 0.78,
+    "pulses": 5,
+    "shake": 0,
+    "visual": "fan",
+    "windup": 1.05,
+    "offset": 6.5
+  },
+  "abyss-summon": {
+    "boss": "abyss-monarch",
+    "pitch": 55,
+    "weight": 0.28,
+    "pulses": 3,
+    "shake": 0,
+    "visual": "portal",
+    "windup": 1.2,
+    "offset": 9.75
+  },
+  "abyss-collapse": {
+    "boss": "abyss-monarch",
+    "pitch": 35,
+    "weight": 0.98,
+    "pulses": 2,
+    "shake": 1.35,
+    "visual": "collapse",
+    "windup": 1.8,
+    "offset": 13
+  },
+  "shadow-storm": {
+    "boss": "abyss-monarch",
+    "pitch": 89,
+    "weight": 0.83,
+    "pulses": 7,
+    "shake": 0,
+    "visual": "fan",
+    "windup": 0.82,
+    "offset": 16.25
+  },
+  "ice-fan": {
+    "boss": "frost-sovereign",
+    "pitch": 185,
+    "weight": 0.7,
+    "pulses": 3,
+    "shake": 0,
+    "visual": "fan",
+    "windup": 1.05,
+    "offset": 0
+  },
+  "frost-patch": {
+    "boss": "frost-sovereign",
+    "pitch": 131,
+    "weight": 0.34,
+    "pulses": 2,
+    "shake": 0,
+    "visual": "crystal",
+    "windup": 1.4,
+    "offset": 3.25
+  },
+  "glacial-ring": {
+    "boss": "frost-sovereign",
+    "pitch": 98,
+    "weight": 0.85,
+    "pulses": 3,
+    "shake": 0.65,
+    "visual": "crystal",
+    "windup": 1.3,
+    "offset": 6.5
+  },
+  "rotating-shelter": {
+    "boss": "frost-sovereign",
+    "pitch": 147,
+    "weight": 0.48,
+    "pulses": 4,
+    "shake": 0,
+    "visual": "crystal",
+    "windup": 1.7,
+    "offset": 9.75
+  },
+  "winter-burst": {
+    "boss": "frost-sovereign",
+    "pitch": 82,
+    "weight": 0.92,
+    "pulses": 3,
+    "shake": 0.95,
+    "visual": "crystal",
+    "windup": 1.55,
+    "offset": 13
+  },
+  "ice-storm": {
+    "boss": "frost-sovereign",
+    "pitch": 220,
+    "weight": 0.76,
+    "pulses": 5,
+    "shake": 0,
+    "visual": "fan",
+    "windup": 1.05,
+    "offset": 16.25
+  },
+  "titan-slam": {
+    "boss": "infernal-titan",
+    "pitch": 44,
+    "weight": 0.98,
+    "pulses": 2,
+    "shake": 1.25,
+    "visual": "fracture",
+    "windup": 1.7,
+    "offset": 0
+  },
+  "ember-line": {
+    "boss": "infernal-titan",
+    "pitch": 67,
+    "weight": 0.62,
+    "pulses": 3,
+    "shake": 0,
+    "visual": "beam",
+    "windup": 1.3,
+    "offset": 3.25
+  },
+  "eruption": {
+    "boss": "infernal-titan",
+    "pitch": 49,
+    "weight": 0.89,
+    "pulses": 3,
+    "shake": 0.75,
+    "visual": "fracture",
+    "windup": 1.55,
+    "offset": 6.5
+  },
+  "flame-wave": {
+    "boss": "infernal-titan",
+    "pitch": 58,
+    "weight": 0.79,
+    "pulses": 3,
+    "shake": 0.85,
+    "visual": "fracture",
+    "windup": 1.5,
+    "offset": 9.75
+  },
+  "titan-rage": {
+    "boss": "infernal-titan",
+    "pitch": 34,
+    "weight": 1,
+    "pulses": 4,
+    "shake": 1.5,
+    "visual": "fracture",
+    "windup": 1,
+    "offset": 13
+  },
+  "radiant-lance": {
+    "boss": "eclipse-seraph",
+    "pitch": 146,
+    "weight": 0.76,
+    "pulses": 2,
+    "shake": 0,
+    "visual": "beam",
+    "windup": 1.45,
+    "offset": 0
+  },
+  "light-ring": {
+    "boss": "eclipse-seraph",
+    "pitch": 110,
+    "weight": 0.55,
+    "pulses": 3,
+    "shake": 0,
+    "visual": "halo",
+    "windup": 1.3,
+    "offset": 3.25
+  },
+  "void-fan": {
+    "boss": "eclipse-seraph",
+    "pitch": 65,
+    "weight": 0.65,
+    "pulses": 5,
+    "shake": 0,
+    "visual": "fan",
+    "windup": 1.1,
+    "offset": 6.5
+  },
+  "shadow-sweep": {
+    "boss": "eclipse-seraph",
+    "pitch": 82,
+    "weight": 0.77,
+    "pulses": 2,
+    "shake": 0.65,
+    "visual": "beam",
+    "windup": 1.15,
+    "offset": 9.75
+  },
+  "twilight-ground": {
+    "boss": "eclipse-seraph",
+    "pitch": 98,
+    "weight": 0.46,
+    "pulses": 3,
+    "shake": 0,
+    "visual": "halo",
+    "windup": 1.35,
+    "offset": 13
+  },
+  "eclipse-wedge": {
+    "boss": "eclipse-seraph",
+    "pitch": 73,
+    "weight": 0.89,
+    "pulses": 3,
+    "shake": 0.85,
+    "visual": "collapse",
+    "windup": 1.8,
+    "offset": 16.25
+  },
+  "eclipse-cross": {
+    "boss": "eclipse-seraph",
+    "pitch": 123,
+    "weight": 0.82,
+    "pulses": 7,
+    "shake": 0,
+    "visual": "fan",
+    "windup": 1,
+    "offset": 19.5
+  },
+  "seraph-finale": {
+    "boss": "eclipse-seraph",
+    "pitch": 55,
+    "weight": 1,
+    "pulses": 4,
+    "shake": 1.5,
+    "visual": "halo",
+    "windup": 1.9,
+    "offset": 22.75
+  }
+}

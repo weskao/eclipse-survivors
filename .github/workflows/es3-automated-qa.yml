@@ -1,0 +1,53 @@
+name: ES3 automated gameplay and performance acceptance
+on:
+  push:
+    branches: [feature/es3-combat-juice-power-pacing-rewards]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: es3-acceptance-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  diagnostics:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Seeded curves, render parity and ten-minute simulation
+        run: ES2_PERF_LONG=1 pnpm exec vitest run tests/es2/performance/benchmark.test.ts
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm check-release
+      - name: Install isolated Chromium (no application dependency)
+        id: chromium
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+      - name: Real Chromium native art and performance diagnostics
+        run: |
+          pnpm dev --host 127.0.0.1 --port 5173 --strictPort > /tmp/es3-dev.log 2>&1 &
+          for i in {1..45}; do curl -sf http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:5173/ >/dev/null
+          node scripts/es2-browser-performance.mjs
+      - name: Responsive bilingual gameplay
+        if: ${{ !cancelled() && steps.chromium.outcome == 'success' }}
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/es3-preview.log 2>&1 &
+          for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node scripts/es2-responsive-layout-matrix.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es3-automated-diagnostics
+          path: |
+            artifacts/es2-browser-performance/
+            artifacts/es2-mobile-browser/
+          if-no-files-found: warn

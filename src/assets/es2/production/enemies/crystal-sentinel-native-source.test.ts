@@ -16,7 +16,7 @@ describe('Crystal Sentinel native 3x enemy atlas and source provenance', () => {
       path: 'crystal-sentinel-body@3x.webp',
       width: 1944, height: 324, frameWidth: 324, frameHeight: 324,
       frames: 6, columns: 6, rows: 1,
-      native3x: true, alpha: true, status: 'needs-human-approval',
+      native3x: true, alpha: true, status: 'approved',
       sourceMaster: 'masters/crystal-sentinel-6poses-3x2-master-1536x1024.png',
       sourceMasterWidth: 1536, sourceMasterHeight: 1024,
       sourceMasterFrameWidth: 512, sourceMasterFrameHeight: 512,

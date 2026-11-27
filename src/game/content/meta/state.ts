@@ -1,4 +1,6 @@
+import { validWallet, type CloudWallet } from '../../../cloud/wallet-policy'
 import type { JobId } from '../../types'
+import { validMonsterKills, type MonsterKills } from '../../monster-catalog'
 import { ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT, isCosmeticId, isDiscoverableId } from './catalog'
 
 export type DiscoveryKind = 'relics' | 'weapons' | 'evolutions' | 'bosses'
@@ -7,6 +9,8 @@ export interface ModeRecord { runs: number; wins: number; bestKills: number; bes
 export interface MetaState {
   version: 3
   embers: number
+  /** Local-only acknowledged cloud balance; never part of the uploaded document beyond its two fields. */
+  cloudWallet?: CloudWallet
   runs: number
   wins: number
   bossWins: number
@@ -17,6 +21,7 @@ export interface MetaState {
   equipment: string[]
   bonuses: string[]
   discoveries: Record<DiscoveryKind, string[]>
+  monsterKills?: MonsterKills
   modeRecords: Record<string, ModeRecord>
   cosmetics: string[]
   /** Optional for compatibility with already committed v3 envelopes. */
@@ -50,7 +55,7 @@ export function createMetaState(): MetaState {
 }
 export const resetMetaState = createMetaState
 export const cloneMetaState = (state: MetaState): MetaState => ({
-  ...state, achievements: [...state.achievements], claimedMilestones: [...state.claimedMilestones],
+  ...state, ...(state.cloudWallet ? { cloudWallet: { ...state.cloudWallet } } : {}), achievements: [...state.achievements], claimedMilestones: [...state.claimedMilestones],
   research: { ...state.research },
   mastery: Object.fromEntries(Object.entries(state.mastery).map(([k, v]) => [k, { ...v }])),
   equipment: [...state.equipment], bonuses: [...state.bonuses], cosmetics: [...state.cosmetics],
@@ -59,13 +64,14 @@ export const cloneMetaState = (state: MetaState): MetaState => ({
     relics: [...state.discoveries.relics], weapons: [...state.discoveries.weapons],
     evolutions: [...state.discoveries.evolutions], bosses: [...state.discoveries.bosses],
   },
+  ...(state.monsterKills ? { monsterKills: { ...state.monsterKills } } : {}),
   modeRecords: Object.fromEntries(Object.entries(state.modeRecords).map(([k, v]) => [k, { ...v }])),
   runIds: [...state.runIds],
 })
 
 /** Strict trust-boundary check. Nothing is coerced and unknown schema versions are refused. */
 export function validateMetaState(raw: unknown): raw is MetaState {
-  if (!isObj(raw) || raw.version !== 3 || !whole(raw.embers) || !whole(raw.runs) || !whole(raw.wins) || !whole(raw.bossWins)
+  if (!isObj(raw) || (raw.cloudWallet !== undefined && !validWallet(raw.cloudWallet)) || raw.version !== 3 || !whole(raw.embers) || !whole(raw.runs) || !whole(raw.wins) || !whole(raw.bossWins)
     || raw.wins > raw.runs || !isObj(raw.research) || !isObj(raw.mastery)
     || !isObj(raw.discoveries) || !isObj(raw.modeRecords)
     || !uniqueStrings(raw.runIds, MAX_RUN_IDS, isRunId)) return false
@@ -91,6 +97,7 @@ export function validateMetaState(raw: unknown): raw is MetaState {
       || !whole(value.xp, 10_000_000) || !whole(value.level, 1000) || value.level < 1) return false
   }
   if (heroes.some(id => !mastery[id])) return false
+  if (raw.monsterKills !== undefined && !validMonsterKills(raw.monsterKills)) return false
   const categories: readonly DiscoveryKind[] = ['relics', 'weapons', 'evolutions', 'bosses']
   if (!validKeys(raw.discoveries, categories)) return false
   for (const category of categories) if (!uniqueStrings(raw.discoveries[category], MAX_DISCOVERIES, isDiscoverableId)) return false

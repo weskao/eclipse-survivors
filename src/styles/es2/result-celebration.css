@@ -56,3 +56,39 @@
   .es2-victory-halo{animation:none!important;opacity:.35;transform:translateX(-50%)}
   .es2-result--victory .es2-result-crown{animation:none!important}
 }
+
+/* Shared one-shot result reveal: paint only, no moving layout. */
+.es2-result{--result-accent:#f0cd88;--result-kill:#ffe1a1;--result-damage:#ffc78c;--result-hp:#a9e6bb;--result-xp:#b9d9ff}
+.es2-tone-defeat .es2-result{--result-accent:#d19a9a;--result-kill:#f2c4a7;--result-damage:#eeb3a2;--result-hp:#c5d5c7;--result-xp:#b9c8e4}
+.es2-tone-defeat .es2-result-status,.es2-tone-defeat .es2-result-crown{color:var(--result-accent)}
+.es2-dialog-result .es2-result-stats>div{border:0;border-radius:4px;border-bottom:1px solid #a6b3c12e;background:transparent;box-shadow:none}
+.es2-dialog-result .es2-result-stats>div:is([data-result-stat="kills"],[data-result-stat="damage"]){background:linear-gradient(105deg,#bda26b16,transparent);border-bottom-color:#d4b57970}
+.es2-result-stats [data-result-stat="kills"] b{color:var(--result-kill)}
+.es2-result-stats [data-result-stat="damage"] b{color:var(--result-damage)}
+.es2-result-stats [data-result-stat="hp"] b{color:var(--result-hp)}
+.es2-result-stats [data-result-stat="xp"] b{color:var(--result-xp)}
+.es2-dialog-result .es2-result-stats>div b{font-variant-numeric:tabular-nums;min-width:0;transform-origin:left center}
+.es2-dialog-result .es2-reward-strip{border-color:#d1ac6566;background:linear-gradient(100deg,#48352075,#182b3b77,#48352065)}
+.es2-dialog-result .es2-reward-strip .es2-result-ember-value{font-size:1.18em;font-weight:900;border:0;padding:0;background:none;color:#ffdf99;font-variant-numeric:tabular-nums}
+.es2-dialog-result .es2-result-skip{flex:none;font-size:1.3rem}
+.es2-result[data-result-revealing] .es2-result-stats>div{animation:es2-result-stat-reveal .48s cubic-bezier(.2,.75,.3,1) var(--result-delay,0ms) both}
+.es2-result[data-result-revealing] .es2-result-stats>div:is([data-result-stat="kills"],[data-result-stat="damage"]) b{animation:es2-result-value-accent .5s ease-out var(--result-delay,0ms) both}
+.es2-result[data-result-revealing] .es2-reward-strip{animation:es2-result-stat-reveal .55s ease-out .65s both}
+.es2-result[data-result-revealing] .es2-reward-group{animation:es2-result-stat-reveal .42s ease-out 1s both}
+.es2-result[data-result-revealing] .es2-result-hero img{animation:es2-result-portrait .65s ease-out both}
+.es2-result:not([data-result-revealing]) .es2-victory-spark{display:none;animation:none}
+.es2-result:not([data-result-revealing]) .es2-victory-halo{animation:none;opacity:.48;transform:translateX(-50%)}
+.es2-result:not([data-result-revealing]) .es2-result-crown{animation:none}
+@keyframes es2-result-stat-reveal{from{opacity:.22;translate:0 4px}to{opacity:1;translate:0 0}}
+@keyframes es2-result-value-accent{from{scale:.93}65%{scale:1.035}to{scale:1}}
+@keyframes es2-result-portrait{from{opacity:.4;scale:.96}to{opacity:1;scale:1}}
+@media(min-width:641px) and (min-height:521px){
+  .es2-dialog-result .es2-result-stats>div:is([data-result-stat="kills"],[data-result-stat="damage"]) b{font-size:clamp(1.05rem,2.5dvh,1.4rem)}
+}
+@media(max-width:480px),(orientation:landscape) and (max-height:520px){
+  .es2-dialog-result .es2-result-stats>div b{transform-origin:right center}
+  .es2-result[data-result-revealing] .es2-result-stats>div:is([data-result-stat="kills"],[data-result-stat="damage"]) b{animation:none}
+  .es2-dialog-result .es2-result-stats>div{column-gap:4px}
+}
+[data-es2-reduce-motion="true"] .es2-result *,[data-es2-reduce-flashing="true"] .es2-result *{animation:none!important}
+@media(prefers-reduced-motion:reduce){.es2-result *{animation:none!important}}

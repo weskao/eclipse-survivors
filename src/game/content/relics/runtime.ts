@@ -1,4 +1,5 @@
-import type { ContentEvent, GameState } from '../../types'
+import { BALANCE } from '../../config'
+import type { ContentEvent, GameState, TreasureTier } from '../../types'
 import { RELIC_BY_ID, RELIC_CUES, RELICS, type RelicBonuses, type RelicDefinition, type RelicId, type RelicStat } from './catalog'
 
 export type RelicFeedback = (cue: (typeof RELIC_CUES)[keyof typeof RELIC_CUES], relic?: RelicDefinition) => void
@@ -11,6 +12,7 @@ const EMPTY_BONUSES: Readonly<RelicBonuses> = Object.freeze({})
 export interface TreasureOffer {
   readonly chestId: number
   readonly options: readonly RelicId[]
+  readonly tier?: TreasureTier
 }
 interface RunRelics {
   readonly inventory: Map<RelicId, number>
@@ -35,7 +37,7 @@ export function inventorySnapshot(state: GameState): Readonly<{ items: readonly 
   const run = getRun(state)
   return { items: Array.from(run.inventory, ([id, stacks]) => ({ id, stacks })), capacity: RELIC_CAPACITY,
     rerolls: run.rerolls, banishes: run.banishes, banished: [...run.banished],
-    pending: run.pending ? { chestId: run.pending.chestId, options: [...run.pending.options] } : null }
+    pending: run.pending ? { ...run.pending, options: [...run.pending.options] } : null }
 }
 function recompute(run: RunRelics): void {
   const stats: RelicBonuses = {}
@@ -75,31 +77,39 @@ function eligible(run: RunRelics, avoid: ReadonlySet<RelicId> = new Set()): Reli
     (run.inventory.get(relic.id) ?? 0) < relic.maxStacks &&
     (run.inventory.has(relic.id) || run.inventory.size < RELIC_CAPACITY))
 }
-function weightedOptions(run: RunRelics, rng: () => number, avoid: ReadonlySet<RelicId> = new Set()): RelicId[] {
+function weightedOptions(run: RunRelics, rng: () => number, avoid: ReadonlySet<RelicId> = new Set(), tier?: TreasureTier): RelicId[] {
   const pool = eligible(run, avoid)
   const choices: RelicId[] = []
   while (choices.length < 3 && pool.length) {
-    const total = pool.reduce((sum, def) => sum + def.weight, 0)
+    // First slot advertises the chest tier when available. Always offer a non-cursed alternative if eligible.
+    const matching = choices.length === 0 && tier && tier !== 'common'
+      ? pool.filter(def => tier === 'cursed' ? def.cursed : def.rarity === tier && !def.cursed)
+      : choices.length === 1 && tier && !choices.some(id => !RELIC_BY_ID.get(id)!.cursed)
+        ? pool.filter(def => !def.cursed) : pool
+    const candidates = matching.length ? matching : pool
+    const total = candidates.reduce((sum, def) => sum + def.weight, 0)
     const sample = rng()
     if (!Number.isFinite(sample)) throw new Error('Invalid treasure RNG sample')
     let roll = Math.min(1 - Number.EPSILON, Math.max(0, sample)) * total
-    let index = pool.findIndex(def => (roll -= def.weight) < 0)
-    if (index < 0) index = pool.length - 1
-    choices.push(pool.splice(index, 1)[0]!.id)
+    let index = candidates.findIndex(def => (roll -= def.weight) < 0)
+    if (index < 0) index = candidates.length - 1
+    const picked = candidates[index]!
+    pool.splice(pool.indexOf(picked), 1)
+    choices.push(picked.id)
   }
   return choices
 }
 /** chestId must be a strictly increasing world-event serial. Same/old chests never pay twice. */
-export function openTreasure(state: GameState, chestId: number, rng: () => number, feedback?: RelicFeedback): TreasureOffer | null {
+export function openTreasure(state: GameState, chestId: number, rng: () => number, feedback?: RelicFeedback, tier?: TreasureTier): TreasureOffer | null {
   const run = getRun(state)
   if (!state.hero || run.pending || !Number.isSafeInteger(chestId) || chestId <= run.lastChestId) return null
   // Invalid random samples must not permanently consume the world chest serial.
-  const options = weightedOptions(run, rng)
+  const options = weightedOptions(run, rng, undefined, tier)
   run.lastChestId = chestId
   if (!options.length) return null
-  run.pending = { chestId, options }
+  run.pending = { chestId, options, ...(tier ? { tier } : {}) }
   feedback?.(RELIC_CUES.chestOpen)
-  return { chestId, options: [...options] }
+  return { ...run.pending, options: [...options] }
 }
 export function claimTreasure(state: GameState, chestId: number, id: RelicId, feedback?: RelicFeedback): boolean {
   const run = getRun(state)
@@ -122,11 +132,11 @@ export function rerollTreasure(state: GameState, chestId: number, rng: () => num
   if (!run.pending || run.pending.chestId !== chestId || run.rerolls <= 0) return null
   const old = new Set(run.pending.options)
   // Prefer new choices; if all remaining items are already shown, a reroll is not charged.
-  const options = weightedOptions(run, rng, old)
+  const options = weightedOptions(run, rng, old, run.pending.tier)
   if (!options.length) return null
   run.rerolls--
-  run.pending = { chestId, options }
-  return { chestId, options: [...options] }
+  run.pending = { ...run.pending, options }
+  return { ...run.pending, options: [...options] }
 }
 export function banishTreasure(state: GameState, chestId: number, id: RelicId): boolean {
   const run = getRun(state)
@@ -134,10 +144,12 @@ export function banishTreasure(state: GameState, chestId: number, id: RelicId): 
       run.banishes <= 0 || run.inventory.has(id) || run.banished.has(id)) return false
   run.banishes--
   run.banished.add(id)
-  run.pending = { chestId, options: run.pending.options.filter(option => option !== id) }
+  run.pending = { ...run.pending, options: run.pending.options.filter(option => option !== id) }
   return true
 }
 export interface AttackContext {
+  baseCritChance?: number
+  relicsEnabled?: boolean
   element?: 'physical' | 'fire' | 'frost' | 'lightning'
   source?: 'weapon' | 'summon'
   moving?: boolean
@@ -151,21 +163,22 @@ export interface AttackContext {
 export interface AttackResult { damage: number; critical: boolean; execute: boolean; pierce: number; extraProjectile: boolean }
 /** Pre-hit adapter: caller applies the result to the actual target (never an extra XP event). */
 export function calculateRelicAttack(state: GameState, damage: number, context: AttackContext, rng: () => number): AttackResult {
-  const b = relicBonuses(state)
+  const relicsEnabled = context.relicsEnabled !== false
+  const b = relicsEnabled ? relicBonuses(state) : EMPTY_BONUSES
   if (!Number.isFinite(damage) || damage <= 0) return { damage: 0, critical: false, execute: false, pierce: 0, extraProjectile: false }
   let multiplier = 1 + (context.element && context.element !== 'physical' ? b[context.element] ?? 0 : 0)
-  if (context.source === 'summon') multiplier *= 1 + (b.summon ?? 0) + (hasRelic(state, 'relics:wolf-totem') && hasRelic(state, 'relics:shadow-chain') ? 0.15 : 0)
+  if (context.source === 'summon') multiplier *= 1 + (b.summon ?? 0) + (relicsEnabled && hasRelic(state, 'relics:wolf-totem') && hasRelic(state, 'relics:shadow-chain') ? 0.15 : 0)
   if (context.moving) multiplier *= 1 + (b.moving ?? 0)
   else if (context.moving === false) multiplier *= 1 + (b.stationary ?? 0)
   if (context.afterDash) multiplier *= 1 + (b.dashDamage ?? 0)
   if (context.boss) multiplier *= 1 + (b.bossDamage ?? 0)
-  const critChance = Math.min(0.75, Math.max(0, b.critChance ?? 0))
+  const critChance = Math.min(BALANCE.combat.criticalChanceCap, Math.max(0, (context.baseCritChance ?? 0) + (b.critChance ?? 0)))
   const critical = critChance > 0 && rng() < critChance
-  if (critical) multiplier *= 1.5 + (b.critPower ?? 0)
+  if (critical) multiplier *= BALANCE.combat.criticalMultiplier + (b.critPower ?? 0)
   const execute = !context.boss && Number.isFinite(context.targetHpFraction) &&
     context.targetHpFraction! > 0 && context.targetHpFraction! <= Math.min(0.3, b.execute ?? 0)
   const pierce = Math.max(0, Math.floor((b.pierce ?? 0) +
-    (hasRelic(state, 'relics:celestial-lens') && hasRelic(state, 'relics:echo-gem') ? 1 : 0)))
+    (relicsEnabled && hasRelic(state, 'relics:celestial-lens') && hasRelic(state, 'relics:echo-gem') ? 1 : 0)))
   const extraChance = Math.min(0.6, Math.max(0, b.extraProjectile ?? 0))
   const extraProjectile = extraChance > 0 && rng() < extraChance
   return { damage: damage * multiplier, critical, execute, pierce, extraProjectile }

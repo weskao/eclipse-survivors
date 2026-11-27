@@ -1,0 +1,35 @@
+name: ES2 hero candidate visual review QA
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths:
+      - 'src/game/render/es2/hero-candidate-preview.ts'
+      - 'src/game/render/es2/hero-candidate-preview.html'
+      - 'src/game/render/es2/hero-candidate-preview.test.ts'
+      - 'src/game/render/es2/hero-candidate-atlas.ts'
+      - 'src/game/render/es2/hero-candidate-atlas.test.ts'
+      - 'src/game/render/es2/combat-vfx.test.ts'
+      - '.github/workflows/es2-hero-candidate-review-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  # Parallel workstreams must not cancel review evidence at this exact SHA.
+  group: es2-hero-candidate-review-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify per-frame review controls and exact atlas indexing
+        run: pnpm exec vitest run src/game/render/es2/hero-candidate-preview.test.ts src/game/render/es2/hero-candidate-atlas.test.ts
+      - name: Typecheck real review page with project definitions
+        run: pnpm typecheck

@@ -1,0 +1,97 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "pose": "run",
+  "direction": "S",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "frameCount": 4,
+  "sourceSHA256": "3c49405599b62e5e05d61405e52e28b8008266728203a4b49031b0e08584f6c3",
+  "webpSHA256": "4b138967587619c54b452a59d24029e489950f657c945dfbe6afceab5ea8fa01",
+  "frames": [
+    {
+      "index": 0,
+      "originalAlphaBounds": [
+        79,
+        32,
+        543,
+        586
+      ],
+      "rgbaSHA256": "f345402320e5336e01b6d8fa8eb34555fb2d557650a94a6655d91a6695d20789",
+      "clearedMarginPixels": 610,
+      "outputRGBA256": "0edadd200492a7ea60a307988a99198b75537b9c7b83e70cb5792f525be50dba"
+    },
+    {
+      "index": 1,
+      "originalAlphaBounds": [
+        57,
+        33,
+        550,
+        594
+      ],
+      "rgbaSHA256": "509a40c886f67510d6d97c2628b4eebac3159ec10951eac6f7325925dd79812b",
+      "clearedMarginPixels": 455,
+      "outputRGBA256": "ff7529cb29718cc67edcb7f1f58e9796289832f5b3214b02c82b99f1724cc939"
+    },
+    {
+      "index": 2,
+      "originalAlphaBounds": [
+        52,
+        40,
+        553,
+        597
+      ],
+      "rgbaSHA256": "72ed04502d3c76ac0d22917a788cf82811967f660a50b042c438926692853693",
+      "clearedMarginPixels": 927,
+      "outputRGBA256": "f8ceb4b6430c7039df607cc0af27f8630dbfc586ecc6955da41368c80f16247a"
+    },
+    {
+      "index": 3,
+      "originalAlphaBounds": [
+        51,
+        23,
+        557,
+        594
+      ],
+      "rgbaSHA256": "c0f92f34052ceaa49e2727e6b3698ed9d54930ded72f55b05cbe17e9eba9563b",
+      "clearedMarginPixels": 921,
+      "outputRGBA256": "916035912d7a7b01d2b4261b4865ec49c02a30d9dd33cddcd03b67e8584dee14"
+    }
+  ],
+  "atlasFile": "run-south-4frames@3x.webp",
+  "sourceFile": "source.png",
+  "bytes": 877180,
+  "footBottoms": [
+    653,
+    657,
+    665,
+    661
+  ],
+  "footAnchorMethod": "opaque alpha >=128 bottom exclusive, measured in each packed 768px cell",
+  "maxDisplayCSSPixels": 147,
+  "sourceResolutionRatio": 4.26530612244898,
+  "grid": [
+    2,
+    2
+  ],
+  "qaGameplayApplied": true,
+  "frameTiming": "four distinct poses indexed by normalized run progress; not complete 10-frame cycle"
+}

@@ -1,4 +1,5 @@
 import type { AbilityId, JobId, MobType } from '../game/types'
+import type { MonsterKills } from '../game/monster-catalog'
 import type { SpecializationId } from '../game/content/heroes'
 import type { ObjectiveModeId } from '../game/content/modes/definitions'
 
@@ -17,12 +18,18 @@ export interface RunStats {
   victory: boolean
   seconds: number
   kills: number
+  /** Optional for compatibility with older run receipts. */
+  bestKillStreak?: number
+  bestMultiKill?: number
+  xpEarned?: number
+  firstUpgradeSeconds?: number
   level: number
   damageDealt: number
   damageTaken: number
   remainingHp: number
   bossDefeated: boolean
   enemies: Partial<Record<MobType, number>>
+  monsterKills?: MonsterKills
   abilities: AbilityId[]
 }
 export interface RunBest { seconds: number; kills: number; level: number; victory: boolean }
@@ -34,7 +41,7 @@ export interface Profile {
   best: Partial<Record<RunModeId, RunBest>>
   achievements: string[]
   recentRunIds: string[]
-  discoveredMonsters: Partial<Record<MobType, number>>
+  discoveredMonsters: MonsterKills
   discoveredAbilities: AbilityId[]
   heroesPlayed: JobId[]
   unlockedCosmetics: CosmeticId[]

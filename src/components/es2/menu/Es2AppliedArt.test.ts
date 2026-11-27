@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { emptyProfile } from '../../../meta/profile'
 import Es2Archive from './Es2Archive.vue'
+import Es2DevArtGallery from './Es2DevArtGallery.vue'
 import Es2MainMenu from './Es2MainMenu.vue'
 import Es2ChoiceCards from './Es2ChoiceCards.vue'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
@@ -25,12 +26,9 @@ describe('c104 applied assets in real game surfaces', () => {
     wrapper.unmount()
   })
 
-  it('renders all four biome scene images in the in-game archives', () => {
-    const wrapper = mount(Es2Archive, {
-      props: {active:true, view:'monsters',hero:'knight',profile:emptyProfile()},
-      global: {stubs:{Es2Dialog:fakeDialog}},
-    })
-    expect(wrapper.findAll('[data-es2-biome-scene]')).toHaveLength(4)
+  it('renders all four biome scene images in the development-only archive gallery', () => {
+    const wrapper = mount(Es2DevArtGallery, { props: {view:'monsters'} })
+    expect(wrapper.findAll('[data-es2-biome-scene]').map(img => img.attributes('src'))).toEqual(Object.values(WORLD_ART.biomes).map(item => item.scene))
     wrapper.unmount()
   })
 

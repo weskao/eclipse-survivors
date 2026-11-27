@@ -1,0 +1,304 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    651,
+    653,
+    659,
+    654
+  ],
+  "footBottomsStatus": "Alpha >=128 proxy, not anatomical anchor",
+  "alphaBounds": [
+    [
+      70,
+      73,
+      697,
+      697
+    ],
+    [
+      71,
+      70,
+      696,
+      697
+    ],
+    [
+      70,
+      70,
+      697,
+      697
+    ],
+    [
+      71,
+      70,
+      682,
+      697
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRect": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        3,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        27,
+        14,
+        564,
+        581
+      ],
+      "coreExtent": [
+        537,
+        567
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 651,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        73,
+        697,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "1da4f9c9fe680d17c551f6f3d7ebdb32381a09acd8176d845d44a0367736a2d7"
+    },
+    {
+      "index": 1,
+      "sourceRect": [
+        627,
+        0,
+        627,
+        627
+      ],
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        1,
+        0,
+        626,
+        627
+      ],
+      "coreAlphaBounds": [
+        22,
+        12,
+        577,
+        583
+      ],
+      "coreExtent": [
+        555,
+        571
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 653,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        71,
+        70,
+        696,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "6d982ac7f3fde3180869b42dba0f514a6bd1e6a28a0e501fa938ffe29fd2cf29"
+    },
+    {
+      "index": 2,
+      "sourceRect": [
+        0,
+        627,
+        627,
+        627
+      ],
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        30,
+        15,
+        576,
+        589
+      ],
+      "coreExtent": [
+        546,
+        574
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 659,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        70,
+        697,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "e96e1fa9e7bdc1746a5539a4ab4e67b9d6572d2615730ee38547732fc4c35cbc"
+    },
+    {
+      "index": 3,
+      "sourceRect": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        1,
+        0,
+        612,
+        627
+      ],
+      "coreAlphaBounds": [
+        12,
+        13,
+        592,
+        584
+      ],
+      "coreExtent": [
+        580,
+        571
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 654,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        71,
+        70,
+        682,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "fdc090480baa89dc188bb494b1bd6dc54884fdd31d834ac2186247a594fcfba6"
+    }
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "6bd54246a665d6810754879821ba689276f43e9c123e2bfa51b65e2bdc35600b",
+  "originalPNGSHA256": "b36989fce0ab79e7fec0364aa7a3c2fc84305d6442bdfb7961690d0532f7b9ec",
+  "atlasFile": "run-e-4frames@3x.webp",
+  "webpSHA256": "ca2c4b4049899999279e5c400fb189245f3d3970a0b36cd07709b7ff7336a534",
+  "bytes": 900962,
+  "sourceProvenance": {
+    "generationId": "931af3e8-29ea-4203-916e-0043c5e282d7",
+    "canonicalPortrait": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "referenceCommit": "9c1e9c68e6c565bd61d09eea0ba08cdf3bb4b9db"
+  },
+  "encoding": "Pillow WebP quality=100 method=3; review only; Polytool/cwebp unavailable",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "sourceSeamMaxAlpha": 1,
+  "sourceBoundaryMaxAlpha": 1,
+  "reviewNotes": [
+    "Four independent candidate poses, not a complete 10-frame cycle. No resampling or mirroring. Alpha preserved; RGB lossy. Anatomical anchor, identity, handedness and continuity require visual review.",
+    "Official Polytool not executed; no gameplay admission.",
+    "Outer-edge alpha max 1; faint boundary noise remains."
+  ]
+}

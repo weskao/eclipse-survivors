@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { emptyHud } from '../../../game/store'
+import { currentLocale, setLocale } from '../../../i18n'
 import CombatHud from './CombatHud.vue'
 
 const wrappers: Array<{ unmount(): void }> = []
@@ -34,12 +35,33 @@ function render() {
 }
 
 describe('compact portrait combat HUD regression', () => {
+  it('shows the localized biome and weather while the boss objective is active', async () => {
+    const locale = currentLocale.value
+    const wrapper = render()
+    try {
+      setLocale('en')
+      await wrapper.setProps({ hud: {
+        ...emptyHud(), bossPct: 80, quest: '最終決戰 · 黎明遺庭', sceneTitle: '黎明遺庭 · 晨光薄霧',
+      } })
+      const title = wrapper.get('[data-es2-scene-title]')
+      expect(title.text()).toBe('Dawnfall Courtyard · Dawn Mist')
+      setLocale('zh-TW')
+      await nextTick()
+      expect(title.text()).toBe('黎明遺庭 · 晨光薄霧')
+    } finally {
+      setLocale(locale)
+    }
+  })
+
   it('exposes one accessible, collapsed-by-default information control without duplicating combat data', async () => {
     const wrapper = render()
     const toggle = wrapper.get('[data-es2-info-toggle]')
     expect(toggle.attributes('aria-expanded')).toBe('false')
     expect(toggle.attributes('aria-controls')).toBe('es2-combat-info-panel')
     expect(toggle.attributes('aria-label')).toBeTruthy()
+    expect(toggle.element.children).toHaveLength(1)
+    expect(toggle.get('svg').attributes('aria-hidden')).toBe('true')
+    expect(toggle.text()).toBe('') // No invisible text flex item pushing the icon off center.
     expect(wrapper.get('#es2-combat-info-panel').attributes('data-es2-info-panel')).toBeDefined()
     expect(wrapper.findAll('[data-es2-status="slow"]')).toHaveLength(1)
     expect(wrapper.findAll('[data-es2-relic="rune"]')).toHaveLength(1)
@@ -114,5 +136,18 @@ describe('compact portrait combat HUD regression', () => {
     expect(special).toContain('joystickSide?:')
     expect(special).toContain('data-side')
     expect(app).toContain(':joystick-side="accessibilityPreferences.joystickSide"')
+  })
+
+  it('uses the compact portrait special button in phone landscape wider than 760px instead of clipping it', () => {
+    const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    // 812×375 / 932×430 phones: the 160px desktop button overflowed the 100px landscape column.
+    expect(special).toMatch(/@media \(max-width: 760px\), \(orientation: landscape\) and \(max-height: 440px\) \{\s*\.es2-hero-special__button \{ min-width: 66px; width: 66px;/)
+  })
+
+  it('keeps the special button in place when stealth/barrier/spirit status chips appear after a cast', () => {
+    const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    // Chips in the button's flex row pushed it 25–115px on cast; they must sit outside the flow.
+    expect(special).toMatch(/<div class="es2-hero-special__statuses">\s*<span v-if="snapshot\.stealth/)
+    expect(special).toMatch(/\.es2-hero-special__statuses \{ position: absolute;/)
   })
 })

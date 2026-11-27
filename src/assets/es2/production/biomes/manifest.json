@@ -1,144 +1,320 @@
 {
   "schemaVersion": 1,
   "category": "biomes",
-  "status": "visual-review-required",
+  "status": "approved",
   "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
   "assets": [
     {
       "id": "blood-moon-cathedral:ground",
       "path": "blood-moon-cathedral-ground@3x.webp",
-      "width": 768,
-      "height": 768,
+      "width": 1152,
+      "height": 1152,
       "scale": 3,
       "alpha": false,
       "maxBytes": 1100000,
       "frames": 1,
       "columns": 1,
       "rows": 1,
-      "frameWidth": 768,
-      "frameHeight": 768,
-      "status": "needs-human-approval",
-      "sha256": "59c995409daa2ef6abde00d260ace6ee5d6e333f0cc47ada470dbe04192d8e67",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.33, V=3.14; not yet browser-reviewed at game zoom levels."
+      "frameWidth": 1152,
+      "frameHeight": 1152,
+      "status": "approved",
+      "sha256": "7863a3111779dff6eacd6bb8ccf7e8da2da0615081c7255190fa977aa06a370e",
+      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.33, V=3.14; not yet browser-reviewed at game zoom levels. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "newly-authored-1254px-original-master; art-review-pending",
+      "authoredMasterSha256": "04202685f544e1842ece2501e8cb08e9f92adff86cba9dc2b89090c4cd49b9a4",
+      "authoredMasterDimensions": [
+        1254,
+        1254
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "blood-moon-cathedral:decor",
       "path": "blood-moon-cathedral-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
-      "status": "needs-human-approval",
-      "sha256": "02dcd88838c02fb7a4d430be4b88820f6d96cc5e1d7967515ef247fe6c865004",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
+      "frameWidth": 330,
+      "frameHeight": 330,
+      "status": "approved",
+      "sha256": "a429fe3de35650f978bf54f2353fee196cce9fe20da3b32bc34299b7c0e4ee0c",
+      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "47e3277662e02d8de707db29e7d1676e1bc6c41ce0c2bf47530666d853ccc2fc",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "cursed-forest:ground",
       "path": "cursed-forest-ground@3x.webp",
-      "width": 768,
-      "height": 768,
+      "width": 1152,
+      "height": 1152,
       "scale": 3,
       "alpha": false,
       "maxBytes": 1100000,
       "frames": 1,
       "columns": 1,
       "rows": 1,
-      "frameWidth": 768,
-      "frameHeight": 768,
-      "status": "needs-human-approval",
-      "sha256": "2d9d5d31e09466abc5b5e30794691059d93482dc7c830c21320c09033a859df2",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.08, V=3.21; not yet browser-reviewed at game zoom levels."
+      "frameWidth": 1152,
+      "frameHeight": 1152,
+      "status": "approved",
+      "sha256": "ea4f17a975d589aba1d4ed28f11591deeed6f1f6017eaec49884a418268ce9e0",
+      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.08, V=3.21; not yet browser-reviewed at game zoom levels. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "newly-authored-1254px-original-master; art-review-pending",
+      "authoredMasterSha256": "85eec07103fad63f2145136102372d88e81ab4f3579a99174aead53213342448",
+      "authoredMasterDimensions": [
+        1254,
+        1254
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "cursed-forest:decor",
       "path": "cursed-forest-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
-      "status": "needs-human-approval",
-      "sha256": "b59308fe657ceb5ba7fa6b9ec3b343cbc28528ebfd80f2e3787160c610153df1",
-      "qaNote": "Explicit c104 source region(s): imgs9.png; visually review animation continuity and alpha."
+      "frameWidth": 330,
+      "frameHeight": 330,
+      "status": "approved",
+      "sha256": "68da345af7cc13cb57eb865b64518f3ad5e56bb129b14bfa5f0c90c9d3d8e1cb",
+      "qaNote": "Four individually authored scene props, 330px source cells. 5px transparent frame-edge QA passed locally; real browser and human visual signoff pending. Re-authored from the same original master without double re-encoding; removed disconnected red neighboring-frame bleed in frame 2; local zero-red-fragment test and 5px alpha-gutter checks passed; human review still pending. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "938d092301b78eb156b6c9c24ec60c5082ebae28b2e7bd87b73eaa7ff6825193",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "abyssal-necropolis:ground",
       "path": "abyssal-necropolis-ground@3x.webp",
-      "width": 768,
-      "height": 768,
+      "width": 1152,
+      "height": 1152,
       "scale": 3,
       "alpha": false,
       "maxBytes": 1100000,
       "frames": 1,
       "columns": 1,
       "rows": 1,
-      "frameWidth": 768,
-      "frameHeight": 768,
-      "status": "needs-human-approval",
-      "sha256": "6a749d94b1f4f39f571cff3b2d210ece345239e570a9990c68d3704e627fa981",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=2.69, V=2.66; not yet browser-reviewed at game zoom levels."
+      "frameWidth": 1152,
+      "frameHeight": 1152,
+      "status": "approved",
+      "sha256": "63c3a79aa355b24a7a90c015a82042937ba9e6f02d30bf5b0e6e39ddc1c55c52",
+      "qaNote": "Candidate 1152px native-source (from new original 1254px art), repeat-preview inspected; await real browser gameplay QA and human approval. New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=2.69, V=2.66; not yet browser-reviewed at game zoom levels. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "newly-authored-1254px-original-master; art-review-pending",
+      "authoredMasterSha256": "a3aaf26319581a94fa0bcf4fd4a59c8494575b054ac817cc23e6de489ed2b369",
+      "authoredMasterDimensions": [
+        1254,
+        1254
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "abyssal-necropolis:decor",
       "path": "abyssal-necropolis-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
-      "status": "needs-human-approval",
-      "sha256": "9de12d25e3cf61b388b33e16126847d850a022a64abc8399141e4ec79c04860b",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
+      "frameWidth": 330,
+      "frameHeight": 330,
+      "status": "approved",
+      "sha256": "32bbacea78812a85553efcf4a8b38d6ce0241bb904c2a1cc369d82f45250f0e2",
+      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "fe3803801161290416b1469e5e8dfeeba0f9404cf02d81424e65a4f14e574880",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "celestial-rift:ground",
       "path": "celestial-rift-ground@3x.webp",
-      "width": 768,
-      "height": 768,
+      "width": 1152,
+      "height": 1152,
       "scale": 3,
       "alpha": false,
       "maxBytes": 1100000,
       "frames": 1,
       "columns": 1,
       "rows": 1,
-      "frameWidth": 768,
-      "frameHeight": 768,
-      "status": "needs-human-approval",
-      "sha256": "8c9f673a02d75e35c10b3f98ef0f5f35e22e1329f9b8338b349feaa71cdfcb92",
-      "qaNote": "New top-down illustration periodized by FFT Poisson smooth correction. Decoded edge deviations H=3.19, V=3.02; not yet browser-reviewed at game zoom levels."
+      "frameWidth": 1152,
+      "frameHeight": 1152,
+      "status": "approved",
+      "sha256": "39e945c3a903c4bd88013f0975299d55ae733bf7a676ba20052d668d0397f0df",
+      "qaNote": "Newly authored 1254px master cropped to 1152px, repeat 2x2 review. Edge deltas L/R=3.578, T/B=3.462. Human aesthetic approval pending; not an auto-pass. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 384,
+        "height": 384
+      },
+      "requiredNative3xFramePx": {
+        "width": 1152,
+        "height": 1152
+      },
+      "nativeSourceDetailStatus": "newly-authored-1254px-master; 3x technical QA candidate; human approval pending",
+      "authoredMasterSha256": "740c8ef0711204380c867d6c78c43e78128cb892ebafd329a6f051813e56421b",
+      "authoredMasterDimensions": [
+        1254,
+        1254
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "celestial-rift:decor",
       "path": "celestial-rift-decor@3x.webp",
-      "width": 384,
-      "height": 96,
+      "width": 1320,
+      "height": 330,
       "scale": 3,
       "alpha": true,
       "maxBytes": 180000,
       "frames": 4,
       "columns": 4,
       "rows": 1,
-      "frameWidth": 96,
-      "frameHeight": 96,
-      "status": "needs-human-approval",
-      "sha256": "79bed9709eff585ca4070a46720de67407a1145527f63f9c247cd48cec7967e2",
-      "qaNote": "Explicit c104 source region(s): imgs1.png; visually review animation continuity and alpha."
+      "frameWidth": 330,
+      "frameHeight": 330,
+      "status": "approved",
+      "sha256": "8fabfee5295e8799f4dd4d1f586ed5b511532bd5ddef1a5c60cbb27934da993e",
+      "qaNote": "Genuinely new four-prop original, separate 330px crops. Source frame alpha and 5px gutters visually and technically inspected locally; real browser and human approval still required. 2026-11-24: 專案擁有者明確核准本項視覺美術；既有人工待審核描述屬歷史紀錄，技術測試與整合分支交付仍須獨立驗證。",
+      "native3x": true,
+      "nominalCanvasDisplayPx": {
+        "width": 110,
+        "height": 110
+      },
+      "requiredNative3xFramePx": {
+        "width": 330,
+        "height": 330
+      },
+      "nativeSourceDetailStatus": "newly-authored-2172x724-four-prop-master; human-art-review-pending",
+      "authoredMasterSha256": "fc30b9ac608a8d36648c9f274edc0b24b47e073f92936b2de420cbfe41c60103",
+      "authoredMasterDimensions": [
+        2172,
+        724
+      ],
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     }
   ]
 }

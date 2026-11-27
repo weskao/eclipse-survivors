@@ -4,12 +4,15 @@ import { animatedEs2ImageSrc, hasGeneratedSkillArt, skillImageSrc } from '../gam
 import { shallowRef } from 'vue'
 import { ART_URLS } from '../game/art'
 import { LOW_HP_PCT } from '../game/constants'
+import { healthBarColor } from '../game/render/health-bars'
+import type { MotionSetting } from '../game/content/accessibility/preferences'
+import { useHeroHealthMotion } from './es2/hud/hero-health-motion'
 import SettingsButton from './SettingsButton.vue'
 import AudioControl from './AudioControl.vue'
 import type { HudView } from '../game/store'
 import type { JobId } from '../game/types'
 
-defineProps<{
+const props = defineProps<{
   active: boolean
   hud: HudView
   choice: JobId
@@ -18,11 +21,16 @@ defineProps<{
   musicVolume?: number
   sfxVolume?: number
   audioActive?: boolean
+  healthMotion?: MotionSetting
   toastText: string
   toastVisible: boolean
 }>()
 const emit = defineEmits<{ toggleMusic: []; toggleSfx: []; musicVolume: [value: number]; sfxVolume: [value: number]; pause: []; settings: [] }>()
 
+const healthMeter = shallowRef<HTMLElement | null>(null)
+useHeroHealthMotion(healthMeter, () => props.hud.hpPct, () => props.active, () => props.healthMotion ?? 'system', () => props.hud.heroCriticalVersion ?? 0)
+const bossMeter = shallowRef<HTMLElement | null>(null)
+useHeroHealthMotion(bossMeter, () => props.hud.bossPct ?? 0, () => props.active && props.hud.bossPct !== null, () => props.healthMotion ?? 'system', () => props.hud.bossCriticalVersion ?? 0)
 const minimap = shallowRef<HTMLCanvasElement | null>(null)
 defineExpose({ minimap })
 </script>
@@ -33,7 +41,7 @@ defineExpose({ minimap })
       <div class="status" :class="{ 'status-critical': hud.hpPct <= LOW_HP_PCT }">
         <div class="hud-face" id="hudFace"><img :src="ART_URLS[choice]" :alt="choice" /></div>
         <b id="who">{{ t(hud.who) }}</b>
-        <div id="hudHealthMeter" class="bar" role="progressbar" :aria-label="t('生命值')" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100"><i id="hpBar" :style="{ width: hud.hpPct + '%' }"></i></div>
+        <div ref="healthMeter" id="hudHealthMeter" class="bar" role="progressbar" :aria-label="t('生命值')" :aria-valuenow="Math.max(0, Math.min(100, hud.hpPct))" aria-valuemin="0" aria-valuemax="100" :style="{ '--es2-progress': Math.max(0, Math.min(100, hud.hpPct)) / 100 }"><i class="hero-hp-trail" aria-hidden="true"></i><i id="hpBar" aria-hidden="true"></i></div>
         <div class="sub" id="hpLabel">{{ t(hud.hpLabel) }}</div>
         <div id="hudExperienceMeter" class="bar exp" role="progressbar" :aria-label="t('經驗值')" :aria-valuenow="Math.max(0, Math.min(100, hud.xpPct))" aria-valuemin="0" aria-valuemax="100"><i id="xpBar" :style="{ width: hud.xpPct + '%' }"></i></div>
       </div>
@@ -53,7 +61,7 @@ defineExpose({ minimap })
     </div>
     <div class="boss-wrap" id="bossWrap" :class="{ show: hud.bossPct !== null }">
       <div class="boss-label">{{ t("☠ 墮落守望者 · MVP") }}</div>
-      <div class="boss-track"><i id="bossHealth" :style="{ width: (hud.bossPct ?? 0) + '%' }"></i></div>
+      <div class="boss-meter-frame"><div ref="bossMeter" class="boss-track" :style="{ '--es2-progress': (hud.bossPct ?? 0) / 100 }"><i class="hero-hp-trail" aria-hidden="true"></i><i id="bossHealth" :style="{ background: `linear-gradient(180deg, #ffd1bc3d, transparent 40%, #240b20a6), ${healthBarColor((hud.bossPct ?? 0) / 100, 'boss')}` }"></i></div></div>
     </div>
     <div class="quest" id="quest">{{ t(hud.quest) }}</div>
     <div class="toast" id="toast" :style="{ opacity: toastVisible ? '1' : '0' }">{{ t(toastText) }}</div>

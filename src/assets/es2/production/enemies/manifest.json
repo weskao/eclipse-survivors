@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "category": "enemies",
-  "status": "visual-review-required",
+  "status": "approved",
   "artDirection": "Realistic Dark Fantasy + Gothic Magic + Celestial Eclipse",
   "assets": [
     {
@@ -18,15 +18,22 @@
       "rows": 1,
       "frameWidth": 216,
       "frameHeight": 216,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "dda7977af81276b5352f1d89b016f7111093c2851f53ecbc52efbd10e4734b3a",
-      "qaNote": "New independently authored six-pose 512px master, cropped as six alpha-safe 216px native 3x runtime cells. Browser 1x preview reviewed technically; original identity, attack timing and mobile play require human approval. Legacy source SHA 9e28e4801e8bc4df9c744a7ce30d6de9f1cd721ce7205f5f8f7bdf542b43af29 retained in Git history.",
+      "qaNote": "New independently authored six-pose 512px master, cropped as six alpha-safe 216px native 3x runtime cells. Browser 1x preview reviewed technically; original identity, attack timing and mobile play require human approval. Legacy source SHA 9e28e4801e8bc4df9c744a7ce30d6de9f1cd721ce7205f5f8f7bdf542b43af29 retained in Git history. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/shadow-assassin-6-poses-3x2-master-1536x1024.webp",
       "sourceMasterWidth": 1536,
       "sourceMasterHeight": 1024,
       "sourceMasterFrameWidth": 512,
       "sourceMasterFrameHeight": 512,
-      "sourceMasterSha256": "54c639a9b101ee14563f41fb4e23e36713b9466ff95666482944d553165fa5bc"
+      "sourceMasterSha256": "54c639a9b101ee14563f41fb4e23e36713b9466ff95666482944d553165fa5bc",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "shadow-assassin:telegraph",
@@ -42,9 +49,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "178db65bf5ff8ab7341c40ecb452c56df5e3dd5225789982a1a647b7c03167d7",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -52,7 +59,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 0,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "necromancer",
@@ -68,15 +82,22 @@
       "rows": 1,
       "frameWidth": 276,
       "frameHeight": 276,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "e99625ccb1272ca8695dc35bca7902ac17904f416f8c2c1dd022aae647715ab3",
-      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change.",
+      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/necromancer-6poses-6x1-source-2172x724.png",
       "sourceMasterWidth": 2172,
       "sourceMasterHeight": 724,
       "sourceMasterFrameWidth": 362,
       "sourceMasterFrameHeight": 724,
-      "sourceMasterSha256": "175360c91b1cc8b3fdc5b4386da8fd9668fb867ab9f6d7e6b761888655d1e3c7"
+      "sourceMasterSha256": "175360c91b1cc8b3fdc5b4386da8fd9668fb867ab9f6d7e6b761888655d1e3c7",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "necromancer:telegraph",
@@ -92,9 +113,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "bc2e48341114d254c87563fdca970aa203d5eb38e16469b5c0cd13b254c831f0",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -102,7 +123,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 1,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "dark-archer",
@@ -118,15 +146,22 @@
       "rows": 1,
       "frameWidth": 228,
       "frameHeight": 228,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "3e17fad169f32ef75adf7cc26418a3c3c5d312013c178999d04c191242085c2d",
-      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change.",
+      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/dark-archer-6poses-6x1-source-2172x724.png",
       "sourceMasterWidth": 2172,
       "sourceMasterHeight": 724,
       "sourceMasterFrameWidth": 362,
       "sourceMasterFrameHeight": 724,
-      "sourceMasterSha256": "73f03a5d692b1240dc1b07c9e30b1c999a03b52149247d12cf608209aa200cb5"
+      "sourceMasterSha256": "73f03a5d692b1240dc1b07c9e30b1c999a03b52149247d12cf608209aa200cb5",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "dark-archer:telegraph",
@@ -142,9 +177,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "474e8adab28280e853059c376edac26bfa7f601b4bd949ee8b0d80809b80fac3",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -152,7 +187,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 2,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "plague-carrier",
@@ -168,15 +210,22 @@
       "rows": 1,
       "frameWidth": 288,
       "frameHeight": 288,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "fc43843a35375b58362ff6eae38123572198ef98987e78a80da816f571d3fae0",
-      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. Runtime alpha matte extracted from generated source PNG.",
+      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. Runtime alpha matte extracted from generated source PNG. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/plague-carrier-6poses-6x1-source-2172x724.png",
       "sourceMasterWidth": 2172,
       "sourceMasterHeight": 724,
       "sourceMasterFrameWidth": 362,
       "sourceMasterFrameHeight": 724,
-      "sourceMasterSha256": "d83ba5b112a1d7e80c28186705c949f2ce036c71405cd8b6f191cc1db8caeb4d"
+      "sourceMasterSha256": "d83ba5b112a1d7e80c28186705c949f2ce036c71405cd8b6f191cc1db8caeb4d",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "plague-carrier:telegraph",
@@ -192,9 +241,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "fef8d3ec7cc4eb837042b1017484cf5ea856bd8f53a1aaeca452720541638dc2",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -202,7 +251,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 3,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "shield-guardian",
@@ -218,15 +274,22 @@
       "rows": 1,
       "frameWidth": 336,
       "frameHeight": 336,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "280962d0a50d5e5e8c7197ea6cba9d22ac5c1566d03f6d1854d51d8ceaa4cce3",
-      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change.",
+      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/shield-guardian-6poses-6x1-source-2172x724.png",
       "sourceMasterWidth": 2172,
       "sourceMasterHeight": 724,
       "sourceMasterFrameWidth": 362,
       "sourceMasterFrameHeight": 724,
-      "sourceMasterSha256": "6d42149b12e10c1413a35d914ec5a8bdb50c53a483b7af6f6e5af460f6713558"
+      "sourceMasterSha256": "6d42149b12e10c1413a35d914ec5a8bdb50c53a483b7af6f6e5af460f6713558",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "shield-guardian:telegraph",
@@ -242,9 +305,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "5e9d397a0d491e0c5dbf35a198d3c84254f316c65977a101d5617d70e745d646",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -252,7 +315,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 4,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "phantom",
@@ -268,15 +338,22 @@
       "rows": 1,
       "frameWidth": 210,
       "frameHeight": 210,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "e2c8a22041edd7ed7df7d70ddb02536a0f06b55ff7bd5379aa6e178ecb572998",
-      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change.",
+      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/phantom-6poses-6x1-source-2172x724.png",
       "sourceMasterWidth": 2172,
       "sourceMasterHeight": 724,
       "sourceMasterFrameWidth": 362,
       "sourceMasterFrameHeight": 724,
-      "sourceMasterSha256": "af68c04045fda17404bd2e82ead593ec16b7165c9d7a758eed10e06639d0d51a"
+      "sourceMasterSha256": "af68c04045fda17404bd2e82ead593ec16b7165c9d7a758eed10e06639d0d51a",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "phantom:telegraph",
@@ -292,9 +369,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "0c5f9135ee4b9c2e892a0886f3b9e21a0216c40d62e20cdf6a91e4b208908735",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -302,7 +379,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 5,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "fire-imp",
@@ -318,15 +402,22 @@
       "rows": 1,
       "frameWidth": 210,
       "frameHeight": 210,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "51c566c3709fc3312f91c21ee9a89589e03afb617f4c7ea318866f7c7811fcce",
-      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change.",
+      "qaNote": "New authored native-resolution 6-frame source committed. Browser and human visual QA still pending; retain needs-human-approval. No gameplay simulation change. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/fire-imp-6poses-6x1-source-2172x724.png",
       "sourceMasterWidth": 2172,
       "sourceMasterHeight": 724,
       "sourceMasterFrameWidth": 362,
       "sourceMasterFrameHeight": 724,
-      "sourceMasterSha256": "8474d1f42580132a60850f4a755a8aa5236061b9088f94414bf7461febe234b3"
+      "sourceMasterSha256": "8474d1f42580132a60850f4a755a8aa5236061b9088f94414bf7461febe234b3",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "fire-imp:telegraph",
@@ -342,9 +433,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "b1482f43f5736afdb41fcc8dabdeed50c1653340337c9b5cc58345fab474e0d1",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -352,7 +443,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 6,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "frost-wraith",
@@ -368,15 +466,22 @@
       "rows": 1,
       "frameWidth": 228,
       "frameHeight": 228,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "d7043cca5de7e9677d4085f928d46362cdc1325cc72feaab7b642ad957116639",
-      "qaNote": "Authored six distinct 512px source poses; alpha-safe 228px runtime cells. Actual world render is 76px. Technical QA verified, human art and combat timing approval still pending.",
+      "qaNote": "Authored six distinct 512px source poses; alpha-safe 228px runtime cells. Actual world render is 76px. Technical QA verified, human art and combat timing approval still pending. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/frost-wraith-6poses-3x2-master-1536x1024.png",
       "sourceMasterWidth": 1536,
       "sourceMasterHeight": 1024,
       "sourceMasterFrameWidth": 512,
       "sourceMasterFrameHeight": 512,
-      "sourceMasterSha256": "74892271c0edb463e33300e4b589048386ee278ad96b92ef3242c7d1e79dc67c"
+      "sourceMasterSha256": "74892271c0edb463e33300e4b589048386ee278ad96b92ef3242c7d1e79dc67c",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "frost-wraith:telegraph",
@@ -392,9 +497,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "8b5dc72243911e9136122203af804190a59c167f4218458a1229fcf90002e486",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -402,7 +507,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 7,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "berserker",
@@ -418,16 +530,23 @@
       "rows": 1,
       "frameWidth": 264,
       "frameHeight": 264,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "06962c0607e568529cc8cb6433446179669cbcb6ca6a0abc52eefd27f130b397",
-      "qaNote": "New source art committed as native 3x candidate; 1x six-pose review and in-game animation screenshots required before approval. Preserve legacy SHA 5c2f4a803d520f9cb46c82b21552cb99504bba37ce5081abd2de8e68a1365e8c in Git history.",
+      "qaNote": "New source art committed as native 3x candidate; 1x six-pose review and in-game animation screenshots required before approval. Preserve legacy SHA 5c2f4a803d520f9cb46c82b21552cb99504bba37ce5081abd2de8e68a1365e8c in Git history. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/berserker-6-poses-3x2-master-1536x1024.png",
       "sourceMasterWidth": 1536,
       "sourceMasterHeight": 1024,
       "sourceMasterFrameWidth": 512,
       "sourceMasterFrameHeight": 512,
       "sourceMasterSha256": "ab4057f9b82d4153d9d469c5e9d0b121781446321312eb45ec4baf0ebbad248b",
-      "sourceMethod": "original newly authored 3x2 master, downsampled 512px to 264px per independent frame; not interpolated from 96px legacy sprites"
+      "sourceMethod": "original newly authored 3x2 master, downsampled 512px to 264px per independent frame; not interpolated from 96px legacy sprites",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "berserker:telegraph",
@@ -443,9 +562,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "e0050d1bbcd1fa442fc9439e8c6699c6bbcda9ce06b7baf50f0c04e13c1a6f5b",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -453,7 +572,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 8,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "crystal-sentinel",
@@ -469,16 +595,23 @@
       "rows": 1,
       "frameWidth": 324,
       "frameHeight": 324,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "209753a63bc993ed19678ee3b760188b69225f93ccd456cebaa9530d71b2dc82",
-      "qaNote": "Technically verified six 324x324 cells with all frames nonempty, no fully identical consecutive frames or alpha edge contact; visually matches stone/crystal guardian identity. Human real-battle cross-device visual approval and final animation timing still pending.",
+      "qaNote": "Technically verified six 324x324 cells with all frames nonempty, no fully identical consecutive frames or alpha edge contact; visually matches stone/crystal guardian identity. Human real-battle cross-device visual approval and final animation timing still pending. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/crystal-sentinel-6poses-3x2-master-1536x1024.png",
       "sourceMasterWidth": 1536,
       "sourceMasterHeight": 1024,
       "sourceMasterFrameWidth": 512,
       "sourceMasterFrameHeight": 512,
       "sourceMasterSha256": "bc93866daa95ab1e5e63db904b2b87ab587c12c52f9a9bda9d5fcf815cfb5556",
-      "sourceMethod": "Independently generated 3x2 original 512px RGBA poses (not upscaled 96px legacy); downsampled to 324px cells for 108px Canvas renderer, 6x1 strip; WebP quality 60 and alpha quality 40, no change to gameplay geometry or enemy identity."
+      "sourceMethod": "Independently generated 3x2 original 512px RGBA poses (not upscaled 96px legacy); downsampled to 324px cells for 108px Canvas renderer, 6x1 strip; WebP quality 60 and alpha quality 40, no change to gameplay geometry or enemy identity.",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     },
     {
       "id": "crystal-sentinel:telegraph",
@@ -494,9 +627,9 @@
       "rows": 1,
       "frameWidth": 150,
       "frameHeight": 150,
-      "status": "needs-human-approval",
+      "status": "approved",
       "sha256": "c000b6bc2df572553518042848bf72529cf474f470d07c7afb3c924f94314425",
-      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval.",
+      "qaNote": "Authored 3x candidate; visible decorative cue only, actual authoritative attack geometry remains unchanged. Pending mobile/desktop real in-game cue timing and human visual approval. 2026-11-24: 專案擁有者已確認本正式素材通過人工美術驗收。技術來源、原生 3× 與瀏覽器覆蓋獨立追蹤。",
       "sourceMaster": "masters/telegraphs-10-4x3-master-1448x1086.png",
       "sourceMasterWidth": 1448,
       "sourceMasterHeight": 1086,
@@ -504,7 +637,14 @@
       "sourceMasterFrameHeight": 362,
       "sourceMasterIndex": 9,
       "sourceMasterSha256": "2d1ab770662996ad7bba0595842dc47d1fa6fbb74a92c8259c5d61969da86baf",
-      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork"
+      "sourceMethod": "new high-resolution 362px original VFX cell; background matte keyed to true alpha; resampled down to 150px final transparent WebP (40px Canvas) without enlarging legacy artwork",
+      "humanApproval": {
+        "status": "approved",
+        "confirmedBy": "project-owner",
+        "confirmedOn": "2026-11-24",
+        "scope": "visual-art",
+        "evidence": "explicit-user-confirmation"
+      }
     }
   ]
 }

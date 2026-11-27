@@ -1,0 +1,127 @@
+# Biomes 8 — owner approval recorded (2026-11-24)
+
+**Current owner-approved state:** all **8 / 8** Biomes assets are approved for visual art by the project owner in this conversation on **2026-11-24**. The four 1152×1152 ground images and four 1320×330 (4× 330×330) transparent decor atlases retain their exact original byte hashes and asset paths. This is a human visual-art approval, **not** a statement that the entire repository CI is green or that source branch has been merged to the integration branch.
+
+- `src/assets/es2/production/biomes/manifest.json`: category `status: approved`, all eight `assets[].status: approved`; each has `humanApproval: { status: approved, confirmedBy: project-owner, confirmedOn: 2026-11-24, scope: visual-art, evidence: explicit-user-confirmation }`.
+- Scope approved: `blood-moon-cathedral`, `cursed-forest`, `abyssal-necropolis`, `celestial-rift`, each both `:ground` and `:decor`. Other category approvals (heroes, enemies, bosses, UI) are **unmodified**.
+- Evidence: real Chromium four-biome desktop/mobile QA [Actions 45247582857](https://github.com/weskao/eclipse-survivors/actions/runs/45247582857) succeeded; strict native-3× dimensions and source mapping checks [Actions 45247582566](https://github.com/weskao/eclipse-survivors/actions/runs/45247582566) passed their individual steps, while the full repository suite retains independent non-Biomes failures.
+- A Biomes-owned approval provenance regression test has been added at `src/assets/es2/production/biomes/human-approval.test.ts`.
+- **Integration owner follow-up:** `src/assets/es2/production/world-art-candidates.test.ts` in the *workstream branch* still hardcodes `visual-review-required` and `needs-human-approval` for all four categories. After integrating current approved Biomes sources into `feature/es2-release-readiness-integration`, the shared test should accept `approved` **for Biomes only**, preserving pending requirements for other unapproved categories. This shared consumer/test is deliberately not edited on this owned-art branch.
+- The release-wide `production-art.test.ts` remains a separate blocking gate for other categories and is **not bypassed**.
+
+---
+
+## Earlier technical review history (recorded before this owner's explicit approval)
+
+The historical text below contains earlier pending statements, retained for traceability; the approved status above and the current manifest take precedence.
+
+# Current ES2 Biomes 8 status — 2026-11-24
+
+> **CURRENT VERDICT: 8/8 sources committed at native 3× dimensions; strict technical source gate green; 8/8 still need human visual art approval.** The historical November 23 notes below describe earlier intermediate states and are superseded by this status.
+
+**Repository:** `weskao/eclipse-survivors`  
+**Owned workstream:** `feature/es2-art-qa-biomes`  
+**Integration destination (NOT merged):** `feature/es2-release-readiness-integration`
+
+## Verified actual repository assets
+
+| Source | Authored dimensions | Four-cell/one-tile geometry | Actual byte size | Review |
+|---|---|---|---:|---|
+| Blood Moon Cathedral ground | 1152×1152 | 1× 1152 | 467,142 | human pending |
+| Blood Moon Cathedral decor | 1320×330 | 4× 330×330 | 109,110 | human pending |
+| Cursed Forest ground | 1152×1152 | 1× 1152 | 549,912 | human pending |
+| Cursed Forest decor | 1320×330 | 4× 330×330 | 164,574 | human pending |
+| Abyssal Necropolis ground | 1152×1152 | 1× 1152 | 509,626 | human pending |
+| Abyssal Necropolis decor | 1320×330 | 4× 330×330 | 125,582 | human pending |
+| Celestial Rift ground | 1152×1152 | 1× 1152 | 516,518 | human pending |
+| Celestial Rift decor | 1320×330 | 4× 330×330 | 166,372 | human pending |
+
+The source hashes, authored 1254px ground masters or 2172×724 prop masters, transparency flags, size limits, and original scene IDs are recorded in the adjacent `manifest.json`. All 8 remain `needs-human-approval`; no manual signoff is invented.
+
+## Actual source-art commit chain and CI evidence
+
+- Ground: `fd6e9e335cf41a3df6c057bc19b5c9a1cff13a74` (three sources) and `858f36c0d8d45f3bf1c9111845b0499f4f5e3623` (fourth).
+- Decoration art: `1e899e2dd7778ddd540706c97ac404d03b99c329` (Cathedral, Forest) and `7192d1d770721fb4b117cbf1bef82a908e6dc73c` (Necropolis, Rift).
+- Forest frame-2 adjacent red-pixel contamination repaired using original newly authored source (not re-encoded WebP): `7626c9971d57f9e50c486c18c47188b423d5d6ca`. Manifest SHA now `68da345af7cc13cb57eb865b64518f3ad5e56bb129b14bfa5f0c90c9d3d8e1cb`; source master SHA remains unchanged.
+- [Final two-source installation CI 45245142163](https://github.com/weskao/eclipse-survivors/actions/runs/45245142163): strict native 3× 8/8, existing world-art tests, typecheck, build and release checks **PASS**, followed by normal fast-forward commit.
+- [Forest source cleanup CI 45246520820](https://github.com/weskao/eclipse-survivors/actions/runs/45246520820): exact patch and source SHA, strict 3× and image mapping, typecheck, production build, release validation **PASS**. Its one-off workflow and patch fragments were removed during the normal commit.
+- Full repository `pnpm test` remains **non-green** due to two independently owned gates (hero sprite source-edge risk; canonical world-art manual approval): 1126 passed, 2 failed, 1 skipped. Do not weaken either gate to force a green result.
+
+## Real browser, alpha-source frames and mobile evidence
+
+- [Chromium Run 45245840938](https://github.com/weskao/eclipse-survivors/actions/runs/45245840938) **PASS** on the fully installed 8-source state before the tiny Forest bleed cleanup. Artifact `es2-biomes-native-source-real-browser-evidence` ID `14854172480`: 12 true gameplay Canvas screenshots (four scenes × desktop 1440×900, phone portrait 375×812, phone landscape 812×375), three video recordings, and per-source decoded geometry and edge measurement JSON.
+- Real Chromium decoded **4 decoration sheets, 16 distinct source cells each viewport**, and found 330px source cells, nonempty alpha on every cell and zero 1px-edge touches. All ground files decode as 1152×1152 and pass the existing numerical edge-difference budget. The newest Forest red-pixel cleanup has a separate successful exact-binary verification; latest screenshot rerun should be checked before final human review.
+- The updated `qa-live-browser.mjs` also enforces 330px native cells and zero boundary bleed. Reviewer must still assess actual art style, repeated floor appearance, clarity during combat, mobile HUD overlaps and any possible unwanted occlusions; a technical browser pass is **not** an art signoff.
+- Existing mobile screenshots show unrelated top-of-screen title/HUD overlap risk; changes to shared UI are reserved for the integration owner.
+
+## Integration boundary
+
+Do not merge this branch into `feature/es2-release-readiness-integration` until the current independent artwork has its human visual approvals and integration owner checks current HEAD for conflicts. Do not touch `develop`, `main`, heroes, balancing or shared Canvas consumers, and do not make PRs, force-push or deploy.
+
+---
+
+## Historical workstream evidence (November 23 snapshot; superseded above)
+
+
+**Source branch:** `feature/es2-art-qa-biomes`  
+**Status:** THREE ground replacements **actually installed and runtime verified**; FIVE assets still blocked; all 8 remain `needs-human-approval`. No integration or release approval is implied.
+
+## Verified authored sources / original packs
+
+The original GitHub Actions [world-art source review](https://github.com/weskao/eclipse-survivors/actions/runs/45173141087) artifact (`14818227501`) was downloaded and visually inspected. `assets/images/imgs1.png` and `imgs9.png` are each **1672×941 px collages**, not four isolated 330×330 authored prop masters. The tiny isolated parts cannot be enlarged or renamed `@3x` and treated as native source. The original four decor sheets remain 4×96×96, still pending real reauthoring.
+
+Three genuine source artworks were independently generated at **1254×1254**, cropped to **1152×1152** without scaling up the old 768px game art, and stitched for visual 2×2 edge inspection. Authored master SHA values are recorded on each updated `ground` manifest item; the full original PNGs and candidate preview package are preserved in the conversation artifact, not inside the runtime build.
+
+## Binary GitHub application — VERIFIED
+
+- [Binary patch staging commit `dbb2a355`](https://github.com/weskao/eclipse-survivors/commit/dbb2a35550fc1a52c5752d4d6efa9f6fadf94d04) preserved the exact **2,470,776 byte** Git binary patch across ten SHA-verified blob parts.
+- [Actions run **45186384834**](https://github.com/weskao/eclipse-survivors/actions/runs/45186384834) successfully checked patch SHA-256, applied the three binaries, passed existing world-art integrity/mapping, typecheck, production build, check-release and pushed by normal fast-forward (no PR/force/main/develop).
+- **Actual installation commit:** [`fd6e9e335cf41a3df6c057bc19b5c9a1cff13a74`](https://github.com/weskao/eclipse-survivors/commit/fd6e9e335cf41a3df6c057bc19b5c9a1cff13a74). Exact original asset paths retained; the transient patch parts were removed.
+- New manifest remains `visual-review-required` and all assets remain `needs-human-approval`; `native3x:true` now applies to the three new ground sources *as source-resolution metadata only*, NOT human approval.
+
+| Asset | New WebP dimensions | Bytes | SHA-256 | New authored master | Status |
+|---|---|---:|---|---|---|
+| `blood-moon-cathedral:ground` | 1152×1152 | 467142 | `7863a3111779dff6eacd6bb8ccf7e8da2da0615081c7255190fa977aa06a370e` | 1254×1254 | applied / approval pending |
+| `cursed-forest:ground` | 1152×1152 | 549912 | `ea4f17a975d589aba1d4ed28f11591deeed6f1f6017eaec49884a418268ce9e0` | 1254×1254 | applied / approval pending |
+| `abyssal-necropolis:ground` | 1152×1152 | 509626 | `63c3a79aa355b24a7a90c015a82042937ba9e6f02d30bf5b0e6e39ddc1c55c52` | 1254×1254 | applied / approval pending |
+
+The runtime's existing Vite URL mapping automatically resolves the three replacement WebPs; no gameplay collisions or player hitboxes were modified.
+
+## Actual Chromium screenshots: full production build, no mockups
+
+[Successful genuine browser QA run **45187256704**](https://github.com/weskao/eclipse-survivors/actions/runs/45187256704); artifact `es2-biomes-native-source-real-browser-evidence` **ID 14824117688** (retained by GitHub Actions for 7 days).
+
+Read-only QA script: `src/assets/es2/production/biomes/qa-live-browser.mjs` with workflow `.github/workflows/es2-biome-real-browser-qa.yml`.
+
+- Captures **12 actual in-game Vue Canvas screenshots**, one each for scene 0–3 at desktop **1440×900**, phone portrait **375×812** at DPR2, and landscape **812×375** at DPR2. Uses `?showcase=1` and the real engine `window.__test.previewBiome(index)`, waiting for a new actual Canvas frame. Does not fake progression or archive-gallery screenshots.
+- Source decode reverified all four ground WebPs at each viewport, including 1152px for the three replacements and 768px for untouched Celestial Rift. All 12 scenes switched successfully without uncaught browser errors.
+- Original GitHub artifact contains 12 PNGs, named WebM recordings for each viewport, and `biome-runtime-evidence.json`. MP4 conversions may be exported separately from downloaded evidence.
+- Decoded per-edge mean absolute RGB values in live Chromium (left/right, top/bottom):
+
+| Biome | Loaded source | L/R RGB mean | T/B RGB mean |
+|---|---:|---:|---:|
+| Blood Moon Cathedral | 1152×1152 | 3.05 | 2.94 |
+| Cursed Forest | 1152×1152 | 3.84 | 4.14 |
+| Abyssal Necropolis | 1152×1152 | 3.23 | 3.00 |
+| Celestial Rift (old) | 768×768 | 3.19 | 3.02 |
+
+**Human visual inspection pending:** visible repetitive large floor motifs, prop layering, contrast and HUD readability in all camera motion and gameplay state variations still need approval. A low mean edge delta is not proof of perfect visual seamlessness or authored native detail.
+
+## Test / remaining blockers
+
+[Native-3× dedicated verification run **45187209702**](https://github.com/weskao/eclipse-survivors/actions/runs/45187209702) exercised all 8 dimension tests: **3 passed, 5 failed** (the untouched Celestial Rift ground and 4 decor atlases). Existing world-art integrity/mapping, TypeScript, build and release check passed. The larger suite still has independent hero/source-art manual gate failures outside this workstream. Do not silence these failures.
+
+To complete the 8-item production-art workstream: author and validate one genuine Celestial Rift 1152×1152 floor plus **four distinct 4-cell 1320×330 transparent decor atlases** (330×330 each, safe frame edges), stage each binary before runtime wiring, inspect source/native detail and gameplay screenshots, then obtain explicit human art signoff and coordinate sequential integration into `feature/es2-release-readiness-integration`. Do not modify heroes, main, develop, force push, open PR or deploy.
+
+Audited HEAD before this documentation update: `bdd7153e80b3c43b78a41dbed8df406bc2872774`.
+
+## Follow-up: fourth authentic floor installed, all four viewed in production Chromium
+
+- **Actual fourth binary + manifest change** [`858f36c0d8d45f3bf1c9111845b0499f4f5e3623`](https://github.com/weskao/eclipse-survivors/commit/858f36c0d8d45f3bf1c9111845b0499f4f5e3623). [Actions `45192711277`](https://github.com/weskao/eclipse-survivors/actions/runs/45192711277) **SUCCESS**: exact SHA-256 patch validated, applied by normal fast-forward to this workstream branch only; asset integrity/mapping, typecheck, build, release check passed; patch staging files removed. No hero/develop/main changes.
+- `celestial-rift-ground@3x.webp` is now **1152×1152** from a **1254×1254 independently drawn source**, 516,518 bytes, SHA-256 `39e945c3a903c4bd88013f0975299d55ae733bf7a676ba20052d668d0397f0df`. Decoded mean seam values: L/R **3.58**, T/B **3.46**. Its source master SHA-256 is retained in manifest. Remains `needs-human-approval`, not an aesthetic sign-off.
+- **All four ground files** now have individually authored 1152px source resolution; this is four of eight world-art assets. Existing Vite import/source geometry and collision/hazard rules are unchanged.
+- [Native-source CI run `45193215894`](https://github.com/weskao/eclipse-survivors/actions/runs/45193215894) confirms **4 passing ground dimension tests and 4 legitimately failing legacy decor dimension tests**. Source integrity/mapping, TypeScript, build and check-release succeeded. The full suite remains intentionally RED due legitimate art gates; no native 3× threshold was relaxed.
+- [Actual Chromium build/browser run **45193215899**](https://github.com/weskao/eclipse-survivors/actions/runs/45193215899) **SUCCESS** at workstream SHA `1064c453aeb155e021e3c22865a734b5e7b2a501`. Artifact **`es2-biomes-native-source-real-browser-evidence` ID 14825019558** contains twelve real production-game Canvas screenshots, three viewport WebM recordings and `biome-runtime-evidence.json`. All 4 biomes rendered at desktop 1440×900, portrait 375×812 and landscape 812×375; all four 1152px ground images decoded. This is actual running gameplay with the existing QA biome-switch hook, not generated UI imagery.
+- The same live browser QA also decoded **all 4 legacy transparent decor atlases, 16 nonempty 96×96 source crops**, with 0 alpha edge contacts at its threshold. This is a technical frame/sampling check, **not original-authored 3× acceptance**. Source atlas still only **384×96** instead of required **1320×330** per biome; all four decor items stay `needs-human-approval` and `native3x:false`.
+- A fresh procedural 330×330-cell decor exploration was visually reviewed and **rejected for visibly lower stylistic fidelity than the original illustrated props** (one Celestial cell also touched its upper frame edge). It was never pushed to project paths or treated as finished art. Screenshots and source-production are separate; no false "8/8 complete" promotional graphics were used as release evidence.
+- No merge into `feature/es2-release-readiness-integration` until remaining four decor sources meet authentic authored fidelity, and explicit visual approval has been granted.

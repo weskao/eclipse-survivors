@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "1254×1254 -> 704×704 Lanczos -> 768×768 with 32px padding; never upscale",
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "3b87a0e1-5143-43b8-a123-da4dfd256d46",
+    "originalPNGSHA256": "3775063c058f1ab341c578ac692e3892384485f918974aebeff343b46e6525b1",
+    "canonicalPortrait": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "referenceCommit": "512b453f0ae38f415bd45f4bca576c9802335605",
+    "referenceMethod": "Canonical portrait and existing special East atlas visually inspected; direct image conditioning not independently verified."
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded RGBA verified; Polytool/cwebp unavailable",
+  "frames": [
+    {
+      "id": "summon-recovery-identity-a",
+      "description": "East-facing summon recovery: lowered orb staff, relaxed left hand, fading spirit motes",
+      "sourceFile": "summon-recovery-identity-a-source.webp",
+      "sourceSHA256": "2c77da26fbecc2daa84125d06bdd2c06aef58f0d26b76d46234c1b5f2252d7bc",
+      "sourceBytes": 1128538,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "summon-recovery-identity-a@3x.webp",
+      "webpSHA256": "cdc722cab06ac99dc5aa47fa945624efebf2a664d86b9182e6fcb6100e69e5c3",
+      "bytes": 394784,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "sourceAlphaBounds": [
+        0,
+        3,
+        1242,
+        1254
+      ],
+      "coreAlphaBounds": [
+        97,
+        9,
+        1095,
+        1227
+      ],
+      "coreExtent": [
+        998,
+        1218
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        32,
+        35,
+        728,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        87,
+        38,
+        647,
+        721
+      ],
+      "outputCoreExtent": [
+        560,
+        683
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA per file; review output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Face, chest filigree, staff flower ornament and garment folds differ from canonical portrait. Staff angle and hand grip, foot anchor, character scale and continuity require manual approval."
+    }
+  ],
+  "reviewNotes": [
+    "Independent recovery candidate; not a continuous eight-frame Q animation.",
+    "Existing special atlas retained; no gameplay admission.",
+    "Existing portrait remains the identity baseline."
+  ]
+}

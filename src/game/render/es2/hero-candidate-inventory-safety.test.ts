@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HERO_CANDIDATE_ATLASES, heroCandidateRect } from './hero-candidate-atlas'
+import { HERO_CANDIDATE_ATLASES, HERO_SOUTH_RUN_DIRS, heroCandidateRect } from './hero-candidate-atlas'
 import { productionHeroQAEastRect, productionHeroSouthRunRect } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 
@@ -34,32 +34,36 @@ function webpDimensions(data: Buffer): [number, number] {
   throw new Error('Unexpected WebP kind: ' + kind)
 }
 
-describe('ES2 all twelve candidate hero motion atlases (real assets, QA only)', () => {
-  it('inventories exactly three East action clips and one South run clip per hero', () => {
-    expect(HERO_CANDIDATE_ATLASES).toHaveLength(12)
+describe('ES2 all twenty-four candidate hero motion atlases (real assets, QA only)', () => {
+  it('inventories southern/East clips, northern run clips and the Paladin batch-14 W/NE/NW', () => {
+    expect(HERO_CANDIDATE_ATLASES).toHaveLength(27)
     const found = new Set(HERO_CANDIDATE_ATLASES.map(c => c.hero + ':' + c.direction + ':' + c.pose))
-    expect(found.size).toBe(12)
+    expect(found.size).toBe(27)
+    for (const direction of ['W', 'NE', 'NW']) expect(found.has('crimson-paladin:' + direction + ':run')).toBe(true)
     for (const hero of heroes) {
       for (const pose of poses) expect(found.has(hero + ':E:' + pose)).toBe(true)
-      expect(found.has(hero + ':S:run')).toBe(true)
+      for (const direction of ['S', 'SE', 'SW']) expect(found.has(hero + ':' + direction + ':run')).toBe(true)
     }
   })
 
   it('checks binary dimensions, exact manifest SHA, no duplicate files, and provisional status', () => {
     const hashes = new Set<string>()
     for (const clip of HERO_CANDIDATE_ATLASES) {
+      const folder = 'folder' in clip ? clip.folder : clip.direction === 'E' ? 'east-2026-11-23'
+        : clip.direction === 'S' ? HERO_SOUTH_RUN_DIRS[clip.hero]
+          : clip.direction.toLowerCase() + (clip.direction === 'SE' || clip.direction === 'SW' ? '-2026-11-24-batch-3' : '-2026-11-24-batch-4')
       const expected = clip.direction === 'E'
         ? eastManifest.candidatePoseSources[clip.hero + ':' + clip.pose]
         : JSON.parse(readFileSync(join(root, clip.hero,
-          'candidates/south-2026-11-23/manifest.json'), 'utf8')) as {
+          'candidates', folder, 'manifest.json'), 'utf8')) as {
             webpSHA256: string; bytes: number; frameCount: number
             status: string; native3x: string; runtimeApplied: boolean
           }
       expect(expected, clip.hero + '/' + clip.pose + '/' + clip.direction).toBeDefined()
       if (!expected) continue
       const path = resolve(root, clip.hero, 'candidates',
-        clip.direction === 'E' ? 'east-2026-11-23' : 'south-2026-11-23',
-        clip.pose + '-' + (clip.direction === 'E' ? 'east' : 'south') + '-4frames@3x.webp')
+        folder,
+        clip.pose + '-' + (clip.direction === 'E' ? 'east' : clip.direction === 'S' ? 'south' : clip.direction.toLowerCase()) + '-4frames@3x.webp')
       expect(path.startsWith(root + sep)).toBe(true)
       const data = readFileSync(path)
       expect(data.length).toBe(expected.bytes)
@@ -69,7 +73,8 @@ describe('ES2 all twelve candidate hero motion atlases (real assets, QA only)', 
       expect(hashes.has(sha)).toBe(false)
       hashes.add(sha)
       expect('QA' in expected ? expected.QA : expected.status).toBe('QA_PENDING')
-      expect(expected.native3x).toBe('unverified')
+      // batch-14 manifests spell it 'UNVERIFIED'; same meaning, still never verified.
+      expect(expected.native3x.toLowerCase()).toBe('unverified')
       expect(expected.runtimeApplied).toBe(false)
       for (let i = 0; i < 4; i++) {
         const rect = heroCandidateRect(i, clip.cellPixels)
@@ -79,7 +84,7 @@ describe('ES2 all twelve candidate hero motion atlases (real assets, QA only)', 
         expect((rect?.y ?? 9999) + clip.cellPixels).toBeLessThanOrEqual(clip.cellPixels * 2)
       }
     }
-    expect(hashes.size).toBe(12)
+    expect(hashes.size).toBe(27)
   })
 
   it('rejects invalid playback clocks before sampling source rectangles', () => {

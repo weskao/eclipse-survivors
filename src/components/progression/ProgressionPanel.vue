@@ -47,7 +47,7 @@ const cost = (id: PermanentUpgrade): number => 25 * (props.profile.upgrades[id] 
           <span aria-hidden="true">{{ item.icon }}</span>
           <div><strong>{{ t(item.title) }} · {{ profile.upgrades[item.id] }}/3</strong><small>{{ t(item.effect) }}</small></div>
           <button type="button" :disabled="profile.upgrades[item.id] >= 3 || profile.embers < cost(item.id)"
-            @click="emit('purchase', item.id)">{{ t(profile.upgrades[item.id] >= 3 ? '已滿階' : cost(item.id) + ' ✦') }}</button>
+            @click="emit('purchase', item.id)">{{ profile.upgrades[item.id] >= 3 ? t('已滿階') : cost(item.id) + ' ✦' }}</button>
         </div>
       </div>
 
@@ -56,7 +56,7 @@ const cost = (id: PermanentUpgrade): number => 25 * (props.profile.upgrades[id] 
         <button v-for="skin in cosmeticDetails.filter(s => s.hero === hero)" :key="skin.id" type="button"
           :disabled="!profile.unlockedCosmetics.includes(skin.id)" :aria-pressed="profile.equippedCosmetics[hero] === skin.id"
           @click="emit('cosmetic', hero, skin.id)">
-          <strong>{{ t(skin.title) }}</strong><small>{{ t(profile.equippedCosmetics[hero] === skin.id ? '使用中' : profile.unlockedCosmetics.includes(skin.id) ? '點擊套用' : '🔒 ' + skin.desc) }}</small>
+          <strong>{{ t(skin.title) }}</strong><small>{{ profile.equippedCosmetics[hero] === skin.id ? t('使用中') : profile.unlockedCosmetics.includes(skin.id) ? t('點擊套用') : t('🔒 {desc}', { desc: t(skin.desc) }) }}</small>
         </button>
       </div>
 
@@ -81,7 +81,7 @@ const cost = (id: PermanentUpgrade): number => 25 * (props.profile.upgrades[id] 
       <div class="codex-grid">
         <div v-for="monster in catalogue.monsters" :key="monster.id" class="codex-entry" :class="{ locked: !monster.count }">
           <span>{{ monster.icon }}</span><strong>{{ monster.count ? t(monster.label) : '???' }}</strong>
-          <small>{{ t(monster.count ? monster.description + ' · ' + monster.count + ' 擊倒' : '尚未發現') }}</small>
+          <small>{{ monster.count ? t('{description} · {count} 擊倒', { description: t(monster.description), count: monster.count }) : t('尚未發現') }}</small>
         </div>
       </div>
       <h3>{{ t("能力圖鑑") }}</h3>

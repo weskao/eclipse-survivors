@@ -15,7 +15,7 @@ function canvas() {
   const fillText = vi.fn()
   const ctx = {
     createRadialGradient: () => ({ addColorStop: () => {} }),
-    save: () => {}, restore: () => {}, translate: () => {},
+    save: () => {}, restore: () => {}, translate: () => {}, scale: () => {},
     beginPath: () => {}, arc: () => {}, fill: () => {}, stroke: () => {},
     ellipse: () => {}, fillRect: () => {}, drawImage, fillText,
   } as unknown as Ctx2D
@@ -37,4 +37,12 @@ describe('live world markers use the existing production treasure artwork', () =
     expect(drawImage).not.toHaveBeenCalled()
     expect(fillText).toHaveBeenCalledWith('◆', 200, 286)
   })
+})
+
+it('uses tier-specific real treasure artwork and leaves its ground anchor unchanged in reduced motion', () => {
+  const legendary={...chest} as HTMLImageElement
+  const s={...state,events:[{...state.events[0]!,tier:'legendary' as const,spawnedAt:0}]}
+  const {ctx,drawImage}=canvas()
+  drawWorldMarkers(ctx,s,0,0,{chest,chests:{legendary}} as WorldRuntimeImages,true)
+  expect(drawImage).toHaveBeenCalledWith(legendary,176,260,48,48)
 })

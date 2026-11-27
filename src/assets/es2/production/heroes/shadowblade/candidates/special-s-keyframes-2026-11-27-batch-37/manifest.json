@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "special",
+  "direction": "S",
+  "sourceDirection": "S",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "1199x1312 -> 643x704 Lanczos -> 768x768 transparent padding; no upscaling",
+  "sourcePixels": [
+    1199,
+    1312
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "fa00b811-7e1a-4945-a153-392fec156c3b",
+    "originalPNGSHA256": "3ea5f56e86f6a9071bd6c55847aeb7e671006925214c819ca3f5c69d06217267",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "29daa46744065f6d7f626abac9e33d1b5d6ed373",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected; direct image conditioning not independently verified."
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded alpha and visible RGBA checked; Polytool not run",
+  "frames": [
+    {
+      "id": "stealth-kneel-rise-identity-a",
+      "description": "South-facing kneeling-to-rise transition; both daggers lowered.",
+      "sourceFile": "stealth-kneel-rise-identity-a-source.webp",
+      "sourceSHA256": "2ff6bb84dc8ecd3f3f9f15f6fbd82eeab12fda757d7591115b22534e5a612c08",
+      "sourceBytes": 989274,
+      "sourceCellPixels": [
+        1199,
+        1312
+      ],
+      "file": "stealth-kneel-rise-identity-a@3x.webp",
+      "webpSHA256": "68d25929e7f8cfd48930f2ec26a87a89fedfd9de010919e394f3aa6021a99b06",
+      "bytes": 317820,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        62,
+        32
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        1185,
+        1312
+      ],
+      "coreAlphaBounds": [
+        78,
+        6,
+        1114,
+        1288
+      ],
+      "coreExtent": [
+        1036,
+        1282
+      ],
+      "sourceBoundaryMaxAlpha": 3,
+      "outputAlphaBounds": [
+        62,
+        32,
+        690,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        104,
+        35,
+        659,
+        723
+      ],
+      "outputCoreExtent": [
+        555,
+        688
+      ],
+      "alphaPreserved": true,
+      "sourceFullRGBAExact": true,
+      "outputFullRGBAExact": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Scar, dual shoulder armor and hood trim differ from original; provisional direction, anchor and continuity."
+    }
+  ],
+  "reviewNotes": [
+    "Independent alternate pose only; identity not approved.",
+    "Do not promote to gameplay. No timing/anchor approved.",
+    "No original production asset replaced."
+  ]
+}

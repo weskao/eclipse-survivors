@@ -18,7 +18,7 @@ function setup() {
 }
 
 describe('ES2 authoritative live VFX bridge', () => {
-  it('maps every one of the 18 confirmed gameplay cues to its authored effect', () => {
+  it('maps every registered confirmed gameplay cue to its authored effect', () => {
     const { state, adapter } = setup()
     COMBAT_FX_SPECS.forEach((spec, index) => {
       const event = {
@@ -30,7 +30,7 @@ describe('ES2 authoritative live VFX bridge', () => {
         max: spec.duration, life: spec.duration,
       })
     })
-    expect(state.content.effects).toHaveLength(18)
+    expect(state.content.effects).toHaveLength(COMBAT_FX_SPECS.length)
   })
 
   it('emits once per ordered authoritative sequence without retaining an event history', () => {
