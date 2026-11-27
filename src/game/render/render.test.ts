@@ -408,7 +408,8 @@ describe('biome renderer contracts', () => {
 
 describe('hero foot health bar uses the live renderer cache', () => {
   it('animates damage, clears the trail on healing, then hides after reaching full', () => {
-    const s = busyState(); s.mobs = []; s.cameraKick = 0
+    // 92f4966e suppresses the foot bar on the menu; 4c6d442f never left menu mode, so exercise a live run.
+    const s = busyState(); s.mode = 'play'; s.mobs = []; s.cameraKick = 0
     const hero = s.hero!; hero.dash = 0; hero.inv = 0; hero.dashCd = -1
     const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
     const { ctx } = createFakeCtx()

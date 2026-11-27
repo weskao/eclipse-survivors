@@ -7,6 +7,8 @@ import { createState, resetRun } from './state'
 import type { GameHooks, Mob, NumberFx } from './types'
 import { createFakeCtx } from './render/fakes'
 import { drawNumbers } from './render/effects'
+import { sampleHeroImpact } from './health-impact'
+import { BALANCE } from './config'
 
 function mob(x = 50): Mob {
   return { x, y: 0, type: 'slime', hp: 200, max: 200, r: 15, speed: 0, dmg: 5,
@@ -32,11 +34,13 @@ describe('authoritative critical feedback', () => {
     const enemy = mob()
     hit(s, enemy, 20, hooks)
     expect(s.numberFx[0]).toMatchObject({ value: 34, critical: true })
-    expect(s.content.effects.map(effect => effect.id)).toContain('combat-vfx:critical-hit')
+    // 7209d63b: the hit path owns the critical contact art; the content pack must not add a radial overlay.
+    expect(s.impactWaves.filter(wave => wave.contact === 'critical')).toHaveLength(1)
+    expect(s.content.effects.map(effect => effect.id)).not.toContain('combat-vfx:critical-hit')
 
     hit(s, enemy, 20, hooks)
     expect(s.numberFx[1]).toMatchObject({ value: 20, critical: false })
-    expect(s.content.effects.filter(effect => effect.id === 'combat-vfx:critical-hit')).toHaveLength(1)
+    expect(s.impactWaves.filter(wave => wave.contact === 'critical')).toHaveLength(1)
   })
 
   it('does not infer crits from the normal damage boost of other heroes', () => {
@@ -61,11 +65,17 @@ describe('authoritative critical feedback', () => {
     const hero = s.hero!
     damageHero(s, hero.max * 0.08, baseHooks())
     expect(s.cameraKick).toBe(0)
+    expect(sampleHeroImpact(hero, s.worldClock)).toBeUndefined()
     expect(s.numberFx.at(-1)).toMatchObject({ received: true, value: Math.round(hero.max * 0.08) })
     hero.inv = 0
     damageHero(s, hero.max * 0.3, baseHooks())
-    expect(s.cameraKick).toBeGreaterThan(0)
-    expect(s.cameraKick).toBeLessThanOrEqual(2)
+    // faea321a: heavy loss recoils through the bounded directional hero impulse, not the global camera kick.
+    expect(s.cameraKick).toBe(0)
+    const recoil = sampleHeroImpact(hero, s.worldClock)!
+    expect(recoil.severity).toBe('heavy')
+    const magnitude = Math.hypot(recoil.offsetX, recoil.offsetY)
+    expect(magnitude).toBeGreaterThan(0)
+    expect(magnitude).toBeLessThanOrEqual(BALANCE.combat.heroHitFeedback.heavy.shakePx)
   })
 
   it('separates player health loss from enemy damage with a clear red minus-number', () => {

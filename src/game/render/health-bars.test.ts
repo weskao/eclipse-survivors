@@ -77,7 +77,9 @@ describe('enemy health color tiers', () => {
     expect(motion.front).toBeGreaterThan(.75)
     fills.length = 0
     drawEnemyHealthBar(ctx, motion, 0, 0, 100, true)
-    expect(fills).toEqual(['#f2c37e', '#ef526f'])
+    // 4c6d442f: an 80% loss is a heavy hit, so the bounded major-hit accent follows the actual-HP fill.
+    expect(motion.impact).toBe('heavy')
+    expect(fills).toEqual(['#f2c37e', '#ef526f', '#ffc27f'])
     expect(elite.hp).toBe(200)
   })
 })
