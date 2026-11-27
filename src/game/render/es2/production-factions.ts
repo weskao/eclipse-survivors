@@ -89,7 +89,7 @@ export function drawLiveFactionArt(
     const master = pair?.highResBody
     const masterReady = !!master?.complete && master.naturalWidth === 1536 && master.naturalHeight === 1024
     if (!masterReady && !ready(body, 6)) continue
-    const frame = dying ? 4 : !reducedMotion && enemy.visualHold && enemy.visualFrame !== undefined ? enemy.visualFrame : factionPoseFrame(enemy, state.worldClock)
+    const frame = dying ? 4 : !reducedMotion && enemy.visualHold && enemy.visualFrame !== undefined ? enemy.visualFrame : factionPoseFrame(enemy, reducedMotion ? 0 : state.worldClock)
     const h = size // Preserve square source-cell proportions and the existing feet anchor.
     ctx.save()
     ctx.translate(x, y)
