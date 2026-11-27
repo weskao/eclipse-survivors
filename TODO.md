@@ -1,5 +1,33 @@
 # TODO — Eclipse Survivors
 
+## Six-hero base art and animation completion (2026-11-27, QA_PENDING)
+
+Audit baseline: `cd719ce9b12e54e8453b3ddfc097fd8ef8cc7e6f`. This is a source/CI inventory, not human visual approval. The existing six heroes have artwork and a render path; this is not proof of complete native-3× motion. Do not count isolated candidate keyframes, generated rig poses, mirrored reuse, or nominal upscaled atlas dimensions as independently authored native frames.
+
+| Hero | Current combat artwork | Native directional motion status |
+|---|---|---|
+| Knight | Original `src/assets/knight.webp` + rig/weapon layers | Existing functional pipeline; native source resolution and complete independently authored action coverage not verified |
+| Ranger | Original `src/assets/ranger.webp` + rig/weapon layers | Same |
+| Wizard | Original `src/assets/wizard.webp` + rig/weapon layers | Same |
+| Shadowblade | Canonical portrait + split direction/action/special sheets | East 8-frame action strips; DEV candidate running in 7 authored facings plus explicitly opt-in E-to-W reflection |
+| Spirit Summoner | Canonical portrait + split direction/action/special sheets | East 8-frame action strips; DEV candidates in 6 run facings; independent W/NW run candidates are present but not admitted |
+| Crimson Paladin | Canonical portrait + split direction/action/special sheets | East 8-frame action strips; DEV candidates in all 8 run facings |
+
+The three specializations have nominal 448px split cells from ~313px sources; the older 384px atlas has ~198px originals. Release non-East active poses hold the directional guard rather than playing complete authored actions. Hurt/death/victory hold the directional idle in the split-sheet path. No automatic portrait reflection is approved for these heroes. DEV preview currently inventories 27 selected four-frame atlases, 21 additional pending atlases, 24 independent keyframes, and separate mirrored review panels. These are distinct from production gameplay admission.
+
+- [x] Inventory the six base hero render paths and distinguish candidate preview from runtime and native-art acceptance.
+- [x] Register Batch 40 south shield brace and southeast run launch as review-only candidates; dedicated Hero Candidate Visual Review QA passed 27/27 at the audit baseline.
+- [ ] Review original Knight/Ranger/Wizard source resolution, actual pose rendering, equipped weapon handedness and runtime max CSS bounds against the native-3× rule; preserve their existing functional rig unless replacement is warranted.
+- [ ] Compare all three specialization candidate sets with their exact canonical portraits (face, hair, costume, equipment, facing and anatomical feet); reject mismatches and reuse valid originals. Preserve QA gates.
+- [ ] Review Spirit Summoner independent W/NW run alternatives (batches 8/13 and 6/12); all remain `eligibleForDevWiring: false`. Confirm actual right-hand staff, identity and anchors before admission; do not reflect East.
+- [ ] Complete authored specialization run/dash (10), attack/cast (12) and special (8) frames per required facing, including transitions and consistent anchors. The strict eight-independent-direction reference target is 720 active frames across the three heroes; an explicitly approved reflection may reduce newly authored work but must be counted separately. Existing 4-frame candidates and 8-frame legacy sequences are not complete replacements.
+- [ ] Complete native idle/ready, hurt, death, victory and recovery sequences; replace existing static/guard fallbacks only after validated art exists.
+- [ ] For approved complete sequences, update manifests, measured foot anchors, exact crop geometry and the production renderer together; retain same-character decode fallback, reduced-motion and bounded caches; do not alter attack origins or hitboxes.
+- [ ] Verify native source pixels versus displayed bounding dimensions, transparent source edges, unique authored frames, SHA-256, Polytool WebP conversion, actual mobile texture/memory budgets and full gameplay video evidence; retain manual production-art approval gate.
+- [ ] Run full test/typecheck/build/release verification and desktop, tablet, phone portrait/landscape browser QA. Baseline integration CI: 1954 passed, 27 failed, 1 skipped; dedicated candidate QA: 27 passed; browser smoke failed. Art gate still blocks all three new heroes.
+
+See `docs/es2/hero-native-3x-remaining-2026-11-23.md` for historical source details and `.claude/rules/character-art-3x.md` / `character-directions-atlas.md` for the governing contract. The separate costume work below is not included in base art completion.
+
 ## Hero costume artwork (not complete)
 
 - [ ] Replace aura-only legacy cosmetics (knight-gilded, ranger-moonlit, wizard-astral) with actual approved costume variants. Current equipped IDs persist and drive the existing world aura and lobby preview, but do not change garment/armor pixels.
