@@ -59,3 +59,7 @@ make verify   # pnpm test, pnpm typecheck, pnpm build, pnpm check-release, on th
 ## Mandatory active skill for every playable hero
 
 Every current or newly added playable hero must define one distinct active skill from day one. Reuse `getHeroActiveDefinition`, engine `activateHeroSpecial`, shared hero selection card, detail surface and `HeroSpecialAction` (Q / touch / cooldown / ready and cast transitions). Keep identity and save compatibility; externalize balance values; validate normal and faction enemies via authoritative hit paths. Require a dedicated role-specific 3× WebP icon, bounded GPU choreography and Canvas fallback, reduced motion/flashing, one original reproducible cinematic SFX via the shared audio owner, bilingual descriptions, success/rejection/cooldown/pause/reset tests, and desktop/mobile gameplay visual/audio QA. Never mark art or audio QA complete without actual inspection. Do not duplicate UI or introduce a new audio/rendering loop.
+
+## CI concurrency
+
+Latest branch commit wins: `.github/workflows/ci.yml` cancels unfinished push/dispatch CI runs from older SHAs on the same branch across workflow files. Keep all current-SHA sibling workflows independent; use workflow + ref concurrency with cancellation enabled for new CI workflows (never a shared branch-only group across different workflows). Preserve other branches, PR refs, completed evidence, and the serialized release/deployment workflow. Capture evidence must identify its exact SHA; cancelled runs are not passing evidence.

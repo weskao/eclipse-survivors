@@ -6,9 +6,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: es2-mobile-browser-${{ github.ref }}
-  # Preserve full browser and art evidence during concurrent integration commits.
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   browser-smoke:
     runs-on: ubuntu-24.04

@@ -15,10 +15,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  # Capture evidence belongs to its exact commit SHA; concurrent branch pushes
-  # must not cancel footage while Chromium is already recording.
-  group: es2-hero-animation-video-${{ github.sha }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   capture:
     runs-on: ubuntu-24.04
