@@ -134,3 +134,21 @@ it.each([22050,48000])('adds a distinct release cue and sustains a richer ceremo
   expect(release.at(-1)).toBe(0)
   expect(release.every(Number.isFinite)).toBe(true)
 })
+
+it('uses seven short distinct battle-only Foley cues without routing ordinary UI audio',()=>{
+  const keys=[23,24,25,26,27,28,29].map(n=>hallCueKey('ui',n)!)
+  expect(keys).toEqual(['battle-shield','battle-arcana','battle-wind','battle-soul','battle-elite','battle-phantom','battle-blood'])
+  expect(hallCueKey('upgrade',23)).toBeUndefined()
+  expect(hallCueKey('ui')).toBeUndefined()
+  for(const rate of [22050,48000]){
+    const samples=keys.map(k=>renderHallCue(rate,k))
+    expect(new Set(samples.map(p=>Array.from(p.slice(100,400)).join(','))).size).toBe(7)
+    for(const p of samples){
+      expect(p.length/rate).toBeLessThanOrEqual(.75)
+      expect(p.every(Number.isFinite)).toBe(true)
+      expect(p[0]).toBe(0)
+      expect(p.at(-1)).toBe(0)
+      expect(p.reduce((m,x)=>Math.max(m,Math.abs(x)),0)).toBeLessThanOrEqual(.58)
+    }
+  }
+})

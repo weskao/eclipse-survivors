@@ -14,7 +14,7 @@ import summonerSpecialIcon from '../../../assets/es2/production/heroes/spirit-su
 import paladinSpecialIcon from '../../../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
 
 export type SpecializationId = 'shadowblade' | 'spirit-summoner' | 'crimson-paladin'
-import { reserveHallProc, grantShield, hallCritBonus, hallRank, hallSummonCast, hallSummonInterval, withHallSource, type HallDamageSource } from '../meta/hall-runtime'
+import { hallFeedback, reserveHallProc, grantShield, hallCritBonus, hallRank, hallSummonCast, hallSummonInterval, withHallSource, type HallDamageSource } from '../meta/hall-runtime'
 import hallTuning from '../../balance/hall-effect-tuning.json'
 
 export type CompanionKind = 'wisp' | 'guardian' | 'reaver'
@@ -248,6 +248,7 @@ export function createHeroSpecializationAdapter(
         if (phantom && reserveHallProc(state)) {
           phantomAt = state.time + hallTuning.shadowPhantomCooldown
           strike(phantom,state.hero!.damage * hallTuning.shadowPhantomDamage,'proc')
+          hallFeedback(state,'phantom',phantom)
         }
       }
       counterCooldown = Math.max(0, counterCooldown - dt)
@@ -262,6 +263,7 @@ export function createHeroSpecializationAdapter(
           if (expired && state.hall && hallRank(state, 'crimson-paladin-blood-sanctuary') && state.time >= sanctuaryAt) {
             sanctuaryAt = state.time + hallTuning.paladinSignatureCooldown
             state.hall.sanctuaryUntil = state.time + hallTuning.paladinSanctuarySeconds
+            hallFeedback(state,'blood')
           }
           if (stored >= PALADIN.retributionMinAbsorb) {
             const hero = state.hero!
@@ -311,6 +313,7 @@ export function createHeroSpecializationAdapter(
         const hall = state.hall
         if (hall && hall.rank('spirit-summoner-legion') && state.time >= hall.legionAt) {
           hall.legionAt = state.time + hallTuning.spiritLegionCooldown; hall.legionUntil = state.time + hallTuning.spiritLegionSeconds
+          hallFeedback(state,'soul')
         }
         if (hall && hero.hp > before && hall.rank('spirit-summoner-soul-bond') && state.time >= hall.soulBondAt) {
           hall.soulBondAt = state.time + hallTuning.spiritBondCooldown; grantShield(state, hallTuning.spiritBondShield, hallTuning.spiritBondSeconds)

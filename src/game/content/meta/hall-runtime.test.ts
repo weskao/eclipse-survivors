@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createState, resetRun } from '../../state'
-import { hallPersistentCast, hallSummonCast, hallWorldHealing, reserveHallProc, hallRangerShot, hallWeaponCast, hallBurstProc, hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
+import { hallFeedback, flushHallFeedback, hallPersistentCast, hallSummonCast, hallWorldHealing, reserveHallProc, hallRangerShot, hallWeaponCast, hallBurstProc, hallChestRevealed, hallChestRerolls, spendHallChestReroll, hallEffectDuration, hallSummonInterval, hallPickupHealing, hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
 function run(ranks: Record<string, number>) {
   const state = createState()
   resetRun(state)
@@ -170,4 +170,45 @@ it('never counts Double Sigil casts while paused or after death', () => {
   s.hero!.hp=0
   hallWeaponCast(s)
   expect(s.hall!.sigilCasts).toBe(0)
+})
+
+it('presents Hall combat triggers once, using bounded local feedback without camera shake or pause replay',()=>{
+  const s=run({'defense-ward':5})
+  const sfx=vi.fn()
+  const hooks={sfx,message:vi.fn(),offerUpgrades:vi.fn(),end:vi.fn()}
+  const initial=s.impactWaves.length
+  expect(hallFeedback(s,'shield')).toBe(true)
+  expect(hallFeedback(s,'arcana')).toBe(false)
+  expect(s.impactWaves.length).toBe(initial+1)
+  expect(s.impactWaves.at(-1)?.color).toBe('#8acbe8')
+  flushHallFeedback(s,hooks)
+  flushHallFeedback(s,hooks)
+  expect(sfx).toHaveBeenCalledTimes(1)
+  expect(sfx).toHaveBeenCalledWith('ui',23)
+  s.time+=.3
+  expect(hallFeedback(s,'phantom')).toBe(true)
+  expect(s.impactWaves.at(-1)?.color).toBe('#bd96e8')
+  s.mode='paused'
+  flushHallFeedback(s,hooks)
+  expect(hallFeedback(s,'blood')).toBe(false)
+  s.mode='play'
+  flushHallFeedback(s,hooks)
+  expect(sfx).toHaveBeenCalledTimes(1)
+  expect(s.cameraKick).toBe(0)
+  expect(hallFeedback(run({}),'shield')).toBe(false)
+})
+it('emits the ward, elite and Soulward cues only at the real gameplay transition',()=>{
+  const s=run({'defense-ward':5,'synergy-hunter-instinct':1,'summons-soulward':5})
+  s.time=s.hall!.wardAt
+  tickHall(s,0,false)
+  expect(s.impactWaves.at(-1)?.color).toBe('#8acbe8')
+  s.time+=.3
+  hallKill(s,true)
+  expect(s.impactWaves.at(-1)?.color).toBe('#f7d28b')
+  const count=s.impactWaves.length
+  s.time+=.3
+  hallKill(s,true)
+  expect(s.impactWaves.length).toBe(count)
+  hallSummonCast(s)
+  expect(s.impactWaves.at(-1)?.color).toBe('#9ae2ce')
 })

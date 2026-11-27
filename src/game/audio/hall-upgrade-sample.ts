@@ -18,6 +18,14 @@ const PALETTE = {
   'signature-attune': { seconds: .78, peak: .61, strike: 294, notes: [293.66,440,739.99,880], onset: .075, step: .07, decay: 8, charge: .28, bass: 146.83, metal: .13, air: .19 },
   'resonance-attune': { seconds: .94, peak: .66, strike: 392, notes: [261.63,392,523.25,783.99,1046.5], onset: .065, step: .11, decay: 7, charge: .35, bass: 130.81, metal: .12, air: .25 },
   release: { seconds: .48, peak: .44, strike: 260, notes: [659.25,440,293.66], onset: .035, step: .085, decay: 9, charge: .19, bass: 146.83, metal: .09, air: .15 },
+
+  'battle-shield': { seconds:.38,peak:.44,strike:218,notes:[329.63,493.88],onset:.035,step:.08,decay:13,charge:.14,bass:109,metal:.18,air:.05 },
+  'battle-arcana': { seconds:.52,peak:.48,strike:330,notes:[440,659.25,987.77],onset:.035,step:.078,decay:11,charge:.18,bass:165,metal:.08,air:.17 },
+  'battle-wind': { seconds:.30,peak:.34,strike:550,notes:[660,990],onset:.023,step:.055,decay:16,charge:.12,bass:0,metal:.045,air:.22 },
+  'battle-soul': { seconds:.56,peak:.42,strike:164,notes:[246.94,369.99,493.88],onset:.05,step:.09,decay:9,charge:.22,bass:82,metal:.065,air:.18 },
+  'battle-elite': { seconds:.56,peak:.50,strike:130,notes:[261.63,392,523.25],onset:.05,step:.085,decay:10,charge:.20,bass:65,metal:.22,air:.08 },
+  'battle-phantom': { seconds:.38,peak:.42,strike:390,notes:[587.33,440,293.66],onset:.025,step:.067,decay:14,charge:.14,bass:147,metal:.06,air:.20 },
+  'battle-blood': { seconds:.58,peak:.53,strike:110,notes:[196,293.66,392],onset:.055,step:.095,decay:9,charge:.22,bass:73,metal:.21,air:.09 },
   blessing:  { seconds: 1.02, peak: .69, strike: 392, notes: [329.63, 440, 659.25, 880, 1046.5], onset: .11, step: .086, decay: 5.5, charge: .43, bass: 164.81, metal: .08, air: .22 },
 } as const
 
@@ -36,6 +44,7 @@ export function hallRankVariant(rank: number, cap: number, unlock: boolean): num
 /** Explicitly scoped variants keep ordinary combat upgrades and all generic UI sounds unchanged. */
 export function hallCueKey(cue: string, variant?: number): HallCue | undefined {
   if (variant === undefined) return undefined
+  if(cue==='ui')return (['battle-shield','battle-arcana','battle-wind','battle-soul','battle-elite','battle-phantom','battle-blood'] as const)[variant-23]
   if (cue === 'upgrade') {
     const ceremony = (['keystone','signature','resonance','attune','signature-attune','resonance-attune','release'] as const)[variant-16]
     if (ceremony) return ceremony

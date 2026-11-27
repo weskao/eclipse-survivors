@@ -1,4 +1,5 @@
 import { BALANCE } from '../../config'
+import { impact, pushParticle } from '../../fx'
 import type { GameHooks, GameState } from '../../types'
 import type { HallRunSnapshot } from './hall-state'
 
@@ -11,6 +12,7 @@ export function createHallRuntime(snapshot: HallRunSnapshot) {
   const rank = (id: string) => snapshot.ranks[id] ?? 0
   return {
     snapshot, rank,
+    feedbackAt: -Infinity, feedbackVariant: 0,
     stride: capped(rank('mobility-stride') * tuning.stride, tuning.movementCap),
     attackCooldown: 1 - capped(rank('offense-fervor') * tuning.fervor, tuning.cooldownCap),
     weaponCooldown: 1 - capped(rank('arcana-celerity') * tuning.celerity + rank('wizard-channel') * tuning.wizardChannel, tuning.cooldownCap),
@@ -133,7 +135,10 @@ export function hallExtraHit(state: GameState, amount: number, source?: HallDama
     h.sigilReady = false; h.sigilAt = now + tuning.doubleSigilCooldown
     bonus = Math.max(bonus, tuning.doubleSigilDamage)
   }
-  if (bonus) h.procAt = now + tuning.procInterval
+  if (bonus) {
+    h.procAt = now + tuning.procInterval
+    hallFeedback(state,source==='basic'?'elite':source==='summon'?'soul':'arcana')
+  }
   return amount * bonus
 }
 export function hallKill(state: GameState, elite = false): void {
@@ -144,6 +149,7 @@ export function hallKill(state: GameState, elite = false): void {
     if (h.rank('hunt-pathfinder')) h.earnedRerolls = Math.min(tuning.salvageCap, h.earnedRerolls + 1)
     if (h.rank('synergy-hunter-instinct')) h.hunterUntil = state.time + tuning.synergyHunterSeconds
     if (h.rank('synergy-reaper')) h.reaperReady = true
+    if(h.rank('hunt-pathfinder')||h.rank('synergy-hunter-instinct')||h.rank('synergy-reaper'))hallFeedback(state,'elite')
   }
   if (!h.rank('offense-momentum')) return
   h.momentum = Math.min(tuning.momentumStacks, (state.time < h.momentumUntil ? h.momentum : 0) + 1)
@@ -156,6 +162,7 @@ export function grantShield(state: GameState, fraction: number, seconds: number)
   const incoming=hero.max*fraction
   if(incoming>=current){h.shield=incoming;h.shieldUntil=state.time+seconds}
   else h.shieldUntil=Math.max(h.shieldUntil,state.time+seconds)
+  if(incoming>current)hallFeedback(state,'shield')
 }
 export function hallIncoming(state: GameState, amount: number, directContact = false, front = false): number {
   const h = state.hall, hero = state.hero
@@ -203,6 +210,7 @@ export function tickHall(state: GameState, dt: number, dashFinished: boolean): v
     if (h.rank('ranger-storm-hunter') && now >= h.stormAt) h.stormReady = true
     h.afterwindUntil = now + tuning.afterwindSeconds
     h.windstepUntil = now + tuning.afterwindSeconds
+    if(h.rank('mobility-afterwind')||h.rank('mobility-windstep'))hallFeedback(state,'wind')
     if (h.rank('knight-bulwark') && now >= h.bulwarkAt) {
       grantShield(state, tuning.bulwarkShield, tuning.bulwarkSeconds)
       h.bulwarkAt = now + tuning.bulwarkCooldown
@@ -241,6 +249,7 @@ export function hallSummonCast(state: GameState): void {
   if (h && state.mode==='play' && state.hero && state.hero.hp>0 && h.rank('summons-soulward') && state.time >= h.soulwardAt) {
     h.soulwardAt = state.time + tuning.soulwardCooldown
     h.soulwardUntil = state.time + tuning.soulwardSeconds
+    hallFeedback(state,'soul')
   }
 }
 
@@ -270,6 +279,7 @@ export function hallRangerShot(state: GameState): {pierce:number;extra:number} {
   if (h && h.rank('ranger-storm-hunter') && h.stormReady && state.time>=h.stormAt) {
     extra=tuning.stormHunterDamage; h.stormAt=state.time+tuning.stormHunterCooldown; h.stormReady=false
   }
+  if(pierce||extra)hallFeedback(state,'wind')
   return {pierce,extra}
 }
 export function hallWeaponCast(state: GameState): void {
@@ -309,4 +319,34 @@ export function hallPersistentCast(state: GameState, id: string): void {
 /** Only existing healing pickups are boosted, not paid recovery or incidental rewards. */
 export function hallWorldHealing(state: GameState, kind: string, choice: string, amount: number): number {
   return (kind==='events:healing-fountain' && choice==='drink') || (kind==='events:divine-shrine' && choice==='heal') ? hallPickupHealing(state,amount) : amount
+}
+
+/** Local, finite, shared Hall feedback. No damage, RNG, screen shake or new effect pools. */
+const FEEDBACK = {
+  shield: {variant:23,color:'#8acbe8',radius:48},
+  arcana: {variant:24,color:'#d9b5ff',radius:58},
+  wind: {variant:25,color:'#a6e8f1',radius:42},
+  soul: {variant:26,color:'#9ae2ce',radius:54},
+  elite: {variant:27,color:'#f7d28b',radius:60},
+  phantom: {variant:28,color:'#bd96e8',radius:44},
+  blood: {variant:29,color:'#ff927e',radius:58},
+} as const
+export type HallFeedbackKind = keyof typeof FEEDBACK
+export function hallFeedback(state:GameState,kind:HallFeedbackKind,point:{x:number;y:number}|null=state.hero):boolean {
+  const h=state.hall
+  if(!h||!point||!state.hero||state.hero.hp<=0||state.mode!=='play'||state.time<h.feedbackAt)return false
+  const cue=FEEDBACK[kind]
+  h.feedbackAt=state.time+.25
+  h.feedbackVariant=cue.variant
+  impact(state,point.x,point.y,cue.radius,cue.color,.4)
+  // Two deterministic drifting sparks preserve combat RNG and the existing bounded pool.
+  for(const side of [-1,1])pushParticle(state,{x:point.x+side*12,y:point.y,life:.32,max:.32,color:cue.color,r:3,vx:side*30,vy:-36})
+  return true
+}
+export function flushHallFeedback(state:GameState,hooks:GameHooks):void {
+  const h=state.hall
+  if(!h?.feedbackVariant)return
+  const variant=h.feedbackVariant
+  h.feedbackVariant=0
+  if(state.mode==='play'&&state.hero&&state.hero.hp>0)hooks.sfx('ui',variant)
 }

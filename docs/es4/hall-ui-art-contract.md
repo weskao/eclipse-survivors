@@ -22,3 +22,5 @@ Use the existing Eclipse Survivors dark fantasy art direction. Contemporary game
 
 ## Ceremony and device QA
 The 2026-11-27 Hall refresh adds bounded forge, signature blade and paired convergence overlays; no hit area or game state depends on CSS. Release/equip feedback follows a matching committed selection. Keep long success notices inside the scrollable inspector body, the 44px confirmation outside, and reserve space for the attunement notice. Correctly scope both accessibility flags to effects, never the root. Use the real Chromium/WebKit ES4 browser matrix; do not infer physical-device acceptance from static CSS or browser emulation. Final WebP work remains non-blocking.
+
+Shared battle feedback uses seven short scoped Foley cues, finite local impact/sparks, a 250 ms global presentation interval and the existing effect budgets. Shield, arcana, wind, spirit, elite/reward, phantom and blood families are deliberately distinct. This is not individual bespoke animation or art for every passive; keep numeric-only upgrades quiet. No new screen shake, damage or RNG changes.

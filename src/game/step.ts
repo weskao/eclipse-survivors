@@ -5,7 +5,7 @@ import { expireKillStreak, flushKillMilestone } from './kill-streak'
 import { burst } from './fx'
 import { compactXpGems } from './xp-gems'
 import { attack, hit, victoryConditionMet } from './combat'
-import { hallAttackDelay, tickHall, withHallSource } from './content/meta/hall-runtime'
+import { flushHallFeedback, hallAttackDelay, tickHall, withHallSource } from './content/meta/hall-runtime'
 import type { ContentRegistry } from './content/registry'
 import type { FactionBridge } from './content/enemies/integration'
 import { hasWonRun } from '../meta/modes'
@@ -242,6 +242,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   sampleCombat(s, factions?.runtime.enemies)
   if (hero.hp <= 0 || s.mode !== 'play') return
   if (hero.skills.heal) hero.hp = Math.min(hero.max, hero.hp + hero.skills.heal * BALANCE.skills.passive.regenPerRank * dt)
+  flushHallFeedback(s,hooks)
   ageEffects(s, hero, dt)
   s.cam.x += (hero.x - s.cam.x) * minmax(dt * 9, 0, 1)
   s.cam.y += (hero.y - s.cam.y) * minmax(dt * 9, 0, 1)

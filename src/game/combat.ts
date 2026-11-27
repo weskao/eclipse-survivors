@@ -1,6 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
-import { hallBurstProc, hallRangerShot, hallWeaponCast, hallAbsorb, hallAttackRange, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallOutgoing, hallSlow, withHallSource } from './content/meta/hall-runtime'
+import { hallFeedback, hallBurstProc, hallRangerShot, hallWeaponCast, hallAbsorb, hallAttackRange, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallOutgoing, hallSlow, withHallSource } from './content/meta/hall-runtime'
 import { classifyHealthImpact, classifyHeroDamage, markHealthCritical, recordHeroImpact, type IncomingHit } from './health-impact'
 import { BOSS_DEFINITIONS } from './content/bosses/definitions'
 import { recordKill } from './kill-streak'
@@ -72,7 +72,8 @@ export function resolveHallBurst(s: GameState, target: CombatTarget, amount: num
   const candidates= combatTargets(s,factions).filter(e=>e.hp>0 && (e.x-target.x)**2+(e.y-target.y)**2<=proc.radius**2)
   candidates.sort((a,b)=>(a.x-target.x)**2+(a.y-target.y)**2-(b.x-target.x)**2-(b.y-target.y)**2)
   for(const e of candidates.slice(0,proc.limit)) hitTarget(s,e,proc.damage,procHooks,factions,target,'hero')
-  impact(s,target.x,target.y,proc.radius,'#d9b5ff',.65)
+  impact(s,target.x,target.y,proc.radius,hooks.hallSource==='basic'?'#edc585':'#d9b5ff',.65)
+  hallFeedback(s,hooks.hallSource==='basic'?'elite':'arcana',target)
 }
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero, kind: ContactKind | undefined = hooks.contactKind): void {
   const hero = s.hero
