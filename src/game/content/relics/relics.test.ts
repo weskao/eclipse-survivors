@@ -2,6 +2,7 @@ import { expect, it } from 'vitest'
 import { createContentRegistry } from '../registry'
 import { createHero, createState, resetRun } from '../../state'
 import { seeded } from '../../math'
+import { installHallRun } from '../meta/hall-runtime'
 import { RELICS_PACK } from '../packs/relics'
 import { RELICS, RELIC_BY_ID, RELIC_CUES, TREASURE_UI, type RelicId } from './catalog'
 import {
@@ -233,4 +234,18 @@ it.each(['rare','epic','legendary','cursed'] as const)('offers the advertised %s
   const safe=offer.options.find(id=>!RELIC_BY_ID.get(id)!.cursed)!
   expect(claimTreasure(s,1,safe)).toBe(true)
   expect(claimTreasure(s,1,safe)).toBe(false)
+})
+
+it('grants Hall rerolls only to common chests and never duplicates loot', () => {
+  const s = setup()
+  installHallRun(s, {hero:s.heroId,ranks:{'hunt-salvage':1}})
+  const first = openTreasure(s,1,seeded(1),undefined,'common')
+  expect(first).not.toBeNull()
+  expect(inventorySnapshot(s).rerolls).toBe(3)
+  const after = rerollTreasure(s,1,seeded(2))!
+  expect(inventorySnapshot(s).rerolls).toBe(2)
+  expect(claimTreasure(s,1,after.options[0]!)).toBe(true)
+  expect(claimTreasure(s,1,after.options[0]!)).toBe(false)
+  expect(openTreasure(s,2,seeded(3),undefined,'rare')).not.toBeNull()
+  expect(inventorySnapshot(s).rerolls).toBe(2)
 })

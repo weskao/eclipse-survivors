@@ -82,6 +82,8 @@ export interface HudView {
 
 export interface UiTreasureChoice {
   readonly kind: 'treasure'
+  readonly chestId?: number
+  readonly rerolls?: number
   readonly tier?: import('./types').TreasureTier
   readonly items: readonly { id: string; title: string; description?: string; icon?: string;
     rarity: SkillRarity | 'epic'; cursed?: boolean }[]
@@ -144,6 +146,7 @@ export interface GameCommands {
   chooseUpgrade(id: AbilityId): void
   chooseTreasure(id: string): void
   cancelTreasure(): void
+  rerollTreasureChoice(chestId: number, expectedRerolls: number): void
   /** Original `pause()`: play → paused, paused → play. */
   togglePause(): void
   dash(): void

@@ -34,7 +34,7 @@ import { researchCelebrationVariant } from './audio/hall-research-cue'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
-import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
+import { calculateRelicAttack, calculateRelicIncoming, claimTreasure, declineTreasure, inventorySnapshot, openTreasure, rerollTreasure, relicBonuses, tickRelicRecovery } from './content/relics/runtime'
 import { trySpawnEvent } from './events'
 import { burst, impact } from './fx'
 import { emitCombatVfx, followHeroSpecialFx } from './content/packs/combat-vfx'
@@ -412,10 +412,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     openTreasure: relicsEnabled ? (state, chestId, tier) => {
       const offer = openTreasure(state, chestId, random, undefined, tier)
       if (!offer) return false
-      ui.specialChoice = { kind: 'treasure', tier: offer.tier, items: offer.options.map(id => {
-        const relic = RELIC_BY_ID.get(id)!
-        return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity, cursed: relic.cursed }
-      }) }
+      publishTreasureOffer()
       ui.upgrades = []
       screen('level')
       const reveal = TREASURE_AUDIO_TIERS.indexOf(offer.tier ?? 'common')
@@ -661,6 +658,24 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (s.levelQueue) offerUpgrades()
     if (!evolved) audio.playSfx('upgrade')
     hud()
+  }
+
+  function publishTreasureOffer(): void {
+    const inventory = inventorySnapshot(s)
+    const offer = inventory.pending
+    if (!offer) return
+    ui.specialChoice = { kind: 'treasure', tier: offer.tier, chestId: offer.chestId, rerolls: inventory.rerolls, items: offer.options.map(id => {
+      const relic = RELIC_BY_ID.get(id)!
+      return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity, cursed: relic.cursed }
+    }) }
+  }
+  function rerollTreasureChoice(chestId: number, expectedRerolls: number): void {
+    if (s.mode !== 'level' || !ui.specialChoice) return
+    const current = inventorySnapshot(s)
+    if (current.pending?.chestId !== chestId || current.rerolls !== expectedRerolls || expectedRerolls <= 0) return
+    if (!rerollTreasure(s, chestId, random)) { audio.playSfx('deny', 1); return }
+    publishTreasureOffer()
+    audio.playSfx('select')
   }
 
   function chooseTreasure(id: string): void {
@@ -1170,7 +1185,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
             profileStorage = saved.profile
             metaStorage = saved.meta
           }
-          const nextMeta = createMetaProgressionStore(metaStorage)
+          const nextMeta = createMetaProgressionStore(metaStorage, !uid && hallPlaytest ? 4 : 3)
           if (uid && nextMeta.get().status !== 'ready') return false
           profileStore = createProfileStore(profileStorage)
           metaStore = nextMeta
@@ -1289,6 +1304,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     chooseUpgrade,
     chooseTreasure,
     cancelTreasure,
+    rerollTreasureChoice,
     togglePause,
     dash: () => heroDash(s, hooks),
     toggleMusic() {

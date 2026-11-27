@@ -239,7 +239,7 @@ onBeforeUnmount(() => {
     @start="engine.start"
     @choose="engine.chooseUpgrade"
     @special-choose="engine.chooseTreasure"
-    @special-cancel="engine.cancelTreasure"
+    @special-cancel="engine.cancelTreasure" @reroll="engine.rerollTreasureChoice"
     @purchase="engine.buyPermanentUpgrade"
     @research="engine.purchaseResearch" @talent="engine.purchaseTalent" @attune="engine.setHallAttunement"
     @equipment="engine.purchaseEquipment"

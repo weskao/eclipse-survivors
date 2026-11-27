@@ -1,4 +1,5 @@
 import { BALANCE } from './config'
+import { hallPickupHealing } from './content/meta/hall-runtime'
 import { MAX_MOBS } from './constants'
 import { damageHero } from './combat'
 import { random } from './math'
@@ -57,7 +58,7 @@ function activateEvent(s: GameState, kind: WorldEventKind, hooks: GameHooks, eve
       }
       break
     case 'shrine':
-      hero.hp = Math.min(hero.max, hero.hp + BALANCE.events.shrineHealing)
+      hero.hp = Math.min(hero.max, hero.hp + hallPickupHealing(s, BALANCE.events.shrineHealing))
       hooks.message('✦ 魔法祭壇 · 回復生命')
       break
     case 'invasion': {

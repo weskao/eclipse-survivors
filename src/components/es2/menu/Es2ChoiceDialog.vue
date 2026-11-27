@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { t } from '../../../i18n'
+import { t, currentLocale } from '../../../i18n'
 import { computed, ref, watch } from 'vue'
 import Es2Dialog from './Es2Dialog.vue'
 import Es2ChoiceCards from './Es2ChoiceCards.vue'
 import { treasureArtUrl } from '../../../game/render/es2/production-world'
 import { CHOICE_ARM_MS, shortcutIndex } from './model'
 import type { ChoiceKind, MenuChoice } from './model'
-const props = defineProps<{ active: boolean; kind: ChoiceKind; items: readonly MenuChoice[]; still?: boolean; tier?: import('../../../game/types').TreasureTier }>()
-const emit = defineEmits<{ choose: [id: string]; cancel: []; settings: [] }>()
+const props = defineProps<{ active: boolean; kind: ChoiceKind; items: readonly MenuChoice[]; still?: boolean; chestId?: number; rerolls?: number; tier?: import('../../../game/types').TreasureTier }>()
+const emit = defineEmits<{ choose: [id: string]; cancel: []; settings: []; reroll: [chestId:number, expectedRerolls:number] }>()
 const selecting = ref(false)
 const revealSkipped = ref(false)
 const uniqueItems = computed(() => props.items.filter((item, i, all) => all.findIndex(other => other.id === item.id) === i))
@@ -48,7 +48,7 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
 <template>
   <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(captions[kind])" :dismissible="kind !== 'level'"
     wide variant="choice" :tone="kind === 'evolution' ? 'legendary' : 'neutral'" @cancel="emit('cancel')" @shortcut="shortcut">
-    <template #header-actions><button v-if="kind === 'level'" type="button" class="es2-secondary es2-dialog-settings" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></template>
+    <template #header-actions><button v-if="kind==='treasure' && chestId!==undefined && rerolls!==undefined" type="button" class="es2-secondary es2-dialog-settings" data-es4-reroll :disabled="!active || selecting || rerolls<=0" @click="emit('reroll',chestId,rerolls)">{{ currentLocale==='en' ? 'Reroll' : '重新抽選' }} · {{ rerolls }}</button><button v-if="kind === 'level'" type="button" class="es2-secondary es2-dialog-settings" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></template>
     <div class="es2-selection-scene" :class="{ 'es2-still': still }" :data-es3-reveal="reveal" @pointerdown.capture="pointerdown">
       <div v-if="reveal === 'treasure'" class="es3-chest-seal" :data-tier="revealTier" aria-hidden="true"><img :src="chestArt" data-es3-chest-reveal alt="" /></div>
       <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="tap" />

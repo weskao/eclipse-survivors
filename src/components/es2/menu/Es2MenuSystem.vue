@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<{
   audioUnlocked?: boolean; musicOn?: boolean; sfxOn?: boolean
   musicVolume?: number; sfxVolume?: number
   accessibilityPreferences?: AccessibilityPreferences
-  specialChoice?: { kind: 'evolution' | 'treasure'; tier?: import('../../../game/types').TreasureTier; items: readonly MenuChoice[] } | null
+  specialChoice?: { kind: 'evolution' | 'treasure'; chestId?:number; rerolls?:number; tier?: import('../../../game/types').TreasureTier; items: readonly MenuChoice[] } | null
   relics?: readonly RelicEntry[]
   notification?: { title: string; message: string } | null
   loading?: { message?: string; hero?: JobId; progress?: number } | null
@@ -43,7 +43,7 @@ const props = withDefaults(defineProps<{
 })
 const emit = defineEmits<{
   select: [job: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; choose: [id: AbilityId]
-  specialChoose: [id: string]; specialCancel: []
+  specialChoose: [id: string]; specialCancel: []; reroll: [chestId:number, expectedRerolls:number]
   purchase: [upgrade: PermanentUpgrade]; cosmetic: [hero: JobId, skin: CosmeticId]
   research: [id: string]; equipment: [id: string]; bonus: [id: string]
   talent: [id:string,rank:number]; attune: [universal:string[],signature:string|null,resonance:string|null]
@@ -116,7 +116,7 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
     <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="stillPresentation"
       @choose="chooseUpgrade" @settings="emit('settings')" />
     <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :tier="specialCards.tier" :items="specialCards.items"
-      :still="stillPresentation" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
+      :still="stillPresentation" :chest-id="specialCards.chestId" :rerolls="specialCards.rerolls" @reroll="(id,count)=>emit('reroll',id,count)" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')">
       <template #cloud><slot name="result-cloud" /></template>
