@@ -251,6 +251,30 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(drawBossNativeKeyframe(ctx, image, snapshot('death', 'light-ring', 'eclipse-seraph'), 300)).toBe(false)
     expect(calls).toHaveLength(1)
   })
+  it('reviews the Batch 21 Seraph hurt pose only in phase 1 with existing fallbacks', () => {
+    const base = snapshot('hurt', 'light-ring', 'eclipse-seraph')
+    const at = (phase: 1 | 2 | 3): BossSnapshot => ({
+      ...base, phase, impacts: [], bodyMotion: { ...base.bodyMotion!, phase },
+    })
+    const state = at(1)
+    expect(selectBossNativeKeyframe(state)).toBe('seraphHurt')
+    expect(selectBossNativeKeyframe(at(2))).toBeNull()
+    expect(selectBossNativeKeyframe(at(3))).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: NaN } })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, pose: 'idle' } })).toBeNull()
+    const image = { complete: true, naturalWidth: 1197, naturalHeight: 1452 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'seraphHurt')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1197, 1452, -149.25, -336.75, 299.25, 363])
+    expect(drawBossNativeKeyframe(ctx, image, at(2), 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+    const failed = { complete: true, naturalWidth: 0, naturalHeight: 1452 } as HTMLImageElement
+    registerBossNativeKeyframe(failed, 'seraphHurt')
+    expect(drawBossNativeKeyframe(ctx, failed, state, 300)).toBe(false)
+    expect(calls).toHaveLength(1)
+  })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
     const makeImage = () => ({ complete: false, src: '' }) as HTMLImageElement
     expect(loadWorldRuntimeImages(makeImage).bossNativeKeyframes).toBeUndefined()
@@ -258,7 +282,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     const batch12 = import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-12/*/**/*.webp')
     const present = (path: string) => !path.startsWith('batch-12/') || Object.hasOwn(batch12, '../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path)
     const seraph = loadWorldRuntimeImages(makeImage, 'eclipse-seraph', 'native')
-    const seraphKeys = (['seraphWindup', 'seraphRelease', 'seraphDeath'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
+    const seraphKeys = (['seraphWindup', 'seraphRelease', 'seraphHurt', 'seraphDeath'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
     expect(Object.keys(seraph.bossNativeKeyframes ?? {})).toEqual(seraphKeys)
     await vi.waitFor(() => {
       for (const key of seraphKeys)

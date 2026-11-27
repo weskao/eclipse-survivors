@@ -32,6 +32,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   frostRelease: ['batch-12/frost-sovereign/attack/ice-fan-release-key-a.webp', 1254, 1254, 639.5, 1245],
   seraphWindup: ['batch-12/eclipse-seraph/windup/light-ring-windup-key-a.webp', 1254, 1254, 628, 1251],
   seraphRelease: ['batch-17/eclipse-seraph/attack/light-ring-release-key-a.webp', 1254, 1254, 624, 1235],
+  seraphHurt: ['batch-21/eclipse-seraph/hurt/seraph-hurt-key-a.webp', 1197, 1452, 597, 1363],
   seraphDeath: ['batch-14/eclipse-seraph/death/fallen-key-a.webp', 1254, 1254, 614.5, 1225],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
@@ -74,6 +75,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   if (snapshot.id === 'eclipse-seraph') {
     if (motion.phase === 3 && motion.pose === 'death') return 'seraphDeath'
     if (motion.phase !== 1) return null
+    if (motion.pose === 'hurt') return 'seraphHurt'
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'light-ring')) return 'seraphWindup'
     if (motion.pose === 'attack' && snapshot.impacts?.at(-1)?.attackId === 'light-ring') return 'seraphRelease'
     return null
