@@ -67,6 +67,8 @@ describe('ES2 candidate review inventory', () => {
     ['shadowblade', 'idle-se-keyframes-2026-11-27-batch-37', ['ready-standing-identity-a']],
     ['spirit-summoner', 'special-e-keyframes-2026-11-27-batch-38', ['summon-forward-identity-b']],
     ['spirit-summoner', 'attack-w-keyframes-2026-11-27-batch-38', ['cast-forward-identity-b']],
+    ['crimson-paladin', 'special-e-keyframes-2026-11-27-batch-39', ['barrier-release-identity-a']],
+    ['crimson-paladin', 'special-w-keyframes-2026-11-27-batch-39', ['barrier-guard-identity-b']],
   ] as const)('preserves %s independent keyframes and their review-only gate', (hero, folder, expectedKeys) => {
     const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero, 'candidates', folder)
     const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
@@ -108,11 +110,11 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain('8 northern and 1 West four-frame strips')
     expect(summary).toContain('21 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 43} candidate review panels`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 43)
-    expect(summary).toContain('20 independent keyframes')
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 45} candidate review panels`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 45)
+    expect(summary).toContain('22 independent keyframes')
     const keys = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-keyframe"]')]
-    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a', 'cast-windup-identity-b', 'windup-identity-a', 'barrier-guard-identity-a', 'stealth-prepare-identity-a', 'summon-recovery-identity-a', 'stealth-strike-identity-a', 'stealth-low-transition-identity-a', 'stealth-recovery-identity-a', 'summon-release-identity-a', 'barrier-counterstrike-identity-a', 'stealth-kneel-rise-identity-a', 'ready-standing-identity-a', 'summon-forward-identity-b', 'cast-forward-identity-b'])
+    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a', 'cast-windup-identity-b', 'windup-identity-a', 'barrier-guard-identity-a', 'stealth-prepare-identity-a', 'summon-recovery-identity-a', 'stealth-strike-identity-a', 'stealth-low-transition-identity-a', 'stealth-recovery-identity-a', 'summon-release-identity-a', 'barrier-counterstrike-identity-a', 'stealth-kneel-rise-identity-a', 'ready-standing-identity-a', 'summon-forward-identity-b', 'cast-forward-identity-b', 'barrier-release-identity-a', 'barrier-guard-identity-b'])
     for (const [folder, label] of [
       ['special-s-keyframes-2026-11-27-batch-37', 'shadowblade · SPECIAL · S'],
       ['idle-se-keyframes-2026-11-27-batch-37', 'shadowblade · IDLE · SE'],
@@ -128,6 +130,15 @@ describe('ES2 candidate review inventory', () => {
       const panels = keys.filter(article => article.dataset.candidateFolder === folder)
       expect(panels).toHaveLength(1)
       expect(panels[0]?.querySelector('h2')?.textContent).toContain(label)
+    }
+    for (const [folder, direction] of [
+      ['special-e-keyframes-2026-11-27-batch-39', 'E'],
+      ['special-w-keyframes-2026-11-27-batch-39', 'W'],
+    ] as const) {
+      const panels = keys.filter(article => article.dataset.candidateFolder === folder)
+      expect(panels).toHaveLength(1)
+      expect(panels[0]?.querySelector('h2')?.textContent).toContain('crimson-paladin · SPECIAL · ' + direction)
+      expect(panels[0]?.querySelector('canvas')?.dataset.mirrored).toBe('false')
     }
     const batch36 = keys.filter(article => article.dataset.candidateFolder === 'special-e-keyframes-2026-11-27-batch-36')
     expect(batch36).toHaveLength(5)
