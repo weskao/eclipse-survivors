@@ -6,8 +6,9 @@ PORT ?= 5173
 
 # embers=N pins the Twilight Embers (暮光餘燼) wallet on every page load: make dev embers=5000.
 # Applied only by the Vite dev server (vite.config.ts devEmbers); builds never include it.
+# Dev-server targets only: Vite inlines any exported VITE_* var into a build's import.meta.env.
 ifdef embers
-export VITE_ES2_EMBERS := $(embers)
+dev dev-unlocked phone phone-unlocked: export VITE_ES2_EMBERS := $(embers)
 endif
 
 .PHONY: setup dev dev-unlocked test-unlocked phone phone-unlocked build preview run test typecheck check-release verify deploy deploy-pages help
