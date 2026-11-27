@@ -77,7 +77,6 @@ const english = new Map<string, string>([
   ["星蝕扇區","Eclipse Wedge"],
   ["星蝕交錯","Eclipse Cross"],
   ["熾天終曲","Seraph Finale"],
->>>>>>> 2bbe3db (feat(archive): enrich monster and boss dossiers with live balance and skills)
   ['解鎖條件：{condition}', 'Unlock requirement: {condition}'],
   ['暮境遠征', 'Eclipse Survivors'],
   ['血量偏低', 'Low health'],
