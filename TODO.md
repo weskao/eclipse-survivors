@@ -274,7 +274,7 @@ Boss output directory: `src/assets/es2/production/skills/boss-dossier/`. Each fi
 | eclipse-cross | 金紫雙色十字交叉能量 |
 | seraph-finale | 金白與深紫星蝕核心，放射終曲光芒 |
 
-Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`. Each filename is `<id>@3x.webp`. Add a Vite glob URL resolver in `monster-details.ts` before `skillImageSrc(attacks[attack].art)`, preserving the current fallback and the shared original-boss attack IDs. No per-card UI branches. 
+Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`. Each filename is `<id>@3x.webp`. The Vite glob URL resolver in `monster-details.ts` already prefers this file and preserves the generic WebP fallback and shared original-boss attack IDs. Add the file and rebuild; no further source change is required. No per-card UI branches. 
 
 | ID / filename stem | Art brief (zh-TW) |
 |---|---|

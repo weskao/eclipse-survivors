@@ -8,6 +8,7 @@ import { t } from '../../../i18n'
 export interface MonsterStat { label: string; value: string | number; name: string }
 export interface MonsterSkill { id: string; title: string; icon: string; description: string; detail: string }
 export interface MonsterGroup { id: string; title?: string; color?: string; stats: MonsterStat[]; skills: MonsterSkill[] }
+const enemyDossierArt = import.meta.glob('../../../assets/es2/production/skills/enemy-dossier/*@3x.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 const attacks: Record<EnemyAttack, { title: string; description: string; art: AbilityId }> = {
   pounce: { title: '躍擊', description: '瞄準旅人後向前撲擊。', art: 'speed' },
   dive: { title: '俯衝', description: '蓄勢後高速俯衝，穿越攻擊路徑。', art: 'haste' },
@@ -45,7 +46,7 @@ function legacyGroup(id: MobType): MonsterGroup {
       stat('RNG', '攻擊觸發距離', config.ai.near[id]),
     ],
     skills: legacyAttacks[id].map(attack => ({
-      id: attack, title: t(attacks[attack].title), icon: skillImageSrc(attacks[attack].art),
+      id: attack, title: t(attacks[attack].title), icon: enemyDossierArt[`../../../assets/es2/production/skills/enemy-dossier/${attack}@3x.webp`] ?? skillImageSrc(attacks[attack].art),
       description: t(attacks[attack].description),
       detail: t('蓄力 {seconds} 秒', { seconds: Number((config.ai.windup[attack] + (id === 'boss' ? config.ai.bossWindupExtra : 0)).toFixed(2)) }),
     })),
