@@ -389,8 +389,8 @@ describe('portal start interaction feedback', () => {
     for (const token of [".es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before","animation:es2-portal-sweep .72s","@keyframes es2-portal-sweep",".es2-portal-start:active:not(:disabled) .es2-portal-core","[data-es2-reduce-flashing=\"true\"] .es2-portal-start",".es2-portal-start:focus-visible:not(:disabled)"]) expect(css).toContain(token)
     expect(css).toMatch(/\.es2-portal-sheen\s*\{[^}]*pointer-events:none/)
     expect(css).toMatch(/@media\s*\(hover:hover\) and \(pointer:fine\)\s*\{\s*\.es2-menu \.es2-portal-start:hover/)
-    expect(css).toContain("--es2-portal-rim:linear-gradient(105deg,#d79b4c,#fff7d5 26%,#ffe6a0 58%,#e1ad5c 82%,#fff7d0);")
-    expect(css).toContain("--es2-portal-fill:radial-gradient(ellipse at 24% 50%,#ffda8566,transparent 57%),linear-gradient(180deg,#ca9651,#976333 46%,#593820 52%,#82552d);")
+    expect(css).toContain("--es2-portal-rim:linear-gradient(100deg,#b9813f,#ffe9b0 22%,#f3c877 55%,#a8743a 78%,#ffe6a8);")
+    expect(css).toContain("--es2-portal-fill:radial-gradient(ellipse 58% 130% at 50% 118%,#ffc56bd9,#e2783f80 42%,transparent 72%),linear-gradient(180deg,#3d2a5c,#241842 54%,#150f2a);")
     expect(css).not.toContain('--es2-portal-lit-rim')
     expect(css).not.toContain('--es2-portal-lit-fill')
     expect(css).not.toMatch(/\.es2-portal-start:hover:not\(:disabled\) \.es2-portal-label\s*\{/)
@@ -399,6 +399,60 @@ describe('portal start interaction feedback', () => {
     expect(css).toContain('.es2-portal-start:active:not(:disabled) .es2-portal-core{transform:scale(.92)}')
     expect(css).toContain('.es2-portal-start:active:not(:disabled) .es2-portal-decoration{transform:scale(.96)}')
     expect(css).toContain('box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399')
+  })
+})
+
+describe('lobby dock silhouette and layout', () => {
+  it('keeps the duration beside the mode name and groups summary and hero into one meta line', () => {
+    const mode = menu({ runMode: 'quick' }).get('.es2-mobile-selected-mode').element
+    expect(Array.from(mode.children, child => child.className)).toEqual(
+      ['es2-expedition-kicker', 'es2-expedition-name', 'es2-expedition-duration', 'es2-expedition-meta'])
+    expect(Array.from(mode.querySelector('.es2-expedition-meta')!.children, child => child.className)).toEqual(
+      ['es2-expedition-description', 'es2-expedition-hero'])
+    // CJK text breaks between any two glyphs; keep-all keeps 「曙鋼騎士」 whole while English still wraps at spaces.
+    expect(css).toContain('.es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}')
+  })
+  it('cuts both dock buttons as forward chevrons from one shared tip instead of hexagon slabs', () => {
+    expect(css).toContain('.es2-menu .es2-menu-actions{--es2-dock-tip:16px;grid-template-columns:minmax(0,1fr) fit-content(52%);')
+    expect(css).toContain('--es2-portal-shape:polygon(0 0,calc(100% - var(--es2-dock-tip)) 0,100% 50%,calc(100% - var(--es2-dock-tip)) 100%,0 100%,var(--es2-dock-tip) 50%);')
+    expect(css.match(/clip-path:var\(--es2-portal-shape\)/g)).toHaveLength(2)
+    expect(css).toContain('clip-path:polygon(12px 0,calc(100% - var(--es2-dock-tip)) 0,100% 50%,calc(100% - var(--es2-dock-tip)) 100%,0 100%,0 12px)')
+    expect(css).not.toContain('polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%)')
+    expect(css).not.toContain('es2-portal-orbit')
+  })
+  it('stacks the slim brief above a full-width single-line gate button on portrait phones only', () => {
+    expect(css).toMatch(/@media\(max-width:700px\) and \(orientation:portrait\)\{\s*\.es2-menu \.es2-menu-actions\{grid-template-columns:minmax\(0,1fr\)\}/)
+    expect(css).toMatch(/\.es2-menu \.es2-portal-start\{[^}]*min-height:56px/)
+    expect(css).toMatch(/\.es2-menu \.es2-portal-label\{[^}]*font:800 max\(1\.0625rem,[^}]*text-wrap:balance/)
+    expect(css).not.toContain('.es2-menu .es2-portal-start{flex-direction:column')
+    expect(css).not.toContain('.es2-menu .es2-expedition-sigil{display:none}')
+  })
+  it('aligns the dock with the 1680px lobby shell and hyphenates long hall labels instead of splitting words', () => {
+    expect(css).toMatch(/\.es2-menu \.es2-menu-action-bar\{\s*padding-inline:[^;]*calc\(\(100% - 1680px\) \/ 2\)/)
+    expect(css).not.toContain('calc((100% - 1120px) / 2)')
+    expect(css).toMatch(/\.es2-menu \.es2-hall-links button\{[^}]*hyphens:auto/)
+    expect(readFileSync(resolve('src/components/es2/hero-roster/HeroActiveSummary.vue'), 'utf8'))
+      .toMatch(/\.es2-active-summary__head strong \{[^}]*hyphens:auto/)
+  })
+  // Chromium ships no hyphenation dictionary, so phone hall labels stay whole by track sizing, not by hyphens.
+  it('keeps phone hall labels as whole words from 360px and breaks anywhere only below it', () => {
+    expect(css).toContain('.es2-menu .es2-hall-links{gap:2px;grid-template-columns:repeat(5,minmax(min-content,1fr))}')
+    expect(css).toMatch(/\.es2-menu \.es2-hall-links button\{flex-direction:column;[^}]*font-size:max\(\.6875rem,min\(calc\(\.6875rem \* var\(--es2-ui-scale,1\)\),3vw\)\);[^}]*overflow-wrap:break-word\}/)
+    expect(css).toMatch(/@media\(max-width:359px\)\{\s*\.es2-menu \.es2-hall-links\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\)\}\s*\.es2-menu \.es2-hall-links button\{overflow-wrap:anywhere\}/)
+  })
+  it('uses the compact brief below 1024px so a tablet brief beside the gate stays short', () => {
+    expect(css).toMatch(/@media\(max-width:1023px\),\(orientation:landscape\) and \(max-height:520px\)\{[^@]*\.es2-menu \.es2-expedition-kicker\{display:none\}/)
+  })
+  it('narrows the gate on small landscape phones so the brief keeps two meta lines, never below one zh-TW line', () => {
+    expect(css).toMatch(/@media\(orientation:landscape\) and \(max-height:520px\)\{[^@]*\.es2-menu \.es2-portal-start\{padding-inline:calc\(var\(--es2-dock-tip\) \+ 6px\)\}/)
+    expect(css).toMatch(/@media\(orientation:landscape\) and \(max-height:520px\) and \(max-width:700px\)\{\s*\.es2-menu \.es2-menu-actions\{grid-template-columns:minmax\(0,1fr\) fit-content\(max\(40%,14\.5rem\)\)\}/)
+  })
+  it('gives a compact phone skill name the full summary width instead of the column beside its icon', () => {
+    const summary = readFileSync(resolve('src/components/es2/hero-roster/HeroActiveSummary.vue'), 'utf8')
+    const phone = summary.slice(summary.indexOf('@media (max-width:610px)'))
+    expect(phone).toContain('.es2-active-summary[data-hero-active-summary="compact"] { display:grid; grid-template-columns:auto minmax(0,1fr);')
+    expect(phone).toContain(':is(.es2-active-summary__copy,.es2-active-summary__head) { display:contents; }')
+    expect(phone).toContain('.es2-active-summary__head strong { grid-column:1 / -1; grid-row:1; }')
   })
 })
 
