@@ -7,6 +7,14 @@ const polish = readFileSync(resolve(process.cwd(), 'src/styles/es2/skill-polish.
 const cards = readFileSync(resolve(process.cwd(), 'src/components/es2/menu/Es2ChoiceCards.vue'), 'utf8')
 
 describe('ES2 choice card responsive illustrations', () => {
+  it('reserves hover bleed inside the existing dialog geometry and preserves scrolling', () => {
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-dialog-body\{[^}]*overflow-x:hidden;overflow-y:auto/)
+    expect(css).toMatch(/@media \(hover:hover\) and \(pointer:fine\)\s*\{[\s\S]*?\.es2-dialog-choice \.es2-dialog-body\{[^}]*margin-block:calc\(-1 \* var\(--es2-choice-bleed-top\)\) -8px;[^}]*padding-block:var\(--es2-choice-bleed-top\) 8px;[^}]*margin-inline:-12px;[^}]*padding-inline:12px/)
+    expect(css).toMatch(/\.es2-dialog-choice \.es2-choice:hover:not\(:disabled\)\{z-index:2\}/)
+    const picker = readFileSync(resolve(process.cwd(), 'src/components/es2/menu/Es2ChoiceDialog.vue'), 'utf8')
+    expect(picker).toMatch(/@keyframes es3-reveal \{ from \{[^}]*translate:0 8px; scale:\.985;/)
+    expect(picker).not.toMatch(/@keyframes es3-reveal[^\n]*transform:/)
+  })
   it('reserves image height separately from longer titles and descriptions', () => {
     expect(css).toMatch(/\.es2-card-art\{[^}]*flex:0 0 auto/)
     expect(css).toMatch(/\.es2-card-art img\{[^}]*object-fit:contain/)

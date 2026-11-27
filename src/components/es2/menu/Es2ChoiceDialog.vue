@@ -75,7 +75,7 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
 @media (prefers-reduced-motion: reduce) { .es3-chest-seal img { animation:none; } }
 :global([data-es2-reduce-motion="true"] .es3-chest-seal img), :global([data-es2-reduce-flashing="true"] .es3-chest-seal img) { animation:none; filter:none; }
 .es3-skip-reveal { display: block; margin: .5rem auto 0; }
-@keyframes es3-reveal { from { opacity: .55; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes es3-reveal { from { opacity: .55; translate:0 8px; scale:.985; } to { opacity: 1; translate:0 0; scale:1; } }
 @media (prefers-reduced-motion: reduce) { [data-es3-reveal] :deep(.es2-choice) { animation: none; } .es3-skip-reveal { display: none; } }
 :global([data-es2-reduce-motion="true"] [data-es3-reveal] .es2-choice), :global([data-es2-reduce-flashing="true"] [data-es3-reveal] .es2-choice) { animation: none; }
 </style>
