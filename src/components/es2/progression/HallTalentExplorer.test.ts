@@ -49,3 +49,15 @@ it('distinguishes owned from active resonance and lets any equipped slot be remo
   expect(wrapper.emitted('attune')).toEqual([[['offense-war-master'],null,null]])
   wrapper.unmount()
 })
+
+it('shows current and next contributions without spending or inventing a next rank at MAX', async () => {
+  const state=createMetaState()
+  state.version=4;state.hall={ownership:{'offense-edge':2},attunement:{universal:[],hero:{},resonance:null}}
+  const wrapper=mount(HallTalentExplorer,{props:{state,hero:'knight'}})
+  expect(wrapper.get('.hall-comparison').text()).toContain('+2%')
+  expect(wrapper.get('.hall-comparison').text()).toContain('+3%')
+  await wrapper.setProps({state:{...state,hall:{...state.hall,ownership:{'offense-edge':5}}}})
+  expect(wrapper.get('.hall-comparison').text()).toContain('+5%')
+  expect(wrapper.findAll('.hall-comparison b')).toHaveLength(1)
+  wrapper.unmount()
+})

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { HALL_TALENTS, HALL_GROUPS, validateHallTalents, hallTalentCost, hallTalentEligible, hallTalentGroup } from './hall-talents'
+import { BALANCE } from '../../config'
+import { hallRankValues } from './hall-rank-values'
 import { createMetaState } from './state'
 
 describe('ES4 talent catalog', () => {
@@ -70,4 +72,24 @@ it('keeps all functional SVG icons and unique future raster briefs available', (
   expect(descriptions.size).toBe(HALL_TALENTS.length)
   expect(svgPaths.size).toBe(HALL_TALENTS.length)
   expect(rasterPaths.size).toBe(HALL_TALENTS.length)
+})
+
+it('provides actual per-rank contribution and no next rank beyond the cap for every ranked node', () => {
+  const ranked = HALL_TALENTS.filter(node => node.maxRank > 1)
+  expect(ranked).toHaveLength(48)
+  for (const node of ranked) {
+    const zero=hallRankValues(node.id,0)!
+    const first=hallRankValues(node.id,1)!
+    const max=hallRankValues(node.id,node.maxRank)!
+    expect(zero.current.every(v=>v.value===0),node.id).toBe(true)
+    expect(zero.next,node.id).toEqual(first.current)
+    expect(first.current.every(v=>v.value!==0),node.id).toBe(true)
+    expect(max.next,node.id).toBeNull()
+  }
+  expect(hallRankValues('offense-edge',2)?.current[0]?.value).toBeCloseTo(BALANCE.hall.edge*200)
+  expect(hallRankValues('defense-constitution',3)?.next?.[0]?.value).toBe(BALANCE.hall.constitution*4)
+  expect(hallRankValues('summons-command',5)?.current.map(v=>v.value)).toEqual([-3,2])
+  expect(hallRankValues('hunt-salvage',5)?.current[0]?.value).toBe(5)
+  expect(hallRankValues('offense-edge',6)).toBeNull()
+  expect(hallRankValues('offense-war-master',1)).toBeNull()
 })

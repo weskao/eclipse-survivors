@@ -1,9 +1,10 @@
-import tuning from '../../balance/hall-effect-tuning.json'
+import { BALANCE } from '../../config'
 import type { GameHooks, GameState } from '../../types'
 import type { HallRunSnapshot } from './hall-state'
 
 export type HallDamageSource = 'basic' | 'weapon' | 'persistent' | 'summon' | 'hero' | 'proc'
 type Target = { hp: number; max: number; slow?: number }
+const tuning = BALANCE.hall
 const capped = (value: number, cap: number) => Math.min(cap, Math.max(0, value))
 
 export function createHallRuntime(snapshot: HallRunSnapshot) {

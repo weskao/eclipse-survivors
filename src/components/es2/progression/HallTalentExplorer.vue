@@ -2,6 +2,7 @@
 import { computed, ref, nextTick } from 'vue'
 import { currentLocale, t } from '../../../i18n'
 import { HALL_GROUPS, hallTalentGroup, hallTalent, hallTalentCost, hallTalentEligible } from '../../../game/content/meta/hall-talents'
+import { hallRankValues, type RankValue } from '../../../game/content/meta/hall-rank-values'
 import { resolveHallRunSnapshot } from '../../../game/content/meta/hall-state'
 import { RESEARCH } from '../../../game/content/meta/catalog'
 import type { MetaState } from '../../../game/content/meta/state'
@@ -57,6 +58,15 @@ const title = (id:string) => {
   const node = hallTalent(id)
   return node ? localized(node.name,node.nameEn) : t(RESEARCH.find(r=>r.id===id)?.title ?? id)
 }
+function rankValueText(values: RankValue[] | undefined): string | undefined {
+  return values?.map(({value,unit}) => {
+    const amount = (value>0?'+':'')+value
+    if(unit==='hp')return amount+' HP'
+    if(unit==='count')return t('{value} 次重擲',{value})
+    if(unit==='points')return t('{value} 個百分點',{value:amount})
+    return amount+'%'
+  }).join(' / ')
+}
 const nodes = computed<HallNode[]>(() => {
   const term = query.value.trim().toLocaleLowerCase()
   return definitions.value.filter(n=>!term || [n.name,n.nameEn,n.effect,n.effectEn].some(s=>s.toLocaleLowerCase().includes(term))).map(n=>({
@@ -66,6 +76,8 @@ const nodes = computed<HallNode[]>(() => {
     canBuy:live.value && hallTalentEligible(n.id,props.state,ownership.value,props.hero) && props.state.embers >= (hallTalentCost(n.id,ownership.value[n.id] ?? 0) ?? Infinity),
     talentType:n.maxRank>1?'rank':tree.value==='hero'?'signature':tree.value==='synergy'?'resonance':'keystone',
     attunementStatus: n.maxRank===1 && ownership.value[n.id] ? activeRanks.value[n.id] ? localized('生效中','Active') : activeChoice(n.id) ? localized('已配置 · 未生效','Equipped · inactive') : localized('已擁有 · 未配置','Owned · unequipped') : undefined,
+    current:rankValueText(hallRankValues(n.id,ownership.value[n.id]??0)?.current),
+    next:rankValueText(hallRankValues(n.id,ownership.value[n.id]??0)?.next??undefined),
     requires:n.requires.map(req=>({...req,title:title(req.id)})),
     requirements:[...n.requires.map(req=>title(req.id)+' · Lv. '+req.rank),...(n.masteryGate?[localized('英雄專精','Hero mastery')+' · Lv. '+n.masteryGate]:[])],
   }))

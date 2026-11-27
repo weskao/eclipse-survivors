@@ -11,6 +11,7 @@ import modes from './modes.json'
 import bosses from './bosses.json'
 import relics from './relics.json'
 import meta from './meta.json'
+import hall from './hall-effect-tuning.json'
 
 /** Compose domain-owned balance data without changing any gameplay values or BALANCE keys. */
 export const tuning = {
@@ -27,4 +28,5 @@ export const tuning = {
   bosses,
   relics,
   meta,
+  hall,
 } as const
