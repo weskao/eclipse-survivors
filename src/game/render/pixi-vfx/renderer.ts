@@ -7,7 +7,7 @@ import { impactGeometry, visibleImpact, type ImpactGeometry } from './plan'
 import type { HeroVfxFrame, VfxFrame } from './bridge'
 import { heroSpecialImages } from '../es2/hero-special-vfx'
 import {
-  HERO_ART_SLOTS, HERO_MOTE_SLOTS, heroArtPose, heroMoteBudget, heroMotePose, type HeroCast, type HeroPose,
+  HERO_ART_SLOTS, HERO_MOTE_SLOTS, HERO_TARGET_SLOTS, heroTargetLimit, heroArtPose, heroMoteBudget, heroMotePose, type HeroCast, type HeroPose,
 } from './hero-choreography'
 import { choreography, particlePose, particleFrame, releaseEnvelope, type ParticleKind, type ParticlePose } from './choreography'
 
@@ -16,7 +16,7 @@ export interface PixiBossRenderer {
   heroSpecial(frame: HeroVfxFrame): boolean; dispose(): void
 }
 type Surface = Pick<VfxFrame, 'ctx' | 'width' | 'height' | 'dpr'>
-// Hero casts reach at most 330 px (Spirit range) from the caster plus sprite half-size.
+// Bound the caster and distant arrow impacts, including their trailing sprites.
 const HERO_CULL = 420
 const TAU = Math.PI * 2, SAFE = Math.PI / 5, MAX_PARTICLES = 64
 const clamp = (x: number) => Math.max(0, Math.min(1, x))
@@ -92,7 +92,7 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
   const heroLayer = new Container()
   heroLayer.addChild(...heroArt, ...heroMotes); heroLayer.visible = false
   const heroPose: HeroPose = { x: 0, y: 0, rotation: 0, width: 0, height: 0, alpha: 0, tint: 0, texture: 'spark', additive: true }
-  const heroTargetPool = [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }]
+  const heroTargetPool = Array.from({ length: HERO_TARGET_SLOTS }, () => ({ x: 0, y: 0 }))
   const heroTargets = [] as { x: number; y: number }[]
   const heroCast: HeroCast = { kind: 'hero-shadowblade', elapsed: 0, life: 0, targets: heroTargets, reduced: false }
   app.stage.addChild(missileLayer, impactLayer, heroLayer)
@@ -212,12 +212,13 @@ export async function createPixiBossRenderer(): Promise<PixiBossRenderer> {
     const e = f.effect, strength = f.policy?.vfxOpacity ?? 1
     const cx = e.x + f.ox, cy = e.y + f.oy - 24
     if (strength <= 0 || !(e.max > 0) || !(e.life > 0)) return false
-    if (cx < -HERO_CULL || cy < -HERO_CULL || cx > f.width + HERO_CULL || cy > f.height + HERO_CULL) return true
+    const cull = f.kind === 'hero-ranger' ? 600 : HERO_CULL
+    if (cx < -cull || cy < -cull || cx > f.width + cull || cy > f.height + cull) return true
     if (!prepare(f)) return false
     const images = heroSpecialImages()
     const struck = (e as { targets?: readonly { x: number; y: number }[] }).targets ?? []
     heroTargets.length = 0
-    for (let i = 0; i < struck.length && i < 3; i++) {
+    for (let i = 0; i < struck.length && i < heroTargetLimit(f.kind); i++) {
       const p = heroTargetPool[i]!
       p.x = struck[i]!.x - e.x; p.y = struck[i]!.y - e.y + 24
       heroTargets.push(p)

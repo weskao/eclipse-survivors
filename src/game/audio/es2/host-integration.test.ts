@@ -7,6 +7,7 @@ import type { AudioSystem, BgmElement } from '../types'
 import { createEs2AudioAdapter } from './adapter'
 import { createEngine } from '../../engine'
 import { DURATION } from '../../constants'
+import { HERO_SPECIALIZATIONS_PACK } from '../../content/heroes'
 
 class Media implements BgmElement {
   paused = true
@@ -36,6 +37,9 @@ function setup() {
 
 describe('ES2 final host audio wiring', () => {
   it.each([
+    ['knight', 'knight-special'],
+    ['ranger', 'ranger-special'],
+    ['wizard', 'wizard-special'],
     ['shadowblade', 'shadowblade-special'],
     ['spirit-summoner', 'spirit-summoner-special'],
     ['crimson-paladin', 'crimson-paladin-special'],
@@ -50,13 +54,14 @@ describe('ES2 final host audio wiring', () => {
         return buffer
       },
     })
-    const engine = createEngine({ audio, contentPacks: [] })
+    const engine = createEngine({ audio, contentPacks: [HERO_SPECIALIZATIONS_PACK] })
     engine.selectHero(hero)
+    expect(engine.ui.heroId).toBe(hero)
     engine.selectRunMode('standard')
     engine.start()
     engine.state.mobs = []
     await new Promise<void>(resolve => setTimeout(resolve, 0))
-    expect(loaded.size).toBe(3)
+    expect(loaded.size).toBe(7)
     const expected = [...loaded.entries()].find(([url]) => url.endsWith(cue + '.wav'))?.[1]
     expect(expected).toBeDefined()
     const before = context.oscillators.length
@@ -101,13 +106,17 @@ describe('ES2 final host audio wiring', () => {
   })
 
   it.each([
+    ['knight', 'knight-special'],
+    ['ranger', 'ranger-special'],
+    ['wizard', 'wizard-special'],
     ['shadowblade', 'shadowblade-special'],
     ['spirit-summoner', 'spirit-summoner-special'],
     ['crimson-paladin', 'crimson-paladin-special'],
   ] as const)('plays the dedicated %s sound via the shared SFX bus and respects mute', (hero, cue) => {
     const { audio, context, created } = setup()
-    const engine = createEngine({ audio, contentPacks: [] })
+    const engine = createEngine({ audio, contentPacks: [HERO_SPECIALIZATIONS_PACK] })
     engine.selectHero(hero)
+    expect(engine.ui.heroId).toBe(hero)
     engine.selectRunMode('standard')
     engine.start()
     engine.state.mobs = []

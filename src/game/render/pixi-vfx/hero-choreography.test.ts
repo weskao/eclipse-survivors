@@ -20,6 +20,27 @@ const motes = (c: HeroCast, budget = HERO_MOTE_SLOTS) => {
 }
 
 describe('hero special GPU choreography', () => {
+  it('gathers void particles before release, then ejects a distinct burst', () => {
+    const early = motes(cast('hero-wizard', .16, 1.4))
+    const later = motes(cast('hero-wizard', .32, 1.2))
+    expect(early.length).toBeGreaterThan(0)
+    expect(Math.hypot(later[0]!.x, later[0]!.y)).toBeLessThan(Math.hypot(early[0]!.x, early[0]!.y))
+    expect(motes(cast('hero-wizard', .64, 1)).some(p => p.texture === 'crystal')).toBe(true)
+  })
+
+  it('traces ranger arrows in flight and then emits contact particles at the target', () => {
+    const early = motes(cast('hero-ranger', .14, 1.1))
+    expect(early.some(p => p.texture === 'spark' && Math.hypot(p.x, p.y) < Math.hypot(targets[0].x, targets[0].y))).toBe(true)
+    expect(motes(cast('hero-ranger', .44, .9)).some(p => p.texture === 'feather')).toBe(true)
+  })
+
+  it('gives the knight distinct ground debris and hot sparks with a bounded pool', () => {
+    const particles = motes(cast('hero-knight', .32, .88))
+    expect(particles.some(p => p.texture === 'crystal' && !p.additive)).toBe(true)
+    expect(particles.some(p => p.texture === 'ember')).toBe(true)
+    expect(particles.length).toBeLessThanOrEqual(HERO_MOTE_SLOTS)
+  })
+
   it('staggers Shadowblade blink-cuts on each struck enemy in step with the cast SFX transients', () => {
     expect(heroStrikeTime('hero-shadowblade', 0)).toBeLessThanOrEqual(0.05)
     for (let i = 0; i < 3; i++) {

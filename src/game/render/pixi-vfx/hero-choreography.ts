@@ -1,7 +1,7 @@
 import type { ParticleKind } from './choreography'
 
 /**
- * Pure, allocation-free choreography for the three hero Q casts. Every pose is a function of
+ * Pure, allocation-free choreography for all six hero Q casts. Every pose is a function of
  * (elapsed, life, struck targets) so the GPU pass can rebuild a frame from the simulation clock
  * without retaining particles. Coordinates are relative to the cast centre (hero chest).
  */
@@ -21,6 +21,10 @@ export interface HeroPose {
 
 export const HERO_ART_SLOTS = 10
 export const HERO_MOTE_SLOTS = 40
+export const HERO_TARGET_SLOTS = 8
+export function heroTargetLimit(kind: string): number {
+  return kind === 'hero-knight' ? 8 : kind === 'hero-wizard' ? 6 : 3
+}
 /** Aegis shatter window: the last seconds of the barrier effect. */
 export const AEGIS_SHATTER = 0.35
 
@@ -36,6 +40,8 @@ const STILL: Record<HeroSpecialKind, number> = { 'hero-knight': .32, 'hero-range
 
 export function heroStrikeTime(kind: HeroSpecialKind, i: number): number {
   if (kind === 'hero-ranger') return .06 + i * .08
+  if (kind === 'hero-knight') return .12
+  if (kind === 'hero-wizard') return .42
   if (kind === 'hero-shadowblade') return SHADOW_FIRST + SHADOW_STEP * i
   return kind === 'hero-spirit-summoner' ? SPIRIT_ARRIVE : 0.35
 }
@@ -131,33 +137,43 @@ export function heroArtPose(out: HeroPose, c: HeroCast, slot: number): boolean {
     return false
   }
   if (c.kind === 'hero-knight') {
-    const u = ease(e / .3), release = 1 - ease((e - .28) / .65)
-    if (slot === 0) return set(out, 0, 18, 0, 140 + u * 250, 100 + u * 150, .6 * release * fade, 0xffd18b, 'rays', true, r)
-    if (slot < 5) return set(out, 0, 18, slot * TAU / 4 + u * .5, 130 + u * 230, 100 + u * 110, .9 * release * fade, 0xffc078, 'rift', true, r)
-    return false
+    const charge = ease(e / .12), wave = ease((e - .12) / .48), tail = 1 - ease((e - .48) / .55)
+    if (slot === 0) return set(out, 0, 24, 0, 90 + wave * 300, 42 + wave * 124, .72 * charge * tail * fade, 0xffd18b, 'rays', true, r)
+    if (slot === 1) return set(out, 0, -32 + charge * 45, -.38 + charge * .8, 190 + charge * 95, 255, (1 - ease((e - .18) / .38)) * .98 * fade, 0xffe4aa, 'rift', true, r)
+    if (slot < 5) {
+      const angle = (slot - 2) * TAU / 3 + wave * .36
+      return set(out, Math.cos(angle) * wave * 76, 24 + Math.sin(angle) * wave * 38, angle, 110 + wave * 240, 55 + wave * 75, charge * tail * .78 * fade, 0xffbd63, 'rift', true, r)
+    }
+    const target = c.targets[slot - 5]
+    const hit = ease((e - .12) / .17), end = 1 - ease((e - .3) / .35)
+    return !!target && set(out, target.x, target.y, 0, 62 + hit * 45, 80 + hit * 35, hit * end * fade, 0xffd59c, 'rays', true, r)
   }
   if (c.kind === 'hero-ranger') {
-    if (slot < 6) {
-      const i = slot >> 1, target = c.targets[i]
+    if (slot < 9) {
+      const i = Math.floor(slot / 3), layer = slot % 3, target = c.targets[i]
       if (!target) return false
       const local = e - heroStrikeTime(c.kind, i)
-      if (local < 0 || local > .6) return false
-      const u = ease(local / .24), angle = Math.atan2(target.y, target.x)
-      if (slot % 2 === 0) return set(out, target.x * u, target.y * u, angle + Math.PI / 2, 28, 115, (1 - ease((local - .24) / .36)) * fade, 0xd8ffb0, 'rift', true, r)
-      return set(out, target.x, target.y, angle, 90, 90, Math.sin(Math.PI * ease((local - .15) / .45)) * fade, 0xeaffc7, 'rays', true, r)
+      if (local < 0 || local > .58) return false
+      const u = ease(local / .22), angle = Math.atan2(target.y, target.x)
+      const tail = 1 - ease((local - .22) / .30)
+      if (layer === 0) return set(out, target.x * u, target.y * u, angle, 92, 13, tail * fade, 0xeaffc7, 'spark', true, r)
+      if (layer === 1) return set(out, target.x * Math.max(0, u - .13), target.y * Math.max(0, u - .13), angle, 138, 27, .58 * tail * fade, 0x75d8a4, 'mist', true, r)
+      const impact = ease((local - .18) / .09) * (1 - ease((local - .28) / .28))
+      return set(out, target.x, target.y, angle, 68 + impact * 38, 68 + impact * 38, impact * fade, 0xeaffc7, 'rays', true, r)
     }
-    if (slot === 6) return set(out, 0, 0, 0, 110, 110, .65 * (1 - ease(e / .6)) * fade, 0xa9e9b5, 'rays', true, r)
-    return false
+    return set(out, 0, -9, 0, 96, 116, .78 * (1 - ease(e / .82)) * fade, 0xa9e9b5, 'rays', true, r)
   }
   if (c.kind === 'hero-wizard') {
-    const collapse = ease(e / .42), release = ease((e - .42) / .33), tail = 1 - ease((e - .66) / .7)
-    if (slot === 0) return set(out, 0, 0, 0, 125 + release * 325, 140 + release * 280, .8 * tail * fade, 0xa384ff, 'rays', true, r)
-    if (slot < 5) {
-      const a = slot * TAU / 4 + e * 2, rad = 135 * (1 - collapse) + release * 70
-      return set(out, Math.cos(a) * rad, Math.sin(a) * rad * .65, a, 85 + collapse * 85, 100 + release * 115, .8 * tail * fade, 0xc0a2ff, 'flame', true, r)
+    const collapse = ease(e / .42), release = ease((e - .42) / .33), tail = 1 - ease((e - .68) / .75)
+    if (slot === 0) return set(out, 0, 16, 0, 76 + release * 390, 50 + release * 230, .83 * tail * fade, 0xa384ff, 'rays', true, r)
+    if (slot === 1) return set(out, 0, -18, e * .4, 138 - collapse * 62 + release * 70, 138 - collapse * 62 + release * 70, .88 * tail * fade, 0x201135, 'void', false, r)
+    if (slot < 6) {
+      const a = (slot - 2) * TAU / 4 + e * 3.4, rad = 135 * (1 - collapse) + release * 115
+      return set(out, Math.cos(a) * rad, Math.sin(a) * rad * .68 - 10, a + Math.PI / 2, 96 + release * 110, 120 + release * 95, .76 * tail * fade, 0xc0a2ff, 'flame', true, r)
     }
-    if (slot === 5) return set(out, 0, 0, 0, 96 + collapse * 50, 96 + collapse * 50, .8 * tail * fade, 0x2c174f, 'void', false, r)
-    return false
+    if (slot === 6) return set(out, 0, -20, -.2, 110 + release * 190, 220 + release * 130, release * tail * .85 * fade, 0xe3c6ff, 'rays', true, r)
+    const target = c.targets[slot - 7]
+    return !!target && set(out, target.x, target.y, e, 95 + release * 45, 105 + release * 55, release * tail * fade, 0xc6a5ff, 'flame', true, r)
   }
   // Crimson Paladin: raise → cast → dim hold (ward + orbiting runes) → retribution shatter outward.
   const raise = ease(e / 0.35), shatter = shatterOf(c), level = aegisLevel(c, e)
@@ -211,14 +227,45 @@ export function heroMotePose(out: HeroPose, c: HeroCast, slot: number): boolean 
     return set(out, Math.cos(a) * rad, Math.sin(a) * rad * 0.4 - 10 - u * 40, 0, 8, 8,
       Math.sin(Math.PI * u) * 0.9 * fade, 0x8ff0e6, 'mist', true, false)
   }
-  if (c.kind === 'hero-knight' || c.kind === 'hero-ranger' || c.kind === 'hero-wizard') {
-    const wizard = c.kind === 'hero-wizard', ranger = c.kind === 'hero-ranger'
-    const local = e - (wizard ? .36 : .06) - (slot % 6) * .025, u = local / .7
+  if (c.kind === 'hero-knight') {
+    const u = (e - .12 - (slot % 5) * .014) / .82
     if (u < 0 || u > 1) return false
-    const t = ranger && c.targets.length ? c.targets[slot % c.targets.length] : undefined
-    const rad = u * (ranger ? 40 : wizard ? 220 : 170) * (.55 + (slot % 5) * .1)
-    return set(out, (t?.x ?? 0) + Math.cos(a) * rad, (t?.y ?? 0) + Math.sin(a) * rad * .65 - u * 28,
-      a, 6 + slot % 3, 11 + slot % 4, (1 - u) * .82 * fade, wizard ? 0xc3a5ff : ranger ? 0xcaf7ac : 0xffbd6c, wizard ? 'void' : ranger ? 'feather' : 'ember', true, false)
+    const debris = slot % 3 === 0, dust = slot % 3 === 1
+    const radius = (25 + 150 * ease(u)) * (.55 + (slot % 7) * .075)
+    const lift = Math.sin(Math.PI * u) * (debris ? 55 : dust ? 20 : 90)
+    return set(out, Math.cos(a) * radius, 24 + Math.sin(a) * radius * .68 - lift,
+      a + u * 3, debris ? 13 : dust ? 24 : 6, debris ? 10 : dust ? 12 : 15,
+      (1 - u) * .88 * fade, debris ? 0x9d794e : dust ? 0xbe9561 : 0xffd47d, debris ? 'crystal' : dust ? 'mist' : 'ember', !debris, false)
+  }
+  if (c.kind === 'hero-ranger') {
+    const n = Math.min(3, c.targets.length)
+    if (!n) return false
+    const i = slot % n, target = c.targets[i]!
+    const local = e - heroStrikeTime(c.kind, i), lag = (Math.floor(slot / n) % 6) * .019
+    const u = (local - lag) / .22
+    if (local < .26 && u >= 0 && u <= 1) {
+      const travel = ease(u)
+      return set(out, target.x * travel, target.y * travel, Math.atan2(target.y, target.x),
+        25 - travel * 11, 4 + slot % 3, (1 - travel * .5) * .76 * fade, 0xbef7bb, 'spark', true, false)
+    }
+    const burst = (local - .22 - lag * .4) / .48
+    if (burst < 0 || burst > 1) return false
+    const d = ease(burst) * (24 + slot % 6 * 8)
+    return set(out, target.x + Math.cos(a) * d, target.y + Math.sin(a) * d * .65 - burst * 22,
+      a + burst, 7 + slot % 3, 12, (1 - burst) * .86 * fade, 0xd6ffc0, 'feather', true, false)
+  }
+  if (c.kind === 'hero-wizard') {
+    if (e < .42) {
+      const gather = ease(e / .42), angle = a + e * 7
+      const radius = (75 + slot % 7 * 13) * (1 - gather) + 8
+      return set(out, Math.cos(angle) * radius, Math.sin(angle) * radius * .75 - 10,
+        angle + Math.PI / 2, 9 + slot % 4, 18, Math.sin(Math.PI * e / .48) * .88 * fade, 0xc5a5ff, 'void', true, false)
+    }
+    const u = (e - .42 - slot % 5 * .019) / .85
+    if (u < 0 || u > 1) return false
+    const d = ease(u) * (120 + slot % 7 * 17), crystal = slot % 3 === 0
+    return set(out, Math.cos(a) * d, Math.sin(a) * d * .75 - Math.sin(Math.PI * u) * 35,
+      a + u * 2, crystal ? 13 : 19, crystal ? 19 : 10, (1 - u) * .87 * fade, crystal ? 0xe3c5ff : 0x9776ed, crystal ? 'crystal' : 'void', true, false)
   }
   const shatter = shatterOf(c)
   const local = (e + slot * 0.137) % 1.2

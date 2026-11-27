@@ -32,7 +32,7 @@ describe('ES2 three-hero selection UI', () => {
     expect(wrapper.text()).toContain('ATK')
     expect(wrapper.text()).toContain('SPD')
     expect(wrapper.text()).toContain('起始武器')
-    expect(wrapper.text()).toContain('冷卻')
+    expect(wrapper.get('[data-active-skill-cooldown]').attributes('aria-label')).toContain('冷卻')
   })
 
 
@@ -178,6 +178,11 @@ describe('ES2 dedicated hero special action', () => {
   it('shows a skill icon on every hero card in the shared main menu', () => {
     const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
     expect(wrapper.findAll('img[data-hero-skill-icon]')).toHaveLength(6)
+    expect(wrapper.findAll('[data-hero-active-summary="compact"]')).toHaveLength(6)
+    for (const item of wrapper.findAll('[data-hero-active-summary="compact"]')) {
+      expect(item.get('[data-active-skill-name]').text().length).toBeGreaterThan(0)
+      expect(item.get('[data-active-skill-cooldown]').text()).toMatch(/\d/)
+    }
   })
 
   it.each(['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'] as const)(
@@ -237,6 +242,13 @@ describe('ES2 dedicated hero special action', () => {
       expect(resumed.get('[data-hero-special]').attributes('data-flourish')).toBeUndefined()
     },
   )
+
+  it('does not replay readiness when the same ready skill resumes after an inactive overlay', async () => {
+    const wrapper = render(HeroSpecialAction, { heroId: 'knight', active: true, snapshot: { cooldown: 0, stealth: 0, barrier: 0, companions: [] } })
+    await wrapper.setProps({ active: false })
+    await wrapper.setProps({ active: true })
+    expect(wrapper.get('[data-hero-special]').attributes('data-flourish')).toBeUndefined()
+  })
 
   it('gives each hero its own flourish motif and removes them under reduced motion', () => {
     const source = readFileSync(resolve('src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')

@@ -5,13 +5,13 @@ import { computed, nextTick, ref, useTemplateRef, watch, watchPostEffect } from 
 import { JOB } from '../../../game/constants'
 import { ART_URLS } from '../../../game/art'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
-import { getHeroActiveDefinition } from '../../../game/content/heroes/classic-active'
 import { HERO_DEFINITIONS } from '../../../game/content/heroes'
 import type { HeroId, JobId } from '../../../game/types'
 import HeroRoster from '../hero-roster/HeroRoster.vue'
 import HeroSelectionCard from '../hero-roster/HeroSelectionCard.vue'
 import { moveHeroSelection } from '../hero-roster/hero-selection'
 import HeroStats from '../hero-roster/HeroStats.vue'
+import HeroActiveSummary from '../hero-roster/HeroActiveSummary.vue'
 import Es2DetailSurface from './Es2DetailSurface.vue'
 import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
@@ -49,7 +49,6 @@ const { id: detailHero, anchor: heroAnchor, tooltipId: heroTooltipId, events: he
 const detailClassic = computed(() => heroes.find(hero => hero.id === detailHero.value) ?? null)
 const detailSpecialization = computed(() => detailHero.value && detailHero.value in HERO_DEFINITIONS
   ? HERO_DEFINITIONS[detailHero.value as keyof typeof HERO_DEFINITIONS] : null)
-const detailActive = computed(() => detailHero.value ? getHeroActiveDefinition(detailHero.value) : null)
 const detailStats = computed(() => detailClassic.value ? JOB[detailClassic.value.id] : detailSpecialization.value?.stats)
 const detailName = computed(() => detailClassic.value?.name ?? detailSpecialization.value?.label ?? '')
 const detailRole = computed(() => detailClassic.value?.role ?? detailSpecialization.value?.subtitle ?? '')
@@ -198,11 +197,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
           <p>{{ t(detailSpecialization.description) }}</p>
           <p>{{ t('起始武器 ·') }} {{ t(detailSpecialization.startingEquipment) }}</p>
         </template>
-          <div v-if="detailActive" class="es2-hero-detail-special">
-            <img :src="detailActive.specialIconSrc" :alt="t('{name} 主動技能圖示', { name: t(detailActive.label) })"
-              width="44" height="44" decoding="async" />
-            <span>{{ t('主動技能 ·') }} {{ t(detailActive.special, detailActive.specialParams) }}{{ t('（冷卻') }} {{ detailActive.specialCooldown }} {{ t('秒）') }}</span>
-          </div>
+        <HeroActiveSummary v-if="detailHero" :hero-id="detailHero" class="es2-hero-detail-special" />
         <template v-if="detailSpecialization">
           <p>{{ t('優勢 ·') }} {{ t(detailSpecialization.strengths.join(' / ')) }}</p>
           <p>{{ t('弱點 ·') }} {{ t(detailSpecialization.weaknesses.join(' / ')) }}</p>

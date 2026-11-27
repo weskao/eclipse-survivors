@@ -52,3 +52,21 @@ test('the Crimson Retribution burst is a short detonation distinct from the barr
   // Front-loaded blast: the first 150 ms outweigh the final 400 ms of tail.
   assert.ok(energy(0, .15) > energy(seconds - .4, seconds) * 2)
 })
+
+test('classic hero cues have intentional windup/contact/tail dynamics instead of a flat tone', () => {
+  const energy = (view, start, end) => {
+    let sum = 0
+    const from = 44 + Math.round(start * 32000) * 4, to = Math.min(view.byteLength, 44 + Math.round(end * 32000) * 4)
+    for (let i = from; i < to; i += 2) sum += view.getInt16(i, true) ** 2
+    return sum / Math.max(1, (to - from) / 2)
+  }
+  const cue = (id) => new DataView(renderHeroSfx(id, HERO_SFX_DURATION[id]).bytes.buffer)
+  const knight = cue('knight-special'), ranger = cue('ranger-special'), wizard = cue('wizard-special')
+  assert.ok(energy(knight, .10, .22) > energy(knight, .00, .05) * 1.5, 'knight impact follows the windup')
+  assert.ok(energy(ranger, .06, .11) > energy(ranger, .00, .025) * 1.4, 'first arrow release is articulate')
+  assert.ok(energy(wizard, .42, .55) > energy(wizard, .02, .13) * 1.5, 'void collapse has a clear impact')
+  for (const [id, view] of [['knight-special', knight], ['ranger-special', ranger], ['wizard-special', wizard]]) {
+    const end = HERO_SFX_DURATION[id]
+    assert.ok(energy(view, end - .10, end) < energy(view, .12, .7) * .1, 'finite clean decay')
+  }
+})

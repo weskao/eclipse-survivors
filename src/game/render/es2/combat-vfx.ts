@@ -48,7 +48,7 @@ export interface DirectedCombatFx extends ContentVisualFx {
   angle?: number
 }
 export interface HeroSpecialFx extends ContentVisualFx {
-  /** World positions the cast actually struck, captured at activation (max 3, frozen). */
+  /** World positions the cast actually struck, captured at activation (bounded per cast, frozen). */
   targets?: readonly { readonly x: number; readonly y: number }[]
 }
 
@@ -131,7 +131,7 @@ export function drawCombatEffect(
   const spec = COMBAT_FX_BY_KIND.get(kind)
   if (!spec || !(effect.max > 0) || !(effect.life > 0)) return
   const x = effect.x + ox, y = effect.y + oy
-  const bounds = spec.radius + 12
+  const bounds = spec.radius + (kind.startsWith('hero-') ? 140 : 12)
   if (x < -bounds || x > state.W + bounds || y < -bounds || y > state.H + bounds) return
 
   const reduced = live(settings.reducedMotion, false)
@@ -303,7 +303,7 @@ export function drawCombatEffect(
       case 'hero-spirit-summoner':
       case 'hero-crimson-paladin':
         heroTargetStrikes(ctx, kind, effect as HeroSpecialFx, reduced)
-        drawHeroSpecialFx(ctx, kind, t, strike, count, reduced)
+        drawHeroSpecialFx(ctx, kind, t, strike, count, reduced, effect as HeroSpecialFx)
         break
       case 'victory-finish':
         ring(ctx, 43 + strike * 74, '#ffd893', 4, 0, 0.58)
@@ -323,9 +323,9 @@ function heroTargetStrikes(
   effect: HeroSpecialFx, reduced: boolean,
 ): void {
   const targets = effect.targets
-  if (!targets?.length || kind === 'hero-crimson-paladin' || kind === 'hero-knight' || kind === 'hero-wizard') return
+  if (!targets?.length || kind === 'hero-crimson-paladin' || kind === 'hero-knight' || kind === 'hero-wizard' || kind === 'hero-ranger') return
   const elapsed = effect.max - effect.life
-  ctx.strokeStyle = kind === 'hero-shadowblade' ? '#b59cff' : kind === 'hero-ranger' ? '#e0f6c2' : '#a0d9d6'
+  ctx.strokeStyle = kind === 'hero-shadowblade' ? '#b59cff' : '#a0d9d6'
   ctx.lineWidth = kind === 'hero-shadowblade' ? 3 : 2
   ctx.lineCap = 'round'
   ctx.beginPath()
