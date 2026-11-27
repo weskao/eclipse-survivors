@@ -12,6 +12,8 @@ import { characterOutsideViewport, drawCharacter } from './characters'
 import type { PixiVfxBridge, VfxFrame } from './pixi-vfx/bridge'
 import type { HeroSpecialKind } from './pixi-vfx/hero-choreography'
 import { runVfxPass } from './pixi-vfx/plan'
+import { activeBossPhase } from './pixi-vfx/boss-phase-choreography'
+import { drawBossPhaseCanvas } from './pixi-vfx/boss-phase-canvas'
 import { preloadEnemyReleaseArt } from './enemy-motion'
 import { preloadHitImpactArt } from './hit-impact'
 import type { HealthBarMotion, HealthBarTarget } from './health-bars'
@@ -169,6 +171,11 @@ export function drawFrame(ctx: Ctx2D, s: GameState, dpr: number, assets: RenderA
       if (assets.pixiVfx!.projectiles(vfxFrame)) drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined, undefined, true, true)
       else drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined)
     } else drawBossTelegraphs(ctx, bossSnapshot, ox, oy, reduced, W, H, projectiles, undefined, policy ?? undefined)
+  }
+  if (bossSnapshot && activeBossPhase(bossSnapshot)) {
+    const quiet = reduced || !!policy?.reduceFlashing
+    runVfxPass(() => !!vfxFrame && !!assets.pixiVfx?.bossPhase?.(vfxFrame),
+      () => drawBossPhaseCanvas(ctx,bossSnapshot,ox,oy,W,H,quiet,(policy?.vfxOpacity ?? 1)*(quiet?.6:1),policy?.quality))
   }
   if (!reduced) drawEchoes(ctx, s, ox, oy)
   if (assets.factions && assets.factionArtwork)

@@ -511,11 +511,12 @@ describe('keyboard and focus', () => {
     expect(engine.ui.musicOn).toBe(true)
   })
 
-  it('menu keydown unlocks audio only when music is on', () => {
+  it('menu keydown unlocks audio when either music or SFX is enabled', () => {
     engine.toggleMusic()
+    engine.toggleSfx()
     key('KeyA')
     expect(audio.unlocked).toBe(false)
-    engine.toggleMusic()
+    engine.toggleSfx()
     key('KeyA')
     expect(audio.unlocked).toBe(true)
   })

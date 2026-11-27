@@ -39,3 +39,35 @@ it('spawns each of the four new bosses in the real game loop across runs', () =>
     expect(livingBosses[0]!.ai?.state, id).toBe('recover')
   }
 })
+
+it('presents and sounds each authoritative phase transition once, and clears it when leaving combat', () => {
+  const audio = silentAudio()
+  const played: string[] = []
+  audio.playSfx = cue => { played.push(cue) }
+  const engine = createEngine({ audio })
+  engine.state.W = 1280; engine.state.H = 720
+  engine.selectRunMode('standard')
+  engine.start()
+  const s = engine.state
+  s.mobs = []; s.spawnT = 999
+  s.time = getMode(s.runMode).bossAt + .1
+  s.hero!.attack = 999
+  engine.advance(1 / 60)
+  const boss = s.mobs.find(m => m.type === 'boss')!
+  expect(boss).toBeDefined()
+  expect(engine.ui.bossPhaseReveal).toBeNull()
+  boss.hp = boss.max * .6
+  engine.advance(1 / 60)
+  expect(engine.ui.bossPhaseReveal).toMatchObject({ boss: 'abyss-monarch', phase: 2 })
+  expect(played.filter(cue => cue === 'boss-phase-2')).toHaveLength(1)
+  const event = engine.ui.bossPhaseReveal
+  engine.advance(1 / 60)
+  expect(engine.ui.bossPhaseReveal).toBe(event)
+  expect(played.filter(cue => cue === 'boss-phase-2')).toHaveLength(1)
+  boss.hp = boss.max * .25
+  engine.advance(1 / 60)
+  expect(engine.ui.bossPhaseReveal).toMatchObject({ boss: 'abyss-monarch', phase: 3 })
+  expect(played.filter(cue => cue === 'boss-phase-3')).toHaveLength(1)
+  engine.goMenu()
+  expect(engine.ui.bossPhaseReveal).toBeNull()
+})

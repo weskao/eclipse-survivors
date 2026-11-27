@@ -80,7 +80,15 @@ export function applyBossBodyPose(ctx: Ctx2D, id: BossId | undefined, body: Boss
   if (body.pose === 'windup' || body.pose === 'attack' || body.pose === 'recover') {
     // No horizontal facing flip: phase art has authored equipment and silhouette.
     applyEnemyPose(ctx, body.pose, 1 - p, 0, 1, weight, false)
-  } else if (body.pose === 'hurt' || body.pose === 'transform') {
+  } else if (body.pose === 'transform') {
+    const charge = Math.sin(Math.PI * Math.min(1,p/.45)), bloom = Math.sin(Math.PI * Math.max(0,(p-.34)/.66))
+    const power = body.phase === 3 ? 1.45 : 1
+    // Weight and elemental silhouette are distinct; feet settle at both ends.
+    const lift = id === 'infernal-titan' ? 5 : id === 'eclipse-seraph' ? 20 : id === 'frost-sovereign' ? 15 : 11
+    ctx.translate(0,-lift*bloom*power)
+    ctx.rotate((id==='abyss-monarch' ? -.045 : id==='frost-sovereign' ? .025 : id==='eclipse-seraph' ? .018 : 0)*bloom*power)
+    ctx.scale(1 + (.045*bloom-.025*charge)*power, 1 + (.075*bloom-.075*charge)*power)
+  } else if (body.pose === 'hurt') {
     const pulse = Math.sin(Math.PI * p)
     if (pulse <= 0) return
     const force = (1 - weight * .5) * pulse

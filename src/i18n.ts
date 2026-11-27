@@ -1588,6 +1588,8 @@ const english = new Map<string, string>([
 , ["漂浮的奧術遺跡、不穩定的裂隙與帶電的星界氣流","Floating arcane ruins, unstable rifts and charged celestial currents"]
 , ["深淵君王","Abyss Monarch"]
 , ["暮色帷幕","Veil of Dusk"]
+, ["第二階段","Phase II"]
+, ["最終階段","Final phase"]
 , ["召喚王廷","Summoned Court"]
 , ["深淵崩塌","Abyssal Collapse"]
 , ["霜寒君主","Frost Sovereign"]

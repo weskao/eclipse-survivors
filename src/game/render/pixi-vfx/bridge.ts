@@ -4,16 +4,18 @@ import type { VisualPresentationPolicy } from '../../content/accessibility/prese
 import type { PixiBossRenderer } from './renderer'
 import type { ContentVisualFx } from '../../types'
 import type { HeroSpecialKind } from './hero-choreography'
+import { activeBossPhase } from './boss-phase-choreography'
 
 export interface VfxFrame {
   ctx: Ctx2D; snapshot: BossSnapshot; ox: number; oy: number; width: number; height: number; dpr: number
   reduced: boolean; policy?: VisualPresentationPolicy | null
 }
-export interface PixiVfxStats { status: 'idle' | 'loading' | 'ready' | 'fallback' | 'disposed'; projectilePasses: number; releasePasses: number; heroPasses: number; fallbackPasses: number; attackIds: readonly string[] }
+export interface PixiVfxStats { status: 'idle' | 'loading' | 'ready' | 'fallback' | 'disposed'; projectilePasses: number; releasePasses: number; heroPasses: number; phasePasses?: number; fallbackPasses: number; attackIds: readonly string[] }
 export interface PixiVfxBridge {
   stats(): PixiVfxStats
   projectiles(frame: VfxFrame): boolean
   impacts(frame: VfxFrame): boolean
+  bossPhase?(frame: VfxFrame): boolean
   /** Start the lazy WebGL load ahead of the first cast. */
   warm(): void
   heroSpecial(frame: HeroVfxFrame): boolean
@@ -27,7 +29,7 @@ export interface HeroVfxFrame {
 export function createPixiVfxBridge(): PixiVfxBridge {
   let renderer: PixiBossRenderer | undefined
   let loading = false, failed = false, disposed = false
-  let projectilePasses = 0, releasePasses = 0, heroPasses = 0, fallbackPasses = 0
+  let projectilePasses = 0, releasePasses = 0, heroPasses = 0, phasePasses = 0, fallbackPasses = 0
   const attackIds = new Set<string>()
   const ensure = () => {
     if (loading || failed || disposed || renderer) return
@@ -79,8 +81,18 @@ export function createPixiVfxBridge(): PixiVfxBridge {
       return painted
     } catch { return fail() }
   }
-  return { projectiles: frame => draw(frame, 'projectiles'), impacts: frame => draw(frame, 'impacts'),
+  const bossPhase = (frame: VfxFrame): boolean => {
+    if (!activeBossPhase(frame.snapshot) || frame.policy?.vfxOpacity === 0 || disposed) return true
+    if (failed) { fallbackPasses++; return false }
+    if (!renderer) { ensure(); fallbackPasses++; return false }
+    try {
+      const painted = renderer.bossPhase(frame)
+      if (painted) phasePasses++; else fallbackPasses++
+      return painted
+    } catch { return fail() }
+  }
+  return { bossPhase, projectiles: frame => draw(frame, 'projectiles'), impacts: frame => draw(frame, 'impacts'),
     warm: ensure, heroSpecial,
-    stats: () => ({ status: disposed ? 'disposed' : failed ? 'fallback' : renderer ? 'ready' : loading ? 'loading' : 'idle', projectilePasses, releasePasses, heroPasses, fallbackPasses, attackIds: [...attackIds] }),
+    stats: () => ({ status: disposed ? 'disposed' : failed ? 'fallback' : renderer ? 'ready' : loading ? 'loading' : 'idle', projectilePasses, releasePasses, heroPasses, phasePasses, fallbackPasses, attackIds: [...attackIds] }),
     dispose() { disposed = true; renderer?.dispose(); renderer = undefined } }
 }
