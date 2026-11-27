@@ -1,0 +1,98 @@
+{
+  "id": "warlock",
+  "variant": "preferred",
+  "path": "warlock-death-preferred@3x.webp",
+  "sourcePath": "warlock-death-preferred-source.png",
+  "sourceGenerationId": "99b3011b-04d1-430a-804b-44bcb1df5fbd",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "nativeSourceCellPixels": 627,
+  "sourceContentBounds": [
+    [
+      50,
+      13,
+      543,
+      618
+    ],
+    [
+      27,
+      60,
+      594,
+      590
+    ],
+    [
+      22,
+      276,
+      610,
+      547
+    ],
+    [
+      27,
+      170,
+      609,
+      547
+    ]
+  ],
+  "runtimeContentBounds": [
+    [
+      53,
+      8,
+      382,
+      412
+    ],
+    [
+      28,
+      58,
+      407,
+      412
+    ],
+    [
+      21,
+      231,
+      414,
+      411
+    ],
+    [
+      23,
+      160,
+      412,
+      411
+    ]
+  ],
+  "sourceSha256": "003e49ae15cdd03acb495f335812808119744928ef67b44d05062acd63c30a78",
+  "sha256": "3eee7a963042ebbb293ac5e77e3b2cbcb54610d0ea49e122cb88d741cb265a38",
+  "bytes": 418868,
+  "width": 872,
+  "height": 872,
+  "rows": 2,
+  "columns": 2,
+  "frames": 4,
+  "frameWidth": 436,
+  "frameHeight": 436,
+  "gutter": 8,
+  "contentCellPixels": 420,
+  "scale": 3,
+  "displayMaximumPx": 139,
+  "alpha": true,
+  "native3x": true,
+  "upscaled": false,
+  "status": "QA_PENDING",
+  "visualReview": "pending",
+  "browserReview": "pending",
+  "canonicalReference": {
+    "path": "src/assets/wizard.webp",
+    "gitBlobSha": "039f60d86b672dd0931991e0d8f0a1d3b54b4275",
+    "commit": "8d117bc7799306552ef87b6739a538edb0b14670"
+  },
+  "frameOrder": [
+    "hit",
+    "kneel",
+    "collapse",
+    "magic-dissolve"
+  ],
+  "anchor": "bottom center, common runtime tile y=412 baseline",
+  "admission": "candidate only; no runtime replacement",
+  "normalization": "Original 1254px generation preserved. Independent 627px cell crops; source alpha <=4 removed from runtime only; shared downscale 0.667769; final frame alpha x0.68. No upscaling. Original face and costume are visual reference, not pixel-identical."
+}
