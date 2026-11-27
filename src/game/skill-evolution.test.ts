@@ -5,6 +5,7 @@ import { applyUpgrade, pickUpgrades } from './progression'
 import { createHero, createState } from './state'
 import { seeded } from './math'
 import { tickSkills } from './skills'
+import { installHallRun } from './content/meta/hall-runtime'
 import type { GameHooks, Mob } from './types'
 
 const hooks = (): GameHooks => ({ sfx: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), end: vi.fn() })
@@ -137,5 +138,51 @@ describe('five recipe-based evolutions', () => {
     const hp = s.hero!.hp
     tickEvolutions(s, hooks())
     expect(s.hero!.hp).toBe(hp)
+  })
+})
+
+describe('ES4 legacy evolution integration', () => {
+  it.each(['frozen-thunderstorm','infernal-singularity','apocalypse-rain','blade-tempest'] as const)('counts one eligible %s cast, not each target, for Double Sigil', id => {
+    const s=setup()
+    s.heroId='wizard'
+    installHallRun(s,{hero:'wizard',ranks:{'wizard-double-sigil':1}})
+    s.hero!.evolutions[id]=true
+    for(let i=0;i<5;i++){
+      s.hero!.evolutionCd[id]=0
+      s.mobs=[mob(30,0),mob(60,0)]
+      tickEvolutions(s,hooks())
+      expect(s.hall!.sigilCasts).toBe(i+1)
+    }
+    s.hero!.evolutionCd[id]=0
+    s.mobs=[mob(30,0),mob(60,0)]
+    tickEvolutions(s,hooks())
+    expect(s.hall!.sigilCasts).toBe(0)
+    expect(s.hall!.sigilReady).toBe(false)
+    expect(s.hall!.sigilAt).toBeGreaterThan(s.time)
+  })
+  it('does not count empty or unreachable area casts or guardian healing as offensive casts', () => {
+    const s=setup()
+    s.heroId='wizard'
+    installHallRun(s,{hero:'wizard',ranks:{'wizard-double-sigil':1}})
+    s.hero!.evolutions['blade-tempest']=true
+    s.hero!.evolutions['guardian-sanctuary']=true
+    s.mobs=[mob(1000,0)]
+    tickEvolutions(s,hooks())
+    expect(s.hall!.sigilCasts).toBe(0)
+    s.hero!.evolutionCd['blade-tempest']=0
+    s.mobs=[]
+    tickEvolutions(s,hooks())
+    expect(s.hall!.sigilCasts).toBe(0)
+  })
+  it('allows Star Collapse on a real legacy area hit', () => {
+    const s=setup()
+    s.heroId='wizard'
+    installHallRun(s,{hero:'wizard',ranks:{'wizard-star-collapse':1}})
+    s.hero!.evolutions['blade-tempest']=true
+    s.time=12
+    s.mobs=[mob(30,0),mob(60,0)]
+    tickEvolutions(s,hooks())
+    expect(s.hall!.starAt).toBeGreaterThan(s.time)
+    expect(s.hall!.procAt).toBeGreaterThan(s.time)
   })
 })

@@ -161,3 +161,13 @@ it('boosts only health pickup interactions, not purchased or consolation healing
   expect(hallWorldHealing(s,'events:monster-ambush','decline',8)).toBe(8)
   expect(hallWorldHealing(run({}),'events:healing-fountain','drink',45)).toBe(45)
 })
+
+it('never counts Double Sigil casts while paused or after death', () => {
+  const s=run({'wizard-double-sigil':1})
+  s.mode='paused'
+  hallWeaponCast(s)
+  s.mode='play'
+  s.hero!.hp=0
+  hallWeaponCast(s)
+  expect(s.hall!.sigilCasts).toBe(0)
+})

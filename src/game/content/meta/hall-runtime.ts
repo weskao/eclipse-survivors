@@ -274,7 +274,7 @@ export function hallRangerShot(state: GameState): {pierce:number;extra:number} {
 }
 export function hallWeaponCast(state: GameState): void {
   const h=state.hall
-  if (!h || !h.rank('wizard-double-sigil') || h.sigilReady) return
+  if (!h || state.mode!=='play' || !state.hero || state.hero.hp<=0 || !h.rank('wizard-double-sigil') || h.sigilReady) return
   if (++h.sigilCasts>=tuning.doubleSigilCasts) { h.sigilCasts=0; h.sigilReady=true }
 }
 export function hallBurstProc(state: GameState, amount:number, source:HallDamageSource|undefined, area:boolean): {damage:number;radius:number;limit:number}|null {
