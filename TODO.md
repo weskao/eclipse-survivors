@@ -184,3 +184,5 @@ Added original deterministic PCM rank (0.74s) and milestone (1.05s) cues using t
 - [ ] Fix CI TS2339 in progression regression and confirm typecheck, Hall tests, and responsive gameplay.
 
 Motion polish uses finite CSS-only effects, no continuous animation loop. Added cap, newly revealed connection, rank-progress and cached/muted audio regression tests; type error fixed in test source, CI confirmation pending.
+
+Browser acceptance now checks actual WebP decode, different-node inspection, both game accessibility flags and English/Traditional Chinese screenshots on every existing viewport profile. Latest CI must confirm; no manual art/audio approval claimed.

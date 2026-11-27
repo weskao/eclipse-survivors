@@ -64,7 +64,7 @@ const masteryProgress = computed(() => {
       <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
         <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }} / {{ masteryCap }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
-        <div class="hall-mastery-track" role="progressbar" :aria-label="t('英雄專精')" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="Math.round(masteryProgress.value * 100)"><i :style="{ width: masteryProgress.value * 100 + '%' }"></i></div>
+        <div class="hall-mastery-track" role="progressbar" :aria-label="t('英雄專精')" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="Math.round(masteryProgress.value * 100)"><i :style="{ width: masteryProgress.value * 100 + '%' }"><span :key="hero + ':' + mastery.xp" class="hall-xp-sheen" aria-hidden="true"></span></i></div>
         <small>{{ mastery.level >= masteryCap ? t('已滿階') : t('距下一級尚需 {xp} XP', { xp: masteryProgress.next.toLocaleString() }) }}</small>
       </div>
     </section>
@@ -110,9 +110,9 @@ const masteryProgress = computed(() => {
 @media(prefers-reduced-motion:reduce){.es2-progression-panel *{scroll-behavior:auto;transition:none!important;animation:none!important}}
 .hall-mastery-track{position:relative;width:100%;height:12px;border:1px solid #90774b;border-radius:8px;background:#0c1722;overflow:hidden}
 .hall-mastery-track i{position:relative;display:block;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,#8b6a3a,#d2a95f 72%,#f1d08e);transition:width .65s cubic-bezier(.17,.76,.23,1)}
-.hall-mastery-track i::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 28%,#fff0c7a0 50%,transparent 72%);transform:translateX(-100%);animation:hall-xp-shimmer 1.05s .25s ease-out both}
+.hall-mastery-track .hall-xp-sheen{position:absolute;inset:0;background:linear-gradient(105deg,transparent 28%,#fff0c7a0 50%,transparent 72%);transform:translateX(-100%);animation:hall-xp-shimmer 1.05s .25s ease-out both}
 @keyframes hall-xp-shimmer{to{transform:translateX(110%)}}
-@media(prefers-reduced-motion:reduce){.hall-mastery-track i::after{display:none}}
+@media(prefers-reduced-motion:reduce){.hall-mastery-track .hall-xp-sheen{display:none}}
 :global([data-es2-reduce-motion="true"]) .hall-mastery-track i,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track i{transition:none}
-:global([data-es2-reduce-motion="true"]) .hall-mastery-track i::after,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track i::after{display:none}
+:global([data-es2-reduce-motion="true"]) .hall-mastery-track .hall-xp-sheen,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track .hall-xp-sheen{display:none}
 </style>

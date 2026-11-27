@@ -418,15 +418,46 @@ try {
           const power = page.locator('[data-hall-inspect="power"]')
           await power.waitFor({ state: 'visible' })
           const rank = await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow')
-          if (hoverCapable) await power.hover()
-          else await power.click()
+          const graph = await page.locator('[data-hall-edge]').count()
+          if (await page.locator('.es2-progression-panel').count()) assert.equal(graph, 4, name + ': authoritative research edges missing')
+          const node = graph ? page.locator('[data-hall-inspect="insight"]') : page.locator('[data-hall-inspect="vitality"]')
+          if (hoverCapable) await node.hover()
+          else await node.click()
           const details = page.locator('.hall-detail').first()
           await details.waitFor({ state: 'visible' })
+          assert.equal((await details.locator('.hall-detail-heading strong').innerText()).trim(), (await node.locator('strong').innerText()).trim(), name + ': inspected node mismatch')
           assert.equal(await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow'), rank, name + ': inspection must never spend')
-          const graph = await page.locator('[data-hall-edge]').count()
-          if (graph) assert.equal(graph, 4, name + ': authoritative research edges missing')
-          await assertLocalizedTextFits(page, name, 'hall-growth')
-          await page.screenshot({ path: destination + '/' + name + '-hall-growth.png', animations: 'disabled' })
+          await power.locator('img').evaluate(img => img.decode())
+          assert.ok(await power.locator('img').evaluate(img => img.naturalWidth > 0), name + ': WebP node art missing')
+          if (hoverCapable && motionAllowed) {
+            await power.hover()
+            assert.notEqual(await power.locator('.hall-ring').evaluate(el => getComputedStyle(el, '::after').animationName), 'none', name + ': hover shimmer absent')
+          }
+          for (const attribute of ['data-es2-reduce-motion', 'data-es2-reduce-flashing']) {
+            const previous = await page.evaluate(key => {
+              const root = document.documentElement
+              const before = root.getAttribute(key)
+              root.setAttribute(key, 'true')
+              return before
+            }, attribute)
+            assert.equal(await power.locator('.hall-ring').evaluate(el => getComputedStyle(el, '::after').display), 'none', name + ': ' + attribute + ' must suppress shimmer')
+            await page.evaluate(({ key, value }) => {
+              if (value === null) document.documentElement.removeAttribute(key)
+              else document.documentElement.setAttribute(key, value)
+            }, { key: attribute, value: previous })
+          }
+          await assertLocalizedTextFits(page, name, 'en-hall-growth')
+          await page.screenshot({ path: destination + '/' + name + '-hall-growth-en.png', animations: 'disabled' })
+          await headerSettings.click()
+          await page.locator('#es2-language').click()
+          await page.locator('#es2-language-listbox [data-es2-value="zh-TW"]').click()
+          await page.locator('.es2-close').click()
+          await assertLocalizedTextFits(page, name, 'zh-TW-hall-growth')
+          await page.screenshot({ path: destination + '/' + name + '-hall-growth-zh-TW.png', animations: 'disabled' })
+          await headerSettings.click()
+          await page.locator('#es2-language').click()
+          await page.locator('#es2-language-listbox [data-es2-value="en"]').click()
+          await page.locator('.es2-close').click()
         }
       }
       const achievement = page.locator('[data-es2-context-card="achievement:first-blood"]')

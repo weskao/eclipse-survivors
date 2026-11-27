@@ -62,7 +62,7 @@ watch(() => props.nodes, (nodes, previous) => {
         <div v-if="tree && rowIndex > 0" class="hall-links" aria-hidden="true">
           <div v-for="edge in hallEdges(rows[rowIndex - 1] ?? [], row)" :key="edge.id"
             :data-hall-edge="edge.id" :data-active="String(edge.active)" :data-revealed="String(upgraded?.revealed.includes(edge.id) ?? false)" class="hall-edge"
-            :style="{ '--from': edge.from + '%', '--to': edge.to + '%', '--left': Math.min(edge.from, edge.to) + '%', '--width': Math.abs(edge.from - edge.to) + '%' }">
+            :style="{ '--from': edge.from + '%', '--to': edge.to + '%', '--left': Math.min(edge.from, edge.to) + '%', '--width': Math.abs(edge.from - edge.to) + '%', '--route-origin': edge.to < edge.from ? 'right' : 'left' }">
             <i></i><i></i><i></i>
           </div>
         </div>
@@ -161,7 +161,7 @@ watch(() => props.nodes, (nodes, previous) => {
 @media(hover:hover) and (pointer:fine){.hall-inspect:hover .hall-ring::after{animation:hall-shimmer .78s ease-out both}}
 @keyframes hall-shimmer{0%{opacity:0;background-position:130% 0}20%{opacity:.8}80%{opacity:.65}100%{opacity:0;background-position:-45% 0}}
 .hall-edge[data-revealed="true"] i::after{content:'';position:absolute;inset:0;background:#ffdc94;box-shadow:0 0 8px #f6bd73;transform-origin:top left;animation:hall-route-down .32s ease-out both}
-.hall-edge[data-revealed="true"] i:nth-child(2)::after{animation:hall-route-across .25s .28s ease-out both}
+.hall-edge[data-revealed="true"] i:nth-child(2)::after{transform-origin:var(--route-origin) center;animation:hall-route-across .25s .28s ease-out both}
 .hall-edge[data-revealed="true"] i:nth-child(3)::after{animation-delay:.49s}
 @keyframes hall-route-down{0%{transform:scaleY(0);opacity:.85}75%{opacity:.8}100%{transform:scaleY(1);opacity:0}}
 @keyframes hall-route-across{0%{transform:scaleX(0);opacity:.85}75%{opacity:.8}100%{transform:scaleX(1);opacity:0}}
@@ -182,6 +182,12 @@ watch(() => props.nodes, (nodes, previous) => {
 @media(orientation:landscape) and (min-width:640px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,32%)}.hall-ring{width:60px}.hall-map{padding:6px}.hall-node{padding:6px}.hall-links{height:16px}}
 @media(max-width:360px){.hall-map{padding:5px}.hall-node{padding:5px}.hall-row{gap:5px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
 @media(prefers-reduced-motion:reduce){.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
-:global([data-es2-reduce-motion="true"]) :is(.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after),:global([data-es2-reduce-flashing="true"]) :is(.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after){display:none!important}
-:global([data-es2-reduce-motion="true"]) :is(.hall-ring,.hall-edge i),:global([data-es2-reduce-flashing="true"]) :is(.hall-ring,.hall-edge i){transition:none!important}
+:global([data-es2-reduce-motion="true"]) .hall-upgrade-fx,
+:global([data-es2-reduce-motion="true"]) .hall-ring::after,
+:global([data-es2-reduce-motion="true"]) .hall-edge i::after,
+:global([data-es2-reduce-flashing="true"]) .hall-upgrade-fx,
+:global([data-es2-reduce-flashing="true"]) .hall-ring::after,
+:global([data-es2-reduce-flashing="true"]) .hall-edge i::after{display:none!important;animation:none!important}
+:global([data-es2-reduce-motion="true"]) .hall-ring,:global([data-es2-reduce-motion="true"]) .hall-edge i,
+:global([data-es2-reduce-flashing="true"]) .hall-ring,:global([data-es2-reduce-flashing="true"]) .hall-edge i{transition:none!important}
 </style>
