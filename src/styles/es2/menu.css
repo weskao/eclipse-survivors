@@ -92,6 +92,17 @@
 .es2-dialog-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:8px;touch-action:pan-y}
 .es2-dialog-choice{overflow:clip}
 .es2-dialog-choice .es2-dialog-body{overflow-x:hidden;overflow-y:auto;overscroll-behavior:none}
+/* Borrow the existing header gap and panel padding for hover paint, not extra layout height.
+   Equal negative margins and padding keep the card grid and outer frame stationary.
+   Keep the scroll container so long choices remain reachable. */
+@media (hover:hover) and (pointer:fine){
+  .es2-dialog-choice{--es2-choice-bleed-top:clamp(8px,2dvh,22px)}
+  .es2-dialog-choice .es2-dialog-body{margin-block:calc(-1 * var(--es2-choice-bleed-top)) -8px;padding-block:var(--es2-choice-bleed-top) 8px;margin-inline:-12px;padding-inline:12px}
+  .es2-dialog-choice .es2-choice:hover:not(:disabled){z-index:2}
+}
+@media (hover:hover) and (pointer:fine) and (orientation:landscape) and (max-height:520px){
+  .es2-dialog-choice{--es2-choice-bleed-top:6px}
+}
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}

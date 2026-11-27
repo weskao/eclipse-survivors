@@ -113,6 +113,34 @@ try {
         assert.ok(scroll.inner > 0 && Math.abs(scroll.inner - scroll.range) <= 1,
           name + ': overflowing content is not reachable: ' + JSON.stringify(scroll))
       record.choiceScroll = scroll
+      if (!touch) {
+        const cards = choice.locator('.es2-choice:not(:disabled)')
+        await page.mouse.move(0, 0)
+        await cards.evaluateAll(rows => Promise.all(rows.flatMap(row => row.getAnimations().filter(a => a.effect?.getComputedTiming().endTime !== Infinity).map(a => a.finished.catch(() => {})))))
+        const card = cards.nth(1)
+        const measureHover = () => card.evaluate(el => {
+          const b = el.getBoundingClientRect(), body = el.closest('.es2-dialog-body').getBoundingClientRect()
+          const outer = el.closest('.es2-dialog').getBoundingClientRect()
+          const hit = document.elementFromPoint(b.left + b.width / 2, b.top + 1)
+          return { top: b.top, bottom: b.bottom, clipTop: body.top, clipBottom: body.bottom,
+            hit: !!hit && el.contains(hit), outerHeight: outer.height, outerTop: outer.top }
+        })
+        const idle = await measureHover()
+        await card.hover()
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.es2-dialog-choice .es2-choice:hover:not(:disabled)')
+          return !!el && getComputedStyle(el).transform === 'matrix(1, 0, 0, 1, 0, -3)'
+        })
+        const hovered = await measureHover()
+        assert.ok(hovered.top <= idle.top - 2.5, name + ': card should lift on hover')
+        assert.ok(hovered.top >= hovered.clipTop + 1 && hovered.bottom <= hovered.clipBottom + 1 && hovered.hit,
+          name + ': hover rim clipped by scroll body: ' + JSON.stringify(hovered))
+        assert.ok(Math.abs(hovered.outerHeight - idle.outerHeight) <= 1 && Math.abs(hovered.outerTop - idle.outerTop) <= 1,
+          name + ': hover must not resize or move dialog')
+        await page.screenshot({ path: dir + '/' + name + '-choice-hover.png' })
+        await page.mouse.move(0, 0)
+        record.choiceHover = hovered
+      }
       if (touch && width < height) {
         record.portraitArt = await choice.locator('.es2-card-art').evaluateAll(async frames => (await Promise.all(frames.map(async frame => {
           const image = frame.querySelector('img')
