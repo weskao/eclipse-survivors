@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { resolveSkillChoiceArt } from '../../../game/ui-art'
 import { upgradeStatPreview } from '../../../game/upgrade-preview'
 import { treasureArtUrl } from '../../../game/render/es2/production-world'
@@ -52,6 +52,15 @@ const emit = defineEmits<{
   toggleMusic: []; toggleSfx: []; dismissNotification: []
   accessibility: [next: AccessibilityPreferences]
 }>()
+const systemMotion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : undefined
+const systemReducedMotion = ref(!!systemMotion?.matches)
+function syncSystemMotion(event: MediaQueryListEvent): void { systemReducedMotion.value = event.matches }
+onMounted(() => systemMotion?.addEventListener?.('change', syncSystemMotion))
+onBeforeUnmount(() => systemMotion?.removeEventListener?.('change', syncSystemMotion))
+const stillPresentation = computed(() => props.upgradeEffect === 'still' ||
+  !!props.accessibilityPreferences?.reducedFlashing ||
+  props.accessibilityPreferences?.reducedMotion === 'on' ||
+  ((props.accessibilityPreferences?.reducedMotion ?? 'system') === 'system' && systemReducedMotion.value))
 const fallbackProfile = emptyProfile()
 const currentProfile = computed(() => props.profile ?? fallbackProfile)
 const archive = ref<MenuView>('main')
@@ -62,7 +71,7 @@ const levelActive = computed(() => props.screen === 'level' && !props.specialCho
 const specialActive = computed(() => !!props.specialChoice && !props.settingsOpen && !props.notification && !props.loading)
 const levelCards = computed<MenuChoice[]>(() => props.upgrades.map(upgrade => ({
   id: upgrade.id, title: upgrade.title, description: upgrade.desc, icon: upgrade.icon,
-  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, props.upgradeEffect === 'still' || props.accessibilityPreferences?.reducedMotion === 'on' || !!props.accessibilityPreferences?.reducedFlashing),
+  ...resolveSkillChoiceArt(upgrade.id, upgrade.iconSrc, stillPresentation.value),
   rarity: upgrade.rarity, level: upgrade.level, maxLevel: upgrade.maxLevel,
   requirements: upgrade.requirements, evolution: upgrade.isEvolution,
   statChanges: upgradeStatPreview(upgrade.id, upgrade.level, upgrade.maxLevel),
@@ -72,7 +81,7 @@ const specialCards = computed(() => {
   if (!offer) return offer
   if (offer.kind === 'evolution') return { ...offer, items: offer.items.map(item => ({
     ...item,
-    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, props.upgradeEffect === 'still' || props.accessibilityPreferences?.reducedMotion === 'on' || !!props.accessibilityPreferences?.reducedFlashing),
+    ...resolveSkillChoiceArt(item.id as AbilityId, item.imageSrc, stillPresentation.value),
     statChanges: item.statChanges ?? upgradeStatPreview(item.id, item.level ?? 0, item.maxLevel ?? 1),
   })) }
   return { ...offer, items: offer.items.map(item => ({
@@ -89,7 +98,7 @@ function navigate(view: MenuView): void { archive.value = view }
 function confirmReset(): void { resetOpen.value = false; emit('reset') }
 </script>
 <template>
-  <div class="es2-system" :class="{ 'es2-system-still': upgradeEffect === 'still' }">
+  <div class="es2-system" :class="{ 'es2-system-still': stillPresentation }">
     <Es2MainMenu v-if="screen === 'menu' && !loading" :choice="choice" :hero-id="heroId" :run-mode="runMode" :version="version"
       :profile="currentProfile" :needs-audio-unlock="musicOn && !audioUnlocked" :archive-view="archive"
       @select="emit('select', $event)" @select-hero="emit('selectHero', $event)" @mode="emit('mode', $event)" @start="emit('start')"
@@ -103,10 +112,10 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
           @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
       </template>
     </Es2MainMenu>
-    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still' || accessibilityPreferences?.reducedMotion === 'on' || !!accessibilityPreferences?.reducedFlashing"
+    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="stillPresentation"
       @choose="chooseUpgrade" @settings="emit('settings')" />
     <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :tier="specialCards.tier" :items="specialCards.items"
-      :still="upgradeEffect === 'still' || accessibilityPreferences?.reducedMotion === 'on' || !!accessibilityPreferences?.reducedFlashing" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
+      :still="stillPresentation" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')">
       <template #cloud><slot name="result-cloud" /></template>

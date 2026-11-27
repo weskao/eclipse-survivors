@@ -206,7 +206,9 @@ async function verifyTreasureReveals(): Promise<string[]> {
       screen: engine.ui.mode === 'level' ? 'level' : 'hidden',
       choice: engine.ui.choice, heroId: engine.ui.heroId, runMode: engine.ui.runMode, version: 'QA',
       specialChoice: engine.ui.specialChoice,
-      upgradeEffect: reduced ? 'still' : 'soft',
+      // Exercise the real system preference rather than forcing the separate still-art setting.
+      upgradeEffect: 'soft',
+      accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'system' },
       onSpecialChoose: (id: string) => engine.chooseTreasure(id),
     }) })
     try {
