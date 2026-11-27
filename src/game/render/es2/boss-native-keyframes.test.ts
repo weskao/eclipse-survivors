@@ -46,7 +46,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(selectBossNativeKeyframe(phase2)).toBe('transformPhase2')
     expect(selectBossNativeKeyframe(state)).toBe('transform')
     expect(selectBossNativeKeyframe(phase1)).toBeNull()
-    expect(selectBossNativeKeyframe({ ...phase2, id: 'abyss-monarch' })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...phase2, id: 'abyss-monarch' })).toBe('abyssAwakeningPhase2')
     const image = { complete: true, naturalWidth: 1374, naturalHeight: 1145 } as HTMLImageElement
     registerBossNativeKeyframe(image, 'transformPhase2')
     const calls: unknown[][] = []
