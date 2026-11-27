@@ -56,7 +56,7 @@ describe('Hall completed skill medallions', () => {
       vi.advanceTimersByTime(1800)
       await wrapper.vm.$nextTick()
       expect(wrapper.find('[data-hall-upgraded]').exists()).toBe(false)
-      expect(wrapper.get('.hall-completion-crest').exists()).toBe(true)
+      expect(wrapper.find('.hall-completion-crest').exists()).toBe(true)
       await wrapper.setProps({ nodes: [node('power', 5)] })
       expect(wrapper.find('[data-hall-upgraded]').exists()).toBe(false)
       await wrapper.setProps({ nodes: [node('power', 3)] })

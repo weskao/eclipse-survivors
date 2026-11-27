@@ -43,7 +43,11 @@ describe('ES2 v3 progression UI adapter', () => {
       await wrapper.get(`[data-hall-inspect="${id}"]`).trigger('click')
       const button = wrapper.get(`[data-research="${id}"]`)
       expect(button.attributes('disabled'), id).toBeDefined()
-      expect(wrapper.get(`[data-hall-node="${id}"]`).text(), id).toContain('5 / 5')
+      const node=wrapper.get(`[data-hall-node="${id}"]`)
+      expect(node.get('.hall-rank').text(),id).toBe('MAX')
+      expect(node.attributes('data-hall-completion'),id).toBe('mastered')
+      expect(node.get('[role="progressbar"]').attributes('aria-valuenow'),id).toBe('5')
+      expect(node.get('[role="progressbar"]').attributes('aria-valuemax'),id).toBe('5')
     }
     wrapper.unmount()
   })

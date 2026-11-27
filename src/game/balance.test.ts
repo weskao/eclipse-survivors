@@ -18,14 +18,14 @@ import { spawnInterval, spawnMob } from './spawn'
 const hooks = { sfx: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), end: vi.fn() }
 
 describe('single-source numerical game balance', () => {
-  it('loads thirteen independent domain JSON files without changing the existing BALANCE API', () => {
+  it('loads all fourteen independent domain JSON files including Hall without losing legacy domains', () => {
     const domains = [
       'world', 'heroes', 'progression', 'skills', 'weapons', 'events', 'enemies',
-      'combat', 'evolutions', 'modes', 'bosses', 'relics', 'meta',
+      'combat', 'evolutions', 'modes', 'bosses', 'relics', 'meta', 'hall',
     ] as const
     expect(Object.keys(BALANCE).sort()).toEqual([...domains].sort())
     for (const domain of domains) {
-      const file = resolve(process.cwd(), 'src/game/balance', `${domain}.json`)
+      const file = resolve(process.cwd(), 'src/game/balance', domain === 'hall' ? 'hall-effect-tuning.json' : `${domain}.json`)
       expect(existsSync(file), `${domain}.json must be independently editable`).toBe(true)
       expect(BALANCE[domain]).toEqual(JSON.parse(readFileSync(file, 'utf8')))
     }

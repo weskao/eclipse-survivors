@@ -22,6 +22,7 @@ const english = new Map<string, string>([
   ["選取節點後升級","Select node to upgrade"],
   ["節點詳情","Node details"],
   ["目前效果","Current effect"],
+  ["主動技能","Active Ability"],
   ['{value} 次重擲','{value} rerolls'],
   ['{value} 個百分點','{value} percentage points'],
   ["下一階效果","Next rank effect"],

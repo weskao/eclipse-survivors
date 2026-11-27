@@ -821,3 +821,14 @@ describe('real hero active video scenario', () => {
     expect(engine.state.mobs).toEqual(mobs)
   })
 })
+
+it('keeps the dedicated Shadowblade Q cue while damaging an explicit nearby target', () => {
+  engine.selectHero('shadowblade')
+  engine.start()
+  const hero=engine.state.hero!
+  engine.state.mobs=[{x:hero.x+24,y:hero.y,r:14,hp:10000,max:10000,type:'slime',speed:0,dmg:1,phase:0,hit:0,slow:0,stagger:0,kx:0,ky:0}]
+  audio.cues.length=0
+  expect(engine.activateHeroSpecial()).toBe(true)
+  expect(engine.state.mobs[0]!.hp).toBeLessThan(10000)
+  expect(audio.cues).toEqual(['shadowblade-special'])
+})

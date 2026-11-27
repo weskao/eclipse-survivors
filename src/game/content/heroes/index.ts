@@ -210,7 +210,10 @@ export function createHeroSpecializationAdapter(
   let lastTargets = NO_TARGETS
   let phantomAt = 0, sanctuaryAt = 0, reckoningAt = 0
 
-  const strike=(target:CombatTarget,amount:number,source:HallDamageSource='hero')=>hitTarget(state,target,amount,withHallSource(state,hooks,source),hooks.factions?.())
+  // The immediate Q cast owns its audio; retain hit VFX, damage and rewards, but
+  // do not layer one generic contact cue for each enemy in the cast.
+  const castHooks: GameHooks = { ...hooks, contactSfx: undefined }
+  const strike=(target:CombatTarget,amount:number,source:HallDamageSource='hero',cast=false)=>hitTarget(state,target,amount,withHallSource(state,cast?castHooks:hooks,source),hooks.factions?.())
   const alive = () => state.mode === 'play' && !!state.hero && state.hero.hp > 0
   const upgrades = () => state.content.levels[def.progressionAbility] ?? 0
   const companions = (): readonly CompanionKind[] => {
@@ -297,11 +300,11 @@ export function createHeroSpecializationAdapter(
         hero.inv = Math.max(hero.inv, 0.7)
         const struck = nearby(state, SHADOW.specialReach, SHADOW.specialHits, hooks)
         lastTargets = strikePoints(struck)
-        for (const enemy of struck) strike(enemy,hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank))
+        for (const enemy of struck) strike(enemy,hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank),'hero',true)
       } else if (id === 'spirit-summoner') {
         const struck = nearby(state, SPIRIT.companionRange, 3, hooks)
         lastTargets = strikePoints(struck)
-        for (const enemy of struck) strike(enemy,hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank))
+        for (const enemy of struck) strike(enemy,hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank),'hero',true)
         const before = hero.hp
         hero.hp = Math.min(hero.max, hero.hp + SPIRIT.specialHeal * (1 + hallRank(state, 'spirit-summoner-mend') * hallTuning.spiritMend))
         hallSummonCast(state)
