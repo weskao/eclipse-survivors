@@ -615,10 +615,8 @@
 .es2-menu .es2-expedition-meta{display:block;margin-top:2px;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif}
 .es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}
 .es2-menu .es2-expedition-hero::before{content:'·';margin-inline:6px;color:#b39b6c;font-weight:700}
-.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 0 auto;min-width:min-content;max-width:30%;color:#e9cc95;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start}
-.es2-expedition-change-label{display:flex;flex-wrap:wrap;align-items:center;min-width:0}
-.es2-expedition-change-label:lang(en){flex-direction:column;align-items:flex-start;flex-wrap:nowrap}
-.es2-expedition-change-label>span{white-space:nowrap}
+.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;color:#e9cc95;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start}
+.es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}
 .es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none}
 /* A violet twilight door with amber light rising from its threshold, framed in gold. */
 .es2-menu .es2-portal-start{

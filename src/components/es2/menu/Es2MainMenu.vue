@@ -73,12 +73,9 @@ const modeBrief = computed(() => t(objectiveSelection.value
 const modeDuration = computed(() => selectedMode.value.duration === null
   ? '∞' : formatDuration(selectedMode.value.duration))
 const page = ref<'heroes' | 'modes'>('heroes')
-// Keep translated phrases intact, but provide semantic wrap points for the dock.
-const expeditionActionLines = computed(() => {
-  const label = t(page.value === 'heroes' ? '變更遠征' : '返回英雄選擇')
-  const space = label.lastIndexOf(' ')
-  return space < 0 ? [label.slice(0, 2), label.slice(2)] : [label.slice(0, space), label.slice(space + 1)]
-})
+// Compact destination labels; retain the full action for accessibility and tooltips.
+const expeditionActionLabel = computed(() => t(page.value === 'heroes' ? '模式' : '英雄'))
+const expeditionActionTitle = computed(() => t(page.value === 'heroes' ? '變更遠征' : '返回英雄選擇'))
 function toggleExpeditionPage(): void {
   heroDetails.clear()
   page.value = page.value === 'heroes' ? 'modes' : 'heroes'
@@ -177,6 +174,8 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
         <button class="es2-expedition-navigation es2-expedition-brief" type="button"
           data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"
           :aria-controls="page === 'heroes' ? 'es2ExpeditionPage' : 'es2HeroPage'"
+          :title="expeditionActionTitle"
+          :aria-label="`${expeditionActionLabel} — ${expeditionActionTitle} · ${modeTitle} ${modeDuration} · ${modeBrief} · ${t(selectedHeroLabel)}`"
           data-ui-sfx="select" @click="toggleExpeditionPage">
           <span class="es2-expedition-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
           <span class="es2-mobile-selected-mode" aria-live="polite">
@@ -189,7 +188,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
             </span>
           </span>
           <span class="es2-expedition-change">
-            <span class="es2-expedition-change-label"><span v-for="line in expeditionActionLines" :key="line">{{ line }}</span></span>
+            <span class="es2-expedition-change-label">{{ expeditionActionLabel }}</span>
             <span class="es2-expedition-change-arrow" aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span>
           </span>
         </button>
