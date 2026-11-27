@@ -561,10 +561,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ui.rewards = profileStore.recordRun(stats)
     }
     refreshMeta()
-    audio.setResultTheme?.(win ? 'victory' : 'defeat')
+    const outcome = win ? 'victory' : 'defeat'
+    // Enter results and release the adaptive battle score before selecting the
+    // terminal theme. Start its first scheduling pass without waiting for rendering.
     screen('result')
-    es2Audio?.setScene(win ? 'victory' : 'defeat')
-    audio.playSfx(win ? 'victory' : 'defeat')
+    if (audio.setResultTheme) {
+      audio.setResultTheme(outcome)
+      audio.tick('result')
+    } else {
+      es2Audio?.setScene(outcome)
+    }
+    audio.playSfx(outcome)
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
     ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}` + saveWarning
     hud()
