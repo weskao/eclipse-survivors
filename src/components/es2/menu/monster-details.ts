@@ -1,4 +1,7 @@
 import { BALANCE } from '../../../game/config'
+import { ENEMY_DEFINITIONS, type FactionKind } from '../../../game/content/enemies/definitions'
+import { isFactionMonster, isNamedBoss, type MonsterId } from '../../../game/monster-catalog'
+import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossAttackId } from '../../../game/content/bosses/definitions'
 import { bossAttackImageSrc } from '../../../game/content/bosses/attack-art'
 import type { AbilityId, EnemyAttack, MobType } from '../../../game/types'
@@ -52,10 +55,31 @@ function legacyGroup(id: MobType): MonsterGroup {
     })),
   }
 }
-export function monsterGroups(id: MobType): MonsterGroup[] {
-  const groups = [legacyGroup(id)]
-  if (id !== 'boss') return groups
-  for (const boss of Object.values(BOSS_DEFINITIONS)) {
+const factionSkills: Record<FactionKind, { title: string; description: string }> = {
+  'shadow-assassin': { title: '暗影突襲', description: '迂迴接近後快速突進攻擊。' },
+  'necromancer': { title: '死靈召喚', description: '召喚爪牙加入戰鬥。' },
+  'dark-archer': { title: '暗影箭矢', description: '保持距離並發射遠程箭矢。' },
+  'plague-carrier': { title: '疫病蔓延', description: '在瞄準位置留下持續毒傷區域。' },
+  'shield-guardian': { title: '盾牌猛擊', description: '近距離盾擊，正面防禦可減少承受傷害。' },
+  'phantom': { title: '幽影突擊', description: '短暫相位移動後進行近身攻擊。' },
+  'fire-imp': { title: '烈焰爆破', description: '在瞄準位置形成燃燒區域。' },
+  'frost-wraith': { title: '寒霜飛彈', description: '發射可造成冰凍效果的投射物。' },
+  'berserker': { title: '狂暴重擊', description: '近身重擊，低生命時移動更快。' },
+  'crystal-sentinel': { title: '晶體射線', description: '鎖定方向並蓄力發射直線攻擊。' },
+}
+export function monsterGroups(id: MonsterId): MonsterGroup[] {
+  if (isFactionMonster(id)) {
+    const def = ENEMY_DEFINITIONS[id], skill = factionSkills[id]
+    return [{ id, color: def.telegraphColor, stats: [
+      stat('HP', '生命', def.hp), stat('ATK', '攻擊力', def.damage),
+      stat('SPD', '移動速度', def.speed), stat('RNG', '攻擊觸發距離', def.range),
+    ], skills: [{ id, title: t(skill.title), icon: enemyDossierArt[`../../../assets/es2/production/skills/enemy-dossier/${id}@3x.webp`] ?? WORLD_ART.enemies[id].telegraph,
+      description: t(skill.description), detail: t('蓄力 {seconds} 秒', { seconds: def.windup }) }] }]
+  }
+  if (!isNamedBoss(id)) return [legacyGroup(id)]
+  const groups: MonsterGroup[] = []
+  {
+    const boss = BOSS_DEFINITIONS[id]
     const ids = [...new Set(boss.phases.flat())]
     const damage = ids.map(key => BOSS_ATTACKS[key].damage).filter(value => value > 0)
     groups.push({

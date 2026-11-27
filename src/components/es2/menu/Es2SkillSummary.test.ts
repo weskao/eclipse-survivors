@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import Es2SkillSummary from './Es2SkillSummary.vue'
 import { monsterGroups } from './monster-details'
+import { MONSTER_IDS } from '../../../game/monster-catalog'
 import HeroActiveSummary from '../hero-roster/HeroActiveSummary.vue'
 
 describe('shared skill value column', () => {
@@ -17,7 +18,7 @@ describe('shared skill value column', () => {
     wrapper.unmount()
   })
 
-  it.each(monsterGroups('slime').concat(monsterGroups('boss')).flatMap(group => group.skills).map(skill => [skill.id, skill] as const))('reserves a separate value column for monster/boss skill %s', (_id, skill) => {
+  it.each(MONSTER_IDS.flatMap(monsterGroups).flatMap(group => group.skills).map(skill => [skill.id, skill] as const))('reserves a separate value column for monster/boss skill %s', (_id, skill) => {
     const wrapper = mount(Es2SkillSummary, { props: { icon: skill.icon, title: skill.title, detail: skill.detail, description: skill.description } })
     const value = wrapper.get('[data-active-skill-cooldown]')
     expect(value.element.parentElement).toBe(wrapper.element)

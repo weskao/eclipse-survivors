@@ -13,7 +13,8 @@ import { ACTIVE_HERO_IDS } from '../hero-roster/active-presentation'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { encyclopedia } from '../../../meta/compendium'
 import type { Profile, PermanentUpgrade, CosmeticId } from '../../../meta/types'
-import type { HeroId, JobId, MobType } from '../../../game/types'
+import type { HeroId, JobId } from '../../../game/types'
+import { isFactionMonster, isNamedBoss, type MonsterId } from '../../../game/monster-catalog'
 import ProgressionPanel from '../progression/ProgressionPanel.vue'
 import { createMetaState, type MetaState } from '../../../game/content/meta/state'
 import type { MenuView, RelicEntry } from './model'
@@ -48,7 +49,7 @@ const cardDetails = computed<Record<string, CardDetail>>(() => {
     if (mob.count) result['monster:' + mob.id] = {
       title: t(mob.label), description: t(mob.description),
       groups: monsterGroups(mob.id),
-      note: t(mob.id === 'boss' ? '首領紀錄為共用擊殺數；以下為各首領的基礎資料，並非個別遭遇紀錄。' : '基礎數值不含遠征難度、時間成長及菁英加成。'),
+      note: t(mob.id === 'boss' ? '歷史紀錄可能包含未區分的首領擊倒數。' : '基礎數值不含遠征難度、時間成長及菁英加成。'),
     }
   }
   for (const ability of entries.value.abilities) {
@@ -77,7 +78,12 @@ function unlockCondition(id: CosmeticId): string | undefined {
     : ACHIEVEMENTS.find(a => a.cosmetic === id)?.hint
 }
 const legacyNodes = computed(() => legacyHallNodes(props.profile))
-const monsterImage = (id: MobType): string | undefined => id === 'warlock' ? undefined : ART_URLS[id]
+function monsterImage(id: MonsterId): string {
+  if (isFactionMonster(id)) return WORLD_ART.enemies[id].body
+  if (isNamedBoss(id)) return WORLD_ART.bosses[id]
+  return ART_URLS[id === 'warlock' ? 'wizard' : id]
+}
+const monsterFrames = (id: MonsterId) => isFactionMonster(id) ? 6 : isNamedBoss(id) ? 3 : 1
 const achievementArt: Record<string, string> = {
   'first-blood': WORLD_ART.ui['achievement-flawless'],
   'first-victory': WORLD_ART.ui['achievement-explorer'],
@@ -139,13 +145,17 @@ const achievementArt: Record<string, string> = {
     </section>
     <section v-else-if="view === 'monsters'" class="es2-archive-section" :aria-label="t('魔物圖鑑')">
       <div class="es2-archive-grid"><article v-for="mob in entries.monsters" :key="mob.id" class="es2-archive-card" :class="{ 'es2-locked': !mob.count, 'es2-context-card': !!mob.count }"
-        :data-es2-context-card="mob.count ? 'monster:' + mob.id : undefined" :tabindex="mob.count ? 0 : undefined">
-        <img v-if="mob.count && monsterImage(mob.id)" :src="monsterImage(mob.id)" :alt="t('{name} 插畫', { name: t(mob.label) })" loading="lazy" />
-        <span v-else class="es2-archive-glyph">{{ mob.icon }}</span><strong>{{ t(mob.count ? mob.label : '???') }}</strong>
+        :data-monster-entry="mob.id" :data-es2-context-card="mob.count ? 'monster:' + mob.id : undefined" :tabindex="mob.count ? 0 : undefined">
+        <div class="es2-archive-art">
+          <span v-if="mob.count && monsterFrames(mob.id) > 1" class="es2-archive-atlas" data-monster-portrait role="img"
+            :aria-label="t('{name} 插畫', { name: t(mob.label) })"
+            :style="{ backgroundImage: 'url(' + monsterImage(mob.id) + ')', backgroundSize: (monsterFrames(mob.id) * 100) + '% 100%' }" />
+          <img v-else-if="mob.count" data-monster-portrait :class="{ 'es2-warlock-portrait': mob.id === 'warlock' }" :src="monsterImage(mob.id)" :alt="t('{name} 插畫', { name: t(mob.label) })" loading="lazy" />
+          <span v-else class="es2-archive-glyph" aria-hidden="true">?</span>
+        </div><strong>{{ t(mob.count ? mob.label : '???') }}</strong>
         <p v-if="!mob.count">{{ t('尚未遭遇') }}</p><small v-if="mob.count">{{ t("擊倒") }} {{ mob.count }}</small>
         <Es2CardInfo v-if="mob.count" :id="'monster:' + mob.id" :title="t(mob.label)" @open="open" />
       </article></div>
-      <component v-if="DevArtGallery" :is="DevArtGallery" view="monsters" />
     </section>
     <section v-else-if="view === 'skills'" class="es2-archive-section" :aria-label="t('技能圖鑑')">
       <h3 class="es2-archive-active-heading">{{ t('英雄主動技能') }}</h3>
@@ -164,7 +174,7 @@ const achievementArt: Record<string, string> = {
       <div class="es2-stat-strip"><div><b>{{ profile.achievements.length }} / {{ ACHIEVEMENTS.length }}</b><small>{{ t("已達成") }}</small></div></div>
       <div class="es2-archive-grid"><article v-for="achievement in ACHIEVEMENTS" :key="achievement.id" class="es2-archive-card es2-context-card" :class="{ 'es2-locked': !profile.achievements.includes(achievement.id) }"
         :data-es2-context-card="'achievement:' + achievement.id" tabindex="0">
-        <img class="es2-achievement-icon" :src="achievementArt[achievement.id]" :alt="t('{name} 成就徽章', { name: t(achievement.title) })" data-es2-achievement-badge loading="lazy" decoding="async" />
+        <div class="es2-archive-art"><img class="es2-achievement-icon" :src="achievementArt[achievement.id]" :alt="t('{name} 成就徽章', { name: t(achievement.title) })" data-es2-achievement-badge loading="lazy" decoding="async" /></div>
         <strong>{{ t(achievement.title) }}</strong>
         <Es2CardInfo :id="'achievement:' + achievement.id" :title="t(achievement.title)" @open="open" />
         <small>{{ t(profile.achievements.includes(achievement.id) ? '✓ 已達成' : '尚未達成') }}</small>

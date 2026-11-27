@@ -5,11 +5,12 @@ import { BALANCE } from '../../../game/config'
 import { BOSS_DEFINITIONS } from '../../../game/content/bosses/definitions'
 import Es2CardDetails from './Es2CardDetails.vue'
 import { monsterGroups } from './monster-details'
+import type { MonsterId } from '../../../game/monster-catalog'
 
 let wrapper: VueWrapper | undefined
 afterEach(() => { wrapper?.unmount(); wrapper = undefined; vi.unstubAllGlobals(); document.body.innerHTML = '' })
 
-function setup(hover: boolean, id: 'slime' | 'boss') {
+function setup(hover: boolean, id: MonsterId) {
   vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), { matches: hover }))
   wrapper = mount(Es2CardDetails, {
     attachTo: document.body,
@@ -34,14 +35,15 @@ describe('shared monster dossiers', () => {
     expect(dialog.querySelector('[data-monster-group="slime"]')?.textContent).toBe(content)
   })
 
-  it('opens all boss dossiers on touch without requiring hover', async () => {
-    const board = setup(false, 'boss')
+  it.each(Object.values(BOSS_DEFINITIONS))('opens the discovered boss $id on touch', async boss => {
+    const board = setup(false, boss.id)
     await board.get('article').trigger('pointerover', { pointerType: 'touch' })
     expect(document.querySelector('[role="tooltip"]')).toBeNull()
     await board.get('button').trigger('click')
     await nextTick()
     const dialog = document.querySelector('[role="dialog"]')!
-    for (const boss of Object.values(BOSS_DEFINITIONS)) {
+    expect(dialog.querySelectorAll('[data-monster-group]')).toHaveLength(1)
+    {
       const section = dialog.querySelector('[data-monster-group="' + boss.id + '"]')!
       expect(section.querySelector('[data-monster-stat="HP"]')?.textContent).toContain(String(boss.health))
       for (const attack of new Set(boss.phases.flat())) {
@@ -51,7 +53,7 @@ describe('shared monster dossiers', () => {
   })
 
   it('assigns a distinct authored icon to every expanded boss attack', () => {
-    const skills = monsterGroups('boss').slice(1).flatMap(group => group.skills)
+    const skills = Object.values(BOSS_DEFINITIONS).flatMap(boss => monsterGroups(boss.id)).flatMap(group => group.skills)
     expect(skills).toHaveLength(new Set(skills.map(skill => skill.id)).size)
     expect(new Set(skills.map(skill => skill.icon)).size).toBe(skills.length)
     expect(skills.every(skill => !!skill.icon && !skill.icon.includes('/skill-icons/'))).toBe(true)
