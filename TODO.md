@@ -252,3 +252,8 @@ See [deferred endgame scope](docs/es4/deferred-endgame-scope.md). Existing enemy
 Catalog and SVG source created; full CI and runtime transactions are not yet verified. Do not enable talent purchases until the authoritative runtime is ready.
 
 ES4 explorer is explicitly a read-only preview. The original core research remains active. V4 migration, real ownership, typed combat effects and attunement remain unimplemented and unchecked.
+
+### ES4 continuation checkpoint — 2026-11-27
+- [ ] Fix ES4 typecheck regression in `src/components/es2/progression/HallTalentExplorer.test.ts:19`: Vue Test Utils `get()` return type omits `exists()` (TS2339). Preserve the assertion using an appropriate supported API and rerun the focused suite and typecheck.
+- [ ] Reconcile inherited manual production-art gate for shadowblade, spirit-summoner and crimson-paladin; obtain legitimate visual approval, never remove or weaken the blocking test. Separate this from the ES4 functional implementation.
+Baseline evidence: [ES4 verification 45961478312](https://github.com/weskao/eclipse-survivors/actions/runs/45961478312), commit `24d9d07b82fad3f057fb51dccae56084c3f52939`: 255 test files passed, one failed; 2,204 tests passed, one failed, one skipped. Typecheck failed with TS2339. No full CI green claimed. SVG 72/72 present; final WebP 0/72. Preserve the deferred scope above. See the mandatory ES4 references in CLAUDE.md.
