@@ -496,10 +496,9 @@ describe('lobby dock silhouette and layout', () => {
       .toMatch(/\.es2-active-summary__head strong \{[^}]*hyphens:auto/)
   })
   // Chromium ships no hyphenation dictionary, so phone hall labels stay whole by track sizing, not by hyphens.
-  it('keeps phone hall labels as whole words from 360px and breaks anywhere only below it', () => {
-    expect(css).toContain('.es2-menu .es2-hall-links{gap:2px;grid-template-columns:repeat(5,minmax(min-content,1fr))}')
-    expect(css).toMatch(/\.es2-menu \.es2-hall-links button\{flex-direction:column;[^}]*font-size:max\(\.6875rem,min\(calc\(\.6875rem \* var\(--es2-ui-scale,1\)\),3vw\)\);[^}]*overflow-wrap:break-word\}/)
-    expect(css).toMatch(/@media\(max-width:359px\)\{\s*\.es2-menu \.es2-hall-links\{grid-template-columns:repeat\(5,minmax\(0,1fr\)\)\}\s*\.es2-menu \.es2-hall-links button\{overflow-wrap:anywhere\}/)
+  it('fits all five phone hall tabs in the available width without shrinking text', () => {
+    expect(css).toContain('.es2-menu .es2-hall-links{gap:2px;grid-template-columns:repeat(5,minmax(0,1fr))}')
+    expect(css).toMatch(/\.es2-menu \.es2-hall-links button\{flex-direction:column;[^}]*font-size:max\(\.6875rem,min\(calc\(\.6875rem \* var\(--es2-ui-scale,1\)\),3vw\)\);[^}]*overflow-wrap:anywhere\}/)
   })
   it('uses the compact brief below 1024px so a tablet brief beside the gate stays short', () => {
     expect(css).toMatch(/@media\(max-width:1023px\),\(orientation:landscape\) and \(max-height:520px\)\{[^@]*\.es2-menu \.es2-expedition-kicker\{display:none\}/)
