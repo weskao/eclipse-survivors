@@ -412,7 +412,11 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (intensity === next) return
       intensity = next
       battle.setIntensity(next)
-      if (next === 'boss') battle.setClock(ac ? ac.currentTime + 0.04 : 0)
+      if (next === 'boss') {
+        battle.setClock(ac ? ac.currentTime + 0.04 : 0)
+        // Silence exploration media on the actual boss beat, even if the next frame opens a picker.
+        if (isBattleMusicMode(mode)) bgm.volume = mp3Level()
+      }
     },
     setBossTheme(id: BossId | null, phase = 1) {
       // The ID comes from the actual living actor, never a predicted timer.

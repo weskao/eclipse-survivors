@@ -5,12 +5,14 @@ import { ACHIEVEMENTS } from '../meta/achievements'
 import { MODES } from '../meta/modes'
 import { MONSTER_ENTRIES } from '../meta/compendium'
 import type { RunRewards, RunStats } from '../meta/types'
+import type { MonsterKills } from '../game/monster-catalog'
 
 const props = defineProps<{
   active: boolean; ending: string; summary: string
   runResult?: RunStats | null; rewards?: RunRewards | null
 }>()
 const emit = defineEmits<{ again: []; home: [] }>()
+const defeated = computed<MonsterKills>(() => props.runResult?.monsterKills ?? props.runResult?.enemies ?? {})
 const duration = computed(() => {
   const seconds = Math.floor(props.runResult?.seconds ?? 0)
   return String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0')
@@ -35,8 +37,8 @@ const duration = computed(() => {
       </div>
       <div v-if="runResult" class="result-breakdown">
         <strong>{{ t("征討紀錄") }}</strong>
-        <span v-for="entry in MONSTER_ENTRIES.filter(m => runResult?.enemies[m.id])" :key="entry.id">{{ t(entry.label) }} ×{{ runResult.enemies[entry.id] }}</span>
-        <span v-if="!Object.values(runResult.enemies).some(Boolean)">{{ t("尚無魔物擊殺") }}</span>
+        <span v-for="entry in MONSTER_ENTRIES.filter(m => defeated[m.id])" :key="entry.id">{{ t(entry.label) }} ×{{ defeated[entry.id] }}</span>
+        <span v-if="!Object.values(defeated).some(Boolean)">{{ t("尚無魔物擊殺") }}</span>
       </div>
       <div v-if="runResult?.abilities.length" class="result-abilities"><strong>{{ t("覺醒能力") }}</strong><span>{{ runResult.abilities.length }} {{ t("種") }}</span></div>
       <div v-if="rewards" class="result-rewards">
