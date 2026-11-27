@@ -914,6 +914,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       hero.hp = hero.max
       hero.inv = 0
       hero.attack = 1.2
+      // Prevent the evidence-only encounter from opening an upgrade dialog mid-cast.
+      // XP, damage, enemy death and audio still use their actual runtime paths.
+      hero.need = Math.max(hero.need, 10000)
       for (let i = 0; i < 8; i++) {
         spawnMob(s)
         const target = s.mobs[s.mobs.length - 1]

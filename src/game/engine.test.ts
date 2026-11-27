@@ -754,3 +754,36 @@ it.each(['common', 'rare', 'epic', 'legendary', 'cursed'] as const)('plays the a
   expect(play.mock.calls.filter(([cue]) => cue === 'treasureClaim')).toEqual([['treasureClaim', expected]])
   expect(inventorySnapshot(s).items).toHaveLength(1)
 })
+
+describe('real hero active video scenario', () => {
+  it('keeps a real Knight cast in live combat after defeating the staged crowd', () => {
+    const old = window.location.href
+    try {
+      window.history.replaceState(null, '', '?heroActiveVideoQa=1')
+      engine.selectHero('knight')
+      engine.selectRunMode('standard')
+      engine.start()
+      expect(engine.testApi.prepareHeroActiveVideo()).toBe(true)
+      const hero = engine.state.hero!
+      // A short evidence recording must not be interrupted by a level-up dialog.
+      expect(hero.need).toBeGreaterThan(1000)
+      expect(engine.state.mobs).toHaveLength(8)
+      expect(engine.activateHeroSpecial()).toBe(true)
+      expect(audio.cues).toContain('knight-special')
+      for (let i = 0; i < 90; i++) engine.advance(.033)
+      expect(engine.state.mode).toBe('play')
+      expect(engine.state.time).toBeGreaterThan(2)
+    } finally {
+      window.history.replaceState(null, '', old)
+    }
+  })
+  it('never changes an ordinary game without the explicit dev flag', () => {
+    engine.selectHero('knight')
+    engine.start()
+    const need = engine.state.hero!.need
+    const mobs = [...engine.state.mobs]
+    expect(engine.testApi.prepareHeroActiveVideo()).toBe(false)
+    expect(engine.state.hero!.need).toBe(need)
+    expect(engine.state.mobs).toEqual(mobs)
+  })
+})

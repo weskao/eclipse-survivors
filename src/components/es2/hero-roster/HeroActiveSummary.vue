@@ -14,6 +14,7 @@ const name = computed(() => t(skill.value.special.split('：')[0]))
       width="44" height="44" decoding="async" loading="lazy" draggable="false" />
     <span class="es2-active-summary__copy">
       <span v-if="showHero" class="es2-active-summary__hero">{{ t(skill.label) }}</span>
+      <span v-if="!compact" class="es2-active-summary__hero">{{ t('主動技能') }}</span>
       <span class="es2-active-summary__head"><strong data-active-skill-name>{{ name }}</strong><span data-active-skill-cooldown class="es2-active-summary__cooldown" :aria-label="t('冷卻 {seconds} 秒', { seconds: skill.specialCooldown })">{{ skill.specialCooldown }}s</span></span>
       <span v-if="!compact" class="es2-active-summary__desc">{{ t(skill.special, skill.specialParams) }}</span>
     </span>
