@@ -188,3 +188,17 @@ it('routes distinct elemental, evolved and active skill contacts in both enemy p
     'hitElemental', 'hitElemental', 'hitEvolved', 'hitEvolved', 'hitHero', 'hitHero', 'hitCritical',
   ])
 })
+
+it('retains the boss death presentation during a saturated same-tick mob clear without losing rewards', () => {
+  const s = session()
+  const h = hooks()
+  const boss: Mob = { ...mob(40), type: 'boss', hp: 1 }
+  hit(s, boss, 1000, h)
+  for (let i = 0; i < 30; i++) hit(s, { ...mob(50 + i), hp: 1 }, 1000, h)
+  expect(s.kill).toBe(31)
+  expect(s.stars).toHaveLength(31)
+  expect(s.fallenMobs).toHaveLength(24)
+  expect(s.fallenMobs).toContain(boss)
+  expect(boss.deathVisual).toBe(.7)
+  expect(h.sfx).toHaveBeenCalledWith('bossDefeat')
+})

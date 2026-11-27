@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { readFileSync } from 'node:fs'
@@ -491,5 +491,36 @@ describe('Adventurer Hall selected mastery integration', () => {
     expect(find('.es2-progression-mastery strong').textContent).toContain('Lv. 3')
     await wrapper.setProps({ heroId: 'crimson-paladin' })
     expect(find('.es2-progression-mastery strong').textContent).toContain('Lv. 1')
+  })
+})
+
+describe('ES3 treasure presentation accessibility', () => {
+  it('uses the actual system motion setting and responds to preference changes without claiming the reward', async () => {
+    const media = new EventTarget()
+    let matches = true
+    vi.stubGlobal('matchMedia', vi.fn(() => Object.assign(media, { matches })))
+    let wrapper: VueWrapper | undefined
+    try {
+      wrapper = mounted({ screen: 'level', upgradeEffect: 'soft',
+        accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedMotion: 'system' },
+        specialChoice: { kind: 'treasure', tier: 'legendary', items: [{ id: 'reward', title: 'Reward', rarity: 'legendary' }] },
+      })
+      await nextTick()
+      expect(document.querySelector('[data-es3-chest-reveal]')).toBeNull()
+      expect(document.querySelector('[data-es3-skip-reveal]')).toBeNull()
+      matches = false
+      media.dispatchEvent(Object.assign(new Event('change'), { matches }))
+      await nextTick()
+      expect(document.querySelector('[data-es3-chest-reveal]')).not.toBeNull()
+      await wrapper.setProps({ accessibilityPreferences: { ...DEFAULT_ACCESSIBILITY_PREFERENCES, reducedFlashing: true } })
+      expect(document.querySelector('[data-es3-chest-reveal]')).toBeNull()
+      expect(wrapper.emitted('specialChoose')).toBeUndefined()
+      click('[data-choice="reward"]')
+      click('[data-choice="reward"]')
+      expect(wrapper.emitted('specialChoose')).toEqual([['reward']])
+    } finally {
+      if (wrapper) { wrappers.splice(wrappers.indexOf(wrapper), 1); wrapper.unmount() }
+      vi.unstubAllGlobals()
+    }
   })
 })

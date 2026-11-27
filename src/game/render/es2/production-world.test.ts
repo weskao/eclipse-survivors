@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { WORLD_ART, ES3_EPIC_TREASURE_URL, ES3_DEATH_URLS, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame } from './production-world'
+import { WORLD_ART, ES3_EPIC_TREASURE_URL, ES3_DEATH_URLS, loadWorldRuntimeImages, drawProductionBossFrame, drawProductionEnemyFrame, drawEs3EnemyDeath } from './production-world'
 import type { Ctx2D } from '../ctx'
 import { cacheBossPhaseLayouts, bossFrameLayout } from './production-world'
 import { BOSS_MAX_DRAW_PX, BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
@@ -236,4 +236,25 @@ describe('ES3 native death atlases in normal gameplay', () => {
     const canonicalOnly = loadWorldRuntimeImages(makeImage, undefined, false, false)
     expect(Object.keys(canonicalOnly.enemyDeaths ?? {})).toEqual([])
   })
+})
+
+it('keeps all native death cells anchored and bounds final-frame opacity in reduced flashing', () => {
+  const image = loaded(872, 872)
+  const calls: { args: unknown[]; alpha: number }[] = []
+  let alpha = 1, saved = 1
+  const ctx = {
+    get globalAlpha() { return alpha }, set globalAlpha(v: number) { alpha = v },
+    save() { saved = alpha }, restore() { alpha = saved },
+    drawImage(...args: unknown[]) { calls.push({ args, alpha }) },
+  } as unknown as Ctx2D
+  for (const remaining of [1, .7, .4, .24]) {
+    expect(drawEs3EnemyDeath(ctx, image, remaining, 1, 100, 110, true)).toBe(true)
+    expect(ctx.globalAlpha).toBe(1)
+  }
+  expect(calls.map(c => c.args.slice(1, 5))).toEqual([[8, 8, 420, 420], [444, 8, 420, 420], [8, 444, 420, 420], [444, 444, 420, 420]])
+  expect(calls.every(c => c.args.slice(5).join(',') === '-50,-96,100,100')).toBe(true)
+  expect(calls[3]!.alpha).toBeLessThanOrEqual(.55)
+  expect(drawEs3EnemyDeath(ctx, loaded(871, 872), .5, 1, 100, 110)).toBe(false)
+  expect(drawEs3EnemyDeath(ctx, image, 0, 1, 100, 110)).toBe(false)
+  expect(calls).toHaveLength(4)
 })
