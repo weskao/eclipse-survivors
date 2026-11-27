@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, nextTick, watch, onBeforeUnmount } from 'vue'
 import { currentLocale, t } from '../../../i18n'
 import { hallPrerequisiteRoute, HALL_GROUPS, hallTalentGroup, hallTalent, hallTalentCost, hallTalentEligible } from '../../../game/content/meta/hall-talents'
 import { hallRankValues, type RankValue } from '../../../game/content/meta/hall-rank-values'
@@ -17,7 +17,7 @@ const equipped = computed(() => props.state.hall?.attunement)
 const selectedSignature = computed(() => equipped.value?.hero[props.hero] ?? null)
 const activeRanks=computed(()=>resolveHallRunSnapshot(props.state,props.hero).ranks)
 const allSlots=computed(()=>[...(equipped.value?.universal??[]),selectedSignature.value,equipped.value?.resonance].filter((id):id is string=>!!id))
-function clearSlot(id:string){if(!live.value)return;emit('attune',(equipped.value?.universal??[]).filter(x=>x!==id),selectedSignature.value===id?null:selectedSignature.value,equipped.value?.resonance===id?null:equipped.value?.resonance??null)}
+function clearSlot(id:string){if(!live.value)return;requestAttune((equipped.value?.universal??[]).filter(x=>x!==id),selectedSignature.value===id?null:selectedSignature.value,equipped.value?.resonance===id?null:equipped.value?.resonance??null)}
 const selectable = computed(() => hallTalentGroup(group.value.id).filter(n => n.maxRank === 1 && ownership.value[n.id] === 1 && (tree.value !== 'hero' || n.group === props.hero)))
 function toggleAttunement(id:string) {
   if (!live.value || !selectable.value.some(n=>n.id===id)) return
@@ -30,8 +30,41 @@ function toggleAttunement(id:string) {
     else return
   } else if (tree.value === 'hero') signature = signature === id ? null : id
   else resonance = resonance === id ? null : id
-  emit('attune', universal, signature, resonance)
+  requestAttune(universal, signature, resonance)
 }
+type AttuneEffect={id:string;kind:'keystone'|'signature'|'resonance'|'release';serial:number}
+const attuneFx=ref<AttuneEffect|null>(null)
+let pending:{hero:string;key:string;effect:AttuneEffect}|null=null
+let timer:ReturnType<typeof setTimeout>|undefined
+let pendingTimer:ReturnType<typeof setTimeout>|undefined
+let serial=0
+const selectionKey=(universal:readonly string[],signature:string|null,resonance:string|null)=>JSON.stringify([universal,signature,resonance])
+const committedKey=computed(()=>selectionKey(equipped.value?.universal??[],selectedSignature.value,equipped.value?.resonance??null))
+function requestAttune(universal:string[],signature:string|null,resonance:string|null){
+  const key=selectionKey(universal,signature,resonance)
+  if(key===committedKey.value)return
+  const newUniversal=universal.find(id=>!equipped.value?.universal.includes(id))
+  const newSignature=signature&&signature!==selectedSignature.value?signature:null
+  const newResonance=resonance&&resonance!==equipped.value?.resonance?resonance:null
+  const removed=allSlots.value.find(id=>!universal.includes(id)&&id!==signature&&id!==resonance)
+  const id=newResonance??newSignature??newUniversal??removed
+  if(!id)return
+  pending={hero:props.hero,key,effect:{id,kind:newResonance?'resonance':newSignature?'signature':newUniversal?'keystone':'release',serial:++serial}}
+  emit('attune',universal,signature,resonance)
+  // Only the matching committed selection can acknowledge this request.
+  clearTimeout(pendingTimer)
+  pendingTimer=setTimeout(()=>{pending=null},250)
+}
+watch(committedKey,key=>{
+  if(!pending)return
+  if(pending.hero!==props.hero||pending.key!==key||!live.value){pending=null;return}
+  attuneFx.value=pending.effect
+  pending=null
+  clearTimeout(timer)
+  timer=setTimeout(()=>{attuneFx.value=null},1050)
+})
+watch(()=>props.hero,()=>{pending=null;attuneFx.value=null;clearTimeout(timer)})
+onBeforeUnmount(()=>{clearTimeout(timer);clearTimeout(pendingTimer)})
 const activeChoice = (id:string) => equipped.value?.universal.includes(id) || selectedSignature.value === id || equipped.value?.resonance === id
 const trees = ['discipline','hero','synergy'] as const
 type Tree = typeof trees[number]
@@ -133,6 +166,7 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
     <section v-if="live" class="es4-attunement" :aria-label="localized('調律','Attunement')">
       <h4>{{ localized('調律配置','Attunement') }} · {{ equipped?.universal.length ?? 0 }}/2 · {{ selectedSignature ? 1 : 0 }}/1 · {{ equipped?.resonance ? 1 : 0 }}/1</h4>
       <p class="es4-notice">{{ localized('共通終極 2、英雄招牌 1、跨樹共鳴 1。只影響下一場遠征；共鳴需配戴兩個指定終極。','Two universal keystones, one hero signature and one resonance. Next run only; a resonance requires both specified keystones.') }}</p>
+      <div v-if="attuneFx" :key="attuneFx.serial" class="es4-attune-feedback" :data-hall-attunement-fx="attuneFx.kind" role="status"><img :src="image(attuneFx.id)" alt="" width="28" height="28"/><span>{{ title(attuneFx.id) }} · {{ attuneFx.kind==='release'?localized('已解除調律','Attunement released'):localized('配置已更新','Attunement updated') }}</span><i aria-hidden="true"></i></div>
       <div class="es4-slots"><button v-for="id in allSlots" :key="id" type="button" class="es4-equip" :data-es4-active-slot="id" :aria-label="localized('卸下 ','Unequip ')+title(id)" @click="clearSlot(id)">{{ title(id) }} · {{ activeRanks[id] ? localized('生效中','Active') : localized('條件未滿足','Inactive') }} ×</button></div>
       <button v-for="node in selectable" :key="node.id" type="button" class="es4-equip" :data-es4-attune="node.id" :aria-pressed="!!activeChoice(node.id)" :disabled="tree==='discipline' && !activeChoice(node.id) && (equipped?.universal.length ?? 0)>=2" @click="toggleAttunement(node.id)">{{ localized(node.name,node.nameEn) }} · {{ activeChoice(node.id) ? (activeRanks[node.id] ? localized('生效中','Active') : localized('已配置 · 未生效','Equipped · inactive')) : localized('配置','Equip') }}</button>
     </section>
@@ -175,4 +209,21 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
 @media(prefers-reduced-motion:reduce){.es4-constellation,.es4-medal{animation:none!important;transition:none!important;transform:none!important}}
 :global([data-es2-reduce-motion="true"]) .es4-constellation,:global([data-es2-reduce-flashing="true"]) .es4-constellation{animation:none!important}
 :global([data-es2-reduce-motion="true"]) .es4-medal,:global([data-es2-reduce-flashing="true"]) .es4-medal{transition:none!important;transform:none!important}
+
+.es4-slots{display:flex;flex-wrap:wrap;gap:5px}
+.es4-equip{position:relative;max-width:100%;overflow-wrap:anywhere;cursor:pointer;background:linear-gradient(145deg,#263744,#151e29);box-shadow:inset 0 1px #ffffff13,0 2px 5px #0005}
+.es4-equip[aria-pressed=true]{border-color:#e9cf96;background:linear-gradient(145deg,#5c492e,#2d302d);color:#fff0cc}
+.es4-equip:focus-visible{outline:2px solid #fff1bf;outline-offset:2px}
+.es4-attune-feedback{position:relative;isolation:isolate;display:flex;align-items:center;gap:8px;overflow:hidden;min-height:34px;padding:5px 9px;margin:7px 0;color:#e9dbb6;background:linear-gradient(115deg,#302b22,#182a37);border:1px solid #ba9863;border-radius:7px;font-size:.8rem;overflow-wrap:anywhere}
+.es4-attune-feedback img{flex:none;object-fit:contain}
+.es4-attune-feedback i{position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 32%,#ffdf9c55 50%,transparent 68%);animation:es4-attune-sweep .85s ease-out both;z-index:-1}
+.es4-attune-feedback[data-hall-attunement-fx=signature]{border-color:#a4ddd4;color:#c8eee8}
+.es4-attune-feedback[data-hall-attunement-fx=resonance]{border-color:#c2a7ef;color:#e5d7ff}
+.es4-attune-feedback[data-hall-attunement-fx=resonance] i{background:linear-gradient(90deg,transparent,#ceb5ff66,transparent);animation-name:es4-attune-converge}
+.es4-attune-feedback[data-hall-attunement-fx=release]{border-color:#8997a4;background:#17232c;color:#cbd3da}
+.es4-attune-feedback[data-hall-attunement-fx=release] i{animation-direction:reverse}
+@keyframes es4-attune-sweep{0%{transform:translateX(-100%);opacity:0}40%{opacity:1}100%{transform:translateX(100%);opacity:0}}
+@keyframes es4-attune-converge{0%{transform:scaleX(2);opacity:0}40%{opacity:1}100%{transform:scaleX(0);opacity:0}}
+@media(prefers-reduced-motion:reduce){.es4-attune-feedback i{display:none!important}}
+:global([data-es2-reduce-motion="true"]) .es4-attune-feedback i,:global([data-es2-reduce-flashing="true"]) .es4-attune-feedback i{display:none!important}
 </style>

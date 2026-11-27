@@ -113,7 +113,7 @@ watch(() => props.nodes, (nodes, previous) => {
   if (!request) return
   const node = nodes.find(item => item.id === request?.id)
   if (node && node.rank === request.rank + 1 && Date.now() - request.time < 2000) {
-    const revealed = nodes.flatMap(child => child.requires
+    const revealed = nodes.filter(child=>!child.locked).flatMap(child => child.requires
       .filter(req => req.id === node.id && node.rank >= req.rank
         && (previous.find(parent => parent.id === req.id)?.rank ?? 0) < req.rank)
       .map(req => req.id + ':' + child.id))
@@ -161,6 +161,7 @@ watch(() => props.nodes, (nodes, previous) => {
             <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" :data-ceremony="node.talentType" :data-milestone="String(upgraded.milestone)" :data-hall-stage="upgraded.rank" :data-hall-route="String(upgraded.arrived.length > 0)" class="hall-upgrade-fx" :style="{ '--hall-fx-scale': 1 + Math.min(5, upgraded.rank) * .08 }" aria-hidden="true">
               <i class="hall-wave"></i><i class="hall-wave"></i><i class="hall-wave"></i>
               <span class="hall-crown"></span>
+              <span v-if="node.talentType && node.talentType!=='rank'" class="hall-ritual" :data-hall-ritual="node.talentType"><i class="hall-ritual-ray"></i><i class="hall-ritual-ray"></i><i class="hall-ritual-seal"></i></span>
               <span class="hall-particles"><i v-for="index in (upgraded.milestone ? 20 : 8 + Math.min(upgraded.rank, 4) * 2)" :key="index" :style="{ '--angle': index * 360 / (upgraded.milestone ? 20 : 8 + Math.min(upgraded.rank, 4) * 2) + 'deg', '--distance': (index % 3 === 0 ? 62 : 43) + 'px', '--delay': (index % 4) * 24 + 'ms' }"></i></span>
             </span>
           </article>
@@ -355,4 +356,23 @@ watch(() => props.nodes, (nodes, previous) => {
 :global([data-es2-reduce-motion="true"] .hall-rank),
 :global([data-es2-reduce-flashing="true"] .hall-completion-crest),
 :global([data-es2-reduce-flashing="true"] .hall-rank){animation:none!important}
+
+/* Three finite silhouettes, sharing the committed purchase event. */
+.hall-ritual{position:absolute;left:50%;top:calc(var(--hall-medallion)/2 + 5px);width:var(--hall-medallion);aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none}
+.hall-ritual-ray,.hall-ritual-seal{position:absolute;inset:-12%;opacity:0;display:block}
+.hall-ritual[data-hall-ritual="keystone"] .hall-ritual-ray{border:2px solid #e9b86a;clip-path:polygon(0 0,100% 0,100% 28%,0 28%);animation:hall-forge-ray .7s ease-out both}
+.hall-ritual[data-hall-ritual="keystone"] .hall-ritual-ray:nth-child(2){rotate:180deg}
+.hall-ritual[data-hall-ritual="keystone"] .hall-ritual-seal{border:2px solid #ffdf99;transform:rotate(45deg);animation:hall-seal .85s .33s ease-out both}
+.hall-ritual[data-hall-ritual="signature"] .hall-ritual-ray{inset:2% -28%;background:linear-gradient(110deg,transparent 35%,#e2fff9 48%,#9adcd8 50%,transparent 60%);clip-path:polygon(0 0,100% 35%,100% 50%,0 15%);animation:hall-blade-in .62s ease-out both}
+.hall-ritual[data-hall-ritual="signature"] .hall-ritual-ray:nth-child(2){rotate:180deg;animation-delay:.1s}
+.hall-ritual[data-hall-ritual="signature"] .hall-ritual-seal{border:2px solid #b9eee8;border-radius:24% 50%;animation:hall-seal .9s .38s ease-out both}
+.hall-ritual[data-hall-ritual="resonance"] .hall-ritual-ray{inset:38% -45%;background:linear-gradient(90deg,transparent,#bcb1ff,#f5e7ff);clip-path:polygon(0 35%,85% 35%,100% 50%,85% 65%,0 65%);animation:hall-converge .68s ease-in-out both}
+.hall-ritual[data-hall-ritual="resonance"] .hall-ritual-ray:nth-child(2){rotate:180deg;filter:hue-rotate(55deg)}
+.hall-ritual[data-hall-ritual="resonance"] .hall-ritual-seal{border:2px solid #e9ddff;border-radius:34%;box-shadow:0 0 12px #c1a6ed;animation:hall-seal .72s .64s ease-out both}
+@keyframes hall-forge-ray{0%{opacity:0;transform:translateY(-20px) scale(1.35)}45%{opacity:.9}100%{opacity:0;transform:translateY(0) scale(.9)}}
+@keyframes hall-blade-in{0%{opacity:0;transform:translateX(-30px) rotate(-15deg)}45%{opacity:.85}100%{opacity:0;transform:translateX(24px) rotate(12deg)}}
+@keyframes hall-converge{0%{opacity:0;transform:translateX(-45px) scaleX(.6)}35%{opacity:.95}90%{opacity:.7;transform:translateX(0) scaleX(.24)}100%{opacity:0;transform:scaleX(0)}}
+@keyframes hall-seal{0%{opacity:0;scale:.75}35%{opacity:.9}100%{opacity:0;scale:1.55}}
+@media(prefers-reduced-motion:reduce){.hall-ritual{display:none!important}}
+:global([data-es2-reduce-motion="true"] .hall-ritual),:global([data-es2-reduce-flashing="true"] .hall-ritual){display:none!important}
 </style>

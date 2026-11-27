@@ -64,3 +64,18 @@ describe('Hall completed skill medallions', () => {
     } finally { wrapper.unmount(); vi.useRealTimers() }
   })
 })
+
+it.each(['keystone','signature','resonance'] as const)('plays a distinct %s ceremony only after committed ownership',async talentType=>{
+  vi.useFakeTimers()
+  const wrapper=mount(HallGrowthBoard,{props:{nodes:[node('special',0,1,{talentType})]}})
+  try{
+    await wrapper.get('[data-hall-confirm]').trigger('click')
+    expect(wrapper.find('[data-hall-ritual]').exists()).toBe(false)
+    await wrapper.setProps({nodes:[node('special',1,1,{talentType})]})
+    expect(wrapper.get('[data-hall-ritual]').attributes('data-hall-ritual')).toBe(talentType)
+    expect(wrapper.findAll('.hall-ritual-ray')).toHaveLength(2)
+    vi.advanceTimersByTime(1800)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-hall-ritual]').exists()).toBe(false)
+  }finally{wrapper.unmount();vi.useRealTimers()}
+})

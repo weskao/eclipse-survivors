@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createMetaState } from '../../../game/content/meta/state'
 import HallTalentExplorer from './HallTalentExplorer.vue'
@@ -74,4 +74,26 @@ it('jumps from resonance to its prerequisite, then routes original research to t
   await wrapper.get('[data-hall-prerequisite="power"]').trigger('click')
   expect(wrapper.emitted('corePrerequisite')).toEqual([['power']])
   wrapper.unmount()
+})
+
+it('animates only an acknowledged equip or release, never a click or initial hydration',async()=>{
+  vi.useFakeTimers()
+  const state=createMetaState()
+  state.version=4;state.hall={ownership:{'offense-war-master':1},attunement:{universal:[],hero:{},resonance:null}}
+  const wrapper=mount(HallTalentExplorer,{props:{state,hero:'knight',writable:true}})
+  try {
+    await wrapper.get('[data-es4-attune="offense-war-master"]').trigger('click')
+    expect(wrapper.find('[data-hall-attunement-fx]').exists()).toBe(false)
+    const equipped={...state,hall:{...state.hall,attunement:{universal:['offense-war-master'],hero:{},resonance:null}}}
+    await wrapper.setProps({state:equipped})
+    expect(wrapper.get('[data-hall-attunement-fx]').attributes('data-hall-attunement-fx')).toBe('keystone')
+    await wrapper.get('[data-es4-active-slot="offense-war-master"]').trigger('click')
+    await wrapper.setProps({state})
+    expect(wrapper.get('[data-hall-attunement-fx]').attributes('data-hall-attunement-fx')).toBe('release')
+    vi.advanceTimersByTime(1300)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-hall-attunement-fx]').exists()).toBe(false)
+    await wrapper.setProps({state:equipped})
+    expect(wrapper.find('[data-hall-attunement-fx]').exists()).toBe(false)
+  }finally{wrapper.unmount();vi.useRealTimers()}
 })
