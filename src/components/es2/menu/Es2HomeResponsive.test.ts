@@ -394,8 +394,8 @@ describe('portal start interaction feedback', () => {
     for (const token of [".es2-portal-start:hover:not(:disabled) .es2-portal-sheen::before","animation:es2-portal-sweep .72s","@keyframes es2-portal-sweep",".es2-portal-start:active:not(:disabled) .es2-portal-core","[data-es2-reduce-flashing=\"true\"] .es2-portal-start",".es2-portal-start:focus-visible:not(:disabled)"]) expect(css).toContain(token)
     expect(css).toMatch(/\.es2-portal-sheen\s*\{[^}]*pointer-events:none/)
     expect(css).toMatch(/@media\s*\(hover:hover\) and \(pointer:fine\)\s*\{\s*\.es2-menu \.es2-portal-start:hover/)
-    expect(css).toContain("--es2-portal-rim:linear-gradient(100deg,#b9813f,#ffe9b0 22%,#f3c877 55%,#a8743a 78%,#ffe6a8);")
-    expect(css).toContain("--es2-portal-fill:radial-gradient(ellipse 58% 130% at 50% 118%,#ffc56bd9,#e2783f80 42%,transparent 72%),linear-gradient(180deg,#3d2a5c,#241842 54%,#150f2a);")
+    expect(css).toContain("--es2-portal-rim:linear-gradient(100deg,#c8862f,#fff1c2 22%,#ffc960 52%,#b8742a 78%,#fff0bd);")
+    expect(css).toContain("--es2-portal-fill:radial-gradient(ellipse 70% 120% at 50% 125%,#ffcf73,#f0743cd9 38%,#a3283f80 64%,transparent 84%),linear-gradient(180deg,#5b2147,#3a1638 52%,#1d0c24);")
     expect(css).not.toContain('--es2-portal-lit-rim')
     expect(css).not.toContain('--es2-portal-lit-fill')
     expect(css).not.toMatch(/\.es2-portal-start:hover:not\(:disabled\) \.es2-portal-label\s*\{/)
@@ -404,6 +404,17 @@ describe('portal start interaction feedback', () => {
     expect(css).toContain('.es2-portal-start:active:not(:disabled) .es2-portal-core{transform:scale(.92)}')
     expect(css).toContain('.es2-portal-start:active:not(:disabled) .es2-portal-decoration{transform:scale(.96)}')
     expect(css).toContain('box-shadow:0 0 19px #ffda8588,inset 0 0 13px #f5c27399')
+  })
+  it('lifts and brightens the whole gate on hover/focus and breathes an idle ember glow that motion settings stop', () => {
+    expect(css).toContain('.es2-menu .es2-portal-start:is(:hover,:focus-visible):not(:disabled){transform:translateY(-2px) scale(1.035);filter:brightness(1.14) saturate(1.1) drop-shadow(0 0 14px #ffb052d9)}')
+    expect(css).toMatch(/\.es2-menu \.es2-portal-start\{[^}]*filter:drop-shadow\(0 0 9px #ff8f4a80\)[^}]*transition:transform \.22s/)
+    expect(css).toMatch(/\.es2-menu \.es2-portal-sheen\{[^}]*animation:es2-portal-breathe 2\.6s ease-in-out infinite/)
+    expect(css).toContain('@keyframes es2-portal-breathe{0%,100%{opacity:.35}50%{opacity:1}}')
+    expect(css).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[^@]*\.es2-menu \.es2-portal-start\{transition:none;transform:none!important\}[^@]*\.es2-menu \.es2-portal-sheen\{animation:none;opacity:\.75\}/)
+    expect(css).toContain('[data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}')
+    expect(css).toContain('[data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}')
+    // The brief turns cool steel so the warm ember gate is the only gold-lit action in the dock.
+    expect(css).toContain('.es2-menu .es2-expedition-brief::before{background:#53677f}')
   })
 })
 

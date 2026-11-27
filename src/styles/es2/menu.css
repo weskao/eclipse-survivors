@@ -596,39 +596,44 @@
 .es2-menu .es2-expedition-brief::before,.es2-menu .es2-expedition-brief::after{
   clip-path:polygon(12px 0,calc(100% - var(--es2-dock-tip)) 0,100% 50%,calc(100% - var(--es2-dock-tip)) 100%,0 100%,0 12px)
 }
-.es2-menu .es2-expedition-brief::before{background:#9d895f}
-.es2-menu .es2-expedition-brief::after{inset:1px;z-index:-1;background:linear-gradient(120deg,#263949,#121f30 58%,#1b2431)}
+.es2-menu .es2-expedition-brief::before{background:#53677f}
+.es2-menu .es2-expedition-brief::after{inset:1px;z-index:-1;background:linear-gradient(120deg,#22334a,#111b2a 58%,#171f2c)}
 .es2-menu .es2-expedition-brief[data-run-mode="boss-rush"]::after,.es2-menu .es2-expedition-brief[data-run-mode="cursed-expedition"]::after{background:linear-gradient(120deg,#462b31,#251d2d 64%,#1b2431)}
 .es2-menu .es2-expedition-brief[data-run-mode="endless-eclipse"]::after,.es2-menu .es2-expedition-brief[data-run-mode="chaos-arena"]::after{background:linear-gradient(120deg,#39304e,#211b38 64%,#1b2431)}
-.es2-menu .es2-expedition-brief:hover::before{background:#f0d197}
+.es2-menu .es2-expedition-brief:hover::before{background:#a9c2df}
 .es2-menu .es2-expedition-sigil{
   display:grid;place-items:center;flex:0 0 42px;width:42px;height:48px;
-  background:linear-gradient(145deg,#73583a,#302b32 65%,#70573a);
+  background:linear-gradient(145deg,#4a6080,#222b3b 65%,#455a78);
   clip-path:polygon(50% 0,100% 25%,100% 72%,50% 100%,0 72%,0 25%);
-  color:#ffe3a6;font:700 24px/1 Georgia,serif;text-shadow:0 0 9px #e8b87070
+  color:#d8e7fa;font:700 24px/1 Georgia,serif;text-shadow:0 0 9px #8fb6e680
 }
 /* Row 1: name + duration; row 2: summary · hero. Words wrap whole, never ellipsis-clipped. */
 .es2-menu .es2-expedition-brief .es2-mobile-selected-mode{flex:1;min-width:0;display:block;text-align:start;overflow-wrap:break-word}
-.es2-menu .es2-expedition-kicker{display:block;margin-bottom:2px;color:#d6ba84;font:700 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;letter-spacing:.04em}
-.es2-menu .es2-expedition-duration{margin-inline-start:7px;color:#d9c5a4;font:700 max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
-.es2-menu .es2-expedition-name{color:#fff0cd;font:700 max(.9rem,calc(1.2rem * var(--es2-ui-scale,1)))/1.16 Georgia,'Noto Serif TC',serif}
+.es2-menu .es2-expedition-kicker{display:block;margin-bottom:2px;color:#9bb1cb;font:700 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;letter-spacing:.04em}
+.es2-menu .es2-expedition-duration{margin-inline-start:7px;color:#bccadb;font:700 max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.es2-menu .es2-expedition-name{color:#f1f5fb;font:700 max(.9rem,calc(1.2rem * var(--es2-ui-scale,1)))/1.16 Georgia,'Noto Serif TC',serif}
 .es2-menu .es2-expedition-meta{display:block;margin-top:2px;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif}
 .es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}
-.es2-menu .es2-expedition-hero::before{content:'·';margin-inline:6px;color:#b39b6c;font-weight:700}
-.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;color:#e9cc95;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start}
+.es2-menu .es2-expedition-hero::before{content:'·';margin-inline:6px;color:#7f94ae;font-weight:700}
+.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;color:#b9cde5;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start}
 .es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}
 .es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none}
-/* A violet twilight door with amber light rising from its threshold, framed in gold. */
+/* A crimson eclipse door with molten ember light rising from its threshold, framed in bright gold. */
 .es2-menu .es2-portal-start{
-  --es2-portal-rim:linear-gradient(100deg,#b9813f,#ffe9b0 22%,#f3c877 55%,#a8743a 78%,#ffe6a8);
-  --es2-portal-fill:radial-gradient(ellipse 58% 130% at 50% 118%,#ffc56bd9,#e2783f80 42%,transparent 72%),linear-gradient(180deg,#3d2a5c,#241842 54%,#150f2a);
+  --es2-portal-rim:linear-gradient(100deg,#c8862f,#fff1c2 22%,#ffc960 52%,#b8742a 78%,#fff0bd);
+  --es2-portal-fill:radial-gradient(ellipse 70% 120% at 50% 125%,#ffcf73,#f0743cd9 38%,#a3283f80 64%,transparent 84%),linear-gradient(180deg,#5b2147,#3a1638 52%,#1d0c24);
   --es2-portal-shape:polygon(0 0,calc(100% - var(--es2-dock-tip)) 0,100% 50%,calc(100% - var(--es2-dock-tip)) 100%,0 100%,var(--es2-dock-tip) 50%);
-  min-height:56px;padding:8px calc(var(--es2-dock-tip) + 14px);gap:10px;color:#fff4d5!important;text-align:center;transition:none
+  min-height:56px;padding:8px calc(var(--es2-dock-tip) + 14px);gap:10px;color:#fff4d5!important;text-align:center;
+  filter:drop-shadow(0 0 9px #ff8f4a80);transition:transform .22s cubic-bezier(.2,.8,.2,1),filter .22s ease-out
 }
 .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after{clip-path:var(--es2-portal-shape)}
 .es2-menu .es2-portal-start::before{background:var(--es2-portal-rim)}
 .es2-menu .es2-portal-start::after{inset:2px;z-index:-1;background:var(--es2-portal-fill)}
 .es2-menu .es2-portal-start:hover:not(:disabled){background:none}
+/* The whole gate lifts and brightens, so the strongest action reads as live before the click. */
+.es2-menu .es2-portal-start:is(:hover,:focus-visible):not(:disabled){transform:translateY(-2px) scale(1.035);filter:brightness(1.14) saturate(1.1) drop-shadow(0 0 14px #ffb052d9)}
+.es2-menu .es2-portal-start:is(:hover,:focus-visible):not(:disabled) .es2-portal-sheen{animation:none;opacity:1}
+.es2-menu .es2-portal-start:active:not(:disabled){transform:scale(.98)}
 .es2-menu .es2-portal-start:focus-visible:not(:disabled),
 .es2-menu .es2-portal-start:active:not(:disabled){
   background:none
@@ -636,8 +641,12 @@
 /* A clipped, one-shot light sweep; no pointer tracking, layout changes or animated paint properties. */
 .es2-menu .es2-portal-sheen{
   position:absolute;inset:3px;margin:0;z-index:0;pointer-events:none;overflow:hidden;
-  clip-path:var(--es2-portal-shape)
+  clip-path:var(--es2-portal-shape);
+  background:radial-gradient(ellipse 55% 110% at 50% 115%,#ffe2a0b3,#ff9a4a59 45%,transparent 75%);
+  animation:es2-portal-breathe 2.6s ease-in-out infinite
 }
+/* Idle invitation: one opacity-only ember pulse on the single Start gate. */
+@keyframes es2-portal-breathe{0%,100%{opacity:.35}50%{opacity:1}}
 .es2-menu .es2-portal-sheen::before{
   content:'';position:absolute;inset:0 auto 0 -48%;width:42%;
   background:linear-gradient(105deg,transparent,#ffe5a636 32%,#fff4cc9e 51%,#ffe5a625 70%,transparent);
@@ -666,9 +675,15 @@
   100%{opacity:0;transform:translateX(370%) skewX(-17deg)}
 }
 @media(prefers-reduced-motion:reduce){
+  .es2-menu .es2-portal-start{transition:none;transform:none!important}
+  .es2-menu .es2-portal-sheen{animation:none;opacity:.75}
   .es2-menu .es2-portal-start .es2-portal-sheen::before{animation:none!important}
   .es2-menu .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
 }
+[data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
+[data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
+[data-es2-reduce-motion="true"] .es2-menu .es2-portal-start{transition:none;transform:none!important}
+[data-es2-reduce-flashing="true"] .es2-menu .es2-portal-start:is(:hover,:focus-visible):not(:disabled){filter:brightness(1.06) drop-shadow(0 0 10px #ffb05299)}
 [data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen::before,
 [data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen::before{animation:none!important}
 [data-es2-reduce-motion="true"] .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core),
