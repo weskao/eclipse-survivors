@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
 import { createFactionRuntime, spawnFactionEnemy } from '../../content/enemies/runtime'
+import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import { createFakeCtx } from '../fakes'
 import { drawLiveFactionArt, loadProductionFactionArt, FACTION_VISUAL_SIZE, type FactionArtwork } from './production-factions'
 
@@ -168,4 +169,29 @@ it('renders a cosmetic faction death from the original body art, without retaini
   const {ctx,drawn}=createFakeCtx()
   expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
   expect(drawn).toHaveLength(1)
+})
+
+it.each(Object.keys(ENEMY_DEFINITIONS) as FactionKind[])('keeps %s idle art still under Reduced Motion without removing attack cues', kind => {
+  const s = createState(); resetRun(s); s.W = 900; s.H = 600
+  const runtime = createFactionRuntime()
+  const enemy = spawnFactionEnemy(runtime, kind, 120, 110)!
+  const body = loaded(576, 96), warning = loaded(96, 96)
+  const art = { [kind]: { body, telegraph: warning } } as FactionArtwork
+  const sample = (clock: number, reduced: boolean) => {
+    s.worldClock = clock
+    const { ctx } = createFakeCtx()
+    const calls: unknown[][] = []
+    ctx.drawImage = (...args: unknown[]) => { calls.push(args) }
+    expect(drawLiveFactionArt(ctx, s, runtime, art, 0, 0, undefined, reduced)).toBe(1)
+    return calls
+  }
+  const cell = (calls: unknown[][]) => calls.find(args => args[0] === body)?.slice(1, 5)
+  expect(cell(sample(0, false))).not.toEqual(cell(sample(.2, false)))
+  expect(cell(sample(0, true))).toEqual(cell(sample(.2, true)))
+  enemy.state = 'windup'
+  const windup = sample(.2, true)
+  expect(cell(windup)).toEqual([192, 0, 96, 96])
+  expect(windup.some(args => args[0] === warning)).toBe(true)
+  enemy.state = 'attack'
+  expect(cell(sample(.2, true))).toEqual([288, 0, 96, 96])
 })
