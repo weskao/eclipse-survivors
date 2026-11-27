@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "658f7a7c1726247ae1dec5f9b7b470d54f836c61",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "shatter-collapse-key-a",
+      "pose": "death",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "death/shatter-collapse-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "4c2667de-392a-4dda-8c5f-870510b41339",
+        "originalPngSha256": "8714b706f67ab314f5fe9ff25f1835f45c1bf84a57ab902cd8e0977b44fad0c2",
+        "canonicalReferenceHead": "658f7a7c1726247ae1dec5f9b7b470d54f836c61"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        45,
+        159,
+        1279,
+        1170
+      ],
+      "alphaAnyBounds": [
+        32,
+        41,
+        1286,
+        1286
+      ],
+      "alphaExtent": [
+        1234,
+        1011
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "sourceEdgeMargins": [
+        45,
+        159,
+        39,
+        148
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "f6777d9fd6e3a9d87839688851c5918b7f772e44a90be22f42266915f8d50f47",
+      "webpCompressedBytes": 785856,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100, method=4, alpha_quality=100; Polytool unavailable (not byte-identical)",
+      "notes": "Generated candidate, exact source-image edit and identity not verified. 32px transparent padding without resizing; raw alpha touches edges, preexisting clipping may remain. Phase not approved. Provisional 949px extent passes; conservative production 1898px gate fails."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}
