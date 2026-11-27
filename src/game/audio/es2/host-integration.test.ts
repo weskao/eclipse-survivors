@@ -37,6 +37,9 @@ function setup() {
 
 describe('ES2 final host audio wiring', () => {
   it.each([
+    ['knight', 'knight-special'],
+    ['ranger', 'ranger-special'],
+    ['wizard', 'wizard-special'],
     ['shadowblade', 'shadowblade-special'],
     ['spirit-summoner', 'spirit-summoner-special'],
     ['crimson-paladin', 'crimson-paladin-special'],
@@ -58,7 +61,7 @@ describe('ES2 final host audio wiring', () => {
     engine.start()
     engine.state.mobs = []
     await new Promise<void>(resolve => setTimeout(resolve, 0))
-    expect(loaded.size).toBe(4) // every HERO_CAST_CUES sample, including crimson-paladin-retribution
+    expect(loaded.size).toBe(7) // all six heroes plus crimson-paladin-retribution
     const expected = [...loaded.entries()].find(([url]) => url.endsWith(cue + '.wav'))?.[1]
     expect(expected).toBeDefined()
     const before = context.oscillators.length
@@ -103,6 +106,9 @@ describe('ES2 final host audio wiring', () => {
   })
 
   it.each([
+    ['knight', 'knight-special'],
+    ['ranger', 'ranger-special'],
+    ['wizard', 'wizard-special'],
     ['shadowblade', 'shadowblade-special'],
     ['spirit-summoner', 'spirit-summoner-special'],
     ['crimson-paladin', 'crimson-paladin-special'],

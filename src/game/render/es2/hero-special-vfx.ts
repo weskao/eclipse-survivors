@@ -1,4 +1,5 @@
 import type { Ctx2D } from '../ctx'
+import { HERO_ART_SLOTS, HERO_TARGET_SLOTS, heroArtPose, heroMotePose, heroTargetLimit, type HeroCast, type HeroPose, type HeroSpecialKind } from '../pixi-vfx/hero-choreography'
 import shadowRiftUrl from '../../../assets/es2/production/skills/shadow-rift.svg?url'
 import spiritFlameUrl from '../../../assets/es2/production/skills/spirit-flame.svg?url'
 import spiritGuardianUrl from '../../../assets/es2/production/skills/spirit-guardian.svg?url'
@@ -6,7 +7,7 @@ import oathWardUrl from '../../../assets/es2/production/skills/oath-ward.svg?url
 import oathRaysUrl from '../../../assets/es2/production/skills/oath-rays.svg?url'
 
 /** Cosmetic world-space texture passes; gameplay hitboxes remain simulation-owned. */
-export type HeroSpecialFxKind = 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin'
+export type HeroSpecialFxKind = HeroSpecialKind
 type Texture = 'rift' | 'flame' | 'guardian' | 'ward' | 'rays'
 const SOURCES: Record<Texture, string> = {
   rift: shadowRiftUrl, flame: spiritFlameUrl, guardian: spiritGuardianUrl, ward: oathWardUrl, rays: oathRaysUrl,
@@ -133,14 +134,71 @@ function paladin(ctx: Ctx2D, t: number, bloom: number, count: number, reduced: b
   dust(ctx, reduced ? 4 : count, 158, bloom, '#d6b580')
 }
 
+type ClassicKind = 'hero-knight' | 'hero-ranger' | 'hero-wizard'
+type WorldCast = { x: number; y: number; life: number; max: number; targets?: readonly { x: number; y: number }[] }
+const CLASSIC_FX = {
+  'hero-knight': { duration: 1.2, color: '#e8c084', radius: 190 },
+  'hero-ranger': { duration: 1.35, color: '#c1e7a9', radius: 110 },
+  'hero-wizard': { duration: 1.65, color: '#b9a2ff', radius: 240 },
+} as const
+const fallbackPose: HeroPose = { x: 0, y: 0, rotation: 0, width: 0, height: 0, alpha: 0, tint: 0, texture: 'spark', additive: true }
+const fallbackTargets = Array.from({ length: HERO_TARGET_SLOTS }, () => ({ x: 0, y: 0 }))
+const relativeTargets: { x: number; y: number }[] = []
+const fallbackCast: HeroCast = { kind: 'hero-knight', elapsed: 0, life: 0, targets: relativeTargets, reduced: false }
+function isArtTexture(key: HeroPose['texture']): key is Texture {
+  return Object.prototype.hasOwnProperty.call(SOURCES, key)
+}
+/** Same clock and cast positions as Pixi. Only the paint backend and particle budget differ. */
+function classicHeroFx(ctx: Ctx2D, kind: ClassicKind, progress: number, bloom: number, count: number, reduced: boolean, world?: WorldCast): void {
+  const profile = CLASSIC_FX[kind], p = fallbackPose, cast = fallbackCast
+  cast.kind = kind; cast.reduced = reduced
+  cast.elapsed = world ? world.max - world.life : progress * profile.duration
+  cast.life = world?.life ?? (1 - progress) * profile.duration
+  relativeTargets.length = 0
+  if (world?.targets) for (let i = 0; i < Math.min(heroTargetLimit(kind), world.targets.length); i++) {
+    const point = fallbackTargets[i]!, target = world.targets[i]!
+    point.x = target.x - world.x; point.y = target.y - world.y + 24
+    relativeTargets.push(point)
+  }
+  for (let i = 0; i < HERO_ART_SLOTS; i++) {
+    if (!heroArtPose(p, cast, i)) continue
+    if (isArtTexture(p.texture) && sprite(ctx, p.texture, p.x, p.y, p.width, p.height, p.alpha, p.rotation)) continue
+    // Use a bounded contact/energy contour if the shared texture isn't decoded.
+    ctx.save()
+    ctx.globalAlpha *= p.alpha
+    ctx.strokeStyle = profile.color; ctx.lineWidth = 2
+    ctx.beginPath(); ctx.ellipse(p.x, p.y, Math.max(1, p.width * .32), Math.max(1, p.height * .26), p.rotation, 0, TAU); ctx.stroke()
+    ctx.restore()
+  }
+  if (reduced) return
+  // One path per cast for the low-cost fallback particle layer.
+  ctx.fillStyle = profile.color
+  ctx.beginPath()
+  let emitted = 0
+  for (let i = 0; i < count; i++) {
+    if (!heroMotePose(p, cast, i)) continue
+    const rx = Math.max(.5, p.width * .22), ry = Math.max(.5, p.height * .22)
+    ctx.moveTo(p.x + rx * Math.cos(p.rotation), p.y + rx * Math.sin(p.rotation))
+    ctx.ellipse(p.x, p.y, rx, ry, p.rotation, 0, TAU)
+    emitted++
+  }
+  if (emitted) ctx.fill()
+  else dust(ctx, count, profile.radius * .55, bloom, profile.color)
+}
+
 /** Local origin is the caster's feet. Registry handles fade, viewport culling and lifetime. */
 export function drawHeroSpecialFx(
   ctx: Ctx2D, kind: HeroSpecialFxKind, progress: number, bloom: number,
-  particleCount: number, reducedMotion: boolean,
+  particleCount: number, reducedMotion: boolean, world?: WorldCast,
 ): void {
   // The explicit preload runs when render assets are mounted; keep a visible fallback on decode failures.
   ctx.translate(0, -24)
   switch (kind) {
+    case 'hero-knight':
+    case 'hero-ranger':
+    case 'hero-wizard':
+      classicHeroFx(ctx, kind, progress, bloom, particleCount, reducedMotion, world)
+      break
     case 'hero-shadowblade': shadowblade(ctx, progress, bloom, particleCount, reducedMotion); break
     case 'hero-spirit-summoner': summoner(ctx, progress, bloom, particleCount, reducedMotion); break
     case 'hero-crimson-paladin': paladin(ctx, progress, bloom, particleCount, reducedMotion); break

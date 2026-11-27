@@ -301,19 +301,29 @@ describe('Hall rank ceremony presentation', () => {
 })
 
 
-it('never compiles a reduced-motion or flashing rule that hides the document root', async () => {
+it('never compiles scoped reduced-motion or flashing CSS that hides the document root', async () => {
   const { parse, compileStyle } = await import('vue/compiler-sfc')
-  const { readFileSync } = await import('node:fs')
-  const source = readFileSync('src/components/es2/progression/ProgressionPanel.vue', 'utf8')
-  const { descriptor } = parse(source)
-  for (const style of descriptor.styles) {
-    const compiled = compileStyle({ source: style.content, filename: 'ProgressionPanel.vue', id: 'data-v-hall-regression', scoped: style.scoped })
-    expect(compiled.errors).toEqual([])
-    for (const match of compiled.code.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
-      if (!/display\s*:\s*none/.test(match[2]!)) continue
-      for (const selector of match[1]!.split(',')) {
-        expect(selector.trim()).not.toMatch(/^\[data-es2-reduce-(motion|flashing)="true"\]$/)
+  const { readFileSync, readdirSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const files = readdirSync('src', { recursive: true }).filter(file => file.endsWith('.vue'))
+  const offenders: string[] = []
+  for (const file of files) {
+    const filename = join('src', file)
+    const { descriptor } = parse(readFileSync(filename, 'utf8'), { filename })
+    for (const style of descriptor.styles) {
+      if (!style.scoped) continue
+      const compiled = compileStyle({ source: style.content, filename, id: 'data-v-a11y-regression', scoped: true })
+      expect(compiled.errors, filename).toEqual([])
+      for (const match of compiled.code.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
+        if (!/display\s*:\s*none/.test(match[2]!)) continue
+        for (const selector of match[1]!.split(',')) {
+          if (/^\[data-es2-reduce-(motion|flashing)\s*=\s*["']?true["']?\]$/.test(selector.trim())) {
+            offenders.push(filename + ': ' + selector.trim())
+          }
+        }
       }
     }
   }
+  expect(files.length).toBeGreaterThan(3)
+  expect(offenders).toEqual([])
 })

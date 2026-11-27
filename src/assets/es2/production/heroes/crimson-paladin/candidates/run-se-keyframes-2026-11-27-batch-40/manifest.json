@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "run",
+  "direction": "SE",
+  "sourceDirection": "SE",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": false,
+  "resampling": "Native crop, 1:1 paste into 768x768 transparent canvas; no resize or mirroring.",
+  "sourcePixels": [
+    632,
+    623
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "dfdf9c7d-90ca-4349-b83f-c767284bf9ee",
+    "originalPNGSHA256": "ad035c0d196a3b6041dad28ef72ee859b69407ebe9b71b1135ecfa80cf4528ad",
+    "canonicalPortrait": "src/assets/es2/production/heroes/crimson-paladin-portrait@3x.webp",
+    "portraitBlobSHA": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+    "referenceCommit": "2b7850cdd06c9c0edbe64872d7963a0725f00f71",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected; direct image conditioning not independently verified.",
+    "originalSheet": "../special-s-keyframes-2026-11-27-batch-40/original-sheet.webp",
+    "sourceCropRect": [
+      631,
+      623,
+      1263,
+      1246
+    ],
+    "originalSheetSHA256": "dcb74a05967e56b6172d18d09807976dd3d2600dfaab00c0103532a7d0d44843"
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded alpha and visible RGBA checked; Polytool not run",
+  "frames": [
+    {
+      "id": "run-launch-identity-a",
+      "description": "Rightward three-quarter running launch pose, provisional SE facing; alternate for incomplete run sequence.",
+      "sourceFile": "run-launch-identity-a-source.webp",
+      "sourceSHA256": "6e7bd755a5a1abbaf16f35060954d8d87dceb25310f0cf173adbc74e3aa1f62c",
+      "sourceBytes": 283486,
+      "sourceCellPixels": [
+        632,
+        623
+      ],
+      "file": "run-launch-identity-a@3x.webp",
+      "webpSHA256": "282181dbc060e2b97e82e9288e39aa733d1885943c1e31c82d949a1677798e8c",
+      "bytes": 283638,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        68,
+        72
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        598,
+        613
+      ],
+      "coreAlphaBounds": [
+        28,
+        13,
+        517,
+        585
+      ],
+      "coreExtent": [
+        489,
+        572
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        68,
+        72,
+        666,
+        685
+      ],
+      "outputCoreAlphaBounds": [
+        96,
+        85,
+        585,
+        657
+      ],
+      "outputCoreExtent": [
+        489,
+        572
+      ],
+      "alphaPreserved": true,
+      "sourceFullRGBAExact": true,
+      "outputFullRGBAExact": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Facial details, armor, weapon, handedness, provisional facing, relative scale and continuity require review. Do not treat this independent pose as a complete animation."
+    }
+  ],
+  "reviewNotes": [
+    "Independent pose only, not an approved frame sequence.",
+    "Source sheet top row was not admitted: original core width below 441px.",
+    "SE run has an existing four-frame candidate; this is an additional independently authored pose for comparison, not a replacement."
+  ]
+}

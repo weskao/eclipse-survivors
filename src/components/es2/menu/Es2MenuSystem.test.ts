@@ -32,6 +32,17 @@ function mounted(props: Record<string, unknown> = {}) {
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount(); document.body.innerHTML = '' })
 
 describe('ES2 main menu integration adapter', () => {
+  it('lists all six hero actives in the skill archive using the shared full summary', async () => {
+    mounted()
+    document.querySelectorAll<HTMLButtonElement>('.es2-hall-links button')[3]!.click()
+    await nextTick()
+    const catalog = find('[data-hero-active-catalog]')
+    expect(catalog).toBeTruthy()
+    const skills = [...catalog.querySelectorAll('[data-hero-active-summary="full"]')]
+    expect(skills.map(el => el.getAttribute('data-active-hero'))).toEqual(['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'])
+    expect(skills.every(el => el.querySelector('[data-active-skill-name]') && el.querySelector('[data-active-skill-cooldown]'))).toBe(true)
+  })
+
   it('re-enters archive pages on navigation without delaying or remounting the same page', async () => {
     mounted()
     const links = document.querySelectorAll<HTMLButtonElement>('.es2-hall-links button')

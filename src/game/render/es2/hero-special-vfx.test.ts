@@ -18,6 +18,9 @@ const mob = (x: number, y: number): Mob => ({
 })
 
 const specials = [
+  ['knight', 'hero-knight', '#e8c084'],
+  ['ranger', 'hero-ranger', '#c1e7a9'],
+  ['wizard', 'hero-wizard', '#b9a2ff'],
   ['shadowblade', 'hero-shadowblade', '#c3b5c6'],
   ['spirit-summoner', 'hero-spirit-summoner', '#a0d9d6'],
   ['crimson-paladin', 'hero-crimson-paladin', '#d6b580'],
@@ -50,7 +53,7 @@ function canvas() {
   return { ctx, calls }
 }
 
-describe('three hero Q specials cinematic visuals', () => {
+describe('six hero Q specials cinematic visuals', () => {
   it.each(specials)('%s only emits a dedicated bounded effect on a successful Q activation', (hero, kind) => {
     const engine = createEngine({ audio: audio() })
     engine.selectHero(hero)
@@ -139,6 +142,16 @@ describe('three hero Q specials cinematic visuals', () => {
     expect(fx.targets!.length).toBeLessThanOrEqual(3)
   })
 
+  it('preserves all eight knight and six wizard contacts, but keeps the ranger capped at three', () => {
+    const targets = Array.from({ length: 12 }, (_, i) => ({ x: i * 10, y: 0 }))
+    for (const [kind, count] of [['hero-knight', 8], ['hero-wizard', 6], ['hero-ranger', 3]] as const) {
+      const s = createState()
+      const registry = createContentRegistry([createCombatVfxPack()])
+      expect(emitCombatVfx(fx => registry.addEffect(s, fx), kind, 0, 0, { targets })).toBe(true)
+      expect((s.content.effects[0] as HeroSpecialFx).targets).toHaveLength(count)
+    }
+  })
+
   it('keeps the Scarlet Aegis on the hero for the whole barrier and shatters it early on break', () => {
     expect(COMBAT_FX_BY_KIND.get('hero-crimson-paladin')!.duration)
       .toBe(BALANCE.heroes.specialEffects['crimson-paladin'].barrierSeconds)
@@ -205,7 +218,15 @@ describe('three hero Q specials cinematic visuals', () => {
     expect(emitCombatVfx(() => true, 'hero-shadowblade', 0, 0, { targets: [{ x: NaN, y: 0 }] })).toBe(false)
   })
 
-  it('culls all three cosmetic casts fully outside the viewport', () => {
+  it('keeps ranger fallback projectile positions tied to the real struck target', () => {
+    const { ctx, calls } = canvas()
+    drawHeroSpecialFx(ctx, 'hero-ranger', .3, .5, 12, false, {
+      x: 420, y: 270, max: 1.35, life: .97, targets: [{ x: 560, y: 300 }],
+    })
+    expect(calls.some(call => call.startsWith('ellipse:140,54,'))).toBe(true)
+  })
+
+  it('culls all six cosmetic casts fully outside the viewport', () => {
     const s = createState()
     s.W = 800; s.H = 600; s.hero = createHero('wizard')
     const registry = createContentRegistry([createCombatVfxPack()])

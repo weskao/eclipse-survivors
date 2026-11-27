@@ -248,16 +248,16 @@ watch(() => props.nodes, (nodes, previous) => {
 @media(orientation:landscape) and (min-width:560px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,36%);--hall-medallion:54px}.hall-map{padding:6px}.hall-links{height:10px}.hall-inspect{gap:2px;padding:2px}.hall-inspect strong{font-size:.75rem}.hall-detail{gap:6px;padding:9px}}
 @media(max-width:360px){.hall-growth{--hall-medallion:60px}.hall-map{padding:6px}.hall-row{gap:3px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
 @media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
-:global([data-es2-reduce-motion="true"]) .hall-upgrade-fx,
-:global([data-es2-reduce-motion="true"]) .hall-ring::after,
-:global([data-es2-reduce-motion="true"]) .hall-edge i::after,
-:global([data-es2-reduce-flashing="true"]) .hall-upgrade-fx,
-:global([data-es2-reduce-flashing="true"]) .hall-ring::after,
-:global([data-es2-reduce-flashing="true"]) .hall-edge i::after{display:none!important;animation:none!important}
-:global([data-es2-reduce-motion="true"]) .hall-ring,:global([data-es2-reduce-motion="true"]) .hall-edge i,
-:global([data-es2-reduce-flashing="true"]) .hall-ring,:global([data-es2-reduce-flashing="true"]) .hall-edge i{transition:none!important}
-:global([data-es2-reduce-motion="true"]) .hall-node[data-hall-arrived="true"] .hall-ring,
-:global([data-es2-reduce-flashing="true"]) .hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}
+:global([data-es2-reduce-motion="true"] .hall-upgrade-fx),
+:global([data-es2-reduce-motion="true"] .hall-ring::after),
+:global([data-es2-reduce-motion="true"] .hall-edge i::after),
+:global([data-es2-reduce-flashing="true"] .hall-upgrade-fx),
+:global([data-es2-reduce-flashing="true"] .hall-ring::after),
+:global([data-es2-reduce-flashing="true"] .hall-edge i::after){display:none!important;animation:none!important}
+:global([data-es2-reduce-motion="true"] .hall-ring),:global([data-es2-reduce-motion="true"] .hall-edge i),
+:global([data-es2-reduce-flashing="true"] .hall-ring),:global([data-es2-reduce-flashing="true"] .hall-edge i){transition:none!important}
+:global([data-es2-reduce-motion="true"] .hall-node[data-hall-arrived="true"] .hall-ring),
+:global([data-es2-reduce-flashing="true"] .hall-node[data-hall-arrived="true"] .hall-ring){animation:none!important}
 
 /* One detail template: a side inspector on wide fine-pointer layouts, a viewport
    overlay on touch/narrow screens. Teleport avoids transformed archive ancestors. */
@@ -277,7 +277,7 @@ watch(() => props.nodes, (nodes, previous) => {
 }
 @keyframes hall-inspector-side{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.hall-detail--floating{animation:none}}
-:global([data-es2-reduce-motion="true"]) .hall-detail--floating{animation:none}
+:global([data-es2-reduce-motion="true"] .hall-detail--floating){animation:none}
 
 /* Rank-dependent bounded ceremony, sized from the same medallion on every device. */
 .hall-upgrade-fx[data-hall-stage="2"] .hall-wave{border-color:#f5ddaa}
@@ -294,8 +294,8 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-unlock-notice{font-size:.78rem;color:#f3d498;animation:hall-notice .35s .68s ease-out both}
 @keyframes hall-notice{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-rank,.hall-unlock-notice{animation:none!important}}
-:global([data-es2-reduce-motion="true"]) .hall-node[data-hall-arrived="true"] .hall-rank,
-:global([data-es2-reduce-flashing="true"]) .hall-node[data-hall-arrived="true"] .hall-rank,
-:global([data-es2-reduce-motion="true"]) .hall-unlock-notice,
-:global([data-es2-reduce-flashing="true"]) .hall-unlock-notice{animation:none!important}
+:global([data-es2-reduce-motion="true"] .hall-node[data-hall-arrived="true"] .hall-rank),
+:global([data-es2-reduce-flashing="true"] .hall-node[data-hall-arrived="true"] .hall-rank),
+:global([data-es2-reduce-motion="true"] .hall-unlock-notice),
+:global([data-es2-reduce-flashing="true"] .hall-unlock-notice){animation:none!important}
 </style>

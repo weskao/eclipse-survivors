@@ -25,6 +25,9 @@ export const COMBAT_FX_SPECS = [
   { kind: 'enemy-death', id: 'combat-vfx:enemy-death', title: 'Soul Dissolution', duration: 0.7, radius: 124 },
   { kind: 'ultimate-attack', id: 'combat-vfx:ultimate-attack', title: 'Ultimate Release', duration: 1.1, radius: 190 },
   { kind: 'victory-finish', id: 'combat-vfx:victory-finish', title: 'Victory Benediction', duration: 2.4, radius: 195 },
+  { kind: 'hero-knight', id: 'combat-vfx:hero-knight', title: 'Dawnbreaker', duration: 1.2, radius: BALANCE.heroes.classicActive.knight.reach },
+  { kind: 'hero-ranger', id: 'combat-vfx:hero-ranger', title: 'Starfall Volley', duration: 1.35, radius: BALANCE.heroes.classicActive.ranger.reach },
+  { kind: 'hero-wizard', id: 'combat-vfx:hero-wizard', title: 'Void Collapse', duration: 1.65, radius: BALANCE.heroes.classicActive.wizard.reach },
   { kind: 'hero-shadowblade', id: 'combat-vfx:hero-shadowblade', title: 'Shadowblade · Nightfall Ambush', duration: 1.08, radius: 210 },
   { kind: 'hero-spirit-summoner', id: 'combat-vfx:hero-spirit-summoner', title: 'Spirit Summoner · Soul Convergence', duration: 1.32, radius: 360 },
   { kind: 'hero-crimson-paladin', id: 'combat-vfx:hero-crimson-paladin', title: 'Crimson Paladin · Scarlet Aegis',
@@ -45,7 +48,7 @@ export interface DirectedCombatFx extends ContentVisualFx {
   angle?: number
 }
 export interface HeroSpecialFx extends ContentVisualFx {
-  /** World positions the cast actually struck, captured at activation (max 3, frozen). */
+  /** World positions the cast actually struck, captured at activation (bounded per cast, frozen). */
   targets?: readonly { readonly x: number; readonly y: number }[]
 }
 
@@ -128,7 +131,7 @@ export function drawCombatEffect(
   const spec = COMBAT_FX_BY_KIND.get(kind)
   if (!spec || !(effect.max > 0) || !(effect.life > 0)) return
   const x = effect.x + ox, y = effect.y + oy
-  const bounds = spec.radius + 12
+  const bounds = spec.radius + (kind.startsWith('hero-') ? 140 : 12)
   if (x < -bounds || x > state.W + bounds || y < -bounds || y > state.H + bounds) return
 
   const reduced = live(settings.reducedMotion, false)
@@ -293,11 +296,14 @@ export function drawCombatEffect(
         rays(ctx, count, 28 + strike * 35, 91 + strike * 89, '#e8ccff', t)
         shards(ctx, count, 44 + strike * 119, 10, '#efb77d', strike)
         break
+      case 'hero-knight':
+      case 'hero-ranger':
+      case 'hero-wizard':
       case 'hero-shadowblade':
       case 'hero-spirit-summoner':
       case 'hero-crimson-paladin':
         heroTargetStrikes(ctx, kind, effect as HeroSpecialFx, reduced)
-        drawHeroSpecialFx(ctx, kind, t, strike, count, reduced)
+        drawHeroSpecialFx(ctx, kind, t, strike, count, reduced, effect as HeroSpecialFx)
         break
       case 'victory-finish':
         ring(ctx, 43 + strike * 74, '#ffd893', 4, 0, 0.58)
@@ -313,11 +319,11 @@ export function drawCombatEffect(
 
 /** Canvas fallback contact: one stroked path from the caster to each target as its strike lands. */
 function heroTargetStrikes(
-  ctx: Ctx2D, kind: 'hero-shadowblade' | 'hero-spirit-summoner' | 'hero-crimson-paladin',
+  ctx: Ctx2D, kind: import('./hero-special-vfx').HeroSpecialFxKind,
   effect: HeroSpecialFx, reduced: boolean,
 ): void {
   const targets = effect.targets
-  if (!targets?.length || kind === 'hero-crimson-paladin') return
+  if (!targets?.length || kind === 'hero-crimson-paladin' || kind === 'hero-knight' || kind === 'hero-wizard' || kind === 'hero-ranger') return
   const elapsed = effect.max - effect.life
   ctx.strokeStyle = kind === 'hero-shadowblade' ? '#b59cff' : '#a0d9d6'
   ctx.lineWidth = kind === 'hero-shadowblade' ? 3 : 2

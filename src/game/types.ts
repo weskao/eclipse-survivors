@@ -25,6 +25,7 @@ export type SfxCue =
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'massKill' | 'boss' | 'bossStagger' | 'bossDefeat' | 'hurt' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'pickup' | 'pickupBurst' | 'evolution'
   | ContactSfxCue | 'treasureReveal' | 'treasureClaim'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
+  | 'knight-special' | 'ranger-special' | 'wizard-special'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special' | 'crimson-paladin-retribution'
 
 export interface JobDef { label: string; hp: number; speed: number; damage: number; delay: number; range: number }

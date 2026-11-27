@@ -6,6 +6,7 @@ import { ENEMY_DEFINITIONS } from './game/content/enemies/definitions'
 import { UP, SCENES } from './game/constants'
 import { EVOLUTIONS } from './game/evolutions'
 import { HERO_DEFINITIONS } from './game/content/heroes'
+import { CLASSIC_ACTIVE_DEFINITIONS } from './game/content/heroes/classic-active'
 import { WEAPON_SPECS } from './game/content/weapons/abilities'
 import { EVOLUTION2_RECIPES } from './game/content/evolution2/recipes'
 import { RELICS } from './game/content/relics/catalog'
@@ -37,6 +38,7 @@ describe('localized game content without changing stable gameplay identifiers', 
       ...UP.flatMap(v => [v.title, v.desc]),
       ...SCENES.flatMap(v => [v.name, v.label]),
       ...EVOLUTIONS.flatMap(v => [v.title, v.desc, v.requirements]),
+      ...Object.values(CLASSIC_ACTIVE_DEFINITIONS).flatMap(v => [v.special, v.special.split('：')[0]]),
       ...Object.values(HERO_DEFINITIONS).flatMap(v => [
         v.label, v.description, v.startingEquipment, v.passive, v.special, ...v.strengths, ...v.weaknesses,
       ]),
