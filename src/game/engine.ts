@@ -26,6 +26,7 @@ import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
+import { RESEARCH } from './content/meta/catalog'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
@@ -709,10 +710,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   }
 
   // Sound only after the transaction is accepted, never on a disabled/failed purchase.
-  function finishPurchase(ok: boolean, reason: string): void {
+  function finishPurchase(ok: boolean, reason: string, milestone = false): void {
     if (ok) {
       refreshMeta()
-      audio.playSfx('upgrade')
+      audio.playSfx('upgrade', milestone ? 2 : 1)
     } else {
       message(reason)
       audio.playSfx('deny')
@@ -1179,15 +1180,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     purchaseResearch(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
-      finishPurchase(metaStore.purchaseResearch(id).ok, '研究未解鎖或儲存失敗')
+      const result = metaStore.purchaseResearch(id)
+      const cap = RESEARCH.find(node => node.id === id)?.maxRank
+      finishPurchase(result.ok, '研究未解鎖或儲存失敗', cap !== undefined && result.state?.research[id] === cap)
     },
     purchaseEquipment(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
-      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseEquipment(id).ok, '裝備未解鎖或儲存失敗', true)
     },
     purchaseBonus(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
-      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗')
+      finishPurchase(metaStore.purchaseBonus(id).ok, '祝福未解鎖或儲存失敗', true)
     },
     selectCosmetic(hero: JobId, skin: CosmeticId) {
       if (s.mode !== 'menu') return

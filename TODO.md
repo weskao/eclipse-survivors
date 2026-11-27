@@ -172,8 +172,10 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 - [x] Wave 1: derive research routes, rank totals, prerequisites and current/next benefits from the authoritative catalog; preserve prices, save and cloud transaction contracts.
 - [x] Wave 2: shared circular WebP node template for research, starting equipment/blessings and legacy archive; desktop hover/focus, touch selection and explicit purchase; mastery progress.
 - [x] Wave 3: consistent dark-fantasy art direction, existing 3x WebP icons, readable progress rings and connected paths, responsive narrow/landscape/tablet/foldable/desktop.
-- [ ] Wave 4: accepted-purchase-only finite upgrade animation, newly available route highlighting, original layered audio through existing SFX/mute bus; reduced motion/flashing.
+- [x] Wave 4: accepted-purchase-only finite upgrade animation, newly available route highlighting, original layered audio through existing SFX/mute bus; reduced motion/flashing.
 - [ ] Add behavior regressions, execute RED → GREEN → REFACTOR, verify full CI and actual browser viewport matrix in both locales.
 - [ ] Review actual game screenshots and audition the upgrade cue on desktop/mobile; do not claim manual art/audio approval from automated tests.
 
 Implementation checkboxes above denote source changes only; actual Chromium matrix and art/audio review remain independent gates below. No balance changes or new prerequisites introduced.
+
+Added original deterministic PCM rank (0.74s) and milestone (1.05s) cues using the existing audio context, cached buffer and mute bus; no new audio dependency. Browser matrix now visits the growth board on each existing viewport profile, checks no-spend inspection and captures screenshots. Full runtime verification remains unchecked.

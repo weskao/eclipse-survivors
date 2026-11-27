@@ -34,6 +34,7 @@ const assertLocalizedTextFits = async (page, caseName, locale) => {
       '.es2-dialog-actions button', '.es2-archive-tabs button',
       '.es2-archive-card strong', '.es2-archive-card p',
       '.es2-card-name', '.es2-card-description', '.es2-reward-strip span',
+      '.hall-node', '.hall-inspect strong', '.hall-buy', '.hall-detail', '.hall-comparison',
     ]
     return [...document.querySelectorAll(selectors.join(','))]
       .filter(el => el.getClientRects().length && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 2)
@@ -413,6 +414,20 @@ try {
           name + ': return navigation clips viewport')
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
+        if (await archivePage.getAttribute('data-es2-archive-page') === 'progression') {
+          const power = page.locator('[data-hall-inspect="power"]')
+          await power.waitFor({ state: 'visible' })
+          const rank = await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow')
+          if (hoverCapable) await power.hover()
+          else await power.click()
+          const details = page.locator('.hall-detail').first()
+          await details.waitFor({ state: 'visible' })
+          assert.equal(await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow'), rank, name + ': inspection must never spend')
+          const graph = await page.locator('[data-hall-edge]').count()
+          if (graph) assert.equal(graph, 4, name + ': authoritative research edges missing')
+          await assertLocalizedTextFits(page, name, 'hall-growth')
+          await page.screenshot({ path: destination + '/' + name + '-hall-growth.png', animations: 'disabled' })
+        }
       }
       const achievement = page.locator('[data-es2-context-card="achievement:first-blood"]')
       const info = achievement.locator('[data-es2-card-info]')
