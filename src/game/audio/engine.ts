@@ -513,6 +513,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       // Only leaving the expedition for Home cancels it (explicit mute/OS teardown are separate).
       if (mode === 'menu') { stopHeroCast(); bossAttacks.prepare(null) }
       else if (mode !== 'play') bossAttacks.cancel()
+      // A picker freezes gameplay, not music. Do not restart, remix or resync the
+      // active media/cinematic score on play ↔ level (including chained rewards).
+      if (isBattleMusicMode(previous) && isBattleMusicMode(mode)) return
       if (mode !== 'result') {
         resultScene = null
         resultScore.dispose()

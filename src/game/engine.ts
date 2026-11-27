@@ -444,7 +444,6 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     if (name === 'menu' || (name === 'result' && audio.setResultTheme)) setAdaptiveScore(false)
     else if (name === 'result') setAdaptiveScore(true)
     if (name === 'menu') es2Audio?.setScene('menu')
-    else if (name === 'play') es2Audio?.setScene('exploration')
     if (name !== 'play') {
       keys = {}
       stick = { x: 0, y: 0 }
@@ -642,6 +641,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     setAdaptiveScore(true) // before wake: never restart the overture
     wakeAudio()
     if (bosses) audio.prepareBossAttackAudio?.(bossIds[bossSequence % bossIds.length]!)
+    // Initialize exploration only for a new expedition, never on picker close/resume.
+    es2Audio?.setScene('exploration')
     screen('play')
     hooks.content?.(s, { type: 'start' })
     audio.playSfx('start')
@@ -770,6 +771,8 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       followHeroSpecialFx(s.content.effects, 'hero-crimson-paladin', s.hero.x, s.hero.y, heroSpecialization.snapshot().barrier > 0)
     }
     worldEvents?.tick()
+    // A reward may have opened during this tick; leave the existing score untouched.
+    if (s.mode !== 'play') return
     if (objectiveRuntime) {
       objectiveRuntime.tick(dt, true)
       if (s.mode !== 'play') return

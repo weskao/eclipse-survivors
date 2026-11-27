@@ -28,7 +28,7 @@ defineProps<{
 .es2-active-summary .es2-active-summary__icon { display:block; flex:0 1 44px; width:44px; max-width:100%; height:auto; aspect-ratio:1; padding:0; object-fit:contain; border-radius:6px; border:1px solid var(--es2-special-accent, #bda473); background:#090e17; }
 .es2-active-summary__copy { display:grid; min-width:0; flex:1 1 4.5rem; gap:3px; }
 .es2-active-summary__head { display:flex; align-items:baseline; min-width:0; color:var(--es2-special-light, #ffe4a6); }
-.es2-active-summary__head strong { font-size:.85rem; line-height:1.2; overflow-wrap:anywhere; }
+.es2-active-summary__head strong { font-size:.85rem; line-height:1.2; overflow-wrap:anywhere; hyphens:auto; }
 .es2-active-summary__cooldown { display:flex; flex-direction:column; align-items:center; justify-content:center; align-self:stretch; min-width:0; box-sizing:border-box; gap:4px; padding:6px 5px; border-inline-start:1px solid color-mix(in srgb,var(--es2-special-accent, #bda473) 30%,transparent); border-start-end-radius:7px; border-end-end-radius:7px; background:#090e1740; text-align:center; font:600 .75rem/1.3 system-ui,sans-serif; color:#e5d9c9; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
 .es2-active-summary__cooldown > span { min-width:0; max-width:100%; }
 .es2-active-summary__hero { color:var(--es2-special-accent, #bda473); font-size:.72rem; overflow-wrap:anywhere; }
@@ -39,4 +39,10 @@ defineProps<{
 .es2-active-summary[data-compact="true"] .es2-active-summary__icon { flex-basis:26px; width:26px; }
 .es2-active-summary[data-compact="true"] .es2-active-summary__head strong { font-size:.72rem; }
 .es2-active-summary[data-compact="true"] .es2-active-summary__cooldown { padding:4px 3px; font-size:.7rem; }
+/* Narrow cards: the name spans the row above the icon, so long single words stay whole. */
+@media (max-width:610px) {
+  .es2-active-summary[data-compact="true"] .es2-active-summary__main { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; }
+  .es2-active-summary[data-compact="true"] :is(.es2-active-summary__copy,.es2-active-summary__head) { display:contents; }
+  .es2-active-summary[data-compact="true"] .es2-active-summary__head strong { grid-column:1 / -1; grid-row:1; }
+}
 </style>

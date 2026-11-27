@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createAudioSystem } from '../engine'
 import { SFX_CUES } from '../sfx'
 import { FakeAudioContext, FakeBuffer } from '../fakeAudio'
@@ -8,6 +8,7 @@ import { createEs2AudioAdapter } from './adapter'
 import { createEngine } from '../../engine'
 import { HERO_SPECIALIZATIONS_PACK } from '../../content/heroes'
 import { DURATION } from '../../constants'
+import { RELICS_PACK } from '../../content/packs/relics'
 
 class Media implements BgmElement {
   paused = true
@@ -231,6 +232,89 @@ describe('ES2 final host audio wiring', () => {
     expect(bossLoop.stoppedAt).toBeNull()
     expect(context.sources.filter(source => source.loop)).toEqual([bossLoop])
     audio.dispose()
+  })
+
+
+  it.each(['upgrade', 'treasure-claim', 'treasure-cancel'] as const)('keeps the sampled Boss and host mix unchanged through %s', async kind => {
+    const context = new FakeAudioContext()
+    const bgm = new Media()
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => context,
+      bossTracks: { 'abyss-monarch': ['abyss-p1.mp3', 'abyss-p2.mp3', 'abyss-p3.mp3'] },
+      loadMusic: async () => new FakeBuffer(480000, 24000),
+    })
+    const engine = createEngine({ audio, contentPacks: [RELICS_PACK] })
+    try {
+      engine.start()
+      const s = engine.state
+      s.bossSpawned = true
+      s.spawnT = 9999
+      s.mobs = [{ x: s.hero!.x + 500, y: s.hero!.y, type: 'boss', hp: 1000, max: 1000, r: 48,
+        speed: 0, dmg: 0, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }]
+      s.time = 0.24
+      engine.advance(0.033)
+      await new Promise<void>(resolve => setTimeout(resolve, 0))
+      const bossLoop = context.sources.find(source => source.loop)!
+      expect(bossLoop).toBeDefined()
+      for (let i = 0; i < 60; i++) audio.tick('play')
+      expect(bgm.volume).toBeCloseTo(0)
+      const playCalls = bgm.played, pauseCalls = bgm.pausedCount
+      const time = bgm.currentTime
+      context.currentTime = 5
+      if (kind === 'upgrade') engine.testApi.level()
+      else {
+        s.events.push({ id: ++s.eventSerial, kind: 'chest', tier: 'rare', x: s.hero!.x, y: s.hero!.y, expiresAt: s.time + 30 })
+        engine.advance(0.016)
+        expect(engine.ui.specialChoice?.kind).toBe('treasure')
+      }
+      expect(s.mode).toBe('level')
+      for (const at of [6, 10, 30]) {
+        context.currentTime = at
+        audio.tick('level')
+        expect(bossLoop.stoppedAt).toBeNull()
+        expect(bgm.volume).toBeCloseTo(0)
+      }
+      if (kind === 'upgrade') engine.chooseUpgrade(engine.ui.upgrades[0]!.id)
+      else if (kind === 'treasure-claim') engine.chooseTreasure(engine.ui.specialChoice!.items[0]!.id)
+      else engine.cancelTreasure()
+      expect(s.mode).toBe('play')
+      // Exercise the gap before the next 4Hz combat intensity update.
+      for (let i = 0; i < 8; i++) audio.tick('play')
+      await new Promise<void>(resolve => setTimeout(resolve, 0))
+      expect(bgm.volume).toBeCloseTo(0)
+      expect(bgm.played).toBe(playCalls)
+      expect(bgm.pausedCount).toBe(pauseCalls)
+      expect(bgm.currentTime).toBe(time)
+      expect(bossLoop.stoppedAt).toBeNull()
+      expect(context.sources.filter(source => source.loop)).toEqual([bossLoop])
+    } finally { audio.dispose() }
+  })
+
+  it('does not reset the combat score when closing repeated level choices', () => {
+    const { audio, bgm } = setup()
+    const intensity = vi.spyOn(audio, 'setCombatIntensity')
+    const engine = createEngine({ audio, contentPacks: [] })
+    try {
+      engine.start()
+      const s = engine.state
+      s.spawnT = 9999
+      s.mobs = Array.from({ length: 20 }, (_, i) => ({
+        x: s.hero!.x + 500 + i * 50, y: s.hero!.y, type: 'slime' as const, hp: 1000, max: 1000, r: 18,
+        speed: 0, dmg: 0, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0,
+      }))
+      s.time = .24
+      engine.advance(.033)
+      expect(intensity).toHaveBeenLastCalledWith('combat')
+      intensity.mockClear()
+      for (let i = 0; i < 2; i++) {
+        engine.testApi.level()
+        expect(s.mode).toBe('level')
+        engine.chooseUpgrade(engine.ui.upgrades[0]!.id)
+        expect(s.mode).toBe('play')
+      }
+      expect(intensity).not.toHaveBeenCalled()
+      expect(bgm.played).toBe(0)
+    } finally { audio.dispose() }
   })
 
   it('hands cinematic boss and results scoring to the host and restores ES2 combat', () => {
