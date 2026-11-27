@@ -246,6 +246,19 @@ describe('ES2 main menu integration adapter', () => {
     expect(wrapper.emitted('specialChoose')).toEqual([['relics:guardian-sigil']])
   })
 
+  it('uses the uploaded independent Epic artwork in the live three-choice reward dialog', async () => {
+    mounted({ screen: 'hidden', specialChoice: { kind: 'treasure', items: [
+      { id: 'relic:qa-epic', title: 'Epic reward', rarity: 'epic' },
+      { id: 'relic:qa-rare', title: 'Rare reward', rarity: 'rare' },
+    ] } })
+    await nextTick()
+    const epic = find('[data-choice="relic:qa-epic"] .es2-card-art img').getAttribute('src')
+    const rare = find('[data-choice="relic:qa-rare"] .es2-card-art img').getAttribute('src')
+    expect(epic).toContain('treasure-epic@3x.webp')
+    expect(rare).toBe(WORLD_ART.ui['treasure-rare'])
+    expect(epic).not.toBe(rare)
+  })
+
   it('renders every cursed relic with the cursed chest artwork, independent of its ID and rarity', async () => {
     mounted({ screen: 'hidden', specialChoice: { kind: 'treasure', items: [
       { id: 'relics:ashen-heart', title: 'Ashen Heart', rarity: 'epic' },
