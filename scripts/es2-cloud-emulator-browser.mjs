@@ -54,6 +54,7 @@ async function home(page) {
 try {
   const first = await createPage({width: 1280, height: 800})
   await login(first, '[data-es2-cloud-account]', 'ember-qa@example.test')
+  await first.locator('[data-es2-account-toast="success"]').waitFor()
   await waitStatus(first, 'synced')
   assert.equal(await first.locator('[role="dialog"]').count(), 0, 'homepage login must not open a custom dialog')
   assert.equal(await balance(first), unlocked ? 100_000 : 0)
@@ -66,6 +67,7 @@ try {
   } else {
   await completeRun(first)
   await resultConfirmed(first)
+  assert.equal(await first.locator('[data-es2-result-cloud]').getAttribute('data-state'), 'synced')
   assert.equal(await first.locator('[data-es2-result-google-login]').count(), 0)
   const earned = await balance(first)
   assert.ok(earned > 0, 'real run settlement must increase the account balance')
@@ -85,6 +87,7 @@ try {
   assert.ok(guestBalance > 0)
   assert.equal(await guest.locator('[role="dialog"]').count(), 1)
   await login(guest, '[data-es2-result-google-login]', 'guest-qa@example.test')
+  await guest.locator('[data-es2-result-cloud] [data-es2-account-toast="success"]').waitFor()
   await resultConfirmed(guest)
   assert.equal(await guest.locator('[role="dialog"]').count(), 1, 'result login must not open a second game dialog')
   assert.equal(await balance(guest), 0, 'guest and new Google wallets are isolated')

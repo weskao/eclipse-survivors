@@ -105,6 +105,11 @@
 }
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
+/* Reward controls are outside the card scrollport; reserve their own height and hover clearance. */
+.es2-dialog-choice > .es2-dialog-actions{flex:0 0 auto;min-width:0;justify-content:center;margin-top:8px;padding-top:4px;border-top:0}
+.es2-dialog-choice > .es2-dialog-actions .es2-hint{margin:0;max-width:100%}
+.es2-dialog-choice > .es2-dialog-actions .es3-skip-reveal{flex:0 1 auto;min-width:44px;max-width:100%}
+@media (hover:hover) and (pointer:fine){.es2-dialog-choice > .es2-dialog-body{margin-block-end:0}}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}
 .es2-tone-victory{border-color:#edca80}
 .es2-tone-defeat{border-color:#c18488}
@@ -281,7 +286,11 @@
   .es2-settings h3{margin:0 0 6px}
   .es2-slider-row{padding:4px 0}
 }
-@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){.es2-dialog-choice .es2-hint{display:none}}
+@media (orientation:landscape) and (max-height:520px){.es2-dialog-choice > .es2-dialog-actions{margin-top:4px;padding-top:2px}}
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){
+  .es2-dialog-choice > .es2-dialog-actions:not(:has(.es3-skip-reveal)){display:none}
+  .es2-dialog-choice > .es2-dialog-actions .es2-hint-text{display:none}
+}
 
 /* Locale-safe wrapping: longer English and large zh-TW text must not widen cards or dialogs. */
 .es2-menu .es2-hero-copy > strong,
@@ -924,25 +933,12 @@
 [data-es2-reduce-motion="true"] .es2-cursor-accent,
 [data-es2-reduce-flashing="true"] .es2-cursor-accent{display:none!important}
 
-/* Selected hero: same silhouette, crest and status ribbon for all six cards.
+/* Selected hero: one outer gold rim and status ribbon for all six cards.
    Never dim the other portraits, alter image bounds, or occupy the detail-button corner. */
 .es2-menu .es2-hero-select-card[aria-pressed="true"]{
   --es2-hero-glow:#ffd16b80;
   border-color:#ffe3a3;
   box-shadow:inset 0 0 0 2px #e9c27e,0 0 0 1px #b58a4a,0 0 18px #e7b56465;
-}
-.es2-menu .es2-hero-select-card[aria-pressed="true"]::after{
-  content:'';position:absolute;inset:4px;z-index:2;pointer-events:none;
-  border:1px solid #e9bf7855;border-radius:inherit;
-  background:
-    linear-gradient(#fff0bb,#c2914d) left top/14px 2px no-repeat,
-    linear-gradient(#fff0bb,#c2914d) left top/2px 14px no-repeat,
-    linear-gradient(#fff0bb,#c2914d) right top/14px 2px no-repeat,
-    linear-gradient(#fff0bb,#c2914d) right top/2px 14px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) left bottom/14px 2px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) left bottom/2px 14px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) right bottom/14px 2px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) right bottom/2px 14px no-repeat;
 }
 .es2-menu .es2-hero-select-card[aria-pressed="true"]>.es2-hero-copy{
   background:linear-gradient(180deg,#342d28,#171f2b 62%);
@@ -963,7 +959,6 @@
   clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);
 }
 @media(max-width:610px),(max-height:520px){
-  .es2-menu .es2-hero-select-card[aria-pressed="true"]::after{inset:3px;background-size:9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px}
   .es2-menu .es2-hero-select-card .es2-hero-selection-status{padding:2px 4px;font-size:max(.6875rem,calc(.75rem * var(--es2-ui-scale,1)))}
 }
 @media(forced-colors:active){
