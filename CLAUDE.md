@@ -1,10 +1,14 @@
 # Eclipse Survivors — Repository Development Rules
 
-Stack: **Vue 3, TypeScript, Vite, pnpm, Vitest, Canvas 2D**. Preserve the stack, existing game art, combat mechanics, accessibility and mobile support. Follow the existing architecture and work on a dedicated branch; do not create a PR, merge, or modify `main` unless asked.
+Stack: **Vue 3, TypeScript, Vite, pnpm, Vitest, Canvas 2D**, Node 24. PixiJS 8 draws boss projectile and release VFX only, composited into the Canvas frame (`docs/boss-pixijs-vfx.md`); warnings, hazards, other combat effects and UI stay Canvas-owned. Preserve the stack, existing game art, combat mechanics, accessibility and mobile support, and follow the existing architecture.
+
+**Branches:** work on a dedicated `feature/**` or `fix/**` branch and commit there. `develop` is the integration branch (`--no-ff` merges); a push to `main` deploys GitHub Pages and tags a release. Do not create a PR, merge, or modify `develop` or `main` unless asked.
+
+**No personal paths in files.** This repo is public: never write a user-specific absolute path (`/Users/<name>/…`, `/home/<name>/…`, `C:\Users\<name>\…`) into any committed file (code, docs, specs, configs, tests, logs). Use repo-relative paths, `$HOME`/`~`, or a placeholder such as `<repo>`.
 
 ## Mandatory rules — read the owning file before you start
 
-Each requirement lives in exactly one file. Rules without `paths:` frontmatter load automatically; open the others, and the skills, when the situation applies.
+Each requirement lives in exactly one file, never a copy here and in a rule. Rules without `paths:` frontmatter load automatically; open the others, and the skills, when the situation applies: work often starts before a scoped file is open.
 
 | Situation | Read and follow |
 |-----------|-----------------|
@@ -24,6 +28,8 @@ Each requirement lives in exactly one file. Rules without `paths:` frontmatter l
 | BOSS CRUD: original score, phase music, per-attack cinematic SFX | `.claude/rules/boss-music-production.md` |
 | BOSS arrival countdown UI, BOSS phase body size | `.claude/rules/boss-visuals.md` |
 | Lobby, Adventurer Hall, hero selection panels, last expedition selection, hero cosmetic cards (every new or updated hero) | `.claude/rules/hero-lobby.md` |
+| Unlocked playtest (`make *-unlocked`, `VITE_ES2_UNLOCKED`), anything that could ship a test unlock | `.claude/rules/unlock-separation.md` |
+| Version bump, `CHANGELOG.md`, release, GitHub Pages deploy, DEV-only QA surfaces | `docs/release-process.md` |
 | Skill CRUD, ability option, projectile, enemy bullet, damage feedback, attack animation — read **before** implementation | `es2-combat-visual-fidelity` skill |
 | Content pack or shared runtime integration | `es-content-integration` skill |
 | Browser-facing change (menus, touch, a11y, Canvas art, audio, perf) | `es-browser-qa` skill |
@@ -31,18 +37,21 @@ Each requirement lives in exactly one file. Rules without `paths:` frontmatter l
 
 ## Feature acceptance
 
-Verify new behavior from the real player entry point through the engine to the resulting state and visible feedback. Generated mockups and mocked Canvas timings are not runtime evidence; never claim QA/CI success without actual outputs.
+Verify new behavior from the real player entry point through the engine to the resulting state and visible feedback. Generated mockups and mocked Canvas timings are not runtime evidence; never claim QA/CI success without actual outputs. CI, manual visual confirmation and RED evidence are separate gates; one never proves another.
 
 ## Mandatory TDD and measurable verification
 
 Every gameplay or performance change follows **RED → GREEN → REFACTOR**: reproduce with a deterministic test that fails for the expected reason, make the smallest fix, rerun. Keep regression tests for boundaries, the boss, hitboxes, skills, offscreen objects, viewport resize, biome changes and long-running cache bounds. Benchmark and device-profiling rules: `.claude/rules/realtime-performance.md` §6.
 
+- A bug fix ships with its prevention: the scoped rule that names the trap, the mechanism that removes it, and a guard test that is RED on the old code.
+- Never delete or weaken tests to pass CI; report any check you could not run.
+- Never commit RED tests (yours or another session's staged files) without the implementation that turns them green.
+- Bug seen only on a phone → reproduce on that device class and orientation (`make phone`); a desktop viewport of the same size is not a reproduction.
+
 Before claiming completion:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm test
-pnpm typecheck
-pnpm build
-pnpm check-release
+make verify   # pnpm test, pnpm typecheck, pnpm build, pnpm check-release, on the locked dependencies
 ```
+
+`make help` lists every target; the `##` annotation on each Makefile target is the single source, so describe a new target there, not here.
