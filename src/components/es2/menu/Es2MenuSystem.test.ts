@@ -118,7 +118,7 @@ describe('ES2 main menu integration adapter', () => {
     await nextTick()
     expect(find('[data-es2-archive-page]')?.textContent).toContain('永久強化')
     expect(document.querySelector('[role="dialog"]')).toBeNull()
-    const buy = find('.es2-archive-card .es2-secondary') as HTMLButtonElement
+    const buy = find('[data-hall-purchase="power"]') as HTMLButtonElement
     expect(buy.disabled).toBe(true)
     click('.es2-danger')
     await nextTick()
@@ -441,5 +441,19 @@ describe('ES2 responsive and motion CSS contract', () => {
   })
   it('never adds gameplay screen-shake animations to upgrade cards', () => {
     expect(css).not.toMatch(/@keyframes\s+.*shake/i)
+  })
+})
+
+describe('Adventurer Hall selected mastery integration', () => {
+  it('forwards the actual selected specialization instead of displaying its legacy job mastery', async () => {
+    const state = createMetaState()
+    state.mastery['heroes:shadowblade'] = { xp: 900, level: 3 }
+    const wrapper = mounted({ metaState: state, metaStatus: 'ready', choice: 'knight', heroId: 'shadowblade' })
+    click('.es2-hall-links button')
+    await nextTick()
+    expect(find('.es2-progression-mastery').textContent).toContain('影刃行者')
+    expect(find('.es2-progression-mastery strong').textContent).toContain('Lv. 3')
+    await wrapper.setProps({ heroId: 'crimson-paladin' })
+    expect(find('.es2-progression-mastery strong').textContent).toContain('Lv. 1')
   })
 })

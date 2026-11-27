@@ -186,3 +186,5 @@ Added original deterministic PCM rank (0.74s) and milestone (1.05s) cues using t
 Motion polish uses finite CSS-only effects, no continuous animation loop. Added cap, newly revealed connection, rank-progress and cached/muted audio regression tests; type error fixed in test source, CI confirmation pending.
 
 Browser acceptance now checks actual WebP decode, different-node inspection, both game accessibility flags and English/Traditional Chinese screenshots on every existing viewport profile. Latest CI must confirm; no manual art/audio approval claimed.
+
+- [x] Correct legacy Hall prices, rank caps, and bonuses to match the authoritative research configuration. Display the actual selected specialization's namespaced mastery while retaining existing classic equipment eligibility. Regression coverage added; runtime CI verification pending.

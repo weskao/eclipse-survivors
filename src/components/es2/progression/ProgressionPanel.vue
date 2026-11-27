@@ -5,6 +5,8 @@ import Es2EmberWallet from '../menu/Es2EmberWallet.vue'
 import HallGrowthBoard from './HallGrowthBoard.vue'
 import { researchHallNodes, unlockHallNodes, type HallNode } from './hall-model'
 import { BALANCE } from '../../../game/config'
+import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
+import type { HeroId } from '../../../game/types'
 import type { MetaState } from '../../../game/content/meta/state'
 import {
   getAchievementStates,
@@ -13,6 +15,7 @@ import {
 const props = withDefaults(defineProps<{
   state: MetaState
   hero: string
+  heroId?: HeroId
   status: 'ready' | 'blocked'
   embedded?: boolean
   busy?: boolean
@@ -29,10 +32,16 @@ const unlocks = computed(() => unlockHallNodes(props.state, props.hero))
 function unlock(node: HallNode) { if (node.kind === 'equipment') emit('equipment', node.id); else if (node.kind === 'bonus') emit('bonus', node.id) }
 const achievements = computed(() => getAchievementStates(props.state))
 const writable = computed(() => props.status === 'ready' && !props.busy)
-const heroName = computed(() => ({
-  knight: '騎士', ranger: '遊俠', wizard: '法師',
-} as Record<string, string>)[props.hero] ?? props.hero)
-const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level: 1 })
+const masteryHero = computed(() => props.heroId ?? props.hero)
+const heroName = computed(() => {
+  const id = masteryHero.value
+  return isSpecializationId(id) ? HERO_DEFINITIONS[id].label : ({
+    knight: '騎士', ranger: '遊俠', wizard: '法師',
+  } as Record<string, string>)[id] ?? id
+})
+// Specialization receipts are persisted with the heroes: namespace by the engine.
+const masteryKey = computed(() => isSpecializationId(masteryHero.value) ? 'heroes:' + masteryHero.value : masteryHero.value)
+const mastery = computed(() => props.state.mastery[masteryKey.value] ?? { xp: 0, level: 1 })
 const masteryCap = BALANCE.meta.runRewards.masteryMaxLevel
 const masteryProgress = computed(() => {
   const level = mastery.value.level, step = BALANCE.meta.runRewards.masteryLevelDivisor
@@ -64,7 +73,7 @@ const masteryProgress = computed(() => {
       <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
         <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }} / {{ masteryCap }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
-        <div class="hall-mastery-track" role="progressbar" :aria-label="t('英雄專精')" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="Math.round(masteryProgress.value * 100)"><i :style="{ width: masteryProgress.value * 100 + '%' }"><span :key="hero + ':' + mastery.xp" class="hall-xp-sheen" aria-hidden="true"></span></i></div>
+        <div class="hall-mastery-track" role="progressbar" :aria-label="t('英雄專精')" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="Math.round(masteryProgress.value * 100)"><i :style="{ width: masteryProgress.value * 100 + '%' }"><span :key="masteryKey + ':' + mastery.xp" class="hall-xp-sheen" aria-hidden="true"></span></i></div>
         <small>{{ mastery.level >= masteryCap ? t('已滿階') : t('距下一級尚需 {xp} XP', { xp: masteryProgress.next.toLocaleString() }) }}</small>
       </div>
     </section>

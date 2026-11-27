@@ -89,7 +89,7 @@ const achievementArt: Record<string, string> = {
     </header>
     <Es2CardDetails :entries="cardDetails" :scope="view" v-slot="{ open }">
     <section v-if="view === 'progression'" class="es2-archive-section" :aria-label="t('永久強化')">
-      <ProgressionPanel v-if="metaStatus" embedded :state="metaState ?? emptyMeta" :hero="hero"
+      <ProgressionPanel v-if="metaStatus" embedded :state="metaState ?? emptyMeta" :hero="hero" :hero-id="selectedHeroId"
         :status="metaStatus" @research="emit('research', $event)"
         @equipment="emit('equipment', $event)" @bonus="emit('bonus', $event)" />
       <div v-else>

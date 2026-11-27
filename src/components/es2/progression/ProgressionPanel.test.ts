@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { BALANCE } from '../../../game/config'
+import { BALANCE, researchCost } from '../../../game/config'
 import { getLocale, setLocale } from '../../../i18n'
 import { buyResearch } from '../../../game/content/meta/progression'
 import { createMetaState } from '../../../game/content/meta/state'
 import ProgressionPanel from './ProgressionPanel.vue'
+import { legacyHallNodes } from './hall-model'
+import { emptyProfile } from '../../../meta/profile'
 
 describe('ES2 v3 progression UI adapter', () => {
   it('formats research and starting bonus values from the JSON in both locales', () => {
@@ -146,6 +148,37 @@ describe('Hall upgrade motion', () => {
     expect(wrapper.get('[data-hall-node="power"] .hall-ring').attributes('style')).toContain('100%')
     expect(wrapper.find('[data-hall-edge][data-revealed="true"]').exists()).toBe(false)
     expect(wrapper.get('[data-research="power"]').attributes('disabled')).toBeDefined()
+    wrapper.unmount()
+  })
+})
+
+describe('Hall authoritative legacy progression', () => {
+  it('uses the transaction catalog for all owned ranks, including the late-rank surcharge', () => {
+    const profile = emptyProfile()
+    profile.embers = 50000
+    for (const id of ['power', 'vitality'] as const) {
+      const cap = BALANCE.meta.research[id].maxRank
+      for (let rank = 0; rank <= cap; rank++) {
+        profile.upgrades[id] = rank
+        const node = legacyHallNodes(profile).find(item => item.id === id)!
+        expect(node.maxRank).toBe(cap)
+        expect(node.cost).toBe(rank === cap ? null : researchCost(id, rank))
+        expect(node.canBuy).toBe(rank < cap)
+      }
+    }
+  })
+  it('shows the selected specialization mastery without replacing the classic equipment context', async () => {
+    const state = createMetaState()
+    state.mastery.knight = { xp: 0, level: 1 }
+    state.mastery['heroes:shadowblade'] = { xp: 900, level: 3 }
+    state.mastery['heroes:crimson-paladin'] = { xp: 2400, level: 5 }
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', heroId: 'shadowblade', status: 'ready' } })
+    expect(wrapper.get('.es2-progression-mastery').text()).toContain('影刃行者')
+    expect(wrapper.get('.es2-progression-mastery strong').text()).toContain('Lv. 3')
+    expect(wrapper.get('[data-equipment="knight-aegis"]').attributes('disabled')).toBeDefined()
+    await wrapper.setProps({ heroId: 'crimson-paladin' })
+    expect(wrapper.get('.es2-progression-mastery').text()).toContain('緋紅聖騎')
+    expect(wrapper.get('.es2-progression-mastery strong').text()).toContain('Lv. 5')
     wrapper.unmount()
   })
 })

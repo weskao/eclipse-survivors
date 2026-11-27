@@ -4,7 +4,7 @@ import { getResearchStates, getEquipmentStates, getBonusStates } from '../../../
 import type { MetaState } from '../../../game/content/meta/state'
 import type { Profile } from '../../../meta/types'
 import type { AbilityId } from '../../../game/types'
-import { upgradeCost } from '../menu/model'
+import { BALANCE, researchCost } from '../../../game/config'
 
 export interface HallNode {
   id: string
@@ -67,13 +67,15 @@ export function unlockHallNodes(state: MetaState, hero: string): HallNode[] {
 
 export function legacyHallNodes(profile: Profile): HallNode[] {
   return ([
-    { id: 'power', title: '破曉之刃', description: '永久傷害 +4% / 階', perRank: .04, flat: false },
-    { id: 'vitality', title: '不滅之心', description: '永久生命 +12 / 階', perRank: 12, flat: true },
+    { id: 'power', title: '破曉之刃', description: '每級 +{value}% 起始攻擊', flat: false },
+    { id: 'vitality', title: '不滅之心', description: '每級 +{value} 起始生命', flat: true },
   ] as const).map(node => {
-    const rank = profile.upgrades[node.id], maxRank = 3, cost = rank >= maxRank ? null : upgradeCost(rank)
-    return { id: node.id, kind: 'legacy', title: node.title, description: t(node.description), art: art(node.id),
+    const rank = profile.upgrades[node.id]
+    const { maxRank, benefitPerRank } = BALANCE.meta.research[node.id]
+    const cost = rank >= maxRank ? null : researchCost(node.id, rank)
+    return { id: node.id, kind: 'legacy', title: node.title, description: t(node.description, { value: Number((benefitPerRank * (node.flat ? 1 : 100)).toFixed(2)) }), art: art(node.id),
       rank, maxRank, cost, locked: false, canBuy: cost !== null && profile.embers >= cost, requires: [], requirements: [],
-      current: effect(rank, node.perRank, node.flat), next: cost === null ? undefined : effect(rank + 1, node.perRank, node.flat) }
+      current: effect(rank, benefitPerRank, node.flat), next: cost === null ? undefined : effect(rank + 1, benefitPerRank, node.flat) }
   })
 }
 
