@@ -7,6 +7,9 @@ import batch32 from '../../../assets/es2/production/heroes/shadowblade/candidate
 import batch33 from '../../../assets/es2/production/heroes/crimson-paladin/candidates/special-e-keyframes-2026-11-27-batch-33/manifest.json'
 import batch34 from '../../../assets/es2/production/heroes/shadowblade/candidates/special-e-keyframes-2026-11-27-batch-34/manifest.json'
 import batch35 from '../../../assets/es2/production/heroes/spirit-summoner/candidates/special-e-keyframes-2026-11-27-batch-35/manifest.json'
+import batch36Shadowblade from '../../../assets/es2/production/heroes/shadowblade/candidates/special-e-keyframes-2026-11-27-batch-36/manifest.json'
+import batch36Summoner from '../../../assets/es2/production/heroes/spirit-summoner/candidates/special-e-keyframes-2026-11-27-batch-36/manifest.json'
+import batch36Paladin from '../../../assets/es2/production/heroes/crimson-paladin/candidates/special-e-keyframes-2026-11-27-batch-36/manifest.json'
 import summonerNWReview from '../../../assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-6/run-nw-4frames@3x.webp'
 
 const grid = document.querySelector<HTMLElement>('#grid')!
@@ -86,6 +89,9 @@ const keyframeBatches = [
   ['special-e-keyframes-2026-11-27-batch-33', batch33],
   ['special-e-keyframes-2026-11-27-batch-34', batch34],
   ['special-e-keyframes-2026-11-27-batch-35', batch35],
+  ['special-e-keyframes-2026-11-27-batch-36', batch36Shadowblade],
+  ['special-e-keyframes-2026-11-27-batch-36', batch36Summoner],
+  ['special-e-keyframes-2026-11-27-batch-36', batch36Paladin],
 ] as const
 for (const [folder, manifest] of keyframeBatches) {
   for (const key of manifest.frames) {
