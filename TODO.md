@@ -257,9 +257,9 @@ Design: [spec](docs/superpowers/specs/2026-11-27-es4-skill-ecosystem-design.md);
 - [ ] Wave 3 / spirit-summoner: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
 - [ ] Wave 3 / crimson-paladin: five hero-specific nodes, mastery gates, two signature choices, runtime and TDD.
 - [ ] Wave 4: attunement slots and six cross-tree resonances; immutable run snapshot, conflict tests.
-- [ ] Wave 5: mobile-first graph, categories, inspector, actual 3× WebP assets, bilingual layouts.
+- [ ] Wave 5: mobile-first graph, categories, inspector, 72 usable semantic SVG assets, bilingual layouts. Final WebP optimization is separate.
 - [ ] Wave 6: distinct rank, signature, resonance and unlock ceremonies; audio/VFX/accessibility tests.
-- [ ] Wave 7: balance and performance report, full CI, real device/browser, art/audio review, release readiness.
+- [ ] Wave 7: balance and performance report, full CI, real device/browser, SVG legibility/audio review, release readiness (final Hall WebP optimization excluded).
 No gameplay implementation or asset admission is claimed by the planning checkbox. Existing Hall QA remains open above.
 
 
@@ -267,9 +267,10 @@ No gameplay implementation or asset admission is claimed by the planning checkbo
 - [x] Semantic, bilingual 72-node catalog with validated DAG, price, mastery and art contract.
 - [x] Compact constellation navigation, medallion controls, shared graph and inspector, clear read-only state until real transactions exist (source implemented; runtime QA pending).
 - [x] 72 temporary SVG icons plus individual future WebP paths and art briefs (source created).
-- [ ] Replace and approve 72 final WebP assets using [individual image paths and briefs](docs/es4/hall-art-manifest.md).
+- [x] Verify all 72 SVG paths and corresponding unique future WebP paths and per-image descriptions exist in the catalog/manifest (repository tree and manifest audit; not visual approval).
+- [ ] **Non-blocking visual optimization:** replace and approve 72 final WebP assets using [individual image paths and briefs](docs/es4/hall-art-manifest.md). Do not block functional Wave 5/7 completion on this item.
 - [ ] Real owned/equipped progression, signature/resonance purchase and run effects; enable purchase only after persistence and runtime integration.
-- [ ] Actual responsive matrix, keyboard and touch behavior, motion and audio quality; final art admission and CI.
+- [ ] Actual responsive matrix, keyboard and touch behavior, motion and audio quality; SVG legibility and CI.
 
 ### Deferred — separate future workstream; do not implement here
 - [ ] Design late-game monster ecology, elite combinations and bosses.
@@ -281,7 +282,7 @@ See [deferred endgame scope](docs/es4/deferred-endgame-scope.md). Existing enemy
 
 Catalog and SVG source created; full CI and runtime transactions are not yet verified. Do not enable talent purchases until the authoritative runtime is ready.
 
-ES4 explorer is explicitly a read-only preview. The original core research remains active. V4 migration, real ownership, typed combat effects and attunement remain unimplemented and unchecked.
+ES4 explorer is read-only in normal builds; the isolated unlocked DEV strategy now implements V4 migration, ownership, combat hooks and attunement. Full end-to-end verification and remaining gameplay gaps are still open. The original core research remains active.
 
 ### ES4 continuation checkpoint — 2026-11-27
 - [ ] Fix ES4 typecheck regression in `src/components/es2/progression/HallTalentExplorer.test.ts:19`: Vue Test Utils `get()` return type omits `exists()` (TS2339). Preserve the assertion using an appropriate supported API and rerun the focused suite and typecheck.

@@ -11,7 +11,7 @@
 **Status:** Proposed execution roadmap; no gameplay code implemented; review design before implementation.
 
 ## Global constraints
-Follow design catalog and provisional numerical values; keep v3 data intact, no cloud schema assumptions, account isolation, no live dev-unlocked wallet, no duplicate code, no new dependency, no PR/force push, only target branch. All UI en/zh-TW, touch/desktop/foldable, 3× transparent WebP, no forced scroll, no accidental spending, audio/accessibility, real effect coverage. Do not mark TODO complete without corresponding test evidence. Preserve all legacy ES3 functionality and measure baseline.
+Follow design catalog and provisional numerical values; keep v3 data intact, no cloud schema assumptions, account isolation, no live dev-unlocked wallet, no duplicate code, no new dependency, no PR/force push, only target branch. All UI en/zh-TW, touch/desktop/foldable, semantic SVGs now with separate future 3× transparent WebP optimization, no forced scroll, no accidental spending, audio/accessibility, real effect coverage. Do not mark TODO complete without corresponding test evidence. Preserve all legacy ES3 functionality and measure baseline.
 
 ## Review focus
 1. Historical v3 saves with missing new keys, corrupt/quota-failed head, stale cloud balances and account switches cannot lose currency or unlocks (Wave 1).
@@ -87,7 +87,7 @@ Files: hall-talents.ts, hall-runtime.ts, hall-effects.ts, hall-store.test.ts, ha
 ## Wave 5 — Responsive Hall and art
 Modify src/components/es2/progression/ProgressionPanel.vue, HallGrowthBoard.vue, hall-model.ts, ProgressionPanel.test.ts, src/i18n.ts; add HallTalentTabs.vue and tests only if distinct responsibility warranted; add asset manifest under existing src/assets/es2/production/ui/ and actual WebP files as needed.
 - [ ] RED: all graph edges rendered including skipped layers, cross-tree portal target reachable, selected state retained by category, desktop hover/focus preview no spend, touch open no scroll, one confirmation, locked nodes inspectable, missing image/decode and duplicate IDs fail. Tab keyboard navigation and loadout slots.
-- [ ] GREEN: four internal tree views (core/disciplines/hero/resonance) within research, six discipline/hero tabs, graph/list toggle, compact responsive existing inspector, true rank labels/requirements/active state, keyboard focus. One card template. Art mappings for all 72; batch missing 3× transparent WebP with manifest and original style. No temporary art treated as approved.
+- [ ] GREEN: four internal tree views (core/disciplines/hero/resonance) within research, six discipline/hero tabs, graph/list toggle, compact responsive existing inspector, true rank labels/requirements/active state, keyboard focus. One card template. Art mappings and usable semantic SVGs for all 72. Preserve individual future 3× transparent WebP paths and briefs; raster replacement is non-blocking optimization, never treated as approved in advance.
 - [ ] Run pnpm exec vitest run src/components/es2/progression; verify 320×568, 390×844, 568×320, 844×390, tablet, foldable, desktop and 200% zoom in both languages with scripts/es2-responsive-layout-matrix.mjs; capture actual screenshots. Commit.
 
 ## Wave 6 — Audio, animation and quality
@@ -100,4 +100,4 @@ Files: src/game/audio/hall-upgrade-sample.ts, hall-research-cue.ts, their tests,
 Files: docs/es4/balance-report.md (new), existing scripts/QA, .github/workflows/es3-automated-qa.yml plus dedicated branch-triggered workflow if necessary, TODO.md. 
 - [ ] Capture fixed seeds per six heroes, 3 investment levels, early/late/boss/endless scenarios, current modes, 130 enemies, correct reward and unlock time; compare no-new-node legacy baseline, p50/p95/p99, frame pacing and memory. ≤5% p95 budget with same conditions; investigate any regression. Tune config only with recorded evidence.
 - [ ] Run pnpm typecheck, pnpm test, pnpm build, pnpm check-release; branch CI must cover full and responsive/audio/balance suites; confirm workflow actually triggers on new branch, no assumed green from old branch.
-- [ ] Verify v2/v3/v4 storage, cloud-conflict gate, both locales, responsive matrix, manual art/audio approval, actual gameplay and no missing assets; document failures separately, never weaken tests. Mark matching TODO rows only after passing evidence. Release/merge requires separate authorization.
+- [ ] Verify v2/v3/v4 storage, cloud-conflict gate, both locales, responsive matrix, SVG legibility/audio review, actual gameplay and no missing functional assets (final Hall WebP replacement is separate); document failures separately, never weaken tests. Mark matching TODO rows only after passing evidence. Release/merge requires separate authorization.

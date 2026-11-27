@@ -31,6 +31,8 @@ VITE_ES4_HALL=0 make build          # public build with original research
 
 Before merging ES4 into `develop`, review the default: retain explicit opt-in or set the public build to `0` until release approval.
 
+**ES4 icon exception:** use the 72 semantic SVGs for functional delivery. Keep every individual future 192×192 transparent WebP path and generation brief in `docs/es4/hall-art-manifest.md` and the catalog. Final raster replacement is non-blocking visual optimization, not a functional completion gate; do not claim raster approval. Other game art rules and actual UI/audio QA remain unchanged.
+
 ## Mandatory rules — read the owning file before you start
 
 Each requirement lives in exactly one file, never a copy here and in a rule. Rules without `paths:` frontmatter load automatically; open the others, and the skills, when the situation applies: work often starts before a scoped file is open.

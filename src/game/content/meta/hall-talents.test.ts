@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { HALL_TALENTS, HALL_GROUPS, validateHallTalents, hallTalentCost, hallTalentEligible, hallTalentGroup } from './hall-talents'
 import { createMetaState } from './state'
 
@@ -47,4 +48,26 @@ describe('ES4 talent catalog', () => {
     expect(hallTalentGroup('offense')).toHaveLength(6)
     expect(hallTalentGroup('shadowblade')).toHaveLength(5)
   })
+})
+
+it('keeps all functional SVG icons and unique future raster briefs available', () => {
+  const manifest = readFileSync('docs/es4/hall-art-manifest.md', 'utf8')
+  const descriptions = new Set<string>()
+  const svgPaths = new Set<string>()
+  const rasterPaths = new Set<string>()
+  for (const node of HALL_TALENTS) {
+    const { temporarySvg, futureWebp, description } = node.art
+    const svg = readFileSync(temporarySvg, 'utf8')
+    expect(svg, node.id).toContain('<svg')
+    expect(svg, node.id).toContain('viewBox="0 0 64 64"')
+    expect(svg, node.id).toContain('<path')
+    expect(manifest, node.id).toContain(futureWebp)
+    expect(manifest, node.id).toContain(description)
+    descriptions.add(description)
+    svgPaths.add(temporarySvg)
+    rasterPaths.add(futureWebp)
+  }
+  expect(descriptions.size).toBe(HALL_TALENTS.length)
+  expect(svgPaths.size).toBe(HALL_TALENTS.length)
+  expect(rasterPaths.size).toBe(HALL_TALENTS.length)
 })

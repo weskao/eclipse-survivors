@@ -1,6 +1,6 @@
 # ES4 art production backlog
 
-All SVGs are temporary. Replace only after reviewed, transparent 192×192 WebP art (3× for 64px) is admitted. The node's existing semantic icon and written brief are the production reference, not approval.
+Owner-approved scope: the 72 semantic SVGs are the functional skill-tree assets. Final transparent 192×192 WebP replacements (3× for 64px) are a **non-blocking visual optimization**. Every checkbox below tracks future raster production, not functional completion. The node's existing semantic icon and written brief are the production reference, not raster approval. Replace only after review; keep paths and briefs stable.
 
 - [ ] **鋒刃鍛造 / Forged Edge** — `src/assets/es4/hall/offense-edge@3x.webp`
   - SVG: `src/assets/es4/hall/offense-edge.svg`
