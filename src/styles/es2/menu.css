@@ -105,6 +105,11 @@
 }
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
+/* Reward controls are outside the card scrollport; reserve their own height and hover clearance. */
+.es2-dialog-choice > .es2-dialog-actions{flex:0 0 auto;min-width:0;justify-content:center;margin-top:8px;padding-top:4px;border-top:0}
+.es2-dialog-choice > .es2-dialog-actions .es2-hint{margin:0;max-width:100%}
+.es2-dialog-choice > .es2-dialog-actions .es3-skip-reveal{flex:0 1 auto;min-width:44px;max-width:100%}
+@media (hover:hover) and (pointer:fine){.es2-dialog-choice > .es2-dialog-body{margin-block-end:0}}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}
 .es2-tone-victory{border-color:#edca80}
 .es2-tone-defeat{border-color:#c18488}
@@ -281,7 +286,11 @@
   .es2-settings h3{margin:0 0 6px}
   .es2-slider-row{padding:4px 0}
 }
-@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){.es2-dialog-choice .es2-hint{display:none}}
+@media (orientation:landscape) and (max-height:520px){.es2-dialog-choice > .es2-dialog-actions{margin-top:4px;padding-top:2px}}
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){
+  .es2-dialog-choice > .es2-dialog-actions:not(:has(.es3-skip-reveal)){display:none}
+  .es2-dialog-choice > .es2-dialog-actions .es2-hint-text{display:none}
+}
 
 /* Locale-safe wrapping: longer English and large zh-TW text must not widen cards or dialogs. */
 .es2-menu .es2-hero-copy > strong,

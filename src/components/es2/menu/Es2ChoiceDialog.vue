@@ -57,7 +57,7 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
 }, { immediate: true })
 </script>
 <template>
-  <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(captions[kind])" :dismissible="kind !== 'level'"
+  <Es2Dialog :active="active" :title="t(titles[kind])" :subtitle="t(kind !== 'level' && !uniqueItems.length ? '目前沒有可用的選項' : captions[kind])" :dismissible="kind !== 'level'"
     wide variant="choice" :tone="kind === 'evolution' ? 'legendary' : 'neutral'" @cancel="emit('cancel')" @shortcut="shortcut">
     <template #header-actions><button v-if="kind === 'level'" type="button" class="es2-secondary es2-dialog-settings" @click="emit('settings')">{{ t("⚙ 遊戲設定") }}</button></template>
     <div class="es2-selection-scene" :class="{ 'es2-still': still }" :data-es3-reveal="reveal" :data-tier="kind === 'treasure' ? tier : undefined" @pointerdown.capture="pointerdown">
@@ -65,10 +65,12 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
         <span class="es3-chest-open__burst"></span><img :src="chestArt" data-es3-chest-reveal alt="" decoding="async" draggable="false" />
       </div>
       <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="tap" />
-      <p class="es2-hint"><span class="es2-hint-text">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</span><button
-        v-if="revealKind" type="button" role="checkbox" class="es3-skip-reveal" data-es3-skip-reveal :aria-checked="skipChecked"
-        @click="toggleSkip"><span class="es3-skip-reveal__box" aria-hidden="true"></span>{{ t('跳過揭曉動畫') }}</button></p>
     </div>
+    <template #actions>
+      <p class="es2-hint"><span v-if="kind === 'level'" class="es2-hint-text">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</span><button
+        v-if="kind !== 'level' || revealKind" type="button" role="checkbox" class="es3-skip-reveal" data-es3-skip-reveal :aria-checked="skipChecked"
+        @click="toggleSkip"><span class="es3-skip-reveal__box" aria-hidden="true"></span>{{ t('跳過揭曉動畫') }}</button></p>
+    </template>
   </Es2Dialog>
 </template>
 
@@ -107,20 +109,15 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
 @keyframes es3-chest-cards { from { opacity:0; translate:0 18px; scale:.94; } to { opacity:1; translate:0 0; scale:1; } }
 
 /* Remembered skip checkbox, in the shared hint row under the cards. */
-.es2-hint:has(.es3-skip-reveal) { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:4px 14px; }
-button.es3-skip-reveal { appearance:none; display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 14px; border:1px solid #e2b77955; border-radius:999px; background:#0d1220cc; box-shadow:none; color:#f1e3c8; font:600 .8125rem/1.2 system-ui,sans-serif; cursor:pointer; }
+.es2-hint { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:4px 14px; min-width:0; max-width:100%; margin:0; }
+.es2-hint-text { overflow-wrap:anywhere; }
+button.es3-skip-reveal { appearance:none; display:inline-flex; flex:0 1 auto; align-items:center; justify-content:center; gap:8px; min-width:44px; max-width:100%; min-height:44px; white-space:normal; overflow-wrap:anywhere; padding:0 14px; border:1px solid #e2b77955; border-radius:999px; background:#0d1220cc; box-shadow:none; color:#f1e3c8; font:600 .8125rem/1.2 system-ui,sans-serif; cursor:pointer; }
 .es3-skip-reveal__box { position:relative; flex:0 0 18px; width:18px; height:18px; box-sizing:border-box; border:2px solid #c9a46a; border-radius:4px; background:#101a27; }
 .es3-skip-reveal[aria-checked="true"] .es3-skip-reveal__box { border-color:#ffe6b0; background:linear-gradient(145deg,#fff1c9,#d7b47b 50%,#967044); }
 .es3-skip-reveal[aria-checked="true"] .es3-skip-reveal__box::after { content:''; position:absolute; left:4px; top:0; width:5px; height:10px; border:solid #1a1208; border-width:0 2px 2px 0; transform:rotate(45deg); }
 .es3-skip-reveal:focus-visible { outline:3px solid #ffe3a6; outline-offset:2px; }
 @media (hover:hover) and (pointer:fine) { .es3-skip-reveal:hover { border-color:#e2b779; } }
-/* Short touch landscape hides the hint text (menu.css); keep the checkbox reachable. */
-@media (orientation:landscape) and (max-height:520px) and (pointer:coarse) {
-  .es2-selection-scene .es2-hint:has(.es3-skip-reveal) { display:flex; margin:2px 0 0; }
-  .es2-hint:has(.es3-skip-reveal) .es2-hint-text { display:none; }
-}
-
-@media (prefers-reduced-motion: reduce) { [data-es3-reveal] :deep(.es2-choice) { animation: none; } .es3-chest-open, .es3-skip-reveal { display: none; } }
+@media (prefers-reduced-motion: reduce) { [data-es3-reveal] :deep(.es2-choice) { animation: none; } .es3-chest-open { display: none; } }
 :global([data-es2-reduce-motion="true"] [data-es3-reveal] .es2-choice), :global([data-es2-reduce-flashing="true"] [data-es3-reveal] .es2-choice) { animation: none; }
 :global([data-es2-reduce-motion="true"] .es3-chest-open), :global([data-es2-reduce-flashing="true"] .es3-chest-open) { display: none; }
 </style>
