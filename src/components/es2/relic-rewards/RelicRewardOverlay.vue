@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { computed, nextTick, ref, watch } from 'vue'
-import { WORLD_ART, ES3_EPIC_TREASURE_URL } from '../../../game/render/es2/production-world'
+import { treasureArtUrl } from '../../../game/render/es2/production-world'
 import Es2Dialog from '../menu/Es2Dialog.vue'
 import { RELIC_BY_ID, RELICS, TREASURE_UI, type RelicDefinition, type RelicId } from '../../../game/content/relics/catalog'
 import type { TreasureOffer, inventorySnapshot } from '../../../game/content/relics/runtime'
@@ -84,7 +84,7 @@ function shortcut(event: KeyboardEvent): void {
           :class="['relic-rewards__card--' + relic.rarity, { 'relic-rewards__card--cursed': relic.cursed }]">
           <button type="button" class="relic-rewards__claim" :data-relic-claim="relic.id" :disabled="busy"
             :aria-label="t('領取 {title}，{description}', { title: t(relic.title), description: t(relic.description) })" @click="claim(relic.id)">
-            <span class="relic-rewards__icon" aria-hidden="true"><img :src="relic.cursed ? WORLD_ART.ui['treasure-cursed'] : relic.rarity === 'legendary' ? WORLD_ART.ui['treasure-legendary'] : relic.rarity === 'epic' ? (ES3_EPIC_TREASURE_URL ?? WORLD_ART.ui['treasure-rare']) : relic.rarity === 'rare' ? WORLD_ART.ui['treasure-rare'] : WORLD_ART.ui['treasure-common']" alt="" decoding="async" /></span>
+            <span class="relic-rewards__icon" aria-hidden="true"><img :src="treasureArtUrl(relic.rarity, relic.cursed)" alt="" decoding="async" /></span>
             <span class="relic-rewards__rarity">{{ t({ common: '普通', rare: '稀有', epic: '史詩', legendary: '傳說' }[relic.rarity]) }} · {{ index + 1 }}</span>
             <strong>{{ t(relic.title) }}</strong>
             <span class="relic-rewards__description">{{ t(relic.description) }}</span>

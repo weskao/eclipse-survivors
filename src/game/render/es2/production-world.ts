@@ -2,7 +2,7 @@ import { BIOME_IDS, type BiomeId } from '../../content/biomes'
 import { BOSS_DEFINITIONS, type BossId } from '../../content/bosses/definitions'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import type { Ctx2D } from '../ctx'
-import type { MobType } from '../../types'
+import type { MobType, TreasureTier } from '../../types'
 import es3ArtManifest from '../../../assets/es3/production/manifest.json'
 import { bossPhaseVisualScale, measureBossPhaseLayouts, type BossPhaseLayout } from './boss-phase-layout'
 export { BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
@@ -140,6 +140,13 @@ export const WORLD_ART = Object.freeze({
   ])) as Record<BiomeId, { ground: string; decor: string; scene: string }>,
   ui: Object.fromEntries(WORLD_UI_IDS.map(id => [id, src('ui', id)])) as Record<WorldUiId, string>,
 })
+
+/** Shared reward-art identity for both choice dialogs, including cursed override. */
+export function treasureArtUrl(tier: TreasureTier = 'common', cursed = false): string {
+  if (cursed || tier === 'cursed') return WORLD_ART.ui['treasure-cursed']
+  if (tier === 'epic') return ES3_EPIC_TREASURE_URL ?? WORLD_ART.ui['treasure-rare']
+  return WORLD_ART.ui[`treasure-${tier}`]
+}
 
 export interface WorldRuntimeImages {
   /** Reuse authored treasure art in live world events. */
