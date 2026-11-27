@@ -1,0 +1,220 @@
+# ES4 art production backlog
+
+All SVGs are temporary. Replace only after reviewed, transparent 192×192 WebP art (3× for 64px) is admitted. The node's existing semantic icon and written brief are the production reference, not approval.
+
+- [ ] **鋒刃鍛造 / Forged Edge** — `src/assets/es4/hall/offense-edge@3x.webp`
+  - SVG: `src/assets/es4/hall/offense-edge.svg`
+  - Brief: Single tempered sword with a sharpened silver edge. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **銳眼 / Keen Eye** — `src/assets/es4/hall/offense-precision@3x.webp`
+  - SVG: `src/assets/es4/hall/offense-precision.svg`
+  - Brief: An engraved eye with a focused central pupil. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **連戰意志 / Momentum** — `src/assets/es4/hall/offense-momentum@3x.webp`
+  - SVG: `src/assets/es4/hall/offense-momentum.svg`
+  - Brief: Three ascending flame tongues inside a broken circlet. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **破甲斬 / Execution** — `src/assets/es4/hall/offense-execution@3x.webp`
+  - SVG: `src/assets/es4/hall/offense-execution.svg`
+  - Brief: Heavy cleaver crossing a fractured armor plate. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **怒刃節奏 / Fervor** — `src/assets/es4/hall/offense-fervor@3x.webp`
+  - SVG: `src/assets/es4/hall/offense-fervor.svg`
+  - Brief: Twin short blades crossing in a rapid diagonal. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **戰王印記 / Warlord Seal** — `src/assets/es4/hall/offense-war-master@3x.webp`
+  - SVG: `src/assets/es4/hall/offense-war-master.svg`
+  - Brief: A crowned blade with a small eight-point seal. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **淬體 / Constitution** — `src/assets/es4/hall/defense-constitution@3x.webp`
+  - SVG: `src/assets/es4/hall/defense-constitution.svg`
+  - Brief: Solid heart set in a hammered metal frame. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **鋼壁 / Iron Wall** — `src/assets/es4/hall/defense-armor@3x.webp`
+  - SVG: `src/assets/es4/hall/defense-armor.svg`
+  - Brief: Broad steel shield with a reinforced central rib. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **再生脈搏 / Regrowth** — `src/assets/es4/hall/defense-recovery@3x.webp`
+  - SVG: `src/assets/es4/hall/defense-recovery.svg`
+  - Brief: A leaf sprouting through a healing droplet. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **不屈 / Resolve** — `src/assets/es4/hall/defense-resolve@3x.webp`
+  - SVG: `src/assets/es4/hall/defense-resolve.svg`
+  - Brief: Cracked shield held together by a central rivet. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **護幕 / Ward** — `src/assets/es4/hall/defense-ward@3x.webp`
+  - SVG: `src/assets/es4/hall/defense-ward.svg`
+  - Brief: A small protective sigil enclosed by an arc. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **不滅堡壘 / Immortal Bastion** — `src/assets/es4/hall/defense-last-stand@3x.webp`
+  - SVG: `src/assets/es4/hall/defense-last-stand.svg`
+  - Brief: Fortress crown over a raised shield. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **魔力聚焦 / Arcane Focus** — `src/assets/es4/hall/arcana-focus@3x.webp`
+  - SVG: `src/assets/es4/hall/arcana-focus.svg`
+  - Brief: Faceted arcane crystal at the center of a rune. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **流轉符文 / Celerity** — `src/assets/es4/hall/arcana-celerity@3x.webp`
+  - SVG: `src/assets/es4/hall/arcana-celerity.svg`
+  - Brief: Hourglass encircled by two turning runes. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **奧術擴界 / Arcane Reach** — `src/assets/es4/hall/arcana-reach@3x.webp`
+  - SVG: `src/assets/es4/hall/arcana-reach.svg`
+  - Brief: Three expanding concentric arcs. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **霜縛 / Frostbind** — `src/assets/es4/hall/arcana-frostbind@3x.webp`
+  - SVG: `src/assets/es4/hall/arcana-frostbind.svg`
+  - Brief: Six-point frost crystal with icy tips. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **元素共振 / Elemental Resonance** — `src/assets/es4/hall/arcana-resonance@3x.webp`
+  - SVG: `src/assets/es4/hall/arcana-resonance.svg`
+  - Brief: Interlocking flame and frost-shaped facets. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **迴響法印 / Echo Sigil** — `src/assets/es4/hall/arcana-echo@3x.webp`
+  - SVG: `src/assets/es4/hall/arcana-echo.svg`
+  - Brief: Double arcane sigils with a small reflected center. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **疾行 / Stride** — `src/assets/es4/hall/mobility-stride@3x.webp`
+  - SVG: `src/assets/es4/hall/mobility-stride.svg`
+  - Brief: Boot wing with a forward sweeping trail. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **疾影步 / Swiftstep** — `src/assets/es4/hall/mobility-dash@3x.webp`
+  - SVG: `src/assets/es4/hall/mobility-dash.svg`
+  - Brief: Two forward chevrons over a trail. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **輕甲律動 / Evasion** — `src/assets/es4/hall/mobility-evasion@3x.webp`
+  - SVG: `src/assets/es4/hall/mobility-evasion.svg`
+  - Brief: Light shield with a lateral slipstream. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **殘風 / Afterwind** — `src/assets/es4/hall/mobility-afterwind@3x.webp`
+  - SVG: `src/assets/es4/hall/mobility-afterwind.svg`
+  - Brief: A curved wake trailing a small arrow. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **獵蹤 / Hunter's Reach** — `src/assets/es4/hall/mobility-hunter@3x.webp`
+  - SVG: `src/assets/es4/hall/mobility-hunter.svg`
+  - Brief: Long arrow framed by a distance reticle. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **無痕步法 / Windstep** — `src/assets/es4/hall/mobility-windstep@3x.webp`
+  - SVG: `src/assets/es4/hall/mobility-windstep.svg`
+  - Brief: Winged blade passing through a wind sigil. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **引靈 / Spirit Magnet** — `src/assets/es4/hall/hunt-magnet@3x.webp`
+  - SVG: `src/assets/es4/hall/hunt-magnet.svg`
+  - Brief: Horseshoe magnet pulling three small motes. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **博聞 / Scholar** — `src/assets/es4/hall/hunt-learning@3x.webp`
+  - SVG: `src/assets/es4/hall/hunt-learning.svg`
+  - Brief: Open field journal with a central spark. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **遺物鑑識 / Relic Appraisal** — `src/assets/es4/hall/hunt-salvage@3x.webp`
+  - SVG: `src/assets/es4/hall/hunt-salvage.svg`
+  - Brief: A faceted relic inspected by an engraved lens. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **旅途補給 / Trail Supplies** — `src/assets/es4/hall/hunt-sustain@3x.webp`
+  - SVG: `src/assets/es4/hall/hunt-sustain.svg`
+  - Brief: Small stoppered potion with a medical cross. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **餘燼慧眼 / Ember Insight** — `src/assets/es4/hall/hunt-fortune@3x.webp`
+  - SVG: `src/assets/es4/hall/hunt-fortune.svg`
+  - Brief: A single glowing ember within a coin rim. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **遠征指引 / Pathfinder** — `src/assets/es4/hall/hunt-pathfinder@3x.webp`
+  - SVG: `src/assets/es4/hall/hunt-pathfinder.svg`
+  - Brief: Four-point compass with a marked north route. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **契約根基 / Spirit Pact** — `src/assets/es4/hall/summons-bond@3x.webp`
+  - SVG: `src/assets/es4/hall/summons-bond.svg`
+  - Brief: Bound spectral wisp above a contract seal. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **靈體韌性 / Spirit Tenacity** — `src/assets/es4/hall/summons-tenacity@3x.webp`
+  - SVG: `src/assets/es4/hall/summons-tenacity.svg`
+  - Brief: Spectral shield enclosing a small wisp. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **靈能延展 / Spirit Extension** — `src/assets/es4/hall/summons-duration@3x.webp`
+  - SVG: `src/assets/es4/hall/summons-duration.svg`
+  - Brief: A spectral hourglass with a trailing wisp. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **號令 / Command** — `src/assets/es4/hall/summons-command@3x.webp`
+  - SVG: `src/assets/es4/hall/summons-command.svg`
+  - Brief: Three spirit motes beneath a command crest. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **護靈 / Soul Ward** — `src/assets/es4/hall/summons-soulward@3x.webp`
+  - SVG: `src/assets/es4/hall/summons-soulward.svg`
+  - Brief: Curved translucent ward enclosing a soul flame. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **萬靈共鳴 / Spirit Chorus** — `src/assets/es4/hall/summons-chorus@3x.webp`
+  - SVG: `src/assets/es4/hall/summons-chorus.svg`
+  - Brief: Three distinct wisps converging into one chorus. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **鋼誓 / Steel Oath** — `src/assets/es4/hall/knight-discipline@3x.webp`
+  - SVG: `src/assets/es4/hall/knight-discipline.svg`
+  - Brief: Knight's steel blade with a broad crossguard. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **架盾 / Shield Stance** — `src/assets/es4/hall/knight-guard@3x.webp`
+  - SVG: `src/assets/es4/hall/knight-guard.svg`
+  - Brief: Angular shield with an outward-facing ridge. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **回刃 / Riposte** — `src/assets/es4/hall/knight-riposte@3x.webp`
+  - SVG: `src/assets/es4/hall/knight-riposte.svg`
+  - Brief: Sword returning around a curved parry arc. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **壁壘之誓 / Bulwark Oath** — `src/assets/es4/hall/knight-bulwark@3x.webp`
+  - SVG: `src/assets/es4/hall/knight-bulwark.svg`
+  - Brief: Layered fortress shield with a winged flank. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **鐵誓反擊 / Iron Counter** — `src/assets/es4/hall/knight-iron-counter@3x.webp`
+  - SVG: `src/assets/es4/hall/knight-iron-counter.svg`
+  - Brief: Heavy returning strike inside three impact marks. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **獵弓專精 / Bow Mastery** — `src/assets/es4/hall/ranger-aim@3x.webp`
+  - SVG: `src/assets/es4/hall/ranger-aim.svg`
+  - Brief: Taut bow with a long silver arrow. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **獵首標記 / Hunter's Mark** — `src/assets/es4/hall/ranger-mark@3x.webp`
+  - SVG: `src/assets/es4/hall/ranger-mark.svg`
+  - Brief: Target mark with a small arrowhead. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **游擊步 / Skirmish** — `src/assets/es4/hall/ranger-skirmish@3x.webp`
+  - SVG: `src/assets/es4/hall/ranger-skirmish.svg`
+  - Brief: A feathered arrow following a sweeping path. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **穿月箭 / Piercing Moon** — `src/assets/es4/hall/ranger-piercing-moon@3x.webp`
+  - SVG: `src/assets/es4/hall/ranger-piercing-moon.svg`
+  - Brief: An arrow passing through a crescent moon. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **疾風獵手 / Storm Hunter** — `src/assets/es4/hall/ranger-storm-hunter@3x.webp`
+  - SVG: `src/assets/es4/hall/ranger-storm-hunter.svg`
+  - Brief: Two arrows splitting along a wind trail. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **虛空研習 / Void Study** — `src/assets/es4/hall/wizard-study@3x.webp`
+  - SVG: `src/assets/es4/hall/wizard-study.svg`
+  - Brief: Open arcane grimoire with a violet crystal. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **咒陣擴張 / Expanded Circle** — `src/assets/es4/hall/wizard-circle@3x.webp`
+  - SVG: `src/assets/es4/hall/wizard-circle.svg`
+  - Brief: Engraved ritual circle with expanding rim. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **秘法引導 / Arcane Channel** — `src/assets/es4/hall/wizard-channel@3x.webp`
+  - SVG: `src/assets/es4/hall/wizard-channel.svg`
+  - Brief: Two joined arcane hourglass chambers. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **星核崩解 / Star Collapse** — `src/assets/es4/hall/wizard-star-collapse@3x.webp`
+  - SVG: `src/assets/es4/hall/wizard-star-collapse.svg`
+  - Brief: A collapsing star with five distinct rays. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **雙重咒印 / Double Sigil** — `src/assets/es4/hall/wizard-double-sigil@3x.webp`
+  - SVG: `src/assets/es4/hall/wizard-double-sigil.svg`
+  - Brief: Twin intersecting rune circles. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **雙刃技藝 / Twin Blades** — `src/assets/es4/hall/shadowblade-blade@3x.webp`
+  - SVG: `src/assets/es4/hall/shadowblade-blade.svg`
+  - Brief: Two curved shadow daggers in an X. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **幽影遁形 / Vanish** — `src/assets/es4/hall/shadowblade-vanish@3x.webp`
+  - SVG: `src/assets/es4/hall/shadowblade-vanish.svg`
+  - Brief: A hooded shadow fading into a trailing crescent. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **伏擊 / Ambush** — `src/assets/es4/hall/shadowblade-ambush@3x.webp`
+  - SVG: `src/assets/es4/hall/shadowblade-ambush.svg`
+  - Brief: A dagger striking from a dark crescent. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **幻影連襲 / Phantom Assault** — `src/assets/es4/hall/shadowblade-phantom@3x.webp`
+  - SVG: `src/assets/es4/hall/shadowblade-phantom.svg`
+  - Brief: A ghostly dagger-bearing silhouette. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **絕影終結 / Shadow Execution** — `src/assets/es4/hall/shadowblade-assassin@3x.webp`
+  - SVG: `src/assets/es4/hall/shadowblade-assassin.svg`
+  - Brief: A descending dark dagger over a fractured mark. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **靈魂契約 / Soul Contract** — `src/assets/es4/hall/spirit-summoner-pact@3x.webp`
+  - SVG: `src/assets/es4/hall/spirit-summoner-pact.svg`
+  - Brief: A spectral contract with a tied spirit flame. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **群靈號令 / Pack Command** — `src/assets/es4/hall/spirit-summoner-pack@3x.webp`
+  - SVG: `src/assets/es4/hall/spirit-summoner-pack.svg`
+  - Brief: Three small spectral heads arranged around a crest. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **共生 / Symbiosis** — `src/assets/es4/hall/spirit-summoner-mend@3x.webp`
+  - SVG: `src/assets/es4/hall/spirit-summoner-mend.svg`
+  - Brief: A heart linked to a small spectral wisp. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **萬靈軍勢 / Spirit Legion** — `src/assets/es4/hall/spirit-summoner-legion@3x.webp`
+  - SVG: `src/assets/es4/hall/spirit-summoner-legion.svg`
+  - Brief: A central spirit flanked by two smaller familiars. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **靈魂共生 / Soul Bond** — `src/assets/es4/hall/spirit-summoner-soul-bond@3x.webp`
+  - SVG: `src/assets/es4/hall/spirit-summoner-soul-bond.svg`
+  - Brief: Heart and soul flame joined by two links. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **緋紅誓約 / Crimson Oath** — `src/assets/es4/hall/crimson-paladin-oath@3x.webp`
+  - SVG: `src/assets/es4/hall/crimson-paladin-oath.svg`
+  - Brief: Crimson shield with a single blood-red seal. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **殉道 / Martyr** — `src/assets/es4/hall/crimson-paladin-sacrifice@3x.webp`
+  - SVG: `src/assets/es4/hall/crimson-paladin-sacrifice.svg`
+  - Brief: A heart beneath a protective crimson arc. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **報復 / Vengeance** — `src/assets/es4/hall/crimson-paladin-vengeance@3x.webp`
+  - SVG: `src/assets/es4/hall/crimson-paladin-vengeance.svg`
+  - Brief: Crimson flame bursting from a cracked shield. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **血誓聖域 / Blood Sanctuary** — `src/assets/es4/hall/crimson-paladin-blood-sanctuary@3x.webp`
+  - SVG: `src/assets/es4/hall/crimson-paladin-blood-sanctuary.svg`
+  - Brief: Circular blood-oath sanctuary with a central drop. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **緋紅審判 / Crimson Reckoning** — `src/assets/es4/hall/crimson-paladin-crimson-reckoning@3x.webp`
+  - SVG: `src/assets/es4/hall/crimson-paladin-crimson-reckoning.svg`
+  - Brief: Crimson judgment blade above a radial impact. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **鐵血戰魂 / Ironblood Spirit** — `src/assets/es4/hall/synergy-blade-and-bastion@3x.webp`
+  - SVG: `src/assets/es4/hall/synergy-blade-and-bastion.svg`
+  - Brief: Crossed sword and shield united by a metal link. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **流風秘法 / Spellwind** — `src/assets/es4/hall/synergy-spellwind@3x.webp`
+  - SVG: `src/assets/es4/hall/synergy-spellwind.svg`
+  - Brief: Arcane star intertwined with a curved wind ribbon. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **靈魂熔爐 / Soulforge** — `src/assets/es4/hall/synergy-soulforge@3x.webp`
+  - SVG: `src/assets/es4/hall/synergy-soulforge.svg`
+  - Brief: Spectral flame inside an arcane forge ring. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **逐獵之心 / Hunter Instinct** — `src/assets/es4/hall/synergy-hunter-instinct@3x.webp`
+  - SVG: `src/assets/es4/hall/synergy-hunter-instinct.svg`
+  - Brief: Compass and arrow joined by a gold clasp. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **守誓靈衛 / Guardian Spirits** — `src/assets/es4/hall/synergy-guardian-spirits@3x.webp`
+  - SVG: `src/assets/es4/hall/synergy-guardian-spirits.svg`
+  - Brief: Protective shield paired with a spirit flame. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.
+- [ ] **收割者之路 / Reaper's Road** — `src/assets/es4/hall/synergy-reaper@3x.webp`
+  - SVG: `src/assets/es4/hall/synergy-reaper.svg`
+  - Brief: Reaping blade paired with a compass seal. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.

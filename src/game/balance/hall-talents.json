@@ -1,0 +1,1856 @@
+{
+  "groups": [
+    {
+      "id": "offense",
+      "name": "戰意",
+      "nameEn": "Warfare",
+      "color": "#cf8275",
+      "motif": "sword",
+      "kind": "discipline"
+    },
+    {
+      "id": "defense",
+      "name": "鐵衛",
+      "nameEn": "Bastion",
+      "color": "#c7ad78",
+      "motif": "shield",
+      "kind": "discipline"
+    },
+    {
+      "id": "arcana",
+      "name": "秘法",
+      "nameEn": "Arcana",
+      "color": "#b29ad8",
+      "motif": "star",
+      "kind": "discipline"
+    },
+    {
+      "id": "mobility",
+      "name": "逐風",
+      "nameEn": "Windwalk",
+      "color": "#81bea0",
+      "motif": "wind",
+      "kind": "discipline"
+    },
+    {
+      "id": "hunt",
+      "name": "尋寶",
+      "nameEn": "Expedition",
+      "color": "#d7b76f",
+      "motif": "gem",
+      "kind": "discipline"
+    },
+    {
+      "id": "summons",
+      "name": "靈契",
+      "nameEn": "Spiritcraft",
+      "color": "#80becb",
+      "motif": "spirit",
+      "kind": "discipline"
+    },
+    {
+      "id": "knight",
+      "name": "曙鋼騎士",
+      "nameEn": "Knight",
+      "color": "#c1c9ce",
+      "motif": "shield",
+      "kind": "hero"
+    },
+    {
+      "id": "ranger",
+      "name": "夜痕遊俠",
+      "nameEn": "Ranger",
+      "color": "#8ebc91",
+      "motif": "arrow",
+      "kind": "hero"
+    },
+    {
+      "id": "wizard",
+      "name": "虛空術士",
+      "nameEn": "Wizard",
+      "color": "#b09bdd",
+      "motif": "star",
+      "kind": "hero"
+    },
+    {
+      "id": "shadowblade",
+      "name": "影刃行者",
+      "nameEn": "Shadowblade",
+      "color": "#9da8d7",
+      "motif": "dagger",
+      "kind": "hero"
+    },
+    {
+      "id": "spirit-summoner",
+      "name": "靈契召喚師",
+      "nameEn": "Spirit Summoner",
+      "color": "#82c8cf",
+      "motif": "spirit",
+      "kind": "hero"
+    },
+    {
+      "id": "crimson-paladin",
+      "name": "緋紅聖騎",
+      "nameEn": "Crimson Paladin",
+      "color": "#d18a80",
+      "motif": "heart",
+      "kind": "hero"
+    },
+    {
+      "id": "synergy",
+      "name": "跨樹共鳴",
+      "nameEn": "Resonance",
+      "color": "#e1c18a",
+      "motif": "link",
+      "kind": "synergy"
+    }
+  ],
+  "talents": [
+    {
+      "id": "offense-edge",
+      "group": "offense",
+      "name": "鋒刃鍛造",
+      "nameEn": "Forged Edge",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "power",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 40,
+      "costStep": 20,
+      "effect": "起始攻擊 +1%/階（新永久攻擊池）",
+      "effectEn": "+1% starting attack per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/offense-edge.svg",
+        "futureWebp": "src/assets/es4/hall/offense-edge@3x.webp",
+        "description": "Single tempered sword with a sharpened silver edge. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "offense-precision",
+      "group": "offense",
+      "name": "銳眼",
+      "nameEn": "Keen Eye",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "offense-edge",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "暴擊率 +0.5 個百分點/階",
+      "effectEn": "+0.5 percentage points critical chance per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/offense-precision.svg",
+        "futureWebp": "src/assets/es4/hall/offense-precision@3x.webp",
+        "description": "An engraved eye with a focused central pupil. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "offense-momentum",
+      "group": "offense",
+      "name": "連戰意志",
+      "nameEn": "Momentum",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "offense-edge",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "每次擊殺獲 1 層戰意，持續 4 秒；每層傷害 +0.2%×階，上限 3 層，刷新而不疊時間",
+      "effectEn": "Kills grant a stack for 4s; +0.2% damage per rank per stack, up to 3 stacks. Refresh duration only.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/offense-momentum.svg",
+        "futureWebp": "src/assets/es4/hall/offense-momentum@3x.webp",
+        "description": "Three ascending flame tongues inside a broken circlet. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "offense-execution",
+      "group": "offense",
+      "name": "破甲斬",
+      "nameEn": "Execution",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "offense-precision",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "對低於 25% HP 的敵人傷害 +1%/階",
+      "effectEn": "+1% damage per rank against targets below 25% HP.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/offense-execution.svg",
+        "futureWebp": "src/assets/es4/hall/offense-execution@3x.webp",
+        "description": "Heavy cleaver crossing a fractured armor plate. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "offense-fervor",
+      "group": "offense",
+      "name": "怒刃節奏",
+      "nameEn": "Fervor",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "offense-momentum",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "基本攻擊冷卻 -0.8%/階",
+      "effectEn": "Basic attack cooldown −0.8% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/offense-fervor.svg",
+        "futureWebp": "src/assets/es4/hall/offense-fervor@3x.webp",
+        "description": "Twin short blades crossing in a rapid diagonal. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "offense-war-master",
+      "group": "offense",
+      "name": "戰王印記",
+      "nameEn": "Warlord Seal",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "offense-execution",
+          "rank": 3
+        },
+        {
+          "id": "offense-fervor",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 320,
+      "costStep": 0,
+      "effect": "基本攻擊第 8 次命中造成一次額外 50% 基礎傷害；內置冷卻 3 秒，不觸發自身",
+      "effectEn": "Every eighth basic hit adds 50% base damage; 3s cooldown, no recursive proc.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/offense-war-master.svg",
+        "futureWebp": "src/assets/es4/hall/offense-war-master@3x.webp",
+        "description": "A crowned blade with a small eight-point seal. Original Eclipse Survivors dark-fantasy icon; Warfare palette #cf8275, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "defense-constitution",
+      "group": "defense",
+      "name": "淬體",
+      "nameEn": "Constitution",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "vitality",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 40,
+      "costStep": 20,
+      "effect": "最大生命 +4/階",
+      "effectEn": "+4 maximum HP per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/defense-constitution.svg",
+        "futureWebp": "src/assets/es4/hall/defense-constitution@3x.webp",
+        "description": "Solid heart set in a hammered metal frame. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "defense-armor",
+      "group": "defense",
+      "name": "鋼壁",
+      "nameEn": "Iron Wall",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "defense-constitution",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "所受傷害 -1%/階",
+      "effectEn": "Incoming damage −1% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/defense-armor.svg",
+        "futureWebp": "src/assets/es4/hall/defense-armor@3x.webp",
+        "description": "Broad steel shield with a reinforced central rib. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "defense-recovery",
+      "group": "defense",
+      "name": "再生脈搏",
+      "nameEn": "Regrowth",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "defense-constitution",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "每秒恢復最大生命 0.03%/階",
+      "effectEn": "Restore 0.03% maximum HP per second per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/defense-recovery.svg",
+        "futureWebp": "src/assets/es4/hall/defense-recovery@3x.webp",
+        "description": "A leaf sprouting through a healing droplet. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "defense-resolve",
+      "group": "defense",
+      "name": "不屈",
+      "nameEn": "Resolve",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "defense-armor",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "生命低於 30% 時所受傷害額外 -1%/階",
+      "effectEn": "Below 30% HP, take an additional 1% less damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/defense-resolve.svg",
+        "futureWebp": "src/assets/es4/hall/defense-resolve@3x.webp",
+        "description": "Cracked shield held together by a central rivet. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "defense-ward",
+      "group": "defense",
+      "name": "護幕",
+      "nameEn": "Ward",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "defense-recovery",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "每 20 秒獲最大生命 0.8%×階的護盾，持續 5 秒，不累積",
+      "effectEn": "Every 20s gain a shield worth 0.8% max HP per rank for 5s; no stacking.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/defense-ward.svg",
+        "futureWebp": "src/assets/es4/hall/defense-ward@3x.webp",
+        "description": "A small protective sigil enclosed by an arc. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "defense-last-stand",
+      "group": "defense",
+      "name": "不滅堡壘",
+      "nameEn": "Immortal Bastion",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "defense-resolve",
+          "rank": 3
+        },
+        {
+          "id": "defense-ward",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 320,
+      "costStep": 0,
+      "effect": "承受將生命降至 25% 以下的一擊後獲 8% 最大生命護盾，持續 4 秒；冷卻 45 秒，不免死",
+      "effectEn": "After surviving a hit that crosses below 25% HP, gain an 8% max-HP shield for 4s; 45s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/defense-last-stand.svg",
+        "futureWebp": "src/assets/es4/hall/defense-last-stand@3x.webp",
+        "description": "Fortress crown over a raised shield. Original Eclipse Survivors dark-fantasy icon; Bastion palette #c7ad78, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "arcana-focus",
+      "group": "arcana",
+      "name": "魔力聚焦",
+      "nameEn": "Arcane Focus",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "insight",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 40,
+      "costStep": 20,
+      "effect": "武器技能傷害 +0.8%/階",
+      "effectEn": "+0.8% weapon skill damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/arcana-focus.svg",
+        "futureWebp": "src/assets/es4/hall/arcana-focus@3x.webp",
+        "description": "Faceted arcane crystal at the center of a rune. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "arcana-celerity",
+      "group": "arcana",
+      "name": "流轉符文",
+      "nameEn": "Celerity",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "arcana-focus",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "武器技能冷卻 -0.8%/階",
+      "effectEn": "Weapon skill cooldown −0.8% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/arcana-celerity.svg",
+        "futureWebp": "src/assets/es4/hall/arcana-celerity@3x.webp",
+        "description": "Hourglass encircled by two turning runes. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "arcana-reach",
+      "group": "arcana",
+      "name": "奧術擴界",
+      "nameEn": "Arcane Reach",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "arcana-focus",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "具範圍的技能半徑 +1%/階",
+      "effectEn": "+1% radius per rank for area skills.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/arcana-reach.svg",
+        "futureWebp": "src/assets/es4/hall/arcana-reach@3x.webp",
+        "description": "Three expanding concentric arcs. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "arcana-frostbind",
+      "group": "arcana",
+      "name": "霜縛",
+      "nameEn": "Frostbind",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "arcana-celerity",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "既有緩速持續時間 +2%/階，不延長 Boss 控制免疫",
+      "effectEn": "+2% existing slow duration per rank; respect boss control immunity.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/arcana-frostbind.svg",
+        "futureWebp": "src/assets/es4/hall/arcana-frostbind@3x.webp",
+        "description": "Six-point frost crystal with icy tips. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "arcana-resonance",
+      "group": "arcana",
+      "name": "元素共振",
+      "nameEn": "Elemental Resonance",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "arcana-reach",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "對已受元素狀態影響的敵人技能傷害 +0.6%/階",
+      "effectEn": "+0.6% skill damage per rank against elemental-status targets.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/arcana-resonance.svg",
+        "futureWebp": "src/assets/es4/hall/arcana-resonance@3x.webp",
+        "description": "Interlocking flame and frost-shaped facets. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "arcana-echo",
+      "group": "arcana",
+      "name": "迴響法印",
+      "nameEn": "Echo Sigil",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "arcana-frostbind",
+          "rank": 3
+        },
+        {
+          "id": "arcana-resonance",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 320,
+      "costStep": 0,
+      "effect": "每 12 秒下一次符合條件的武器技能產生 35% 傷害的迴響；沿用目標上限，不重觸發",
+      "effectEn": "Every 12s the next qualifying weapon skill echoes for 35% damage; preserve target caps and prevent recursion.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/arcana-echo.svg",
+        "futureWebp": "src/assets/es4/hall/arcana-echo@3x.webp",
+        "description": "Double arcane sigils with a small reflected center. Original Eclipse Survivors dark-fantasy icon; Arcana palette #b29ad8, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "mobility-stride",
+      "group": "mobility",
+      "name": "疾行",
+      "nameEn": "Stride",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "vitality",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 40,
+      "costStep": 20,
+      "effect": "移速 +1%/階",
+      "effectEn": "+1% movement speed per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/mobility-stride.svg",
+        "futureWebp": "src/assets/es4/hall/mobility-stride@3x.webp",
+        "description": "Boot wing with a forward sweeping trail. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "mobility-dash",
+      "group": "mobility",
+      "name": "疾影步",
+      "nameEn": "Swiftstep",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "mobility-stride",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "既有 Dash 冷卻 -1%/階",
+      "effectEn": "Existing Dash cooldown −1% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/mobility-dash.svg",
+        "futureWebp": "src/assets/es4/hall/mobility-dash@3x.webp",
+        "description": "Two forward chevrons over a trail. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "mobility-evasion",
+      "group": "mobility",
+      "name": "輕甲律動",
+      "nameEn": "Evasion",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "mobility-stride",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "移動時所受接觸傷害 -0.6%/階",
+      "effectEn": "While moving, contact damage −0.6% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/mobility-evasion.svg",
+        "futureWebp": "src/assets/es4/hall/mobility-evasion@3x.webp",
+        "description": "Light shield with a lateral slipstream. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "mobility-afterwind",
+      "group": "mobility",
+      "name": "殘風",
+      "nameEn": "Afterwind",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "mobility-dash",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "Dash 後 2 秒移速 +1%/階，刷新不疊加",
+      "effectEn": "After Dash, +1% movement speed per rank for 2s; refresh only.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/mobility-afterwind.svg",
+        "futureWebp": "src/assets/es4/hall/mobility-afterwind@3x.webp",
+        "description": "A curved wake trailing a small arrow. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "mobility-hunter",
+      "group": "mobility",
+      "name": "獵蹤",
+      "nameEn": "Hunter's Reach",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "mobility-evasion",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "移動期間基本攻擊射程 +1%/階（不改近戰判定形狀）",
+      "effectEn": "+1% basic attack reach per rank while moving; preserve melee shape.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/mobility-hunter.svg",
+        "futureWebp": "src/assets/es4/hall/mobility-hunter@3x.webp",
+        "description": "Long arrow framed by a distance reticle. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "mobility-windstep",
+      "group": "mobility",
+      "name": "無痕步法",
+      "nameEn": "Windstep",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "mobility-afterwind",
+          "rank": 3
+        },
+        {
+          "id": "mobility-hunter",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 320,
+      "costStep": 0,
+      "effect": "Dash 完成後 2 秒內下一次基本攻擊 +25% 傷害；冷卻 8 秒",
+      "effectEn": "After Dash, next basic attack within 2s gains 25% damage; 8s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/mobility-windstep.svg",
+        "futureWebp": "src/assets/es4/hall/mobility-windstep@3x.webp",
+        "description": "Winged blade passing through a wind sigil. Original Eclipse Survivors dark-fantasy icon; Windwalk palette #81bea0, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "hunt-magnet",
+      "group": "hunt",
+      "name": "引靈",
+      "nameEn": "Spirit Magnet",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "scavenging",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 40,
+      "costStep": 20,
+      "effect": "拾取半徑 +2%/階",
+      "effectEn": "+2% pickup radius per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/hunt-magnet.svg",
+        "futureWebp": "src/assets/es4/hall/hunt-magnet@3x.webp",
+        "description": "Horseshoe magnet pulling three small motes. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "hunt-learning",
+      "group": "hunt",
+      "name": "博聞",
+      "nameEn": "Scholar",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "hunt-magnet",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "經驗獲取 +0.5%/階",
+      "effectEn": "+0.5% XP gain per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/hunt-learning.svg",
+        "futureWebp": "src/assets/es4/hall/hunt-learning@3x.webp",
+        "description": "Open field journal with a central spark. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "hunt-salvage",
+      "group": "hunt",
+      "name": "遺物鑑識",
+      "nameEn": "Relic Appraisal",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "hunt-magnet",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "每場前 1–5 次普通寶箱揭曉提供一次額外免費重擲額度（每次最多 1、全場最多 5；不增寶箱內容）",
+      "effectEn": "First 1–5 ordinary chest reveals grant one free reroll each; max 5 per run, no extra loot.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/hunt-salvage.svg",
+        "futureWebp": "src/assets/es4/hall/hunt-salvage@3x.webp",
+        "description": "A faceted relic inspected by an engraved lens. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "hunt-sustain",
+      "group": "hunt",
+      "name": "旅途補給",
+      "nameEn": "Trail Supplies",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "hunt-learning",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "拾取既有回血物品時恢復量 +2%/階",
+      "effectEn": "+2% healing from existing health pickups per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/hunt-sustain.svg",
+        "futureWebp": "src/assets/es4/hall/hunt-sustain@3x.webp",
+        "description": "Small stoppered potion with a medical cross. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "hunt-fortune",
+      "group": "hunt",
+      "name": "餘燼慧眼",
+      "nameEn": "Ember Insight",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "hunt-salvage",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "結算基礎餘燼 +0.4%/階，不放大成就、里程碑或其他獎勵",
+      "effectEn": "+0.4% base settlement embers per rank; exclude milestone and other rewards.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/hunt-fortune.svg",
+        "futureWebp": "src/assets/es4/hall/hunt-fortune@3x.webp",
+        "description": "A single glowing ember within a coin rim. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "hunt-pathfinder",
+      "group": "hunt",
+      "name": "遠征指引",
+      "nameEn": "Pathfinder",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "hunt-sustain",
+          "rank": 3
+        },
+        {
+          "id": "hunt-fortune",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 320,
+      "costStep": 0,
+      "effect": "每場首次精英擊殺後得到一次普通寶箱選項重擲額度（共用上限 5；不生成寶箱）",
+      "effectEn": "First elite kill grants an ordinary chest reroll charge; shared cap 5, no extra chest.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/hunt-pathfinder.svg",
+        "futureWebp": "src/assets/es4/hall/hunt-pathfinder@3x.webp",
+        "description": "Four-point compass with a marked north route. Original Eclipse Survivors dark-fantasy icon; Expedition palette #d7b76f, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "summons-bond",
+      "group": "summons",
+      "name": "契約根基",
+      "nameEn": "Spirit Pact",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "insight",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 40,
+      "costStep": 20,
+      "effect": "召喚／持續效果傷害 +0.8%/階；同一來源只套一類",
+      "effectEn": "+0.8% summon or persistent-effect damage per rank; apply only one source class.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/summons-bond.svg",
+        "futureWebp": "src/assets/es4/hall/summons-bond@3x.webp",
+        "description": "Bound spectral wisp above a contract seal. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "summons-tenacity",
+      "group": "summons",
+      "name": "靈體韌性",
+      "nameEn": "Spirit Tenacity",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "summons-bond",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "有生命值的召喚物最大 HP +2%/階；無 HP 的效果改為持續時間 +0.5%/階",
+      "effectEn": "+2% summon max HP per rank, or +0.5% duration for effects without HP.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/summons-tenacity.svg",
+        "futureWebp": "src/assets/es4/hall/summons-tenacity@3x.webp",
+        "description": "Spectral shield enclosing a small wisp. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "summons-duration",
+      "group": "summons",
+      "name": "靈能延展",
+      "nameEn": "Spirit Extension",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "summons-bond",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 65,
+      "costStep": 25,
+      "effect": "有限時間召喚與持續效果時長 +1%/階，不增加 tick 頻率",
+      "effectEn": "+1% finite summon and persistent-effect duration per rank; unchanged tick frequency.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/summons-duration.svg",
+        "futureWebp": "src/assets/es4/hall/summons-duration@3x.webp",
+        "description": "A spectral hourglass with a trailing wisp. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "summons-command",
+      "group": "summons",
+      "name": "號令",
+      "nameEn": "Command",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "summons-tenacity",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "召喚物攻擊間隔 -0.6%/階；無召喚者的持續效果傷害 +0.4%/階",
+      "effectEn": "Summon attack interval −0.6% per rank, or +0.4% persistent-effect damage without a summon.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/summons-command.svg",
+        "futureWebp": "src/assets/es4/hall/summons-command@3x.webp",
+        "description": "Three spirit motes beneath a command crest. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "summons-soulward",
+      "group": "summons",
+      "name": "護靈",
+      "nameEn": "Soul Ward",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "summons-duration",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 90,
+      "costStep": 35,
+      "effect": "召喚或施放持續效果後獲 3 秒傷害減免 0.6%/階；冷卻 12 秒",
+      "effectEn": "Summon or persistent cast grants 0.6% damage reduction per rank for 3s; 12s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/summons-soulward.svg",
+        "futureWebp": "src/assets/es4/hall/summons-soulward@3x.webp",
+        "description": "Curved translucent ward enclosing a soul flame. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "summons-chorus",
+      "group": "summons",
+      "name": "萬靈共鳴",
+      "nameEn": "Spirit Chorus",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "summons-command",
+          "rank": 3
+        },
+        {
+          "id": "summons-soulward",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 320,
+      "costStep": 0,
+      "effect": "每 15 秒首次合格召喚攻擊／持續效果命中額外造成 30% 傷害；不可連鎖觸發",
+      "effectEn": "Every 15s first eligible summon or persistent hit adds 30% damage; no recursive trigger.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/summons-chorus.svg",
+        "futureWebp": "src/assets/es4/hall/summons-chorus@3x.webp",
+        "description": "Three distinct wisps converging into one chorus. Original Eclipse Survivors dark-fantasy icon; Spiritcraft palette #80becb, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "knight-discipline",
+      "group": "knight",
+      "name": "鋼誓",
+      "nameEn": "Steel Oath",
+      "maxRank": 5,
+      "requires": [],
+      "masteryGate": 1,
+      "firstCost": 50,
+      "costStep": 25,
+      "effect": "近戰基本攻擊傷害 +1%/階",
+      "effectEn": "+1% melee basic attack damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/knight-discipline.svg",
+        "futureWebp": "src/assets/es4/hall/knight-discipline@3x.webp",
+        "description": "Knight's steel blade with a broad crossguard. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "knight-guard",
+      "group": "knight",
+      "name": "架盾",
+      "nameEn": "Shield Stance",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "knight-discipline",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "受正面接觸傷害 -1%/階（以最後有效面向判定）",
+      "effectEn": "Frontal contact damage −1% per rank; use last valid facing.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/knight-guard.svg",
+        "futureWebp": "src/assets/es4/hall/knight-guard@3x.webp",
+        "description": "Angular shield with an outward-facing ridge. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "knight-riposte",
+      "group": "knight",
+      "name": "回刃",
+      "nameEn": "Riposte",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "knight-discipline",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "有效受傷後 3 秒內下一次近戰攻擊 +2%/階；冷卻 6 秒",
+      "effectEn": "After effective damage, next melee attack within 3s gains 2% damage per rank; 6s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/knight-riposte.svg",
+        "futureWebp": "src/assets/es4/hall/knight-riposte@3x.webp",
+        "description": "Sword returning around a curved parry arc. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "knight-bulwark",
+      "group": "knight",
+      "name": "壁壘之誓",
+      "nameEn": "Bulwark Oath",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "knight-guard",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "Dash 結束獲 6% 最大 HP 護盾，4 秒，冷卻 15 秒",
+      "effectEn": "Dash end grants a 6% max-HP shield for 4s; 15s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/knight-bulwark.svg",
+        "futureWebp": "src/assets/es4/hall/knight-bulwark@3x.webp",
+        "description": "Layered fortress shield with a winged flank. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "knight-iron-counter",
+      "group": "knight",
+      "name": "鐵誓反擊",
+      "nameEn": "Iron Counter",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "knight-riposte",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "觸發回刃時對最多 3 個相鄰目標造成 45% 基礎傷害；冷卻 10 秒",
+      "effectEn": "Riposte triggers 45% base damage to up to 3 nearby targets; 10s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/knight-iron-counter.svg",
+        "futureWebp": "src/assets/es4/hall/knight-iron-counter@3x.webp",
+        "description": "Heavy returning strike inside three impact marks. Original Eclipse Survivors dark-fantasy icon; Knight palette #c1c9ce, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "ranger-aim",
+      "group": "ranger",
+      "name": "獵弓專精",
+      "nameEn": "Bow Mastery",
+      "maxRank": 5,
+      "requires": [],
+      "masteryGate": 1,
+      "firstCost": 50,
+      "costStep": 25,
+      "effect": "遠程基本攻擊傷害 +1%/階",
+      "effectEn": "+1% ranged basic attack damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/ranger-aim.svg",
+        "futureWebp": "src/assets/es4/hall/ranger-aim@3x.webp",
+        "description": "Taut bow with a long silver arrow. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "ranger-mark",
+      "group": "ranger",
+      "name": "獵首標記",
+      "nameEn": "Hunter's Mark",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "ranger-aim",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "同一目標連續 3 次基本攻擊命中後，下次命中 +2%/階，最多追蹤 1 個目標",
+      "effectEn": "After 3 consecutive basic hits on one tracked target, next hit gains 2% damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/ranger-mark.svg",
+        "futureWebp": "src/assets/es4/hall/ranger-mark@3x.webp",
+        "description": "Target mark with a small arrowhead. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "ranger-skirmish",
+      "group": "ranger",
+      "name": "游擊步",
+      "nameEn": "Skirmish",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "ranger-aim",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "移動時基本攻擊冷卻 -0.6%/階",
+      "effectEn": "While moving, basic attack cooldown −0.6% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/ranger-skirmish.svg",
+        "futureWebp": "src/assets/es4/hall/ranger-skirmish@3x.webp",
+        "description": "A feathered arrow following a sweeping path. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "ranger-piercing-moon",
+      "group": "ranger",
+      "name": "穿月箭",
+      "nameEn": "Piercing Moon",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "ranger-mark",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "每 8 秒下一發基本射擊可穿透 1 名額外敵人；既有穿透上限仍有效",
+      "effectEn": "Every 8s next basic shot pierces one extra enemy within existing limits.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/ranger-piercing-moon.svg",
+        "futureWebp": "src/assets/es4/hall/ranger-piercing-moon@3x.webp",
+        "description": "An arrow passing through a crescent moon. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "ranger-storm-hunter",
+      "group": "ranger",
+      "name": "疾風獵手",
+      "nameEn": "Storm Hunter",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "ranger-skirmish",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "Dash 後下一發基本射擊附加一發 35% 傷害箭；冷卻 10 秒",
+      "effectEn": "After Dash, next basic shot adds a 35% damage arrow; 10s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/ranger-storm-hunter.svg",
+        "futureWebp": "src/assets/es4/hall/ranger-storm-hunter@3x.webp",
+        "description": "Two arrows splitting along a wind trail. Original Eclipse Survivors dark-fantasy icon; Ranger palette #8ebc91, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "wizard-study",
+      "group": "wizard",
+      "name": "虛空研習",
+      "nameEn": "Void Study",
+      "maxRank": 5,
+      "requires": [],
+      "masteryGate": 1,
+      "firstCost": 50,
+      "costStep": 25,
+      "effect": "武器技能傷害 +1%/階",
+      "effectEn": "+1% weapon skill damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/wizard-study.svg",
+        "futureWebp": "src/assets/es4/hall/wizard-study@3x.webp",
+        "description": "Open arcane grimoire with a violet crystal. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "wizard-circle",
+      "group": "wizard",
+      "name": "咒陣擴張",
+      "nameEn": "Expanded Circle",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "wizard-study",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "具範圍的技能半徑 +1%/階",
+      "effectEn": "+1% area skill radius per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/wizard-circle.svg",
+        "futureWebp": "src/assets/es4/hall/wizard-circle@3x.webp",
+        "description": "Engraved ritual circle with expanding rim. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "wizard-channel",
+      "group": "wizard",
+      "name": "秘法引導",
+      "nameEn": "Arcane Channel",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "wizard-study",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "武器技能冷卻 -0.6%/階",
+      "effectEn": "Weapon skill cooldown −0.6% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/wizard-channel.svg",
+        "futureWebp": "src/assets/es4/hall/wizard-channel@3x.webp",
+        "description": "Two joined arcane hourglass chambers. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "wizard-star-collapse",
+      "group": "wizard",
+      "name": "星核崩解",
+      "nameEn": "Star Collapse",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "wizard-circle",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "每 12 秒下一次區域技能命中造成一次 40% 傷害的小型爆發，最多 5 目標",
+      "effectEn": "Every 12s next area hit creates a 40% burst, max 5 targets.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/wizard-star-collapse.svg",
+        "futureWebp": "src/assets/es4/hall/wizard-star-collapse@3x.webp",
+        "description": "A collapsing star with five distinct rays. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "wizard-double-sigil",
+      "group": "wizard",
+      "name": "雙重咒印",
+      "nameEn": "Double Sigil",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "wizard-channel",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "每第 6 次合格技能施放產生 30% 傷害的額外迴響；冷卻 10 秒",
+      "effectEn": "Every sixth eligible cast echoes for 30% damage; 10s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/wizard-double-sigil.svg",
+        "futureWebp": "src/assets/es4/hall/wizard-double-sigil@3x.webp",
+        "description": "Twin intersecting rune circles. Original Eclipse Survivors dark-fantasy icon; Wizard palette #b09bdd, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "shadowblade-blade",
+      "group": "shadowblade",
+      "name": "雙刃技藝",
+      "nameEn": "Twin Blades",
+      "maxRank": 5,
+      "requires": [],
+      "masteryGate": 1,
+      "firstCost": 50,
+      "costStep": 25,
+      "effect": "基本攻擊暴擊率 +0.6 個百分點/階",
+      "effectEn": "+0.6 percentage points basic attack critical chance per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/shadowblade-blade.svg",
+        "futureWebp": "src/assets/es4/hall/shadowblade-blade@3x.webp",
+        "description": "Two curved shadow daggers in an X. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "shadowblade-vanish",
+      "group": "shadowblade",
+      "name": "幽影遁形",
+      "nameEn": "Vanish",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "shadowblade-blade",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "既有影襲潛行時長 +2%/階，不增加免傷時間",
+      "effectEn": "+2% existing stealth duration per rank; no added invulnerability.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/shadowblade-vanish.svg",
+        "futureWebp": "src/assets/es4/hall/shadowblade-vanish@3x.webp",
+        "description": "A hooded shadow fading into a trailing crescent. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "shadowblade-ambush",
+      "group": "shadowblade",
+      "name": "伏擊",
+      "nameEn": "Ambush",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "shadowblade-blade",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "離開潛行後首擊傷害 +2%/階；每次潛行只觸發一次",
+      "effectEn": "First hit after stealth gains 2% damage per rank, once per stealth.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/shadowblade-ambush.svg",
+        "futureWebp": "src/assets/es4/hall/shadowblade-ambush@3x.webp",
+        "description": "A dagger striking from a dark crescent. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "shadowblade-phantom",
+      "group": "shadowblade",
+      "name": "幻影連襲",
+      "nameEn": "Phantom Assault",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "shadowblade-vanish",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "Q 影襲結束後殘影攻擊 1 個合格目標，40% 傷害，冷卻 10 秒",
+      "effectEn": "After Q shadow assault, a phantom strikes one eligible target for 40% damage; 10s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/shadowblade-phantom.svg",
+        "futureWebp": "src/assets/es4/hall/shadowblade-phantom@3x.webp",
+        "description": "A ghostly dagger-bearing silhouette. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "shadowblade-assassin",
+      "group": "shadowblade",
+      "name": "絕影終結",
+      "nameEn": "Shadow Execution",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "shadowblade-ambush",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "伏擊首擊對生命低於 25% 目標額外 +30% 傷害；冷卻 12 秒，不強制秒殺",
+      "effectEn": "Ambush first hit against targets below 25% HP gains 30% damage; 12s cooldown, no instant kill.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/shadowblade-assassin.svg",
+        "futureWebp": "src/assets/es4/hall/shadowblade-assassin@3x.webp",
+        "description": "A descending dark dagger over a fractured mark. Original Eclipse Survivors dark-fantasy icon; Shadowblade palette #9da8d7, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "spirit-summoner-pact",
+      "group": "spirit-summoner",
+      "name": "靈魂契約",
+      "nameEn": "Soul Contract",
+      "maxRank": 5,
+      "requires": [],
+      "masteryGate": 1,
+      "firstCost": 50,
+      "costStep": 25,
+      "effect": "召喚物傷害 +1%/階",
+      "effectEn": "+1% summon damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/spirit-summoner-pact.svg",
+        "futureWebp": "src/assets/es4/hall/spirit-summoner-pact@3x.webp",
+        "description": "A spectral contract with a tied spirit flame. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "spirit-summoner-pack",
+      "group": "spirit-summoner",
+      "name": "群靈號令",
+      "nameEn": "Pack Command",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "spirit-summoner-pact",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "召喚物攻擊冷卻 -0.6%/階",
+      "effectEn": "Summon attack cooldown −0.6% per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/spirit-summoner-pack.svg",
+        "futureWebp": "src/assets/es4/hall/spirit-summoner-pack@3x.webp",
+        "description": "Three small spectral heads arranged around a crest. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "spirit-summoner-mend",
+      "group": "spirit-summoner",
+      "name": "共生",
+      "nameEn": "Symbiosis",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "spirit-summoner-pact",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "既有 Q 靈潮回復量 +3%/階",
+      "effectEn": "+3% existing Q spirit-surge healing per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/spirit-summoner-mend.svg",
+        "futureWebp": "src/assets/es4/hall/spirit-summoner-mend@3x.webp",
+        "description": "A heart linked to a small spectral wisp. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "spirit-summoner-legion",
+      "group": "spirit-summoner",
+      "name": "萬靈軍勢",
+      "nameEn": "Spirit Legion",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "spirit-summoner-pack",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "Q 靈潮後 4 秒召喚傷害 +15%，冷卻 15 秒；不增加實體數",
+      "effectEn": "After Q spirit surge, +15% summon damage for 4s; 15s cooldown, no extra entities.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/spirit-summoner-legion.svg",
+        "futureWebp": "src/assets/es4/hall/spirit-summoner-legion@3x.webp",
+        "description": "A central spirit flanked by two smaller familiars. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "spirit-summoner-soul-bond",
+      "group": "spirit-summoner",
+      "name": "靈魂共生",
+      "nameEn": "Soul Bond",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "spirit-summoner-mend",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "Q 回復後獲最大 HP 5% 護盾，4 秒，冷卻 15 秒",
+      "effectEn": "After Q healing, gain 5% max-HP shield for 4s; 15s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/spirit-summoner-soul-bond.svg",
+        "futureWebp": "src/assets/es4/hall/spirit-summoner-soul-bond@3x.webp",
+        "description": "Heart and soul flame joined by two links. Original Eclipse Survivors dark-fantasy icon; Spirit Summoner palette #82c8cf, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "crimson-paladin-oath",
+      "group": "crimson-paladin",
+      "name": "緋紅誓約",
+      "nameEn": "Crimson Oath",
+      "maxRank": 5,
+      "requires": [],
+      "masteryGate": 1,
+      "firstCost": 50,
+      "costStep": 25,
+      "effect": "既有 Q 血誓屏障吸收上限 +2%/階，生命代價不變",
+      "effectEn": "+2% existing Q blood-oath shield capacity per rank; unchanged HP cost.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/crimson-paladin-oath.svg",
+        "futureWebp": "src/assets/es4/hall/crimson-paladin-oath@3x.webp",
+        "description": "Crimson shield with a single blood-red seal. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "crimson-paladin-sacrifice",
+      "group": "crimson-paladin",
+      "name": "殉道",
+      "nameEn": "Martyr",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "crimson-paladin-oath",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "屏障存續中受傷減免 +0.6%/階；自損不減免",
+      "effectEn": "During shield, damage reduction +0.6% per rank; self-cost unaffected.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/crimson-paladin-sacrifice.svg",
+        "futureWebp": "src/assets/es4/hall/crimson-paladin-sacrifice@3x.webp",
+        "description": "A heart beneath a protective crimson arc. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "crimson-paladin-vengeance",
+      "group": "crimson-paladin",
+      "name": "報復",
+      "nameEn": "Vengeance",
+      "maxRank": 5,
+      "requires": [
+        {
+          "id": "crimson-paladin-oath",
+          "rank": 2
+        }
+      ],
+      "masteryGate": 3,
+      "firstCost": 80,
+      "costStep": 35,
+      "effect": "既有屏障終結爆發傷害 +2%/階",
+      "effectEn": "+2% existing shield-end burst damage per rank.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/crimson-paladin-vengeance.svg",
+        "futureWebp": "src/assets/es4/hall/crimson-paladin-vengeance@3x.webp",
+        "description": "Crimson flame bursting from a cracked shield. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "crimson-paladin-blood-sanctuary",
+      "group": "crimson-paladin",
+      "name": "血誓聖域",
+      "nameEn": "Blood Sanctuary",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "crimson-paladin-sacrifice",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "屏障正常結束後 3 秒獲每秒最大 HP 1% 回復；冷卻 20 秒，不抵銷全部代價",
+      "effectEn": "After normal shield end, heal 1% max HP per second for 3s; 20s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/crimson-paladin-blood-sanctuary.svg",
+        "futureWebp": "src/assets/es4/hall/crimson-paladin-blood-sanctuary@3x.webp",
+        "description": "Circular blood-oath sanctuary with a central drop. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "crimson-paladin-crimson-reckoning",
+      "group": "crimson-paladin",
+      "name": "緋紅審判",
+      "nameEn": "Crimson Reckoning",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "crimson-paladin-vengeance",
+          "rank": 3
+        }
+      ],
+      "masteryGate": 6,
+      "firstCost": 380,
+      "costStep": 0,
+      "effect": "既有報復爆發半徑 +15%、傷害 +20%；冷卻 20 秒，目標上限不變",
+      "effectEn": "Existing vengeance burst radius +15%, damage +20%; 20s cooldown, unchanged target cap.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/crimson-paladin-crimson-reckoning.svg",
+        "futureWebp": "src/assets/es4/hall/crimson-paladin-crimson-reckoning@3x.webp",
+        "description": "Crimson judgment blade above a radial impact. Original Eclipse Survivors dark-fantasy icon; Crimson Paladin palette #d18a80, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "synergy-blade-and-bastion",
+      "group": "synergy",
+      "name": "鐵血戰魂",
+      "nameEn": "Ironblood Spirit",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "offense-war-master",
+          "rank": 1
+        },
+        {
+          "id": "defense-last-stand",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 450,
+      "costStep": 0,
+      "effect": "有效受傷後 4 秒內首個戰王追加攻擊 +20% 傷害；冷卻 15 秒",
+      "effectEn": "Within 4s of effective damage, first Warlord extra hit gains 20% damage; 15s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/synergy-blade-and-bastion.svg",
+        "futureWebp": "src/assets/es4/hall/synergy-blade-and-bastion@3x.webp",
+        "description": "Crossed sword and shield united by a metal link. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "synergy-spellwind",
+      "group": "synergy",
+      "name": "流風秘法",
+      "nameEn": "Spellwind",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "arcana-echo",
+          "rank": 1
+        },
+        {
+          "id": "mobility-windstep",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 450,
+      "costStep": 0,
+      "effect": "Dash 後 3 秒內一次迴響額外 +15% 傷害；冷卻 15 秒",
+      "effectEn": "Within 3s of Dash, one echo gains 15% damage; 15s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/synergy-spellwind.svg",
+        "futureWebp": "src/assets/es4/hall/synergy-spellwind@3x.webp",
+        "description": "Arcane star intertwined with a curved wind ribbon. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "synergy-soulforge",
+      "group": "synergy",
+      "name": "靈魂熔爐",
+      "nameEn": "Soulforge",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "arcana-echo",
+          "rank": 1
+        },
+        {
+          "id": "summons-chorus",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 450,
+      "costStep": 0,
+      "effect": "一次符合兩類的命中只觸發較強額外攻擊，並額外 +10% 傷害；冷卻 15 秒",
+      "effectEn": "Dual-class hit uses only the stronger extra hit, +10% damage; 15s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/synergy-soulforge.svg",
+        "futureWebp": "src/assets/es4/hall/synergy-soulforge@3x.webp",
+        "description": "Spectral flame inside an arcane forge ring. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "synergy-hunter-instinct",
+      "group": "synergy",
+      "name": "逐獵之心",
+      "nameEn": "Hunter Instinct",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "mobility-windstep",
+          "rank": 1
+        },
+        {
+          "id": "hunt-pathfinder",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 450,
+      "costStep": 0,
+      "effect": "每場首次精英擊殺後額外 5 秒 +8% 移速；不新增獎勵",
+      "effectEn": "First elite kill each run grants +8% movement speed for 5s; no extra reward.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/synergy-hunter-instinct.svg",
+        "futureWebp": "src/assets/es4/hall/synergy-hunter-instinct@3x.webp",
+        "description": "Compass and arrow joined by a gold clasp. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "synergy-guardian-spirits",
+      "group": "synergy",
+      "name": "守誓靈衛",
+      "nameEn": "Guardian Spirits",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "defense-last-stand",
+          "rank": 1
+        },
+        {
+          "id": "summons-chorus",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 450,
+      "costStep": 0,
+      "effect": "不滅堡壘觸發後 4 秒召喚／持續效果傷害 +10%；冷卻 45 秒",
+      "effectEn": "After Immortal Bastion, summon/persistent damage +10% for 4s; 45s cooldown.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/synergy-guardian-spirits.svg",
+        "futureWebp": "src/assets/es4/hall/synergy-guardian-spirits@3x.webp",
+        "description": "Protective shield paired with a spirit flame. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    },
+    {
+      "id": "synergy-reaper",
+      "group": "synergy",
+      "name": "收割者之路",
+      "nameEn": "Reaper's Road",
+      "maxRank": 1,
+      "requires": [
+        {
+          "id": "offense-war-master",
+          "rank": 1
+        },
+        {
+          "id": "hunt-pathfinder",
+          "rank": 1
+        }
+      ],
+      "masteryGate": 0,
+      "firstCost": 450,
+      "costStep": 0,
+      "effect": "每場首次精英擊殺後下一次戰王追加攻擊 +25% 傷害；不增加餘燼",
+      "effectEn": "First elite kill each run empowers next Warlord extra hit by 25%; no extra embers.",
+      "art": {
+        "temporarySvg": "src/assets/es4/hall/synergy-reaper.svg",
+        "futureWebp": "src/assets/es4/hall/synergy-reaper@3x.webp",
+        "description": "Reaping blade paired with a compass seal. Original Eclipse Survivors dark-fantasy icon; Resonance palette #e1c18a, engraved metal and restrained highlights, strong silhouette, centered on transparent background, no lettering, no outer progress ring. 192×192 at 3× for 64px display.",
+        "status": "SVG_TEMPORARY"
+      }
+    }
+  ]
+}
