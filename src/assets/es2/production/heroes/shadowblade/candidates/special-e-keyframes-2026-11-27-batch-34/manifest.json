@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "1254x1254 -> 704x704 Lanczos -> 768x768 transparent padding; no upscaling",
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "83ded43f-bb5c-48c4-9ea6-da1c7298e0aa",
+    "originalPNGSHA256": "3ce55f41428ff403e12c4756703331bf46975c42ef855b186f13300a60ab67c8",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "56f61e416d1b31cf1db8fbedf9e5d115a35b2af8",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected; direct image conditioning not independently verified."
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded RGBA verified; Polytool/cwebp unavailable",
+  "frames": [
+    {
+      "id": "stealth-prepare-identity-a",
+      "description": "East-facing stealth preparation: low stance with crossed twin daggers; distinct from Batch 32 attack windup",
+      "sourceFile": "stealth-prepare-identity-a-source.webp",
+      "sourceSHA256": "ccf5b91f89f8d526654490ed0f323c493c0b47e5c58a6b4e15c3211e23e413fc",
+      "sourceBytes": 985568,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "stealth-prepare-identity-a@3x.webp",
+      "webpSHA256": "a15588fc23648b6ef0586b8236f0c9dbec871e9a633d5e8740dcbe7bab397ff6",
+      "bytes": 334308,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "sourceAlphaBounds": [
+        11,
+        36,
+        1187,
+        1246
+      ],
+      "coreAlphaBounds": [
+        15,
+        39,
+        1184,
+        1243
+      ],
+      "coreExtent": [
+        1169,
+        1204
+      ],
+      "sourceBoundaryMaxAlpha": 0,
+      "outputAlphaBounds": [
+        37,
+        51,
+        699,
+        732
+      ],
+      "outputCoreAlphaBounds": [
+        41,
+        54,
+        697,
+        730
+      ],
+      "outputCoreExtent": [
+        656,
+        676
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA pixels for each WebP; output is downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "New scar and altered armor/weapon details need identity review; pose, handedness, scale, anchors, timing and continuity not approved."
+    }
+  ],
+  "reviewNotes": [
+    "One independent Q pose, not a complete sequence.",
+    "Original portrait has no clearly visible scar; generated scar and equipment details are not identity-approved.",
+    "No replacement or gameplay admission."
+  ]
+}
