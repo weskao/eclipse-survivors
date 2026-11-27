@@ -1,0 +1,9 @@
+# ES4 storage and runtime inventory (initial audit)
+
+Reference: ES3 `54cad2219010381e14ab8db5f2baf87bf5a921ef`; ES4 post-merge `0636a0c6688a3869da28110c9d30168cea0e5479`.
+Catalog: 72 unique talents; 264 new ranks; 77 total including five original research nodes. New maximum-rank cost: 44,880 embers. The existing original research prices are unchanged.
+
+- `state.ts` validates the legacy research, receipt ledger, mastery, cosmetics, and wallet. V4 uses a separate head and alternating slots; migration preserves all existing fields and does not overwrite the V3 or V2 bytes. V4 is explicitly opt-in, local-only; the engine remains on V3 until the complete runtime and UI gate are integrated.
+- The cloud contract in `src/cloud/wallet-policy.ts` contains only revision and embers. It cannot fence an old client or synchronize skill ownership. V4 refuses cloud restore/spending, and refuses a changed legacy head. No automatic downgrade: export and explicit recovery are required. Account-specific storage prefixes remain the host's responsibility; no cross-device ownership sync is claimed.
+- Runtime inventory: `engine.ts` creates the run in start/resetRun, handles outgoing/incoming damage and afterDamage, dispatches content kill events, and settles exactly one run receipt. ES3 and classic hero Q adapters are now present. `combat.ts` owns authoritative hit and damage; faction bridge owns faction targets. `progression.ts` owns XP/reward settlement. Source tags and reroll semantics still require a complete audit before enabling new gameplay.
+- Baseline failures: run 45961478312 reported 2,204 passing, one failing visual approval and one skipped test, plus TS2339. Latest full baseline and performance recordings remain pending; no green or timing claims. 72 provisional SVGs exist, no final WebP approval.
