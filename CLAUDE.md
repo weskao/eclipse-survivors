@@ -4,6 +4,16 @@ Stack: **Vue 3, TypeScript, Vite, pnpm, Vitest, Canvas 2D**, Node 24. PixiJS 8 d
 
 **Branches:** work on a dedicated `feature/**` or `fix/**` branch and commit there. `develop` is the integration branch (`--no-ff` merges); a push to `main` deploys GitHub Pages and tags a release. Do not create a PR, merge, or modify `develop` or `main` unless asked.
 
+
+## ES4 inbound merge rule
+
+The remote target `origin/feature/es4-adventurer-hall-skill-ecosystem` may receive merges only from these two upstream branches:
+
+- `origin/develop`
+- `origin/feature/es3-combat-juice-power-pacing-rewards`
+
+This is a strict allowlist. Do not merge any other branch directly into ES4, including `main`, `feature/es2-release-readiness-integration`, or other feature/fix branches. Integrate those changes through an authorized upstream branch first, subject to that branch's own rules. Fetch `origin` and verify the source and target HEADs before merging; preserve ES4-specific changes and resolve conflicts without dropping either branch's required behavior. Do not bypass the allowlist using an alternate ref, squash merge, or synthetic merge commit. Do not force-push, create a PR, or modify the upstream branches without explicit authorization. Normal ES4 development commits remain permitted.
+
 **No personal paths in files.** This repo is public: never write a user-specific absolute path (`/Users/<name>/…`, `/home/<name>/…`, `C:\Users\<name>\…`) into any committed file (code, docs, specs, configs, tests, logs). Use repo-relative paths, `$HOME`/`~`, or a placeholder such as `<repo>`.
 
 ## Mandatory rules — read the owning file before you start
