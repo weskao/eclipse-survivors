@@ -1,5 +1,6 @@
 // Hits, auto-attack, hero damage and dash (original hit / attack / damageHero / dash).
 import { BALANCE } from './config'
+import { hallAbsorb, hallAttackRange, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallOutgoing, hallSlow, withHallSource } from './content/meta/hall-runtime'
 import { classifyHealthImpact, classifyHeroDamage, markHealthCritical, recordHeroImpact, type IncomingHit } from './health-impact'
 import { BOSS_DEFINITIONS } from './content/bosses/definitions'
 import { recordKill } from './kill-streak'
@@ -65,7 +66,8 @@ export function emitCombatContact(s: GameState, hooks: GameHooks, x: number, y: 
 export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {x:number; y:number} | null = s.hero, kind: ContactKind | undefined = hooks.contactKind): void {
   const hero = s.hero
   if (!hero || e.hp <= 0 || !Number.isFinite(d) || d <= 0) return
-  const modified = hooks.modifyOutgoingDamage?.(d, e) ?? d
+  const talentDamage = hallOutgoing(s, d, e, hooks.hallSource)
+  const modified = hooks.modifyOutgoingDamage?.(talentDamage, e, hooks.hallSource) ?? talentDamage
   const applied = modified * (e.type === 'boss' && (e.weaknessRemaining ?? 0) > 0 ? BALANCE.bosses.weaknessDamageMultiplier : 1)
   if (!Number.isFinite(applied) || applied <= 0) return
   const critical = hooks.consumeCriticalHit?.() ?? false
@@ -93,6 +95,7 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
   hooks.content?.(s, { type: 'hit', mob: e, damage: dealt })
   if (e.hp === 0) {
     recordKill(s)
+    hallKill(s)
     if (s.fallenMobs.length >= 24) {
       // A mob clear must not evict the boss defeat pose before it can be drawn.
       const ordinary = s.fallenMobs.findIndex(mob => mob.type !== 'boss')
@@ -117,13 +120,15 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
     // Observers see a fully finalized kill, including the boss flag and spawned XP.
     hooks.content?.(s, { type: 'kill', mob: e, damage: dealt })
   }
+  const extra = hallExtraHit(s, d, hooks.hallSource)
+  if (extra > 0 && e.hp > 0) hit(s, e, extra, { ...hooks, hallSource: 'proc', modifyOutgoingDamage: undefined, consumeCriticalHit: undefined }, source, kind)
 }
 
 export function dash(s: GameState, hooks: GameHooks): void {
   const hero = s.hero
   if (s.mode !== 'play' || !hero || hero.dashCd > 0) return
   hero.dash = BALANCE.combat.dashDuration
-  hero.dashCd = DASH_COOLDOWN
+  hero.dashCd = DASH_COOLDOWN * (s.hall?.dashCooldown ?? 1)
   hero.inv = Math.max(hero.inv, BALANCE.combat.dashInvulnerability)
   burst(s, hero.x, hero.y, '#d8f8ff', 15)
   impact(s, hero.x, hero.y, 55, '#c6f7ff', 0.4)
@@ -135,16 +140,18 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   const hero = s.hero
   if (!hero || (!s.mobs.length && !factions?.runtime.enemies.length)) return
   const choice = s.choice
+  const basicHooks = withHallSource(s, hooks, 'basic')
+  const range = hero.range * hallAttackRange(s)
   const close = nearestAlive(s.mobs, hero)
   const legacy = close[0]
-  const faction = factions?.nearestFaction(hero.x, hero.y, hero.range + 64)
+  const faction = factions?.nearestFaction(hero.x, hero.y, range + 64)
   const useFaction = !!faction && (!legacy ||
     dist(faction.x - hero.x, faction.y - hero.y) - faction.radius <
     dist(legacy.x - hero.x, legacy.y - hero.y) - legacy.r)
   const target = useFaction ? faction : legacy
   if (!target) return
   const targetRadius = 'radius' in target ? target.radius : target.r
-  if (dist(target.x - hero.x, target.y - hero.y) > hero.range + targetRadius) return
+  if (dist(target.x - hero.x, target.y - hero.y) > range + targetRadius) return
   const multi = Math.min(1 + (hero.skills.multi ?? 0), 4)
   const angle = Math.atan2(target.y - hero.y, target.x - hero.x)
   hero.face = Math.cos(angle) >= 0 ? 1 : -1
@@ -159,15 +166,15 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
       for (const e of close) {
         const r = dist(e.x - hero.x, e.y - hero.y)
         const d = Math.atan2(e.y - hero.y, e.x - hero.x)
-        if (r < hero.range + e.r && Math.cos(d - a) > 0.71) hit(s, e, hero.damage, hooks)
+        if (r < range + e.r && Math.cos(d - a) > 0.71) hit(s, e, hero.damage, basicHooks)
       }
       // The authored faction pool is separate from the legacy Mob array.
       // Reuse its authoritative damage/reward bridge, never a fake Mob copy.
-      for (const e of factions?.factionsInRadius(hero.x, hero.y, hero.range + 35) ?? []) {
+      for (const e of factions?.factionsInRadius(hero.x, hero.y, range + 35) ?? []) {
         const r = dist(e.x - hero.x, e.y - hero.y)
         const d = Math.atan2(e.y - hero.y, e.x - hero.x)
-        if (r < hero.range + e.radius && Math.cos(d - a) > 0.71) {
-          factions!.hitFaction(s, e, hero.damage, hero.x, hero.y, hooks)
+        if (r < range + e.radius && Math.cos(d - a) > 0.71) {
+          factions!.hitFaction(s, e, hero.damage, hero.x, hero.y, basicHooks)
         }
       }
     }
@@ -193,7 +200,8 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
   }
   const chain = hero.skills.chain
   if (chain && hero.chainCd <= 0) {
-    hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank)
+    const weaponHooks = withHallSource(s, hooks, 'weapon')
+    hero.chainCd = Math.max(BALANCE.combat.chainMinCooldown, BALANCE.skills.passive.chainCooldownBase - chain * BALANCE.skills.passive.chainCooldownPerRank) * (s.hall?.weaponCooldown ?? 1)
     const limit = BALANCE.combat.chainTargetsByRank[Math.min(chain, BALANCE.combat.chainTargetsByRank.length) - 1]!
     const damage = hero.damage * (BALANCE.skills.passive.chainDamageBase + BALANCE.skills.passive.chainDamagePerRank * chain)
     const shock = chain >= BALANCE.combat.chainShockRank
@@ -203,9 +211,9 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
     let count = 0, next = 0
     for (; next < chainTargets.length && count < limit; next++) {
       const to = chainTargets[next]!
-      if (!hitTarget(s, to, damage, hooks, factions, from, 'elemental')) continue
+      if (!hitTarget(s, to, damage, weaponHooks, factions, from, 'elemental')) continue
       zigzag(s, from.x, from.y - 25, to.x, to.y)
-      if (shock) slowTarget(to, BALANCE.combat.chainShockSeconds)
+      if (shock) slowTarget(to, hallSlow(s, to, BALANCE.combat.chainShockSeconds))
       if (to.hp === 0) killed ??= to
       from = to
       count++
@@ -222,7 +230,7 @@ export function attack(s: GameState, hooks: GameHooks, factions?: FactionBridge)
       }
       if (extra) {
         zigzag(s, killed.x, killed.y - 25, extra.x, extra.y)
-        if (hitTarget(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, hooks, factions, killed, 'elemental')) slowTarget(extra, BALANCE.combat.chainShockSeconds)
+        if (hitTarget(s, extra, damage * BALANCE.combat.chainDischargeDamageMultiplier, weaponHooks, factions, killed, 'elemental')) slowTarget(extra, hallSlow(s, extra, BALANCE.combat.chainShockSeconds))
       }
     }
     hooks.sfx('chain')
@@ -249,7 +257,8 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
   const rank = incoming?.rank ?? (source ? source.type === 'boss' ? 'boss' : source.elite ? 'elite' : 'ordinary' : undefined)
   const critical = !!rank && (hooks.rollIncomingCritical?.(rank) ?? false)
   const raw = critical && rank ? n * BALANCE.combat.incomingCritical[rank].multiplier : n
-  const mitigated = hooks.mitigateIncomingDamage?.(raw) ?? raw
+  const reduced = hallIncoming(s, raw, !!source, !!source && Math.cos(Math.atan2(source.y - hero.y, source.x - hero.x) - hero.aimAngle) >= 0)
+  const mitigated = hallAbsorb(s, hooks.mitigateIncomingDamage?.(reduced) ?? reduced)
   // A completely absorbed hit neither removes HP nor grants phantom invulnerability.
   if (!Number.isFinite(mitigated) || mitigated <= 0) return
   const shield = hero.skills.shield ?? 0
@@ -257,7 +266,9 @@ export function damageHero(s: GameState, n: number, hooks: GameHooks, source?: M
   const taken = mitigated * reduce
   const actuallyTaken = Math.min(Math.max(0, hero.hp), taken)
   s.damageTaken += actuallyTaken
+  const previousHp = hero.hp
   hero.hp = Math.max(0, hero.hp - taken)
+  hallDamageTaken(s, actuallyTaken, previousHp)
   const severity = classifyHeroDamage(actuallyTaken / hero.max, critical)
   if (actuallyTaken > 0) {
     if (critical) markHealthCritical(hero)

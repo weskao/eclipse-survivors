@@ -1,4 +1,5 @@
 import { damageHero, emitCombatContact, hit } from '../../combat'
+import { hallExtraHit, hallKill, hallOutgoing } from '../meta/hall-runtime'
 import { BALANCE } from '../../config'
 import { recordKill } from '../../kill-streak'
 import { compactXpGems } from '../../xp-gems'
@@ -104,11 +105,13 @@ export function createFactionBridge(options: FactionBridgeOptions) {
   function hitFaction(state: GameState, enemy: FactionEnemy, amount: number,
     sourceX: number, sourceY: number, hooks: GameHooks, kind = hooks.contactKind): number {
     if (state.mode !== 'play' || !state.hero || !runtime.enemies.includes(enemy) || enemy.hp <= 0 || enemy.state === 'phase' || !Number.isFinite(amount) || amount <= 0) return 0
-    const modified = hooks.modifyOutgoingDamage?.(amount, enemy) ?? amount
+    const talentDamage = hallOutgoing(state, amount, enemy, hooks.hallSource)
+    const modified = hooks.modifyOutgoingDamage?.(talentDamage, enemy, hooks.hallSource) ?? talentDamage
     if (!Number.isFinite(modified) || modified <= 0) return 0
     const critical = hooks.consumeCriticalHit?.() ?? false
     const applied = damageFactionEnemy(runtime, enemy, modified, sourceX, sourceY, reward => {
       recordKill(state)
+      hallKill(state)
       defeated[reward.kind] = (defeated[reward.kind] ?? 0) + 1
       // The legacy XP collection path owns level progression; never award XP twice.
       state.stars.push({ x: reward.x, y: reward.y, value: reward.xp, t: 0 })
@@ -133,6 +136,8 @@ export function createFactionBridge(options: FactionBridgeOptions) {
       emitCombatContact(state, hooks, enemy.x, enemy.y, enemy.radius, angle, critical, heavy, kind)
       if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)
+      const extra = hallExtraHit(state, amount, hooks.hallSource)
+      if (extra > 0 && enemy.hp > 0) hitFaction(state, enemy, extra, sourceX, sourceY, { ...hooks, hallSource: 'proc', modifyOutgoingDamage: undefined, consumeCriticalHit: undefined }, kind)
     }
     return applied
   }

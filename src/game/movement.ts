@@ -1,5 +1,6 @@
 // Hero locomotion (original update() lines 124-154).
 import { pushEcho } from './fx'
+import { hallMovement } from './content/meta/hall-runtime'
 import { dist, rand, random } from './math'
 import type { GameState, MoveInput } from './types'
 
@@ -11,7 +12,7 @@ export function moveHero(s: GameState, input: MoveInput, dt: number, speedMultip
   const moving = amount > 0.05
   // Accelerate/decelerate smoothly, preserve diagonal speed and direction.
   // Drag is strong enough to avoid ice-skating when input is released.
-  const speed = hero.speed * (hero.dash > 0 ? 2.8 : 1) * Math.max(0, Math.min(1, speedMultiplier))
+  const speed = hero.speed * hallMovement(s) * (hero.dash > 0 ? 2.8 : 1) * Math.max(0, Math.min(1, speedMultiplier))
   const targetX = moving ? (x / Math.max(1, amount)) * speed : 0
   const targetY = moving ? (y / Math.max(1, amount)) * speed : 0
   const smooth = 1 - Math.exp(-dt * (moving ? 19 : 24))

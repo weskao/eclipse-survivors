@@ -1,0 +1,52 @@
+import { describe, expect, it } from 'vitest'
+import { createState, resetRun } from '../../state'
+import { hallAttackDelay, hallAttackRange, hallCritBonus, hallDamageTaken, hallExtraHit, hallIncoming, hallKill, hallMovement, hallOutgoing, installHallRun, tickHall } from './hall-runtime'
+function run(ranks: Record<string, number>) {
+  const state = createState()
+  resetRun(state)
+  state.mode = 'play'
+  installHallRun(state, {hero:'knight',ranks:Object.freeze(ranks)})
+  return state
+}
+describe('ES4 Hall runtime', () => {
+  it('installs immutable per-run stat effects exactly once', () => {
+    const base = run({})
+    const state = run({'offense-edge':5,'defense-constitution':5,'mobility-stride':5,'hunt-learning':5})
+    expect(state.hero!.damage).toBeCloseTo(base.hero!.damage*1.05)
+    expect(state.hero!.max).toBe(base.hero!.max+20)
+    expect(state.hero!.speed).toBeCloseTo(base.hero!.speed*1.05)
+    expect(state.xpGainMultiplier).toBeCloseTo(1.025)
+    installHallRun(state,{hero:'knight',ranks:{'offense-edge':5}})
+    expect(state.hero!.damage).toBeCloseTo(base.hero!.damage*1.05)
+  })
+  it('gates outgoing damage by source, caps crit and blocks recursion', () => {
+    const state=run({'offense-precision':5,'shadowblade-blade':5,'offense-momentum':5,'offense-execution':5,'offense-war-master':1,'arcana-focus':5,'arcana-resonance':5,'summons-bond':5})
+    const enemy={hp:200,max:1000,slow:1}
+    hallKill(state);hallKill(state);hallKill(state);hallKill(state)
+    expect(hallOutgoing(state,100,enemy,'basic')).toBeCloseTo(108)
+    expect(hallOutgoing(state,100,enemy,'weapon')).toBeCloseTo(115)
+    expect(hallOutgoing(state,100,enemy,'summon')).toBeCloseTo(112)
+    expect(hallCritBonus(state,'basic')).toBeCloseTo(.05)
+    for(let i=0;i<7;i++)expect(hallExtraHit(state,100,'basic')).toBe(0)
+    expect(hallExtraHit(state,100,'basic')).toBe(50)
+    expect(hallExtraHit(state,100,'proc')).toBe(0)
+    state.time=5
+    expect(hallOutgoing(state,100,enemy,'basic')).toBeCloseTo(105)
+  })
+  it('handles shield threshold, regen and bounded after-dash movement', () => {
+    const state=run({'defense-armor':5,'defense-resolve':5,'defense-recovery':5,'defense-ward':5,'defense-last-stand':1,'mobility-stride':5,'mobility-afterwind':5,'mobility-hunter':5,'offense-fervor':5})
+    const h=state.hero!
+    h.hp=h.max*.2
+    expect(hallIncoming(state,100)).toBeCloseTo(90)
+    hallDamageTaken(state,20,h.max*.35)
+    expect(state.hall!.shield).toBeCloseTo(h.max*.08)
+    state.time=20
+    tickHall(state,1,true)
+    expect(state.hall!.shield).toBeCloseTo(h.max*.04)
+    expect(h.hp/h.max).toBeCloseTo(.2015)
+    expect(hallMovement(state)*(1+state.hall!.stride)).toBeCloseTo(1.1)
+    expect(hallAttackDelay(state)).toBeCloseTo(.96)
+    h.moveAmount=1
+    expect(hallAttackRange(state)).toBeCloseTo(1.05)
+  })
+})

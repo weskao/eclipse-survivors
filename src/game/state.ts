@@ -32,6 +32,7 @@ export function createHero(job: JobId): Hero {
 
 /** Original `start()` run reset (everything except audio/UI side effects). */
 export function resetRun(s: GameState): void {
+  delete s.hall
   s.hero = createHero(s.choice)
   s.content = { levels: {}, cooldowns: {}, effects: [] }
   s.mobs = []; s.fallenMobs = []; s.shots = []; s.enemyShots = []; s.stars = []; s.fx = []; s.swipes = []

@@ -5,6 +5,7 @@ import { expireKillStreak, flushKillMilestone } from './kill-streak'
 import { burst } from './fx'
 import { compactXpGems } from './xp-gems'
 import { attack, hit, victoryConditionMet } from './combat'
+import { hallAttackDelay, tickHall, withHallSource } from './content/meta/hall-runtime'
 import type { ContentRegistry } from './content/registry'
 import type { FactionBridge } from './content/enemies/integration'
 import { hasWonRun } from '../meta/modes'
@@ -43,6 +44,7 @@ function tickTimers(s: GameState, hero: Hero, dt: number): void {
 }
 
 function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, factions?: FactionBridge): void {
+  const shotHooks = withHallSource(s, hooks, 'basic')
   for (const b of s.shots) {
     b.prevX = b.x
     b.prevY = b.y
@@ -53,7 +55,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
     // The bridge owns both target pools, including misses. Resolve before
     // expiring the projectile so its final swept segment can still hit.
     if (factions) {
-      factions.resolveShot(s, b, hooks, { x: b.prevX, y: b.prevY })
+      factions.resolveShot(s, b, shotHooks, { x: b.prevX, y: b.prevY })
       b.life -= dt
       continue
     }
@@ -84,7 +86,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
       }
     }
     if (closest) {
-      hit(s, closest, b.d, hooks, { x: b.prevX, y: b.prevY })
+      hit(s, closest, b.d, shotHooks, { x: b.prevX, y: b.prevY })
       b.life = 0
     }
   }
@@ -100,7 +102,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
 
 function collectStars(s: GameState, hero: Hero, dt: number, hooks: GameHooks): void {
   let collected = 0
-  const reach = s.magnetUntil > s.time ? Infinity : BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank
+  const reach = s.magnetUntil > s.time ? Infinity : (BALANCE.skills.passive.xpMagnetBase + (hero.skills.magnet ?? 0) * BALANCE.skills.passive.xpMagnetPerRank) * (s.hall?.pickupRadius ?? 1)
   const pickupSquared = BALANCE.combat.starPickupDistance ** 2
   for (const star of s.stars) {
     if (star.dead) continue
@@ -204,7 +206,9 @@ export interface BossStepAdapter {
 export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHooks, registry?: ContentRegistry, bosses?: BossStepAdapter, factions?: FactionBridge): void {
   const hero = s.hero
   if (!hero || s.mode !== 'play') return
+  const wasDashing = hero.dash > 0
   tickTimers(s, hero, dt)
+  tickHall(s, dt, wasDashing && hero.dash <= 0)
   registry?.tick(s, dt, hooks)
   const nextScene = sceneIndexAt(s.time)
   if (nextScene !== s.currentScene) setScene(s, nextScene, true, hooks)
@@ -214,7 +218,7 @@ export function step(s: GameState, dt: number, input: MoveInput, hooks: GameHook
   hero.x = free.x; hero.y = free.y
   if (hero.attack <= 0) {
     attack(s, hooks, factions)
-    hero.attack = hero.delay
+    hero.attack = hero.delay * hallAttackDelay(s)
   }
   tickEnemies(s, dt, hooks)
   bosses?.tick(s, dt, hooks)

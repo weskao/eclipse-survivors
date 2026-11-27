@@ -27,6 +27,8 @@ import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
+import { resolveHallRunSnapshot } from './content/meta/hall-state'
+import { hallCritBonus, installHallRun } from './content/meta/hall-runtime'
 import { HALL_UPGRADE, hallRankVariant } from './audio/hall-upgrade-sample'
 import { researchCelebrationVariant } from './audio/hall-research-cue'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
@@ -349,13 +351,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     message,
     offerUpgrades,
     end,
-    modifyOutgoingDamage: (amount, target) => {
+    modifyOutgoingDamage: (amount, target, source) => {
       lastCritical = false
-      const modified = heroSpecialization?.modifyOutgoingDamage(amount) ?? amount
+      const modified = heroSpecialization?.modifyOutgoingDamage(amount, source) ?? amount
       if (!s.hero || s.mode !== 'play' || !Number.isFinite(modified) || modified <= 0) return modified
       const result = calculateRelicAttack(s, modified, {
         relicsEnabled,
-        baseCritChance: s.heroId === 'shadowblade' ? 0 : BALANCE.combat.baseCriticalChance,
+        baseCritChance: s.heroId === 'shadowblade' ? 0 : BALANCE.combat.baseCriticalChance + hallCritBonus(s, source),
         moving: s.hero.moveAmount > 0,
         boss: target?.type === 'boss',
         targetHp: target?.hp,
@@ -626,6 +628,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         }
       }
     }
+    installHallRun(s, resolveHallRunSnapshot(unlocked, s.heroId))
     ui.runResult = null
     ui.rewards = null
     ui.specialChoice = null

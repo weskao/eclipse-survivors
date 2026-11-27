@@ -136,6 +136,8 @@ export interface WorldEvent extends Point { id: number; kind: WorldEventKind; ex
 
 /** Everything the original kept in IIFE-level `let`s that gameplay and rendering read. */
 export interface GameState {
+  /** Optional run-owned ES4 modifiers, never persisted. */
+  hall?: import('./content/meta/hall-runtime').HallRuntime
   mode: GameMode
   choice: JobId
   /** Real selected hero identity; choice remains the current legacy renderer fallback. */
@@ -204,6 +206,7 @@ export interface MoveInput { x: number; y: number }
  */
 export interface GameHooks {
   contactKind?: ContactKind
+  hallSource?: import('./content/meta/hall-runtime').HallDamageSource
   otherLivingActors?(): number
   /** Same authoritative actors used by legacy, arsenal and evolution combat. */
   factions?(): import('./content/enemies/integration').FactionBridge | undefined
@@ -220,7 +223,7 @@ export interface GameHooks {
   /** Optional integration bridge: only an accepted chest consumes its serial for relic rewards. */
   openTreasure?(state: GameState, chestId: number, tier?: TreasureTier): boolean
   /** Optional per-run combat intercepts, resolved exactly once in legacy hit/damage paths. */
-  modifyOutgoingDamage?(amount: number, target?: Pick<Mob, 'hp' | 'max'> & { type?: MobType }): number
+  modifyOutgoingDamage?(amount: number, target?: Pick<Mob, 'hp' | 'max'> & { type?: MobType }, source?: import('./content/meta/hall-runtime').HallDamageSource): number
   /** One-shot metadata from the authoritative outgoing-damage roll. */
   consumeCriticalHit?(): boolean
   /** Authoritative seeded roll for direct enemy attacks only. */

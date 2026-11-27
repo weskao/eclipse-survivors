@@ -14,6 +14,8 @@ import summonerSpecialIcon from '../../../assets/es2/production/heroes/spirit-su
 import paladinSpecialIcon from '../../../assets/es2/production/heroes/crimson-paladin-special@3x.webp'
 
 export type SpecializationId = 'shadowblade' | 'spirit-summoner' | 'crimson-paladin'
+import { hallCritBonus, withHallSource, type HallDamageSource } from '../meta/hall-runtime'
+
 export type CompanionKind = 'wisp' | 'guardian' | 'reaver'
 
 interface HeroStats {
@@ -137,7 +139,7 @@ export interface HeroSpecializationAdapter {
   /** Wire a dedicated special-skill input in the integration branch. */
   activate(): boolean
   /** Apply BEFORE normal hit() to support shadow crit and low-health damage. */
-  modifyOutgoingDamage(amount: number): number
+  modifyOutgoingDamage(amount: number, source?: HallDamageSource): number
   consumeCriticalHit(): boolean
   /** Apply BEFORE damageHero(); pass the returned amount to the legacy damage path. */
   mitigateIncomingDamage(amount: number): number
@@ -260,7 +262,7 @@ export function createHeroSpecializationAdapter(
         if (companion === 'guardian') {
           hero.hp = Math.min(hero.max, hero.hp + SPIRIT.guardianHealBase + upgrades() * SPIRIT.guardianHealPerRank)
         } else if (nearest?.hp && nearest.hp > 0) {
-          hit(state, nearest, hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * SPIRIT.companionDamagePerRank), hooks)
+          hit(state, nearest, hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * SPIRIT.companionDamagePerRank), withHallSource(state, hooks, 'summon'))
           if (companion === 'reaver') hero.hp = Math.min(hero.max, hero.hp + 1.5)
         }
       }
@@ -292,12 +294,12 @@ export function createHeroSpecializationAdapter(
       hooks.sfx(def.audio.special)
       return true
     },
-    modifyOutgoingDamage(amount: number): number {
+    modifyOutgoingDamage(amount: number, source?: HallDamageSource): number {
       lastCritical = false
       if (!Number.isFinite(amount) || amount <= 0) return 0
       if (!alive()) return amount
       if (id === 'shadowblade') {
-        lastCritical = random() < SHADOW.critChance
+        lastCritical = random() < SHADOW.critChance + hallCritBonus(state, source)
         return lastCritical ? amount * (SHADOW.critMultiplier + upgrades() * SHADOW.critBonusPerRank) : amount
       }
       if (id === 'spirit-summoner') return amount * (1 + (companions().includes('wisp') ? 0.06 : 0))
