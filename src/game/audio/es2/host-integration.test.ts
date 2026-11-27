@@ -8,6 +8,7 @@ import { createEs2AudioAdapter } from './adapter'
 import { createEngine } from '../../engine'
 import { HERO_SPECIALIZATIONS_PACK } from '../../content/heroes'
 import { DURATION } from '../../constants'
+import { getMode } from '../../../meta/modes'
 import { RELICS_PACK } from '../../content/packs/relics'
 
 class Media implements BgmElement {
@@ -334,7 +335,7 @@ describe('ES2 final host audio wiring', () => {
       state.mobs = []
       state.hero!.attack = 10
       if (outcome === 'victory') {
-        state.time = DURATION - 0.01
+        state.time = getMode('standard').duration! - 0.01
         state.bossSpawned = true
         state.bossDefeated = true
       } else {
