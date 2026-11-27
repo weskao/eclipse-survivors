@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderHallUpgradeSample, renderHallCue, hallCueKey } from './hall-upgrade-sample'
+import { renderHallUpgradeSample, renderHallCue, hallCueKey, hallRankVariant } from './hall-upgrade-sample'
 
 describe('hall upgrade sound', () => {
   it.each([22050, 48000])('renders bounded, deterministic, distinct rank and milestone Foley at %i Hz', rate => {
@@ -49,5 +49,29 @@ describe('Hall interaction and reward sound palette', () => {
     expect(hallCueKey('select', 1)).toBe('inspect')
     expect(hallCueKey('deny', 1)).toBe('deny')
     expect(hallCueKey('upgrade', 99)).toBeUndefined()
+  })
+})
+
+describe('Rank-specific Hall ceremonies', () => {
+  it.each([22050,48000])('renders five different ranks and five combined unlock cues at %i Hz', rate => {
+    const plain = [1,2,3,4,5].map(rank => hallRankVariant(rank, 5, false))
+    const linked = [1,2,3,4,5].map(rank => hallRankVariant(rank, 5, true))
+    expect(new Set([...plain, ...linked]).size).toBe(10)
+    const signatures = [...plain, ...linked].map(variant => {
+      const key = hallCueKey('upgrade', variant)!
+      expect(key).toBeDefined()
+      const pcm = renderHallCue(rate, key)
+      expect(pcm.every(Number.isFinite)).toBe(true)
+      expect(pcm.reduce((peak, value) => Math.max(peak, Math.abs(value)), 0)).toBeLessThanOrEqual(.81)
+      expect(pcm[0]).toBe(0)
+      expect(pcm.at(-1)).toBe(0)
+      return Array.from(pcm.slice(100, 600)).join(',')
+    })
+    expect(new Set(signatures).size).toBe(10)
+    for (const variant of linked) {
+      const pcm = renderHallCue(rate, hallCueKey('upgrade', variant)!)
+      expect(pcm.length / rate).toBeCloseTo(1.6, 2)
+      expect(pcm.slice(Math.floor(rate * 1.2)).some(x => Math.abs(x) > .005)).toBe(true)
+    }
   })
 })

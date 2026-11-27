@@ -202,3 +202,5 @@ Compact topology implementation: one visible confirmation per board; unchanged W
 - [x] Hall UX: one accessible category at a time (research, mastery, equipment/blessings, achievements); touch viewport inspector with close and safe-area handling, no forced scroll; desktop hover stays inline; preserve selection, explicit spend, art, audio and motion. Add regression and viewport checks.
 
 Hall UX source implemented with one detail template (teleported only for floating layouts), no forced scrolling, four accessible category tabs, category-change dismissal and viewport regressions. Runtime CI and device validation remain open.
+
+- [ ] Hall rank ceremonies: distinct rank 1–4 and mastery sounds, combined destination-unlock finale (only complete prerequisites), synchronized sculpted ring and rank-specific particles, unlock notice visible in touch inspector; waveform and transaction regressions, actual audiovisual QA.

@@ -274,3 +274,27 @@ describe('Hall category navigation and touch inspector', () => {
     }
   })
 })
+
+describe('Hall rank ceremony presentation', () => {
+  it('distinguishes partial route progress from a fully unlocked destination', async () => {
+    const state = createMetaState()
+    state.embers = 10000
+    state.research.power = 1
+    state.research.vitality = 1
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    await wrapper.get('[data-hall-inspect="insight"]').trigger('click')
+    await wrapper.get('.hall-growth--tree [data-hall-confirm]').trigger('click')
+    const first = buyResearch(state, 'insight').state
+    await wrapper.setProps({ state: first })
+    expect(wrapper.get('[data-hall-upgraded="insight"]').attributes('data-hall-stage')).toBe('1')
+    expect(wrapper.get('[data-hall-upgraded="insight"]').attributes('data-hall-route')).toBe('false')
+    expect(wrapper.get('[data-hall-node="ember-study"]').attributes('data-hall-arrived')).toBe('false')
+    await wrapper.get('[data-hall-inspect="scavenging"]').trigger('click')
+    await wrapper.get('.hall-growth--tree [data-hall-confirm]').trigger('click')
+    await wrapper.setProps({ state: buyResearch(first, 'scavenging').state })
+    expect(wrapper.get('[data-hall-upgraded="scavenging"]').attributes('data-hall-route')).toBe('true')
+    expect(wrapper.get('[data-hall-node="ember-study"]').attributes('data-hall-arrived')).toBe('true')
+    expect(wrapper.get('[data-hall-unlock-notice]').text()).toContain('餘燼研究')
+    wrapper.unmount()
+  })
+})
