@@ -305,7 +305,7 @@ it('never compiles scoped reduced-motion or flashing CSS that hides the document
   const { parse, compileStyle } = await import('vue/compiler-sfc')
   const { readFileSync, readdirSync } = await import('node:fs')
   const { join } = await import('node:path')
-  const files = readdirSync('src', { recursive: true }).filter(file => file.endsWith('.vue'))
+  const files = readdirSync('src', { recursive: true, encoding: 'utf8', withFileTypes: false }).filter(file => file.endsWith('.vue'))
   const offenders: string[] = []
   for (const file of files) {
     const filename = join('src', file)

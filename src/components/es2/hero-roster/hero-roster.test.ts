@@ -255,7 +255,12 @@ describe('ES2 dedicated hero special action', () => {
     for (const motif of ['shadow-slash', 'spirit-rise', 'aegis-flare'])
       expect(source).toMatch(new RegExp('@keyframes es2-special-' + motif))
     expect(source).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[^@]*\.es2-hero-special__flourish\s*\{[^}]*display:\s*none/)
-    expect(source).toMatch(/:global\(\[data-es2-reduce-motion="true"\]\)[^{]*\.es2-hero-special__flourish[^{]*\{[^}]*display:\s*none/)
+    // Scope the entire descendant selector globally: wrapping only the ancestor
+    // can make Vue emit a rule hiding the root under reduced motion.
+    for (const policy of ['motion', 'flashing']) {
+      expect(source).toContain(':global([data-es2-reduce-' + policy + '="true"] .es2-hero-special__flourish)')
+    }
+    expect(source).toMatch(/\.es2-hero-special__flourish\)\s*\{\s*display:\s*none/)
   })
 
   it('clips decorative overflow without creating a scroll container inside the skill button', () => {
