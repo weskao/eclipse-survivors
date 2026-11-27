@@ -4,7 +4,7 @@ import {
   COMBAT_FX_BY_KIND, COMBAT_FX_SPECS, drawCombatEffect,
   type CombatFxKind, type CombatVfxPreferences, type DirectedCombatFx, type HeroSpecialFx,
 } from '../../render/es2/combat-vfx'
-import { AEGIS_SHATTER } from '../../render/pixi-vfx/hero-choreography'
+import { AEGIS_SHATTER, heroTargetLimit } from '../../render/pixi-vfx/hero-choreography'
 
 export const HERO_AEGIS_SHATTER_SECONDS = AEGIS_SHATTER
 type Point = { readonly x: number; readonly y: number }
@@ -30,7 +30,7 @@ export function emitCombatVfx(
   const effect: DirectedCombatFx & HeroSpecialFx = {
     id: spec.id, x, y, life, max: spec.duration,
     ...(options.angle === undefined ? {} : { angle: options.angle }),
-    ...(targets?.length ? { targets: Object.freeze(targets.slice(0, 3)) } : {}),
+    ...(targets?.length ? { targets: Object.freeze(targets.slice(0, heroTargetLimit(kind))) } : {}),
   }
   return addEffect(effect)
 }

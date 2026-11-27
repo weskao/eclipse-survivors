@@ -67,7 +67,7 @@ describe('live hero integration, including original roster regressions', () => {
     expect(engine.ui.heroSpecial!.barrier).toBeGreaterThan(0)
   })
 
-  it('keeps three original characters, original fallback IDs and no ability for legacy runs', () => {
+  it('keeps three original characters, original fallback IDs and shared active ability for classic runs', () => {
     for (const id of ['knight', 'ranger', 'wizard'] as const) {
       const engine = createEngine({ audio: audio() })
       engine.selectJob(id)
@@ -75,6 +75,18 @@ describe('live hero integration, including original roster regressions', () => {
       expect(engine.state.choice).toBe(id)
       expect(engine.state.heroId).toBe(id)
       expect(engine.state.hero?.max).toBe(JOB[id].hp)
+      expect(engine.ui.heroSpecial?.cooldown).toBe(0)
+      const h = engine.state.hero!
+      const target = { x: h.x + 20, y: h.y, hp: 999, max: 999, type: 'slime' as const, r: 15, speed: 0, dmg: 0, phase: 0, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0 }
+      engine.state.mobs = [target]
+      expect(engine.activateHeroSpecial()).toBe(true)
+      expect(target.hp).toBeLessThan(999)
+      expect(engine.state.content.effects.filter(fx => fx.id === 'combat-vfx:hero-' + id)).toHaveLength(1)
+      expect(engine.activateHeroSpecial()).toBe(false)
+      const cd = engine.ui.heroSpecial!.cooldown
+      engine.togglePause(); engine.advance(1)
+      expect(engine.ui.heroSpecial!.cooldown).toBe(cd)
+      engine.goMenu()
       expect(engine.ui.heroSpecial).toBeNull()
     }
   })

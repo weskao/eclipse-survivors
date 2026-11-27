@@ -13,8 +13,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: es2-boss-attack-video-integration
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   boss-attack-capture:
     runs-on: ubuntu-24.04

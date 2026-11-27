@@ -1,0 +1,52 @@
+name: ES2 six-hero real combat with live audio
+on:
+  push:
+    branches: [feature/es2-release-readiness-integration]
+    paths:
+      - 'scripts/es2-hero-active-gameplay-video.mjs'
+      - '.github/workflows/es2-hero-active-gameplay-video.yml'
+      - 'src/game/engine.ts'
+      - 'src/game/render/pixi-vfx/hero-choreography.ts'
+      - 'src/game/content/heroes/**'
+      - 'public/audio/heroes/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install real recording dependencies
+        run: |
+          npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
+          ../node_modules/.bin/playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg xvfb pulseaudio pulseaudio-utils
+      - name: Record actual browser window and live audio
+        run: |
+          pulseaudio --start --exit-idle-time=-1
+          pactl load-module module-null-sink sink_name=heroqa sink_properties=device.description=HeroQA
+          pactl set-default-sink heroqa
+          export PULSE_SINK=heroqa
+          pnpm dev --host 127.0.0.1 --port 4174 --strictPort > /tmp/es2-hero-active-dev.log 2>&1 &
+          for i in {1..60}; do curl -sf http://127.0.0.1:4174/@vite/client >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4174/@vite/client >/dev/null
+          xvfb-run -a -s "-screen 0 1280x720x24" node scripts/es2-hero-active-gameplay-video.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: es2-six-heroes-real-combat-live-audio-mp4
+          path: artifacts/es2-hero-active-gameplay/
+          if-no-files-found: warn
+          retention-days: 30

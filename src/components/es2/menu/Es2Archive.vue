@@ -8,6 +8,8 @@ import { COSMETICS, cosmeticStyle } from '../../../meta/cosmetics'
 import { ACHIEVEMENTS as META_ACHIEVEMENTS } from '../../../game/content/meta/catalog'
 import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
+import HeroActiveSummary from '../hero-roster/HeroActiveSummary.vue'
+import { ACTIVE_HERO_IDS } from '../hero-roster/active-presentation'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { encyclopedia } from '../../../meta/compendium'
 import type { Profile, PermanentUpgrade, CosmeticId } from '../../../meta/types'
@@ -146,6 +148,10 @@ const achievementArt: Record<string, string> = {
       <component v-if="DevArtGallery" :is="DevArtGallery" view="monsters" />
     </section>
     <section v-else-if="view === 'skills'" class="es2-archive-section" :aria-label="t('技能圖鑑')">
+      <h3 class="es2-archive-active-heading">{{ t('英雄主動技能') }}</h3>
+      <div class="es2-archive-active-grid" data-hero-active-catalog>
+        <HeroActiveSummary v-for="id in ACTIVE_HERO_IDS" :key="id" :hero-id="id" show-hero />
+      </div>
       <div class="es2-archive-grid"><article v-for="ability in entries.abilities" :key="ability.id" class="es2-archive-card" :class="{ 'es2-locked': !ability.discovered, 'es2-context-card': ability.discovered }"
         :data-es2-context-card="ability.discovered ? 'skill:' + ability.id : undefined" :tabindex="ability.discovered ? 0 : undefined">
         <img v-if="ability.discovered" :src="skillImageSrc(ability.id)" :alt="t('{name} 技能插畫', { name: t(ability.title) })" loading="lazy" />
@@ -170,5 +176,8 @@ const achievementArt: Record<string, string> = {
 </template>
 
 <style scoped>
+.es2-archive-active-heading{color:#edcf97;margin:0 0 8px;font-size:1rem}
+.es2-archive-active-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:8px;margin-bottom:18px}
+
 .es2-achievement-icon{display:block;width:64px!important;height:64px;object-fit:contain}
 </style>

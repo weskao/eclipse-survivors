@@ -11,6 +11,7 @@ import HeroRoster from '../hero-roster/HeroRoster.vue'
 import HeroSelectionCard from '../hero-roster/HeroSelectionCard.vue'
 import { moveHeroSelection } from '../hero-roster/hero-selection'
 import HeroStats from '../hero-roster/HeroStats.vue'
+import HeroActiveSummary from '../hero-roster/HeroActiveSummary.vue'
 import Es2DetailSurface from './Es2DetailSurface.vue'
 import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
@@ -195,11 +196,9 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
         <template v-if="detailSpecialization">
           <p>{{ t(detailSpecialization.description) }}</p>
           <p>{{ t('起始武器 ·') }} {{ t(detailSpecialization.startingEquipment) }}</p>
-          <div class="es2-hero-detail-special">
-            <img :src="detailSpecialization.specialIconSrc" :alt="t('{name} 主動技能圖示', { name: t(detailSpecialization.label) })"
-              width="44" height="44" decoding="async" />
-            <span>{{ t('主動技能 ·') }} {{ t(detailSpecialization.special, detailSpecialization.specialParams) }}{{ t('（冷卻') }} {{ detailSpecialization.specialCooldown }} {{ t('秒）') }}</span>
-          </div>
+        </template>
+        <HeroActiveSummary v-if="detailHero" :hero-id="detailHero" class="es2-hero-detail-special" />
+        <template v-if="detailSpecialization">
           <p>{{ t('優勢 ·') }} {{ t(detailSpecialization.strengths.join(' / ')) }}</p>
           <p>{{ t('弱點 ·') }} {{ t(detailSpecialization.weaknesses.join(' / ')) }}</p>
         </template>
