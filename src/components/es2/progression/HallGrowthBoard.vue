@@ -288,7 +288,7 @@ watch(() => props.nodes, (nodes, previous) => {
 /* The fixed inspector must stay inside its safe-area bounds on every animation frame. */
 @keyframes hall-inspector-in{from{opacity:0}to{opacity:1}}
 @media(orientation:landscape) and (max-height:600px){
-  .hall-detail--floating{inset-inline:auto max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));width:min(44vw,330px);max-width:calc(100vw - 16px);max-height:none;padding:9px;gap:5px;border-radius:10px}
+  .hall-detail--floating{inset-inline:auto max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));bottom:max(8px,env(safe-area-inset-bottom));width:min(44vw,330px);max-width:calc(100vw - 16px);height:calc(100dvh - max(8px,env(safe-area-inset-top)) - max(8px,env(safe-area-inset-bottom)));min-height:0;max-height:calc(100dvh - max(8px,env(safe-area-inset-top)) - max(8px,env(safe-area-inset-bottom)));padding:9px;gap:5px;border-radius:10px}
   .hall-detail--floating .hall-detail-heading img{width:36px;height:36px;flex-basis:36px}
 }
 @media(prefers-reduced-motion:reduce){.hall-detail--floating{animation:none}}
@@ -356,6 +356,6 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-detail--floating .hall-detail-emblem{width:46px;height:46px}
 .hall-detail--floating .hall-detail-emblem img{width:100%;height:100%}
 .hall-detail--floating .hall-detail-body{align-content:start}
-@media(orientation:landscape) and (max-height:600px){.hall-detail--floating{max-height:none}.hall-detail--floating .hall-detail-emblem{width:38px;height:38px}.hall-detail--floating .hall-detail-heading{gap:6px}.hall-detail--floating .hall-description{padding-top:4px}.hall-detail--floating .hall-effect{padding:5px 4px}}
+@media(orientation:landscape) and (max-height:600px){.hall-detail--floating .hall-detail-emblem{width:38px;height:38px}.hall-detail--floating .hall-detail-heading{gap:6px}.hall-detail--floating .hall-description{padding-top:4px}.hall-detail--floating .hall-effect{padding:5px 4px}}
 @media(max-width:360px){.hall-detail-heading{gap:7px}.hall-detail-emblem{width:46px;height:46px}.hall-comparison{gap:3px}.hall-comparison .hall-effect{padding:5px 3px}}
 </style>
