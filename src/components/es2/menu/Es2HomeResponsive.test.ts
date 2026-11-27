@@ -264,6 +264,11 @@ describe('phone homepage viewport-first navigation', () => {
 })
 
 describe('homepage menu layout across devices', () => {
+  it('keeps interactive page geometry stationary throughout entry transitions', () => {
+    expect(css).toMatch(/\.es2-hero-section\s*,\s*\.es2-mode-section\s*\{\s*animation:\s*es2-scene-fade\b/)
+    expect(css).not.toMatch(/\.es2-(?:hero|mode)-section\s*\{[^}]*--es2-scene-from:/)
+  })
+
   it.each(Object.entries({"boss-rush":"♛","endless-eclipse":"☾","relic-hunt":"◇","cursed-expedition":"✧","chaos-arena":"✵"}))('shares the %s mode icon with its selected expedition summary', (id, glyph) => {
     const wrapper = menu({ runMode: id })
     expect(wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`).text()).toBe(glyph)

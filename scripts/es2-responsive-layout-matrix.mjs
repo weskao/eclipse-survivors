@@ -279,6 +279,22 @@ try {
       }
       await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
       await page.locator('[data-es2-expedition-navigation]').click()
+      // Inspect the actual first animation frame as well as the normal layout.
+      // A translated full-width grid can clip at 390px even when its final layout fits.
+      const entryOffenders = await page.locator('.es2-mode-section').evaluate(section => {
+        const animations = section.getAnimations()
+        const times = animations.map(animation => animation.currentTime)
+        try {
+          for (const animation of animations) animation.currentTime = 0
+          return [...section.querySelectorAll('[data-mode], [data-objective-mode]')].flatMap(el => {
+            const r = el.getBoundingClientRect()
+            return r.left < -2 || r.right > innerWidth + 2 ? [{ text: el.textContent.trim().slice(0, 80), left: r.left, right: r.right }] : []
+          })
+        } finally {
+          animations.forEach((animation, index) => { animation.currentTime = times[index] })
+        }
+      })
+      assert.deepEqual(entryOffenders, [], name + ': expedition cards clip during the first entry frame')
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
       if (hoverCapable) {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
