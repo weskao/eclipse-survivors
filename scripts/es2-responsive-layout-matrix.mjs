@@ -52,9 +52,20 @@ const assertSkillValueColumns = async (scope, label) => {
     .map(row => {
       const main = row.querySelector('.es2-active-summary__main'), value = row.querySelector('[data-active-skill-cooldown]')
       const a = main.getBoundingClientRect(), b = value.getBoundingClientRect(), r = row.getBoundingClientRect()
-      return { title: main.textContent.trim().slice(0, 48), valid: a.right <= b.left + 1
+      const css = getComputedStyle(value), rightPadding = parseFloat(css.paddingRight)
+      const leftPadding = parseFloat(css.paddingLeft)
+      const parts = [...value.children].map(el => {
+        const bounds = el.getBoundingClientRect()
+        return { right: bounds.right, width: bounds.width }
+      })
+      const shortValue = /^\d+(?:\.\d+)?s$/.test(value.textContent.trim())
+      return { title: main.textContent.trim().slice(0, 48), width: b.width,
+        valid: a.right <= b.left + 1
         && Math.abs(r.top - b.top) <= 2 && Math.abs(r.bottom - b.bottom) <= 2
-        && value.scrollWidth <= value.clientWidth + 2 && b.width > 0 }
+        && value.scrollWidth <= value.clientWidth + 2 && b.width > 0
+        && parseFloat(css.borderInlineStartWidth) === 0 && css.textAlign === 'end'
+        && parts.every(part => Math.abs(part.right - (b.right - rightPadding)) <= 1)
+        && (!shortValue || b.width <= Math.max(...parts.map(part => part.width)) + leftPadding + rightPadding + 2) }
     }))
   assert.ok(result.length > 0, label + ': missing shared skill value columns')
   assert.deepEqual(result.filter(row => !row.valid), [], label + ': skill value column overlaps or clips')
@@ -221,6 +232,7 @@ try {
           name + ': unclear or clipped selected hero ' + JSON.stringify(result))
       }
       await verifyHeroSelection()
+      await assertSkillValueColumns(page, name + ': lobby compact skill values')
       const hoverCapable = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches)
       const cursor = await page.evaluate(() => ({
         body: getComputedStyle(document.body).cursor,
