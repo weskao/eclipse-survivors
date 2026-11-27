@@ -282,7 +282,7 @@ export function drawCharacter(
   }
   ctx.save(); ctx.translate(x, y)
   if (!reducedMotion && mob?.type !== 'boss' && mob?.deathVisual && mob.hp <= 0 && enemyDeath &&
-      drawEs3EnemyDeath(ctx, enemyDeath, mob.deathVisual, mob.deathVisualTotal ?? .28, sx, sy)) {
+      drawEs3EnemyDeath(ctx, enemyDeath, mob.deathVisual, mob.deathVisualTotal ?? .28, sx, sy, reduceFlashing)) {
     ctx.restore()
     return
   }

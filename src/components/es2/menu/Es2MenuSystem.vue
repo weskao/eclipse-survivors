@@ -103,10 +103,10 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
           @bonus="emit('bonus', $event)" @reset="resetOpen = true" />
       </template>
     </Es2MainMenu>
-    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still'"
+    <Es2ChoiceDialog :active="levelActive" kind="level" :items="levelCards" :still="upgradeEffect === 'still' || accessibilityPreferences?.reducedMotion === 'on' || !!accessibilityPreferences?.reducedFlashing"
       @choose="chooseUpgrade" @settings="emit('settings')" />
     <Es2ChoiceDialog v-if="specialCards" :active="specialActive" :kind="specialCards.kind" :tier="specialCards.tier" :items="specialCards.items"
-      :still="upgradeEffect === 'still'" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
+      :still="upgradeEffect === 'still' || accessibilityPreferences?.reducedMotion === 'on' || !!accessibilityPreferences?.reducedFlashing" @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
       :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')">
       <template #cloud><slot name="result-cloud" /></template>

@@ -1,7 +1,7 @@
 import { createEngine } from '../../../src/game/engine'
 import { loadArtwork, type Artwork } from '../../../src/game/art'
 import { createApp, h, nextTick } from 'vue'
-import Es2ChoiceDialog from '../../../src/components/es2/menu/Es2ChoiceDialog.vue'
+import Es2MenuSystem from '../../../src/components/es2/menu/Es2MenuSystem.vue'
 import { createState, resetRun } from '../../../src/game/state'
 import { hit } from '../../../src/game/combat'
 import { step } from '../../../src/game/step'
@@ -180,7 +180,7 @@ function verifyLiveDeaths(art: Artwork, world: WorldRuntimeImages): void {
     step(s, 1 / 60, { x: 0, y: 0 }, hooks)
   }
   for (const id of kinds) if (frames.get(id)!.size !== 4) throw new Error('Live combat did not draw all four frames: ' + id)
-  if (s.fallenMobs.length !== 0) throw new Error('Death pool did not expire')
+  if (Number(s.fallenMobs.length) !== 0) throw new Error('Death pool did not expire')
   canvas.width = canvas.height = 0
 }
 
@@ -202,10 +202,12 @@ async function verifyTreasureReveals(): Promise<string[]> {
     if (engine.ui.specialChoice?.tier !== tier) throw new Error('Real chest event did not open: ' + tier)
     const host = document.createElement('div')
     document.body.append(host)
-    const app = createApp({ render: () => h(Es2ChoiceDialog, {
-      active: engine.ui.mode === 'level' && !!engine.ui.specialChoice,
-      kind: 'treasure', tier, items: engine.ui.specialChoice?.items ?? [],
-      still: reduced, onChoose: (id: string) => engine.chooseTreasure(id),
+    const app = createApp({ render: () => h(Es2MenuSystem, {
+      screen: engine.ui.mode === 'level' ? 'level' : 'hidden',
+      choice: engine.ui.choice, heroId: engine.ui.heroId, runMode: engine.ui.runMode, version: 'QA',
+      specialChoice: engine.ui.specialChoice,
+      upgradeEffect: reduced ? 'still' : 'soft',
+      onSpecialChoose: (id: string) => engine.chooseTreasure(id),
     }) })
     try {
       app.mount(host)

@@ -290,7 +290,7 @@ export function drawProductionEnemyFrame(
 
 /** Four fixed row-major cells, each with an eight-pixel transparent gutter. */
 export function drawEs3EnemyDeath(
-  ctx: Ctx2D, image: HTMLImageElement, remaining: number, total: number, width: number, height: number,
+  ctx: Ctx2D, image: HTMLImageElement, remaining: number, total: number, width: number, height: number, reduceFlashing = false,
 ): boolean {
   if (!image.complete || image.naturalWidth !== 872 || image.naturalHeight !== 872 ||
       !Number.isFinite(remaining) || !Number.isFinite(total) || total <= 0 || remaining <= 0) return false
@@ -300,7 +300,7 @@ export function drawEs3EnemyDeath(
   if (!Number.isFinite(side) || side <= 0) return false
   ctx.save()
   // Dissolve art is already transparent; taper only the last quarter.
-  ctx.globalAlpha *= Math.min(1, (1 - progress) * 4)
+  ctx.globalAlpha *= Math.min(1, (1 - progress) * 4) * (reduceFlashing && frame === 3 ? .55 : 1)
   ctx.drawImage(image, (frame % 2) * 436 + 8, Math.floor(frame / 2) * 436 + 8,
     420, 420, -side / 2, 4 - side, side, side)
   ctx.restore()
