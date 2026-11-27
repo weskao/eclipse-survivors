@@ -924,25 +924,12 @@
 [data-es2-reduce-motion="true"] .es2-cursor-accent,
 [data-es2-reduce-flashing="true"] .es2-cursor-accent{display:none!important}
 
-/* Selected hero: same silhouette, crest and status ribbon for all six cards.
+/* Selected hero: one outer gold rim and status ribbon for all six cards.
    Never dim the other portraits, alter image bounds, or occupy the detail-button corner. */
 .es2-menu .es2-hero-select-card[aria-pressed="true"]{
   --es2-hero-glow:#ffd16b80;
   border-color:#ffe3a3;
   box-shadow:inset 0 0 0 2px #e9c27e,0 0 0 1px #b58a4a,0 0 18px #e7b56465;
-}
-.es2-menu .es2-hero-select-card[aria-pressed="true"]::after{
-  content:'';position:absolute;inset:4px;z-index:2;pointer-events:none;
-  border:1px solid #e9bf7855;border-radius:inherit;
-  background:
-    linear-gradient(#fff0bb,#c2914d) left top/14px 2px no-repeat,
-    linear-gradient(#fff0bb,#c2914d) left top/2px 14px no-repeat,
-    linear-gradient(#fff0bb,#c2914d) right top/14px 2px no-repeat,
-    linear-gradient(#fff0bb,#c2914d) right top/2px 14px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) left bottom/14px 2px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) left bottom/2px 14px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) right bottom/14px 2px no-repeat,
-    linear-gradient(#c2914d,#fff0bb) right bottom/2px 14px no-repeat;
 }
 .es2-menu .es2-hero-select-card[aria-pressed="true"]>.es2-hero-copy{
   background:linear-gradient(180deg,#342d28,#171f2b 62%);
@@ -963,7 +950,6 @@
   clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 50%,calc(100% - 6px) 100%,6px 100%,0 50%);
 }
 @media(max-width:610px),(max-height:520px){
-  .es2-menu .es2-hero-select-card[aria-pressed="true"]::after{inset:3px;background-size:9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px,9px 2px,2px 9px}
   .es2-menu .es2-hero-select-card .es2-hero-selection-status{padding:2px 4px;font-size:max(.6875rem,calc(.75rem * var(--es2-ui-scale,1)))}
 }
 @media(forced-colors:active){

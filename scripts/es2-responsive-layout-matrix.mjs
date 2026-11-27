@@ -225,11 +225,12 @@ try {
             insideCard: !!b && b.left >= a.left && b.right <= a.right && b.top >= a.top && b.bottom <= a.bottom,
             statusVisible: !!b && b.width > 0 && b.height > 0,
             borderDifferent: style.borderColor !== rest.borderColor, shadowDifferent: style.boxShadow !== rest.boxShadow,
+            noInnerFrame: ['none', 'normal'].includes(getComputedStyle(selected, '::after').content),
             statusBackground: status && getComputedStyle(status).backgroundImage,
             textFits: status && status.scrollWidth <= status.clientWidth + 2 }
         })
         assert.ok(result.selectedCount === 1 && result.insideCard && result.statusVisible &&
-          result.borderDifferent && result.shadowDifferent && result.statusBackground !== 'none' && result.textFits,
+          result.borderDifferent && result.shadowDifferent && result.noInnerFrame && result.statusBackground !== 'none' && result.textFits,
           name + ': unclear or clipped selected hero ' + JSON.stringify(result))
       }
       await verifyHeroSelection()

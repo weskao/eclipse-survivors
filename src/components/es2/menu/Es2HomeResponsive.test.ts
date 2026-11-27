@@ -577,3 +577,11 @@ describe('hero card selection reveals the whole card', () => {
     }
   })
 })
+
+it('keeps the selected hero outer gold rim and glow without an inset decorative frame at any breakpoint', () => {
+  expect(css).not.toMatch(/\.es2-hero-select-card\[aria-pressed=["']?true["']?\]::?after\s*\{/)
+  const selected = css.match(/\.es2-menu \.es2-hero-select-card\[aria-pressed="true"\]\s*\{([^}]+)\}/)?.[1] ?? ''
+  expect(selected).toContain('border-color:#ffe3a3')
+  expect(selected).toContain('box-shadow:inset 0 0 0 2px #e9c27e')
+  expect(selected).toContain('--es2-hero-glow:#ffd16b80')
+})
