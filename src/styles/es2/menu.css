@@ -1036,3 +1036,17 @@
   .es2-dialog-result .es2-result-cloud{font-size:.75rem}
   .es2-dialog-result .es2-result-cloud button{min-height:44px;padding:.3rem .8rem}
 }
+
+/* Monster dossiers share the hero stat tiles and the existing scrollable detail surface. */
+.es2-menu [data-es2-archive-page="monsters"] .es2-card-info-trigger{display:grid}
+.es2-menu [data-es2-archive-page="monsters"] .es2-context-card>strong{padding-inline-end:25px}
+.es2-monster-dossier{display:grid;gap:9px;min-width:0;padding:12px;border:1px solid #a78d594d;border-radius:8px;background:#0b172577}
+.es2-monster-dossier h3,.es2-monster-dossier h4{margin:0;color:#ffe4a6;overflow-wrap:anywhere}
+.es2-monster-dossier h3{font-size:1.08em}
+.es2-monster-dossier h4{font-size:.9em;letter-spacing:.03em}
+.es2-monster-stat-name{color:#bfcad3;font-size:.78rem;text-align:center;overflow-wrap:anywhere}
+.es2-monster-skill{align-items:flex-start;padding:8px;border:1px solid #a78d5933;border-radius:6px;background:#0c1723}
+.es2-monster-skill>div{min-width:0;display:grid;gap:3px;overflow-wrap:anywhere}
+.es2-monster-skill strong{color:#ffe4a6}
+.es2-monster-skill small,.es2-hero-detail-content .es2-monster-note{color:#bfcad3}
+.es2-monster-skill img{border-radius:5px}

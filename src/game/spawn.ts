@@ -26,7 +26,7 @@ export function spawnMob(s: GameState, type?: 'boss', otherLiving = 0): void {
     hp,
     max: hp,
     r: t === 'boss' ? 48 : t === 'golem' ? 30 : t === 'warlock' ? 22 : t === 'goblin' ? 20 : 18,
-    speed: t === 'boss' ? 51 : t === 'bat' ? 108 + lvl * 3 : t === 'golem' ? 48 + lvl * 2 : t === 'warlock' ? 66 + lvl * 2 : t === 'goblin' ? 69 + lvl * 3 : 77 + lvl * 3,
+    speed: BALANCE.enemies.baseSpeed[t] + lvl * BALANCE.enemies.speedPerLevel[t],
     dmg: Math.round((t === 'boss' ? BALANCE.enemies.bossDamage : (BALANCE.enemies.baseDamage + lvl * BALANCE.enemies.damagePerLevel) * (elite ? BALANCE.enemies.eliteDamageMultiplier : 1)) * modifiers.enemyDamage),
     elite,
     phase: rand(0, 8),

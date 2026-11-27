@@ -19,6 +19,7 @@ import { upgradeCost } from './model'
 import Es2CardDetails from './Es2CardDetails.vue'
 import Es2CardInfo from './Es2CardInfo.vue'
 import type { CardDetail } from './Es2CardDetails.vue'
+import { monsterGroups } from './monster-details'
 const props = defineProps<{
   view: Exclude<MenuView, 'main'>; profile: Profile; hero: JobId; heroId?: HeroId; relics?: readonly RelicEntry[]
   metaState?: MetaState | null; metaStatus?: 'ready' | 'blocked' | null
@@ -41,7 +42,11 @@ const cardDetails = computed<Record<string, CardDetail>>(() => {
       lines: relic.description && t(relic.description) !== description ? [t(relic.description)] : [] }
   }
   for (const mob of entries.value.monsters) {
-    if (mob.count) result['monster:' + mob.id] = { title: t(mob.label), description: t(mob.description) }
+    if (mob.count) result['monster:' + mob.id] = {
+      title: t(mob.label), description: t(mob.description),
+      groups: monsterGroups(mob.id),
+      note: t(mob.id === 'boss' ? '首領紀錄為共用擊殺數；以下為各首領的基礎資料，並非個別遭遇紀錄。' : '基礎數值不含遠征難度、時間成長及菁英加成。'),
+    }
   }
   for (const ability of entries.value.abilities) {
     if (ability.discovered) result['skill:' + ability.id] = { title: t(ability.title), description: t(ability.desc) }
