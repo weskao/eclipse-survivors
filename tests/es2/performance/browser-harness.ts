@@ -69,9 +69,9 @@ async function verifyContactArt(): Promise<string[]> {
 }
 // Real decoded native candidate pixels, outside the timed performance workload.
 async function verifyNativeDeathArt(): Promise<Record<string, number>> {
-  const normal = loadWorldRuntimeImages()
-  if (Object.keys(normal.enemyDeaths ?? {}).length) throw new Error('Unapproved candidate loaded by default')
-  const qa = loadWorldRuntimeImages(undefined, undefined, false, true)
+  const canonicalOnly = loadWorldRuntimeImages(undefined, undefined, false, false)
+  if (Object.keys(canonicalOnly.enemyDeaths ?? {}).length) throw new Error('Rejected old atlases loaded')
+  const qa = loadWorldRuntimeImages()
   const atlasCanvas = document.createElement('canvas')
   atlasCanvas.width = atlasCanvas.height = 872
   const read = atlasCanvas.getContext('2d', { willReadFrequently: true })!

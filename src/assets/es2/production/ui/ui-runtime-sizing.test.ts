@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { treasureArtUrl, WORLD_ART, ES3_EPIC_TREASURE_URL } from '../../../../game/render/es2/production-world'
 
 const archive = readFileSync(resolve('src/components/es2/menu/Es2Archive.vue'), 'utf8')
 const gallery = readFileSync(resolve('src/components/es2/menu/Es2DevArtGallery.vue'), 'utf8')
@@ -23,8 +24,11 @@ describe('ES2 UI 192px source / maximum 64px display', () => {
   })
 
   it('connects all four local treasure images to the live loot-choice dialog', () => {
-    for (const id of ['treasure-common', 'treasure-rare', 'treasure-legendary', 'treasure-cursed']) {
-      expect(chest).toContain("WORLD_ART.ui['" + id + "']")
+    expect(chest).toContain('treasureArtUrl(relic.rarity, relic.cursed)')
+    for (const tier of ['common', 'rare', 'legendary', 'cursed'] as const) {
+      expect(treasureArtUrl(tier)).toBe(WORLD_ART.ui[`treasure-${tier}`])
     }
+    expect(treasureArtUrl('epic')).toBe(ES3_EPIC_TREASURE_URL)
+    expect(treasureArtUrl('epic', true)).toBe(WORLD_ART.ui['treasure-cursed'])
   })
 })

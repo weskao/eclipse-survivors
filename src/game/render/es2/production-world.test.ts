@@ -42,9 +42,9 @@ describe('ES2 world art live asset mapping', () => {
       expect(runtime.chests?.epic).not.toBe(runtime.chests?.rare)
       expect(assigned).toContain(ES3_EPIC_TREASURE_URL)
     } else expect(runtime.chests?.epic).toBe(runtime.chests?.rare)
-    expect(Object.keys(runtime.enemyDeaths ?? {})).toEqual([])
+    expect(Object.keys(runtime.enemyDeaths ?? {}).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
     for (const url of Object.values(ES3_DEATH_URLS)) expect(assigned).not.toContain(url)
-    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL))
+    expect(assigned).toHaveLength(22 + Number(!!ES3_EPIC_TREASURE_URL))
   })
 
   it('loads only live world image categories once at mount, not all 49 UI resources', () => {
@@ -57,7 +57,7 @@ describe('ES2 world art live asset mapping', () => {
     expect(Object.keys(runtime.bosses)).toHaveLength(4)
     expect(Object.keys(runtime.ground)).toHaveLength(4)
     expect(Object.keys(runtime.decor)).toHaveLength(4)
-    expect(assigned).toHaveLength(17 + Number(!!ES3_EPIC_TREASURE_URL))
+    expect(assigned).toHaveLength(22 + Number(!!ES3_EPIC_TREASURE_URL))
   })
 
   it('crops the real phase and enemy atlas cells without redrawing a blank image', () => {
@@ -217,22 +217,23 @@ describe('ES2 world art live asset mapping', () => {
 })
 
 
-describe('ES3 native death candidate development review', () => {
-  it('loads isolated native candidates only on explicit opt-in and falls back if decoding fails', async () => {
+describe('ES3 native death atlases in normal gameplay', () => {
+  it('preloads all five exact native atlases without a debug flag and restores canonical fallback on error', () => {
     const makeImage = (): HTMLImageElement => ({
       complete: false, naturalWidth: 0, naturalHeight: 0, src: '', onerror: null,
     }) as unknown as HTMLImageElement
-    const normal = loadWorldRuntimeImages(makeImage)
-    expect(Object.keys(normal.enemyDeaths ?? {})).toEqual([])
-    const qa = loadWorldRuntimeImages(makeImage, undefined, false, true)
-    expect(Object.keys(qa.enemyDeaths ?? {}).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
+    const runtime = loadWorldRuntimeImages(makeImage)
+    expect(Object.keys(runtime.enemyDeaths ?? {}).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
     for (const id of ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const) {
-      await vi.waitFor(() => expect(qa.enemyDeaths?.[id]?.src).toContain(id + '-death-preferred@3x.webp'))
+      expect(runtime.enemyDeaths?.[id]?.src).toContain(id + '-death-preferred@3x.webp')
+      expect(runtime.enemyDeaths?.[id]?.src).not.toBe(ES3_DEATH_URLS[id])
     }
-    const failed = qa.enemyDeaths?.golem!
+    const failed = runtime.enemyDeaths?.golem!
     expect(failed.onerror).toBeTypeOf('function')
     failed.onerror?.call(failed, {} as Event)
-    expect(qa.enemyDeaths?.golem).toBeUndefined()
-    expect(normal.enemyDeaths?.golem).toBeUndefined()
+    expect(runtime.enemyDeaths?.golem).toBeUndefined()
+    expect(runtime.enemyDeaths?.bat).toBeDefined()
+    const canonicalOnly = loadWorldRuntimeImages(makeImage, undefined, false, false)
+    expect(Object.keys(canonicalOnly.enemyDeaths ?? {})).toEqual([])
   })
 })
