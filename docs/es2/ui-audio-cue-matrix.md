@@ -60,7 +60,7 @@ Original sampled Foley through the existing SFX master; one cached buffer per ev
 | Inspect by click/tap/keyboard | select / 1 | 0.28 s | latch and glass harmonics |
 | Failed transaction | deny / 1 | 0.36 s | muted metal, descending interval |
 | Rank increase | upgrade / 1 | 0.74 s | latch, charge, three chimes |
-| Max rank | upgrade / 2 | 1.05 s | weighty low resonance and five-note bloom |
+| Max rank | upgrade / 2 | 1.42 s | rank-4 motif, richer B-major bell response, low octave and chamber tail |
 | Newly satisfied prerequisite | upgrade / 3 | 0.92 s | ascending sequence synchronized to route sweep |
 | Equipment unlocked | upgrade / 4 | 0.86 s | forged-metal double strike and low chord |
 | Blessing unlocked | upgrade / 5 | 1.02 s | airy charge and luminous harmonic tail |
@@ -68,4 +68,4 @@ Original sampled Foley through the existing SFX master; one cached buffer per ev
 Normal combat/menu calls without an explicit Hall variant keep their existing sounds. Visual accessibility settings do not override the separate sound volume/mute setting. Manual listening acceptance remains independent of PCM tests.
 
 ### Rank-specific ceremonies
-Ranks 1–4 use distinct authored tonal and percussive profiles (0.74/0.78/0.84/0.91s); max rank retains the 1.05s grand resonance. A fully opened research destination adds a delayed 0.68s arrival layer to the original rank cue in one 1.6s cached sample. Partial prerequisite edges only light their own path, without a false unlock fanfare. Rapid purchases retain the existing crossfade, mute and volume behavior.
+Ranks 1–4 use distinct authored tonal and percussive profiles (0.74/0.78/0.84/0.91s); max rank reprises the exact rank-4 opening, then adds a B-major chord response and octave at 0.52s (1.42s total), aligned with the MAX crest inscription. The combined route sample retains its 1.60s length. A fully opened research destination adds a delayed 0.68s arrival layer to the original rank cue in one 1.6s cached sample. Partial prerequisite edges only light their own path, without a false unlock fanfare. Rapid purchases retain the existing crossfade, mute and volume behavior.

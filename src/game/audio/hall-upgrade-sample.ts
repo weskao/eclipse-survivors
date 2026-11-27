@@ -8,7 +8,7 @@ const PALETTE = {
   'rank-2': { seconds: .78, peak: .67, strike: 174, notes: [293.66, 440, 587.33, 739.99], onset: .105, step: .075, decay: 7.4, charge: .30, bass: 146.83, metal: .23, air: .13 },
   'rank-3': { seconds: .84, peak: .70, strike: 130.81, notes: [220, 329.63, 440, 659.25], onset: .09, step: .093, decay: 6.2, charge: .35, bass: 110, metal: .26, air: .14 },
   'rank-4': { seconds: .91, peak: .74, strike: 164.81, notes: [246.94, 369.99, 493.88, 739.99, 987.77], onset: .10, step: .08, decay: 5.8, charge: .40, bass: 123.47, metal: .28, air: .18 },
-  milestone: { seconds: 1.05, peak: .78, strike: 143, notes: [196, 293.66, 392, 493.88, 587.33], onset: .12, step: .075, decay: 5, charge: .36, bass: 98, metal: .25, air: .15 },
+  milestone: { seconds: .90, peak: .68, strike: 123.47, notes: [246.94, 311.13, 369.99, 493.88, 622.25, 987.77], onset: .065, step: .075, decay: 4.8, charge: .31, bass: 123.47, metal: .20, air: .21 },
   route:     { seconds: .92, peak: .71, strike: 196, notes: [293.66, 440, 587.33, 880], onset: .11, step: .15, decay: 8, charge: .37, bass: 146.83, metal: .15, air: .19 },
   equipment: { seconds: .86, peak: .72, strike: 95, notes: [196, 293.66, 392], onset: .18, step: .075, decay: 7, charge: .22, bass: 98, metal: .32, air: .055 },
   keystone: { seconds: 1.14, peak: .77, strike: 116, notes: [174.61,261.63,349.23,523.25,698.46], onset: .14, step: .09, decay: 5.5, charge: .39, bass: 87.31, metal: .32, air: .14 },
@@ -57,7 +57,26 @@ export function renderHallCue(rate: number, kind: HallCue): Float32Array {
     for (let i = 0; i < arrival.length; i++) mix[offset + i] = Math.tanh(mix[offset + i]! + arrival[i]! * .72)
     return mix
   }
-  const p = PALETTE[kind as keyof typeof PALETTE]
+  if (kind === 'milestone') {
+    // The last ordinary rank is the recognizable opening. At the crest's
+    // inscription, answer it with a B-major bell chord and a lower octave.
+    // Render once into the same cached buffer: no separate voices or timers.
+    const motif = renderPalette(rate, 'rank-4')
+    const finale = renderPalette(rate, 'milestone')
+    const offset = Math.round(rate * .52)
+    const pcm = new Float32Array(Math.max(motif.length, offset + finale.length))
+    for (let i = 0; i < motif.length; i++) pcm[i] = motif[i]! * .86
+    for (let i = 0; i < finale.length; i++) pcm[offset + i] = pcm[offset + i]! + finale[i]! * .74
+    const peak = pcm.reduce((max, value) => Math.max(max, Math.abs(value)), 0)
+    const gain = peak > 0 ? .78 / peak : 0
+    for (let i = 0; i < pcm.length; i++) pcm[i] = pcm[i]! * gain
+    return pcm
+  }
+  return renderPalette(rate, kind as keyof typeof PALETTE)
+}
+
+function renderPalette(rate: number, kind: keyof typeof PALETTE): Float32Array {
+  const p = PALETTE[kind]
   const pcm = new Float32Array(Math.ceil(rate * p.seconds))
   const tau = 2 * Math.PI
   const delays = [.019, .037, .067, .113].map(t => Math.max(1, Math.round(rate * t)))

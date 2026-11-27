@@ -913,7 +913,7 @@ describe('Adventurer Hall upgrade Foley', () => {
     expect(ctx.sources[1]!.buffer).toBe(rank)
     ctx.currentTime = 12
     audio.playSfx('upgrade', 2)
-    expect(ctx.sources[2]!.buffer?.length).toBe(Math.ceil(48000 * 1.05))
+    expect(ctx.sources[2]!.buffer?.length).toBe(Math.ceil(48000 * 1.42))
     expect(ctx.sources[2]!.buffer).not.toBe(rank)
     audio.setSfxVolume(0)
     ctx.currentTime = 13

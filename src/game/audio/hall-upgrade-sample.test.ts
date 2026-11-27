@@ -6,7 +6,7 @@ describe('hall upgrade sound', () => {
     const rank = renderHallUpgradeSample(rate, false)
     const milestone = renderHallUpgradeSample(rate, true)
     expect(rank.length / rate).toBeCloseTo(.74, 2)
-    expect(milestone.length / rate).toBeCloseTo(1.05, 2)
+    expect(milestone.length / rate).toBeCloseTo(1.42, 2)
     expect(rank).toEqual(renderHallUpgradeSample(rate, false))
     for (const pcm of [rank, milestone]) {
       const peak = pcm.reduce((max, sample) => Math.max(max, Math.abs(sample)), 0)
@@ -23,7 +23,7 @@ describe('hall upgrade sound', () => {
 describe('Hall interaction and reward sound palette', () => {
   it.each([22050, 48000])('has eight distinct, finite layered cues at %i Hz', rate => {
     const kinds = ['hover', 'inspect', 'deny', 'rank', 'milestone', 'route', 'equipment', 'blessing'] as const
-    const durations = [.12, .28, .36, .74, 1.05, .92, .86, 1.02]
+    const durations = [.12, .28, .36, .74, 1.42, .92, .86, 1.02]
     const signatures = kinds.map((kind, i) => {
       const pcm = renderHallCue(rate, kind)
       expect(pcm.length / rate).toBeCloseTo(durations[i]!, 2)
@@ -87,4 +87,32 @@ it('renders distinct scoped keystone, signature, resonance and attunement ceremo
     expect(p.at(-1)).toBe(0)
     expect(p.reduce((peak,x)=>Math.max(peak,Math.abs(x)),0)).toBeLessThanOrEqual(.81)
   }
+})
+
+describe('Mastered skill musical identity', () => {
+  it.each([22050, 48000])('retains the preceding rank motif and adds a distinct audible finale at %i Hz', rate => {
+    const rank = renderHallCue(rate, 'rank-4')
+    const mastered = renderHallCue(rate, 'milestone')
+    const opening = Math.floor(rate * .48)
+    let ab = 0, aa = 0, bb = 0
+    for (let i = 0; i < opening; i++) {
+      ab += rank[i]! * mastered[i]!
+      aa += rank[i]! ** 2
+      bb += mastered[i]! ** 2
+    }
+    // A different chord at the opening breaks the musical continuity.
+    expect(ab / Math.sqrt(aa * bb)).toBeGreaterThan(.999)
+    expect(mastered.length / rate).toBeCloseTo(1.42, 2)
+    const tail = mastered.slice(Math.floor(rate * .98), Math.floor(rate * 1.25))
+    const rms = Math.sqrt(tail.reduce((sum, sample) => sum + sample ** 2, 0) / tail.length)
+    expect(rms).toBeGreaterThan(.012)
+    expect(mastered.reduce((peak, sample) => Math.max(peak, Math.abs(sample)), 0)).toBeLessThanOrEqual(.81)
+    expect(mastered[0]).toBe(0)
+    expect(mastered.at(-1)).toBe(0)
+    // Even when the last rank opens another node, keep the mastered motif.
+    const routed = renderHallCue(rate, hallCueKey('upgrade', hallRankVariant(5, 5, true))!)
+    expect(routed.length / rate).toBeCloseTo(1.6, 2)
+    expect(routed.slice(0, opening)).toEqual(mastered.slice(0, opening).map(sample => sample * .83))
+    expect(routed.slice(Math.floor(rate * 1.2)).some(sample => Math.abs(sample) > .005)).toBe(true)
+  })
 })

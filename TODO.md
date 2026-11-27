@@ -292,3 +292,7 @@ Baseline evidence: [ES4 verification 45961478312](https://github.com/weskao/ecli
 ### ES4 completed-node visual refinement
 - [x] Shared permanent max-rank crest, full gold bezel, MAX plate and distinct one-rank ownership seal; rank-derived state and bounded final-purchase animation implemented.
 - [ ] Verify completed-node regression suite, actual browser/device screenshots, reduced-motion/flashing and final-rank audio/animation timing in CI. No final art approval implied.
+
+### Hall mastered sound refinement
+- [x] Distinct advanced maximum-rank cue retaining the prior rank's exact musical opening, adding a richer harmonized finale; independent waveform regression verified at 22,050/48,000 Hz, unrelated cues unchanged.
+- [ ] Verify Vitest audio scheduler and full CI; audition the 1.42s mastered cue and 1.60s combined route cue in actual game with music, mobile speakers and headphones.
