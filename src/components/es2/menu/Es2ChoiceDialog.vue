@@ -67,7 +67,7 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
       <Es2ChoiceCards :kind="kind" :items="uniqueItems" :disabled="selecting" :label="t(captions[kind])" @choose="tap" />
     </div>
     <template #actions>
-      <p class="es2-hint"><span v-if="kind === 'level'" class="es2-hint-text">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</span><button
+      <p class="es2-hint"><span v-if="kind === 'level' || uniqueItems.length" class="es2-hint-text" :class="{ 'es2-level-hint': kind === 'level' }">{{ t(uniqueItems.length ? '點選卡牌或按 1–9 選擇' : '目前沒有可用的選項') }}</span><button
         v-if="kind !== 'level' || revealKind" type="button" role="checkbox" class="es3-skip-reveal" data-es3-skip-reveal :aria-checked="skipChecked"
         @click="toggleSkip"><span class="es3-skip-reveal__box" aria-hidden="true"></span>{{ t('跳過揭曉動畫') }}</button></p>
     </template>
@@ -110,7 +110,7 @@ watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), pro
 
 /* Remembered skip checkbox, in the shared hint row under the cards. */
 .es2-hint { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:4px 14px; min-width:0; max-width:100%; margin:0; }
-.es2-hint-text { overflow-wrap:anywhere; }
+.es2-hint-text { flex:0 1 auto; min-width:0; max-width:100%; overflow-wrap:anywhere; }
 button.es3-skip-reveal { appearance:none; display:inline-flex; flex:0 1 auto; align-items:center; justify-content:center; gap:8px; min-width:44px; max-width:100%; min-height:44px; white-space:normal; overflow-wrap:anywhere; padding:0 14px; border:1px solid #e2b77955; border-radius:999px; background:#0d1220cc; box-shadow:none; color:#f1e3c8; font:600 .8125rem/1.2 system-ui,sans-serif; cursor:pointer; }
 .es3-skip-reveal__box { position:relative; flex:0 0 18px; width:18px; height:18px; box-sizing:border-box; border:2px solid #c9a46a; border-radius:4px; background:#101a27; }
 .es3-skip-reveal[aria-checked="true"] .es3-skip-reveal__box { border-color:#ffe6b0; background:linear-gradient(145deg,#fff1c9,#d7b47b 50%,#967044); }

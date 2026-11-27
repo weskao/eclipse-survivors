@@ -22,6 +22,9 @@ describe('ES2 choice card responsive illustrations', () => {
     expect(css).toMatch(/\.es2-dialog-choice > \.es2-dialog-body\{margin-block-end:0\}/)
     expect(css).toContain('.es2-dialog-choice > .es2-dialog-actions:not(:has(.es3-skip-reveal)){display:none}')
     expect(picker).not.toMatch(/@media \(prefers-reduced-motion: reduce\)[^\n]*\.es3-skip-reveal/)
+    expect(picker).toMatch(/\.es2-hint \{[^}]*flex-wrap:wrap;[^}]*gap:4px 14px/)
+    expect(css).toContain('.es2-dialog-choice > .es2-dialog-actions .es2-hint-text.es2-level-hint{display:none}')
+    expect(css).not.toContain('.es2-dialog-choice > .es2-dialog-actions .es2-hint-text{display:none}')
   })
   it('reserves image height separately from longer titles and descriptions', () => {
     expect(css).toMatch(/\.es2-card-art\{[^}]*flex:0 0 auto/)

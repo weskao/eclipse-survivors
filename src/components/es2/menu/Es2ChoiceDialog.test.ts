@@ -356,14 +356,16 @@ it.each([false, true])('keeps the same isolated treasure and evolution footer (s
     expect(footer().textContent).toContain('點選卡牌或按 1–9 選擇')
     expect(skip()).toBeNull()
     await wrapper.setProps({ kind: 'treasure', tier: 'rare' })
-    expect(footer().querySelector('.es2-hint-text')).toBeNull()
-    expect(footer().children).toHaveLength(1)
+    expect(footer().children).toHaveLength(2)
+    expect(footer().firstElementChild?.textContent).toBe('點選卡牌或按 1–9 選擇')
+    expect(footer().lastElementChild).toBe(skip())
     expect(skip().getAttribute('aria-checked')).toBe('true')
-    expect(footer().textContent?.trim()).toBe('跳過揭曉動畫')
+    expect(skip().textContent?.trim()).toBe('跳過揭曉動畫')
     expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
     setLocale('en', storage)
     await nextTick()
-    expect(footer().textContent?.trim()).toBe('Skip Reveal')
+    expect(footer().firstElementChild?.textContent).toBe('Click a card or press 1–9 to select')
+    expect(skip().textContent?.trim()).toBe('Skip Reveal')
     skip().click()
     await nextTick()
     expect(skip().getAttribute('aria-checked')).toBe('false')
@@ -376,7 +378,9 @@ it.each([false, true])('keeps the same isolated treasure and evolution footer (s
     const treasureFooter = footer().innerHTML
     await wrapper.setProps({ kind: 'evolution' })
     expect(footer().innerHTML).toBe(treasureFooter)
-    expect(footer().children).toHaveLength(1)
+    expect(footer().children).toHaveLength(2)
+    expect(footer().firstElementChild?.textContent).toBe('Click a card or press 1–9 to select')
+    expect(footer().lastElementChild).toBe(skip())
     expect(dialog().querySelector('.es2-dialog-body [data-es3-skip-reveal]')).toBeNull()
     expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
     await wrapper.setProps({ items: [] })
@@ -390,11 +394,12 @@ it.each([false, true])('keeps the same isolated treasure and evolution footer (s
   }
 })
 
-it('uses a checkbox-only evolution footer while preserving the ordinary upgrade hint', async () => {
+it('places the localized evolution selection hint immediately before its checkbox and preserves the ordinary upgrade hint', async () => {
   const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'evolution', items: choices })
   await nextTick()
-  expect(dialog().querySelector('.es2-hint-text')).toBeNull()
-  expect(dialog().querySelector('.es2-dialog-actions [data-es3-skip-reveal]')).not.toBeNull()
+  const hint = dialog().querySelector('.es2-dialog-actions .es2-hint-text')!
+  expect(hint.textContent).toBe('點選卡牌或按 1–9 選擇')
+  expect(hint.nextElementSibling).toBe(dialog().querySelector('.es2-dialog-actions [data-es3-skip-reveal]'))
   await wrapper.setProps({ kind: 'level' })
   expect(dialog().querySelector('.es2-hint-text')).not.toBeNull()
   expect(dialog().querySelector('[data-es3-skip-reveal]')).toBeNull()

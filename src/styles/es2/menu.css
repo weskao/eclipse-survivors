@@ -289,7 +289,7 @@
 @media (orientation:landscape) and (max-height:520px){.es2-dialog-choice > .es2-dialog-actions{margin-top:4px;padding-top:2px}}
 @media (orientation:landscape) and (max-height:520px) and (pointer:coarse){
   .es2-dialog-choice > .es2-dialog-actions:not(:has(.es3-skip-reveal)){display:none}
-  .es2-dialog-choice > .es2-dialog-actions .es2-hint-text{display:none}
+  .es2-dialog-choice > .es2-dialog-actions .es2-hint-text.es2-level-hint{display:none}
 }
 
 /* Locale-safe wrapping: longer English and large zh-TW text must not widen cards or dialogs. */
