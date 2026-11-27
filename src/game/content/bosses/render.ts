@@ -7,7 +7,7 @@ import { drawEnergyMissile } from '../../render/energy-art'
 import type { ProjectileArtId, ProjectileSprites } from '../../render/projectile-art'
 import type { VisualPresentationPolicy } from '../accessibility/presentation'
 
-const ATTACK_ART = import.meta.glob('../../../assets/es2/production/skills/boss-attacks/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
+import { ATTACK_ART } from './attack-art'
 const MATERIAL_ART = import.meta.glob('../../../assets/es2/production/skills/boss-materials/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>
 export type BossMaterialKind = 'abyss' | 'frost' | 'infernal' | 'seraph'
 export type BossMaterialSprites = Partial<Record<BossMaterialKind, HTMLImageElement>>
