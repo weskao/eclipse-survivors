@@ -19,6 +19,12 @@ jobs:
   capture:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        hero: [knight, ranger, wizard, shadowblade, spirit-summoner, crimson-paladin]
+    env:
+      HERO_ID: ${{ matrix.hero }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
@@ -46,7 +52,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: es2-six-heroes-real-combat-live-audio-mp4
+          name: es2-real-combat-live-audio-${{ matrix.hero }}-mp4
           path: artifacts/es2-hero-active-gameplay/
           if-no-files-found: warn
           retention-days: 30

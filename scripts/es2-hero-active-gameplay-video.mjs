@@ -10,7 +10,9 @@ import { chromium } from 'playwright'
 const output = 'artifacts/es2-hero-active-gameplay'
 const base = new URL(process.env.PREVIEW_URL ?? 'http://127.0.0.1:4174/')
 base.searchParams.set('heroActiveVideoQa', '1')
-const heroes = ['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin']
+const allHeroes = ['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin']
+const heroes = process.env.HERO_ID ? allHeroes.filter(id => id === process.env.HERO_ID) : allHeroes
+assert.ok(heroes.length, 'Unknown HERO_ID')
 const display = process.env.DISPLAY
 assert.ok(display, 'Xvfb DISPLAY is required for real window capture')
 await mkdir(output, { recursive: true })
@@ -39,31 +41,41 @@ try {
         null, { timeout: 45000 })
       await page.waitForFunction(() => window.__test?.pixiVfx?.status === 'ready', null, { timeout: 30000 })
       assert.equal(await action.getAttribute('data-ready'), 'true')
-      const before = await page.evaluate(() => ({ frames: window.__test.frames, gpu: window.__test.pixiVfx.heroPasses }))
+      assert.equal(await page.evaluate(() => window.__test.prepareHeroActiveVideo()), true)
+      const before = await page.evaluate(() => ({ frames: window.__test.frames, gpu: window.__test.pixiVfx.heroPasses, time: window.__test.time }))
+      // Software WebGL and live encoding share CPU; the recording must track game time,
+      // not an arbitrary seven-second wall-clock cutoff.
       const file = output + '/' + heroId + '-real-combat-with-audio.mp4'
       let recordingError = ''
-      recorder = spawn('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'warning', '-y',
+      recorder = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'warning', '-y',
         '-thread_queue_size', '1024', '-f', 'x11grab', '-draw_mouse', '0', '-framerate', '30',
         '-video_size', '1280x720', '-i', display + '+0,0',
         '-thread_queue_size', '1024', '-f', 'pulse', '-i', 'heroqa.monitor',
-        '-t', '7', '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '20',
+        '-t', '60', '-c:v', 'libx264', '-threads', '2', '-preset', 'ultrafast', '-crf', '20',
         '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-ac', '2', '-movflags', '+faststart', file])
       recorder.stderr.on('data', data => { recordingError += data.toString() })
       const recorded = new Promise(resolve => {
         recorder.once('error', e => resolve({ code: -1, error: String(e) }))
         recorder.once('close', code => resolve({ code, error: recordingError }))
       })
-      await page.waitForTimeout(950)
-      assert.equal(await page.evaluate(() => window.__test.prepareHeroActiveVideo()), true)
-      await page.waitForTimeout(300)
+      const recordingStarted = Date.now()
+      await page.waitForTimeout(1250)
       await page.keyboard.press('KeyQ')
       await page.waitForFunction(id => document.querySelector('.es2-hero-special[data-hero="' + id + '"] [data-hero-special]')?.getAttribute('data-ready') === 'false', heroId, { timeout: 3000 })
       await page.waitForFunction(previous => window.__test?.pixiVfx?.heroPasses > previous, before.gpu, { timeout: 5000 })
       await page.screenshot({ path: output + '/' + heroId + '-actual-cast.png' })
-      // Continue real combat, with ordinary movement and legal choices if they appear.
+      // Keep the recorder active until the actual simulation has shown the whole cast.
+      // A level dialog, stopped Canvas, or stalled simulation must still fail the job.
+      await page.waitForFunction(start => window.__test?.mode === 'play' &&
+        window.__test.frames > start.frames + 30 && window.__test.time >= start.time + 2.6,
+        before, { timeout: 45000 })
       await page.keyboard.down('KeyD')
-      await page.waitForTimeout(600)
-      await page.keyboard.up('KeyD')
+      try { await page.waitForTimeout(600) } finally { await page.keyboard.up('KeyD') }
+      await page.waitForTimeout(Math.max(0, 7200 - (Date.now() - recordingStarted)))
+      assert.equal(await page.evaluate(() => window.__test.mode), 'play')
+      assert.equal(recorder.exitCode, null, 'FFmpeg ended before the real cast finished')
+      recorder.stdin.write('q')
+      recorder.stdin.end()
       const result = await recorded
       assert.equal(result.code, 0, result.error)
       const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-show_streams', '-show_format', '-of', 'json', file], { encoding: 'utf8' }))
@@ -84,7 +96,7 @@ try {
       assert.deepEqual(errors, [])
       const evidence = { heroId, file, bytes: (await stat(file)).size, duration: probe.format.duration,
         audioPeakDb: peak, canvasFrames: after.frames - before.frames, gpuPasses: after.gpu - before.gpu,
-        source: 'real game window and live system audio; DEV target placement only' }
+        source: 'real game window and live system audio; DEV target placement and deferred level-up only' }
       results.push(evidence)
       await writeFile(output + '/capture-evidence.json', JSON.stringify({ sha: process.env.GITHUB_SHA, results }, null, 2))
       console.log('CAPTURED', JSON.stringify(evidence))
@@ -96,4 +108,4 @@ try {
 } finally {
   await browser.close()
 }
-assert.equal(results.length, 6)
+assert.equal(results.length, heroes.length)
