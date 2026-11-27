@@ -34,6 +34,8 @@ export const BOSS_NATIVE_KEYFRAMES = {
   seraphRelease: ['batch-17/eclipse-seraph/attack/light-ring-release-key-a.webp', 1254, 1254, 624, 1235],
   seraphHurt: ['batch-21/eclipse-seraph/hurt/seraph-hurt-key-a.webp', 1197, 1452, 597, 1363],
   seraphDeath: ['batch-14/eclipse-seraph/death/fallen-key-a.webp', 1254, 1254, 614.5, 1225],
+  abyssAwakening: ['batch-22/abyss-monarch/transform/awakening-key-a.webp', 1318, 1318, 657, 1274],
+  frostDeath: ['batch-22/frost-sovereign/death/shatter-collapse-key-a.webp', 1318, 1318, 662, 1170],
 } as const
 export type NativeBossKeyframe = keyof typeof BOSS_NATIVE_KEYFRAMES
 const registered = new WeakMap<HTMLImageElement, NativeBossKeyframe>()
@@ -50,6 +52,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   if (!snapshot.phase || !motion || motion.phase !== snapshot.phase
       || !Number.isFinite(motion.progress) || motion.progress < 0 || motion.progress > 1) return null
   if (snapshot.id === 'abyss-monarch') {
+    if (motion.phase === 3 && motion.pose === 'transform') return 'abyssAwakening'
     if (motion.phase === 3 && motion.pose === 'death') return 'abyssDeath'
     if (motion.phase !== 1) return null
     if (motion.pose === 'idle') return 'abyssIdle'
@@ -63,6 +66,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
     return null
   }
   if (snapshot.id === 'frost-sovereign') {
+    if (motion.phase === 3 && motion.pose === 'death') return 'frostDeath'
     if (motion.phase !== 1) return null
     if (motion.pose === 'hurt') return 'frostHurt'
     if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'ice-fan')) return 'frostWindup'
