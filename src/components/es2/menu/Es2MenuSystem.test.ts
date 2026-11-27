@@ -399,14 +399,18 @@ describe('ES2 responsive and motion CSS contract', () => {
       // Old one-off fades are replaced, not layered.
       expect(css).not.toMatch(/es2-page-arrive|es2-enter\b/)
     })
-    it('keeps the lobby fade opacity-only so the fixed action bar stays pinned to the viewport bottom', () => {
-      // A filling translate/scale animation makes .es2-menu the containing block of its fixed action bar.
+    it('keeps viewport shell and dock fades opacity-only without persistent compositing layers', () => {
+      // Viewport surfaces must not retain translated or scaled layers.
       const menuRule = block.match(/^\.es2-menu\s*\{([^}]*)\}/m)?.[1] ?? ''
       const keyframe = menuRule.match(/animation:\s*([\w-]+)/)?.[1] ?? ''
       expect(keyframe).toBeTruthy()
       const frames = block.match(new RegExp(`@keyframes ${keyframe}\\s*\\{([^}]*\\})\\s*\\}`))?.[1] ?? ''
       expect(frames).toContain('opacity')
       expect(frames).not.toMatch(/translate|scale|transform|filter|perspective/)
+      const dockRule = block.match(/^\.es2-menu-action-bar\s*\{([^}]*)\}/m)?.[1] ?? ''
+      expect(dockRule).toContain('animation: ' + keyframe)
+      expect(menuRule).toContain('backwards')
+      expect(dockRule).toContain('backwards')
     })
     it('covers home pages, dialogs, choice cards, loading and combat entry', () => {
       for (const selector of ['.es2-menu', '.es2-hero-section', '.es2-mode-section', '.es2-archive-page', '.es2-menu-action-bar',

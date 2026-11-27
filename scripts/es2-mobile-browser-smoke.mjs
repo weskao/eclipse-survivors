@@ -108,11 +108,11 @@ try {
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
       assert.match(await page.locator('#gameVersion').innerText(), /^v[0-9]/)
       const assertHomepage = async (section) => {
-        await page.locator('.es2-menu').evaluate(element => { element.scrollTop = 0 })
+        await page.locator('.es2-menu-scroll').evaluate(element => { element.scrollTop = 0 })
         const layout = await page.evaluate(() => {
           const start = document.querySelector('.es2-start')
           const rect = start.getBoundingClientRect()
-          const root = document.querySelector('.es2-menu')
+          const root = document.querySelector('.es2-menu-scroll')
           const bar = document.querySelector('.es2-menu-action-bar')
           const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2)
           return {
@@ -133,17 +133,15 @@ try {
         assert.equal(layout.menuScroll, 0, `${viewport.name}: ${section}: homepage auto-scrolled`)
         assert.ok(layout.startHeight >= 44 && layout.startHit, `${viewport.name}: ${section}: Start is obscured or too small ${JSON.stringify(layout)}`)
         assert.ok(layout.menuOverflowX <= 2, `${viewport.name}: ${section}: menu scrolls horizontally ${JSON.stringify(layout)}`)
-        if (viewport.width > viewport.height) {
-          assert.ok(layout.menuBottom <= layout.barTop + 2, `${viewport.name}: ${section}: selection area overlaps Start dock ${JSON.stringify(layout)}`)
-          const scrolled = await page.locator('.es2-menu').evaluate(root => {
-            root.scrollTop = root.scrollHeight
-            const start = root.querySelector('.es2-start'), rect = start.getBoundingClientRect()
-            const visible = rect.top >= 0 && rect.bottom <= innerHeight + 2 && start.contains(document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2))
-            root.scrollTop = 0
-            return visible
-          })
-          assert.ok(scrolled, `${viewport.name}: ${section}: Start becomes inaccessible when scrolling`)
-        }
+        assert.ok(layout.menuBottom <= layout.barTop + 2, `${viewport.name}: ${section}: selection area overlaps Start dock ${JSON.stringify(layout)}`)
+        const scrolled = await page.locator('.es2-menu-scroll').evaluate(root => {
+          root.scrollTop = root.scrollHeight
+          const start = document.querySelector('.es2-start'), rect = start.getBoundingClientRect()
+          const visible = rect.top >= 0 && rect.bottom <= innerHeight + 2 && start.contains(document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2))
+          root.scrollTop = 0
+          return visible
+        })
+        assert.ok(scrolled, `${viewport.name}: ${section}: Start becomes inaccessible when scrolling`)
       }
       const assertHeroArtUsesSpace = async (family) => {
         const selector = family === 'new'
