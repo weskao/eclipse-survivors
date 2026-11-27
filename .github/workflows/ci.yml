@@ -1,0 +1,36 @@
+name: CI
+# Skyline Rush-style workflow/ref concurrency, plus branch-wide stale run cleanup.
+# Never use one shared concurrency group for all workflows: current-SHA siblings
+# must execute in parallel instead of cancelling one another.
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  cancel-stale-ci:
+    if: startsWith(github.ref, 'refs/heads/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            scripts/cancel-stale-ci.mjs
+            scripts/cancel-stale-ci.test.mjs
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - name: Cancel all superseded branch CI workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --test scripts/cancel-stale-ci.test.mjs
+          node scripts/cancel-stale-ci.mjs
