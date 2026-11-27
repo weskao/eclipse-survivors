@@ -546,3 +546,20 @@ describe('ES3 production boss body motion', () => {
     expect(boss.hp).toBe(boss.max - 1)
   })
 })
+
+it('keeps living enemy art readable without a bright hit flash when Reduced Flashing is enabled', () => {
+  const s = busyState(), art = fakeArtwork(true)
+  const enemy = mob('slime', 80, 80, { hit: .12 })
+  const sample = (reducedFlashing: boolean) => {
+    const f = createFakeCtx()
+    const filters: string[] = []
+    f.ctx.drawImage = (...args: unknown[]) => {
+      if (args[0] === art.slime) filters.push(f.ctx.filter)
+    }
+    drawCharacter(f.ctx, s, art, {}, enemy, 0, 0, false, undefined, undefined, undefined, undefined, undefined, false, reducedFlashing)
+    return filters
+  }
+  expect(sample(false)).toEqual(['brightness(1.3) sepia(.25)'])
+  expect(sample(true)).toEqual(['none'])
+  expect(enemy.hit).toBe(.12)
+})

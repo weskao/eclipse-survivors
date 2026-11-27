@@ -251,3 +251,40 @@ describe('App', () => {
   })
 
 })
+
+it('updates live Canvas and root presentation when system motion changes, then releases the listener', async () => {
+  const key = 'eclipse-survivors.accessibility.v1'
+  const saved = localStorage.getItem(key)
+  localStorage.setItem(key, JSON.stringify({ reducedMotion: 'system' }))
+  const motion = Object.assign(new EventTarget(), { matches: false, media: '(prefers-reduced-motion: reduce)' })
+  vi.stubGlobal('matchMedia', (query: string) => query === motion.media ? motion :
+    Object.assign(new EventTarget(), { matches: false, media: query }))
+  const engine = { ...createEngine(), mount: vi.fn(() => vi.fn()) }
+  const policy = vi.spyOn(engine, 'setVisualPresentationPolicy')
+  let wrapper: ReturnType<typeof mount> | undefined
+  try {
+    wrapper = mount(App, { props: { engine }, attachTo: document.body })
+    engine.start()
+    await nextTick()
+    expect(document.documentElement.dataset.es2ReduceMotion).toBe('false')
+    motion.matches = true
+    motion.dispatchEvent(Object.assign(new Event('change'), { matches: true }))
+    await nextTick()
+    expect(document.documentElement.dataset.es2ReduceMotion).toBe('true')
+    expect(policy).toHaveBeenLastCalledWith(expect.objectContaining({ reduceMotion: true }))
+    motion.matches = false
+    motion.dispatchEvent(Object.assign(new Event('change'), { matches: false }))
+    await nextTick()
+    expect(document.documentElement.dataset.es2ReduceMotion).toBe('false')
+    expect(policy).toHaveBeenLastCalledWith(expect.objectContaining({ reduceMotion: false }))
+    wrapper.unmount(); wrapper = undefined
+    const calls = policy.mock.calls.length
+    motion.dispatchEvent(new Event('change'))
+    expect(policy.mock.calls).toHaveLength(calls)
+  } finally {
+    wrapper?.unmount()
+    vi.unstubAllGlobals()
+    if (saved === null) localStorage.removeItem(key)
+    else localStorage.setItem(key, saved)
+  }
+})
