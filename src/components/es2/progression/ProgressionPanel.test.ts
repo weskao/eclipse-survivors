@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { BALANCE } from '../../../game/config'
 import { getLocale, setLocale } from '../../../i18n'
+import { buyResearch } from '../../../game/content/meta/progression'
 import { createMetaState } from '../../../game/content/meta/state'
 import ProgressionPanel from './ProgressionPanel.vue'
 
@@ -88,6 +89,41 @@ describe('ES2 v3 progression UI adapter', () => {
     expect(wrapper.get('[data-achievement="first-victory"]').text()).toContain('已達成')
     expect(wrapper.get('[data-achievement="monster-hunter"]').text()).toContain('未達成')
     expect(wrapper.findAll('section[aria-label]')).toHaveLength(4)
+    wrapper.unmount()
+  })
+})
+
+describe('Adventurer Hall growth routes', () => {
+  it('displays actual prerequisites, current/next benefit and the rank ring without spending on inspection', async () => {
+    const state = createMetaState()
+    state.embers = 200
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    expect(wrapper.findAll('[data-hall-edge]')).toHaveLength(4)
+    expect(wrapper.get('[data-hall-edge="power:insight"]').attributes('data-active')).toBe('false')
+    await wrapper.get('[data-hall-inspect="power"]').trigger('click')
+    expect(wrapper.get('[data-hall-detail]').text()).toContain('+4%')
+    expect(wrapper.get('[data-hall-node="power"] img').attributes('src')).toContain('damage@3x.webp')
+    expect(wrapper.get('[data-hall-node="power"] [role="progressbar"]').attributes('aria-valuenow')).toBe('0')
+    expect(wrapper.emitted('research')).toBeUndefined()
+    await wrapper.get('[data-hall-inspect="insight"]').trigger('click')
+    expect(wrapper.get('[data-hall-detail]').text()).toContain('攻擊研究')
+    expect(wrapper.get('[data-research="insight"]').attributes('disabled')).toBeDefined()
+    wrapper.unmount()
+  })
+
+  it('animates only a committed rank increase and lights the real unlocked connection', async () => {
+    const state = createMetaState()
+    state.embers = 200
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    await wrapper.get('[data-research="power"]').trigger('click')
+    expect(wrapper.find('[data-hall-upgraded]').exists()).toBe(false)
+    const result = buyResearch(state, 'power')
+    expect(result.ok).toBe(true)
+    await wrapper.setProps({ state: result.state })
+    expect(wrapper.get('[data-hall-upgraded="power"]').exists()).toBe(true)
+    expect(wrapper.get('[data-hall-edge="power:insight"]').attributes('data-active')).toBe('true')
+    expect(wrapper.get('[data-research="insight"]').attributes('disabled')).toBeUndefined()
+    expect(state.research.power).toBe(0)
     wrapper.unmount()
   })
 })

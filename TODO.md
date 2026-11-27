@@ -166,3 +166,12 @@ Implementation status (2026-11-26): substantial implementation integrated. See [
 - [ ] `src/components/es2/menu/Es2SourceFramePreview.test.ts` (4 tests) — enemy/boss/decor preview animations and the `.es2-world-art-scene` `object-fit` rule are missing
 - [ ] `src/assets/es2/production/ui/ui-runtime-sizing.test.ts` — the 3× art budget computes `NaN`
 - [ ] `src/assets/es2/production/heroes/production-art.test.ts` — shadowblade, spirit-summoner and crimson-paladin are still unreviewed; this clears only with human visual approval, not a code change
+
+
+## Adventurer Hall — Celestial Legacy growth board (2026-11-27)
+- [ ] Wave 1: derive research routes, rank totals, prerequisites and current/next benefits from the authoritative catalog; preserve prices, save and cloud transaction contracts.
+- [ ] Wave 2: shared circular WebP node template for research, starting equipment/blessings and legacy archive; desktop hover/focus, touch selection and explicit purchase; mastery progress.
+- [ ] Wave 3: consistent dark-fantasy art direction, existing 3x WebP icons, readable progress rings and connected paths, responsive narrow/landscape/tablet/foldable/desktop.
+- [ ] Wave 4: accepted-purchase-only finite upgrade animation, newly available route highlighting, original layered audio through existing SFX/mute bus; reduced motion/flashing.
+- [ ] Add behavior regressions, execute RED → GREEN → REFACTOR, verify full CI and actual browser viewport matrix in both locales.
+- [ ] Review actual game screenshots and audition the upgrade cue on desktop/mobile; do not claim manual art/audio approval from automated tests.
