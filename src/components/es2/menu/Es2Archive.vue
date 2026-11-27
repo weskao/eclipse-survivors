@@ -108,12 +108,18 @@ const achievementArt: Record<string, string> = {
         <button v-for="skin in skins" :key="skin.id" type="button" data-ui-sfx="managed"
           :data-es2-cosmetic-option="skin.id" :style="cosmeticStyle(skin.id)"
           :disabled="!profile.unlockedCosmetics.includes(skin.id)"
-          :aria-pressed="profile.equippedCosmetics[cosmeticHero] === skin.id" @click="emit('cosmetic', cosmeticHero, skin.id)">
+          :aria-pressed="profile.equippedCosmetics[cosmeticHero] === skin.id"
+          :aria-disabled="profile.equippedCosmetics[cosmeticHero] === skin.id ? true : undefined"
+          @click="profile.equippedCosmetics[cosmeticHero] !== skin.id && emit('cosmetic', cosmeticHero, skin.id)">
           <span class="es2-skin-preview" aria-hidden="true"><HeroPortrait :hero-id="selectedHeroId" alt="" /><span class="es2-skin-ring"></span></span>
           <strong>{{ t(skin.name) }}</strong>
           <small v-if="!profile.unlockedCosmetics.includes(skin.id)" class="es2-skin-locked"><span aria-hidden="true">🔒</span> {{ t('未解鎖') }}</small>
           <small v-if="!profile.unlockedCosmetics.includes(skin.id) && unlockCondition(skin.id)" class="es2-skin-unlock" data-es2-cosmetic-unlock>{{ t('解鎖條件：{condition}', { condition: t(unlockCondition(skin.id)) }) }}</small>
-          <small v-if="profile.unlockedCosmetics.includes(skin.id)">{{ t(profile.equippedCosmetics[cosmeticHero] === skin.id ? '✓ 使用中' : '套用造型') }}</small>
+          <span v-if="profile.unlockedCosmetics.includes(skin.id)" class="es2-skin-status"
+             :data-es2-skin-status="profile.equippedCosmetics[cosmeticHero] === skin.id ? 'equipped' : 'available'">
+             {{ t(profile.equippedCosmetics[cosmeticHero] === skin.id ? '✓ 使用中' : '套用造型') }}
+             <span v-if="profile.equippedCosmetics[cosmeticHero] !== skin.id" aria-hidden="true">›</span>
+           </span>
         </button>
       </div>
       <button class="es2-danger" type="button" @click="emit('reset')">{{ t("重置永久進度…") }}</button>

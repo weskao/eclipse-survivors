@@ -36,5 +36,6 @@ export function renderHeroSelectSample(rate: number): Float32Array {
   }
   const gain = peak > 0 ? .42 / peak : 0
   for (let i = 0; i < pcm.length; i++) pcm[i] = pcm[i]! * gain
+  pcm[pcm.length - 1] = 0
   return pcm
 }
