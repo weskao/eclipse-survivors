@@ -121,7 +121,7 @@ export function createContentRegistry(packs: readonly ContentPack[] = [], rng: (
         state.content.cooldowns[ability.id] = Math.max(0, timer)
         if (timer > 0) continue
         const cooldown = ability.cooldownSeconds ?? 0
-        if (cooldown) state.content.cooldowns[ability.id] = cooldown
+        if (cooldown) state.content.cooldowns[ability.id] = cooldown * ((ability.kind==='weapon'||ability.kind==='evolution') ? state.hall?.weaponCooldown ?? 1 : 1)
         ability.onTick(context(state, hooks), dt, level)
       }
     },

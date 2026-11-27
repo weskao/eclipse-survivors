@@ -238,3 +238,17 @@ it('marks only landed faction crits and preserves actual HP loss', () => {
   expect(healthCriticalVersion(enemy)).toBeGreaterThan(0)
 })
 
+
+it('resolves both actors crossed by a piercing arrow in the same swept segment', () => {
+  const s=game(), bridge=createFactionBridge({random:()=>0})
+  const first={x:35,y:0,r:10,hp:100,max:100,type:'slime',hit:0,stagger:0,kx:0,ky:0} as Mob
+  s.mobs.push(first)
+  const second=bridge.spawn(s,'berserker',110,0)!
+  const hp=second.hp
+  const shot: Shot={x:180,y:0,prevX:0,prevY:0,vx:0,vy:0,d:10,r:5,life:1,kind:'arrow',hallPierce:1,hallVisited:new Set()}
+  bridge.resolveShot(s,shot,hooks,{x:0,y:0})
+  expect(first.hp).toBe(90)
+  expect(second.hp).toBeLessThan(hp)
+  expect(shot.life).toBe(0)
+  expect(bridge.resolveShot(s,shot,hooks,{x:0,y:0})).toBeNull()
+})

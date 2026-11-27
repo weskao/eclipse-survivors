@@ -43,7 +43,9 @@ export function installHallRun(state: GameState, snapshot: HallRunSnapshot): voi
   state.xpGainMultiplier *= h.xp
 }
 export function withHallSource(state: GameState, hooks: GameHooks, source: HallDamageSource, area = false): GameHooks {
-  return state.hall ? { ...hooks, hallSource: source, hallArea: area } : hooks
+  if (!state.hall) return hooks
+  if (source==='proc') return {...hooks,hallSource:source,hallArea:false,modifyOutgoingDamage:undefined,consumeCriticalHit:undefined}
+  return { ...hooks, hallSource: source, hallArea: area }
 }
 export function hallCritBonus(state: GameState, source?: HallDamageSource): number {
   const h = state.hall

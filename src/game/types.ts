@@ -95,7 +95,7 @@ export interface EnemyProjectile {
 export interface Shot {
   x: number; y: number; vx: number; vy: number; life: number; d: number
   kind: 'arrow' | 'magic'; r: number; prevX?: number; prevY?: number
-  hallPierce?: number; hallVisited?: Set<object>; hallProc?: boolean
+  hallPierce?: number; hallVisited?: Set<object>; hallProc?: boolean; hallWeapon?: boolean
 }
 
 export interface Star { x: number; y: number; value: number; t: number; dead?: boolean; attractionSpeed?: number; mergedReceipts?: Map<number, number> }

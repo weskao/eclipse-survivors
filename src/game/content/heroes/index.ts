@@ -1,6 +1,6 @@
 import { BALANCE } from '../../config'
 import { HERO_MASTERY_DESCRIPTIONS } from './mastery-preview'
-import { damageHero, hit } from '../../combat'
+import { combatTargets, damageHero, hit, hitTarget, type CombatTarget } from '../../combat'
 import { impact } from '../../fx'
 import { random as simulationRandom } from '../../math'
 import { createHero } from '../../state'
@@ -164,12 +164,12 @@ const PALADIN = BALANCE.heroes.specialEffects['crimson-paladin']
 const COMPANION_ORDER = ['wisp', 'guardian', 'reaver'] as const
 
 /** Attack-time target selection: squared distances, no full-array sort, and at most three results. */
-function nearby(state: GameState, reach: number, limit: number): Mob[] {
+function nearby(state: GameState, reach: number, limit: number, hooks: GameHooks): CombatTarget[] {
   const hero = state.hero
   if (!hero) return []
-  const selected: { mob: Mob; d: number }[] = []
+  const selected: { mob: CombatTarget; d: number }[] = []
   const reachSquared = reach * reach
-  for (const enemy of state.mobs) {
+  for (const enemy of combatTargets(state,hooks.factions?.())) {
     if (enemy.hp <= 0) continue
     const dx = enemy.x - hero.x
     const dy = enemy.y - hero.y
@@ -185,7 +185,7 @@ function nearby(state: GameState, reach: number, limit: number): Mob[] {
 }
 
 // Captured before hit() so knockback or death cannot move the visual contact point.
-const strikePoints = (mobs: readonly Mob[]): readonly CastTarget[] =>
+const strikePoints = (mobs: readonly CombatTarget[]): readonly CastTarget[] =>
   mobs.length ? Object.freeze(mobs.map(m => Object.freeze({ x: m.x, y: m.y }))) : NO_TARGETS
 
 /**
@@ -210,6 +210,7 @@ export function createHeroSpecializationAdapter(
   let lastTargets = NO_TARGETS
   let phantomAt = 0, sanctuaryAt = 0, reckoningAt = 0
 
+  const strike=(target:CombatTarget,amount:number,source:HallDamageSource='hero')=>hitTarget(state,target,amount,withHallSource(state,hooks,source),hooks.factions?.())
   const alive = () => state.mode === 'play' && !!state.hero && state.hero.hp > 0
   const upgrades = () => state.content.levels[def.progressionAbility] ?? 0
   const companions = (): readonly CompanionKind[] => {
@@ -258,7 +259,7 @@ export function createHeroSpecializationAdapter(
             if (reckoning) reckoningAt = state.time + hallTuning.paladinSignatureCooldown
             const reach = PALADIN.retributionRange * (reckoning ? 1 + hallTuning.paladinReckoningRadius : 1)
             const damage = stored * (PALADIN.retributionAbsorbRatio + upgrades() * PALADIN.retributionRatioPerRank) * (1 + hallRank(state, 'crimson-paladin-vengeance') * hallTuning.paladinVengeance) * (reckoning ? 1 + hallTuning.paladinReckoningDamage : 1)
-            for (const enemy of nearby(state, reach, PALADIN.retributionTargets)) hit(state, enemy, damage, withHallSource(state, hooks, 'hero'))
+            for (const enemy of nearby(state, reach, PALADIN.retributionTargets, hooks)) strike(enemy,damage)
             impact(state, hero.x, hero.y, reach, '#ff8a6a', 1.6)
             hooks.sfx('crimson-paladin-retribution')
           }
@@ -270,12 +271,12 @@ export function createHeroSpecializationAdapter(
       companionTimer = SPIRIT.companionTickSeconds * hallSummonInterval(state)
       const hero = state.hero!
       const active = companions()
-      const nearest = nearby(state, SPIRIT.companionRange, 1)[0]
+      const nearest = nearby(state, SPIRIT.companionRange, 1, hooks)[0]
       for (const companion of active) {
         if (companion === 'guardian') {
           hero.hp = Math.min(hero.max, hero.hp + SPIRIT.guardianHealBase + upgrades() * SPIRIT.guardianHealPerRank)
         } else if (nearest?.hp && nearest.hp > 0) {
-          hit(state, nearest, hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * SPIRIT.companionDamagePerRank), withHallSource(state, hooks, 'summon'))
+          strike(nearest,hero.damage * (companion === 'reaver' ? 0.36 : 0.53) * (1 + upgrades() * SPIRIT.companionDamagePerRank),'summon')
           if (companion === 'reaver') hero.hp = Math.min(hero.max, hero.hp + 1.5)
         }
       }
@@ -287,15 +288,15 @@ export function createHeroSpecializationAdapter(
       if (id === 'shadowblade') {
         stealth = SHADOW.stealthSeconds * (1 + hallRank(state, 'shadowblade-vanish') * hallTuning.shadowVanish)
         hero.inv = Math.max(hero.inv, 0.7)
-        const struck = nearby(state, SHADOW.specialReach, SHADOW.specialHits)
+        const struck = nearby(state, SHADOW.specialReach, SHADOW.specialHits, hooks)
         lastTargets = strikePoints(struck)
-        for (const enemy of struck) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), withHallSource(state, hooks, 'hero'))
-        const phantom = hallRank(state, 'shadowblade-phantom') && state.time >= phantomAt ? nearby(state, SHADOW.specialReach, 1)[0] : undefined
-        if (phantom) { phantomAt = state.time + hallTuning.shadowPhantomCooldown; hit(state, phantom, hero.damage * hallTuning.shadowPhantomDamage, withHallSource(state, hooks, 'proc')) }
+        for (const enemy of struck) strike(enemy,hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank))
+        const phantom = hallRank(state, 'shadowblade-phantom') && state.time >= phantomAt ? nearby(state, SHADOW.specialReach, 1, hooks)[0] : undefined
+        if (phantom) { phantomAt = state.time + hallTuning.shadowPhantomCooldown; strike(phantom,hero.damage * hallTuning.shadowPhantomDamage,'proc') }
       } else if (id === 'spirit-summoner') {
-        const struck = nearby(state, SPIRIT.companionRange, 3)
+        const struck = nearby(state, SPIRIT.companionRange, 3, hooks)
         lastTargets = strikePoints(struck)
-        for (const enemy of struck) hit(state, enemy, hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank), hooks)
+        for (const enemy of struck) strike(enemy,hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank))
         const before = hero.hp
         hero.hp = Math.min(hero.max, hero.hp + SPIRIT.specialHeal * (1 + hallRank(state, 'spirit-summoner-mend') * hallTuning.spiritMend))
         hallSummonCast(state)
@@ -348,7 +349,7 @@ export function createHeroSpecializationAdapter(
       if (!alive() || id !== 'crimson-paladin' || !Number.isFinite(amount) || amount <= 0 || counterCooldown > 0) return
       counterCooldown = PALADIN.counterCooldown
       const hero = state.hero!
-      for (const enemy of nearby(state, PALADIN.counterRange, PALADIN.counterTargets)) hit(state, enemy, hero.damage * (PALADIN.counterDamageBase + upgrades() * PALADIN.counterDamagePerRank), hooks)
+      for (const enemy of nearby(state, PALADIN.counterRange, PALADIN.counterTargets, hooks)) strike(enemy,hero.damage * (PALADIN.counterDamageBase + upgrades() * PALADIN.counterDamagePerRank))
       impact(state, hero.x, hero.y, 72, '#fb8f96', 0.45)
     },
     canBeTargeted(): boolean {

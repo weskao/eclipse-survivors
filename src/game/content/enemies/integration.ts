@@ -167,13 +167,20 @@ export function createFactionBridge(options: FactionBridgeOptions) {
   function resolveShot(state: GameState, shot: Shot, hooks: GameHooks,
     source: { x: number; y: number }): FactionShotContact | null {
     if (state.mode !== 'play' || shot.life <= 0) return null
-    const contact = shotContact(state, shot)
-    if (!contact) return null
-    if (contact.kind === 'legacy') hit(state, contact.target, shot.d, hooks, source)
-    else hitFaction(state, contact.target, shot.d, source.x, source.y, hooks)
-    if (shot.hallPierce) { shot.hallPierce--; shot.hallVisited?.add(contact.target) }
-    else shot.life = 0
-    return contact
+    let first: FactionShotContact | null = null
+    // Maximum two contacts for a Hall arrow; never scan a visited target again.
+    for (let i=0; i<2; i++) {
+      const contact = shotContact(state, shot)
+      if (!contact) break
+      first ??= contact
+      if (contact.kind === 'legacy') hit(state, contact.target, shot.d, hooks, source)
+      else hitFaction(state, contact.target, shot.d, source.x, source.y, hooks)
+      if (shot.hallPierce && i===0) {
+        shot.hallPierce=0
+        ;(shot.hallVisited ??= new Set()).add(contact.target)
+      } else { shot.life=0; break }
+    }
+    return first
   }
 
   function nearestFaction(x: number, y: number, radius: number): FactionEnemy | null {

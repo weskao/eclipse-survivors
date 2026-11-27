@@ -45,8 +45,9 @@ function tickTimers(s: GameState, hero: Hero, dt: number): void {
 
 function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, factions?: FactionBridge): void {
   const shotHooks = withHallSource(s, hooks, 'basic')
+  const weaponShotHooks = withHallSource(s,hooks,'weapon')
   for (const b of s.shots) {
-    const activeHooks = b.hallProc ? {...shotHooks,hallSource:'proc' as const,modifyOutgoingDamage:undefined,consumeCriticalHit:undefined} : shotHooks
+    const activeHooks = b.hallProc ? withHallSource(s,hooks,'proc') : b.hallWeapon ? weaponShotHooks : shotHooks
     b.prevX = b.x
     b.prevY = b.y
     const travel = Math.min(dt, Math.max(0, b.life))
@@ -64,6 +65,7 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
     const dx = b.x - b.prevX
     const dy = b.y - b.prevY
     const lengthSquared = dx * dx + dy * dy
+    for(let contact=0;contact<2;contact++) {
     let closest: typeof s.mobs[number] | null = null
     let firstContact = Infinity
     for (const e of s.mobs) {
@@ -86,10 +88,10 @@ function moveShots(s: GameState, hero: Hero, dt: number, hooks: GameHooks, facti
         firstContact = t
       }
     }
-    if (closest) {
-      hit(s, closest, b.d, activeHooks, { x: b.prevX, y: b.prevY })
-      if (b.hallPierce) { b.hallPierce--; b.hallVisited?.add(closest) }
-      else b.life = 0
+    if (!closest) break
+    hit(s, closest, b.d, activeHooks, { x: b.prevX, y: b.prevY })
+    if (b.hallPierce && contact===0) { b.hallPierce=0; (b.hallVisited ??= new Set()).add(closest) }
+    else { b.life=0; break }
     }
   }
   s.shots = s.shots.filter((b) => b.life > 0)

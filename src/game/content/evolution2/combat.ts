@@ -1,3 +1,4 @@
+import { hallWeaponCast, hallSlow, withHallSource } from '../meta/hall-runtime'
 import { combatTargets, hitTarget, slowTarget, targetRadius, type CombatTarget } from '../../combat'
 import type { FactionBridge } from '../enemies/integration'
 import type { ContentContext } from '../contracts'
@@ -39,10 +40,13 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
   }
   const hero = state.hero
   if (!hero) return
-  const nearby = targetsNear(state, hero.x, hero.y, recipe.radius, factions)
+  const radiusScale=state.hall?.radius ?? 1
+  const nearby = targetsNear(state, hero.x, hero.y, recipe.radius * radiusScale, factions)
   if (!nearby.length) return
 
   const cue = EVOLUTION2_CUES[recipe.id]!
+  const attackHooks=withHallSource(state,hooks,'weapon',true)
+  if (recipe.id !== 'evolution2:spectral-volley') hallWeaponCast(state)
   const hitMobs = new Set<CombatTarget>()
   let hitCount = 0
   const damage = (mob: CombatTarget, power: number): number => {
@@ -50,7 +54,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     hitMobs.add(mob)
     hitCount++
     const before = mob.hp
-    hitTarget(state, mob, hero.damage * power, hooks, factions, hero, 'evolved')
+    hitTarget(state, mob, hero.damage * power, attackHooks, factions, hero, 'evolved')
     return before - mob.hp
   }
   const cueAt = (x: number, y: number): void => {
@@ -59,7 +63,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
   const area = (x: number, y: number, radius: number, power: number, pull = 0): void => {
     // Deterministic nearest-first AoE prevents distant array entries from
     // exhausting a cast's hit budget before enemies at the blast center.
-    for (const mob of targetsNear(state, x, y, radius, factions)) {
+    for (const mob of targetsNear(state, x, y, radius * radiusScale, factions)) {
       if (hitCount >= MAX_HITS_PER_CAST) break
       if (mob.hp <= 0 || hitMobs.has(mob)) continue
       if (pull > 0) {
@@ -108,7 +112,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     case 'evolution2:toxic-permafrost': {
       for (const mob of nearby.slice(0, 10)) {
         damage(mob, 0.85)
-        slowTarget(mob, 2.8)
+        slowTarget(mob, hallSlow(state,mob,2.8))
       }
       cueAt(hero.x, hero.y)
       break
@@ -147,7 +151,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     case 'evolution2:solar-tempest': {
       for (const mob of nearby.slice(0, 5)) {
         damage(mob, 1.6)
-        slowTarget(mob, 0.8)
+        slowTarget(mob, hallSlow(state,mob,0.8))
         cueAt(mob.x, mob.y)
       }
       break
@@ -163,6 +167,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
       const count = Math.min(5, Math.max(0, MAX_VOLLEY_PROJECTILES - state.shots.length))
       // No phantom cast: an exhausted shared projectile budget cannot spawn arrows.
       if (count === 0) return
+      hallWeaponCast(state)
       const first = nearby[0]!
       const base = Math.atan2(first.y - hero.y, first.x - hero.x)
       for (let i = 0; i < count; i++) {
@@ -171,6 +176,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
           x: hero.x, y: hero.y - 8,
           vx: Math.cos(angle) * 570, vy: Math.sin(angle) * 570,
           life: 1.25, d: hero.damage * 1.05, kind: 'arrow', r: 6,
+          ...(state.hall ? {hallWeapon:true} : {}),
         })
       }
       cueAt(hero.x, hero.y)
@@ -186,7 +192,7 @@ export function executeEvolution(context: ContentContext, recipe: Evolution2Reci
     case 'evolution2:verdant-snare': {
       for (const mob of nearby.slice(0, 8)) {
         damage(mob, 0.95)
-        slowTarget(mob, 3.5)
+        slowTarget(mob, hallSlow(state,mob,3.5))
         if ('stagger' in mob) mob.stagger = Math.max(mob.stagger, ('type' in mob && mob.type === 'boss') ? 0.08 : 0.35)
       }
       cueAt(hero.x, hero.y)
