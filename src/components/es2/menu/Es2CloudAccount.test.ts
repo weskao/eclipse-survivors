@@ -131,6 +131,26 @@ describe('Google OAuth entry points', () => {
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1)
     wrapper.unmount()
   })
+  it('shows result sign-in feedback independently of the cloud save and keeps retry available', async () => {
+    const { cloud, user, status, confirmed } = fixture()
+    user.value = { uid: 'a', displayName: 'Adventurer' } as User
+    status.value = 'syncing'
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 50, result: true, notice: 'success' } })
+    expect(wrapper.get('[data-es2-account-toast]').text()).toContain('登入成功')
+    expect(wrapper.get('[data-es2-result-cloud]').attributes('data-state')).toBe('syncing')
+    expect(wrapper.get('[data-es2-result-cloud-status]').text()).not.toContain('已儲存至')
+    status.value = 'synced'
+    confirmed.value = true
+    await nextTick()
+    expect(wrapper.get('[data-es2-result-cloud]').attributes('data-state')).toBe('synced')
+    confirmed.value = false
+    status.value = 'error'
+    await wrapper.setProps({ notice: null })
+    expect(wrapper.find('[data-es2-account-toast]').exists()).toBe(false)
+    expect(wrapper.get('[data-es2-result-cloud]').attributes('data-state')).toBe('error')
+    expect(wrapper.find('[data-es2-result-cloud-retry]').exists()).toBe(true)
+    wrapper.unmount()
+  })
   it('only reports a confirmed cloud save, localizes it and offers retry after failure', async () => {
     const { cloud, status, user, confirmed, sync } = fixture()
     const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 50, result: true }, attachTo: document.body })
