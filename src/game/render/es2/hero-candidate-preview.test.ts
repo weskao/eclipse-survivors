@@ -60,6 +60,9 @@ describe('ES2 candidate review inventory', () => {
     ['crimson-paladin', 'special-e-keyframes-2026-11-27-batch-33', ['barrier-guard-identity-a']],
     ['shadowblade', 'special-e-keyframes-2026-11-27-batch-34', ['stealth-prepare-identity-a']],
     ['spirit-summoner', 'special-e-keyframes-2026-11-27-batch-35', ['summon-recovery-identity-a']],
+    ['shadowblade', 'special-e-keyframes-2026-11-27-batch-36', ['stealth-strike-identity-a', 'stealth-low-transition-identity-a', 'stealth-recovery-identity-a']],
+    ['spirit-summoner', 'special-e-keyframes-2026-11-27-batch-36', ['summon-release-identity-a']],
+    ['crimson-paladin', 'special-e-keyframes-2026-11-27-batch-36', ['barrier-counterstrike-identity-a']],
   ] as const)('preserves %s independent keyframes and their review-only gate', (hero, folder, expectedKeys) => {
     const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero, 'candidates', folder)
     const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
@@ -101,11 +104,16 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain('8 northern and 1 West four-frame strips')
     expect(summary).toContain('21 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 34} candidate review panels`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 34)
-    expect(summary).toContain('11 independent keyframes')
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 39} candidate review panels`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 39)
+    expect(summary).toContain('16 independent keyframes')
     const keys = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-keyframe"]')]
-    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a', 'cast-windup-identity-b', 'windup-identity-a', 'barrier-guard-identity-a', 'stealth-prepare-identity-a', 'summon-recovery-identity-a'])
+    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a', 'cast-windup-identity-b', 'windup-identity-a', 'barrier-guard-identity-a', 'stealth-prepare-identity-a', 'summon-recovery-identity-a', 'stealth-strike-identity-a', 'stealth-low-transition-identity-a', 'stealth-recovery-identity-a', 'summon-release-identity-a', 'barrier-counterstrike-identity-a'])
+    const batch36 = keys.filter(article => article.dataset.candidateFolder === 'special-e-keyframes-2026-11-27-batch-36')
+    expect(batch36).toHaveLength(5)
+    for (const [hero, count] of [['shadowblade', 3], ['spirit-summoner', 1], ['crimson-paladin', 1]] as const) {
+      expect(batch36.filter(article => article.querySelector('h2')?.textContent?.startsWith(hero + ' · SPECIAL · E'))).toHaveLength(count)
+    }
     const summonRecovery = keys.filter(article => article.dataset.candidateFolder === 'special-e-keyframes-2026-11-27-batch-35')
     expect(summonRecovery).toHaveLength(1)
     expect(summonRecovery[0]?.querySelector('h2')?.textContent).toContain('spirit-summoner · SPECIAL · E')
