@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import Es2EmberWallet from '../menu/Es2EmberWallet.vue'
 import HallGrowthBoard from './HallGrowthBoard.vue'
 import { researchHallNodes, unlockHallNodes, type HallNode } from './hall-model'
@@ -27,6 +27,25 @@ const emit = defineEmits<{
   equipment: [id: string]
   bonus: [id: string]
 }>()
+const categories = [
+  { id: 'research', label: '研究之樹', icon: '✧' },
+  { id: 'mastery', label: '英雄專精', icon: '♜' },
+  { id: 'unlocks', label: '起始裝備與祝福', icon: '◇' },
+  { id: 'achievements', label: '永久成就', icon: '★' },
+] as const
+type Category = typeof categories[number]['id']
+const category = ref<Category>('research')
+const tabs = ref<HTMLElement | null>(null)
+function moveCategory(event: KeyboardEvent, id: Category) {
+  const index = categories.findIndex(tab => tab.id === id)
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? categories.length - 1
+    : event.key === 'ArrowRight' ? (index + 1) % categories.length
+    : event.key === 'ArrowLeft' ? (index + categories.length - 1) % categories.length : -1
+  if (next < 0) return
+  event.preventDefault()
+  category.value = categories[next]!.id
+  void nextTick(() => tabs.value?.querySelector<HTMLElement>('[data-hall-tab="' + category.value + '"]')?.focus({ preventScroll: true }))
+}
 const research = computed(() => researchHallNodes(props.state))
 const unlocks = computed(() => unlockHallNodes(props.state, props.hero))
 function unlock(node: HallNode) { if (node.kind === 'equipment') emit('equipment', node.id); else if (node.kind === 'bonus') emit('bonus', node.id) }
@@ -64,12 +83,20 @@ const masteryProgress = computed(() => {
       {{ t(error || '儲存狀態無法驗證，目前已停用永久獎勵與消費，避免遺失進度。') }}
     </p>
 
-    <section :aria-label="t('永久研究')" class="es2-progression-section">
+    <div ref="tabs" class="hall-category-tabs" role="tablist" :aria-label="t('成長分類')">
+      <button v-for="tab in categories" :key="tab.id" type="button" role="tab" data-ui-sfx="select"
+        :id="'hall-tab-' + tab.id" :data-hall-tab="tab.id" :aria-selected="category === tab.id"
+        :aria-controls="'hall-category-' + tab.id" :tabindex="category === tab.id ? 0 : -1"
+        @click="category = tab.id" @keydown="moveCategory($event, tab.id)">
+        <span aria-hidden="true">{{ tab.icon }}</span><span>{{ t(tab.label) }}</span>
+      </button>
+    </div>
+    <section v-show="category === 'research'" id="hall-category-research" data-hall-category="research" role="tabpanel" aria-labelledby="hall-tab-research" :aria-label="t('永久研究')" class="es2-progression-section">
       <h3>{{ t("研究之樹") }}</h3>
-      <HallGrowthBoard :nodes="research" :writable="writable" tree @purchase="emit('research', $event.id)" />
+      <HallGrowthBoard :nodes="research" :writable="writable" :visible="category === 'research'" tree @purchase="emit('research', $event.id)" />
     </section>
 
-    <section :aria-label="t('英雄專精')" class="es2-progression-section">
+    <section v-show="category === 'mastery'" id="hall-category-mastery" data-hall-category="mastery" role="tabpanel" aria-labelledby="hall-tab-mastery" :aria-label="t('英雄專精')" class="es2-progression-section">
       <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
         <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }} / {{ masteryCap }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
@@ -78,13 +105,13 @@ const masteryProgress = computed(() => {
       </div>
     </section>
 
-    <section :aria-label="t('起始裝備與祝福')" class="es2-progression-section">
+    <section v-show="category === 'unlocks'" id="hall-category-unlocks" data-hall-category="unlocks" role="tabpanel" aria-labelledby="hall-tab-unlocks" :aria-label="t('起始裝備與祝福')" class="es2-progression-section">
       <h3>{{ t("起始裝備與祝福") }}</h3>
       <p class="es2-progression-caption">{{ t("已解鎖的效果由遊戲整合層在開局時套用，不會改變進行中的戰鬥。") }}</p>
-      <HallGrowthBoard :nodes="unlocks" :writable="writable" @purchase="unlock" />
+      <HallGrowthBoard :nodes="unlocks" :writable="writable" :visible="category === 'unlocks'" @purchase="unlock" />
     </section>
 
-    <section :aria-label="t('永久成就')" class="es2-progression-section">
+    <section v-show="category === 'achievements'" id="hall-category-achievements" data-hall-category="achievements" role="tabpanel" aria-labelledby="hall-tab-achievements" :aria-label="t('永久成就')" class="es2-progression-section">
       <h3>{{ t("永久成就 ·") }} {{ state.achievements.length }} / {{ achievements.length }}</h3>
       <div class="es2-progression-achievements">
         <article v-for="entry in achievements" :key="entry.id" :data-achievement="entry.id"
@@ -124,4 +151,11 @@ const masteryProgress = computed(() => {
 @media(prefers-reduced-motion:reduce){.hall-mastery-track .hall-xp-sheen{display:none}}
 :global([data-es2-reduce-motion="true"]) .hall-mastery-track i,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track i{transition:none}
 :global([data-es2-reduce-motion="true"]) .hall-mastery-track .hall-xp-sheen,:global([data-es2-reduce-flashing="true"]) .hall-mastery-track .hall-xp-sheen{display:none}
+
+.hall-category-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:4px;margin-bottom:12px;border:1px solid #a5885255;border-radius:8px;background:#111c28}
+.hall-category-tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:44px;padding:5px 7px;color:#bfc9d4;background:#1b2a39;border:1px solid #6b7a8545;border-radius:5px;font:600 .8rem/1.3 system-ui;overflow-wrap:anywhere;cursor:pointer}
+.hall-category-tabs button[aria-selected="true"]{color:#ffe4ae;border-color:#d6b575;background:linear-gradient(145deg,#594731,#29303a);box-shadow:inset 0 -2px #e5bd79}
+.hall-category-tabs button:focus-visible{outline:2px solid #ffe0a0;outline-offset:1px}
+.hall-category-tabs button>span:first-child{color:#e3c28d;font-size:1rem;flex:none}
+@media(max-width:480px){.hall-category-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-bottom:8px}.hall-category-tabs button{padding:4px 6px}}
 </style>

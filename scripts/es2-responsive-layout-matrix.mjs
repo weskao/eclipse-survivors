@@ -420,22 +420,29 @@ try {
           const rank = await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow')
           const growth = power.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " hall-growth ")][1]')
           assert.equal(await growth.locator('.hall-map .hall-buy, .hall-map p').count(), 0, name + ': redundant node card details')
-          assert.equal(await growth.locator('[data-hall-confirm]').count(), 1, name + ': one upgrade action per board')
+          assert.equal(await growth.locator('.hall-map .hall-buy').count(), 0, name + ': no inline node purchase')
           const bounds = await growth.locator('.hall-map').evaluate(el => ({ height: el.getBoundingClientRect().height, scrollWidth: el.scrollWidth, width: el.clientWidth }))
           assert.ok(bounds.scrollWidth <= bounds.width + 1, name + ': compact graph overflows')
           assert.ok(bounds.height <= 405, name + ': compact graph exceeds height budget ' + bounds.height)
           const graph = await page.locator('[data-hall-edge]').count()
           if (await page.locator('.es2-progression-panel').count()) assert.equal(graph, 4, name + ': authoritative research edges missing')
           const node = graph ? page.locator('[data-hall-inspect="insight"]') : page.locator('[data-hall-inspect="vitality"]')
-          if (hoverCapable) await node.hover()
+          const floating = await page.evaluate(() => matchMedia('(max-width: 739px), (hover: none) and (pointer: coarse)').matches)
+          await node.scrollIntoViewIfNeeded()
+          const scrollBefore = await page.locator('.es2-menu').evaluate(el => el.scrollTop)
+          if (hoverCapable && !floating) await node.hover()
           else await node.click()
-          const details = page.locator('.hall-detail').first()
+          const details = floating ? page.locator('.hall-detail--floating[data-open="true"]') : growth.locator('.hall-detail')
           await details.waitFor({ state: 'visible' })
+          if (floating) {
+            assert.ok(inside(await details.evaluate(rect), width, height), name + ': floating inspector clips viewport')
+            assert.ok(Math.abs(await page.locator('.es2-menu').evaluate(el => el.scrollTop) - scrollBefore) <= 1, name + ': tap must not scroll archive')
+          }
           assert.equal((await details.locator('.hall-detail-heading strong').innerText()).trim(), (await node.locator('strong').innerText()).trim(), name + ': inspected node mismatch')
           assert.equal(await page.locator('[data-hall-node="power"] [role="progressbar"]').getAttribute('aria-valuenow'), rank, name + ': inspection must never spend')
           await power.locator('img').evaluate(img => img.decode())
           assert.ok(await power.locator('img').evaluate(img => img.naturalWidth > 0), name + ': WebP node art missing')
-          if (hoverCapable && motionAllowed) {
+          if (hoverCapable && motionAllowed && !floating) {
             await power.hover()
             assert.notEqual(await power.locator('.hall-ring').evaluate(el => getComputedStyle(el, '::after').animationName), 'none', name + ': hover shimmer absent')
           }
@@ -454,12 +461,29 @@ try {
           }
           await assertLocalizedTextFits(page, name, 'en-hall-growth')
           await page.screenshot({ path: destination + '/' + name + '-hall-growth-en.png', animations: 'disabled' })
+          if (floating) {
+            await details.locator('[data-hall-close]').click()
+            await details.waitFor({ state: 'hidden' })
+          }
+          if (await page.locator('[data-hall-tab="mastery"]').count()) {
+            await page.locator('[data-hall-tab="mastery"]').click()
+            assert.equal(await page.locator('[data-hall-category="mastery"]').isVisible(), true)
+            assert.equal(await page.locator('[data-hall-category="research"]').isVisible(), false)
+            await page.locator('[data-hall-tab="unlocks"]').click()
+            assert.equal(await page.locator('[data-hall-category="unlocks"]').isVisible(), true)
+            await page.locator('[data-hall-tab="achievements"]').click()
+            assert.equal(await page.locator('[data-hall-category="achievements"]').isVisible(), true)
+            await page.locator('[data-hall-tab="research"]').click()
+            assert.equal(await page.locator('[data-hall-category="research"]').isVisible(), true)
+          }
           await headerSettings.click()
           await page.locator('#es2-language').click()
           await page.locator('#es2-language-listbox [data-es2-value="zh-TW"]').click()
           await page.locator('.es2-close').click()
+          if (floating) await node.click()
           await assertLocalizedTextFits(page, name, 'zh-TW-hall-growth')
           await page.screenshot({ path: destination + '/' + name + '-hall-growth-zh-TW.png', animations: 'disabled' })
+          if (floating) await page.locator('.hall-detail--floating[data-open="true"] [data-hall-close]').click()
           await headerSettings.click()
           await page.locator('#es2-language').click()
           await page.locator('#es2-language-listbox [data-es2-value="en"]').click()

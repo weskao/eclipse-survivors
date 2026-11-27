@@ -199,4 +199,6 @@ Compact topology implementation: one visible confirmation per board; unchanged W
 
 - [x] Hall compact confirmation safety: hover/focus previews never authorize a different node's purchase; only explicit selection enables the single confirmation. Added a behavioral regression; runtime verification pending.
 
-- [ ] Hall UX: one accessible category at a time (research, mastery, equipment/blessings, achievements); touch viewport inspector with close and safe-area handling, no forced scroll; desktop hover stays inline; preserve selection, explicit spend, art, audio and motion. Add regression and viewport checks.
+- [x] Hall UX: one accessible category at a time (research, mastery, equipment/blessings, achievements); touch viewport inspector with close and safe-area handling, no forced scroll; desktop hover stays inline; preserve selection, explicit spend, art, audio and motion. Add regression and viewport checks.
+
+Hall UX source implemented with one detail template (teleported only for floating layouts), no forced scrolling, four accessible category tabs, category-change dismissal and viewport regressions. Runtime CI and device validation remain open.
