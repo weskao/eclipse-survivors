@@ -287,3 +287,7 @@ ES4 explorer is explicitly a read-only preview. The original core research remai
 - [ ] Fix ES4 typecheck regression in `src/components/es2/progression/HallTalentExplorer.test.ts:19`: Vue Test Utils `get()` return type omits `exists()` (TS2339). Preserve the assertion using an appropriate supported API and rerun the focused suite and typecheck.
 - [ ] Reconcile inherited manual production-art gate for shadowblade, spirit-summoner and crimson-paladin; obtain legitimate visual approval, never remove or weaken the blocking test. Separate this from the ES4 functional implementation.
 Baseline evidence: [ES4 verification 45961478312](https://github.com/weskao/eclipse-survivors/actions/runs/45961478312), commit `24d9d07b82fad3f057fb51dccae56084c3f52939`: 255 test files passed, one failed; 2,204 tests passed, one failed, one skipped. Typecheck failed with TS2339. No full CI green claimed. SVG 72/72 present; final WebP 0/72. Preserve the deferred scope above. See the mandatory ES4 references in CLAUDE.md.
+
+### ES4 completed-node visual refinement
+- [x] Shared permanent max-rank crest, full gold bezel, MAX plate and distinct one-rank ownership seal; rank-derived state and bounded final-purchase animation implemented.
+- [ ] Verify completed-node regression suite, actual browser/device screenshots, reduced-motion/flashing and final-rank audio/animation timing in CI. No final art approval implied.

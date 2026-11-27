@@ -58,10 +58,13 @@ onBeforeUnmount(() => clearTimeout(celebrationTimer))
 let request: { id: string; rank: number; time: number } | null = null
 let dispatching = false
 const isFine = () => typeof window.matchMedia === 'function' && window.matchMedia('(hover: hover) and (pointer: fine)').matches
-const canPurchase = (node: HallNode) => !props.preview && props.writable && node.canBuy && node.cost !== null
-const status = (node: HallNode) => props.preview ? '規劃預覽' : node.cost === null ? (node.maxRank === 1 ? '已解鎖' : '已滿階')
-  : node.locked ? '尚未解鎖' : !node.canBuy ? '餘燼不足' : '可升級'
-const action = (node: HallNode) => props.preview ? t('尚未開放升級') : node.cost === null || node.locked ? t(status(node))
+// Completion derives from committed ownership, not price or writability.
+const completion = (node: HallNode) => node.maxRank > 0 && node.rank >= node.maxRank
+  ? (node.maxRank === 1 ? 'unlocked' : 'mastered') : 'none'
+const canPurchase = (node: HallNode) => completion(node) === 'none' && !props.preview && props.writable && node.canBuy && node.cost !== null
+const status = (node: HallNode) => completion(node) === 'mastered' ? '已滿階' : completion(node) === 'unlocked' ? '已解鎖'
+  : props.preview ? '規劃預覽' : node.locked ? '尚未解鎖' : !node.canBuy ? '餘燼不足' : '可升級'
+const action = (node: HallNode) => completion(node) !== 'none' ? t(status(node)) : props.preview ? t('尚未開放升級') : node.cost === null || node.locked ? t(status(node))
   : t(node.kind === 'research' ? '研究 · {cost} ✧' : node.kind === 'legacy' ? '升級 · {cost} ✧' : '解鎖 · {cost} ✧', { cost: node.cost })
 
 function inspect(node: HallNode, event?: MouseEvent) {
@@ -117,7 +120,8 @@ watch(() => props.nodes, (nodes, previous) => {
         <div class="hall-row" :class="{ 'hall-row--single': tree && row.length === 1 }"
           :style="tree ? { '--columns': row.length } : undefined">
           <article v-for="node in row" :key="node.id" class="hall-node" :data-hall-node="node.id"
-            :data-state="node.cost === null ? 'maxed' : node.locked ? 'locked' : node.canBuy ? 'available' : 'poor'"
+            :data-state="completion(node) !== 'none' ? 'maxed' : node.locked ? 'locked' : node.canBuy ? 'available' : 'poor'"
+            :data-hall-completion="completion(node)"
             :data-talent-type="node.talentType" :data-selected="String(active?.id === node.id)" :data-hall-arrived="String(upgraded?.arrived.includes(node.id) ?? false)"
             @pointerenter="!floating && isFine() && (hovered = node.id)" @pointerleave="hovered === node.id && (hovered = '')">
             <button type="button" class="hall-inspect" data-ui-sfx="hall-inspect" :data-hall-inspect="node.id"
@@ -128,7 +132,8 @@ watch(() => props.nodes, (nodes, previous) => {
                 <span class="hall-ring-ticks" aria-hidden="true"></span>
                 <span v-if="node.rank > 0 && node.rank < node.maxRank" class="hall-ring-tip" aria-hidden="true"></span>
                 <img :src="node.art" alt="" width="64" height="64" loading="lazy" decoding="async" draggable="false" />
-                <span class="hall-rank">{{ node.rank }} / {{ node.maxRank }}</span>
+                <span v-if="completion(node) !== 'none'" class="hall-completion-crest" aria-hidden="true"><i></i></span>
+                <span class="hall-rank">{{ completion(node) === 'mastered' ? 'MAX' : node.rank + ' / ' + node.maxRank }}</span>
               </span>
               <strong>{{ t(node.title) }}</strong>
               <span class="hall-status">{{ node.attunementStatus ?? t(status(node)) }}</span>
@@ -143,9 +148,9 @@ watch(() => props.nodes, (nodes, previous) => {
       </template>
     </div>
     <Teleport to="body" :disabled="!floating">
-    <aside v-if="active" v-show="visible && (!floating || opened)" ref="detail" class="hall-detail" :class="{ 'hall-detail--floating': floating }" :data-hall-detail="tree ? '' : undefined" :data-open="String(floating && opened && visible)" tabindex="-1" :aria-label="t('節點詳情')">
+    <aside v-if="active" v-show="visible && (!floating || opened)" ref="detail" class="hall-detail" :class="{ 'hall-detail--floating': floating }" :data-hall-detail-completion="completion(active)" :data-hall-detail="tree ? '' : undefined" :data-open="String(floating && opened && visible)" tabindex="-1" :aria-label="t('節點詳情')">
       <button v-if="floating" type="button" class="hall-detail-close" data-hall-close data-ui-sfx="select" :aria-label="t('關閉節點詳情')" @click="closeDetail(true)">×</button>
-      <div class="hall-detail-heading"><img :src="active.art" alt="" width="48" height="48" /><div><small>{{ t('節點詳情') }}</small><strong>{{ t(active.title) }}</strong></div></div>
+      <div class="hall-detail-heading"><img :src="active.art" alt="" width="48" height="48" /><div><small>{{ t('節點詳情') }}<span v-if="completion(active) === 'mastered'" class="hall-detail-max-mark"> · MAX</span></small><strong>{{ t(active.title) }}</strong></div></div>
       <div class="hall-detail-body">
       <p>{{ active.description }}</p>
       <p v-if="preview && active.cost !== null" class="hall-preview-price">{{ t('預計升級成本 · {cost} ✧', { cost: active.cost }) }}</p>
@@ -157,7 +162,7 @@ watch(() => props.nodes, (nodes, previous) => {
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><p v-for="requirement in active.requirements" :key="requirement">{{ requirement }}</p></div>
       <small class="hall-status">{{ active.attunementStatus ?? t(status(active)) }}</small>
       </div>
-      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview ? t('選取節點後升級') : action(active) }}</button>
+      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview && completion(active) === 'none' ? t('選取節點後升級') : action(active) }}</button>
       <div v-if="upgraded?.id === active.id" role="status" class="hall-success" :key="upgraded.rank">
         <span class="hall-ceremony-label">{{ t(upgraded.milestone ? '最高等階達成' : '升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</span>
         <span v-if="upgraded.arrived.length" data-hall-unlock-notice class="hall-unlock-notice">{{ t('新研究已開啟') }} · {{ nodes.filter(node => upgraded?.arrived.includes(node.id)).map(node => t(node.title)).join(' · ') }}</span>
@@ -299,4 +304,34 @@ watch(() => props.nodes, (nodes, previous) => {
 :global([data-es2-reduce-flashing="true"] .hall-node[data-hall-arrived="true"] .hall-rank),
 :global([data-es2-reduce-motion="true"] .hall-unlock-notice),
 :global([data-es2-reduce-flashing="true"] .hall-unlock-notice){animation:none!important}
+
+/* Permanent earned crest: same footprint and artwork, independent of hover, selection,
+   preview, affordability and the transient transaction celebration. */
+.hall-completion-crest{position:absolute;inset:-3px;z-index:3;border:1px solid #dab87a;border-radius:50%;pointer-events:none;box-shadow:0 0 0 1px #493620,inset 0 0 0 1px #fff1b847}
+.hall-completion-crest::before,.hall-completion-crest::after{content:'';position:absolute;top:40%;width:7px;height:15px;background:linear-gradient(135deg,#fff1bd 4%,#b98c43 44%,#79512a 68%,#e4c58b);clip-path:polygon(100% 0,100% 100%,0 50%);left:-4px}
+.hall-completion-crest::after{left:auto;right:-4px;transform:rotate(180deg)}
+.hall-completion-crest i{position:absolute;top:-4px;left:50%;width:10px;height:10px;transform:translateX(-50%) rotate(45deg);border:1px solid #fff0b7;background:linear-gradient(135deg,#fff2c2,#b78a49 50%,#6d4728);box-shadow:0 0 3px #20170f}
+.hall-node[data-hall-completion="mastered"] .hall-ring{background:conic-gradient(#fff2c4,#b48747 19%,#ffe9ab 39%,#9a6932 64%,#efcf87 83%,#fff2c4);box-shadow:0 0 0 1px #271b11,0 0 0 3px #ad864c,0 0 10px #e3b96a55,inset 0 1px 2px #fff2c0}
+.hall-node[data-hall-completion="mastered"] .hall-ring-metal{background:conic-gradient(from 0deg,#fff1bc 0 var(--hall-rank-progress),#333e48 var(--hall-rank-progress) 100%);box-shadow:inset 0 0 0 1px #65451f,inset 0 1px 2px #fff5c6}
+.hall-node[data-hall-completion="mastered"] .hall-ring::before{background:radial-gradient(ellipse at 42% 25%,#58462f,#17232d 72%);border-color:#e8c783}
+.hall-node[data-hall-completion="mastered"] .hall-rank{min-width:38px;background:linear-gradient(#fff0bc,#d7ad62 52%,#a77537);color:#302010;border-color:#fff0bd;text-shadow:none;letter-spacing:.07em}
+.hall-node[data-hall-completion="mastered"] .hall-status{color:#f7d99b;font-weight:800}
+.hall-node[data-hall-completion="mastered"] .hall-inspect strong{color:#f3d9ab}
+.hall-node[data-hall-completion="mastered"][data-selected="true"] .hall-ring{box-shadow:0 0 0 1px #fff0bb,0 0 0 3px #c8a260,0 0 15px #e3b96a80,inset 0 1px 2px #fff2c0}
+.hall-node[data-hall-completion="unlocked"] .hall-completion-crest{inset:-2px;border-color:#c9b28b}
+.hall-node[data-hall-completion="unlocked"] .hall-completion-crest::before,.hall-node[data-hall-completion="unlocked"] .hall-completion-crest::after{display:none}
+.hall-node[data-hall-completion="unlocked"] .hall-completion-crest i{background:linear-gradient(135deg,#f4e6c6,#9d8359);width:8px;height:8px}
+.hall-detail[data-hall-detail-completion="mastered"]{border-color:#c7a66c}
+.hall-detail-max-mark{color:#f4d99e;font-weight:800;letter-spacing:.08em}
+.hall-detail[data-hall-detail-completion="mastered"] .hall-confirm:disabled{color:#e4c890;border-color:#b69b65;background:linear-gradient(150deg,#463c2d,#232c32);cursor:default}
+/* Only a locally committed last rank animates the crest. Saved maxed nodes stay still. */
+.hall-node[data-hall-completion="mastered"]:has(.hall-upgrade-fx[data-milestone="true"]) .hall-completion-crest{animation:hall-mastered-forge .92s .36s ease-out both}
+.hall-node[data-hall-completion="mastered"]:has(.hall-upgrade-fx[data-milestone="true"]) .hall-rank{animation:hall-mastered-inscription .52s .64s ease-out both}
+@keyframes hall-mastered-forge{0%{opacity:.25;transform:scale(1.18) rotate(-15deg)}48%{opacity:1;transform:scale(1.04) rotate(0deg);box-shadow:0 0 9px #efd197aa}100%{opacity:1;transform:none}}
+@keyframes hall-mastered-inscription{0%{transform:translateX(-50%) scale(.9);filter:brightness(.9)}45%{transform:translateX(-50%) scale(1.08);filter:brightness(1.12)}100%{transform:translateX(-50%) scale(1);filter:none}}
+@media(prefers-reduced-motion:reduce){.hall-completion-crest,.hall-rank{animation:none!important}}
+:global([data-es2-reduce-motion="true"] .hall-completion-crest),
+:global([data-es2-reduce-motion="true"] .hall-rank),
+:global([data-es2-reduce-flashing="true"] .hall-completion-crest),
+:global([data-es2-reduce-flashing="true"] .hall-rank){animation:none!important}
 </style>
