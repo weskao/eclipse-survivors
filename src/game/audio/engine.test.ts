@@ -1024,6 +1024,25 @@ describe('audio scene ownership and deferred trusted resume', () => {
     audio.dispose()
   })
 
+  it.each(['menu', 'mute'] as const)('does not replay an unheard terminal cue after %s', async action => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.interrupt()
+    audio.onScreen('result')
+    audio.setResultTheme?.('defeat')
+    audio.playSfx('defeat')
+    expect(ctx.oscillators).toHaveLength(0)
+    if (action === 'menu') audio.onScreen('menu')
+    else { audio.setSfxVolume(0); audio.setSfxVolume(100) }
+    audio.wake()
+    await Promise.resolve()
+    const sfxNotes = ctx.oscillators.filter(note =>
+      ctx.gains.some(gain => note.targets.includes(gain) && gain.targets.includes(ctx.gains[0]!)))
+    expect(sfxNotes).toHaveLength(0)
+    audio.dispose()
+  })
+
   it('never replays a pending cue after interruption or a screen change', async () => {
     ctx.state = 'suspended'
     let finish!: () => void

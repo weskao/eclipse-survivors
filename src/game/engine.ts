@@ -1045,7 +1045,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
+      if (((s.mode === 'menu' || s.mode === 'result') && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return

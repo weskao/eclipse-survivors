@@ -111,6 +111,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let resumePending: Promise<void> | null = null
   // Keep only a bounded set of cues from the current trusted resume attempt.
   const pendingSfx = new Map<SfxCue, number | undefined>()
+  let pendingResultCue: 'victory' | 'defeat' | null = null
+  let contextWasRunning = false
+  let resultRecoveryAttempted = false
   let master: GainLike | null = null
   let musicBus: GainLike | null = null
   let musicOn = true
@@ -297,6 +300,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         const created = createContext()
         if (!created) { playScore(); return }
         ac = created
+        contextWasRunning = false
         resumePending = null
         pendingSfx.clear()
         sfxLast.clear()
@@ -324,8 +328,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
           const cues = [...pendingSfx]
           pendingSfx.clear()
           if (interrupted || ctx.state !== 'running') return
+          contextWasRunning = true
           cinematic.sync()
           for (const [cue, milestone] of cues) system.playSfx(cue, milestone)
+          if (mode === 'result') system.tick('result')
         }, () => {
           if (resumePending !== attempt) return
           resumePending = null
@@ -335,6 +341,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       playScore()
       cinematic.sync()
       if (recovering && ac && resultScene) resultScore.resume(ac.currentTime)
+      if (ac.state === 'running') {
+        contextWasRunning = true
+        if (recovering && mode === 'result') system.tick('result')
+      }
     } catch {
       ac = null
       resumePending = null
@@ -396,13 +406,15 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     setSfxVolume(value: number) {
       sfxVolume = clampVolume(value, sfxVolume)
       if (sfxVolume > 0) previousSfxVolume = sfxVolume
-      else { pendingSfx.clear(); stopHeroCast(); bossAttacks.cancel() }
+      else { pendingSfx.clear(); pendingResultCue = null; stopHeroCast(); bossAttacks.cancel() }
       try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
       if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
     },
     wake,
     interrupt,
     setResultTheme(next) {
+      pendingResultCue = null
+      resultRecoveryAttempted = false
       resultScene = next
       resultScore.dispose()
       resultScore = createEs2Score()
@@ -437,6 +449,12 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       const ctx = running()
       if (!sfxOn || !sfxVolume) return
       if (!ctx) {
+        // Unlike transient combat/UI cues, an unheard terminal cue belongs to
+        // the current result even when suspension preceded the resume gesture.
+        if (mode === 'result' && cue === resultScene && (cue === 'victory' || cue === 'defeat')) {
+          pendingResultCue = cue
+          return
+        }
         // resume() is asynchronous in real Chromium/WebKit. Never drop the
         // first intentional UI action or the terminal fanfare during this gap.
         if (resumePending && !interrupted && (mode === 'menu' || mode === 'result' || ESSENTIAL_SFX.has(cue)) &&
@@ -543,7 +561,20 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     tick(mode) {
       if (externalScoreActive) return
+      // A previously running context may be suspended by the browser without a
+      // visibility event. Attempt recovery once, never unlock a fresh context
+      // or override an explicit interruption. Rejected resumes need a gesture.
+      if (mode === 'result' && resultScene && !interrupted && contextWasRunning &&
+          ac?.state === 'suspended' && !resumePending && !resultRecoveryAttempted) {
+        resultRecoveryAttempted = true
+        wake()
+      }
       const ctx = running()
+      if (ctx && mode === 'result' && pendingResultCue) {
+        const cue = pendingResultCue
+        pendingResultCue = null
+        system.playSfx(cue)
+      }
       if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }
       if (mode === 'result') {
@@ -580,6 +611,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       // active media/cinematic score on play ↔ level (including chained rewards).
       if (isBattleMusicMode(previous) && isBattleMusicMode(mode)) return
       if (mode !== 'result') {
+        pendingResultCue = null
+        resultRecoveryAttempted = false
         resultScene = null
         resultScore.dispose()
         resultScore = createEs2Score()
@@ -654,13 +687,16 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       save('starSfx', sfxOn)
       if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
       if (sfxOn) wake()
-      else { pendingSfx.clear(); stopHeroCast(); bossAttacks.cancel() }
+      else { pendingSfx.clear(); pendingResultCue = null; stopHeroCast(); bossAttacks.cancel() }
       return sfxOn
     },
     dispose() {
       interrupted = true
       resumePending = null
       pendingSfx.clear()
+      pendingResultCue = null
+      contextWasRunning = false
+      resultRecoveryAttempted = false
       bgm.pause()
       menuBgm?.pause()
       cinematic.dispose()
