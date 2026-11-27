@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "8cb7d836b0e90b52192f097d29ceabfefc2119a9",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-awakening-key-a",
+      "pose": "transform",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/abyss-phase2-awakening-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "a076f266-cb61-4bea-93cd-30cf1b89c66a",
+        "originalPngSha256": "30a0a0798d2e44bb7af9702207bf61ee29272523f3a5c65e1fc490c8f9435744",
+        "canonicalReferenceHead": "8cb7d836b0e90b52192f097d29ceabfefc2119a9",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        163,
+        38,
+        1124,
+        1218
+      ],
+      "alphaAnyBounds": [
+        57,
+        32,
+        1314,
+        1222
+      ],
+      "alphaExtent": [
+        961,
+        1180
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        131,
+        6,
+        1092,
+        1186
+      ],
+      "originalAlphaAnyBounds": [
+        25,
+        0,
+        1282,
+        1190
+      ],
+      "sourceEdgeMargins": [
+        163,
+        38,
+        252,
+        45
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "1313d8024a4d0dc494d00eb0f1c464ef5113c9e5f3afda46070b4741989f93f5",
+      "webpCompressedBytes": 522802,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100 (Polytool unavailable)",
+      "notes": "Provisional phase-2 awakening study, not a verified phase assignment or animation sequence. Independent reference-based redraw, exact edit/identity unverified. Original alpha reaches an edge; 32px transparent padding does not repair existing clipping. No upscaling. 949px provisional extent passes, conservative 1898px production gate fails."
+    },
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-awakening-key-b",
+      "pose": "transform",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/abyss-phase2-awakening-key-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "e93674e8-991a-47de-abd1-b6fbe57d5405",
+        "originalPngSha256": "c233ef71eef7c8c0d250ccabac08fe830f3925648cf35df4e79b9dbdb209eb9d",
+        "canonicalReferenceHead": "8cb7d836b0e90b52192f097d29ceabfefc2119a9",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1359,
+      "cellHeight": 1278,
+      "frameRects": [
+        [
+          0,
+          0,
+          1359,
+          1278
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        679.5,
+        639.0
+      ],
+      "alphaBounds": [
+        108,
+        51,
+        1229,
+        1223
+      ],
+      "alphaAnyBounds": [
+        32,
+        47,
+        1291,
+        1246
+      ],
+      "alphaExtent": [
+        1121,
+        1172
+      ],
+      "actualSourceResolution": [
+        1359,
+        1278
+      ],
+      "originalGeneratedResolution": [
+        1295,
+        1214
+      ],
+      "originalAlpha128Bounds": [
+        76,
+        19,
+        1197,
+        1191
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        15,
+        1259,
+        1214
+      ],
+      "sourceEdgeMargins": [
+        108,
+        51,
+        130,
+        55
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "66357e43954b335a354edbdf24c405abfdda3bc3fab9037329fe4009c048b2bf",
+      "webpCompressedBytes": 597532,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100 (Polytool unavailable)",
+      "notes": "Provisional phase-2 awakening study, not a verified phase assignment or animation sequence. Independent reference-based redraw, exact edit/identity unverified. Original alpha reaches an edge; 32px transparent padding does not repair existing clipping. No upscaling. 949px provisional extent passes, conservative 1898px production gate fails."
+    }
+  ],
+  "missing": [
+    "identity and clipping review",
+    "phase and anchor approval",
+    "coherent animation sequence",
+    "browser visual QA",
+    "1898px production extent"
+  ]
+}
