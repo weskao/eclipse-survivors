@@ -600,7 +600,15 @@
 .es2-menu .es2-expedition-brief::after{inset:1px;z-index:-1;background:linear-gradient(120deg,#22334a,#111b2a 58%,#171f2c)}
 .es2-menu .es2-expedition-brief[data-run-mode="boss-rush"]::after,.es2-menu .es2-expedition-brief[data-run-mode="cursed-expedition"]::after{background:linear-gradient(120deg,#462b31,#251d2d 64%,#1b2431)}
 .es2-menu .es2-expedition-brief[data-run-mode="endless-eclipse"]::after,.es2-menu .es2-expedition-brief[data-run-mode="chaos-arena"]::after{background:linear-gradient(120deg,#39304e,#211b38 64%,#1b2431)}
-.es2-menu .es2-expedition-brief:hover::before{background:#a9c2df}
+/* Secondary button: cool steel rim, fill, chip and arrow respond; it never lifts, scales or turns gold like the gate. */
+.es2-menu .es2-expedition-brief::after{transition:filter .18s ease-out}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::before{background:#a9c2df}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::after{inset:2px;filter:brightness(1.5) saturate(1.2)}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change{border-color:#e3eefb;background:#3a5a84;color:#fff}
+.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(3px)}
+.es2-menu .es2-expedition-brief[aria-controls="es2HeroPage"]:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(-3px)}
+.es2-menu .es2-expedition-brief:focus-visible{outline:2px solid #cfe0f5;outline-offset:2px}
+.es2-menu .es2-expedition-brief:active{filter:brightness(.94)}
 .es2-menu .es2-expedition-sigil{
   display:grid;place-items:center;flex:0 0 42px;width:42px;height:48px;
   background:linear-gradient(145deg,#4a6080,#222b3b 65%,#455a78);
@@ -615,9 +623,9 @@
 .es2-menu .es2-expedition-meta{display:block;margin-top:2px;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif}
 .es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}
 .es2-menu .es2-expedition-hero::before{content:'·';margin-inline:6px;color:#7f94ae;font-weight:700}
-.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;color:#b9cde5;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start}
+.es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;padding:5px 7px 5px 10px;border:1px solid #6f87a6;border-radius:999px;background:#0b1422b3;color:#d2e1f3;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start;transition:border-color .18s ease-out,background-color .18s ease-out,color .18s ease-out}
 .es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}
-.es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none}
+.es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none;transition:transform .18s cubic-bezier(.2,.8,.2,1)}
 /* A crimson eclipse door with molten ember light rising from its threshold, framed in bright gold. */
 .es2-menu .es2-portal-start{
   --es2-portal-rim:linear-gradient(100deg,#c8862f,#fff1c2 22%,#ffc960 52%,#b8742a 78%,#fff0bd);
@@ -679,7 +687,9 @@
   .es2-menu .es2-portal-sheen{animation:none;opacity:.75}
   .es2-menu .es2-portal-start .es2-portal-sheen::before{animation:none!important}
   .es2-menu .es2-portal-start :is(.es2-portal-decoration,.es2-portal-core){transition:none!important;transform:none!important}
+  .es2-menu .es2-expedition-change-arrow{transition:none;transform:none!important}
 }
+[data-es2-reduce-motion="true"] .es2-menu .es2-expedition-change-arrow{transition:none;transform:none!important}
 [data-es2-reduce-motion="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
 [data-es2-reduce-flashing="true"] .es2-portal-start .es2-portal-sheen{animation:none;opacity:.75}
 [data-es2-reduce-motion="true"] .es2-menu .es2-portal-start{transition:none;transform:none!important}
@@ -693,6 +703,8 @@
   .es2-menu .es2-portal-start:is(:hover,:focus-visible,:active):not(:disabled){background:ButtonFace;text-shadow:none}
   .es2-menu .es2-portal-start::before,.es2-menu .es2-portal-start::after,.es2-menu .es2-portal-sheen{display:none}
   .es2-menu .es2-portal-start:focus-visible:not(:disabled){outline:3px solid Highlight}
+  .es2-menu .es2-expedition-brief{border:1px solid ButtonText}
+  .es2-menu .es2-expedition-change{border-color:ButtonText}
 }
 /* A small pointed-arch doorway with warm light inside; static paint, no idle animation. */
 .es2-menu .es2-portal-decoration{
@@ -982,7 +994,8 @@
    the viewport even on the first animation frame. Archive content still rises.
    Do not retain a compositor animation layer after the fade completes. */
 @keyframes es2-scene-fade { from { opacity: 0; } }
-.es2-menu { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
+/* The lobby shell must be opaque on its first paint; fade only its children. */
+.es2-menu { animation:none; opacity:1; }
 .es2-hero-section, .es2-mode-section { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
 .es2-archive-page { --es2-scene-from: 0 12px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
 .es2-menu-action-bar { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
@@ -1006,13 +1019,13 @@
   }
 }
 
-/* Expedition result (victory/defeat): the whole report fits the viewport with no body scroll.
+/* Expedition result (victory/defeat): compact report fits when possible; allow overflow fallback.
    The portrait is the only flexible element: it grows into spare height and yields it to rewards.
    Narrow portrait stacks banner over report; wide or landscape screens use banner | report. */
-.es2-dialog-result .es2-dialog-body{display:flex;flex-direction:column;overflow:hidden;touch-action:manipulation}
+.es2-dialog-result .es2-dialog-body{display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain}
 .es2-dialog-result .es2-dialog-actions{justify-content:center;margin-top:clamp(8px,1.8dvh,18px);padding-top:clamp(8px,1.8dvh,16px)}
 .es2-dialog-result .es2-dialog-actions button{flex:0 1 220px}
-.es2-dialog-result .es2-result{position:relative;display:flex;flex-direction:column;flex:1 1 auto;gap:clamp(8px,1.5dvh,14px);min-height:0;text-align:center}
+.es2-dialog-result .es2-result{position:relative;display:flex;flex-direction:column;flex:1 1 auto;gap:clamp(8px,1.5dvh,14px);min-height:min-content;text-align:center}
 .es2-dialog-result .es2-result-banner{position:relative;display:flex;flex-direction:column;align-items:center;flex:1 1 clamp(136px,31dvh,300px);gap:2px;padding:clamp(6px,1.2dvh,12px) 10px;border:1px solid #c3a97d40;border-radius:12px;background:radial-gradient(ellipse 58% 52% at 50% 40%,#e4b26324,transparent 72%),#08121ecc;box-shadow:inset 0 1px #d9bb8726}
 .es2-tone-defeat .es2-result-banner{background:radial-gradient(ellipse 58% 52% at 50% 40%,#9d454536,transparent 72%),#08121ecc}
 /* Preferred size lives on the banner; a zero-basis portrait keeps the banner floor at portrait-min + status + mode. */
@@ -1033,7 +1046,7 @@
 .es2-reward-strip span{padding:1px 8px;border:1px solid #b5a06c55;border-radius:999px;background:#0e1b2bcc;font-size:.75rem;line-height:1.4}
 .es2-dialog-result .es2-result-cloud{margin:0}
 @media (min-width:640px){
-  .es2-dialog-result .es2-result{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-rows:minmax(0,1fr);gap:clamp(10px,1.8vw,22px)}
+  .es2-dialog-result .es2-result{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-rows:minmax(min-content,1fr);gap:clamp(10px,1.8vw,22px)}
   .es2-dialog-result .es2-result-hero{flex-basis:clamp(96px,38dvh,340px)}
   .es2-dialog-result .es2-victory-celebration{grid-column:1;grid-row:1}
 }

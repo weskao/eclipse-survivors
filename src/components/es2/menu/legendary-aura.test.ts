@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AURA_BUDGET, auraMode, auraSpriteCount, emberPose, perimeterPoint } from './legendary-aura'
+import { AURA_BUDGET, auraMode, auraSpriteCount, burstPose, emberPose, perimeterPoint } from './legendary-aura'
 
 describe('legendary choice aura plan', () => {
   it('turns off for reduced motion or still mode and calms for reduced flashing', () => {
@@ -37,6 +37,23 @@ describe('legendary choice aura plan', () => {
     }
     const early = emberPose(0, .1, 180, 260), later = emberPose(0, .4, 180, 260)
     expect(later.y).toBeLessThan(early.y)
+  })
+
+  it('keeps every reveal burst glow inside the art box so card text stays readable', () => {
+    // Stacked (desktop/landscape) and side-by-side (portrait) art boxes.
+    for (const art of [{ x: 0, y: 0, w: 240, h: 160 }, { x: 6, y: 4, w: 96, h: 210 }]) {
+      for (let i = 0; i < AURA_BUDGET.burst; i++) for (let r = 0; r < 1; r += .05) {
+        const p = burstPose(i, r, art)
+        expect(p.x - p.size / 2).toBeGreaterThanOrEqual(art.x - 1e-9)
+        expect(p.x + p.size / 2).toBeLessThanOrEqual(art.x + art.w + 1e-9)
+        expect(p.y - p.size / 2).toBeGreaterThanOrEqual(art.y - 1e-9)
+        expect(p.y + p.size / 2).toBeLessThanOrEqual(art.y + art.h + 1e-9)
+        expect(p.alpha).toBeGreaterThanOrEqual(0); expect(p.alpha).toBeLessThanOrEqual(1)
+      }
+    }
+    const art = { x: 0, y: 0, w: 240, h: 160 }, spread = (r: number) => Math.hypot(burstPose(5, r, art).x - 120, burstPose(5, r, art).y - 80)
+    expect(burstPose(0, .2, art)).toEqual(burstPose(0, .2, art))
+    expect(spread(.6)).toBeGreaterThan(spread(.05))
   })
 
   it('bounds sprites for every legendary card in a three-choice offer', () => {

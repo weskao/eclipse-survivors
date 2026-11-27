@@ -23,6 +23,7 @@ export interface HallNode {
   attunementStatus?: string
   current?: string
   next?: string
+  increment?: string
 }
 
 const icons: Record<string, AbilityId> = {
@@ -44,6 +45,7 @@ export function researchHallNodes(state: MetaState): HallNode[] {
       description: t(node.description, { value: Number((node.benefitPerRank * (flat ? 1 : 100)).toFixed(2)) }),
       rank: node.rank, maxRank: node.maxRank, cost: node.nextCost, locked: node.locked, canBuy: node.canBuy,
       requires, requirements: requires.map(req => t(req.title) + ' · Lv. ' + req.rank),
+      increment: effect(1, node.benefitPerRank, flat),
       current: effect(node.rank, node.benefitPerRank, flat),
       next: node.nextCost === null ? undefined : effect(node.rank + 1, node.benefitPerRank, flat),
     }
@@ -77,6 +79,7 @@ export function legacyHallNodes(profile: Profile): HallNode[] {
     const cost = rank >= maxRank ? null : researchCost(node.id, rank)
     return { id: node.id, kind: 'legacy', title: node.title, description: t(node.description, { value: Number((benefitPerRank * (node.flat ? 1 : 100)).toFixed(2)) }), art: art(node.id),
       rank, maxRank, cost, locked: false, canBuy: cost !== null && profile.embers >= cost, requires: [], requirements: [],
+      increment: effect(1, benefitPerRank, node.flat),
       current: effect(rank, benefitPerRank, node.flat), next: cost === null ? undefined : effect(rank + 1, benefitPerRank, node.flat) }
   })
 }

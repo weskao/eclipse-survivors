@@ -1,7 +1,8 @@
 import type { Application, Container, Graphics, Sprite, Texture } from 'pixi.js'
-import { AURA_BUDGET, emberPose, perimeterPoint, type AuraMode } from './legendary-aura'
+import { AURA_BUDGET, burstPose, emberPose, perimeterPoint, type ArtBox, type AuraMode } from './legendary-aura'
 
-export interface AuraRect { x: number; y: number; w: number; h: number; r: number }
+/** Card rect in grid space; `art` is the card's art content box in card space (the reveal focal point). */
+export interface AuraRect { x: number; y: number; w: number; h: number; r: number; art?: ArtBox }
 export interface LegendaryAuraHandle { layout(width: number, height: number, cards: readonly AuraRect[], mode: AuraMode): void; release(): void }
 
 type Pixi = typeof import('pixi.js')
@@ -97,8 +98,9 @@ function runtime(): Promise<Runtime | null> {
 function place(fx: CardFx, c: AuraRect, mode: AuraMode, t: number, stagger: number): void {
   const full = mode === 'full', { w, h } = c
   fx.root.position.set(c.x, c.y)
-  // Rays sit behind the art focal point (upper card), slow enough to read as light, not motion.
-  const cx = w / 2, cy = h * .3, span = Math.max(w, h) * 1.25
+  // Rays sit behind the art focal point (top on stacked cards, left column on portrait rows), slow enough to read as light.
+  const art = c.art ?? { x: w * .1, y: h * .05, w: w * .8, h: h * .45 }
+  const cx = art.x + art.w / 2, cy = art.y + art.h / 2, span = Math.max(w, h) * 1.25
   fx.rays.visible = true; fx.rays.position.set(cx, cy); fx.rays.width = fx.rays.height = span
   fx.rays.rotation = t * (full ? .12 : .05); fx.rays.alpha = (full ? .2 : .12) + Math.sin(t * 1.3) * (full ? .05 : .015)
   // Foil sweep: one diagonal pass every 3.6 s; calm mode keeps it dim and slow.
@@ -125,17 +127,18 @@ function place(fx: CardFx, c: AuraRect, mode: AuraMode, t: number, stagger: numb
       s.visible = true; s.position.set(p.x, p.y); s.alpha = (full ? 1 : .5) * fade ** 1.4; s.scale.set((k2 ? .32 : .6) * (.55 + fade * .45))
     }
   }
-  // Reveal: light pillar drops onto the card, a shockwave ring and a gold burst spill out once, then settle.
+  // Reveal: a light pillar drops onto the art, then a shockwave ring and gold burst bloom once inside it, leaving card text clear.
   const r = (t - stagger) / AURA_BUDGET.revealSeconds, revealing = full && r >= 0 && r < 1
   fx.pillar.visible = fx.ring.visible = revealing
   for (const s of fx.burst) s.visible = revealing
   if (!revealing) return
-  fx.pillar.position.set(cx, h * .5); fx.pillar.width = w * (1.1 - r * .7); fx.pillar.height = h * 1.3; fx.pillar.alpha = .85 * (1 - ease(r))
-  fx.ring.position.set(cx, cy); fx.ring.width = fx.ring.height = Math.max(w, h) * (.2 + ease(r) * 1.1); fx.ring.alpha = .9 * (1 - r) ** 2
+  const artBottom = art.y + art.h
+  fx.pillar.position.set(cx, artBottom / 2); fx.pillar.width = art.w * (.9 - r * .6); fx.pillar.height = artBottom; fx.pillar.alpha = .85 * (1 - ease(r))
+  // Ring texture's bright band peaks at ~0.9 of its radius, so 1.05 × the short side keeps it within the art box.
+  fx.ring.position.set(cx, cy); fx.ring.width = fx.ring.height = Math.min(art.w, art.h) * (.3 + ease(r) * .75); fx.ring.alpha = .9 * (1 - r) ** 2
   for (let i = 0; i < fx.burst.length; i++) {
-    const s = fx.burst[i]!, a = i / fx.burst.length * Math.PI * 2 + hash(i) * .4, dist = (.25 + hash(i + 30) * .55) * Math.max(w, h) * ease(r)
-    s.position.set(cx + Math.cos(a) * dist, cy + Math.sin(a) * dist * .85 + r * r * h * .12)
-    s.alpha = (1 - r) ** 1.2; s.scale.set((.3 + hash(i + 60) * .35) * (1 - r * .5))
+    const s = fx.burst[i]!, p = burstPose(i, r, art)
+    s.position.set(p.x, p.y); s.alpha = p.alpha; s.width = s.height = p.size
   }
 }
 

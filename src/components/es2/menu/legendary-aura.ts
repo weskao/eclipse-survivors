@@ -60,6 +60,16 @@ export function perimeterPoint(w: number, h: number, r: number, u: number): { x:
 
 const hash = (n: number) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x) }
 
+export interface ArtBox { x: number; y: number; w: number; h: number }
+
+/** Reveal burst spark: radiates from the art centre; its whole glow (size = diameter) stays inside the art box, never over card text. */
+export function burstPose(i: number, r: number, art: ArtBox): { x: number; y: number; alpha: number; size: number } {
+  const e = 1 - (1 - r) ** 3, a = i / AURA_BUDGET.burst * Math.PI * 2 + hash(i + 41) * .4
+  const size = Math.min(art.w, art.h) * (.1 + hash(i + 60) * .1) * (1 - r * .5)
+  const d = (.3 + hash(i + 30) * .7) * e, rx = (art.w - size) / 2, ry = (art.h - size) / 2
+  return { x: art.x + art.w / 2 + Math.cos(a) * rx * d, y: art.y + art.h / 2 + Math.sin(a) * ry * d, alpha: (1 - r) ** 1.2, size }
+}
+
 /** Deterministic looping ember: rises from the lower card edge, sways, fades in and out; biased toward the side edges. */
 export function emberPose(i: number, t: number, w: number, h: number): { x: number; y: number; alpha: number; scale: number } {
   const loop = AURA_BUDGET.emberLoop * (.75 + hash(i) * .5)

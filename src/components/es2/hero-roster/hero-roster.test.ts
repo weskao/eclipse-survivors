@@ -8,6 +8,7 @@ import HeroSpecialAction from './HeroSpecialAction.vue'
 import Es2MainMenu from '../menu/Es2MainMenu.vue'
 import { getLocale, setLocale, t } from '../../../i18n'
 import { getHeroActiveDefinition } from '../../../game/content/heroes/classic-active'
+import { ACTIVE_HERO_IDS } from './active-presentation'
 
 const instances: Array<{ unmount(): void }> = []
 function render(component: Component, props: Record<string, unknown>) {
@@ -377,5 +378,19 @@ describe('real menu roster integration', () => {
     expect(wrapper.emitted('selectHero')?.[0]).toEqual(['spirit-summoner'])
     await wrapper.get('[data-hero="wizard"]').trigger('click')
     expect(wrapper.emitted('select')?.[0]).toEqual(['wizard'])
+  })
+})
+
+describe('compact hero skill names on phones', () => {
+  // The phone name column beside the 3rem value column is ~51px at .72rem (320px portrait, 812x375 landscape);
+  // "Collapse" (8 letters, 51px) is the widest word that fits, "Dawnbreaker" (82px) split mid-word.
+  it('keeps every English active-skill word short enough to wrap whole in the compact card', () => {
+    const previous = getLocale()
+    try {
+      setLocale('en')
+      const names = ACTIVE_HERO_IDS.map(id => t(getHeroActiveDefinition(id).special.split('：')[0]))
+      expect(names).toContain('Dawn Breaker')
+      expect(names.flatMap(name => name.split(/\s+/)).filter(word => word.length > 8)).toEqual([])
+    } finally { setLocale(previous) }
   })
 })

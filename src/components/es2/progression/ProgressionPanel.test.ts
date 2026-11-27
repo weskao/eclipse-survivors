@@ -369,3 +369,28 @@ it('returns from a talent prerequisite to the exact original research node',asyn
     wrapper.unmount()
   } finally { vi.unstubAllEnvs() }
 })
+
+describe('Hall upgrade detail presentation', () => {
+  it('shows current and next ranks with the catalog increment and removes the preview at maximum rank', async () => {
+    const state = createMetaState()
+    state.embers = 50_000
+    state.research.power = 3
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    const detail = () => wrapper.get('[data-hall-detail]')
+    const increment = '+' + Number((BALANCE.meta.research.power.benefitPerRank * 100).toFixed(2)) + '%'
+    expect(detail().get('[data-hall-rank-label]').text()).toContain('3 / 5')
+    expect(detail().get('[data-hall-current]').text()).toContain('Lv. 3')
+    expect(detail().get('[data-hall-next]').text()).toContain('Lv. 4')
+    expect(detail().get('[data-hall-increment]').text()).toContain(increment)
+    expect(detail().findAll('.hall-detail-pip[data-filled="true"]')).toHaveLength(3)
+    const maxed = structuredClone(state)
+    maxed.research.power = 5
+    await wrapper.setProps({ state: maxed })
+    expect(detail().attributes('data-rank-complete')).toBe('true')
+    expect(detail().get('[data-hall-rank-label]').text()).toContain('MAX')
+    expect(detail().find('[data-hall-next]').exists()).toBe(false)
+    expect(detail().find('[data-hall-increment]').exists()).toBe(false)
+    expect(detail().get('[data-hall-confirm]').attributes('disabled')).toBeDefined()
+    wrapper.unmount()
+  })
+})

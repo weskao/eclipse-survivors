@@ -416,6 +416,21 @@ describe('portal start interaction feedback', () => {
     // The brief turns cool steel so the warm ember gate is the only gold-lit action in the dock.
     expect(css).toContain('.es2-menu .es2-expedition-brief::before{background:#53677f}')
   })
+  it('gives the expedition brief secondary-button affordance without out-ranking the portal', () => {
+    // Resting chip + hover/focus rim, fill, chip and arrow response read as a button.
+    expect(css).toMatch(/\.es2-menu \.es2-expedition-change\{[^}]*border:1px solid #6f87a6[^}]*border-radius:999px/)
+    expect(css).toContain('.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::before{background:#a9c2df}')
+    expect(css).toContain('.es2-menu .es2-expedition-brief:is(:hover,:focus-visible)::after{inset:2px;filter:brightness(1.5) saturate(1.2)}')
+    expect(css).toContain('.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change{border-color:#e3eefb;background:#3a5a84;color:#fff}')
+    expect(css).toContain('.es2-menu .es2-expedition-brief:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(3px)}')
+    expect(css).toContain('.es2-menu .es2-expedition-brief[aria-controls="es2HeroPage"]:is(:hover,:focus-visible) .es2-expedition-change-arrow{transform:translateX(-3px)}')
+    expect(css).toContain('.es2-menu .es2-expedition-brief:focus-visible{outline:2px solid #cfe0f5;outline-offset:2px}')
+    expect(css).toContain('.es2-menu .es2-expedition-brief:active{filter:brightness(.94)}')
+    // Hierarchy: the brief never lifts, scales or glows gold like the Start gate.
+    const briefRules = [...css.matchAll(/\.es2-expedition-brief[^{]*\{([^}]*)\}/g)].map(match => match[1]).join(';')
+    expect(briefRules).not.toMatch(/scale\(|translateY\(-|drop-shadow|#ff[a-f0-9]{4}/i)
+    expect(css).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[^@]*\.es2-menu \.es2-expedition-change-arrow\{transition:none;transform:none!important\}/)
+  })
 })
 
 describe('lobby dock silhouette and layout', () => {

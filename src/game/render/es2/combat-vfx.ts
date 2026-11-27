@@ -25,7 +25,7 @@ export const COMBAT_FX_SPECS = [
   { kind: 'enemy-death', id: 'combat-vfx:enemy-death', title: 'Soul Dissolution', duration: 0.7, radius: 124 },
   { kind: 'ultimate-attack', id: 'combat-vfx:ultimate-attack', title: 'Ultimate Release', duration: 1.1, radius: 190 },
   { kind: 'victory-finish', id: 'combat-vfx:victory-finish', title: 'Victory Benediction', duration: 2.4, radius: 195 },
-  { kind: 'hero-knight', id: 'combat-vfx:hero-knight', title: 'Dawnbreaker', duration: 1.2, radius: BALANCE.heroes.classicActive.knight.reach },
+  { kind: 'hero-knight', id: 'combat-vfx:hero-knight', title: 'Dawn Breaker', duration: 1.2, radius: BALANCE.heroes.classicActive.knight.reach },
   { kind: 'hero-ranger', id: 'combat-vfx:hero-ranger', title: 'Starfall Volley', duration: 1.35, radius: BALANCE.heroes.classicActive.ranger.reach },
   { kind: 'hero-wizard', id: 'combat-vfx:hero-wizard', title: 'Void Collapse', duration: 1.65, radius: BALANCE.heroes.classicActive.wizard.reach },
   { kind: 'hero-shadowblade', id: 'combat-vfx:hero-shadowblade', title: 'Shadowblade · Nightfall Ambush', duration: 1.08, radius: 210 },

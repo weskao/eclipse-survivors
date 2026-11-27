@@ -21,7 +21,13 @@ function measure(): void {
   if (!handle || !grid) return
   const cards: AuraRect[] = []
   for (const el of grid.querySelectorAll<HTMLElement>('.es2-rarity-legendary')) {
-    cards.push({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, r: parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0 })
+    // Art content box in card space (the card is positioned); padding excludes the rarity pill overlaid on compact layouts.
+    const art = el.querySelector<HTMLElement>('.es2-card-art'), pad = art && getComputedStyle(art)
+    const box = art && pad && {
+      x: art.offsetLeft + art.clientLeft + parseFloat(pad.paddingLeft), y: art.offsetTop + art.clientTop + parseFloat(pad.paddingTop),
+      w: art.clientWidth - parseFloat(pad.paddingLeft) - parseFloat(pad.paddingRight), h: art.clientHeight - parseFloat(pad.paddingTop) - parseFloat(pad.paddingBottom),
+    }
+    cards.push({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, r: parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, art: box && box.w > 0 && box.h > 0 ? box : undefined })
   }
   handle.layout(grid.clientWidth, grid.clientHeight, cards, mode())
 }

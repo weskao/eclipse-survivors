@@ -169,19 +169,33 @@ watch(() => props.nodes, (nodes, previous) => {
       </template>
     </div>
     <Teleport to="body" :disabled="!floating">
-    <aside v-if="active" v-show="visible && (!floating || opened)" ref="detail" class="hall-detail" :class="{ 'hall-detail--floating': floating }" :data-hall-detail-completion="completion(active)" :data-hall-detail="tree ? '' : undefined" :data-open="String(floating && opened && visible)" tabindex="-1" :aria-label="t('節點詳情')">
+    <aside v-if="active" v-show="visible && (!floating || opened)" ref="detail" class="hall-detail" :class="{ 'hall-detail--floating': floating }" :data-hall-detail-completion="completion(active)" :data-rank-complete="String(completion(active) === 'mastered')" :data-hall-detail="tree ? '' : undefined" :data-open="String(floating && opened && visible)" tabindex="-1" :aria-label="t('節點詳情')">
       <button v-if="floating" type="button" class="hall-detail-close" data-hall-close data-ui-sfx="select" :aria-label="t('關閉節點詳情')" @click="closeDetail(true)">×</button>
-      <div class="hall-detail-heading"><img :src="active.art" alt="" width="48" height="48" /><div><small>{{ t('節點詳情') }}<span v-if="completion(active) === 'mastered'" class="hall-detail-max-mark"> · MAX</span></small><strong>{{ t(active.title) }}</strong></div></div>
+      <div class="hall-detail-heading">
+        <div class="hall-detail-emblem"><img :src="active.art" alt="" width="48" height="48" /></div>
+        <div class="hall-detail-title">
+          <small>{{ t(active.kind === 'research' ? '永久研究' : active.kind === 'legacy' ? '永久強化' : '起始裝備與祝福') }}</small>
+          <strong>{{ t(active.title) }}</strong>
+          <div v-if="active.maxRank > 1" class="hall-detail-rank" data-hall-rank-label>
+            <b>Lv. {{ active.rank }} / {{ active.maxRank }}</b>
+            <span v-if="active.rank === active.maxRank" class="hall-max-label">✦ MAX</span>
+          </div>
+          <div v-if="active.maxRank > 1" class="hall-detail-pips" aria-hidden="true">
+            <i v-for="rank in active.maxRank" :key="rank" class="hall-detail-pip" :data-filled="String(rank <= active.rank)" :data-next="String(rank === active.rank + 1)"></i>
+          </div>
+        </div>
+      </div>
       <div class="hall-detail-body">
-      <p>{{ active.description }}</p>
+      <div class="hall-description"><small>{{ t('技能說明') }}</small><p>{{ active.description }}</p></div>
       <p v-if="preview && active.cost !== null" class="hall-preview-price">{{ t('預計升級成本 · {cost} ✧', { cost: active.cost }) }}</p>
-      <div v-if="active.current !== undefined" class="hall-comparison">
-        <div><small>{{ t('目前效果') }}</small><b>{{ active.current }}</b></div>
-        <span v-if="active.next !== undefined" aria-hidden="true">→</span>
-        <div v-if="active.next !== undefined"><small>{{ t('下一階效果') }}</small><b>{{ active.next }}</b></div>
+      <div v-if="active.current !== undefined" class="hall-comparison" :class="{ 'hall-comparison--single': active.next === undefined }">
+        <div class="hall-effect" data-hall-current><small>{{ t('目前效果') }}</small><span class="hall-effect-level">Lv. {{ active.rank }}</span><b>{{ active.current }}</b></div>
+        <span v-if="active.next !== undefined" class="hall-effect-arrow" aria-hidden="true">→</span>
+        <div v-if="active.next !== undefined" class="hall-effect hall-effect--next" data-hall-next><small>{{ t('下一階效果') }}</small><span class="hall-effect-level">Lv. {{ active.rank + 1 }}</span><b>{{ active.next }}</b></div>
+        <div v-if="active.next !== undefined && active.increment !== undefined" class="hall-effect-gain" data-hall-increment><small>{{ t('每階提升') }}</small><b>↑ {{ active.increment }}</b></div>
       </div>
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><div v-for="(requirement,index) in active.requirements" :key="requirement"><button v-if="navigableRequirements && active.requires[index]" type="button" class="hall-prerequisite-link" :data-hall-prerequisite="active.requires[index]?.id" data-ui-sfx="select" @click="followRequirement(index)">{{ requirement }} ↗</button><p v-else>{{ requirement }}</p></div></div>
-      <small class="hall-status">{{ active.attunementStatus ?? t(status(active)) }}</small>
+      <small class="hall-status hall-detail-status" :data-state="completion(active) !== 'none' ? 'maxed' : active.locked ? 'locked' : active.canBuy ? 'available' : 'poor'">{{ active.attunementStatus ?? t(status(active)) }}</small>
       <div v-if="upgraded?.id === active.id" role="status" class="hall-success" :key="upgraded.rank">
         <span class="hall-ceremony-label">{{ t(upgraded.milestone ? '最高等階達成' : '升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</span>
         <span v-if="upgraded.arrived.length" data-hall-unlock-notice class="hall-unlock-notice">{{ t('新研究已開啟') }} · {{ nodes.filter(node => upgraded?.arrived.includes(node.id)).map(node => t(node.title)).join(' · ') }}</span>
@@ -274,6 +288,7 @@ watch(() => props.nodes, (nodes, previous) => {
 @media(hover:hover) and (pointer:fine){.hall-inspect:hover{border-color:#b89a6355}.hall-buy:hover:not(:disabled){background:linear-gradient(#7a603e,#4d3826)}}
 @media(min-width:740px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(205px,30%);--hall-medallion:68px}.hall-map{padding:10px 18px}.hall-growth--tree .hall-row{max-width:400px;margin-inline:auto}.hall-growth--tree .hall-links{max-width:400px;margin-inline:auto}}
 @media(orientation:landscape) and (min-width:560px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,36%);--hall-medallion:54px}.hall-map{padding:6px}.hall-links{height:10px}.hall-inspect{gap:2px;padding:2px}.hall-inspect strong{font-size:.75rem}.hall-detail{gap:6px;padding:9px}}
+@media(max-width:739px) and (orientation:portrait){.hall-growth{--hall-medallion:56px}.hall-map{padding:6px}.hall-links{height:10px}}
 @media(max-width:360px){.hall-growth{--hall-medallion:56px}.hall-map{padding:6px}.hall-links{height:10px}.hall-row{gap:3px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
 @media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
 :global([data-es2-reduce-motion="true"] .hall-upgrade-fx),
@@ -383,4 +398,49 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-upgrade-fx,.hall-upgrade-fx *{pointer-events:none}
 .hall-ritual{max-width:100%}
 @media(orientation:landscape) and (max-height:360px){.hall-detail--floating{padding:8px;gap:4px}.hall-detail--floating .hall-detail-heading img{width:30px;height:30px;flex-basis:30px}}
+/* Shared upgrade inspector: restrained gilded surfaces, readable effect hierarchy,
+   and persistent rank cues independent of the existing purchase ceremony. */
+.hall-detail{border-radius:12px;background:radial-gradient(ellipse at 15% 0%,#473a35 0,transparent 56%),linear-gradient(155deg,#202b38,#101721 80%);box-shadow:inset 0 1px #f5d09b22,0 6px 20px #0004}
+.hall-detail-heading{gap:10px;align-items:center}
+.hall-detail-emblem{display:grid;place-items:center;flex:0 0 auto;width:58px;height:58px;padding:5px;box-sizing:border-box;border:1px solid #b99a64;border-radius:50%;background:radial-gradient(circle,#4d4543,#192331 72%);box-shadow:0 0 0 2px #9d805332,inset 0 0 7px #0008}
+.hall-detail-emblem img{width:100%;height:100%;min-width:0;object-fit:contain;filter:drop-shadow(0 2px 3px #0009)}
+.hall-detail-title{min-width:0;flex:1}
+.hall-detail-title strong{color:#ffe2ad;font-size:clamp(1rem,1.5vw,1.25rem);line-height:1.2;margin:3px 0}
+.hall-detail-rank{display:flex;gap:5px;align-items:center;flex-wrap:wrap;color:#e7c88e;font:600 .8rem/1.3 system-ui;font-variant-numeric:tabular-nums}
+.hall-detail-pips{display:flex;gap:3px;margin-top:5px;max-width:180px}
+.hall-detail-pip{height:5px;flex:1;min-width:0;border-radius:2px;background:#39434d;border:1px solid #96836b44}
+.hall-detail-pip[data-filled="true"]{background:linear-gradient(90deg,#a67e42,#f4d795);border-color:#dfbe83;box-shadow:0 0 5px #caa36138}
+.hall-detail-pip[data-next="true"]{border-color:#b69a69;background:#6e573750}
+.hall-max-label,.hall-node-max{color:#ffdc86;font-weight:800}
+.hall-detail[data-rank-complete="true"]{border-color:#e1bb72;box-shadow:inset 0 0 20px #d6a85a13,0 0 16px #d6a85a22}
+.hall-detail[data-rank-complete="true"] .hall-detail-emblem{border-color:#ffe09a;box-shadow:0 0 0 2px #ac814d,0 0 14px #edba674d}
+.hall-node[data-state="maxed"] .hall-rank{background:linear-gradient(#624b29,#302318);border-color:#e0bf79;color:#fff0b8}
+.hall-description{display:grid;gap:4px;border-top:1px solid #b49b6940;padding-top:8px}
+.hall-description p{color:#e0dce0;line-height:1.55}
+.hall-comparison{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:5px;padding:0;border:0}
+.hall-comparison--single{grid-template-columns:minmax(0,1fr)}
+.hall-comparison .hall-effect{display:grid;align-content:start;gap:3px;padding:8px 6px;border:1px solid #a78c5b44;border-radius:7px;background:#121b25;min-width:0;text-align:center}
+.hall-comparison .hall-effect--next{background:linear-gradient(150deg,#263c31,#182b29);border-color:#83b69566}
+.hall-effect small{color:#d2bf9e;font-size:.73rem}
+.hall-effect-level{color:#aeb7c2;font:500 .72rem/1.2 system-ui}
+.hall-comparison .hall-effect b{color:#ffe2ad;font:750 clamp(1rem,2.1vw,1.4rem)/1.2 system-ui;overflow-wrap:anywhere}
+.hall-comparison .hall-effect--next b{color:#a8e6ae}
+.hall-effect-arrow{align-self:center;color:#c9ae7b;font-size:1rem}
+.hall-comparison .hall-effect-gain{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;padding:4px;color:#a8e6ae}
+.hall-comparison .hall-effect-gain b{font-size:.85rem;color:#a8e6ae}
+.hall-requirements{padding:8px;border-radius:6px;background:#0e172175;border:1px solid #a78c5b35}
+.hall-detail-status{justify-self:start;padding:3px 8px;border-radius:4px;border:1px solid #a78c5b55;background:#181e29}
+.hall-detail-status[data-state="available"]{color:#a8e6ae;border-color:#83b69555}
+.hall-detail-status[data-state="poor"]{color:#f3b5a5;border-color:#d07d6866}
+.hall-detail-status[data-state="maxed"]{color:#ffe09a;border-color:#d9b46e88}
+.hall-detail .hall-confirm:not(:disabled){background:linear-gradient(180deg,#a28149,#674a29);border-color:#edcb89;box-shadow:inset 0 1px #f6dfa966,0 3px 8px #0005;color:#fff4dc;font-weight:750}
+@media(hover:hover) and (pointer:fine){.hall-detail .hall-confirm:hover:not(:disabled){background:linear-gradient(180deg,#b79860,#765735)}}
+.hall-detail .hall-confirm:active:not(:disabled){box-shadow:inset 0 2px 5px #0006}
+.hall-detail--floating{background:radial-gradient(ellipse at 15% 0%,#473a35,transparent 60%),linear-gradient(155deg,#202b38,#101721 85%);max-height:min(60dvh,460px)}
+.hall-detail--floating .hall-detail-emblem{width:46px;height:46px}
+.hall-detail--floating .hall-detail-emblem img{width:100%;height:100%}
+.hall-detail--floating .hall-detail-body{align-content:start}
+@media(orientation:landscape) and (max-height:600px){.hall-detail--floating{max-height:none}.hall-detail--floating .hall-detail-emblem{width:38px;height:38px}.hall-detail--floating .hall-detail-heading{gap:6px}.hall-detail--floating .hall-description{padding-top:4px}.hall-detail--floating .hall-effect{padding:5px 4px}}
+@media(max-width:360px){.hall-detail-heading{gap:7px}.hall-detail-emblem{width:46px;height:46px}.hall-comparison{gap:3px}.hall-comparison .hall-effect{padding:5px 3px}}
+
 </style>
