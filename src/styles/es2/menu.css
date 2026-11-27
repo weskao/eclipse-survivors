@@ -957,13 +957,12 @@
 @keyframes es2-scene-arrive {
   from { opacity: 0; translate: var(--es2-scene-from, 0 0); scale: var(--es2-scene-scale, 1); }
 }
-/* Home: lobby fades in, hero page from the left, expedition page from the right, archive rises. */
-/* Keep viewport surfaces stationary; only the scrollable page content slides.
+/* Home: fade interactive selection grids in place so their hit targets stay inside
+   the viewport even on the first animation frame. Archive content still rises.
    Do not retain a compositor animation layer after the fade completes. */
 @keyframes es2-scene-fade { from { opacity: 0; } }
 .es2-menu { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
-.es2-hero-section { --es2-scene-from: -18px 0; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
-.es2-mode-section { --es2-scene-from: 18px 0; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
+.es2-hero-section, .es2-mode-section { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
 .es2-archive-page { --es2-scene-from: 0 12px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
 .es2-menu-action-bar { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
 /* Dialogs (settings/pause, level-up, treasure, result, confirmations) and loading. */
@@ -1071,5 +1070,4 @@
 }
 @container (max-width: 9rem){
   .es2-monster-dossier .es2-hero-stat-strip{grid-template-columns:minmax(0,1fr)}
-  .es2-monster-dossier .es2-monster-skill{flex-direction:column;align-items:flex-start}
 }

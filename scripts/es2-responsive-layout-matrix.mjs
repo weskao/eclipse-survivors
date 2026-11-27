@@ -45,6 +45,20 @@ const assertLocalizedTextFits = async (page, caseName, locale) => {
   const doc = await page.evaluate(() => ({ content: document.documentElement.scrollWidth, viewport: innerWidth }))
   assert.ok(doc.content <= doc.viewport + inset, caseName + ': ' + locale + ' page overflow: ' + JSON.stringify(doc))
 }
+// The shared summary must reserve its entire trailing column, not just title-line space.
+const assertSkillValueColumns = async (scope, label) => {
+  const result = await scope.locator('.es2-active-summary[data-has-detail]').evaluateAll(rows => rows
+    .filter(row => row.getClientRects().length)
+    .map(row => {
+      const main = row.querySelector('.es2-active-summary__main'), value = row.querySelector('[data-active-skill-cooldown]')
+      const a = main.getBoundingClientRect(), b = value.getBoundingClientRect(), r = row.getBoundingClientRect()
+      return { title: main.textContent.trim().slice(0, 48), valid: a.right <= b.left + 1
+        && Math.abs(r.top - b.top) <= 2 && Math.abs(r.bottom - b.bottom) <= 2
+        && value.scrollWidth <= value.clientWidth + 2 && b.width > 0 }
+    }))
+  assert.ok(result.length > 0, label + ': missing shared skill value columns')
+  assert.deepEqual(result.filter(row => !row.valid), [], label + ': skill value column overlaps or clips')
+}
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 await mkdir(destination, { recursive: true })
 try {
@@ -241,6 +255,7 @@ try {
         const tip = page.locator('[data-es2-hover-details]')
         await tip.waitFor({ state: 'visible' })
         assert.match(await tip.innerText(), /虛空術士|Void/i)
+        await assertSkillValueColumns(tip, name + ': hero hover')
         assert.ok(inside(await tip.evaluate(rect), width, height), name + ': hero tooltip clips')
         assert.ok(await card.evaluate(el => {
           const a = el.getBoundingClientRect(), p = document.querySelector('[data-es2-hover-details]').getBoundingClientRect()
@@ -256,6 +271,7 @@ try {
         await page.locator('[data-es2-hero-details="wizard"]').click()
         const desktopDetail = page.locator('.es2-dialog[role="dialog"]')
         await desktopDetail.waitFor({ state: 'visible' })
+        await assertSkillValueColumns(desktopDetail, name + ': desktop hero detail')
         await desktopDetail.locator('.es2-close').click()
         await desktopDetail.waitFor({ state: 'hidden' })
         await page.keyboard.press('Escape')
@@ -273,12 +289,29 @@ try {
         await page.locator('[data-es2-hero-details="wizard"]').click()
         const details = page.locator('.es2-dialog[role="dialog"]')
         await details.waitFor({ state: 'visible' })
+        await assertSkillValueColumns(details, name + ': touch hero detail')
         assert.match(await details.innerText(), /虛空術士|Void/i)
         await details.locator('.es2-close').click()
         await details.waitFor({ state: 'hidden' })
       }
       await page.screenshot({ path: destination + '/' + name + '-home-full.png', animations: 'disabled' })
       await page.locator('[data-es2-expedition-navigation]').click()
+      // Inspect the actual first animation frame as well as the normal layout.
+      // A translated full-width grid can clip at 390px even when its final layout fits.
+      const entryOffenders = await page.locator('.es2-mode-section').evaluate(section => {
+        const animations = section.getAnimations()
+        const times = animations.map(animation => animation.currentTime)
+        try {
+          for (const animation of animations) animation.currentTime = 0
+          return [...section.querySelectorAll('[data-mode], [data-objective-mode]')].flatMap(el => {
+            const r = el.getBoundingClientRect()
+            return r.left < -2 || r.right > innerWidth + 2 ? [{ text: el.textContent.trim().slice(0, 80), left: r.left, right: r.right }] : []
+          })
+        } finally {
+          animations.forEach((animation, index) => { animation.currentTime = times[index] })
+        }
+      })
+      assert.deepEqual(entryOffenders, [], name + ': expedition cards clip during the first entry frame')
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
       if (hoverCapable) {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
