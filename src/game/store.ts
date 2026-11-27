@@ -88,7 +88,15 @@ export interface UiTreasureChoice {
 }
 
 /** Reactive UI snapshot (engine owns it as a `shallowReactive`; replace nested objects, don't mutate). */
+export interface BossPhaseReveal {
+  readonly boss: import('./content/bosses/definitions').BossId
+  readonly phase: 2 | 3
+  readonly serial: number
+  readonly expiresAt: number
+}
+
 export interface UiState {
+  bossPhaseReveal?: BossPhaseReveal | null
   mode: GameMode
   choice: JobId
   heroId: HeroId

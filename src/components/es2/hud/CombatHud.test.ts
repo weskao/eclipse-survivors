@@ -277,3 +277,16 @@ it('uses the same sampled health variables for the fixed boss HUD', async () => 
   expect(value('--hero-hp-trail')).toBe('0.3')
   expect(meter.attributes('data-hp-impact')).toBeUndefined()
 })
+
+it('shows a keyed, noninteractive phase reveal only for an explicit encounter event', async () => {
+  const { wrapper } = render({ hud: { ...equipped, bossPct: 60 }, feed: { boss: { name: 'Abyss Monarch', phase: 2, totalPhases: 3 } } })
+  expect(wrapper.find('[data-boss-phase-reveal]').exists()).toBe(false)
+  await wrapper.setProps({ bossPhaseReveal: { boss: 'abyss-monarch', phase: 2, serial: 1, expiresAt: 10 } })
+  const p2 = wrapper.get('[data-boss-phase-reveal]')
+  expect(p2.attributes('data-phase')).toBe('2')
+  expect(p2.attributes('role')).toBe('status')
+  await wrapper.setProps({ bossPhaseReveal: { boss: 'abyss-monarch', phase: 3, serial: 2, expiresAt: 12 } })
+  expect(wrapper.get('[data-boss-phase-reveal]').attributes('data-phase')).toBe('3')
+  await wrapper.setProps({ bossPhaseReveal: null })
+  expect(wrapper.find('[data-boss-phase-reveal]').exists()).toBe(false)
+})

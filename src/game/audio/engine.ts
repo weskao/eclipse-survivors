@@ -11,6 +11,7 @@ import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones, treasureTones, trea
 import { isHurtCue, renderHurtSample, type HurtCue } from './hurt-samples'
 import { hallCueKey, renderHallCue, type HallCue } from './hall-upgrade-sample'
 import { renderHeroSelectSample } from './hero-select-sample'
+import { BOSS_PHASE_PALETTE, renderBossPhaseSample } from './boss-phase-sample'
 import { isBattleMusicMode, type AudioSystem, type BgmElement, type CombatIntensity, type SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
@@ -98,7 +99,7 @@ const clampVolume = (value: number, fallback: number): number =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
 const HERO_CAST_CUES = ['knight-special', 'ranger-special', 'wizard-special', 'shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution'] as const
 const MAX_SFX_PER_100MS = 8
-const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'hurt-heavy', 'hurt-critical', 'hurt-extreme', 'boss', 'bossStagger', 'bossDefeat', 'victory', 'defeat', 'killStreak', 'evolution',
+const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'hurt-heavy', 'hurt-critical', 'hurt-extreme', 'boss', 'bossStagger', 'bossDefeat', 'boss-phase-2', 'boss-phase-3', 'victory', 'defeat', 'killStreak', 'evolution',
   ...HERO_CAST_CUES])
 
 export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
@@ -123,6 +124,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let noiseBuffer: BufferLike | null = null
   const foleyBuffers = new Map<HurtCue | 'hero-select', BufferLike>()
   const hallBuffers = new Map<HallCue, BufferLike>()
+  const phaseBuffers = new Map<string, BufferLike>()
   let hallReward: { source: BufferSourceLike; gain: GainLike; endsAt: number } | null = null
   const heroCastBuffers = new Map<SfxCue, BufferLike>()
   // A cast belongs to the expedition, not the transient gameplay screen. Track both
@@ -299,7 +301,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         sfxLast.clear()
         recentSfx.length = 0
         noiseBuffer = null
-        foleyBuffers.clear(); hallBuffers.clear(); hallReward = null
+        foleyBuffers.clear(); phaseBuffers.clear(); hallBuffers.clear(); hallReward = null
         master = ac.createGain()
         master.gain.value = sfxLevel()
         master.connect(ac.destination)
@@ -442,6 +444,24 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
       recentSfx.push(now)
       sfxLast.set(cue, now)
+      if ((cue === 'boss-phase-2' || cue === 'boss-phase-3') && master) {
+        try {
+          const boss = BOSS_PHASE_PALETTE[milestone ?? 0] ?? BOSS_PHASE_PALETTE[0]
+          const phase = cue === 'boss-phase-2' ? 2 : 3
+          const key = boss + ':' + phase
+          let buffer = phaseBuffers.get(key)
+          if (!buffer) {
+            const pcm = renderBossPhaseSample(boss, phase, ctx.sampleRate)
+            buffer = ctx.createBuffer(1, pcm.length, ctx.sampleRate)
+            buffer.getChannelData(0).set(pcm)
+            phaseBuffers.set(key, buffer)
+          }
+          const source = ctx.createBufferSource()
+          source.buffer = buffer; source.loop = false
+          source.connect(master); source.start(now)
+          return
+        } catch { /* finite layered fallback below */ }
+      }
       if ((cue === 'hero-select' || isHurtCue(cue)) && master) {
         try {
           let buffer = foleyBuffers.get(cue)
@@ -641,7 +661,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       stopHeroCast()
       bossAttacks.prepare(null)
       heroCastBuffers.clear()
-      foleyBuffers.clear(); hallBuffers.clear(); hallReward = null
+      foleyBuffers.clear(); phaseBuffers.clear(); hallBuffers.clear(); hallReward = null
       ac?.close().catch(() => {})
       ac = null
       master = null

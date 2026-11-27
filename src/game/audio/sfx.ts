@@ -6,7 +6,7 @@ export type SfxTone = readonly [number, number, number, number, OscillatorType]
 /** Minimum seconds between two plays of the same cue (original `sfxCooldown`). */
 export const SFX_COOLDOWN: Record<SfxCue, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, 'hero-select': .26, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
-  dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8,
+  dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, killStreak: 0.65, massKill: 0.65, boss: 0.8, bossStagger: 0.8, bossDefeat: 0.8, 'boss-phase-2': .8, 'boss-phase-3': .8,
   treasureReveal: .35, treasureClaim: .35,
   hitNormal: 0.12, hitHeavy: 0.18, hitCritical: 0.22, hitElemental: .22, hitEvolved: .32, hitHero: .35, eliteKill: 0.45,
   hurt: 0.28, 'hurt-heavy': .34, 'hurt-critical': .39, 'hurt-extreme': .48, pickup: 0.16, pickupBurst: 0.28, evolution: 0.5, scene: 0.45, deny: 0.22, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
@@ -34,6 +34,8 @@ export const SFX_CUES: Record<SfxCue, readonly SfxTone[]> = {
   massKill: [[43, 0, 0.12, 0.055, 'triangle'], [62, 0.035, 0.2, 0.045, 'sawtooth'], [74, 0.09, 0.25, 0.035, 'sine']],
   killStreak: [[48, 0, 0.18, 0.055, 'triangle'], [60, 0.04, 0.27, 0.05, 'sawtooth'], [67, 0.12, 0.3, 0.04, 'triangle'], [76, 0.23, 0.4, 0.035, 'sine']],
   boss: [[38, 0, 0.65, 0.075, 'sawtooth'], [45, 0.13, 0.79, 0.04, 'triangle']],
+  'boss-phase-2': [[36, 0, .5, .10, 'triangle'], [43, .12, .65, .065, 'sawtooth'], [67, .27, .7, .045, 'sine']],
+  'boss-phase-3': [[29, 0, .8, .12, 'triangle'], [36, .18, .9, .075, 'sawtooth'], [55, .38, .9, .065, 'triangle'], [72, .42, 1.0, .04, 'sine']],
   bossStagger: [[36, 0, 0.23, 0.07, 'triangle'], [55, 0.025, 0.24, 0.05, 'sawtooth'], [67, 0.12, 0.38, 0.035, 'sine'], [79, 0.2, 0.4, 0.025, 'triangle']],
   bossDefeat: [[52, 0, 0.4, 0.076, 'triangle'], [59, 0.2, 0.54, 0.055, 'sine'], [64, 0.34, 0.68, 0.05, 'sine']],
   treasureReveal: [[60,0,.18,.035,'triangle'],[72,.08,.32,.028,'sine']],
