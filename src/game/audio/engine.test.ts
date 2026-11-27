@@ -873,3 +873,18 @@ describe('Hall sampled feedback routing', () => {
     audio.dispose()
   })
 })
+
+describe('Rapid Hall purchases', () => {
+  it('crossfades the previous reward instead of stacking celebration audio', () => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 10
+    audio.playSfx('upgrade', 1)
+    ctx.currentTime = 10.2
+    audio.playSfx('upgrade', 3)
+    expect(ctx.sources).toHaveLength(2)
+    expect(ctx.sources[0]!.stoppedAt).toBeCloseTo(10.235, 3)
+    expect(ctx.sources[1]!.stoppedAt).toBeNull()
+    audio.dispose()
+  })
+})

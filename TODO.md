@@ -192,3 +192,5 @@ Browser acceptance now checks actual WebP decode, different-node inspection, bot
 - [x] Hall sound palette: distinct original hover, inspection, transaction denial, rank, route reveal, max rank, equipment, and blessing Foley; single managed bus, bounded voices and no duplicate generic click. Add waveform and routing regressions; audition final audio in game.
 
 Hall sound source implementation and regressions added; waveform checks and full integration CI recorded separately. Manual listening remains unchecked.
+
+- [ ] Compact Hall layout: remove repeated card descriptions/purchase controls, one selected-node detail per board, compact topology at all sizes, refined layered metal progress rings and destination unlock animation. Preserve existing assets, sounds and transaction rules; verify actual responsive render.

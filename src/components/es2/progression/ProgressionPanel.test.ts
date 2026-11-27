@@ -31,22 +31,24 @@ describe('ES2 v3 progression UI adapter', () => {
     for (const id of Object.keys(BALANCE.meta.research)) state.research[id] = 4
     const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
     for (const id of Object.keys(BALANCE.meta.research)) {
+      await wrapper.get(`[data-hall-inspect="${id}"]`).trigger('click')
       const button = wrapper.get(`[data-research="${id}"]`)
       expect(button.attributes('disabled'), id).toBeUndefined()
-      expect(button.element.closest('article')?.textContent, id).toContain('4 / 5')
+      expect(wrapper.get(`[data-hall-node="${id}"]`).text(), id).toContain('4 / 5')
     }
     const maxState = structuredClone(state)
     for (const id of Object.keys(BALANCE.meta.research)) maxState.research[id] = 5
     await wrapper.setProps({ state: maxState })
     for (const id of Object.keys(BALANCE.meta.research)) {
+      await wrapper.get(`[data-hall-inspect="${id}"]`).trigger('click')
       const button = wrapper.get(`[data-research="${id}"]`)
       expect(button.attributes('disabled'), id).toBeDefined()
-      expect(button.element.closest('article')?.textContent, id).toContain('5 / 5')
+      expect(wrapper.get(`[data-hall-node="${id}"]`).text(), id).toContain('5 / 5')
     }
     wrapper.unmount()
   })
 
-  it('renders immutable researched ranks, wallet, mastery, and achievement status', () => {
+  it('renders immutable researched ranks, wallet, mastery, and achievement status', async () => {
     const state = createMetaState()
     state.embers = 300
     state.mastery.knight = { xp: 900, level: 3 }
@@ -56,9 +58,12 @@ describe('ES2 v3 progression UI adapter', () => {
     expect(wrapper.text()).toContain('英雄專精')
     expect(wrapper.text()).toContain('永久成就')
     expect(wrapper.text()).toContain('騎士')
-    expect(wrapper.find('[data-research="insight"]').attributes('disabled')).toBeDefined()
-    expect(wrapper.find('[data-equipment="knight-aegis"]').attributes('disabled')).toBeUndefined()
-    expect(wrapper.find('[data-bonus="ember-spark"]').attributes('disabled')).toBeDefined()
+    await wrapper.get('[data-hall-inspect="insight"]').trigger('click')
+    expect(wrapper.get('[data-research="insight"]').attributes('disabled')).toBeDefined()
+    await wrapper.get('[data-hall-inspect="knight-aegis"]').trigger('click')
+    expect(wrapper.get('[data-equipment="knight-aegis"]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[data-hall-inspect="ember-spark"]').trigger('click')
+    expect(wrapper.get('[data-bonus="ember-spark"]').attributes('disabled')).toBeDefined()
     wrapper.unmount()
   })
 
@@ -128,6 +133,8 @@ describe('Adventurer Hall growth routes', () => {
     expect(wrapper.get('[data-hall-node="power"] .hall-ring').attributes('style')).toContain('20%')
     expect(wrapper.get('[data-hall-upgraded="power"]').attributes('data-milestone')).toBe('false')
     expect(wrapper.find('[data-hall-edge="vitality:scavenging"][data-revealed="true"]').exists()).toBe(false)
+    expect(wrapper.get('[data-hall-node="insight"]').attributes('data-hall-arrived')).toBe('true')
+    await wrapper.get('[data-hall-inspect="insight"]').trigger('click')
     expect(wrapper.get('[data-research="insight"]').attributes('disabled')).toBeUndefined()
     expect(state.research.power).toBe(0)
     wrapper.unmount()
@@ -175,10 +182,32 @@ describe('Hall authoritative legacy progression', () => {
     const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', heroId: 'shadowblade', status: 'ready' } })
     expect(wrapper.get('.es2-progression-mastery').text()).toContain('影刃行者')
     expect(wrapper.get('.es2-progression-mastery strong').text()).toContain('Lv. 3')
+    await wrapper.get('[data-hall-inspect="knight-aegis"]').trigger('click')
     expect(wrapper.get('[data-equipment="knight-aegis"]').attributes('disabled')).toBeDefined()
     await wrapper.setProps({ heroId: 'crimson-paladin' })
     expect(wrapper.get('.es2-progression-mastery').text()).toContain('緋紅聖騎')
     expect(wrapper.get('.es2-progression-mastery strong').text()).toContain('Lv. 5')
+    wrapper.unmount()
+  })
+})
+
+describe('Compact Hall topology and metal ring', () => {
+  it('uses one confirmation per board, retains inspectable locked nodes and renders the shared metal ring', async () => {
+    const state = createMetaState()
+    state.embers = 200
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    const tree = wrapper.get('.hall-growth--tree')
+    expect(tree.findAll('.hall-map button')).toHaveLength(5)
+    expect(tree.findAll('.hall-map p, .hall-map .hall-buy')).toHaveLength(0)
+    expect(tree.findAll('[data-hall-confirm]')).toHaveLength(1)
+    expect(tree.findAll('.hall-ring-metal')).toHaveLength(5)
+    expect(tree.findAll('.hall-ring-ticks')).toHaveLength(5)
+    await tree.get('[data-hall-inspect="insight"]').trigger('click')
+    expect(tree.get('[data-hall-confirm]').attributes('disabled')).toBeDefined()
+    expect(wrapper.emitted('research')).toBeUndefined()
+    await tree.get('[data-hall-inspect="power"]').trigger('click')
+    await tree.get('[data-hall-confirm]').trigger('click')
+    expect(wrapper.emitted('research')).toEqual([['power']])
     wrapper.unmount()
   })
 })
