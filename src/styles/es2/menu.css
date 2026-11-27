@@ -1070,5 +1070,4 @@
 }
 @container (max-width: 9rem){
   .es2-monster-dossier .es2-hero-stat-strip{grid-template-columns:minmax(0,1fr)}
-  .es2-monster-dossier .es2-monster-skill{flex-direction:column;align-items:flex-start}
 }
