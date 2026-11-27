@@ -1009,7 +1009,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && audio.musicOn) || s.mode === 'play') wakeAudio()
+      if ((s.mode === 'menu' && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
@@ -1051,8 +1051,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (!control || (control instanceof HTMLButtonElement && control.disabled) ||
           control.getAttribute('aria-disabled') === 'true') return
       const cue = control.dataset.uiSfx
-      if (cue === 'managed' || cue === 'silent') return
+      if (cue === 'silent') return
+      // Keyboard activation of managed controls still needs the trusted wake.
       if (e.detail === 0 || !audio.unlocked) wakeAudio()
+      if (cue === 'managed') return
       if (cue === 'hall-inspect') audio.playSfx('select', 1)
       else audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
     }
@@ -1069,7 +1071,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('blur', onBlur)
     win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
-    doc.addEventListener('pointerdown', onPointerDown)
+    doc.addEventListener('pointerdown', onPointerDown, true)
     doc.addEventListener('click', onUiClick, true)
     doc.addEventListener('pointerover', onPointerOver)
     return () => {
@@ -1078,7 +1080,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('blur', onBlur)
       win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
-      doc.removeEventListener('pointerdown', onPointerDown)
+      doc.removeEventListener('pointerdown', onPointerDown, true)
       doc.removeEventListener('click', onUiClick, true)
       doc.removeEventListener('pointerover', onPointerOver)
     }

@@ -957,3 +957,69 @@ describe('Rapid Hall purchases', () => {
     audio.dispose()
   })
 })
+
+describe('audio scene ownership and deferred trusted resume', () => {
+  it.each(['victory', 'defeat'] as const)('releases the boss soundtrack on %s and restores the menu', async outcome => {
+    const menu = new FakeBgm()
+    const audio = createAudioSystem({
+      bgm, menuBgm: menu, storage: null, createContext: () => ctx,
+      bossTracks: { 'abyss-monarch': ['boss1.wav', 'boss2.wav', 'boss3.wav'] },
+      victoryTrack: 'victory.wav',
+      loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('abyss-monarch')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const boss = ctx.sources.find(source => source.loop)!
+    expect(boss).toBeDefined()
+    audio.setResultTheme?.(outcome)
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(boss.stoppedAt).not.toBeNull()
+    expect(ctx.sources.filter(source => source.loop)).toEqual([boss])
+    const before = ctx.oscillators.length
+    audio.playSfx(outcome)
+    expect(ctx.oscillators.length).toBeGreaterThan(before)
+    audio.onScreen('menu')
+    expect(menu.paused).toBe(false)
+    ctx.currentTime = 2
+    audio.playSfx('hero-select')
+    expect(ctx.sources.at(-1)?.loop).toBe(false)
+    audio.dispose()
+  })
+
+  it.each(['hero-select', 'victory', 'defeat'] as const)('preserves the first %s cue while a trusted gesture resumes the context', async cue => {
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => { finish = () => { ctx.state = 'running'; resolve() } })
+    const audio = make()
+    if (cue !== 'hero-select') { audio.setResultTheme?.(cue); audio.onScreen('result') }
+    audio.wake()
+    audio.playSfx(cue)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources).toHaveLength(0)
+    finish()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(ctx.oscillators.length + ctx.sources.length).toBeGreaterThan(0)
+    audio.dispose()
+  })
+
+  it('never replays a pending cue after interruption or a screen change', async () => {
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => { finish = () => { ctx.state = 'running'; resolve() } })
+    const audio = make()
+    audio.wake()
+    audio.playSfx('hero-select')
+    audio.onScreen('play')
+    audio.interrupt()
+    finish()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(ctx.sources).toHaveLength(0)
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.dispose()
+  })
+})

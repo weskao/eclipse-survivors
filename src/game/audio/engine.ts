@@ -106,6 +106,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const storage = opts.storage === undefined ? defaultStorage() : opts.storage
   const createContext = opts.createContext ?? defaultCreateContext
   let ac: AudioContextLike | null = null
+  let resumePending: Promise<void> | null = null
+  // Keep only a bounded set of cues from the current trusted resume attempt.
+  const pendingSfx = new Map<SfxCue, number | undefined>()
   let master: GainLike | null = null
   let musicBus: GainLike | null = null
   let musicOn = true
@@ -291,6 +294,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         const created = createContext()
         if (!created) { playScore(); return }
         ac = created
+        resumePending = null
+        pendingSfx.clear()
+        sfxLast.clear()
+        recentSfx.length = 0
         noiseBuffer = null
         foleyBuffers.clear(); hallBuffers.clear(); hallReward = null
         master = ac.createGain()
@@ -301,14 +308,34 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         musicBus.connect(ac.destination)
         preloadHeroCasts(ac)
       }
-      if (ac.state !== 'running' && ac.state !== 'closed') {
-        void ac.resume().catch(() => { /* Browsers may require another gesture. */ })
+      if (ac.state !== 'running' && ac.state !== 'closed' && !resumePending) {
+        const ctx = ac
+        const attempt = ctx.resume()
+        resumePending = attempt
+        void attempt.then(() => {
+          if (resumePending !== attempt || ac !== ctx) {
+            if (ac === ctx && interrupted && ctx.state === 'running') void ctx.suspend().catch(() => {})
+            return
+          }
+          resumePending = null
+          const cues = [...pendingSfx]
+          pendingSfx.clear()
+          if (interrupted || ctx.state !== 'running') return
+          cinematic.sync()
+          for (const [cue, milestone] of cues) system.playSfx(cue, milestone)
+        }, () => {
+          if (resumePending !== attempt) return
+          resumePending = null
+          pendingSfx.clear()
+        })
       }
       playScore()
       cinematic.sync()
       if (recovering && ac && resultScene) resultScore.resume(ac.currentTime)
     } catch {
       ac = null
+      resumePending = null
+      pendingSfx.clear()
       master = null
       musicBus = null
     }
@@ -317,6 +344,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const interrupt = (): void => {
     if (interrupted) return
     interrupted = true
+    resumePending = null
+    pendingSfx.clear()
     bgm.pause()
     menuBgm?.pause()
     cinematic.stop(true)
@@ -331,7 +360,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const running = (): AudioContextLike | null =>
     (!interrupted && ac && ac.state === 'running' ? ac : null)
 
-  return {
+  const system: AudioSystem = {
     get unlocked() { return ac !== null },
     createEs2Port() {
       return {
@@ -364,7 +393,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     setSfxVolume(value: number) {
       sfxVolume = clampVolume(value, sfxVolume)
       if (sfxVolume > 0) previousSfxVolume = sfxVolume
-      else { stopHeroCast(); bossAttacks.cancel() }
+      else { pendingSfx.clear(); stopHeroCast(); bossAttacks.cancel() }
       try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
       if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
     },
@@ -375,7 +404,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       resultScore.dispose()
       resultScore = createEs2Score()
       if (next) resultScore.change(next, ac ? ac.currentTime + 0.02 : 0)
-      cinematic.result(next === 'victory')
+      cinematic.result(next)
     },
     setCombatIntensity(next) {
       if (intensity === next) return
@@ -399,7 +428,14 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     cancelBossAttackAudio() { bossAttacks.cancel() },
     playSfx(cue, milestone) {
       const ctx = running()
-      if (!sfxOn || !sfxVolume || !ctx) return
+      if (!sfxOn || !sfxVolume) return
+      if (!ctx) {
+        // resume() is asynchronous in real Chromium/WebKit. Never drop the
+        // first intentional UI action or the terminal fanfare during this gap.
+        if (resumePending && !interrupted && (mode === 'menu' || mode === 'result' || ESSENTIAL_SFX.has(cue)) &&
+            (pendingSfx.has(cue) || pendingSfx.size < MAX_SFX_PER_100MS)) pendingSfx.set(cue, milestone)
+        return
+      }
       const now = ctx.currentTime
       if (now - (sfxLast.get(cue) ?? -100) < SFX_COOLDOWN[cue]) return
       while (recentSfx.length && now - recentSfx[0]! >= 0.1) recentSfx.shift()
@@ -508,6 +544,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     onScreen(nextMode: GameMode) {
       const previous = mode
+      if (previous !== nextMode && !(isBattleMusicMode(previous) && isBattleMusicMode(nextMode))) pendingSfx.clear()
       setMode(nextMode)
       // Level-up, treasure, pause/settings and result overlays must never truncate a cast.
       // Only leaving the expedition for Home cancels it (explicit mute/OS teardown are separate).
@@ -520,7 +557,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         resultScene = null
         resultScore.dispose()
         resultScore = createEs2Score()
-        cinematic.result(false)
+        cinematic.result(null)
       }
       if (mode !== 'menu') menuBgm?.pause()
       if (!isBattleMusicMode(mode) && mode !== 'result') cinematic.stop(mode === 'paused')
@@ -591,11 +628,13 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       save('starSfx', sfxOn)
       if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
       if (sfxOn) wake()
-      else { stopHeroCast(); bossAttacks.cancel() }
+      else { pendingSfx.clear(); stopHeroCast(); bossAttacks.cancel() }
       return sfxOn
     },
     dispose() {
       interrupted = true
+      resumePending = null
+      pendingSfx.clear()
       bgm.pause()
       menuBgm?.pause()
       cinematic.dispose()
@@ -615,4 +654,5 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       recentSfx.length = 0
     },
   }
+  return system
 }

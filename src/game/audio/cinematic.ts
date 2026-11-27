@@ -25,7 +25,7 @@ export function createCinematicMusic(
 ): {
   readonly playingBoss: boolean
   readonly resultFallback: boolean
-  result(active: boolean): void
+  result(theme: 'victory' | 'defeat' | null): void
   boss(id: BossId | null, phase?: number): void
   warning(seconds: number | null): void
   sync(): void
@@ -35,7 +35,7 @@ export function createCinematicMusic(
   let bossId: BossId | null = null
   let phase = 1
   let remaining: number | null = null
-  let resultActive = false
+  let resultTheme: 'victory' | 'defeat' | null = null
   let voice: Voice | null = null
   let paused: { key: string; offset: number } | null = null
   let loading: string | null = null
@@ -44,7 +44,7 @@ export function createCinematicMusic(
   const failed = new Set<string>()
 
   const wanted = (): { key: string; url: string; loop: boolean } | null => {
-    if (resultActive) return opts.victoryTrack
+    if (resultTheme) return resultTheme === 'victory' && opts.victoryTrack
       ? { key: 'result:victory', url: opts.victoryTrack, loop: false } : null
     if (bossId) {
       const url = opts.bossTracks?.[bossId]?.[phase - 1]
@@ -130,10 +130,10 @@ export function createCinematicMusic(
   return {
     get playingBoss() { return !!(voice && voice.key.startsWith('boss:')) },
     get resultFallback() { return !opts.victoryTrack || failed.has(opts.victoryTrack) },
-    result(active) {
-      if (active === resultActive) return
-      resultActive = active
-      if (active) { bossId = null; remaining = null }
+    result(theme) {
+      if (theme === resultTheme) return
+      resultTheme = theme
+      if (theme) { bossId = null; remaining = null }
       sync()
     },
     boss(id, newPhase = 1) {
@@ -158,7 +158,7 @@ export function createCinematicMusic(
       failed.clear()
       bossId = null
       remaining = null
-      resultActive = false
+      resultTheme = null
     },
   }
 }
