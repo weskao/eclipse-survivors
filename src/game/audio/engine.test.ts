@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { BgmElement, SettingsStorage } from './types'
 import { createAudioSystem } from './engine'
 import { FakeAudioContext } from './fakeAudio'
@@ -1058,5 +1058,94 @@ describe('audio scene ownership and deferred trusted resume', () => {
     expect(ctx.sources).toHaveLength(0)
     expect(ctx.oscillators).toHaveLength(0)
     audio.dispose()
+  })
+})
+
+describe('opt-in DEV result audio diagnostics', () => {
+  it.each(['defeat', 'victory'] as const)('reports actual %s scheduling separately from sampled bus signals', async outcome => {
+    const originalUrl = window.location.href
+    window.history.replaceState(null, '', '?audioDiagnostics=1')
+    vi.useFakeTimers()
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const analysers: Array<{ fftSize: number; getFloatTimeDomainData(data: Float32Array): void }> = []
+    const context = Object.assign(ctx, { createAnalyser() {
+      const amplitude = analysers.length === 0 ? 0.125 : 0.25
+      const node = { fftSize: 2048, getFloatTimeDomainData(data: Float32Array) {
+        data.fill(amplitude)
+      } }
+      analysers.push(node)
+      return node
+    } })
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => context,
+      victoryTrack: 'victory.wav', loadMusic: async () => context.createBuffer(2, 48000, 48000) })
+    try {
+      audio.wake()
+      audio.onScreen('play')
+      audio.onScreen('result')
+      audio.setResultTheme?.(outcome)
+      audio.tick('result')
+      audio.playSfx(outcome)
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(log).toHaveBeenCalledWith('[Audio][Result]', expect.objectContaining({
+        outcome, audioContext: 'running', bgmEnabled: true, bgmVolume: 100,
+        bgmScheduled: true, sfxEnabled: true, sfxVolume: 100, sfxScheduled: true,
+        bgmSource: outcome === 'victory' ? 'victory.wav' : 'synth',
+        bgmSignal: expect.objectContaining({ peak: 0.25, rmsMax: 0.25 }),
+        sfxSignal: expect.objectContaining({ peak: 0.125, rmsMax: 0.125 }),
+      }))
+      expect(analysers).toHaveLength(2)
+      expect(ctx.gains[0]!.targets).toContain(analysers[0])
+      expect(ctx.gains[1]!.targets).toContain(analysers[1])
+      audio.onScreen('menu')
+      const count = log.mock.calls.length
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(log.mock.calls).toHaveLength(count)
+    } finally {
+      audio.dispose()
+      log.mockRestore()
+      vi.useRealTimers()
+      window.history.replaceState(null, '', originalUrl)
+    }
+  })
+
+  it('reports muted and unavailable signals without claiming playback', async () => {
+    const originalUrl = window.location.href
+    window.history.replaceState(null, '', '?audioDiagnostics=1')
+    vi.useFakeTimers()
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const audio = make()
+    try {
+      audio.wake()
+      audio.setMusicVolume(0)
+      audio.setSfxVolume(0)
+      audio.onScreen('result')
+      audio.setResultTheme?.('defeat')
+      audio.tick('result')
+      audio.playSfx('defeat')
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(log).toHaveBeenCalledWith('[Audio][Result]', expect.objectContaining({
+        outcome: 'defeat', bgmVolume: 0, sfxVolume: 0,
+        bgmScheduled: false, sfxScheduled: false, bgmSignal: null, sfxSignal: null,
+      }))
+    } finally {
+      audio.dispose()
+      log.mockRestore()
+      vi.useRealTimers()
+      window.history.replaceState(null, '', originalUrl)
+    }
+  })
+
+  it('does not attach diagnostic nodes or emit logs without opt-in', async () => {
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const createAnalyser = vi.fn()
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => Object.assign(ctx, { createAnalyser }) })
+    try {
+      audio.wake()
+      audio.onScreen('result')
+      audio.setResultTheme?.('defeat')
+      audio.tick('result')
+      expect(createAnalyser).not.toHaveBeenCalled()
+      expect(log).not.toHaveBeenCalled()
+    } finally { audio.dispose(); log.mockRestore() }
   })
 })
