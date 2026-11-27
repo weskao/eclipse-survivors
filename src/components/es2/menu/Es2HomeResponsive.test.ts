@@ -100,6 +100,15 @@ describe('phone homepage viewport-first navigation', () => {
     } finally { setLocale(previous) }
   })
 
+  it('keeps both keyboard navigation groups wrapped without changing their event contracts', async () => {
+    const wrapper = menu()
+    await wrapper.get('[data-hero="knight"]').trigger('keydown', { key: 'ArrowLeft' })
+    await wrapper.get('[data-hero-id="shadowblade"]').trigger('keydown', { key: 'ArrowLeft' })
+    expect(wrapper.emitted('select')).toEqual([['wizard']])
+    expect(wrapper.emitted('selectHero')).toEqual([['crimson-paladin']])
+    expect(wrapper.emitted('start')).toBeUndefined()
+  })
+
   it('keeps each classic hero\'s four base stats on its card without a duplicate panel', () => {
     const wrapper = menu()
     for (const id of ['knight', 'ranger', 'wizard'] as const) {

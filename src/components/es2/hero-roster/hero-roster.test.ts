@@ -70,6 +70,23 @@ describe('ES2 three-hero selection UI', () => {
 })
 
 describe('ES2 shared homepage hero selection interaction', () => {
+  it('renders all six heroes through the same card component, with each retaining its own data', () => {
+    const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
+    const cards = wrapper.findAllComponents({ name: 'HeroSelectionCard' })
+    expect(cards).toHaveLength(6)
+    expect(cards.map(card => card.get('button.es2-hero-select-card').attributes('data-hero')
+      ?? card.get('button.es2-hero-select-card').attributes('data-hero-id')))
+      .toEqual(['knight', 'ranger', 'wizard', 'shadowblade', 'spirit-summoner', 'crimson-paladin'])
+    for (const card of cards) {
+      expect(card.findAll('.es2-hero-copy > strong')).toHaveLength(1)
+      expect(card.findAll('.es2-hero-stat-strip')).toHaveLength(1)
+      expect(card.findAll('.es2-hero-selection-status')).toHaveLength(1)
+      expect(card.findAll('.es2-hero-detail-trigger')).toHaveLength(1)
+    }
+    expect(wrapper.findAll('[data-hero] .es2-hero-action-preview')).toHaveLength(0)
+    expect(wrapper.findAll('[data-hero-id] .es2-hero-action-preview')).toHaveLength(3)
+  })
+
   it('uses the same animated selection surface for the classic and specialization heroes', async () => {
     const wrapper = render(Es2MainMenu, { choice: 'knight', runMode: 'quick', version: '1.2.0' })
     const cards = [...wrapper.findAll('.es2-hero-card'), ...wrapper.findAll('.es2-roster__card')]
