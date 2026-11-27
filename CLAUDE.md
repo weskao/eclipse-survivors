@@ -66,3 +66,7 @@ Every current or newly added playable hero must define one distinct active skill
 ## CI concurrency
 
 Latest branch commit wins: `.github/workflows/ci.yml` cancels unfinished push/dispatch CI runs from older SHAs on the same branch across workflow files. Keep all current-SHA sibling workflows independent; use workflow + ref concurrency with cancellation enabled for new CI workflows (never a shared branch-only group across different workflows). Preserve other branches, PR refs, completed evidence, and the serialized release/deployment workflow. Capture evidence must identify its exact SHA; cancelled runs are not passing evidence.
+
+## Shared character and monster dossiers
+
+Hero, monster and boss information surfaces must use `Es2DetailSurface`, `Es2StatStrip` and `Es2SkillSummary` rather than duplicate their markup or styles. Keep desktop hover and the explicit info button on touch content-equivalent. Read monster and boss stats/attack phases from authoritative balance and encounter definitions; retain existing discovery semantics, identify unscaled values, and use the matching authored skill image (an SVG is acceptable until dedicated production art exists). Preserve bilingual content and add a regression test for both interaction modes and distinct boss attack artwork.

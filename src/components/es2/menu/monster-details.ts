@@ -1,12 +1,13 @@
 import { BALANCE } from '../../../game/config'
 import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossAttackId } from '../../../game/content/bosses/definitions'
+import { bossAttackImageSrc } from '../../../game/content/bosses/attack-art'
 import type { AbilityId, EnemyAttack, MobType } from '../../../game/types'
 import { skillImageSrc } from '../../../game/ui-art'
 import { t } from '../../../i18n'
 
 export interface MonsterStat { label: string; value: string | number; name: string }
 export interface MonsterSkill { id: string; title: string; icon: string; description: string; detail: string }
-export interface MonsterGroup { id: string; title?: string; stats: MonsterStat[]; skills: MonsterSkill[] }
+export interface MonsterGroup { id: string; title?: string; color?: string; stats: MonsterStat[]; skills: MonsterSkill[] }
 const attacks: Record<EnemyAttack, { title: string; description: string; art: AbilityId }> = {
   pounce: { title: '躍擊', description: '瞄準旅人後向前撲擊。', art: 'speed' },
   dive: { title: '俯衝', description: '蓄勢後高速俯衝，穿越攻擊路徑。', art: 'haste' },
@@ -57,7 +58,7 @@ export function monsterGroups(id: MobType): MonsterGroup[] {
     const ids = [...new Set(boss.phases.flat())]
     const damage = ids.map(key => BOSS_ATTACKS[key].damage).filter(value => value > 0)
     groups.push({
-      id: boss.id, title: t(boss.title),
+      id: boss.id, title: t(boss.title), color: boss.color,
       stats: [
         stat('HP', '生命', boss.health),
         stat('ATK', '技能基礎傷害範圍', damage.length ? `${Math.min(...damage)}–${Math.max(...damage)}` : '—'),
@@ -72,7 +73,7 @@ export function monsterGroups(id: MobType): MonsterGroup[] {
         const art: AbilityId = attack.kind === 'summon' ? 'multi' : attack.kind === 'projectile' ? 'bolt' :
           attack.shape === 'ring' ? 'orb' : attack.shape === 'beam' ? 'chain' : attack.kind === 'zone' ? 'vortex' : 'meteor'
         return {
-          id: key, title: t(bossNames[key]), icon: skillImageSrc(art),
+          id: key, title: t(bossNames[key]), icon: bossAttackImageSrc(key) ?? skillImageSrc(art),
           description: `${phases.join(' / ')} · ${t(kind)} · ${t(shape)}`,
           detail: t('傷害 {damage} · 蓄力 {seconds} 秒', { damage: attack.damage, seconds: attack.windup }),
         }
