@@ -245,7 +245,7 @@ watch(() => props.nodes, (nodes, previous) => {
 @media(hover:hover) and (pointer:fine){.hall-inspect:hover{border-color:#b89a6355}.hall-buy:hover:not(:disabled){background:linear-gradient(#7a603e,#4d3826)}}
 @media(min-width:740px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(205px,30%);--hall-medallion:68px}.hall-map{padding:10px 18px}.hall-growth--tree .hall-row{max-width:400px;margin-inline:auto}.hall-growth--tree .hall-links{max-width:400px;margin-inline:auto}}
 @media(orientation:landscape) and (min-width:560px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,36%);--hall-medallion:54px}.hall-map{padding:6px}.hall-links{height:10px}.hall-inspect{gap:2px;padding:2px}.hall-inspect strong{font-size:.75rem}.hall-detail{gap:6px;padding:9px}}
-@media(max-width:360px){.hall-growth{--hall-medallion:60px}.hall-map{padding:6px}.hall-row{gap:3px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
+@media(max-width:360px){.hall-growth{--hall-medallion:56px}.hall-map{padding:6px}.hall-links{height:10px}.hall-row{gap:3px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
 @media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
 :global([data-es2-reduce-motion="true"] .hall-upgrade-fx),
 :global([data-es2-reduce-motion="true"] .hall-ring::after),
