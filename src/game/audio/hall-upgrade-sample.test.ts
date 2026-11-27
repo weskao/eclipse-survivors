@@ -116,3 +116,21 @@ describe('Mastered skill musical identity', () => {
     expect(routed.slice(Math.floor(rate * 1.2)).some(sample => Math.abs(sample) > .005)).toBe(true)
   })
 })
+
+it.each([22050,48000])('adds a distinct release cue and sustains a richer ceremony tail at %i Hz',rate=>{
+  expect(hallCueKey('upgrade',22)).toBe('release')
+  const rms=(pcm:Float32Array,start:number,end:number)=>{
+    const part=pcm.slice(Math.floor(pcm.length*start),Math.floor(pcm.length*end))
+    return Math.sqrt(part.reduce((sum,x)=>sum+x*x,0)/part.length)
+  }
+  for(const kind of ['milestone','signature','resonance'] as const){
+    const pcm=renderHallCue(rate,kind)
+    expect(rms(pcm,.65,.9),kind).toBeGreaterThan(.065)
+    expect(pcm.reduce((m,x)=>Math.max(m,Math.abs(x)),0)).toBeLessThanOrEqual(.81)
+  }
+  const release=renderHallCue(rate,'release')
+  expect(release.length/rate).toBeCloseTo(.48,2)
+  expect(release[0]).toBe(0)
+  expect(release.at(-1)).toBe(0)
+  expect(release.every(Number.isFinite)).toBe(true)
+})

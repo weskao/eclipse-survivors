@@ -30,5 +30,6 @@ export function attunementCelebrationVariant(hero:string,before:MetaState|null,a
   if(b.resonance&&b.resonance!==a.resonance)return HALL_UPGRADE.resonanceAttune
   if(b.hero[hero]&&b.hero[hero]!==a.hero[hero])return HALL_UPGRADE.signatureAttune
   if(b.universal.some(id=>!a.universal.includes(id)))return HALL_UPGRADE.attune
+  if(a.universal.some(id=>!b.universal.includes(id)) || (a.hero[hero] && !b.hero[hero]) || (a.resonance && !b.resonance))return HALL_UPGRADE.release
   return undefined
 }
