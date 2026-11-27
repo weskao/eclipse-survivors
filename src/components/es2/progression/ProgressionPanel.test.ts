@@ -231,7 +231,8 @@ describe('Hall preview purchase safety', () => {
 
 describe('Hall category navigation and touch inspector', () => {
   it('shows just one category, with keyboard-accessible navigation and preserved research selection', async () => {
-    const wrapper = mount(ProgressionPanel, { props: { state: createMetaState(), hero: 'knight', status: 'ready' } })
+    // isVisible() needs a connected element: jsdom ignores v-show's inline display:none on detached nodes.
+    const wrapper = mount(ProgressionPanel, { attachTo: document.body, props: { state: createMetaState(), hero: 'knight', status: 'ready' } })
     expect(wrapper.findAll('[data-hall-tab]')).toHaveLength(4)
     expect(wrapper.get('[data-hall-category="research"]').isVisible()).toBe(true)
     expect(wrapper.get('[data-hall-category="mastery"]').isVisible()).toBe(false)
