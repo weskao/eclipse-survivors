@@ -20,6 +20,74 @@ function fixture() {
 }
 afterEach(() => { setLocale('zh-TW'); document.body.innerHTML = '' })
 describe('Google OAuth entry points', () => {
+  it('replaces the Google entry with the signed-in avatar and opens the existing account dialog', async () => {
+    const { cloud, user, status, confirmed, login, sync } = fixture()
+    user.value = { uid: 'a', displayName: 'Avery', email: 'avery@example.test', photoURL: 'https://example.test/avatar.png' } as User
+    status.value = 'synced'
+    confirmed.value = true
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 50 }, attachTo: document.body })
+    const button = wrapper.get('[data-es2-cloud-account]')
+    expect(button.get('[data-es2-profile-avatar] img').attributes('src')).toBe('https://example.test/avatar.png')
+    expect(button.find('.es2-cloud-trigger-label').exists()).toBe(false)
+    expect(button.text()).not.toContain('avery@example.test')
+    expect(button.get('[data-es2-profile-status]').attributes('data-state')).toBe('synced')
+    expect(button.attributes('aria-expanded')).toBe('false')
+    await button.trigger('click')
+    expect(button.attributes('aria-expanded')).toBe('true')
+    expect(login).not.toHaveBeenCalled()
+    const dialog = document.body.querySelector('[role="dialog"]')!
+    expect(dialog.textContent).toContain('Avery')
+    expect(dialog.textContent).toContain('avery@example.test')
+    expect(dialog.querySelector('.es2-cloud-provider img')?.getAttribute('src')).toMatch(/google-sign-in\.webp/)
+    expect(dialog.textContent).toContain('暮光餘燼已同步')
+    setLocale('en')
+    await nextTick()
+    expect(dialog.textContent).toContain('Twilight Embers synced')
+    ;(dialog.querySelector('[data-es2-cloud-sync]') as HTMLButtonElement).click()
+    expect(sync).toHaveBeenCalledTimes(1)
+    ;(dialog.querySelector('[data-es2-cloud-logout]') as HTMLButtonElement).click()
+    expect(cloud.logout).toHaveBeenCalledTimes(1)
+    user.value = null
+    await nextTick()
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull()
+    expect(button.get('img').attributes('src')).toMatch(/google-sign-in\.webp/)
+    wrapper.unmount()
+  })
+  it('uses a name initial when the photo fails and a new photo when the account changes', async () => {
+    const { cloud, user } = fixture()
+    user.value = { uid: 'a', displayName: '  星蝕', photoURL: 'https://example.test/broken.png' } as User
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 0 } })
+    const avatar = wrapper.get('[data-es2-profile-avatar]')
+    await avatar.get('img').trigger('error')
+    expect(avatar.find('img').exists()).toBe(false)
+    expect(avatar.text()).toBe('星')
+    user.value = { uid: 'b', displayName: 'Beta', photoURL: 'https://example.test/new.png' } as User
+    await nextTick()
+    expect(avatar.get('img').attributes('src')).toBe('https://example.test/new.png')
+    user.value = { uid: 'c', email: 'private@example.test', photoURL: null } as User
+    await nextTick()
+    expect(avatar.text()).toBe('P')
+    expect(avatar.find('img').exists()).toBe(false)
+    wrapper.unmount()
+  })
+  it('never shows a confirmed profile status for an unconfirmed save or playtest', async () => {
+    const { cloud, user, status, confirmed } = fixture()
+    user.value = { uid: 'a' } as User
+    status.value = 'synced'
+    const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 0 } })
+    const marker = wrapper.get('[data-es2-profile-status]')
+    expect(marker.attributes('data-state')).toBe('syncing')
+    confirmed.value = true
+    await nextTick()
+    expect(marker.attributes('data-state')).toBe('synced')
+    for (const state of ['error', 'conflict', 'playtest'] as const) {
+      status.value = state
+      await nextTick()
+      expect(marker.attributes('data-state')).toBe(state)
+    }
+    wrapper.unmount()
+  })
+
   it('opens OAuth directly from the homepage and uses the original local WebP', async () => {
     const { cloud, login } = fixture()
     const wrapper = mount(Es2CloudAccount, { props: { cloud, embers: 50 }, attachTo: document.body })
