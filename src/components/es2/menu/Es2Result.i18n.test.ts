@@ -31,7 +31,7 @@ describe('localized expedition results', () => {
   it('renders streak records in both locales without fabricating records for older runs', async () => {
     setLocale('en', storage)
     const wrapper = mount(Es2Result, {
-      props: { active: true, ending: '🏆 遠征勝利！', summary: '', result: { ...result, bestKillStreak: 12, bestMultiKill: 4 } },
+      props: { active: true, still: true, ending: '🏆 遠征勝利！', summary: '', result: { ...result, bestKillStreak: 12, bestMultiKill: 4 } },
       attachTo: document.body,
     })
     await nextTick()
@@ -51,7 +51,7 @@ describe('localized expedition results', () => {
     setLocale('en', storage)
     const wrapper = mount(Es2Result, {
       props: {
-        active: true, ending: '🏆 遠征勝利！',
+        active: true, still: true, ending: '🏆 遠征勝利！',
         summary: '存活 68 秒 · 擊敗 12 隻魔物 · 等級 4',
         result,
         rewards: { embers: 20, newAchievements: ['first-blood'], newCosmetics: ['knight-gilded'] },
@@ -79,7 +79,7 @@ describe('localized expedition results', () => {
 
 it('shows measured run XP, first upgrade, DPS and kills per minute in both languages', async () => {
   setLocale('en',storage)
-  const wrapper=mount(Es2Result,{props:{active:true,ending:'',summary:'',result:{...result,seconds:60,damageDealt:1200,kills:30,xpEarned:75,firstUpgradeSeconds:8}},attachTo:document.body})
+  const wrapper=mount(Es2Result,{props:{active:true,still:true,ending:'',summary:'',result:{...result,seconds:60,damageDealt:1200,kills:30,xpEarned:75,firstUpgradeSeconds:8}},attachTo:document.body})
   await nextTick()
   const stats=document.body.querySelector('.es2-result-stats')!
   expect(stats.textContent).toContain('75XP earned')

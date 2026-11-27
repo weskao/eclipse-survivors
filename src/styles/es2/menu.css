@@ -994,7 +994,8 @@
    the viewport even on the first animation frame. Archive content still rises.
    Do not retain a compositor animation layer after the fade completes. */
 @keyframes es2-scene-fade { from { opacity: 0; } }
-.es2-menu { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
+/* The lobby shell must be opaque on its first paint; fade only its children. */
+.es2-menu { animation:none; opacity:1; }
 .es2-hero-section, .es2-mode-section { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
 .es2-archive-page { --es2-scene-from: 0 12px; animation: es2-scene-arrive var(--es2-scene-base) var(--es2-scene-ease) both; }
 .es2-menu-action-bar { animation: es2-scene-fade var(--es2-scene-base) var(--es2-scene-ease) backwards; }
@@ -1018,13 +1019,13 @@
   }
 }
 
-/* Expedition result (victory/defeat): the whole report fits the viewport with no body scroll.
+/* Expedition result (victory/defeat): compact report fits when possible; allow overflow fallback.
    The portrait is the only flexible element: it grows into spare height and yields it to rewards.
    Narrow portrait stacks banner over report; wide or landscape screens use banner | report. */
-.es2-dialog-result .es2-dialog-body{display:flex;flex-direction:column;overflow:hidden;touch-action:manipulation}
+.es2-dialog-result .es2-dialog-body{display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain}
 .es2-dialog-result .es2-dialog-actions{justify-content:center;margin-top:clamp(8px,1.8dvh,18px);padding-top:clamp(8px,1.8dvh,16px)}
 .es2-dialog-result .es2-dialog-actions button{flex:0 1 220px}
-.es2-dialog-result .es2-result{position:relative;display:flex;flex-direction:column;flex:1 1 auto;gap:clamp(8px,1.5dvh,14px);min-height:0;text-align:center}
+.es2-dialog-result .es2-result{position:relative;display:flex;flex-direction:column;flex:1 1 auto;gap:clamp(8px,1.5dvh,14px);min-height:min-content;text-align:center}
 .es2-dialog-result .es2-result-banner{position:relative;display:flex;flex-direction:column;align-items:center;flex:1 1 clamp(136px,31dvh,300px);gap:2px;padding:clamp(6px,1.2dvh,12px) 10px;border:1px solid #c3a97d40;border-radius:12px;background:radial-gradient(ellipse 58% 52% at 50% 40%,#e4b26324,transparent 72%),#08121ecc;box-shadow:inset 0 1px #d9bb8726}
 .es2-tone-defeat .es2-result-banner{background:radial-gradient(ellipse 58% 52% at 50% 40%,#9d454536,transparent 72%),#08121ecc}
 /* Preferred size lives on the banner; a zero-basis portrait keeps the banner floor at portrait-min + status + mode. */
@@ -1045,7 +1046,7 @@
 .es2-reward-strip span{padding:1px 8px;border:1px solid #b5a06c55;border-radius:999px;background:#0e1b2bcc;font-size:.75rem;line-height:1.4}
 .es2-dialog-result .es2-result-cloud{margin:0}
 @media (min-width:640px){
-  .es2-dialog-result .es2-result{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-rows:minmax(0,1fr);gap:clamp(10px,1.8vw,22px)}
+  .es2-dialog-result .es2-result{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-rows:minmax(min-content,1fr);gap:clamp(10px,1.8vw,22px)}
   .es2-dialog-result .es2-result-hero{flex-basis:clamp(96px,38dvh,340px)}
   .es2-dialog-result .es2-victory-celebration{grid-column:1;grid-row:1}
 }

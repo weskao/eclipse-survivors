@@ -121,7 +121,7 @@ function confirmReset(): void { resetOpen.value = false; emit('reset') }
       :still="stillPresentation" :skip-reveal="accessibilityPreferences?.skipRewardReveal"
       @choose="emit('specialChoose', $event)" @cancel="emit('specialCancel')" @skip-reveal="skipRewardReveal" />
     <Es2Result :active="screen === 'result' && !settingsOpen && !notification && !loading" :ending="ending"
-      :summary="summary" :result="runResult" :rewards="rewards" @again="emit('again')" @home="emit('home')">
+      :summary="summary" :result="runResult" :rewards="rewards" :still="stillPresentation" @again="emit('again')" @home="emit('home')">
       <template #cloud><slot name="result-cloud" /></template>
     </Es2Result>
     <Es2Message :active="resetOpen && !settingsOpen" kind="confirmation" :title="t('重置所有遠征紀錄？')"

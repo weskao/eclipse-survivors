@@ -15,7 +15,7 @@ const run = {
 const storage = { getItem: () => null, setItem: () => {} }
 afterEach(() => { setLocale('zh-TW', storage); document.body.innerHTML = '' })
 
-describe('expedition result screen fits without scrolling', () => {
+describe('expedition result screen fits with overflow fallback', () => {
   it('splits the result into a hero banner and a run report inside a result-variant dialog', () => {
     const wrapper = mount(Es2Result, {
       props: { active: true, ending: '勝利', summary: '', result: run,
@@ -48,11 +48,15 @@ describe('expedition result screen fits without scrolling', () => {
     wrapper.unmount()
   })
 
-  it('never scrolls the result body; the portrait absorbs spare height instead', () => {
-    expect(css).toMatch(/\.es2-dialog-result \.es2-dialog-body\{[^}]*overflow:hidden/)
-    expect(css).not.toMatch(/\.es2-dialog-result \.es2-dialog-body\{[^}]*overflow-y:auto/)
+  it('allows body scrolling only when content exceeds the available height', () => {
+    expect(css).toMatch(/\.es2-dialog-result \.es2-dialog-body\{[^}]*overflow-x:hidden;overflow-y:auto/)
     expect(css).toMatch(/\.es2-dialog-result \.es2-result-hero\{[^}]*flex:1 1 [^;]+;[^}]*min-height:/)
     expect(css).toMatch(/\.es2-dialog-result \.es2-result-hero img\{[^}]*object-fit:contain/)
+  })
+
+  it('keeps the destination shell opaque from its first paint', () => {
+    expect(css).toMatch(/\.es2-menu \{ animation:none; opacity:1; \}/)
+    expect(css).not.toMatch(/\.es2-menu\s*\{\s*animation:\s*es2-scene-fade/)
   })
 
   it('never breaks a stat number across lines; the label wraps instead', () => {

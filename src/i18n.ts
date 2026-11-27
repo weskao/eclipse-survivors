@@ -1646,7 +1646,7 @@ const english = new Map<string, string>([
 , ["全場磁吸","Global Magnet"]
 , ["✦ 全場磁吸 · 吸引所有經驗水晶","✦ Global Magnet · Attract All XP Crystals"]
 , ["詛咒 · 有代價","Cursed · Comes at a Cost"]
-, ["跳過揭曉動畫","Skip Reveal"]
+, ["跳過揭曉動畫","Skip Reveal"], ["跳過結算動畫","Skip Results Animation"]
 , ["無盡屠戮","Massacre"]
 , ["毀滅狂潮","Annihilation"]
 , ["暮光浩劫","Eclipse Massacre"]
