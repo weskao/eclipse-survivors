@@ -52,7 +52,15 @@ describe('ES2 three-hero selection UI', () => {
     const rules = css.split(portrait).slice(1).map(rest => rest.slice(0, rest.indexOf('}')))
     expect(rules.length).toBeGreaterThan(1)
     expect(rules.some(rule => rule.includes('aspect-ratio:1'))).toBe(true)
-    for (const rule of rules) expect(rule).not.toMatch(/(^|;)\s*height:clamp/)
+    for (const rule of rules) {
+      expect(rule).not.toMatch(/(^|;)\s*height:clamp/)
+      for (const [, padding] of rule.matchAll(/padding:([^;}]+)/g)) {
+        const [top, right = top, bottom = top, left = right] = padding.trim().split(/\s+/).map(parseFloat)
+        // Content box stays square-or-wider, and the top clears the selected card's 6px lift.
+        expect(left + right).toBeLessThanOrEqual(top + bottom)
+        expect(top).toBeGreaterThanOrEqual(6)
+      }
+    }
   })
 
   it('uses distinct generated art for each hero active skill in character cards', () => {
