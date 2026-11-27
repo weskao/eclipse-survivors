@@ -409,27 +409,34 @@ describe('portal start interaction feedback', () => {
 
 describe('lobby dock silhouette and layout', () => {
   it.each([
-    ['en', ['Change', 'expedition'], ['Back to', 'heroes']],
-    ['zh-TW', ['變更', '遠征'], ['返回', '英雄選擇']],
-  ] as const)('aligns the localized dock action label independently from its arrow in %s', async (locale, forward, back) => {
+    ['en', 'Modes', 'Heroes', 'Change expedition', 'Back to heroes'],
+    ['zh-TW', '模式', '英雄', '變更遠征', '返回英雄選擇'],
+  ] as const)('uses short localized destinations and preserves the full action in %s', async (locale, forward, back, fullForward, fullBack) => {
     const previous = getLocale()
     try {
       setLocale(locale)
       const wrapper = menu()
-      const action = wrapper.get('.es2-expedition-change')
-      const lines = () => action.findAll('.es2-expedition-change-label > span').map(node => node.text())
-      expect(lines()).toEqual(forward)
+      const button = wrapper.get('[data-es2-expedition-navigation]')
+      const action = button.get('.es2-expedition-change')
+      const label = () => action.get('.es2-expedition-change-label').text()
+      expect(label()).toBe(forward)
+      expect(button.attributes('aria-label')).toContain(forward)
+      expect(button.attributes('aria-label')).toContain(fullForward)
+      expect(button.attributes('title')).toBe(fullForward)
       expect(action.get('.es2-expedition-change-arrow').text()).toBe('›')
       expect(action.get('.es2-expedition-change-arrow').attributes('aria-hidden')).toBe('true')
-      await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
-      expect(lines()).toEqual(back)
+      await button.trigger('click')
+      expect(label()).toBe(back)
+      expect(button.attributes('aria-label')).toContain(back)
+      expect(button.attributes('aria-label')).toContain(fullBack)
+      expect(button.attributes('title')).toBe(fullBack)
       expect(action.get('.es2-expedition-change-arrow').text()).toBe('‹')
     } finally { setLocale(previous) }
   })
-  it('centers a separate arrow beside left-aligned semantic text chunks', () => {
+  it('keeps the short dock label and its centered arrow in a compact independent grid', () => {
     expect(css).toMatch(/\.es2-menu \.es2-expedition-change\{[^}]*display:grid;grid-template-columns:minmax\(0,1fr\) auto;align-items:center;[^}]*text-align:start/)
-    expect(css).toMatch(/\.es2-expedition-change-label:lang\(en\)\{[^}]*flex-direction:column;align-items:flex-start/)
-    expect(css).toContain('.es2-expedition-change-label>span{white-space:nowrap}')
+    expect(css).toContain('.es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}')
+    expect(css).not.toContain('.es2-expedition-change-label:lang(en)')
   })
   it('keeps the duration beside the mode name and groups summary and hero into one meta line', () => {
     const mode = menu({ runMode: 'quick' }).get('.es2-mobile-selected-mode').element

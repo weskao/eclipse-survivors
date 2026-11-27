@@ -139,12 +139,17 @@ try {
           const label = action.querySelector('.es2-expedition-change-label')
           const arrow = action.querySelector('.es2-expedition-change-arrow')
           const a = action.getBoundingClientRect(), l = label.getBoundingClientRect(), r = arrow.getBoundingClientRect()
-          const chunks = [...label.children].map(el => el.getBoundingClientRect())
-          const english = label.matches(':lang(en)')
+          const range = document.createRange()
+          range.selectNodeContents(label)
+          const text = range.getBoundingClientRect()
+          const brief = action.closest('button').getBoundingClientRect()
+          const allowed = ['Modes', 'Heroes', '模式', '英雄']
           return { center: Math.abs((l.top + l.bottom - r.top - r.bottom) / 2),
-            beside: r.left >= l.right - 1 && r.right <= a.right + 1,
-            aligned: !english || (Math.abs(chunks[0].left - chunks[1].left) <= 1 && chunks[1].top >= chunks[0].bottom - 1),
-            fits: chunks.every(chunk => chunk.right <= l.right + 1) }
+            beside: r.left >= l.right - 1 && r.right <= a.right + 1 && a.right <= brief.right + 1,
+            aligned: Math.abs(text.left - l.left) <= 1,
+            fits: allowed.includes(label.textContent.trim()) && text.right <= l.right + 1 &&
+              text.bottom <= l.bottom + 1 && label.scrollWidth <= label.clientWidth + 1,
+            label: label.textContent.trim() }
         })
         assert.ok(actionLayout.center <= 1 && actionLayout.beside && actionLayout.aligned && actionLayout.fits,
           name + ': dock action alignment ' + JSON.stringify(actionLayout))

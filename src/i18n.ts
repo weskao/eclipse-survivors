@@ -110,6 +110,8 @@ const english = new Map<string, string>([
   ["返回英雄選擇", "Back to heroes"],
   ["目前遠征", "Current expedition"],
   ["變更遠征", "Change expedition"],
+  ["模式", "Modes"],
+  ["英雄", "Heroes"],
   ["依序挑戰五位首領，敵人逐戰增強。", "Challenge five increasingly powerful bosses."],
   ["無盡求生，迎戰週期性星蝕事件。", "Survive endlessly through recurring eclipse events."],
   ["回收四件聖物，擊敗守護首領。", "Recover four relics and defeat the guardian boss."],
