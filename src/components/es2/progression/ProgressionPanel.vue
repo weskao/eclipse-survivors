@@ -4,6 +4,7 @@ import { computed, nextTick, ref } from 'vue'
 import Es2EmberWallet from '../menu/Es2EmberWallet.vue'
 import HallGrowthBoard from './HallGrowthBoard.vue'
 import HallTalentExplorer from './HallTalentExplorer.vue'
+import { hallFeature as resolveHallFeature } from '../../../game/content/meta/hall-feature'
 import { researchHallNodes, unlockHallNodes, type HallNode } from './hall-model'
 import { BALANCE } from '../../../game/config'
 import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
@@ -38,6 +39,7 @@ const categories = [
 ] as const
 type Category = typeof categories[number]['id']
 const category = ref<Category>('research')
+const hallFeature = resolveHallFeature()
 const researchView = ref<'core'|'ascendancy'>('core')
 const tabs = ref<HTMLElement | null>(null)
 function moveCategory(event: KeyboardEvent, id: Category) {
@@ -97,12 +99,12 @@ const masteryProgress = computed(() => {
     </div>
     <section v-show="category === 'research'" id="hall-category-research" data-hall-category="research" role="tabpanel" aria-labelledby="hall-tab-research" :aria-label="t('永久研究')" class="es2-progression-section">
       <h3>{{ t("研究之樹") }}</h3>
-      <div class="hall-research-nav" role="group" :aria-label="t('研究路線')">
+      <div v-if="hallFeature.visible" class="hall-research-nav" role="group" :aria-label="t('研究路線')">
         <button type="button" data-ui-sfx="select" :aria-pressed="researchView==='core'" @click="researchView='core'">{{ t('核心研究') }}</button>
-        <button type="button" data-ui-sfx="select" :aria-pressed="researchView==='ascendancy'" @click="researchView='ascendancy'">{{ t('暮蝕昇華') }} <small>{{ t('預覽') }}</small></button>
+        <button type="button" data-es4-entry data-ui-sfx="select" :aria-pressed="researchView==='ascendancy'" @click="researchView='ascendancy'">{{ t('暮蝕昇華') }} <small v-if="!hallFeature.playable">{{ t('預覽') }}</small></button>
       </div>
       <HallGrowthBoard v-show="researchView==='core'" :nodes="research" :writable="writable" :visible="category === 'research' && researchView==='core'" tree @purchase="emit('research', $event.id)" />
-      <HallTalentExplorer v-if="researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'" :writable="writable" @purchase="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"/>
+      <HallTalentExplorer v-if="hallFeature.visible && researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'" :writable="writable && hallFeature.playable" @purchase="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"/>
     </section>
 
     <section v-show="category === 'mastery'" id="hall-category-mastery" data-hall-category="mastery" role="tabpanel" aria-labelledby="hall-tab-mastery" :aria-label="t('英雄專精')" class="es2-progression-section">

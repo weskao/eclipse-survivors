@@ -161,3 +161,16 @@ Eclipse Survivors is an evolving **playable prototype**. All images displayed ab
 ## License
 
 No open-source license has been granted for this repository. All rights are reserved unless explicitly stated otherwise.
+
+### ES4 talent-tree feature switch
+
+`VITE_ES4_HALL=0` (default or unset) keeps the original five permanent research nodes and V3 progression. Set `VITE_ES4_HALL=1` in `.env.local` or pass it to Vite to expose the expanded tree. Restart the dev server or rebuild after changing it.
+
+```sh
+VITE_ES4_HALL=0 make dev          # original ES2 research only
+VITE_ES4_HALL=1 make dev-unlocked # actual ES4 purchase and combat, disposable V4 guest save
+VITE_ES4_HALL=1 make phone-unlocked # same on LAN/mobile
+VITE_ES4_HALL=0 make build        # default public build
+```
+
+The ES4 flag does not grant unlocked mode on its own. A normal enabled build shows a read-only preview until release approval; unlocked DEV ES4 uses in-memory saves and disables the cloud-wallet adapter even with the emulator. Switching off does not delete or downgrade saved data. The centralized policy in `src/game/content/meta/hall-feature.ts` is the only place that reads the flag; remove the temporary switch after full production approval and migration safety verification.

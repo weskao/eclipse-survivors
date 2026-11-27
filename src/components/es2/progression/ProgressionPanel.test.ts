@@ -327,3 +327,29 @@ it('never compiles scoped reduced-motion or flashing CSS that hides the document
   expect(files.length).toBeGreaterThan(3)
   expect(offenders).toEqual([])
 })
+
+describe('ES4 build-time master switch', () => {
+  it('does not render any ES4 entry or node when disabled, even with V4 data', () => {
+    vi.stubEnv('VITE_ES4_HALL','0')
+    try {
+      const state=createMetaState()
+      state.version=4; state.hall={ownership:{'offense-edge':1},attunement:{universal:[],hero:{},resonance:null}}
+      const wrapper=mount(ProgressionPanel,{props:{state,hero:'knight',status:'ready'}})
+      expect(wrapper.find('[data-es4-entry]').exists()).toBe(false)
+      expect(wrapper.find('.hall-research-nav').exists()).toBe(false)
+      expect(wrapper.find('[data-es4-tree]').exists()).toBe(false)
+      expect(wrapper.findAll('#hall-category-research [data-hall-node]')).toHaveLength(5)
+      wrapper.unmount()
+    } finally { vi.unstubAllEnvs() }
+  })
+  it('exposes the new tree when enabled while retaining core research', async () => {
+    vi.stubEnv('VITE_ES4_HALL','1')
+    try {
+      const wrapper=mount(ProgressionPanel,{props:{state:createMetaState(),hero:'knight',status:'ready'}})
+      expect(wrapper.findAll('#hall-category-research [data-hall-node]')).toHaveLength(5)
+      await wrapper.get('[data-es4-entry]').trigger('click')
+      expect(wrapper.find('[data-es4-tree]').exists()).toBe(true)
+      wrapper.unmount()
+    } finally { vi.unstubAllEnvs() }
+  })
+})

@@ -27,7 +27,7 @@ import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
-import { resolveHallRunSnapshot } from './content/meta/hall-state'
+import { hallFeature } from './content/meta/hall-feature'
 import { hallCritBonus, installHallRun } from './content/meta/hall-runtime'
 import { HALL_UPGRADE, hallRankVariant } from './audio/hall-upgrade-sample'
 import { attunementCelebrationVariant, talentCelebrationVariant, researchCelebrationVariant } from './audio/hall-research-cue'
@@ -170,8 +170,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   const unlockedPlaytest = import.meta.env.DEV && import.meta.env.VITE_ES2_UNLOCKED === '1'
   const runtime = cloudRuntime()
   const emulator = runtime.mode === 'emulator'
-  // Deliberately isolated opt-in: unverified Hall effects cannot spend real embers.
-  const hallPlaytest = unlockedPlaytest && !emulator && import.meta.env.VITE_ES4_HALL === '1'
+  const hall = hallFeature()
   const namespace = emulator ? 'emulator.' + runtime.projectId : 'account'
   const scopedStorage = (uid: string | null) => {
     if (!uid && !emulator) return undefined
@@ -180,12 +179,12 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
   // Unlocked test profiles remain in memory even when authenticated. A dedicated
   // demo project owns their test currency; live phone sign-in is identity-only.
   const guestProfileStorage = unlockedPlaytest ? createUnlockedPlaytestProfileStorage() : scopedStorage(null)
-  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage(100_000, hallPlaytest) : scopedStorage(null)
+  const guestMetaStorage = unlockedPlaytest ? createUnlockedPlaytestMetaStorage(100_000, hall.playable) : scopedStorage(null)
   const unlockedAccounts = new Map<string, { profile: ReturnType<typeof createUnlockedPlaytestProfileStorage>; meta: ReturnType<typeof createUnlockedPlaytestMetaStorage> }>()
   let profileStore = opts.profileStore ?? createProfileStore(guestProfileStorage)
   // Injected legacy stores are retained for existing compatibility tests.
   // In production the v3 writer owns all currency and run settlements.
-  let metaStore = opts.profileStore ? null : createMetaProgressionStore(guestMetaStorage, hallPlaytest ? 4 : 3)
+  let metaStore = opts.profileStore ? null : createMetaProgressionStore(guestMetaStorage, hall.metaVersion)
   let walletAccount: string | null = null
   const walletReady = (): boolean => !walletAccount || !!metaStore?.get().state?.cloudWallet
   function displayProfile() {
@@ -628,7 +627,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         }
       }
     }
-    installHallRun(s, resolveHallRunSnapshot(unlocked, s.heroId))
+    installHallRun(s, hall.snapshot(unlocked, s.heroId))
     ui.runResult = null
     ui.rewards = null
     ui.specialChoice = null
@@ -664,13 +663,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const inventory = inventorySnapshot(s)
     const offer = inventory.pending
     if (!offer) return
-    ui.specialChoice = { kind: 'treasure', tier: offer.tier, chestId: offer.chestId, rerolls: inventory.rerolls, items: offer.options.map(id => {
+    ui.specialChoice = { kind: 'treasure', tier: offer.tier, ...hall.treasureControls(offer.chestId, inventory.rerolls), items: offer.options.map(id => {
       const relic = RELIC_BY_ID.get(id)!
       return { id, title: relic.title, description: relic.description, icon: relic.icon, rarity: relic.rarity, cursed: relic.cursed }
     }) }
   }
   function rerollTreasureChoice(chestId: number, expectedRerolls: number): void {
-    if (s.mode !== 'level' || !ui.specialChoice) return
+    if (!hall.playable || s.mode !== 'level' || !ui.specialChoice) return
     const current = inventorySnapshot(s)
     if (current.pending?.chestId !== chestId || current.rerolls !== expectedRerolls || expectedRerolls <= 0) return
     if (!rerollTreasure(s, chestId, random)) { audio.playSfx('deny', 1); return }
@@ -1169,7 +1168,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     new URLSearchParams(window.location.search).get('content-showcase') === '1'
 
   return {
-    ...(!opts.profileStore && (!unlockedPlaytest || emulator) ? { cloudWallet: {
+    ...(!opts.profileStore && hall.allowsWallet && (!unlockedPlaytest || emulator) ? { cloudWallet: {
       select(uid: string | null) {
         if (s.mode !== 'menu' && s.mode !== 'result') return false
         if (uid === walletAccount) return true
@@ -1185,7 +1184,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
             profileStorage = saved.profile
             metaStorage = saved.meta
           }
-          const nextMeta = createMetaProgressionStore(metaStorage, !uid && hallPlaytest ? 4 : 3)
+          const nextMeta = createMetaProgressionStore(metaStorage, hall.metaVersion)
           if (uid && nextMeta.get().status !== 'ready') return false
           profileStore = createProfileStore(profileStorage)
           metaStore = nextMeta
@@ -1243,13 +1242,13 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       purchaseHallResearch(id, '研究未解鎖或儲存失敗')
     },
     purchaseTalent(id: string, expectedRank: number) {
-      if (!hallPlaytest || s.mode !== 'menu' || !metaStore || walletAccount) return
+      if (!metaStore || !hall.canEdit(s.mode, walletAccount)) return
       const before=metaStore.get().state
       const result = metaStore.purchaseTalent(id, s.heroId, expectedRank)
       finishPurchase(result.ok, '研究未解鎖或儲存失敗',talentCelebrationVariant(id,s.heroId,before,result.state))
     },
     setHallAttunement(universal: string[], signature: string | null, resonance: string | null) {
-      if (!hallPlaytest || s.mode !== 'menu' || !metaStore || walletAccount) return
+      if (!metaStore || !hall.canEdit(s.mode, walletAccount)) return
       const before=metaStore.get().state
       const result = metaStore.setHallAttunement(s.heroId, universal, signature, resonance)
       if (result.ok) {

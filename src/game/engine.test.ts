@@ -754,3 +754,37 @@ it.each(['common', 'rare', 'epic', 'legendary', 'cursed'] as const)('plays the a
   expect(play.mock.calls.filter(([cue]) => cue === 'treasureClaim')).toEqual([['treasureClaim', expected]])
   expect(inventorySnapshot(s).items).toHaveLength(1)
 })
+
+describe('ES4 Hall build-time isolation', () => {
+  it('keeps the old V3 catalog and prevents talent commands when disabled', () => {
+    vi.stubEnv('VITE_ES4_HALL','0')
+    vi.stubEnv('VITE_ES2_UNLOCKED','1')
+    try {
+      const instance=createEngine({audio:new SpyAudio()})
+      const before=instance.ui.metaState?.embers
+      expect(instance.ui.metaState?.version).toBe(3)
+      instance.purchaseTalent('offense-edge',0)
+      expect(instance.ui.metaState?.embers).toBe(before)
+      expect(instance.ui.metaState?.hall).toBeUndefined()
+      instance.start()
+      expect(instance.state.hall).toBeUndefined()
+    } finally { vi.unstubAllEnvs() }
+  })
+  it('enables purchase and an immutable run snapshot in an isolated unlocked DEV build', () => {
+    vi.stubEnv('VITE_ES4_HALL','1')
+    vi.stubEnv('VITE_ES2_UNLOCKED','1')
+    try {
+      const instance=createEngine({audio:new SpyAudio()})
+      instance.selectHero('knight')
+      expect(instance.ui.metaState?.version).toBe(4)
+      expect(instance.cloudWallet).toBeUndefined()
+      const before=instance.ui.metaState!.embers
+      instance.purchaseTalent('offense-edge',0)
+      expect(instance.ui.metaState?.hall?.ownership['offense-edge']).toBe(1)
+      expect(instance.ui.metaState?.embers).toBe(before-40)
+      instance.start()
+      expect(instance.state.hall?.snapshot.ranks['offense-edge']).toBe(1)
+      expect(Object.isFrozen(instance.state.hall?.snapshot.ranks)).toBe(true)
+    } finally { vi.unstubAllEnvs() }
+  })
+})
