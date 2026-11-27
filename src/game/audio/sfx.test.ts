@@ -3,7 +3,7 @@ import type { SfxCue } from '../types'
 import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones, treasureTones } from './sfx'
 
 // Copied from the original game.js `sfxCooldown` table.
-const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'hero-select' | 'treasureReveal' | 'treasureClaim' | 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'hitElemental' | 'hitEvolved' | 'hitHero' | 'eliteKill' | 'bossStagger' | 'pickupBurst' | 'evolution' | 'killStreak' | 'massKill' | 'deny' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special' | 'crimson-paladin-retribution' | 'knight-special' | 'ranger-special' | 'wizard-special'>, number> = {
+const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'hero-select' | 'treasureReveal' | 'treasureClaim' | 'legendaryReveal' | 'legendaryClaim' | 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'hitElemental' | 'hitEvolved' | 'hitHero' | 'eliteKill' | 'bossStagger' | 'pickupBurst' | 'evolution' | 'killStreak' | 'massKill' | 'deny' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special' | 'crimson-paladin-retribution' | 'knight-special' | 'ranger-special' | 'wizard-special'>, number> = {
   ui: 0.07, hover: 0.15, select: 0.09, start: 0.4, pause: 0.2, resume: 0.2, upgrade: 0.1, level: 0.26,
   dash: 0.28, knight: 0.12, ranger: 0.1, wizard: 0.15, chain: 0.23, kill: 0.14, boss: 0.8, bossDefeat: 0.8,
   hurt: 0.28, pickup: 0.16, scene: 0.45, victory: 1, defeat: 1, bolt: 0.3, frost: 0.5, meteor: 0.45, vortex: 0.5,
@@ -11,7 +11,7 @@ const ORIGINAL_COOLDOWN: Record<Exclude<SfxCue, 'hero-select' | 'treasureReveal'
 
 describe('sfx tables', () => {
   it('cooldowns match game.js', () => {
-    const { treasureReveal, treasureClaim, hitNormal, hitHeavy, hitCritical, hitElemental, hitEvolved, hitHero, eliteKill, deny, 'hero-select': heroSelect, 'hurt-heavy': heavy, 'hurt-critical': critical, 'hurt-extreme': extreme, killStreak, massKill, pickupBurst, evolution, bossStagger, 'shadowblade-special': shadow, 'spirit-summoner-special': spirit, 'crimson-paladin-special': paladin, 'crimson-paladin-retribution': retribution, 'knight-special': knight, 'ranger-special': ranger, 'wizard-special': wizard, ...legacy } = SFX_COOLDOWN
+    const { treasureReveal, treasureClaim, legendaryReveal, legendaryClaim, hitNormal, hitHeavy, hitCritical, hitElemental, hitEvolved, hitHero, eliteKill, deny, 'hero-select': heroSelect, 'hurt-heavy': heavy, 'hurt-critical': critical, 'hurt-extreme': extreme, killStreak, massKill, pickupBurst, evolution, bossStagger, 'shadowblade-special': shadow, 'spirit-summoner-special': spirit, 'crimson-paladin-special': paladin, 'crimson-paladin-retribution': retribution, 'knight-special': knight, 'ranger-special': ranger, 'wizard-special': wizard, ...legacy } = SFX_COOLDOWN
     expect([heavy, critical, extreme]).toEqual([.34, .39, .48])
     expect([shadow, spirit, paladin, retribution]).toEqual([0.55, 0.9, 0.75, 0.6])
     expect([knight, ranger, wizard]).toEqual([.65, .55, .8])
@@ -19,6 +19,7 @@ describe('sfx tables', () => {
     expect(deny).toBe(0.22)
     expect(treasureReveal).toBeGreaterThan(0)
     expect(treasureClaim).toBeGreaterThan(0)
+    expect([legendaryReveal, legendaryClaim]).toEqual([.6, .3])
     expect([hitNormal,hitHeavy,hitCritical,hitElemental,hitEvolved,hitHero,eliteKill].every(n=>n>=.1)).toBe(true)
     expect(killStreak).toBeGreaterThan(0.5)
     expect(massKill).toBeGreaterThan(0.5)

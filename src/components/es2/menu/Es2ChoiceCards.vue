@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { fallbackSkillImage } from '../../../game/ui-art'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import Es2LegendaryAura from './Es2LegendaryAura.vue'
 import type { ChoiceKind, MenuChoice } from './model'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 const props = withDefaults(defineProps<{
@@ -9,6 +10,8 @@ const props = withDefaults(defineProps<{
 }>(), { disabled: false, label: '可選擇項目' })
 const emit = defineEmits<{ choose: [id: string] }>()
 const focused = ref<string | null>(null)
+// Remount the aura (replaying its reveal) only when the set of legendary offers changes.
+const legendaryKey = computed(() => props.items.filter(item => item.rarity === 'legendary').map(item => item.id).join('|'))
 const rarityIcon = (rarity?: string) => rarity === 'legendary' ? WORLD_ART.ui['rarity-legendary'] : rarity === 'rare' || rarity === 'epic' ? WORLD_ART.ui['rarity-rare'] : WORLD_ART.ui['rarity-common']
 function select(item: MenuChoice): void {
   if (!props.disabled && !item.disabled) emit('choose', item.id)
@@ -20,6 +23,7 @@ function select(item: MenuChoice): void {
       :class="[`es2-rarity-${item.rarity ?? 'common'}`, { 'es2-choice-selected': selectedId === item.id, 'es2-choice-focused': focused === item.id, 'es2-choice-evolution': item.evolution, 'es2-skill-card': kind !== undefined }]"
       :data-choice="item.id" :aria-pressed="selectedId === item.id" :disabled="disabled || item.disabled" @focus="focused = item.id"
       @click="select(item)">
+      <span v-if="item.rarity === 'legendary'" class="es3-legend-frame" data-es3-legend-frame aria-hidden="true"></span>
       <div class="es2-card-art">
         <picture v-if="item.imageSrc">
           <source v-if="item.reducedMotionSrc" media="(prefers-reduced-motion: reduce)" :srcset="item.reducedMotionSrc" />
@@ -46,6 +50,7 @@ function select(item: MenuChoice): void {
       <small v-if="item.requirements" class="es2-card-requirements">◈ {{ t(item.requirements) }}</small>
       <span v-if="selectedId === item.id" class="es2-card-selected-text">{{ t("✓ 已選擇") }}</span>
     </button>
+    <Es2LegendaryAura v-if="legendaryKey" :key="legendaryKey" />
   </div>
 </template>
 

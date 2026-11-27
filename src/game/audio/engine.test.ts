@@ -275,6 +275,24 @@ describe('playSfx', () => {
     expect(created).toBe(1)
   })
 
+  it.each(['legendaryReveal', 'legendaryClaim'] as const)('plays one cached %s Foley buffer without a generic tone', cue => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 20
+    audio.playSfx(cue)
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const sample = ctx.sources[0]!.buffer
+    ctx.currentTime = 22
+    audio.playSfx(cue)
+    expect(ctx.sources[1]!.buffer).toBe(sample)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 24
+    audio.playSfx(cue)
+    expect(ctx.sources).toHaveLength(2)
+  })
+
   it('plays one oscillator per tone with the original pitch math', () => {
     const audio = make()
     audio.wake()

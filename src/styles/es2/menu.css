@@ -1100,3 +1100,20 @@
 .es2-warlock-portrait{filter:hue-rotate(15deg) saturate(1.2)}
 .es2-archive-art>.es2-achievement-icon{margin:auto}
 @media(max-width:700px){.es2-archive-art{height:115px}.es2-archive-atlas{width:min(100%,115px)}}
+
+/* ES3 legendary choice: rotating gold foil rim, label shimmer and one shared Pixi aura layer (Es2LegendaryAura). */
+@property --es3-legend-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
+.es2-choice-grid{position:relative}
+.es3-legend-aura{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.es3-legend-aura-canvas{display:block;pointer-events:none}
+.es3-legend-frame{position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;padding:2px;background:conic-gradient(from var(--es3-legend-angle),#ffe7a6,#c8892f 14%,#fff6d8 26%,#a8682a 40%,#ffd36e 55%,#fffaf0 64%,#b97a30 78%,#ffe7a6);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);animation:es3-legend-spin 5.5s linear infinite,es3-legend-enter .9s cubic-bezier(.2,.8,.2,1) both}
+.es2-choice.es2-rarity-legendary{box-shadow:0 10px 26px #000a,0 0 22px #e8b8674d,inset 0 0 28px #ffcf7a26}
+.es2-choice.es2-rarity-legendary:hover:not(:disabled),.es2-choice.es2-rarity-legendary.es2-choice-focused{box-shadow:0 14px 34px #000c,0 0 0 1px #ffe7a6,0 0 38px #f0bd6a99,inset 0 0 32px #ffcf7a40}
+.es2-choice.es2-rarity-legendary .es2-rarity-label{color:#ffe7a6;text-shadow:0 1px 4px #000c,0 0 10px #ffc96b66;animation:es3-legend-label 2.8s ease-in-out infinite}
+@keyframes es3-legend-spin{to{--es3-legend-angle:360deg}}
+@keyframes es3-legend-enter{0%{opacity:0;filter:brightness(2.4)}35%{opacity:1;filter:brightness(1.8)}100%{opacity:1;filter:none}}
+@keyframes es3-legend-label{50%{color:#fffbea;text-shadow:0 1px 4px #000c,0 0 16px #ffd98acc}}
+[data-es2-reduce-motion="true"] .es3-legend-frame,[data-es2-reduce-motion="true"] .es2-rarity-legendary .es2-rarity-label,.es2-still .es3-legend-frame,.es2-still .es2-rarity-legendary .es2-rarity-label{animation:none}
+[data-es2-reduce-flashing="true"] .es3-legend-frame,[data-es2-reduce-flashing="true"] .es2-rarity-legendary .es2-rarity-label{animation:none}
+@media(prefers-reduced-motion:reduce){.es3-legend-frame,.es2-rarity-legendary .es2-rarity-label{animation:none}}
+@media(forced-colors:active){.es3-legend-frame{display:none}.es2-choice.es2-rarity-legendary .es2-rarity-label{color:CanvasText;text-shadow:none}}

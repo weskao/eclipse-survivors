@@ -23,7 +23,7 @@ export type ContactSfxCue = 'hitNormal' | 'hitHeavy' | 'hitCritical' | 'hitEleme
 export type SfxCue =
   | 'ui' | 'hover' | 'select' | 'hero-select' | 'start' | 'pause' | 'resume' | 'upgrade' | 'level' | 'dash'
   | 'knight' | 'ranger' | 'wizard' | 'chain' | 'kill' | 'killStreak' | 'massKill' | 'boss' | 'bossStagger' | 'bossDefeat' | 'hurt' | 'hurt-heavy' | 'hurt-critical' | 'hurt-extreme' | 'pickup' | 'pickupBurst' | 'evolution'
-  | ContactSfxCue | 'treasureReveal' | 'treasureClaim'
+  | ContactSfxCue | 'treasureReveal' | 'treasureClaim' | 'legendaryReveal' | 'legendaryClaim'
   | 'scene' | 'deny' | 'victory' | 'defeat' | 'bolt' | 'frost' | 'meteor' | 'vortex'
   | 'knight-special' | 'ranger-special' | 'wizard-special'
   | 'shadowblade-special' | 'spirit-summoner-special' | 'crimson-paladin-special' | 'crimson-paladin-retribution'
