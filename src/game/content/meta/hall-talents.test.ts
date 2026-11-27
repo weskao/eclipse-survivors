@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { HALL_TALENTS, HALL_GROUPS, validateHallTalents, hallTalentCost, hallTalentEligible, hallTalentGroup } from './hall-talents'
+import { hallPrerequisiteRoute, HALL_TALENTS, HALL_GROUPS, validateHallTalents, hallTalentCost, hallTalentEligible, hallTalentGroup } from './hall-talents'
 import { BALANCE } from '../../config'
 import { hallRankValues } from './hall-rank-values'
 import { createMetaState } from './state'
@@ -92,4 +92,16 @@ it('provides actual per-rank contribution and no next rank beyond the cap for ev
   expect(hallRankValues('hunt-salvage',5)?.current[0]?.value).toBe(5)
   expect(hallRankValues('offense-edge',6)).toBeNull()
   expect(hallRankValues('offense-war-master',1)).toBeNull()
+})
+
+it('routes every prerequisite to its owning core or ES4 group', () => {
+  for(const node of HALL_TALENTS) for(const requirement of node.requires) {
+    const target=hallPrerequisiteRoute(requirement.id)
+    expect(target,requirement.id).not.toBeNull()
+    const prerequisite=HALL_TALENTS.find(n=>n.id===requirement.id)
+    if(prerequisite) {
+      expect(target).toEqual({tree:HALL_GROUPS.find(g=>g.id===prerequisite.group)!.kind,group:prerequisite.group,id:requirement.id})
+    } else expect(target).toEqual({tree:'core',id:requirement.id})
+  }
+  expect(hallPrerequisiteRoute('unknown')).toBeNull()
 })

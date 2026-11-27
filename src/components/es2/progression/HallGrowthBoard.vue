@@ -2,8 +2,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { t } from '../../../i18n'
 import { hallEdges, hallRows, type HallNode } from './hall-model'
-const props = withDefaults(defineProps<{ nodes: readonly HallNode[]; writable?: boolean; tree?: boolean; visible?: boolean; preview?: boolean }>(), { writable: true, tree: false, visible: true, preview: false })
-const emit = defineEmits<{ purchase: [node: HallNode] }>()
+const props = withDefaults(defineProps<{ nodes: readonly HallNode[]; writable?: boolean; tree?: boolean; visible?: boolean; preview?: boolean; navigableRequirements?: boolean }>(), { writable: true, tree: false, visible: true, preview: false })
+const emit = defineEmits<{ purchase: [node: HallNode]; prerequisite: [id: string] }>()
 const selected = ref('')
 const hovered = ref('')
 const detail = ref<HTMLElement | null>(null)
@@ -77,6 +77,26 @@ function inspect(node: HallNode, event?: MouseEvent) {
     if (!wasOpen && event.detail === 0) void nextTick(() => detail.value?.focus({ preventScroll: true }))
   }
 }
+/** Used by cross-tree links; one shared inspector and no new dialog. */
+async function focusNode(id: string) {
+  const node=props.nodes.find(item=>item.id===id)
+  if (!node) return
+  inspect(node)
+  if(floating.value) {
+    opened.value=true
+    opener=root.value?.querySelector<HTMLElement>('[data-hall-inspect="'+id+'"]')??null
+    await nextTick()
+    detail.value?.focus({preventScroll:true})
+  } else {
+    await nextTick()
+    root.value?.querySelector<HTMLElement>('[data-hall-inspect="'+id+'"]')?.focus({preventScroll:true})
+  }
+}
+function followRequirement(index:number) {
+  const requirement=active.value?.requires[index]
+  if(requirement) emit('prerequisite',requirement.id)
+}
+defineExpose({focusNode})
 function purchase(node: HallNode) {
   if (!canPurchase(node) || node.id !== selectedNode.value?.id || dispatching) return
   inspect(node)
@@ -159,7 +179,7 @@ watch(() => props.nodes, (nodes, previous) => {
         <span v-if="active.next !== undefined" aria-hidden="true">→</span>
         <div v-if="active.next !== undefined"><small>{{ t('下一階效果') }}</small><b>{{ active.next }}</b></div>
       </div>
-      <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><p v-for="requirement in active.requirements" :key="requirement">{{ requirement }}</p></div>
+      <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><div v-for="(requirement,index) in active.requirements" :key="requirement"><button v-if="navigableRequirements && active.requires[index]" type="button" class="hall-prerequisite-link" :data-hall-prerequisite="active.requires[index]?.id" data-ui-sfx="select" @click="followRequirement(index)">{{ requirement }} ↗</button><p v-else>{{ requirement }}</p></div></div>
       <small class="hall-status">{{ active.attunementStatus ?? t(status(active)) }}</small>
       </div>
       <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview && completion(active) === 'none' ? t('選取節點後升級') : action(active) }}</button>
@@ -222,6 +242,7 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-comparison b{font:700 1.1rem system-ui;font-variant-numeric:tabular-nums;color:#f7d18d}
 .hall-comparison div:last-child b{color:#b6e7b7}
 .hall-requirements p{margin-top:4px}
+.hall-prerequisite-link{font:inherit;min-height:44px;max-width:100%;text-align:start;overflow-wrap:anywhere;color:inherit;background:none;border:0;border-bottom:1px solid currentColor;padding:4px 2px;cursor:pointer}.hall-prerequisite-link:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .hall-success{color:#b6e7b7!important}
 .hall-ring{transition:--hall-rank-progress .62s cubic-bezier(.17,.76,.23,1),--hall-tip-angle .62s cubic-bezier(.17,.76,.23,1),box-shadow .25s}
 .hall-ring::after{content:'';position:absolute;inset:2px;z-index:5;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(112deg,transparent 31%,#e7c1841a 43%,#fff0c57a 50%,#e7c1841a 57%,transparent 69%);background-size:240% 100%;background-position:130% 0}

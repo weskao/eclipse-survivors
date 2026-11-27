@@ -55,3 +55,12 @@ export function hallTalentEligible(id: string, state: MetaState, ownership: Read
   }
   return node.requires.every(req => (byId.has(req.id) ? ownership[req.id] ?? 0 : state.research[req.id] ?? 0) >= req.rank)
 }
+
+export type HallPrerequisiteRoute = { tree: 'core'; id: string } | { tree: 'discipline' | 'hero' | 'synergy'; group: string; id: string }
+export function hallPrerequisiteRoute(id: string): HallPrerequisiteRoute | null {
+  const node = hallTalent(id)
+  if (!node) return RESEARCH.some(item => item.id === id) ? { tree: 'core', id } : null
+  const group = HALL_GROUPS.find(item => item.id === node.group)
+  if (!group || (group.kind !== 'discipline' && group.kind !== 'hero' && group.kind !== 'synergy')) return null
+  return { tree: group.kind, group: group.id, id }
+}

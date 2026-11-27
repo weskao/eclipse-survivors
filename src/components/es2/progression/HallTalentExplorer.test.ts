@@ -61,3 +61,17 @@ it('shows current and next contributions without spending or inventing a next ra
   expect(wrapper.findAll('.hall-comparison b')).toHaveLength(1)
   wrapper.unmount()
 })
+
+it('jumps from resonance to its prerequisite, then routes original research to the parent', async () => {
+  const wrapper=mount(HallTalentExplorer,{props:{state:createMetaState(),hero:'knight'}})
+  await wrapper.get('[data-es4-tree="synergy"]').trigger('click')
+  await wrapper.get('[data-hall-inspect="synergy-blade-and-bastion"]').trigger('click')
+  await wrapper.get('[data-hall-prerequisite="offense-war-master"]').trigger('click')
+  expect(wrapper.get('[data-es4-tree="discipline"]').attributes('aria-selected')).toBe('true')
+  expect(wrapper.get('[data-es4-discipline="offense"]').attributes('aria-selected')).toBe('true')
+  expect(wrapper.get('[data-hall-inspect="offense-war-master"]').attributes('aria-pressed')).toBe('true')
+  await wrapper.get('[data-hall-inspect="offense-edge"]').trigger('click')
+  await wrapper.get('[data-hall-prerequisite="power"]').trigger('click')
+  expect(wrapper.emitted('corePrerequisite')).toEqual([['power']])
+  wrapper.unmount()
+})

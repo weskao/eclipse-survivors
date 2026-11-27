@@ -353,3 +353,15 @@ describe('ES4 build-time master switch', () => {
     } finally { vi.unstubAllEnvs() }
   })
 })
+
+it('returns from a talent prerequisite to the exact original research node',async()=> {
+  vi.stubEnv('VITE_ES4_HALL','1')
+  try {
+    const wrapper=mount(ProgressionPanel,{props:{state:createMetaState(),hero:'knight',status:'ready'}})
+    await wrapper.get('[data-es4-entry]').trigger('click')
+    await wrapper.get('[data-hall-prerequisite="power"]').trigger('click')
+    expect(wrapper.find('[data-es4-tree]').exists()).toBe(false)
+    expect(wrapper.get('[data-hall-inspect="power"]').attributes('aria-pressed')).toBe('true')
+    wrapper.unmount()
+  } finally { vi.unstubAllEnvs() }
+})

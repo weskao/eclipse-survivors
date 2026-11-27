@@ -41,6 +41,8 @@ type Category = typeof categories[number]['id']
 const category = ref<Category>('research')
 const hallFeature = resolveHallFeature()
 const researchView = ref<'core'|'ascendancy'>('core')
+const coreBoard=ref<InstanceType<typeof HallGrowthBoard>|null>(null)
+async function jumpToCore(id:string){researchView.value='core';await nextTick();await coreBoard.value?.focusNode(id)}
 const tabs = ref<HTMLElement | null>(null)
 function moveCategory(event: KeyboardEvent, id: Category) {
   const index = categories.findIndex(tab => tab.id === id)
@@ -103,8 +105,8 @@ const masteryProgress = computed(() => {
         <button type="button" data-ui-sfx="select" :aria-pressed="researchView==='core'" @click="researchView='core'">{{ t('核心研究') }}</button>
         <button type="button" data-es4-entry data-ui-sfx="select" :aria-pressed="researchView==='ascendancy'" @click="researchView='ascendancy'">{{ t('暮蝕昇華') }} <small v-if="!hallFeature.playable">{{ t('預覽') }}</small></button>
       </div>
-      <HallGrowthBoard v-show="researchView==='core'" :nodes="research" :writable="writable" :visible="category === 'research' && researchView==='core'" tree @purchase="emit('research', $event.id)" />
-      <HallTalentExplorer v-if="hallFeature.visible && researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'" :writable="writable && hallFeature.playable" @purchase="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"/>
+      <HallGrowthBoard ref="coreBoard" v-show="researchView==='core'" :nodes="research" :writable="writable" :visible="category === 'research' && researchView==='core'" tree @purchase="emit('research', $event.id)" />
+      <HallTalentExplorer @core-prerequisite="jumpToCore" v-if="hallFeature.visible && researchView==='ascendancy'" :state="state" :hero="masteryHero" :visible="category==='research'" :writable="writable && hallFeature.playable" @purchase="(id,rank)=>emit('talent',id,rank)" @attune="(u,s,r)=>emit('attune',u,s,r)"/>
     </section>
 
     <section v-show="category === 'mastery'" id="hall-category-mastery" data-hall-category="mastery" role="tabpanel" aria-labelledby="hall-tab-mastery" :aria-label="t('英雄專精')" class="es2-progression-section">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, nextTick } from 'vue'
 import { currentLocale, t } from '../../../i18n'
-import { HALL_GROUPS, hallTalentGroup, hallTalent, hallTalentCost, hallTalentEligible } from '../../../game/content/meta/hall-talents'
+import { hallPrerequisiteRoute, HALL_GROUPS, hallTalentGroup, hallTalent, hallTalentCost, hallTalentEligible } from '../../../game/content/meta/hall-talents'
 import { hallRankValues, type RankValue } from '../../../game/content/meta/hall-rank-values'
 import { resolveHallRunSnapshot } from '../../../game/content/meta/hall-state'
 import { RESEARCH } from '../../../game/content/meta/catalog'
@@ -10,7 +10,7 @@ import HallGrowthBoard from './HallGrowthBoard.vue'
 import type { HallNode } from './hall-model'
 
 const props = withDefaults(defineProps<{ state: MetaState; hero: string; visible?: boolean; writable?: boolean }>(), {visible:true,writable:false})
-const emit = defineEmits<{ purchase: [id:string, rank:number]; attune: [universal:string[], signature:string|null, resonance:string|null] }>()
+const emit = defineEmits<{ purchase: [id:string, rank:number]; attune: [universal:string[], signature:string|null, resonance:string|null]; corePrerequisite: [id:string] }>()
 const live = computed(() => props.writable && props.state.version === 4 && !!props.state.hall && !props.state.cloudWallet)
 const ownership = computed(() => props.state.hall?.ownership ?? {})
 const equipped = computed(() => props.state.hall?.attunement)
@@ -41,6 +41,7 @@ const view = ref<'graph'|'list'>('graph')
 const query = ref('')
 const groupNav = ref<HTMLElement|null>(null)
 const treeNav = ref<HTMLElement|null>(null)
+const growthBoard=ref<InstanceType<typeof HallGrowthBoard>|null>(null)
 const locale = currentLocale
 const localized = (zh:string,en:string) => locale.value === 'en' ? en : zh
 const tabs = computed(() => [
@@ -82,6 +83,16 @@ const nodes = computed<HallNode[]>(() => {
     requirements:[...n.requires.map(req=>title(req.id)+' · Lv. '+req.rank),...(n.masteryGate?[localized('英雄專精','Hero mastery')+' · Lv. '+n.masteryGate]:[])],
   }))
 })
+async function jumpToPrerequisite(id:string) {
+  const target=hallPrerequisiteRoute(id)
+  if(!target)return
+  if(target.tree==='core'){emit('corePrerequisite',id);return}
+  tree.value=target.tree
+  selections.value[target.tree]=target.group
+  query.value=''
+  await nextTick()
+  await growthBoard.value?.focusNode(id)
+}
 function selectTree(id:Tree){tree.value=id;query.value=''}
 function selectGroup(id:string){selections.value[tree.value]=id;query.value=''}
 function move(event:KeyboardEvent, ids:readonly string[], id:string, select:(id:string)=>void, root:HTMLElement|null, attr:string){
@@ -117,7 +128,7 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
       <input v-if="view==='list'" v-model="query" type="search" :aria-label="localized('搜尋技能','Search talents')" :placeholder="localized('搜尋技能','Search talents')"/>
     </div>
     <p v-if="!live" class="es4-notice">{{ localized('新能力尚未開放購買。預覽不會消耗餘燼，既有研究仍可正常升級。','New talents are not yet purchasable. Preview never spends embers; original research remains available.') }}</p>
-    <HallGrowthBoard v-if="nodes.length" :key="group.id" :nodes="nodes" :tree="view==='graph' && tree!=='synergy'" :writable="live" :visible="visible" :preview="!live" :class="{'es4-list':view==='list'}" @purchase="emit('purchase',$event.id,$event.rank)"/>
+    <HallGrowthBoard v-if="nodes.length" ref="growthBoard" :key="group.id" navigable-requirements @prerequisite="jumpToPrerequisite" :nodes="nodes" :tree="view==='graph' && tree!=='synergy'" :writable="live" :visible="visible" :preview="!live" :class="{'es4-list':view==='list'}" @purchase="emit('purchase',$event.id,$event.rank)"/>
     <p v-else role="status">{{ localized('沒有符合的技能','No matching talents') }}</p>
     <section v-if="live" class="es4-attunement" :aria-label="localized('調律','Attunement')">
       <h4>{{ localized('調律配置','Attunement') }} · {{ equipped?.universal.length ?? 0 }}/2 · {{ selectedSignature ? 1 : 0 }}/1 · {{ equipped?.resonance ? 1 : 0 }}/1</h4>
