@@ -59,7 +59,23 @@ try {
     page.on('pageerror', e => errors.push(e.message))
     try {
       await page.goto(base, { waitUntil: 'domcontentloaded' })
-      await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
+      try {
+        await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
+      } catch (error) {
+        const ancestry = await page.locator('.es2-start').first().evaluate(el => {
+          const result = []
+          for (let node = el; node; node = node.parentElement) {
+            const css = getComputedStyle(node), r = node.getBoundingClientRect()
+            result.push({ tag: node.tagName, class: node.className, hidden: node.hidden,
+              display: css.display, visibility: css.visibility, opacity: css.opacity,
+              contentVisibility: css.contentVisibility, width: r.width, height: r.height })
+          }
+          return result
+        }).catch(() => [])
+        console.error('ES3_LOBBY_VISIBILITY ' + JSON.stringify({ name, errors, ancestry }))
+        await page.screenshot({ path: destination + '/' + name + '-lobby-failure.png' }).catch(() => {})
+        throw error
+      }
       // Non-editable UI must never enter native text selection, including teleported overlays.
       const verifySelectionPolicy = async (stage) => {
         const offenders = await page.evaluate(() => [...document.body.querySelectorAll('*')]

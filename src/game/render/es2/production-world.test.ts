@@ -224,8 +224,9 @@ describe('ES3 native death candidate development review', () => {
     }) as unknown as HTMLImageElement
     const normal = loadWorldRuntimeImages(makeImage)
     expect(Object.keys(normal.enemyDeaths ?? {})).toEqual([])
-    const qa = Reflect.apply(loadWorldRuntimeImages, undefined, [makeImage, undefined, false, true]) as ReturnType<typeof loadWorldRuntimeImages>
-    for (const id of ['slime', 'bat', 'goblin', 'golem'] as const) {
+    const qa = loadWorldRuntimeImages(makeImage, undefined, false, true)
+    expect(Object.keys(qa.enemyDeaths ?? {}).sort()).toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
+    for (const id of ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const) {
       await vi.waitFor(() => expect(qa.enemyDeaths?.[id]?.src).toContain(id + '-death-preferred@3x.webp'))
     }
     const failed = qa.enemyDeaths?.golem!

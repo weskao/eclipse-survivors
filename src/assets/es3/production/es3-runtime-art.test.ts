@@ -84,8 +84,9 @@ describe('ES3 uploaded native contact textures', () => {
 describe('ES3 identity-safe native enemy candidates', () => {
   const dir = join(root, 'enemies', 'candidates')
   const candidates = readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
-  it('keeps the owner-uploaded slime candidate in an isolated directory', () => {
-    expect(candidates).toContain('slime-death-native3x-2026-11-26')
+  it('contains exactly one isolated native death candidate for every legacy enemy', () => {
+    expect(candidates.map(folder => folder.split('-death-native3x-')[0]).sort())
+      .toEqual(['bat', 'goblin', 'golem', 'slime', 'warlock'])
   })
   it.each(candidates)('%s retains native source, isolated candidate status and canonical provenance', folder => {
     const base = join(dir, folder)

@@ -39,6 +39,7 @@ try {
       assert.equal(report.frames, 120)
       assert.equal(report.initialMobs, 130)
       assert.deepEqual(report.contactArt, ['normal', 'heavy', 'critical', 'elemental', 'evolved', 'hero', 'critical'])
+      assert.deepEqual(report.nativeDeathArt, { slime: 4, bat: 4, goblin: 4, golem: 4, warlock: 4 })
       for (const key of ['simulationMs', 'canvas2dRenderMs', 'requestAnimationFrameIntervalMs']) {
         assert.ok(Number.isFinite(report[key].median), key + ' median missing')
         assert.ok(Number.isFinite(report[key].p95), key + ' p95 missing')

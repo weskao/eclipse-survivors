@@ -2,6 +2,7 @@ import { createEngine } from '../../../src/game/engine'
 import { loadArtwork } from '../../../src/game/art'
 import { createRenderAssets, drawFrame } from '../../../src/game/render'
 import { drawHitImpact, preloadHitImpactArt } from '../../../src/game/render/hit-impact'
+import { drawEs3EnemyDeath, loadWorldRuntimeImages } from '../../../src/game/render/es2/production-world'
 import { createStressScenario, type StressPreset } from '../../../src/game/performance/es2/scenarios'
 import { distribution } from '../../../src/game/performance/es2/metrics'
 import { resolvePresentationPolicy } from '../../../src/game/content/accessibility/presentation'
@@ -66,6 +67,65 @@ async function verifyContactArt(): Promise<string[]> {
   }
   return results
 }
+// Real decoded native candidate pixels, outside the timed performance workload.
+async function verifyNativeDeathArt(): Promise<Record<string, number>> {
+  const normal = loadWorldRuntimeImages()
+  if (Object.keys(normal.enemyDeaths ?? {}).length) throw new Error('Unapproved candidate loaded by default')
+  const qa = loadWorldRuntimeImages(undefined, undefined, false, true)
+  const atlasCanvas = document.createElement('canvas')
+  atlasCanvas.width = atlasCanvas.height = 872
+  const read = atlasCanvas.getContext('2d', { willReadFrequently: true })!
+  const preview = document.createElement('canvas')
+  preview.width = preview.height = 160
+  const paint = preview.getContext('2d', { willReadFrequently: true })!
+  const result: Record<string, number> = {}
+  const deadline = performance.now() + 15000
+  for (const id of ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const) {
+    const image = qa.enemyDeaths?.[id]
+    if (!image) throw new Error('Missing isolated native candidate: ' + id)
+    while (!image.complete || !image.naturalWidth) {
+      if (performance.now() >= deadline) throw new Error('Candidate decode timeout: ' + id)
+      await nextFrame()
+    }
+    if (image.naturalWidth !== 872 || image.naturalHeight !== 872) throw new Error('Invalid native atlas: ' + id)
+    read.clearRect(0, 0, 872, 872)
+    read.drawImage(image, 0, 0)
+    const pixels = read.getImageData(0, 0, 872, 872).data
+    const coverage = [0, 0, 0, 0]
+    for (let y = 0; y < 872; y++) for (let x = 0; x < 872; x++) {
+      const alpha = pixels[(y * 872 + x) * 4 + 3]!
+      if (!alpha) continue
+      if (x % 436 < 8 || x % 436 >= 428 || y % 436 < 8 || y % 436 >= 428)
+        throw new Error('Nontransparent atlas gutter: ' + id + ' ' + x + ',' + y)
+      coverage[Math.floor(y / 436) * 2 + Math.floor(x / 436)]!++
+    }
+    const frameSignatures = new Set<number>()
+    for (const remaining of [1, .7, .4, .1]) {
+      paint.clearRect(0, 0, 160, 160)
+      paint.save(); paint.translate(80, 145)
+      const drawn = drawEs3EnemyDeath(paint, image, remaining, 1, 139, 139)
+      paint.restore()
+      if (!drawn || paint.globalAlpha !== 1) throw new Error('Invalid death frame draw/state: ' + id)
+      const rgba = paint.getImageData(0, 0, 160, 160).data
+      let signature = 2166136261
+      let visible = false
+      for (let i = 0; i < rgba.length; i += 4) {
+        if (rgba[i + 3]!) visible = true
+        signature = Math.imul(signature ^ rgba[i]!, 16777619)
+        signature = Math.imul(signature ^ rgba[i + 1]!, 16777619)
+        signature = Math.imul(signature ^ rgba[i + 2]!, 16777619)
+        signature = Math.imul(signature ^ rgba[i + 3]!, 16777619)
+      }
+      if (!visible) throw new Error('Blank death frame: ' + id)
+      frameSignatures.add(signature)
+    }
+    if (coverage.some(n => n === 0) || frameSignatures.size !== 4) throw new Error('Missing or repeated death frames: ' + id)
+    result[id] = frameSignatures.size
+  }
+  atlasCanvas.width = atlasCanvas.height = preview.width = preview.height = 0
+  return result
+}
+
 async function run() {
   const preset: StressPreset = new URLSearchParams(location.search).get('preset') === 'mobile-low'
     ? 'mobile-low' : 'desktop'
@@ -111,6 +171,7 @@ async function run() {
     return memory?.usedJSHeapSize ?? null
   }
   const contactArt = await verifyContactArt()
+  const nativeDeathArt = await verifyNativeDeathArt()
   const heapBefore = heap()
   for (let i = 0; i < 30; i++) {
     engine.advance(1 / 60)
@@ -136,7 +197,7 @@ async function run() {
     label: 'ES2_REAL_CHROMIUM_CANVAS_PERFORMANCE_NOT_PHYSICAL_DEVICE',
     platform: navigator.userAgent, preset, viewport: [s.W, s.H], dpr,
     initialMobs: 130, liveMobs: s.mobs.length,
-    frames: 120, contactArt,
+    frames: 120, contactArt, nativeDeathArt,
     simulationMs: distribution(simMs),
     canvas2dRenderMs: distribution(renderMs),
     requestAnimationFrameIntervalMs: distribution(rafIntervalsMs),
