@@ -15,7 +15,8 @@ import type { HeroId, JobId, MobType } from '../../../game/types'
 import ProgressionPanel from '../progression/ProgressionPanel.vue'
 import { createMetaState, type MetaState } from '../../../game/content/meta/state'
 import type { MenuView, RelicEntry } from './model'
-import { upgradeCost } from './model'
+import HallGrowthBoard from '../progression/HallGrowthBoard.vue'
+import { legacyHallNodes } from '../progression/hall-model'
 import Es2CardDetails from './Es2CardDetails.vue'
 import Es2CardInfo from './Es2CardInfo.vue'
 import type { CardDetail } from './Es2CardDetails.vue'
@@ -68,10 +69,7 @@ function unlockCondition(id: CosmeticId): string | undefined {
     ? META_ACHIEVEMENTS.find(a => a.cosmetic === id)?.description
     : ACHIEVEMENTS.find(a => a.cosmetic === id)?.hint
 }
-const upgrades: readonly { id: PermanentUpgrade; title: string; icon: string; bonus: string }[] = [
-  { id: 'power', title: '破曉之刃', icon: '⚔', bonus: '永久傷害 +4% / 階' },
-  { id: 'vitality', title: '不滅之心', icon: '✚', bonus: '永久生命 +12 / 階' },
-]
+const legacyNodes = computed(() => legacyHallNodes(props.profile))
 const monsterImage = (id: MobType): string | undefined => id === 'warlock' ? undefined : ART_URLS[id]
 const achievementArt: Record<string, string> = {
   'first-blood': WORLD_ART.ui['achievement-flawless'],
@@ -97,11 +95,7 @@ const achievementArt: Record<string, string> = {
       <div v-else>
       <div class="es2-stat-strip"><div><b>{{ profile.runs }}</b><small>{{ t("遠征次數") }}</small></div><div><b>{{ profile.wins }}</b><small>{{ t("勝利") }}</small></div></div>
       <p class="es2-hint">{{ t("目前職業：") }}{{ t(hero) }} {{ t("· 永久能力於下一次遠征生效。") }}</p>
-      <div class="es2-archive-grid"><article v-for="entry in upgrades" :key="entry.id" class="es2-archive-card">
-        <div class="es2-archive-glyph" aria-hidden="true">{{ entry.icon }}</div><strong>{{ t(entry.title) }}</strong><p>{{ t(entry.bonus) }}</p><small>{{ t("第") }} {{ profile.upgrades[entry.id] }} {{ t("/ 3 階") }}</small>
-        <button class="es2-secondary" type="button" data-ui-sfx="managed" :disabled="profile.upgrades[entry.id] >= 3 || profile.embers < upgradeCost(profile.upgrades[entry.id])"
-          @click="emit('purchase', entry.id)">{{ t(profile.upgrades[entry.id] >= 3 ? '已滿階' : `升級 · ${upgradeCost(profile.upgrades[entry.id])} ✧`) }}</button>
-      </article></div>
+      <HallGrowthBoard :nodes="legacyNodes" @purchase="emit('purchase', $event.id as PermanentUpgrade)" />
       </div>
       <h3>{{ t("英雄造型") }} <small>{{ t("目前為光環造型 · 不影響戰鬥數值") }}</small></h3>
       <div class="es2-skins" role="group" :aria-label="t('英雄造型')">

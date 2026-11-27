@@ -2,9 +2,12 @@
 import { t } from '../../../i18n'
 import { computed } from 'vue'
 import Es2EmberWallet from '../menu/Es2EmberWallet.vue'
+import HallGrowthBoard from './HallGrowthBoard.vue'
+import { researchHallNodes, unlockHallNodes, type HallNode } from './hall-model'
+import { BALANCE } from '../../../game/config'
 import type { MetaState } from '../../../game/content/meta/state'
 import {
-  getAchievementStates, getBonusStates, getEquipmentStates, getResearchStates,
+  getAchievementStates,
 } from '../../../game/content/meta/progression'
 
 const props = withDefaults(defineProps<{
@@ -21,15 +24,22 @@ const emit = defineEmits<{
   equipment: [id: string]
   bonus: [id: string]
 }>()
-const research = computed(() => getResearchStates(props.state))
-const equipment = computed(() => getEquipmentStates(props.state, props.hero))
-const bonuses = computed(() => getBonusStates(props.state))
+const research = computed(() => researchHallNodes(props.state))
+const unlocks = computed(() => unlockHallNodes(props.state, props.hero))
+function unlock(node: HallNode) { if (node.kind === 'equipment') emit('equipment', node.id); else if (node.kind === 'bonus') emit('bonus', node.id) }
 const achievements = computed(() => getAchievementStates(props.state))
 const writable = computed(() => props.status === 'ready' && !props.busy)
 const heroName = computed(() => ({
   knight: '騎士', ranger: '遊俠', wizard: '法師',
 } as Record<string, string>)[props.hero] ?? props.hero)
 const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level: 1 })
+const masteryCap = BALANCE.meta.runRewards.masteryMaxLevel
+const masteryProgress = computed(() => {
+  const level = mastery.value.level, step = BALANCE.meta.runRewards.masteryLevelDivisor
+  if (level >= masteryCap) return { value: 1, next: 0 }
+  const lower = (level - 1) ** 2 * step, upper = level ** 2 * step
+  return { value: Math.min(1, Math.max(0, (mastery.value.xp - lower) / (upper - lower))), next: Math.max(0, upper - mastery.value.xp) }
+})
 </script>
 
 <template>
@@ -47,49 +57,22 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 
     <section :aria-label="t('永久研究')" class="es2-progression-section">
       <h3>{{ t("研究之樹") }}</h3>
-      <div class="es2-progression-grid">
-        <article v-for="node in research" :key="node.id" class="es2-progression-item" :class="{ locked: node.locked }">
-          <span class="es2-progression-icon" aria-hidden="true">{{ node.icon }}</span>
-          <strong>{{ t(node.title) }}</strong><p>{{ t(node.description, { value: node.benefit === 'hpFlat' ? node.benefitPerRank : Number((node.benefitPerRank * 100).toFixed(2)) }) }}</p>
-          <small>{{ t("等級") }} {{ node.rank }} / {{ node.maxRank }}<span v-if="node.locked"> {{ t("· 前置研究未解鎖") }}</span></small>
-          <button type="button" data-ui-sfx="managed" :data-research="node.id" :disabled="!writable || !node.canBuy"
-            @click="emit('research', node.id)">
-            {{ t(node.nextCost === null ? '已滿階' : node.locked ? '尚未解鎖' : '研究 · {cost} ✧', { cost: node.nextCost }) }}
-          </button>
-        </article>
-      </div>
+      <HallGrowthBoard :nodes="research" :writable="writable" tree @purchase="emit('research', $event.id)" />
     </section>
 
     <section :aria-label="t('英雄專精')" class="es2-progression-section">
       <h3>{{ t("英雄專精") }}</h3>
       <div class="es2-progression-mastery">
-        <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
+        <span>{{ t(heroName) }}</span><strong>Lv. {{ mastery.level }} / {{ masteryCap }}</strong><small>{{ t("累積熟練度") }} {{ mastery.xp.toLocaleString() }} XP</small>
+        <div class="hall-mastery-track" role="progressbar" :aria-label="t('英雄專精')" :aria-valuemin="0" :aria-valuemax="100" :aria-valuenow="Math.round(masteryProgress.value * 100)"><i :style="{ width: masteryProgress.value * 100 + '%' }"></i></div>
+        <small>{{ mastery.level >= masteryCap ? t('已滿階') : t('距下一級尚需 {xp} XP', { xp: masteryProgress.next.toLocaleString() }) }}</small>
       </div>
     </section>
 
     <section :aria-label="t('起始裝備與祝福')" class="es2-progression-section">
       <h3>{{ t("起始裝備與祝福") }}</h3>
       <p class="es2-progression-caption">{{ t("已解鎖的效果由遊戲整合層在開局時套用，不會改變進行中的戰鬥。") }}</p>
-      <div class="es2-progression-grid">
-        <article v-for="item in equipment" :key="item.id" class="es2-progression-item">
-          <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
-          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description) }}</p>
-          <button type="button" data-ui-sfx="managed" :data-equipment="item.id"
-            :disabled="!writable || !item.canBuy"
-            @click="emit('equipment', item.id)">
-            {{ t(item.unlocked ? '已解鎖' : item.locked ? '熟練度不足' : '解鎖 · {cost} ✧', { cost: item.cost }) }}
-          </button>
-        </article>
-        <article v-for="item in bonuses" :key="item.id" class="es2-progression-item">
-          <span class="es2-progression-icon" aria-hidden="true">{{ item.icon }}</span>
-          <strong>{{ t(item.title) }}</strong><p>{{ t(item.description, { value: Number(((item.bonus ?? 0) * 100).toFixed(2)) }) }}</p>
-          <button type="button" data-ui-sfx="managed" :data-bonus="item.id"
-            :disabled="!writable || !item.canBuy"
-            @click="emit('bonus', item.id)">
-            {{ t(item.unlocked ? '已解鎖' : item.locked ? '研究尚未達標' : '解鎖 · {cost} ✧', { cost: item.cost }) }}
-          </button>
-        </article>
-      </div>
+      <HallGrowthBoard :nodes="unlocks" :writable="writable" @purchase="unlock" />
     </section>
 
     <section :aria-label="t('永久成就')" class="es2-progression-section">
@@ -116,15 +99,6 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 .es2-progression-error{border:1px solid #dd8875;padding:12px;border-radius:8px;color:#ffdbd3}
 .es2-progression-section{margin-top:24px}
 .es2-progression-section h3{color:#f8d998;letter-spacing:.03em;margin:0 0 12px;font-size:1.15rem}
-.es2-progression-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}
-.es2-progression-item{display:flex;flex-direction:column;gap:8px;padding:14px;background:#211d24;border:1px solid #8c74564d;border-radius:12px;min-width:0}
-.es2-progression-item.locked{border-color:#665b5a}
-.es2-progression-item p{margin:0;color:#bcb1a7;font-size:.86rem;flex:1}
-.es2-progression-item small{color:#d0b78a}
-.es2-progression-icon{font-size:1.4rem;color:#eac384}
-.es2-progression-item button{min-height:44px;border:1px solid #cfae68;border-radius:8px;background:#513b31;color:#fff0ca;font:inherit;cursor:pointer}
-.es2-progression-item button:disabled{background:#27252a;border-color:#6c6160;color:#a7a0a0;cursor:not-allowed}
-.es2-progression-item button:focus-visible{outline:3px solid #fff0bc;outline-offset:3px}
 .es2-progression-mastery{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:14px;background:#211d24;border-radius:10px}
 .es2-progression-mastery strong{color:#f5cd89}
 .es2-progression-mastery small{color:#c3b8a6}
@@ -133,6 +107,6 @@ const mastery = computed(() => props.state.mastery[props.hero] ?? { xp: 0, level
 .es2-progression-achievements article.locked{opacity:.62}
 .es2-progression-achievements article strong{font-size:.84rem;flex:1}
 .es2-progression-achievements small{font-size:.75rem}
-@media(max-width:540px){.es2-progression-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.es2-progression-panel *{scroll-behavior:auto;transition:none!important;animation:none!important}}
+.hall-mastery-track{width:100%;height:10px;border:1px solid #90774b;border-radius:8px;background:#0c1722;overflow:hidden}.hall-mastery-track i{display:block;height:100%;background:linear-gradient(90deg,#8b6a3a,#f1d08e)}
 </style>

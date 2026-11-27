@@ -8,6 +8,15 @@ export interface LocaleStorage { getItem(key: string): string | null; setItem(ke
 export const LOCALE_STORAGE_KEY = 'eclipse-survivors-locale'
 
 const english = new Map<string, string>([
+  ["節點詳情","Node details"],
+  ["目前效果","Current effect"],
+  ["下一階效果","Next rank effect"],
+  ["前置條件","Prerequisites"],
+  ["可升級","Available"],
+  ["餘燼不足","Not enough embers"],
+  ["升級成功","Upgrade complete"],
+  ["距下一級尚需 {xp} XP","{xp} XP to next level"],
+  ["升級 · {cost} ✧","Upgrade · {cost} ✧"],
   ['解鎖條件：{condition}', 'Unlock requirement: {condition}'],
   ['暮境遠征', 'Eclipse Survivors'],
   ['血量偏低', 'Low health'],
