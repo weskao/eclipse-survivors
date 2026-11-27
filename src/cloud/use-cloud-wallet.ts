@@ -4,7 +4,8 @@ import type { User, createCloudClient } from './firebase-wallet'
 import { cloudRuntime } from './cloud-runtime'
 
 type Status = 'unavailable' | 'loading' | 'guest' | 'syncing' | 'synced' | 'error' | 'conflict' | 'playtest'
-export function useCloudWallet(engine: Engine) {
+export type AccountNotice = 'success' | 'error'
+export function useCloudWallet(engine: Engine, notify?: (notice: AccountNotice) => void) {
   const runtime = cloudRuntime()
   const config = runtime.config
   const authOnly = runtime.mode === 'auth-only'
@@ -64,12 +65,16 @@ export function useCloudWallet(engine: Engine) {
     const id = ++attempt
     signingIn.value = true
     status.value = 'guest'
-    try { await client.value.login() }
+    try {
+      await client.value.login()
+      if (!disposed && id === attempt) notify?.('success')
+    }
     catch (error) {
       const code = (error as { code?: string })?.code
-      if (id !== attempt) return
+      if (disposed || id !== attempt) return
       console.warn('Google sign-in did not complete:', code ?? 'unknown')
       status.value = code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' ? 'guest' : 'error'
+      if (status.value === 'error') notify?.('error')
     } finally { if (id === attempt) signingIn.value = false }
   }
   async function logout(): Promise<void> {
