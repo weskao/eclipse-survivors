@@ -193,4 +193,6 @@ Browser acceptance now checks actual WebP decode, different-node inspection, bot
 
 Hall sound source implementation and regressions added; waveform checks and full integration CI recorded separately. Manual listening remains unchecked.
 
-- [ ] Compact Hall layout: remove repeated card descriptions/purchase controls, one selected-node detail per board, compact topology at all sizes, refined layered metal progress rings and destination unlock animation. Preserve existing assets, sounds and transaction rules; verify actual responsive render.
+- [x] Compact Hall layout: remove repeated card descriptions/purchase controls, one selected-node detail per board, compact topology at all sizes, refined layered metal progress rings and destination unlock animation. Preserve existing assets, sounds and transaction rules; verify actual responsive render.
+
+Compact topology implementation: one visible confirmation per board; unchanged WebP art; metal bezel, inset, tick marks, moving progress head; destination pulse on true prerequisite unlock. Runtime viewport matrix and aesthetic approval remain pending.

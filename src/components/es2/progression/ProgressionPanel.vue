@@ -106,9 +106,9 @@ const masteryProgress = computed(() => {
 .es2-progression-header p,.es2-progression-caption{color:#c8bda8;margin:5px 0}
 .es2-progression-overline{letter-spacing:.15em;font-size:.75rem;color:#d5b675}
 .es2-progression-error{border:1px solid #dd8875;padding:12px;border-radius:8px;color:#ffdbd3}
-.es2-progression-section{margin-top:24px}
+.es2-progression-section{margin-top:16px}
 .es2-progression-section h3{color:#f8d998;letter-spacing:.03em;margin:0 0 12px;font-size:1.15rem}
-.es2-progression-mastery{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:14px;background:#211d24;border-radius:10px}
+.es2-progression-mastery{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:10px;background:#211d24;border-radius:10px}
 .es2-progression-mastery strong{color:#f5cd89}
 .es2-progression-mastery small{color:#c3b8a6}
 .es2-progression-achievements{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px}

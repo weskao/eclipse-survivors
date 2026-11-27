@@ -10,7 +10,7 @@ const detail = ref<HTMLElement | null>(null)
 const rows = computed(() => props.tree ? hallRows(props.nodes) : [props.nodes])
 const active = computed(() => props.nodes.find(node => node.id === hovered.value)
   ?? props.nodes.find(node => node.id === selected.value) ?? props.nodes[0])
-const upgraded = ref<{ id: string; rank: number; milestone: boolean; revealed: readonly string[] } | null>(null)
+const upgraded = ref<{ id: string; rank: number; milestone: boolean; revealed: readonly string[]; arrived: readonly string[] } | null>(null)
 let celebrationTimer: ReturnType<typeof setTimeout> | undefined
 onBeforeUnmount(() => clearTimeout(celebrationTimer))
 let request: { id: string; rank: number; time: number } | null = null
@@ -47,7 +47,8 @@ watch(() => props.nodes, (nodes, previous) => {
       .filter(req => req.id === node.id && node.rank >= req.rank
         && (previous.find(parent => parent.id === req.id)?.rank ?? 0) < req.rank)
       .map(req => req.id + ':' + child.id))
-    upgraded.value = { id: node.id, rank: node.rank, milestone: node.rank === node.maxRank, revealed }
+    const arrived = nodes.filter(child => !child.locked && previous.find(old => old.id === child.id)?.locked).map(child => child.id)
+    upgraded.value = { id: node.id, rank: node.rank, milestone: node.rank === node.maxRank, revealed, arrived }
     clearTimeout(celebrationTimer)
     celebrationTimer = setTimeout(() => { upgraded.value = null }, 1350)
   }
@@ -70,22 +71,21 @@ watch(() => props.nodes, (nodes, previous) => {
           :style="tree ? { '--columns': row.length } : undefined">
           <article v-for="node in row" :key="node.id" class="hall-node" :data-hall-node="node.id"
             :data-state="node.cost === null ? 'maxed' : node.locked ? 'locked' : node.canBuy ? 'available' : 'poor'"
-            :data-selected="String(active?.id === node.id)"
+            :data-selected="String(active?.id === node.id)" :data-hall-arrived="String(upgraded?.arrived.includes(node.id) ?? false)"
             @pointerenter="isFine() && (hovered = node.id)" @pointerleave="hovered === node.id && (hovered = '')">
             <button type="button" class="hall-inspect" data-ui-sfx="hall-inspect" :data-hall-inspect="node.id"
               :aria-pressed="active?.id === node.id" @focus="hovered = node.id" @blur="hovered = ''" @click="inspect(node, true)">
               <span class="hall-ring" role="progressbar" :aria-label="t(node.title)" :aria-valuemin="0" :aria-valuemax="node.maxRank" :aria-valuenow="node.rank"
-                :style="{ '--hall-rank-progress': (node.rank / node.maxRank * 100) + '%' }">
+                :style="{ '--hall-rank-progress': (node.rank / node.maxRank * 100) + '%', '--hall-tick-step': 360 / node.maxRank + 'deg', '--hall-tip-angle': node.rank / node.maxRank * 360 + 'deg' }">
+                <span class="hall-ring-metal" aria-hidden="true"></span>
+                <span class="hall-ring-ticks" aria-hidden="true"></span>
+                <span v-if="node.rank > 0 && node.rank < node.maxRank" class="hall-ring-tip" aria-hidden="true"></span>
                 <img :src="node.art" alt="" width="64" height="64" loading="lazy" decoding="async" draggable="false" />
                 <span class="hall-rank">{{ node.rank }} / {{ node.maxRank }}</span>
               </span>
               <strong>{{ t(node.title) }}</strong>
               <span class="hall-status">{{ t(status(node)) }}</span>
             </button>
-            <p>{{ node.description }}</p>
-            <button class="hall-buy" type="button" data-ui-sfx="managed" :data-research="node.kind === 'research' ? node.id : undefined"
-              :data-equipment="node.kind === 'equipment' ? node.id : undefined" :data-bonus="node.kind === 'bonus' ? node.id : undefined"
-              :data-hall-purchase="node.id" :disabled="!canPurchase(node)" @click="purchase(node)">{{ action(node) }}</button>
             <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" :data-milestone="String(upgraded.milestone)" class="hall-upgrade-fx" aria-hidden="true">
               <i class="hall-wave"></i><i class="hall-wave"></i><i class="hall-wave"></i>
               <span class="hall-particles"><i v-for="index in 12" :key="index" :style="{ '--angle': index * 30 + 'deg', '--distance': (index % 3 === 0 ? 62 : 43) + 'px', '--delay': (index % 4) * 22 + 'ms' }"></i></span>
@@ -104,37 +104,42 @@ watch(() => props.nodes, (nodes, previous) => {
       </div>
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><p v-for="requirement in active.requirements" :key="requirement">{{ requirement }}</p></div>
       <small class="hall-status">{{ t(status(active)) }}</small>
-      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :disabled="!canPurchase(active)" @click="purchase(active)">{{ action(active) }}</button>
+      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="!canPurchase(active)" @click="purchase(active)">{{ action(active) }}</button>
       <p v-if="upgraded?.id === active.id" role="status" class="hall-success">{{ t('升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</p>
     </aside>
   </div>
 </template>
 
 <style scoped>
-@property --hall-rank-progress { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
-.hall-growth{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0;font:inherit;color:#ebdfcc}
-.hall-map{min-width:0;padding:clamp(8px,1.5vw,18px);border:1px solid #937a4a66;border-radius:5px 17px;background:radial-gradient(ellipse at 50% 0%,#253747,#101a26 64%);overflow:hidden}
-.hall-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:clamp(6px,1.4vw,18px);align-items:stretch}
-.hall-growth--tree .hall-row{grid-template-columns:repeat(var(--columns,2),minmax(0,1fr))}
-.hall-growth--tree .hall-row--single{grid-template-columns:minmax(0,1fr);width:50%;min-width:min(100%,140px);margin-inline:auto}
-.hall-node{position:relative;isolation:isolate;display:flex;flex-direction:column;gap:7px;align-items:stretch;padding:clamp(6px,1.25vw,15px);min-width:0;background:linear-gradient(155deg,#283441,#121c27 70%);border:1px solid #62718180;border-radius:4px 14px;color:#e5d9c8;overflow:hidden}
-.hall-node[data-state="locked"]{border-color:#665e58;background:#171e26}
-.hall-node[data-state="maxed"]{border-color:#bd9d60}
-.hall-node[data-selected="true"]{border-color:#e5bd70;box-shadow:inset 0 0 14px #d3a45325}
-.hall-inspect{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;width:100%;min-height:44px;padding:4px 0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
-.hall-inspect strong,.hall-node p,.hall-detail{overflow-wrap:anywhere}
-.hall-ring{position:relative;display:grid;place-items:center;width:clamp(62px,9vw,92px);max-width:100%;aspect-ratio:1;border-radius:50%;background:conic-gradient(from 0deg,#f5d28b 0 var(--hall-rank-progress),#46505b var(--hall-rank-progress) 100%);box-shadow:0 0 0 1px #ab946a,0 3px 10px #0008;padding:4px;margin-block:2px 9px}
-.hall-ring::before{content:'';position:absolute;inset:4px;background:#0a1521;border:1px solid #9e8656;border-radius:inherit}
-.hall-ring img{position:relative;width:84%;height:84%;object-fit:contain;max-width:64px;max-height:64px}
-.hall-node[data-state="locked"] .hall-ring img{filter:saturate(.35);opacity:.7}
-.hall-rank{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);min-width:44px;padding:2px 5px;border:1px solid #9a7d4f;border-radius:4px;background:#182330;color:#f4d397;font:700 .75rem system-ui;white-space:nowrap;font-variant-numeric:tabular-nums}
+@property --hall-rank-progress { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
+@property --hall-tip-angle { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
+.hall-growth{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0;font:inherit;color:#ebdfcc;--hall-medallion:68px}
+.hall-map{min-width:0;padding:10px 12px;border:1px solid #937a4a55;border-radius:5px 14px;background:radial-gradient(ellipse at 50% 10%,#253747,#101a26 72%);overflow:hidden;align-self:start}
+.hall-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,88px),1fr));gap:5px;align-items:start}
+.hall-growth--tree .hall-row{grid-template-columns:repeat(var(--columns,2),minmax(0,1fr));gap:0}
+.hall-growth--tree .hall-row--single{grid-template-columns:minmax(0,1fr);width:50%;min-width:0;margin-inline:auto}
+.hall-node{position:relative;isolation:isolate;display:flex;justify-content:center;min-width:0;color:#e5d9c8}
+.hall-inspect{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;width:100%;min-height:44px;padding:3px 4px;border:1px solid transparent;border-radius:9px;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
+.hall-inspect strong{font-size:.82rem;line-height:1.3;overflow-wrap:anywhere}
+.hall-detail{overflow-wrap:anywhere}
+.hall-ring{position:relative;isolation:isolate;display:grid;place-items:center;width:var(--hall-medallion);max-width:100%;aspect-ratio:1;border-radius:50%;background:conic-gradient(from 0deg,#fff1b9 0deg,#c49a51 65deg,#f6d78f 165deg,#956c35 250deg,#f6dca4 360deg);box-shadow:0 0 0 1px #251a12,0 0 0 2px #a4834e,0 3px 7px #000b,inset 0 1px 2px #fff2c0a0;margin:2px 0 8px;padding:8px}
+.hall-ring-metal{position:absolute;inset:3px;border-radius:50%;background:conic-gradient(from 0deg,#ffe7a1 0 var(--hall-rank-progress),#333e48 var(--hall-rank-progress) 100%);box-shadow:inset 0 0 0 1px #111b25,inset 0 2px 3px #0009}
+.hall-ring-ticks{position:absolute;inset:1px;border-radius:50%;background:repeating-conic-gradient(from -1deg,#f6db9c99 0deg 1.6deg,transparent 1.6deg var(--hall-tick-step));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 5px));pointer-events:none}
+.hall-ring::before{content:'';position:absolute;inset:8px;z-index:1;border-radius:inherit;background:radial-gradient(ellipse at 44% 30%,#33404a,#101a26 68%);border:1px solid #ba9555;box-shadow:inset 0 0 7px #000c,0 0 0 1px #261c13}
+.hall-ring img{position:relative;z-index:2;width:90%;height:90%;object-fit:contain;max-width:64px;max-height:64px;filter:drop-shadow(0 2px 2px #0009)}
+.hall-ring-tip{position:absolute;z-index:3;inset:0;border-radius:50%;transform:rotate(var(--hall-tip-angle));pointer-events:none}
+.hall-ring-tip::before{content:'';position:absolute;top:3px;left:50%;width:5px;height:5px;transform:translateX(-50%);border-radius:50%;background:#fff5d0;box-shadow:0 0 6px 2px #ffce72a0}
+.hall-node[data-state="locked"] .hall-ring{filter:saturate(.42);opacity:.72}
+.hall-node[data-state="locked"] .hall-ring img{filter:saturate(.35) drop-shadow(0 2px 2px #0009)}
+.hall-node[data-state="maxed"] .hall-ring{box-shadow:0 0 0 1px #271b11,0 0 0 2px #d9b46e,0 0 13px #dfb16b55,inset 0 1px 2px #fff2c0}
+.hall-rank{position:absolute;z-index:4;bottom:-6px;left:50%;transform:translateX(-50%);min-width:38px;padding:1px 4px;border:1px solid #a98b53;border-radius:4px;background:linear-gradient(#29343c,#141d27);color:#f4d397;font:700 .69rem system-ui;white-space:nowrap;font-variant-numeric:tabular-nums;box-shadow:0 2px 3px #0007}
+.hall-node[data-selected="true"] .hall-inspect{border-color:#b89a6340;background:radial-gradient(ellipse at 50% 28%,#d4b16b14,transparent 70%)}
 .hall-status{font:600 .76rem/1.4 system-ui;color:#d8bc80}
 .hall-node[data-state="locked"] .hall-status,.hall-node[data-state="poor"] .hall-status{color:#b7b4ad}
-.hall-node p{margin:0;color:#c5c6cc;font:400 .8rem/1.45 system-ui;text-align:center;flex:1}
 .hall-buy{position:relative;min-height:44px;width:100%;padding:5px 7px;border:1px solid #bd9d63;border-radius:5px;background:linear-gradient(#665035,#392d23);color:#fff0c9;font:600 .86rem/1.3 system-ui;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
 .hall-buy:disabled{background:#222a31;border-color:#62605b;color:#a8afb5;cursor:not-allowed}
 .hall-buy:focus-visible,.hall-inspect:focus-visible{outline:2px solid #ffda94;outline-offset:-2px}
-.hall-links{position:relative;height:clamp(20px,3vw,35px)}
+.hall-links{position:relative;height:14px}
 .hall-edge{position:absolute;inset:0;color:#56616a;pointer-events:none}
 .hall-edge[data-active="true"]{color:#dfb971}
 .hall-edge i{position:absolute;display:block;background:currentColor;transition:background-color .4s,box-shadow .4s}
@@ -154,9 +159,9 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-comparison div:last-child b{color:#b6e7b7}
 .hall-requirements p{margin-top:4px}
 .hall-success{color:#b6e7b7!important}
-.hall-ring{transition:--hall-rank-progress .62s cubic-bezier(.17,.76,.23,1),box-shadow .25s}
-.hall-ring::after{content:'';position:absolute;inset:4px;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(112deg,transparent 31%,#e7c1841a 43%,#fff0c57a 50%,#e7c1841a 57%,transparent 69%);background-size:240% 100%;background-position:130% 0}
-.hall-node[data-selected="true"] .hall-ring{box-shadow:0 0 0 1px #cfa86c,0 0 15px #d7a85b38}
+.hall-ring{transition:--hall-rank-progress .62s cubic-bezier(.17,.76,.23,1),--hall-tip-angle .62s cubic-bezier(.17,.76,.23,1),box-shadow .25s}
+.hall-ring::after{content:'';position:absolute;inset:2px;z-index:5;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(112deg,transparent 31%,#e7c1841a 43%,#fff0c57a 50%,#e7c1841a 57%,transparent 69%);background-size:240% 100%;background-position:130% 0}
+.hall-node[data-selected="true"] .hall-ring{box-shadow:0 0 0 1px #cfa86c,0 0 0 2px #dfbb78,0 0 13px #d7a85b60,inset 0 1px 2px #fff2c0}
 .hall-node:has(.hall-upgrade-fx) .hall-ring::after,.hall-inspect:focus-visible .hall-ring::after{animation:hall-shimmer .8s ease-out both}
 @media(hover:hover) and (pointer:fine){.hall-inspect:hover .hall-ring::after{animation:hall-shimmer .78s ease-out both}}
 @keyframes hall-shimmer{0%{opacity:0;background-position:130% 0}20%{opacity:.8}80%{opacity:.65}100%{opacity:0;background-position:-45% 0}}
@@ -165,23 +170,26 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-edge[data-revealed="true"] i:nth-child(3)::after{animation-delay:.49s}
 @keyframes hall-route-down{0%{transform:scaleY(0);opacity:.85}75%{opacity:.8}100%{transform:scaleY(1);opacity:0}}
 @keyframes hall-route-across{0%{transform:scaleX(0);opacity:.85}75%{opacity:.8}100%{transform:scaleX(1);opacity:0}}
-.hall-upgrade-fx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;border-radius:inherit}
+.hall-upgrade-fx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:visible;border-radius:inherit}
 .hall-upgrade-fx::before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#efc98116 47%,#ffe7a94d 50%,transparent 63%);background-size:240% 100%;animation:hall-shimmer .9s ease-out both}
-.hall-wave{position:absolute;left:50%;top:clamp(42px,6vw,65px);width:72px;aspect-ratio:1;border:2px solid #f7d597;border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:hall-awaken .75s ease-out both}
+.hall-wave{position:absolute;left:50%;top:calc(var(--hall-medallion) / 2 + 5px);width:72px;aspect-ratio:1;border:2px solid #f7d597;border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:hall-awaken .75s ease-out both}
 .hall-wave:nth-child(2){animation-delay:.1s;border-color:#b9d3db}
 .hall-wave:nth-child(3){width:28px;animation-delay:.16s;border-style:dotted}
-.hall-particles{position:absolute;left:50%;top:clamp(42px,6vw,65px);width:0;height:0}
+.hall-particles{position:absolute;left:50%;top:calc(var(--hall-medallion) / 2 + 5px);width:0;height:0}
 .hall-particles i{position:absolute;left:0;top:0;width:3px;height:8px;border-radius:2px;background:#ffe4a5;box-shadow:0 0 6px #e9bb76;opacity:0;animation:hall-spark .68s var(--delay) ease-out both}
 .hall-upgrade-fx[data-milestone="true"] .hall-wave{border-width:3px;animation-duration:1.05s}
 .hall-upgrade-fx[data-milestone="true"] .hall-particles i{width:4px;height:11px;--distance:78px!important;animation-duration:.95s}
 .hall-upgrade-fx[data-milestone="true"]::before{animation-duration:1.15s}
 @keyframes hall-awaken{0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}25%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(2.5)}}
 @keyframes hall-spark{0%{opacity:0;transform:rotate(var(--angle)) translateY(-7px) scale(.5)}18%{opacity:.9}100%{opacity:0;transform:rotate(var(--angle)) translateY(calc(-1 * var(--distance))) scale(.15)}}
-@media(hover:hover) and (pointer:fine){.hall-node:hover{border-color:#e5bd70}.hall-buy:hover:not(:disabled){background:linear-gradient(#7a603e,#4d3826)}}
-@media(min-width:900px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(200px,27%)}}
-@media(orientation:landscape) and (min-width:640px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,32%)}.hall-ring{width:60px}.hall-map{padding:6px}.hall-node{padding:6px}.hall-links{height:16px}}
-@media(max-width:360px){.hall-map{padding:5px}.hall-node{padding:5px}.hall-row{gap:5px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
-@media(prefers-reduced-motion:reduce){.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
+.hall-node[data-hall-arrived="true"] .hall-ring{animation:hall-destination .64s .68s ease-out both}
+.hall-node[data-hall-arrived="true"] .hall-ring::after{animation:hall-shimmer .63s .68s ease-out both}
+@keyframes hall-destination{0%{filter:saturate(.35);transform:scale(.94)}40%{filter:saturate(1.2) brightness(1.25);transform:scale(1.08);box-shadow:0 0 0 2px #e9c182,0 0 20px #e9c18299}100%{filter:none;transform:none}}
+@media(hover:hover) and (pointer:fine){.hall-inspect:hover{border-color:#b89a6355}.hall-buy:hover:not(:disabled){background:linear-gradient(#7a603e,#4d3826)}}
+@media(min-width:740px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(205px,30%);--hall-medallion:72px}.hall-map{padding:10px 18px}.hall-growth--tree .hall-row{max-width:400px;margin-inline:auto}.hall-growth--tree .hall-links{max-width:400px;margin-inline:auto}}
+@media(orientation:landscape) and (min-width:560px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,36%);--hall-medallion:54px}.hall-map{padding:6px}.hall-links{height:10px}.hall-inspect{gap:2px;padding:2px}.hall-inspect strong{font-size:.75rem}.hall-detail{gap:6px;padding:9px}}
+@media(max-width:360px){.hall-growth{--hall-medallion:60px}.hall-map{padding:6px}.hall-row{gap:3px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
+@media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}
 :global([data-es2-reduce-motion="true"]) .hall-upgrade-fx,
 :global([data-es2-reduce-motion="true"]) .hall-ring::after,
 :global([data-es2-reduce-motion="true"]) .hall-edge i::after,
@@ -190,4 +198,6 @@ watch(() => props.nodes, (nodes, previous) => {
 :global([data-es2-reduce-flashing="true"]) .hall-edge i::after{display:none!important;animation:none!important}
 :global([data-es2-reduce-motion="true"]) .hall-ring,:global([data-es2-reduce-motion="true"]) .hall-edge i,
 :global([data-es2-reduce-flashing="true"]) .hall-ring,:global([data-es2-reduce-flashing="true"]) .hall-edge i{transition:none!important}
+:global([data-es2-reduce-motion="true"]) .hall-node[data-hall-arrived="true"] .hall-ring,
+:global([data-es2-reduce-flashing="true"]) .hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}
 </style>
