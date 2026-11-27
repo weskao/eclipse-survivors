@@ -239,12 +239,12 @@ Rank-specific source and full-prerequisite destination finale implemented; manua
 
 ## Monster / Boss dossier — final 3× WebP art (2026-11-27)
 
-- [ ] Produce 25 boss-specific static WebP dossier icons using the existing `boss-attacks/<id>.svg` as mandatory geometry/palette references. The SVGs remain canonical combat telegraphs; do not replace or resize the combat assets.
+- [ ] Produce 25 boss-specific static WebP dossier icons using the existing `boss-attacks/<id>.svg` as mandatory geometry/palette references. Use these SVGs as temporary combat and dossier references until the complete WebP migration and runtime QA below pass.
 - [ ] Produce 6 dedicated legacy enemy attack WebP icons (currently reuse existing generic skill WebPs). These are a separate improvement, not missing runtime files.
 - [ ] Art QA: preserve the existing dark-fantasy identity, distinct silhouette and phase/attack geometry; transparent alpha, no lettering, no background tile or border, centered subject with ~8–12% transparent padding; high contrast at 44 CSS px; static square 132×132 px (3×44), lossless or high-quality WebP with alpha, no animation. Do not upscale low-resolution source art. Source master may be larger.
-- [ ] Runtime QA: verify each ID resolves to its own new image, image decode succeeds in the actual hover preview and Info dialog, both locales and all viewport profiles. Keep SVG/generic fallback for unproduced art; review images before marking complete.
+- [ ] Runtime QA: verify each ID resolves to its own new image, image decode succeeds in the actual hover preview and Info dialog, both locales and all viewport profiles. Keep SVG/generic fallback only during the transition; review images before retiring every superseded SVG.
 
-Boss output directory: `src/assets/es2/production/skills/boss-dossier/`. Each filename is exactly `<id>@3x.webp`; `bossAttackImageSrc` already prefers that path via Vite glob and retains the original SVG fallback. Adding files and rebuilding is sufficient; no combat data, collision, or renderer changes.
+Boss output directory: `src/assets/es2/production/skills/boss-dossier/`. Each filename is exactly `<id>@3x.webp`; `bossAttackImageSrc` already prefers that path via Vite glob and retains the original SVG fallback. Adding files and rebuilding applies the dossier icons during the transition; the separate combat asset migration and final SVG cleanup below are mandatory.
 
 | ID / filename stem | Art brief (zh-TW) |
 |---|---|
@@ -284,3 +284,11 @@ Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`
 | slam | 巨像岩拳震地，碎石與衝擊環 |
 | bolt | 術士發射單枚紫色魔力彈 |
 | summon | 暗影召喚法陣與爪牙剪影 |
+
+### Mandatory SVG retirement after WebP migration
+
+- [ ] After all 31 dedicated `@3x.webp` dossier images are produced, integrated and visually verified, replace every corresponding SVG reference with the final WebP source and remove the temporary SVG fallback paths. This is a mandatory completion gate, not optional cleanup.
+- [ ] Migrate all 25 original `src/assets/es2/production/skills/boss-attacks/<id>.svg` assets used by the combat renderer to equivalent transparent `<id>@3x.webp` assets before deleting them. Preserve the original telegraph shape, safe sectors, origin, aspect ratio, alpha and in-game visual scale; use 3× the actual combat display size, not the 132×132 dossier icon resolution. Keep combat collision geometry and balance unchanged. Update shared asset lookup/globs, loaders, manifests and tests to resolve WebP only.
+- [ ] Delete all 25 superseded boss-attack SVG files, plus any temporary SVGs created for these 31 dossier skills. Audit other direct and indirect consumers (including preloads, Canvas/GPU rendering, asset tests and documentation). If an affected SVG is shared by another feature, migrate that consumer to WebP first. Do not delete unrelated SVG assets outside this scope.
+- [ ] Verify that no superseded SVG files or runtime SVG references remain, every affected ID resolves to a valid 3× WebP, and no missing-image or decode errors occur. Run typecheck, build, unit tests, responsive browser QA (desktop hover and Info dialog, mobile Info dialog), and actual Boss combat telegraph/impact QA across graphics quality settings. Only mark this section complete after migration, physical deletion and verification all pass.
+
