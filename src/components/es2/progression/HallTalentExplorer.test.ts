@@ -104,6 +104,6 @@ it('reserves the feedback region without replacing the attunement buttons or pre
   const wrapper=mount(HallTalentExplorer,{props:{state,hero:'knight',writable:true}})
   expect(wrapper.find('.es4-attune-status').exists()).toBe(true)
   expect(wrapper.find('[data-hall-attunement-fx]').exists()).toBe(false)
-  expect(wrapper.get('[data-es4-attune="offense-war-master"]').exists()).toBe(true)
+  expect(wrapper.find('[data-es4-attune="offense-war-master"]').exists()).toBe(true)
   wrapper.unmount()
 })

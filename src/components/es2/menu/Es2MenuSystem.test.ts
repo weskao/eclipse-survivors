@@ -386,6 +386,7 @@ describe('ES2 main menu integration adapter', () => {
     const profile = emptyProfile()
     profile.discoveredMonsters.slime = 2
     profile.discoveredMonsters.boss = 1
+    for (const boss of Object.values(BOSS_DEFINITIONS)) profile.discoveredMonsters[boss.id] = 1
     mounted({ profile })
     click('.es2-hall-links button:nth-child(3)')
     await nextTick()
@@ -399,9 +400,9 @@ describe('ES2 main menu integration adapter', () => {
     expect(dialog.querySelector('[data-monster-skill="pounce"] img')?.getAttribute('src')).toContain('@3x.webp')
     click('.es2-close')
     await nextTick()
-    click('[data-es2-card-info="monster:boss"]')
-    await nextTick()
     for (const boss of Object.values(BOSS_DEFINITIONS)) {
+      click('[data-es2-card-info="monster:' + boss.id + '"]')
+      await nextTick()
       const section = find('[data-monster-group="' + boss.id + '"]')
       expect(section.querySelector('[data-monster-stat="HP"]')?.textContent).toContain(String(boss.health))
       for (const attacks of boss.phases) for (const attack of attacks) {
@@ -409,6 +410,8 @@ describe('ES2 main menu integration adapter', () => {
         expect(skill?.querySelector('img')).not.toBeNull()
         expect(skill?.textContent).toContain(String(BOSS_ATTACKS[attack].damage))
       }
+      click('.es2-close')
+      await nextTick()
     }
   })
 
@@ -472,9 +475,11 @@ describe('ES2 responsive and motion CSS contract', () => {
       for (const selector of ['.es2-menu', '.es2-hero-section', '.es2-mode-section', '.es2-archive-page', '.es2-menu-action-bar',
         '.es2-backdrop', '.es2-dialog', '.es2-choice-grid > .es2-choice', '.es2-loading', '#game[data-es2-combat-scene]',
         '.es2-hud--active .es2-hud__top', '.es2-hud--active .es2-hud__bottom']) expect(block).toContain(selector)
-      // Hero page slides in from the left, expedition page from the right.
-      expect(block).toMatch(/\.es2-hero-section\s*\{\s*--es2-scene-from:\s*-\d+px 0;/)
-      expect(block).toMatch(/\.es2-mode-section\s*\{\s*--es2-scene-from:\s*\d+px 0;/)
+      // Interactive selection grids fade in place: first-frame hit targets must not shift.
+      const selectionRule = block.match(/\.es2-hero-section,\s*\.es2-mode-section\s*\{([^}]*)\}/)?.[1] ?? ''
+      expect(selectionRule).toContain('animation: es2-scene-fade')
+      expect(selectionRule).toContain('backwards')
+      expect(selectionRule).not.toMatch(/translate|--es2-scene-from|scale/)
       expect(block).toMatch(/#game\[data-es2-combat-scene\]\s*\{[^}]*--es2-scene-scale:\s*1\.\d+;[^}]*var\(--es2-scene-slow\)/)
       // Never uses `transform`, so hover lifts and the centered HUD bottom bar keep working.
       expect(block.slice(block.indexOf('@keyframes es2-scene-arrive'))).not.toMatch(/transform\s*:/)

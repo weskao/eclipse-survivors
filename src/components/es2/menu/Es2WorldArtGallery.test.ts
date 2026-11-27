@@ -4,6 +4,7 @@ import { setLocale } from '../../../i18n'
 import { mount } from '@vue/test-utils'
 import { emptyProfile } from '../../../meta/profile'
 import Es2Archive from './Es2Archive.vue'
+import Es2DevArtGallery from './Es2DevArtGallery.vue'
 
 const storage = { getItem: () => null, setItem: () => {} }
 afterEach(() => setLocale('zh-TW', storage))
@@ -19,7 +20,8 @@ const render = async (view: 'monsters' | 'achievements') => {
 
 describe('ES2 accessible in-game world-art gallery', () => {
   it('shows all ten new enemies with attack previews, all four bosses and all four biomes', async () => {
-    const wrapper = await render('monsters')
+    // The discovery-gated archive no longer embeds the unrestricted monster art gallery.
+    const wrapper = mount(Es2DevArtGallery, { props: { view: 'monsters' } })
     expect(wrapper.findAll('[data-es2-world-enemy]')).toHaveLength(10)
     expect(wrapper.findAll('[data-es2-world-telegraph]')).toHaveLength(10)
     expect(wrapper.findAll('[data-es2-world-boss]')).toHaveLength(4)

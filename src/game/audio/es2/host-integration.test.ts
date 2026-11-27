@@ -218,11 +218,14 @@ describe('ES2 final host audio wiring', () => {
     await new Promise<void>(resolve => setTimeout(resolve, 0))
     const bossLoop = context.sources.find(source => source.loop)!
     expect(bossLoop).toBeDefined()
+    // Complete the host crossfade before measuring uninterrupted boss ownership.
+    for (let i = 0; i < 60; i++) audio.tick('play')
+    expect(bgm.volume).toBeCloseTo(0)
     context.currentTime = 5
     engine.testApi.level()
     expect(engine.state.mode).toBe('level')
     expect(bossLoop.stoppedAt).toBeNull()
-    expect(bgm.volume).toBe(0)
+    expect(bgm.volume).toBeCloseTo(0)
     context.currentTime = 10
     audio.tick('level')
     expect(bossLoop.stoppedAt).toBeNull()
