@@ -66,3 +66,6 @@ Original sampled Foley through the existing SFX master; one cached buffer per ev
 | Blessing unlocked | upgrade / 5 | 1.02 s | airy charge and luminous harmonic tail |
 
 Normal combat/menu calls without an explicit Hall variant keep their existing sounds. Visual accessibility settings do not override the separate sound volume/mute setting. Manual listening acceptance remains independent of PCM tests.
+
+### Rank-specific ceremonies
+Ranks 1–4 use distinct authored tonal and percussive profiles (0.74/0.78/0.84/0.91s); max rank retains the 1.05s grand resonance. A fully opened research destination adds a delayed 0.68s arrival layer to the original rank cue in one 1.6s cached sample. Partial prerequisite edges only light their own path, without a false unlock fanfare. Rapid purchases retain the existing crossfade, mute and volume behavior.

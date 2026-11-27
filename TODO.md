@@ -203,4 +203,6 @@ Compact topology implementation: one visible confirmation per board; unchanged W
 
 Hall UX source implemented with one detail template (teleported only for floating layouts), no forced scrolling, four accessible category tabs, category-change dismissal and viewport regressions. Runtime CI and device validation remain open.
 
-- [ ] Hall rank ceremonies: distinct rank 1–4 and mastery sounds, combined destination-unlock finale (only complete prerequisites), synchronized sculpted ring and rank-specific particles, unlock notice visible in touch inspector; waveform and transaction regressions, actual audiovisual QA.
+- [x] Hall rank ceremonies: distinct rank 1–4 and mastery sounds, combined destination-unlock finale (only complete prerequisites), synchronized sculpted ring and rank-specific particles, unlock notice visible in touch inspector; waveform and transaction regressions, actual audiovisual QA.
+
+Rank-specific source and full-prerequisite destination finale implemented; manual audiovisual acceptance and full CI remain open.

@@ -26,8 +26,8 @@ import { createBossEncounterPack } from './content/packs/bosses'
 import { createObjectiveRuntime, type ObjectiveRuntime } from './content/objectives/runtime'
 import { createLiveWorldEvents, type LiveWorldEvents } from './content/world-events/runtime'
 import { createMetaProgressionStore } from './content/meta/store'
-import { RESEARCH } from './content/meta/catalog'
-import { HALL_UPGRADE } from './audio/hall-upgrade-sample'
+import { HALL_UPGRADE, hallRankVariant } from './audio/hall-upgrade-sample'
+import { researchCelebrationVariant } from './audio/hall-research-cue'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
@@ -721,11 +721,11 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     }
   }
 
-  // The rank crossing is the same prerequisite threshold used by the route animation.
-  function researchSound(id: string, rank: number | undefined): number {
-    if (rank === RESEARCH.find(node => node.id === id)?.maxRank && rank !== undefined) return HALL_UPGRADE.milestone
-    return RESEARCH.some(node => node.requires?.some(req => req.id === id && req.rank === rank))
-      ? HALL_UPGRADE.route : HALL_UPGRADE.rank
+  function purchaseHallResearch(id: string, reason: string): void {
+    if (!metaStore) return
+    const before = metaStore.get().state
+    const result = metaStore.purchaseResearch(id)
+    finishPurchase(result.ok, reason, researchCelebrationVariant(id, before, result.state))
   }
 
   function advance(dt: number): void {
@@ -1183,18 +1183,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     buyPermanentUpgrade(id: PermanentUpgrade) {
       if (s.mode !== 'menu' || !walletReady()) return
       if (metaStore) {
-        const result = metaStore.purchaseResearch(id)
-        finishPurchase(result.ok, '永久研究未完成：儲存失敗或條件不足', researchSound(id, result.state?.research[id]))
+        purchaseHallResearch(id, '永久研究未完成：儲存失敗或條件不足')
       } else {
         const ok = profileStore.buyUpgrade(id)
-        const full = profileStore.get().upgrades[id] === BALANCE.meta.research[id].maxRank
-        finishPurchase(ok, '餘燼不足或已達最高階', full ? HALL_UPGRADE.milestone : HALL_UPGRADE.rank)
+        const rank = profileStore.get().upgrades[id]
+        finishPurchase(ok, '餘燼不足或已達最高階', hallRankVariant(rank, BALANCE.meta.research[id].maxRank, false))
       }
     },
     purchaseResearch(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return
-      const result = metaStore.purchaseResearch(id)
-      finishPurchase(result.ok, '研究未解鎖或儲存失敗', researchSound(id, result.state?.research[id]))
+      purchaseHallResearch(id, '研究未解鎖或儲存失敗')
     },
     purchaseEquipment(id: string) {
       if (s.mode !== 'menu' || !walletReady() || !metaStore) return

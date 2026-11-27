@@ -97,7 +97,7 @@ watch(() => props.nodes, (nodes, previous) => {
     const arrived = nodes.filter(child => !child.locked && previous.find(old => old.id === child.id)?.locked).map(child => child.id)
     upgraded.value = { id: node.id, rank: node.rank, milestone: node.rank === node.maxRank, revealed, arrived }
     clearTimeout(celebrationTimer)
-    celebrationTimer = setTimeout(() => { upgraded.value = null }, 1350)
+    celebrationTimer = setTimeout(() => { upgraded.value = null }, arrived.length ? 1750 : 1450)
   }
   request = null
 })
@@ -133,9 +133,10 @@ watch(() => props.nodes, (nodes, previous) => {
               <strong>{{ t(node.title) }}</strong>
               <span class="hall-status">{{ t(status(node)) }}</span>
             </button>
-            <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" :data-milestone="String(upgraded.milestone)" class="hall-upgrade-fx" aria-hidden="true">
+            <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" :data-milestone="String(upgraded.milestone)" :data-hall-stage="upgraded.rank" :data-hall-route="String(upgraded.arrived.length > 0)" class="hall-upgrade-fx" :style="{ '--hall-fx-scale': 1 + Math.min(5, upgraded.rank) * .08 }" aria-hidden="true">
               <i class="hall-wave"></i><i class="hall-wave"></i><i class="hall-wave"></i>
-              <span class="hall-particles"><i v-for="index in 12" :key="index" :style="{ '--angle': index * 30 + 'deg', '--distance': (index % 3 === 0 ? 62 : 43) + 'px', '--delay': (index % 4) * 22 + 'ms' }"></i></span>
+              <span class="hall-crown"></span>
+              <span class="hall-particles"><i v-for="index in (upgraded.milestone ? 20 : 8 + Math.min(upgraded.rank, 4) * 2)" :key="index" :style="{ '--angle': index * 360 / (upgraded.milestone ? 20 : 8 + Math.min(upgraded.rank, 4) * 2) + 'deg', '--distance': (index % 3 === 0 ? 62 : 43) + 'px', '--delay': (index % 4) * 24 + 'ms' }"></i></span>
             </span>
           </article>
         </div>
@@ -156,7 +157,10 @@ watch(() => props.nodes, (nodes, previous) => {
       <small class="hall-status">{{ t(status(active)) }}</small>
       </div>
       <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview ? t('選取節點後升級') : action(active) }}</button>
-      <p v-if="upgraded?.id === active.id" role="status" class="hall-success">{{ t('升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</p>
+      <div v-if="upgraded?.id === active.id" role="status" class="hall-success" :key="upgraded.rank">
+        <span class="hall-ceremony-label">{{ t(upgraded.milestone ? '最高等階達成' : '升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</span>
+        <span v-if="upgraded.arrived.length" data-hall-unlock-notice class="hall-unlock-notice">{{ t('新研究已開啟') }} · {{ nodes.filter(node => upgraded?.arrived.includes(node.id)).map(node => t(node.title)).join(' · ') }}</span>
+      </div>
     </aside>
     </Teleport>
   </div>
@@ -225,7 +229,7 @@ watch(() => props.nodes, (nodes, previous) => {
 @keyframes hall-route-across{0%{transform:scaleX(0);opacity:.85}75%{opacity:.8}100%{transform:scaleX(1);opacity:0}}
 .hall-upgrade-fx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:visible;border-radius:inherit}
 .hall-upgrade-fx::before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#efc98116 47%,#ffe7a94d 50%,transparent 63%);background-size:240% 100%;animation:hall-shimmer .9s ease-out both}
-.hall-wave{position:absolute;left:50%;top:calc(var(--hall-medallion) / 2 + 5px);width:72px;aspect-ratio:1;border:2px solid #f7d597;border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:hall-awaken .75s ease-out both}
+.hall-wave{position:absolute;left:50%;top:calc(var(--hall-medallion) / 2 + 5px);width:calc(var(--hall-medallion) * var(--hall-fx-scale,1));aspect-ratio:1;border:2px solid #f7d597;border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:hall-awaken .75s ease-out both}
 .hall-wave:nth-child(2){animation-delay:.1s;border-color:#b9d3db}
 .hall-wave:nth-child(3){width:28px;animation-delay:.16s;border-style:dotted}
 .hall-particles{position:absolute;left:50%;top:calc(var(--hall-medallion) / 2 + 5px);width:0;height:0}
@@ -273,4 +277,24 @@ watch(() => props.nodes, (nodes, previous) => {
 @keyframes hall-inspector-side{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.hall-detail--floating{animation:none}}
 :global([data-es2-reduce-motion="true"]) .hall-detail--floating{animation:none}
+
+/* Rank-dependent bounded ceremony, sized from the same medallion on every device. */
+.hall-upgrade-fx[data-hall-stage="2"] .hall-wave{border-color:#f5ddaa}
+.hall-upgrade-fx[data-hall-stage="3"] .hall-wave{border-color:#b5d4da;animation-duration:.86s}
+.hall-upgrade-fx[data-hall-stage="4"] .hall-wave{border-color:#ffe6ac;animation-duration:.95s}
+.hall-crown{position:absolute;left:50%;top:calc(var(--hall-medallion) / 2 + 5px);width:calc(var(--hall-medallion) * 1.18);aspect-ratio:1;border-radius:50%;background:repeating-conic-gradient(from 12deg,#fff0b7 0deg 1deg,transparent 1deg 30deg);mask:radial-gradient(farthest-side,transparent 74%,#000 76%,#000 94%,transparent 96%);opacity:0;transform:translate(-50%,-50%);animation:hall-crown-in .82s ease-out both}
+.hall-upgrade-fx[data-milestone="true"] .hall-crown{width:calc(var(--hall-medallion) * 1.4);animation-duration:1.22s;background:repeating-conic-gradient(from 0deg,#ffe5a0 0deg 2deg,transparent 2deg 15deg)}
+@keyframes hall-crown-in{0%{opacity:0;transform:translate(-50%,-50%) rotate(-24deg) scale(.72)}30%{opacity:.84}100%{opacity:0;transform:translate(-50%,-50%) rotate(24deg) scale(1.3)}}
+.hall-node[data-hall-arrived="true"] .hall-ring{animation-duration:.85s}
+.hall-node[data-hall-arrived="true"] .hall-rank{animation:hall-arrival-label .7s .68s ease-out both}
+@keyframes hall-arrival-label{0%{box-shadow:0 0 0 #f0cc8000}35%{box-shadow:0 0 12px #f0cc80aa;color:#fff0c7}100%{box-shadow:0 2px 3px #0007}}
+.hall-success{display:grid;gap:3px;line-height:1.35;overflow-wrap:anywhere;margin:0}
+.hall-ceremony-label{font-weight:700;color:#dcefbf}
+.hall-unlock-notice{font-size:.78rem;color:#f3d498;animation:hall-notice .35s .68s ease-out both}
+@keyframes hall-notice{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-rank,.hall-unlock-notice{animation:none!important}}
+:global([data-es2-reduce-motion="true"]) .hall-node[data-hall-arrived="true"] .hall-rank,
+:global([data-es2-reduce-flashing="true"]) .hall-node[data-hall-arrived="true"] .hall-rank,
+:global([data-es2-reduce-motion="true"]) .hall-unlock-notice,
+:global([data-es2-reduce-flashing="true"]) .hall-unlock-notice{animation:none!important}
 </style>
