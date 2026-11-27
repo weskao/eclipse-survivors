@@ -102,6 +102,10 @@ export function hit(s: GameState, e: Mob, d: number, hooks: GameHooks, source: {
     e.deathVisual = e.deathVisualTotal = boss ? .7 : e.elite ? .46 : e.type === 'golem' ? .36 : .28
     if (s.fallenMobs.length < 24) s.fallenMobs.push(e)
     s.defeatedTypes[e.type] = (s.defeatedTypes[e.type] ?? 0) + 1
+    if (boss && e.bossArtId) {
+      const counts = s.defeatedBosses ??= {}
+      counts[e.bossArtId] = (counts[e.bossArtId] ?? 0) + 1
+    }
     const value = boss ? BALANCE.combat.killXp.boss : e.type === 'golem' ? BALANCE.combat.killXp.golem : e.type === 'goblin' ? BALANCE.combat.killXp.goblin : BALANCE.combat.killXp.default
     s.stars.push({ x: e.x, y: e.y, value: Math.round(value * (e.rewardXpMultiplier ?? 1)), t: rand(0, 6) })
     const identity = boss && e.bossArtId ? BOSS_DEFINITIONS[e.bossArtId] : undefined

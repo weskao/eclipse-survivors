@@ -11,7 +11,7 @@ export function createState(): GameState {
     numberFx: [], impactWaves: [], lightningFx: [], motionEchoes: [],
     cameraKick: 0, lastCameraKickAt: -Infinity, time: 0, kill: 0, killStreak: emptyKillStreak(), spawnT: 0, bossSpawned: false, bossDefeated: false,
     combatTelemetry: emptyCombatTelemetry(), directorSeed: 0, factionSpawnWindow: 0, factionSpawnSequence: 0,
-    runMode: 'quick', cosmetic: 'knight-default', damageDealt: 0, damageTaken: 0, xpGainMultiplier: 1, pickupGainMultiplier: 1, defeatedTypes: {},
+    runMode: 'quick', cosmetic: 'knight-default', damageDealt: 0, damageTaken: 0, xpGainMultiplier: 1, pickupGainMultiplier: 1, defeatedTypes: {}, defeatedBosses: {},
     worldClock: 0, sceneFxClock: 0, cam: { x: 0, y: 0 }, levelQueue: 0, currentScene: 0,
     events: [], eventSerial: 0, nextEventAt: BALANCE.events.firstSpawnAt, sceneEnteredAt: 0,
     hazardLastHitAt: -Infinity, blessingUntil: 0, magnetUntil: 0, challengeUntil: 0, challengePoint: null,
@@ -37,7 +37,7 @@ export function resetRun(s: GameState): void {
   s.mobs = []; s.fallenMobs = []; s.shots = []; s.enemyShots = []; s.stars = []; s.fx = []; s.swipes = []
   s.time = 0; s.kill = 0; s.killStreak = emptyKillStreak(); s.spawnT = 0; s.bossSpawned = false; s.bossDefeated = false
   s.combatTelemetry = emptyCombatTelemetry(); s.directorSeed = 0; s.factionSpawnWindow = 0; s.factionSpawnSequence = 0
-  s.damageDealt = 0; s.damageTaken = 0; s.xpGainMultiplier = 1; s.pickupGainMultiplier = 1; s.defeatedTypes = {}
+  s.damageDealt = 0; s.damageTaken = 0; s.xpGainMultiplier = 1; s.pickupGainMultiplier = 1; s.defeatedTypes = {}; s.defeatedBosses = {}
   s.numberFx = []; s.impactWaves = []; s.lightningFx = []; s.motionEchoes = []
   s.cameraKick = 0; s.cameraKickAngle = undefined; s.lastCameraKickAt = -Infinity; s.cam.x = s.cam.y = 0; s.levelQueue = 0; s.currentScene = 0
   s.events = []; s.eventSerial = 0; s.nextEventAt = BALANCE.events.firstSpawnAt; s.sceneEnteredAt = 0
