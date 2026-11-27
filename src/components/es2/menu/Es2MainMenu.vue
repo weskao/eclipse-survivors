@@ -174,10 +174,13 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
           data-ui-sfx="select" @click="toggleExpeditionPage">
           <span class="es2-expedition-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
           <span class="es2-mobile-selected-mode" aria-live="polite">
-            <span class="es2-expedition-kicker">{{ t('目前遠征') }} <span class="es2-expedition-duration">{{ modeDuration }}</span></span>
+            <span class="es2-expedition-kicker">{{ t('目前遠征') }}</span>
             <strong class="es2-expedition-name">{{ modeTitle }}</strong>
-            <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
-            <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
+            <span class="es2-expedition-duration">{{ modeDuration }}</span>
+            <span class="es2-expedition-meta">
+              <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
+              <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
+            </span>
           </span>
           <span class="es2-expedition-change">{{ t(page === 'heroes' ? '變更遠征' : '返回英雄選擇') }} <span aria-hidden="true">{{ page === 'heroes' ? '›' : '‹' }}</span></span>
         </button>
