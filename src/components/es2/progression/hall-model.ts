@@ -19,6 +19,8 @@ export interface HallNode {
   canBuy: boolean
   requires: readonly { id: string; rank: number; title: string }[]
   requirements: readonly string[]
+  talentType?: 'rank' | 'keystone' | 'signature' | 'resonance'
+  attunementStatus?: string
   current?: string
   next?: string
 }

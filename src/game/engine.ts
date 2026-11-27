@@ -30,7 +30,7 @@ import { createMetaProgressionStore } from './content/meta/store'
 import { resolveHallRunSnapshot } from './content/meta/hall-state'
 import { hallCritBonus, installHallRun } from './content/meta/hall-runtime'
 import { HALL_UPGRADE, hallRankVariant } from './audio/hall-upgrade-sample'
-import { researchCelebrationVariant } from './audio/hall-research-cue'
+import { attunementCelebrationVariant, talentCelebrationVariant, researchCelebrationVariant } from './audio/hall-research-cue'
 import { createUnlockedPlaytestMetaStorage, createUnlockedPlaytestProfileStorage } from './content/meta/dev-unlocked'
 import type { ContentPack } from './content/contracts'
 import { RELIC_BY_ID, type RelicId } from './content/relics/catalog'
@@ -1244,13 +1244,18 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     },
     purchaseTalent(id: string, expectedRank: number) {
       if (!hallPlaytest || s.mode !== 'menu' || !metaStore || walletAccount) return
+      const before=metaStore.get().state
       const result = metaStore.purchaseTalent(id, s.heroId, expectedRank)
-      finishPurchase(result.ok, '研究未解鎖或儲存失敗')
+      finishPurchase(result.ok, '研究未解鎖或儲存失敗',talentCelebrationVariant(id,s.heroId,before,result.state))
     },
     setHallAttunement(universal: string[], signature: string | null, resonance: string | null) {
       if (!hallPlaytest || s.mode !== 'menu' || !metaStore || walletAccount) return
+      const before=metaStore.get().state
       const result = metaStore.setHallAttunement(s.heroId, universal, signature, resonance)
-      if (result.ok) { refreshMeta(); audio.playSfx('select') }
+      if (result.ok) {
+        refreshMeta(); const cue=attunementCelebrationVariant(s.heroId,before,result.state)
+        if(cue!==undefined)audio.playSfx('upgrade',cue);else audio.playSfx('select')
+      }
       else { message('研究未解鎖或儲存失敗'); audio.playSfx('deny', 1) }
     },
     purchaseEquipment(id: string) {

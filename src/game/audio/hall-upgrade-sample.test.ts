@@ -75,3 +75,16 @@ describe('Rank-specific Hall ceremonies', () => {
     }
   })
 })
+
+it('renders distinct scoped keystone, signature, resonance and attunement ceremonies', () => {
+  const keys=[16,17,18,19,20,21].map(n=>hallCueKey('upgrade',n)!)
+  expect(keys).toEqual(['keystone','signature','resonance','attune','signature-attune','resonance-attune'])
+  const samples=keys.map(key=>renderHallCue(22050,key))
+  expect(new Set(samples.map(p=>Array.from(p.slice(100,400)).join(','))).size).toBe(6)
+  for(const p of samples) {
+    expect(p.every(Number.isFinite)).toBe(true)
+    expect(p[0]).toBe(0)
+    expect(p.at(-1)).toBe(0)
+    expect(p.reduce((peak,x)=>Math.max(peak,Math.abs(x)),0)).toBeLessThanOrEqual(.81)
+  }
+})

@@ -118,7 +118,7 @@ watch(() => props.nodes, (nodes, previous) => {
           :style="tree ? { '--columns': row.length } : undefined">
           <article v-for="node in row" :key="node.id" class="hall-node" :data-hall-node="node.id"
             :data-state="node.cost === null ? 'maxed' : node.locked ? 'locked' : node.canBuy ? 'available' : 'poor'"
-            :data-selected="String(active?.id === node.id)" :data-hall-arrived="String(upgraded?.arrived.includes(node.id) ?? false)"
+            :data-talent-type="node.talentType" :data-selected="String(active?.id === node.id)" :data-hall-arrived="String(upgraded?.arrived.includes(node.id) ?? false)"
             @pointerenter="!floating && isFine() && (hovered = node.id)" @pointerleave="hovered === node.id && (hovered = '')">
             <button type="button" class="hall-inspect" data-ui-sfx="hall-inspect" :data-hall-inspect="node.id"
               :aria-pressed="selectedNode?.id === node.id" @focus="!floating && (hovered = node.id)" @blur="hovered = ''" @click="inspect(node, $event)">
@@ -131,9 +131,9 @@ watch(() => props.nodes, (nodes, previous) => {
                 <span class="hall-rank">{{ node.rank }} / {{ node.maxRank }}</span>
               </span>
               <strong>{{ t(node.title) }}</strong>
-              <span class="hall-status">{{ t(status(node)) }}</span>
+              <span class="hall-status">{{ node.attunementStatus ?? t(status(node)) }}</span>
             </button>
-            <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" :data-milestone="String(upgraded.milestone)" :data-hall-stage="upgraded.rank" :data-hall-route="String(upgraded.arrived.length > 0)" class="hall-upgrade-fx" :style="{ '--hall-fx-scale': 1 + Math.min(5, upgraded.rank) * .08 }" aria-hidden="true">
+            <span v-if="upgraded?.id === node.id" :key="upgraded.rank" :data-hall-upgraded="node.id" :data-ceremony="node.talentType" :data-milestone="String(upgraded.milestone)" :data-hall-stage="upgraded.rank" :data-hall-route="String(upgraded.arrived.length > 0)" class="hall-upgrade-fx" :style="{ '--hall-fx-scale': 1 + Math.min(5, upgraded.rank) * .08 }" aria-hidden="true">
               <i class="hall-wave"></i><i class="hall-wave"></i><i class="hall-wave"></i>
               <span class="hall-crown"></span>
               <span class="hall-particles"><i v-for="index in (upgraded.milestone ? 20 : 8 + Math.min(upgraded.rank, 4) * 2)" :key="index" :style="{ '--angle': index * 360 / (upgraded.milestone ? 20 : 8 + Math.min(upgraded.rank, 4) * 2) + 'deg', '--distance': (index % 3 === 0 ? 62 : 43) + 'px', '--delay': (index % 4) * 24 + 'ms' }"></i></span>
@@ -155,7 +155,7 @@ watch(() => props.nodes, (nodes, previous) => {
         <div v-if="active.next !== undefined"><small>{{ t('下一階效果') }}</small><b>{{ active.next }}</b></div>
       </div>
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><p v-for="requirement in active.requirements" :key="requirement">{{ requirement }}</p></div>
-      <small class="hall-status">{{ t(status(active)) }}</small>
+      <small class="hall-status">{{ active.attunementStatus ?? t(status(active)) }}</small>
       </div>
       <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview ? t('選取節點後升級') : action(active) }}</button>
       <div v-if="upgraded?.id === active.id" role="status" class="hall-success" :key="upgraded.rank">
@@ -168,6 +168,7 @@ watch(() => props.nodes, (nodes, previous) => {
 </template>
 
 <style scoped>
+.hall-node[data-talent-type='signature'] .hall-ring{border-radius:24% 50% 24% 50%}.hall-node[data-talent-type='resonance'] .hall-ring{border-radius:34%;outline:1px solid #c1a6ed;outline-offset:2px}.hall-upgrade-fx[data-ceremony='signature']{filter:hue-rotate(28deg)}.hall-upgrade-fx[data-ceremony='resonance']{filter:hue-rotate(215deg)}
 @property --hall-rank-progress { syntax: '<percentage>'; inherits: true; initial-value: 0%; }
 @property --hall-tip-angle { syntax: '<angle>'; inherits: true; initial-value: 0deg; }
 .hall-growth{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0;font:inherit;color:#ebdfcc;--hall-medallion:68px}

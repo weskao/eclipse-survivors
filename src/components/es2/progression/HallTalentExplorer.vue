@@ -2,6 +2,7 @@
 import { computed, ref, nextTick } from 'vue'
 import { currentLocale, t } from '../../../i18n'
 import { HALL_GROUPS, hallTalentGroup, hallTalent, hallTalentCost, hallTalentEligible } from '../../../game/content/meta/hall-talents'
+import { resolveHallRunSnapshot } from '../../../game/content/meta/hall-state'
 import { RESEARCH } from '../../../game/content/meta/catalog'
 import type { MetaState } from '../../../game/content/meta/state'
 import HallGrowthBoard from './HallGrowthBoard.vue'
@@ -13,6 +14,9 @@ const live = computed(() => props.writable && props.state.version === 4 && !!pro
 const ownership = computed(() => props.state.hall?.ownership ?? {})
 const equipped = computed(() => props.state.hall?.attunement)
 const selectedSignature = computed(() => equipped.value?.hero[props.hero] ?? null)
+const activeRanks=computed(()=>resolveHallRunSnapshot(props.state,props.hero).ranks)
+const allSlots=computed(()=>[...(equipped.value?.universal??[]),selectedSignature.value,equipped.value?.resonance].filter((id):id is string=>!!id))
+function clearSlot(id:string){if(!live.value)return;emit('attune',(equipped.value?.universal??[]).filter(x=>x!==id),selectedSignature.value===id?null:selectedSignature.value,equipped.value?.resonance===id?null:equipped.value?.resonance??null)}
 const selectable = computed(() => hallTalentGroup(group.value.id).filter(n => n.maxRank === 1 && ownership.value[n.id] === 1 && (tree.value !== 'hero' || n.group === props.hero)))
 function toggleAttunement(id:string) {
   if (!live.value || !selectable.value.some(n=>n.id===id)) return
@@ -46,8 +50,8 @@ const tabs = computed(() => [
 const groups = computed(() => HALL_GROUPS.filter(group => group.kind === tree.value))
 const group = computed(() => groups.value.find(g => g.id === selections.value[tree.value]) ?? groups.value[0]!)
 const glyphs: Record<string,string> = {sword:'offense-edge',shield:'defense-armor',star:'arcana-focus',wind:'mobility-stride',gem:'hunt-salvage',spirit:'summons-bond',arrow:'ranger-aim',dagger:'shadowblade-blade',heart:'crimson-paladin-oath',link:'synergy-blade-and-bastion'}
-const art = import.meta.glob<string>('/src/assets/es4/hall/*.svg', {eager:true,query:'?url',import:'default'})
-const image = (id:string) => art['/' + (hallTalent(id)?.art.temporarySvg ?? '')] ?? ''
+const art = import.meta.glob<string>('/src/assets/es4/hall/*.{svg,webp}', {eager:true,query:'?url',import:'default'})
+const image = (id:string) => {const a=hallTalent(id)?.art;return a? (a.status==='approved'?art['/'+a.futureWebp]:undefined)??art['/'+a.temporarySvg]??'':''}
 const definitions = computed(() => hallTalentGroup(group.value.id))
 const title = (id:string) => {
   const node = hallTalent(id)
@@ -60,6 +64,8 @@ const nodes = computed<HallNode[]>(() => {
     description:localized(n.effect,n.effectEn), art:image(n.id), rank:ownership.value[n.id] ?? 0, maxRank:n.maxRank,
     cost:hallTalentCost(n.id,ownership.value[n.id] ?? 0), locked:!hallTalentEligible(n.id,props.state,ownership.value,props.hero),
     canBuy:live.value && hallTalentEligible(n.id,props.state,ownership.value,props.hero) && props.state.embers >= (hallTalentCost(n.id,ownership.value[n.id] ?? 0) ?? Infinity),
+    talentType:n.maxRank>1?'rank':tree.value==='hero'?'signature':tree.value==='synergy'?'resonance':'keystone',
+    attunementStatus: n.maxRank===1 && ownership.value[n.id] ? activeRanks.value[n.id] ? localized('生效中','Active') : activeChoice(n.id) ? localized('已配置 · 未生效','Equipped · inactive') : localized('已擁有 · 未配置','Owned · unequipped') : undefined,
     requires:n.requires.map(req=>({...req,title:title(req.id)})),
     requirements:[...n.requires.map(req=>title(req.id)+' · Lv. '+req.rank),...(n.masteryGate?[localized('英雄專精','Hero mastery')+' · Lv. '+n.masteryGate]:[])],
   }))
@@ -104,7 +110,8 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
     <section v-if="live" class="es4-attunement" :aria-label="localized('調律','Attunement')">
       <h4>{{ localized('調律配置','Attunement') }} · {{ equipped?.universal.length ?? 0 }}/2 · {{ selectedSignature ? 1 : 0 }}/1 · {{ equipped?.resonance ? 1 : 0 }}/1</h4>
       <p class="es4-notice">{{ localized('共通終極 2、英雄招牌 1、跨樹共鳴 1。只影響下一場遠征；共鳴需配戴兩個指定終極。','Two universal keystones, one hero signature and one resonance. Next run only; a resonance requires both specified keystones.') }}</p>
-      <button v-for="node in selectable" :key="node.id" type="button" class="es4-equip" :data-es4-attune="node.id" :aria-pressed="!!activeChoice(node.id)" :disabled="tree==='discipline' && !activeChoice(node.id) && (equipped?.universal.length ?? 0)>=2" @click="toggleAttunement(node.id)">{{ localized(node.name,node.nameEn) }} · {{ activeChoice(node.id) ? localized('已配置','Equipped') : localized('配置','Equip') }}</button>
+      <div class="es4-slots"><button v-for="id in allSlots" :key="id" type="button" class="es4-equip" :data-es4-active-slot="id" :aria-label="localized('卸下 ','Unequip ')+title(id)" @click="clearSlot(id)">{{ title(id) }} · {{ activeRanks[id] ? localized('生效中','Active') : localized('條件未滿足','Inactive') }} ×</button></div>
+      <button v-for="node in selectable" :key="node.id" type="button" class="es4-equip" :data-es4-attune="node.id" :aria-pressed="!!activeChoice(node.id)" :disabled="tree==='discipline' && !activeChoice(node.id) && (equipped?.universal.length ?? 0)>=2" @click="toggleAttunement(node.id)">{{ localized(node.name,node.nameEn) }} · {{ activeChoice(node.id) ? (activeRanks[node.id] ? localized('生效中','Active') : localized('已配置 · 未生效','Equipped · inactive')) : localized('配置','Equip') }}</button>
     </section>
   </section>
 </template>

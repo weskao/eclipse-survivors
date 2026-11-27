@@ -11,12 +11,18 @@ const PALETTE = {
   milestone: { seconds: 1.05, peak: .78, strike: 143, notes: [196, 293.66, 392, 493.88, 587.33], onset: .12, step: .075, decay: 5, charge: .36, bass: 98, metal: .25, air: .15 },
   route:     { seconds: .92, peak: .71, strike: 196, notes: [293.66, 440, 587.33, 880], onset: .11, step: .15, decay: 8, charge: .37, bass: 146.83, metal: .15, air: .19 },
   equipment: { seconds: .86, peak: .72, strike: 95, notes: [196, 293.66, 392], onset: .18, step: .075, decay: 7, charge: .22, bass: 98, metal: .32, air: .055 },
+  keystone: { seconds: 1.14, peak: .77, strike: 116, notes: [174.61,261.63,349.23,523.25,698.46], onset: .14, step: .09, decay: 5.5, charge: .39, bass: 87.31, metal: .32, air: .14 },
+  signature: { seconds: 1.27, peak: .78, strike: 185, notes: [220,329.63,554.37,659.25,880], onset: .16, step: .105, decay: 5.1, charge: .46, bass: 110, metal: .23, air: .23 },
+  resonance: { seconds: 1.42, peak: .79, strike: 146, notes: [293.66,392,587.33,784,1174.66,1568], onset: .14, step: .14, decay: 5.2, charge: .52, bass: 73.42, metal: .18, air: .26 },
+  attune: { seconds: .58, peak: .51, strike: 440, notes: [440,659.25,880], onset: .055, step: .06, decay: 10, charge: .18, bass: 220, metal: .10, air: .13 },
+  'signature-attune': { seconds: .78, peak: .61, strike: 294, notes: [293.66,440,739.99,880], onset: .075, step: .07, decay: 8, charge: .28, bass: 146.83, metal: .13, air: .19 },
+  'resonance-attune': { seconds: .94, peak: .66, strike: 392, notes: [261.63,392,523.25,783.99,1046.5], onset: .065, step: .11, decay: 7, charge: .35, bass: 130.81, metal: .12, air: .25 },
   blessing:  { seconds: 1.02, peak: .69, strike: 392, notes: [329.63, 440, 659.25, 880, 1046.5], onset: .11, step: .086, decay: 5.5, charge: .43, bass: 164.81, metal: .08, air: .22 },
 } as const
 
 type RankCue = 'rank' | 'rank-2' | 'rank-3' | 'rank-4' | 'milestone'
 export type HallCue = keyof typeof PALETTE | `${RankCue}-route`
-export const HALL_UPGRADE = { rank: 1, milestone: 2, route: 3, equipment: 4, blessing: 5 } as const
+export const HALL_UPGRADE = { rank: 1, milestone: 2, route: 3, equipment: 4, blessing: 5, keystone:16, signature:17, resonance:18, attune:19, signatureAttune:20, resonanceAttune:21 } as const
 const REWARD_CUES: readonly HallCue[] = ['rank', 'milestone', 'route', 'equipment', 'blessing', 'rank-2', 'rank-3', 'rank-4']
 const RANK_CUES = ['rank', 'rank-2', 'rank-3', 'rank-4', 'milestone'] as const
 const RANK_VARIANTS = [1, 6, 7, 8, 2] as const
@@ -30,6 +36,8 @@ export function hallRankVariant(rank: number, cap: number, unlock: boolean): num
 export function hallCueKey(cue: string, variant?: number): HallCue | undefined {
   if (variant === undefined) return undefined
   if (cue === 'upgrade') {
+    const ceremony = (['keystone','signature','resonance','attune','signature-attune','resonance-attune'] as const)[variant-16]
+    if (ceremony) return ceremony
     const rank = RANK_CUES[variant - 11]
     return rank ? `${rank}-route` : REWARD_CUES[variant - 1]
   }
