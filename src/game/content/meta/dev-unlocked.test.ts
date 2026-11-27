@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createProfileStore } from '../../../meta/profile'
 import { createMetaProgressionStore } from './store'
 import { ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT } from './catalog'
@@ -38,5 +38,20 @@ describe('development-only unlocked playtest storage', () => {
     expect(first.get().state?.research.power).toBe(0)
     const second = createMetaProgressionStore(createUnlockedPlaytestMetaStorage())
     expect(second.get().state?.research.power).toBe(RESEARCH.find(item => item.id === 'power')!.maxRank)
+  })
+
+  it('seeds `make dev-unlocked embers=N` into both wallets', async () => {
+    vi.stubEnv('VITE_ES2_EMBERS', '4321')
+    vi.resetModules()
+    try {
+      const dev = await import('./dev-unlocked')
+      const { createMetaProgressionStore: meta } = await import('./store')
+      const { createProfileStore: legacy } = await import('../../../meta/profile')
+      expect(meta(dev.createUnlockedPlaytestMetaStorage()).get().state?.embers).toBe(4321)
+      expect(legacy(dev.createUnlockedPlaytestProfileStorage()).get().embers).toBe(4321)
+    } finally {
+      vi.unstubAllEnvs()
+      vi.resetModules()
+    }
   })
 })

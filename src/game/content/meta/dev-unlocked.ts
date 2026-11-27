@@ -9,6 +9,9 @@ import {
 import { createMetaState } from './state'
 import { META_V3_HEAD_KEY, META_V3_SLOT_KEYS } from './store'
 
+// `make dev-unlocked embers=N` overrides the seeded wallet; vite.config.ts devEmbers validates N.
+const PLAYTEST_EMBERS = Number(import.meta.env.VITE_ES2_EMBERS || 100_000)
+
 /** Per-page, disposable storage: playtest progress never reads or writes a real save. */
 function memoryStorage(initial: readonly (readonly [string, string])[]) {
   const bytes = new Map(initial)
@@ -22,7 +25,7 @@ function memoryStorage(initial: readonly (readonly [string, string])[]) {
 /** Seed only supported v3 unlocks. The real transaction store still validates all writes. */
 export function createUnlockedPlaytestMetaStorage() {
   const state = createMetaState()
-  state.embers = 100_000
+  state.embers = PLAYTEST_EMBERS
   state.runs = 20
   state.wins = 10
   state.bossWins = 3
@@ -48,7 +51,7 @@ export function createUnlockedPlaytestMetaStorage() {
 
 export function createUnlockedPlaytestProfileStorage() {
   const profile = emptyProfile()
-  profile.embers = 100_000
+  profile.embers = PLAYTEST_EMBERS
   profile.runs = 20
   profile.wins = 10
   profile.upgrades = { power: 3, vitality: 3 }

@@ -4,6 +4,12 @@
 PNPM ?= pnpm
 PORT ?= 5173
 
+# embers=N pins the Twilight Embers (暮光餘燼) wallet on every page load: make dev embers=5000.
+# Applied only by the Vite dev server (vite.config.ts devEmbers); builds never include it.
+ifdef embers
+export VITE_ES2_EMBERS := $(embers)
+endif
+
 .PHONY: setup dev dev-unlocked test-unlocked phone phone-unlocked build preview run test typecheck check-release verify deploy deploy-pages help
 
 # Install the exact locked dependencies on first use or after a manifest/lockfile change.
@@ -13,11 +19,11 @@ node_modules: package.json pnpm-lock.yaml
 
 setup: node_modules ## Install dependencies from pnpm-lock.yaml
 
-dev: node_modules ## Start the game at localhost (auto-opens your browser); PORT=5174 to override
+dev: node_modules ## Start the game at localhost (auto-opens your browser); PORT=5174, embers=N to override
 	$(PNPM) dev --host localhost --port $(PORT) --open
 
 # Never use the unlocked flag for a production build. Engine guards it with import.meta.env.DEV.
-dev-unlocked: node_modules ## Local playtest with unlocked progression, cosmetics and discoveries (disposable save)
+dev-unlocked: node_modules ## Local playtest with unlocked progression, cosmetics and discoveries (disposable save); embers=N
 	VITE_ES2_UNLOCKED=1 $(PNPM) dev --host localhost --port $(PORT) --open
 
 test-unlocked: dev-unlocked ## Alias for the unlocked local playtest
@@ -32,7 +38,7 @@ $(eval $(PHONE_BRANCH):;@:)
 endif
 endif
 
-phone: node_modules ## Phone LAN server; with phone-dev skill: make phone [branch|off] [y=1]
+phone: node_modules ## Phone LAN server; with phone-dev skill: make phone [branch|off] [y=1] [embers=N]
 	@if [ -f "$(PHONE_DEV)" ]; then \
 	  python3 "$(PHONE_DEV)" $(if $(filter off,$(PHONE_BRANCH)),--off,--interactive $(if $(y),--yes) $(if $(PHONE_BRANCH),--branch "$(PHONE_BRANCH)")); \
 	elif [ -n "$(PHONE_BRANCH)" ]; then \
