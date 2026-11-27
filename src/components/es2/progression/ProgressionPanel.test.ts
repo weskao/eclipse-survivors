@@ -298,3 +298,21 @@ describe('Hall rank ceremony presentation', () => {
     wrapper.unmount()
   })
 })
+
+
+it('never compiles a reduced-motion or flashing rule that hides the document root', async () => {
+  const { parse, compileStyle } = await import('@vue/compiler-sfc')
+  const { readFileSync } = await import('node:fs')
+  const source = readFileSync('src/components/es2/progression/ProgressionPanel.vue', 'utf8')
+  const { descriptor } = parse(source)
+  for (const style of descriptor.styles) {
+    const compiled = compileStyle({ source: style.content, filename: 'ProgressionPanel.vue', id: 'data-v-hall-regression', scoped: style.scoped })
+    expect(compiled.errors).toEqual([])
+    for (const match of compiled.code.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
+      if (!/display\s*:\s*none/.test(match[2]!)) continue
+      for (const selector of match[1]!.split(',')) {
+        expect(selector.trim()).not.toMatch(/^\[data-es2-reduce-(motion|flashing)="true"\]$/)
+      }
+    }
+  }
+})

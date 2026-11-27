@@ -296,3 +296,17 @@ it('preserves the advertised chest tier even when another reward card is cursed'
   await nextTick()
   expect(dialog().querySelector('.es3-chest-seal')?.getAttribute('data-tier')).toBe('legendary')
 })
+
+
+it.each(['rare', 'epic', 'legendary'] as const)('uses the correct %s reveal art and permits a single claim after skip', async tier => {
+  const wrapper = mounted(Es2ChoiceDialog, { active: true, kind: 'treasure', tier,
+    items: [{ id: 'reward', title: 'Reward', rarity: tier }] })
+  await nextTick()
+  expect(dialog().querySelector('[data-es3-chest-reveal]')?.getAttribute('src')).toContain('treasure-' + tier + '@3x.webp')
+  dialog().querySelector<HTMLButtonElement>('[data-es3-skip-reveal]')!.click()
+  await nextTick()
+  expect(dialog().querySelector('[data-es3-reveal]')).toBeNull()
+  button('reward').click()
+  button('reward').click()
+  expect(wrapper.emitted('choose')).toEqual([['reward']])
+})
