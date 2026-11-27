@@ -179,6 +179,7 @@ export interface GameState {
   xpGainMultiplier: number
   pickupGainMultiplier: number
   defeatedTypes: Partial<Record<MobType, number>>
+  defeatedBosses?: Partial<Record<import('./content/bosses/definitions').BossId, number>>
   worldClock: number
   sceneFxClock: number
   cam: Point

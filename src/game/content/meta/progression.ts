@@ -1,6 +1,7 @@
 import { BALANCE, researchCost, type ResearchId } from '../../config'
 import hallTuning from '../../balance/hall-effect-tuning.json'
 import type { RunStats } from '../../../meta/types'
+import { mergeMonsterKills, validMonsterKills, isNamedBoss, type MonsterId } from '../../monster-catalog'
 import {
   ACHIEVEMENTS, MILESTONES, RESEARCH, STARTING_BONUSES, STARTING_EQUIPMENT,
   LEGACY_EVOLUTIONS, LEGACY_WEAPONS, isCosmeticId, isDiscoverableId,
@@ -53,6 +54,7 @@ function isReceiptValid(receipt: RunReceipt): boolean {
     || !s.abilities.every(x => typeof x === 'string' && (isDiscoverableId(x)
       || ['damage', 'speed', 'haste', 'maxhp', 'magnet', 'heal'].includes(x)))) return false
   if (!Object.values(s.enemies).every(x => whole(x, 1_000_000))) return false
+  if (s.monsterKills !== undefined && (!validMonsterKills(s.monsterKills) || !Object.values(s.monsterKills).every(x => whole(x, 1_000_000)))) return false
   if (!validOptionalList(receipt.relicIds) || !validOptionalList(receipt.weaponIds)
     || !validOptionalList(receipt.evolutionIds) || !validOptionalList(receipt.bossIds)) return false
   if (receipt.cosmeticIds !== undefined &&
@@ -129,6 +131,7 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   next.runs++
   next.wins += Number(stats.victory)
   next.bossWins += Number(stats.bossDefeated)
+  next.monsterKills = mergeMonsterKills(next.monsterKills ?? {}, stats.monsterKills ?? stats.enemies)
   const previous = next.mastery[hero] ?? { xp: 0, level: 1 }
   const xp = previous.xp + BALANCE.meta.runRewards.masteryBaseXp
     + Math.floor(stats.kills / BALANCE.meta.runRewards.masteryKillsDivisor)
@@ -140,7 +143,8 @@ export function applyCompletedRun(state: MetaState, receipt: RunReceipt): Progre
   dedupe(next.discoveries.weapons, [...fromAbilities.filter(id => !LEGACY_EVOLUTIONS.includes(id) && (LEGACY_WEAPONS.includes(id) || id.includes(':'))), ...(receipt.weaponIds ?? [])])
   dedupe(next.discoveries.evolutions, [...fromAbilities.filter(id => LEGACY_EVOLUTIONS.includes(id)), ...(receipt.evolutionIds ?? [])])
   dedupe(next.discoveries.relics, receipt.relicIds ?? [])
-  dedupe(next.discoveries.bosses, receipt.bossIds ?? (stats.bossDefeated ? ['bosses:legacy-boss'] : []))
+  const exactBosses = Object.entries(stats.monsterKills ?? {}).filter(([id, count]) => count > 0 && isNamedBoss(id as MonsterId)).map(([id]) => 'bosses:' + id)
+  dedupe(next.discoveries.bosses, receipt.bossIds ?? (stats.monsterKills ? [...exactBosses, ...((stats.monsterKills.boss ?? 0) > 0 ? ['bosses:legacy-boss'] : [])] : stats.bossDefeated ? ['bosses:legacy-boss'] : []))
   dedupe(next.cosmetics, receipt.cosmeticIds ?? [])
   if (Object.values(next.discoveries).some(ids => ids.length > MAX_DISCOVERIES)
     || next.cosmetics.length > 1024 || Object.keys(next.modeRecords).length > 256) return rejected('invalid')

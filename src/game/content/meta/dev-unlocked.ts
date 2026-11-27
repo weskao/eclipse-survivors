@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS as LEGACY_ACHIEVEMENTS } from '../../../meta/achievements'
 import { emptyProfile, SAVE_KEY } from '../../../meta/profile'
+import { MONSTER_IDS } from '../../monster-catalog'
 import { UP } from '../../constants'
 import { EVOLUTIONS } from '../../evolutions'
 import {
@@ -57,7 +58,7 @@ export function createUnlockedPlaytestProfileStorage() {
   profile.achievements = LEGACY_ACHIEVEMENTS.map(item => item.id)
   profile.discoveredAbilities = [...UP.map(item => item.id), ...EVOLUTIONS.map(item => item.id)]
   profile.heroesPlayed = ['knight', 'ranger', 'wizard']
-  for (const mob of ['slime', 'bat', 'goblin', 'golem', 'warlock', 'boss'] as const) {
+  for (const mob of MONSTER_IDS) {
     profile.discoveredMonsters[mob] = 1
   }
   return memoryStorage([[SAVE_KEY, JSON.stringify(profile)]])

@@ -6,6 +6,7 @@ import { createProfileStore, type ProfileStore } from '../meta/profile'
 import { MODES, isObjectiveModeId } from '../meta/modes'
 import type { RunStats, RunModeId, PermanentUpgrade, CosmeticId } from '../meta/types'
 import { loadArtwork, BGM_URL, type Artwork } from './art'
+import { mergeMonsterKills, runMonsterKills } from './monster-catalog'
 import { createAudioSystem } from './audio/engine'
 import { createEs2AudioAdapter } from './audio/es2/adapter'
 import type { AudioSystem } from './audio/types'
@@ -192,6 +193,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     const persisted = metaStore?.get()
     if (persisted?.status === 'ready' && persisted.state) {
       const v3 = persisted.state
+      legacy.discoveredMonsters = mergeMonsterKills(persisted.legacyProfile?.discoveredMonsters ?? legacy.discoveredMonsters, v3.monsterKills ?? {})
       legacy.runs = v3.runs
       legacy.wins = v3.wins
       legacy.embers = v3.embers
@@ -516,6 +518,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       kills: s.kill, level: h?.level ?? 1, remainingHp: Math.max(0, Math.ceil(h?.hp ?? 0)),
       damageDealt: Math.round(s.damageDealt), damageTaken: Math.round(s.damageTaken),
       bossDefeated: s.bossDefeated, enemies: { ...s.defeatedTypes },
+      monsterKills: runMonsterKills(s.defeatedTypes, factions?.defeated ?? {}, s.defeatedBosses ?? {}),
       abilities: [
         ...(Object.keys(h?.skills ?? {}) as UpgradeId[]),
         ...(Object.keys(s.content.levels) as ContentId[]),
