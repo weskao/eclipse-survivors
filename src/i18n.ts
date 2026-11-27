@@ -8,6 +8,7 @@ export interface LocaleStorage { getItem(key: string): string | null; setItem(ke
 export const LOCALE_STORAGE_KEY = 'eclipse-survivors-locale'
 
 const english = new Map<string, string>([
+  ["選取節點後升級","Select node to upgrade"],
   ["節點詳情","Node details"],
   ["目前效果","Current effect"],
   ["下一階效果","Next rank effect"],

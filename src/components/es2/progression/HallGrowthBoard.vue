@@ -8,8 +8,9 @@ const selected = ref('')
 const hovered = ref('')
 const detail = ref<HTMLElement | null>(null)
 const rows = computed(() => props.tree ? hallRows(props.nodes) : [props.nodes])
-const active = computed(() => props.nodes.find(node => node.id === hovered.value)
-  ?? props.nodes.find(node => node.id === selected.value) ?? props.nodes[0])
+const selectedNode = computed(() => props.nodes.find(node => node.id === selected.value) ?? props.nodes[0])
+const active = computed(() => props.nodes.find(node => node.id === hovered.value) ?? selectedNode.value)
+const isPreview = computed(() => active.value?.id !== selectedNode.value?.id)
 const upgraded = ref<{ id: string; rank: number; milestone: boolean; revealed: readonly string[]; arrived: readonly string[] } | null>(null)
 let celebrationTimer: ReturnType<typeof setTimeout> | undefined
 onBeforeUnmount(() => clearTimeout(celebrationTimer))
@@ -28,7 +29,7 @@ function inspect(node: HallNode, move = false) {
   if (move && !isFine()) void nextTick(() => detail.value?.scrollIntoView?.({ block: 'nearest', behavior: 'instant' }))
 }
 function purchase(node: HallNode) {
-  if (!canPurchase(node) || dispatching) return
+  if (!canPurchase(node) || node.id !== selectedNode.value?.id || dispatching) return
   inspect(node)
   dispatching = true
   request = { id: node.id, rank: node.rank, time: Date.now() }
@@ -74,7 +75,7 @@ watch(() => props.nodes, (nodes, previous) => {
             :data-selected="String(active?.id === node.id)" :data-hall-arrived="String(upgraded?.arrived.includes(node.id) ?? false)"
             @pointerenter="isFine() && (hovered = node.id)" @pointerleave="hovered === node.id && (hovered = '')">
             <button type="button" class="hall-inspect" data-ui-sfx="hall-inspect" :data-hall-inspect="node.id"
-              :aria-pressed="active?.id === node.id" @focus="hovered = node.id" @blur="hovered = ''" @click="inspect(node, true)">
+              :aria-pressed="selectedNode?.id === node.id" @focus="hovered = node.id" @blur="hovered = ''" @click="inspect(node, true)">
               <span class="hall-ring" role="progressbar" :aria-label="t(node.title)" :aria-valuemin="0" :aria-valuemax="node.maxRank" :aria-valuenow="node.rank"
                 :style="{ '--hall-rank-progress': (node.rank / node.maxRank * 100) + '%', '--hall-tick-step': 360 / node.maxRank + 'deg', '--hall-tip-angle': node.rank / node.maxRank * 360 + 'deg' }">
                 <span class="hall-ring-metal" aria-hidden="true"></span>
@@ -104,7 +105,7 @@ watch(() => props.nodes, (nodes, previous) => {
       </div>
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><p v-for="requirement in active.requirements" :key="requirement">{{ requirement }}</p></div>
       <small class="hall-status">{{ t(status(active)) }}</small>
-      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="!canPurchase(active)" @click="purchase(active)">{{ action(active) }}</button>
+      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview ? t('選取節點後升級') : action(active) }}</button>
       <p v-if="upgraded?.id === active.id" role="status" class="hall-success">{{ t('升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</p>
     </aside>
   </div>
@@ -186,7 +187,7 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-node[data-hall-arrived="true"] .hall-ring::after{animation:hall-shimmer .63s .68s ease-out both}
 @keyframes hall-destination{0%{filter:saturate(.35);transform:scale(.94)}40%{filter:saturate(1.2) brightness(1.25);transform:scale(1.08);box-shadow:0 0 0 2px #e9c182,0 0 20px #e9c18299}100%{filter:none;transform:none}}
 @media(hover:hover) and (pointer:fine){.hall-inspect:hover{border-color:#b89a6355}.hall-buy:hover:not(:disabled){background:linear-gradient(#7a603e,#4d3826)}}
-@media(min-width:740px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(205px,30%);--hall-medallion:72px}.hall-map{padding:10px 18px}.hall-growth--tree .hall-row{max-width:400px;margin-inline:auto}.hall-growth--tree .hall-links{max-width:400px;margin-inline:auto}}
+@media(min-width:740px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(205px,30%);--hall-medallion:68px}.hall-map{padding:10px 18px}.hall-growth--tree .hall-row{max-width:400px;margin-inline:auto}.hall-growth--tree .hall-links{max-width:400px;margin-inline:auto}}
 @media(orientation:landscape) and (min-width:560px) and (max-height:520px){.hall-growth{grid-template-columns:minmax(0,1fr) minmax(165px,36%);--hall-medallion:54px}.hall-map{padding:6px}.hall-links{height:10px}.hall-inspect{gap:2px;padding:2px}.hall-inspect strong{font-size:.75rem}.hall-detail{gap:6px;padding:9px}}
 @media(max-width:360px){.hall-growth{--hall-medallion:60px}.hall-map{padding:6px}.hall-row{gap:3px}.hall-detail{padding:10px}.hall-buy{font-size:.78rem}}
 @media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-ring{animation:none!important}.hall-upgrade-fx,.hall-ring::after,.hall-edge i::after{display:none!important}.hall-ring,.hall-edge i{transition:none!important}}

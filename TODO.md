@@ -196,3 +196,5 @@ Hall sound source implementation and regressions added; waveform checks and full
 - [x] Compact Hall layout: remove repeated card descriptions/purchase controls, one selected-node detail per board, compact topology at all sizes, refined layered metal progress rings and destination unlock animation. Preserve existing assets, sounds and transaction rules; verify actual responsive render.
 
 Compact topology implementation: one visible confirmation per board; unchanged WebP art; metal bezel, inset, tick marks, moving progress head; destination pulse on true prerequisite unlock. Runtime viewport matrix and aesthetic approval remain pending.
+
+- [x] Hall compact confirmation safety: hover/focus previews never authorize a different node's purchase; only explicit selection enables the single confirmation. Added a behavioral regression; runtime verification pending.

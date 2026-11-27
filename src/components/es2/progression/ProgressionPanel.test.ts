@@ -211,3 +211,20 @@ describe('Compact Hall topology and metal ring', () => {
     wrapper.unmount()
   })
 })
+
+describe('Hall preview purchase safety', () => {
+  it('does not allow keyboard preview of a different node to spend until explicitly selected', async () => {
+    const state = createMetaState()
+    state.embers = 200
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    const tree = wrapper.get('.hall-growth--tree')
+    await tree.get('[data-hall-inspect="vitality"]').trigger('focus')
+    expect(tree.get('[data-hall-confirm]').attributes('disabled')).toBeDefined()
+    expect(wrapper.emitted('research')).toBeUndefined()
+    await tree.get('[data-hall-inspect="vitality"]').trigger('click')
+    expect(tree.get('[data-hall-confirm]').attributes('disabled')).toBeUndefined()
+    await tree.get('[data-hall-confirm]').trigger('click')
+    expect(wrapper.emitted('research')).toEqual([['vitality']])
+    wrapper.unmount()
+  })
+})
