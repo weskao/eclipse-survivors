@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "14e036d0a6a82f33f6ea70d3a345469146cf929d",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 1898,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-phase2-flame-wave-release-study-a",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/titan-phase2-flame-wave-release-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "79660625-b18c-428e-8183-d9fcb7d28807",
+        "originalPngSha256": "e6a597f0fa487f49274d012ec5372494ed34ac3bcf38ce8da3c138df14b97fdf",
+        "canonicalReferenceHead": "14e036d0a6a82f33f6ea70d3a345469146cf929d",
+        "editOperationVerified": false,
+        "stagedPngSha256": "f3c852108c4a3c1e41f78e88b15af3c4a1a84937bc2b5e3630ac264c5dfc6201"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        62,
+        32,
+        1329,
+        1218
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1344,
+        1231
+      ],
+      "alphaExtent": [
+        1267,
+        1186
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        30,
+        0,
+        1297,
+        1186
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        62,
+        32,
+        47,
+        45
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Both palms extend forward; proposed P2 flame-wave release study, not approved phase or attack mapping. Independent redraw; oversized hands and halo may differ from canonical. Original alpha128 touches top edge and faint alpha touches canvas boundaries. Padding does not restore clipped pixels. No resampling; 1898px gate unmet.",
+      "sha256": "d6205c386f74843abe669cb10695001b369e0caf6029759e26635ea91f5d19f9",
+      "webpCompressedBytes": 1025082,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    }
+  ],
+  "missing": [
+    "phase and character identity review",
+    "source clipping and anchor approval",
+    "flame-wave warning and recovery poses",
+    "eruption poses",
+    "native 1898px extent",
+    "browser visual QA"
+  ]
+}
