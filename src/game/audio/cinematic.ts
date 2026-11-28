@@ -18,10 +18,11 @@ interface Voice {
  * musical offset; a short gain crossfade replaces abrupt track restarts.
  */
 export function createCinematicMusic(
-  opts: Pick<AudioSystemOptions, 'bossTracks' | 'warningTrack' | 'victoryTrack' | 'loadMusic'>,
+  opts: Pick<AudioSystemOptions, 'bossTracks' | 'warningTrack' | 'victoryTrack' | 'defeatTrack' | 'loadMusic'>,
   context: () => AudioContextLike | null,
   musicBus: () => GainLike | null,
   allowed: () => boolean,
+  onResultScheduled?: () => void,
 ): {
   readonly playingBoss: boolean
   readonly resultFallback: boolean
@@ -43,9 +44,13 @@ export function createCinematicMusic(
   const cached = new Map<string, Promise<BufferLike | null>>()
   const failed = new Set<string>()
 
+  const resultTrack = (): string | undefined =>
+    resultTheme === 'victory' ? opts.victoryTrack : resultTheme === 'defeat' ? opts.defeatTrack : undefined
   const wanted = (): { key: string; url: string; loop: boolean } | null => {
-    if (resultTheme) return resultTheme === 'victory' && opts.victoryTrack
-      ? { key: 'result:victory', url: opts.victoryTrack, loop: false } : null
+    if (resultTheme) {
+      const url = resultTrack()
+      return url ? { key: 'result:' + resultTheme, url, loop: false } : null
+    }
     if (bossId) {
       const url = opts.bossTracks?.[bossId]?.[phase - 1]
       return url ? { key: 'boss:' + bossId + ':' + phase, url, loop: true } : null
@@ -89,10 +94,13 @@ export function createCinematicMusic(
   const sync = (): void => {
     const ctx = context()
     const next = wanted()
-    if (!next || !ctx || ctx.state !== 'running' || !allowed()) {
+    if (!next || !ctx || ctx.state === 'closed' || !allowed()) {
       if (voice || loading) stop(!!next)
       return
     }
+    // A suspended context freezes its own audio clock. Keep the live source
+    // (and pending phase intent) until resume; don't restart/fade it on a tap.
+    if (ctx.state !== 'running') return
     if (voice?.key === next.key || loading === next.key || failed.has(next.url)) return
     const previous = voice
     const offset = paused?.key === next.key ? paused.offset
@@ -123,13 +131,17 @@ export function createCinematicMusic(
         voice = { key: next.key, source, gain, started: now + 0.02,
           offset: startOffset, duration, loop: next.loop }
         paused = null
+        if (next.key.startsWith('result:')) onResultScheduled?.()
       } catch { failed.add(next.url) }
     })
   }
 
   return {
     get playingBoss() { return !!(voice && voice.key.startsWith('boss:')) },
-    get resultFallback() { return !opts.victoryTrack || failed.has(opts.victoryTrack) },
+    get resultFallback() {
+      const url = resultTrack()
+      return !url || failed.has(url)
+    },
     result(theme) {
       if (theme === resultTheme) return
       resultTheme = theme

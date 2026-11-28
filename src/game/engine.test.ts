@@ -567,6 +567,54 @@ describe('keyboard and focus', () => {
     b.remove()
   })
 
+  it.each(['touch', 'pen'])('wakes on completed %s activation rather than pointerdown, with a single click cue', pointerType => {
+    const button = document.createElement('button')
+    button.dataset.uiSfx = 'select'
+    document.body.append(button)
+    const initial = audio.wakeCalls
+    button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType }))
+    expect(audio.wakeCalls).toBe(initial)
+    button.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType }))
+    expect(audio.wakeCalls).toBe(initial + 1)
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
+    expect(audio.cues).toEqual(['select'])
+    button.remove()
+  })
+
+  it.each([
+    ['mouse', new PointerEvent('pointerdown', { bubbles: true, pointerType: 'mouse' })],
+    ['touch', new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' })],
+    ['pen', new PointerEvent('pointerup', { bubbles: true, pointerType: 'pen' })],
+    ['Space', new KeyboardEvent('keydown', { bubbles: true, code: 'Space' })],
+    ['Enter', new KeyboardEvent('keydown', { bubbles: true, code: 'Enter' })],
+  ])('keeps the explicit audio control in place until the %s click completes', (_, event) => {
+    const button = document.createElement('button')
+    button.dataset.es2AudioUnlock = ''
+    document.body.append(button)
+    try {
+      button.dispatchEvent(event)
+      expect(engine.ui.audioUnlocked).toBe(false)
+      expect(engine.ui.settingsOpen).toBe(false)
+      button.click()
+      expect(engine.ui.audioUnlocked).toBe(true)
+      expect(audio.cues).toEqual(['ui'])
+    } finally {
+      button.remove()
+    }
+  })
+
+  it('recovers from completed tab clicks even when a context already exists', () => {
+    const button = document.createElement('button')
+    button.dataset.uiSfx = 'select'
+    document.body.append(button)
+    audio.unlocked = true
+    const initial = audio.wakeCalls
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))
+    expect(audio.wakeCalls).toBe(initial + 1)
+    expect(audio.cues).toEqual(['select'])
+    button.remove()
+  })
+
   it('shares select feedback across mouse, keyboard activation and listbox options', () => {
     const b = document.createElement('button')
     b.dataset.uiSfx = 'select'

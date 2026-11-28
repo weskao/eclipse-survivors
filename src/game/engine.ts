@@ -228,6 +228,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     bossTracks: bossTrackUrls,
     warningTrack: import.meta.env.BASE_URL + 'audio/boss/arrival-warning.mp3',
     victoryTrack: import.meta.env.BASE_URL + 'audio/eclipse-victory.wav',
+    defeatTrack: import.meta.env.BASE_URL + 'audio/eclipse-defeat.wav',
   })
   // The original audio owner provides the context and buses. Never start a second BGM.
   // Older injected AudioSystem fakes retain their original behaviour unchanged.
@@ -560,10 +561,17 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       ui.rewards = profileStore.recordRun(stats)
     }
     refreshMeta()
-    audio.setResultTheme?.(win ? 'victory' : 'defeat')
+    const outcome = win ? 'victory' : 'defeat'
+    // Enter results and release the adaptive battle score before selecting the
+    // terminal theme. Start its first scheduling pass without waiting for rendering.
     screen('result')
-    es2Audio?.setScene(win ? 'victory' : 'defeat')
-    audio.playSfx(win ? 'victory' : 'defeat')
+    if (audio.setResultTheme) {
+      audio.setResultTheme(outcome)
+      audio.tick('result')
+    } else {
+      es2Audio?.setScene(outcome)
+    }
+    audio.playSfx(outcome)
     ui.ending = win ? '🏆 遠征勝利！' : '💀 冒險結束'
     ui.summary = `存活 ${Math.floor(s.time)} 秒 · 擊敗 ${s.kill} 隻魔物 · 等級 ${s.hero?.level ?? 1}` + saveWarning
     hud()
@@ -1033,12 +1041,16 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function listen(win: Window = window): () => void {
     const doc = win.document
+    // Unlocking removes this button, so let its native click land before changing the menu.
+    const isMenuAudioButton = (target: EventTarget | null): boolean =>
+      target instanceof Element && !!target.closest('button[data-es2-audio-unlock]')
     const onKeyDown = (e: KeyboardEvent): void => {
       if (ui.settingsOpen) {
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
+      if ((e.code === 'Enter' || e.code === 'Space') && isMenuAudioButton(e.target)) return
+      if (((s.mode === 'menu' || s.mode === 'result') && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
@@ -1071,7 +1083,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (es2Audio) es2Audio.interrupt()
       else audio.interrupt()
     }
-    const onPointerDown = (): void => { wakeAudio() }
+    // Mouse activation begins at pointerdown; touch/pen activation occurs on
+    // pointerup. Starting resume on touch-down can leave a restricted promise
+    // pending before the browser has granted transient user activation.
+    const onPointerDown = (e: PointerEvent): void => {
+      if (e.pointerType !== 'touch' && e.pointerType !== 'pen' && !isMenuAudioButton(e.target)) wakeAudio()
+    }
+    const onPointerUp = (e: PointerEvent): void => {
+      if ((e.pointerType === 'touch' || e.pointerType === 'pen') && !isMenuAudioButton(e.target)) wakeAudio()
+    }
     // Click covers touch, mouse and keyboard activation, including teleported dialogs.
     // Explicitly managed controls already play their semantic cue in the engine.
     const onUiClick = (e: MouseEvent): void => {
@@ -1081,8 +1101,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
           control.getAttribute('aria-disabled') === 'true') return
       const cue = control.dataset.uiSfx
       if (cue === 'silent') return
-      // Keyboard activation of managed controls still needs the trusted wake.
-      if (e.detail === 0 || !audio.unlocked) wakeAudio()
+      // A context can exist but still be suspended. A completed click is a
+      // second trusted recovery opportunity, including managed and keyboard UI.
+      wakeAudio()
       if (cue === 'managed') return
       if (cue === 'hall-inspect') audio.playSfx('select', 1)
       else audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
@@ -1101,6 +1122,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
     doc.addEventListener('pointerdown', onPointerDown, true)
+    doc.addEventListener('pointerup', onPointerUp, true)
     doc.addEventListener('click', onUiClick, true)
     doc.addEventListener('pointerover', onPointerOver)
     return () => {
@@ -1110,6 +1132,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
       doc.removeEventListener('pointerdown', onPointerDown, true)
+      doc.removeEventListener('pointerup', onPointerUp, true)
       doc.removeEventListener('click', onUiClick, true)
       doc.removeEventListener('pointerover', onPointerOver)
     }

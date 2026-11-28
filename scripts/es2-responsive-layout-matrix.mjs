@@ -481,6 +481,32 @@ try {
           name + ': archive selection is inaccessible')
         assert.ok(inside(await page.locator('[data-es2-return-lobby]').evaluate(rect), width, height),
           name + ': return navigation clips viewport')
+        // The shared archive header keeps equal internal top insets without an exposed scrollport gap.
+        const hallHeader = await page.locator('.es2-menu-scroll').evaluate(el => {
+          const nav = el.querySelector('.es2-hall-navigation')
+          const back = nav.querySelector('[data-es2-return-lobby]')
+          const wallet = nav.querySelector('[data-es2-ember-wallet]')
+          const previous = el.scrollTop
+          el.scrollTop = el.scrollHeight
+          const scroller = el.getBoundingClientRect(), header = nav.getBoundingClientRect()
+          const css = getComputedStyle(nav)
+          const result = {
+            stuck: el.scrollTop > 0 && header.top <= scroller.top + parseFloat(getComputedStyle(el).paddingTop) + 1,
+            offset: header.top - scroller.top,
+            scrollPadding: parseFloat(getComputedStyle(el).paddingTop),
+            backTop: back.getBoundingClientRect().top - header.top,
+            walletTop: wallet.getBoundingClientRect().top - header.top,
+            expectedInset: parseFloat(css.paddingTop) + parseFloat(css.borderTopWidth),
+            padding: parseFloat(css.paddingTop),
+          }
+          el.scrollTop = previous
+          return result
+        })
+        assert.equal(hallHeader.scrollPadding, 0, name + ': archive scrollport must have no top padding')
+        assert.ok(hallHeader.padding >= 4, name + ': archive navigation needs internal top padding')
+        assert.ok(Math.abs(hallHeader.backTop - hallHeader.expectedInset) <= 1 &&
+          Math.abs(hallHeader.walletTop - hallHeader.expectedInset) <= 1, name + ': return button and wallet must share the same top inset')
+        if (hallHeader.stuck) assert.ok(Math.abs(hallHeader.offset) <= 1, name + ': sticky hall navigation exposes background above it')
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
         const uncentered = await archivePage.locator('.es2-archive-card').evaluateAll(cards => cards.flatMap(card => {
