@@ -44,10 +44,15 @@ describe('shared HOT expedition badge', () => {
 })
 
 describe('ES2 objective mode chooser adapter', () => {
-  it('renders exactly five accessible choices without replacing four legacy modes', async () => {
+  it('renders all nine choices in one radio group', async () => {
     const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' } })
     wrappers.push(wrapper)
     expect(wrapper.findAll('[data-objective-mode]')).toHaveLength(5)
+    expect(wrapper.findAll('[role="radiogroup"]')).toHaveLength(1)
+    expect(wrapper.get('[role="radiogroup"]').findAll('[role="radio"]')).toHaveLength(9)
+    expect(wrapper.findAll('[data-es2-mode-chapter]')).toHaveLength(2)
+    expect(wrapper.findAll('[role="radio"][aria-checked="true"]')).toHaveLength(1)
+    expect(wrapper.findAll('[role="radio"][tabindex="0"]')).toHaveLength(1)
     for (const id of ['boss-rush', 'endless-eclipse', 'relic-hunt', 'cursed-expedition', 'chaos-arena']) {
       const icon = wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`)
       expect(icon.get('img').attributes('src')).toContain(id + '@3x.webp')
@@ -58,11 +63,27 @@ describe('ES2 objective mode chooser adapter', () => {
     expect(wrapper.text()).toContain('永恆星蝕')
     expect(wrapper.text()).toContain('聖物追獵')
     expect(wrapper.text()).toContain('詛咒遠征')
-    expect(wrapper.findAll('.es2-objective-choice .modifier')).toHaveLength(15)
-    expect(wrapper.find('[data-objective-mode="endless-eclipse"] .reward').text()).toContain('每 3 分鐘')
+    expect(wrapper.findAll('.es2-objective-choice .modifier')).toHaveLength(0)
+    expect(wrapper.get('[data-objective-mode="endless-eclipse"] [data-es2-mode-time-value]').text()).toBe('∞')
     await wrapper.find('[data-objective-mode="chaos-arena"]').trigger('click')
     expect(wrapper.emitted('select')).toEqual([['chaos-arena']])
     expect(wrapper.find('[data-objective-mode="boss-rush"]').attributes('aria-checked')).toBe('true')
+  })
+
+  it('moves across chapters with one selected value and wraps keyboard navigation', async () => {
+    const wrapper = mount(ModeChooser, { props: { value: 'challenge' }, attachTo: document.body })
+    wrappers.push(wrapper)
+    await wrapper.get('[data-mode="challenge"]').trigger('keydown', { key: 'ArrowRight' })
+    expect(wrapper.emitted('select')).toEqual([['boss-rush']])
+    await wrapper.setProps({ value: 'boss-rush' })
+    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1)
+    expect(wrapper.get('[data-mode="challenge"]').attributes('aria-checked')).toBe('false')
+    expect(wrapper.get('[data-objective-mode="boss-rush"]').attributes('tabindex')).toBe('0')
+    await wrapper.get('[data-objective-mode="boss-rush"]').trigger('keydown', { key: 'ArrowLeft' })
+    expect(wrapper.emitted('select')?.at(-1)).toEqual(['challenge'])
+    await wrapper.setProps({ value: 'quick' })
+    await wrapper.get('[data-mode="quick"]').trigger('keydown', { key: 'ArrowLeft' })
+    expect(wrapper.emitted('select')?.at(-1)).toEqual(['chaos-arena'])
   })
 
   it('shows one localized title and opens full mode details without changing selection', async () => {
@@ -121,7 +142,7 @@ describe('ES2 objective mode chooser adapter', () => {
     const wrapper = mount(ModeChooser, { props: { value: null, disabled: true } })
     wrappers.push(wrapper)
     expect(wrapper.findAll('button').every(button => button.attributes('disabled') !== undefined)).toBe(true)
-    expect(wrapper.findAll('[role="radio"]')).toHaveLength(5)
+    expect(wrapper.findAll('[role="radio"]')).toHaveLength(9)
   })
 })
 

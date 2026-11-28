@@ -29,12 +29,12 @@ export async function assertModeDurations(page, label) {
     const bounds = el => el.getBoundingClientRect()
     const c = bounds(card), t = bounds(chip), copy = bounds(card.querySelector('.es2-mode-copy')), v = bounds(value)
     const font = parseFloat(getComputedStyle(value).fontSize)
-    return { mode:card.dataset.mode, text:value.textContent, font,
-      valid: font >= (card.dataset.mode==='endless'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
+    return { mode:card.dataset.mode ?? card.dataset.objectiveMode, text:value.textContent, font,
+      valid: font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
         && t.left>=c.left-1 && t.right<=c.right+1 && t.top>=c.top-1 && t.bottom<=c.bottom+1
         && copy.right<=t.left+1 && v.width<=t.width+1 && chip.scrollWidth<=chip.clientWidth+1
         && getComputedStyle(value).fontFamily.includes('Eclipse Numerals') }
   }))
-  assert.equal(cards.length,4,label + ': missing classic time chips')
+  assert.equal(cards.length,9,label + ': missing expedition time chips')
   assert.deepEqual(cards.filter(card=>!card.valid),[],label + ': duration readability or overflow')
 }

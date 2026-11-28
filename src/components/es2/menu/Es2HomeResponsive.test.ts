@@ -384,14 +384,18 @@ describe('homepage menu layout across devices', () => {
       }
       if (page === 'heroes') await brief.trigger('click')
     }
-    expect(css).toContain('.es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}')
+    const board = wrapper.get('[data-es2-expedition-board]')
+    expect(board.findAll('[role="radiogroup"]')).toHaveLength(0)
+    expect(board.attributes('role')).toBe('radiogroup')
+    expect(board.findAll('[role="radio"]')).toHaveLength(9)
+    expect(board.findAll('[aria-checked="true"]')).toHaveLength(1)
   })
   it('uses a shared responsive card/detail emblem size, matching title color and duration chip', () => {
     expect(css).toContain('.es2-mode-sigil:is(.es2-mode-mark,.es2-objective-sigil,.es2-mode-detail-sigil){width:var(--es2-mode-card-sigil-size)')
     for (const size of [48, 40, 36, 30]) expect(css).toContain('--es2-mode-card-sigil-size:' + size + 'px')
     expect(css).not.toContain('.es2-mode-detail-sigil{width:36px')
     expect(css).toContain('.es2-menu .es2-expedition-sigil{width:56px')
-    expect(css).toMatch(/@media \(max-width:460px\) and \(orientation:portrait\)\{[^@]*\.es2-menu \.es2-mode-grid,[^{}]*\.es2-menu \.es2-objective-grid\{grid-template-columns:minmax\(0,1fr\)/)
+    expect(css).toContain('.es2-expedition-board .es2-mode-grid{grid-template-columns:minmax(0,1fr)}')
     expect(css).toMatch(/\.es2-menu \.es2-expedition-name\{[^}]*color:var\(--es2-mode-accent\)[^}]*font:800/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-duration\{[^}]*display:inline-block[^}]*border:1px solid[^}]*font-variant-numeric:tabular-nums/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-meta\{[^}]*font:500 max\(\.6875rem/)

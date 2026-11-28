@@ -350,6 +350,12 @@ try {
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
       await assertExpeditionModeIcons(page, name + ': expedition selection', { cards: true })
       await assertModeDurations(page, name)
+      const board = page.locator('[data-es2-expedition-board]')
+      assert.equal(await board.getAttribute('role'), 'radiogroup')
+      assert.equal(await board.locator('[role="radiogroup"]').count(), 0)
+      assert.equal(await board.locator('[role="radio"]').count(), 9)
+      assert.equal(await board.locator('[aria-checked="true"]').count(), 1)
+      assert.equal(await board.locator('[role="radio"][tabindex="0"]').count(), 1)
       const hot = page.locator('[data-objective-mode="boss-rush"] [data-es2-mode-hot]')
       assert.equal(await page.locator('[data-es2-mode-hot]:visible').count(), 1, name + ': exactly one HOT badge')
       const hotLayout = await hot.evaluate(el => {
@@ -378,6 +384,8 @@ try {
         for (const id of [...ids, initial]) {
           await page.locator(`[data-mode="${id}"], [data-objective-mode="${id}"]`).click()
           assert.equal(await brief.getAttribute('data-run-mode'), id)
+          assert.equal(await board.locator('[aria-checked="true"]').count(), 1)
+          assert.equal(await board.locator('[role="radio"][tabindex="0"]').count(), 1)
           await assertExpeditionModeIcons(page, name + ': ' + id, { cards: true })
         }
         await page.mouse.move(0, 0)
