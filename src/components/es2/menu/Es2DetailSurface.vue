@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, watchPostEffect } from 'vue'
 import Es2Dialog from './Es2Dialog.vue'
+import type { RunModeId } from '../../../meta/types'
 
-const props = defineProps<{ active: boolean; title: string; subtitle?: string; anchor: HTMLElement | null; tooltipId: string }>()
+const props = defineProps<{ active: boolean; title: string; subtitle?: string; anchor: HTMLElement | null; tooltipId: string; modeTheme?: RunModeId }>()
 const emit = defineEmits<{ cancel: []; hold: []; leave: [] }>()
 const panel = ref<HTMLElement | null>(null)
 const position = ref({ left: '0px', top: '0px', visibility: 'hidden' as const } as { left: string; top: string; visibility: 'hidden' | 'visible' })
@@ -62,7 +63,7 @@ watchPostEffect(onCleanup => {
 
 <template>
   <Teleport v-if="active && anchor" to="body">
-    <aside :id="tooltipId" ref="panel" class="es2-hover-details" data-es2-hover-details role="tooltip"
+    <aside :id="tooltipId" ref="panel" class="es2-hover-details" data-es2-hover-details :data-es2-mode-theme="modeTheme" role="tooltip"
       :style="position" @pointerenter="emit('hold')" @pointerleave="emit('leave')">
       <header class="es2-hover-details__header">
         <slot name="leading"><span class="es2-hover-details__seal" aria-hidden="true">✧</span></slot>
@@ -71,7 +72,7 @@ watchPostEffect(onCleanup => {
       <div class="es2-hover-details__body"><slot /></div>
     </aside>
   </Teleport>
-  <Es2Dialog v-else :active="active" :title="title" :subtitle="subtitle" @cancel="emit('cancel')">
+  <Es2Dialog v-else :active="active" :title="title" :subtitle="subtitle" :mode-theme="modeTheme" @cancel="emit('cancel')">
     <template v-if="$slots.leading" #title-leading><slot name="leading" /></template>
     <slot />
   </Es2Dialog>

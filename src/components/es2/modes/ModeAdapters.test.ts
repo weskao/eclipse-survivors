@@ -50,11 +50,19 @@ describe('ES2 objective mode chooser adapter', () => {
       expect(dialog.querySelector('h2')?.textContent).toBe('永恆星蝕')
       expect(dialog.querySelector('.es2-mode-sigil img')?.getAttribute('src')).toBe(
         wrapper.get('[data-objective-mode="endless-eclipse"] .es2-mode-sigil img').attributes('src'))
+      expect(dialog.getAttribute('data-es2-mode-theme')).toBe('endless-eclipse')
+      expect(dialog.querySelector('[data-es2-mode-detail="objective"] strong')?.textContent).toBe('遠征目標')
+      expect(dialog.querySelector('[data-es2-mode-detail="rules"] strong')?.textContent).toBe('特殊規則')
+      expect(dialog.querySelectorAll('[data-es2-mode-detail="rules"] li')).toHaveLength(3)
+      expect(dialog.querySelector('[data-es2-mode-detail="reward"] strong')?.textContent).toBe('獎勵')
       expect(dialog.textContent).toContain('每 180 秒')
       expect(wrapper.emitted('select')).toBeUndefined()
       setLocale('en')
       await nextTick()
       expect(dialog.querySelector('h2')?.textContent).toBe('Endless Eclipse')
+      expect(dialog.querySelector('[data-es2-mode-detail="objective"] strong')?.textContent).toBe('Expedition objective')
+      expect(dialog.querySelector('[data-es2-mode-detail="rules"] strong')?.textContent).toBe('Special rules')
+      expect(dialog.querySelector('[data-es2-mode-detail="reward"] strong')?.textContent).toBe('Reward')
       expect(dialog.textContent).toContain('Complete an eclipse event every 180 seconds')
       expect(wrapper.get('[data-es2-mode-details="endless-eclipse"]').attributes('aria-label')).toBe('View mode details: Endless Eclipse')
       ;(dialog.querySelector('.es2-close') as HTMLButtonElement).click()
@@ -63,6 +71,22 @@ describe('ES2 objective mode chooser adapter', () => {
     } finally {
       setLocale(locale)
     }
+  })
+
+  it('uses the matching mode theme and same art for every expansion detail dialog', async () => {
+    const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' }, attachTo: document.body })
+    wrappers.push(wrapper)
+    for (const card of wrapper.findAll('[data-objective-mode]')) {
+      const id = card.attributes('data-objective-mode')
+      await wrapper.get(`[data-es2-mode-details="${id}"]`).trigger('click')
+      const dialog = document.body.querySelector('[role="dialog"]')!
+      expect(dialog.getAttribute('data-es2-mode-theme')).toBe(id)
+      expect(dialog.querySelector('.es2-mode-detail-sigil img')?.getAttribute('src')).toBe(card.get('.es2-mode-sigil img').attributes('src'))
+      expect(dialog.querySelectorAll('[data-es2-mode-detail]')).toHaveLength(3)
+      ;(dialog.querySelector('.es2-close') as HTMLButtonElement).click()
+      await nextTick()
+    }
+    expect(wrapper.emitted('select')).toBeUndefined()
   })
 
   it('disables every mode control when the host cannot start a new run', () => {

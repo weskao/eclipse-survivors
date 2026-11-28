@@ -360,6 +360,17 @@ try {
         await page.mouse.move(0, 0)
         await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
       }
+      const assertModeDetail = async (surface, card) => {
+        const a = await card.locator('.es2-mode-sigil').boundingBox()
+        const b = await surface.locator('.es2-mode-detail-sigil').boundingBox()
+        assert.ok(a && b && Math.abs(a.width-b.width) <= 1 && Math.abs(a.height-b.height) <= 1,
+          name + ': detail emblem must match card geometry ' + JSON.stringify({card:a, detail:b}))
+        assert.equal(await surface.getAttribute('data-es2-mode-theme'), await card.getAttribute('data-es2-mode-theme'))
+        const colors = await surface.locator('[data-es2-mode-detail] strong').evaluateAll(nodes => nodes.map(el => getComputedStyle(el).color))
+        assert.equal(colors.length, 3, name + ': missing mode detail priorities')
+        assert.equal(new Set(colors).size, 3, name + ': objective, rules and reward must be distinguishable')
+        assert.equal(await surface.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
+      }
       if (hoverCapable) {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
         const card = page.locator('[data-objective-mode="boss-rush"]')
@@ -368,18 +379,21 @@ try {
         const tip = page.locator('[data-es2-hover-details]')
         await tip.waitFor({ state: 'visible' })
         assert.match(await tip.innerText(), /首領連戰|Boss Rush/i)
-        assert.equal(await tip.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
+        await assertModeDetail(tip, card)
         assert.ok(inside(await tip.evaluate(rect), width, height), name + ': mode tooltip clips')
         assert.equal(await card.getAttribute('aria-checked'), before)
         await page.keyboard.press('Escape')
         await tip.waitFor({ state: 'hidden' })
-      } else {
+      }
+      // The Info control must match the hover surface on desktop as well as touch.
+      {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
         const card = page.locator('[data-objective-mode="boss-rush"]')
         await page.locator('[data-es2-mode-details="boss-rush"]').click()
         const info = page.locator('.es2-dialog[role="dialog"]')
         await info.waitFor({ state: 'visible' })
-        assert.equal(await info.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
+        await assertModeDetail(info, card)
+        assert.ok(inside(await info.evaluate(rect), width, height), name + ': mode dialog clips')
         await info.locator('.es2-close').click()
         await info.waitFor({ state: 'hidden' })
         await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })

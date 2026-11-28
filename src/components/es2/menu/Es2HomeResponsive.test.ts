@@ -359,8 +359,10 @@ describe('homepage menu layout across devices', () => {
     }
     expect(css).toContain('.es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}')
   })
-  it('uses a shared hexagonal icon, matching title color and duration chip', () => {
-    expect(css).toContain('.es2-menu .es2-mode-mark{width:48px')
+  it('uses a shared responsive card/detail emblem size, matching title color and duration chip', () => {
+    expect(css).toContain('.es2-mode-sigil:is(.es2-mode-mark,.es2-objective-sigil,.es2-mode-detail-sigil){width:var(--es2-mode-card-sigil-size)')
+    for (const size of [48, 40, 36, 30]) expect(css).toContain('--es2-mode-card-sigil-size:' + size + 'px')
+    expect(css).not.toContain('.es2-mode-detail-sigil{width:36px')
     expect(css).toContain('.es2-menu .es2-expedition-sigil{width:56px')
     expect(css).toMatch(/@media \(max-width:460px\) and \(orientation:portrait\)\{[^@]*\.es2-menu \.es2-mode-grid,[^{}]*\.es2-menu \.es2-objective-grid\{grid-template-columns:minmax\(0,1fr\)/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-name\{[^}]*color:var\(--es2-mode-accent\)[^}]*font:800/)

@@ -1883,6 +1883,8 @@ const english = new Map<string, string>([
   , ["{title} · {seconds} 秒", "{title} · {seconds} sec"]
   , ["冷卻 {seconds} 秒", "Cooldown {seconds} sec"]
   , ["每 3 分鐘 +{embers} 餘燼（最高 1500）", "+{embers} Embers every 3 min (max 1500)"]
+  , ["遠征目標", "Expedition objective"]
+  , ["特殊規則", "Special rules"]
   , ["勝利獎勵 {embers} 餘燼", "Victory reward: {embers} Embers"]
   , ["研究 · {cost} ✧", "Research · {cost} ✧"]
   , ["解鎖 · {cost} ✧", "Unlock · {cost} ✧"]

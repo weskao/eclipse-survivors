@@ -41,18 +41,27 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
         <small class="reward">✦ {{ rewardText(id) }}</small>
       </button>
       <button type="button" class="es2-mode-detail-trigger" :disabled="disabled"
-        :data-es2-mode-details="id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(id) })"
+        :data-es2-mode-details="id" :data-es2-mode-theme="id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(id) })"
         aria-haspopup="dialog" data-ui-sfx="select" @click="modeDetails.openModal(id)"><span aria-hidden="true">i</span></button>
       </div>
     </div>
-    <Es2DetailSurface :active="detail !== null" :title="detailId ? modeTitle(detailId) : ''"
+    <Es2DetailSurface :active="detail !== null" :title="detailId ? modeTitle(detailId) : ''" :mode-theme="detailId ?? undefined"
       :anchor="modeAnchor" :tooltip-id="modeTooltipId" @cancel="modeDetails.clear()" @hold="modeDetails.hold()" @leave="modeDetails.leave()">
       <template #leading><Es2ModeSigil v-if="detailId" :mode="detailId" class="es2-mode-detail-sigil" /></template>
-      <div v-if="detail && detailId" class="es2-hero-detail-content">
-        <p>{{ t(detail.description) }}</p>
-        <p>{{ t(detail.victoryDescription) }}</p>
-        <p v-for="modifier in detail.preRunModifiers" :key="modifier">◈ {{ t(modifier) }}</p>
-        <p>✦ {{ rewardText(detailId) }}</p>
+      <div v-if="detail && detailId" class="es2-mode-detail">
+        <p class="es2-mode-detail-intro">{{ t(detail.description) }}</p>
+        <div class="es2-mode-detail-block" data-es2-mode-detail="objective">
+          <strong>{{ t('遠征目標') }}</strong>
+          <p>{{ t(detail.victoryDescription) }}</p>
+        </div>
+        <div class="es2-mode-detail-block" data-es2-mode-detail="rules">
+          <strong>{{ t('特殊規則') }}</strong>
+          <ul><li v-for="modifier in detail.preRunModifiers" :key="modifier">{{ t(modifier) }}</li></ul>
+        </div>
+        <div class="es2-mode-detail-block" data-es2-mode-detail="reward">
+          <strong>{{ t('獎勵') }}</strong>
+          <p>{{ rewardText(detailId) }}</p>
+        </div>
       </div>
     </Es2DetailSurface>
   </section>
@@ -70,7 +79,6 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
   background: #211d2b; cursor: pointer; }
 .es2-objective-choice strong { font-size: 1rem; min-width:0; overflow-wrap:anywhere; }
 .es2-objective-choice .es2-objective-heading { display:flex; align-items:center; gap:6px; min-width:0; }
-.es2-objective-sigil { width:40px; font-size:24px; line-height:1; }
 .es2-objective-choice span { font-size: 0.83rem; line-height: 1.45; }
 .es2-objective-choice small { color: #c3b3a7; font-size: 0.75rem; line-height: 1.4; }
 .es2-objective-choice .modifier { color: #e1d1b6; }
