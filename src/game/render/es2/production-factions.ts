@@ -14,7 +14,7 @@ import { type ProjectileSprites, type ProjectileArtId } from '../projectile-art'
 export type FactionArtwork = Record<FactionKind, { body: HTMLImageElement; telegraph: HTMLImageElement; highResBody?: HTMLImageElement }>
 
 /** Only existing authentic 512px 3×2 source grids: never upscale undersized strips. */
-const NATIVE_MASTER_URLS: Partial<Record<FactionKind, string>> = {
+export const FACTION_MASTER_URLS: Readonly<Partial<Record<FactionKind, string>>> = {
   'shadow-assassin': assassinMasterUrl,
   'frost-wraith': frostWraithMasterUrl,
 }
@@ -45,7 +45,7 @@ export function loadProductionFactionArt(makeImage: () => HTMLImageElement = () 
     const telegraph = makeImage()
     body.src = WORLD_ART.enemies[kind].body
     telegraph.src = WORLD_ART.enemies[kind].telegraph
-    const authoredMasterUrl = NATIVE_MASTER_URLS[kind]
+    const authoredMasterUrl = FACTION_MASTER_URLS[kind]
     if (authoredMasterUrl) {
       // Existing 512px authored source, decoded once per renderer. No per-actor allocations.
       const highResBody = makeImage()

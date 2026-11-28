@@ -10,6 +10,7 @@ import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/hero
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
 import HeroActiveSummary from '../hero-roster/HeroActiveSummary.vue'
 import { ACTIVE_HERO_IDS } from '../hero-roster/active-presentation'
+import { FACTION_MASTER_URLS } from '../../../game/render/es2/production-factions'
 import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { encyclopedia } from '../../../meta/compendium'
 import type { Profile, PermanentUpgrade, CosmeticId } from '../../../meta/types'
@@ -46,9 +47,12 @@ const cardDetails = computed<Record<string, CardDetail>>(() => {
       lines: relic.description && t(relic.description) !== description ? [t(relic.description)] : [] }
   }
   for (const mob of entries.value.monsters) {
-    if (mob.count) result['monster:' + mob.id] = {
-      title: t(mob.label), description: t(mob.description),
-      groups: monsterGroups(mob.id),
+    if (!mob.count) continue
+    const groups = monsterGroups(mob.id)
+    result['monster:' + mob.id] = {
+      title: t(mob.label),
+      description: isFactionMonster(mob.id) ? (groups[0]?.skills[0]?.description ?? t(mob.description)) : t(mob.description),
+      groups,
       note: t(mob.id === 'boss' ? '歷史紀錄可能包含未區分的首領擊倒數。' : '基礎數值不含遠征難度、時間成長及菁英加成。'),
     }
   }
@@ -79,11 +83,18 @@ function unlockCondition(id: CosmeticId): string | undefined {
 }
 const legacyNodes = computed(() => legacyHallNodes(props.profile))
 function monsterImage(id: MonsterId): string {
-  if (isFactionMonster(id)) return WORLD_ART.enemies[id].body
+  if (isFactionMonster(id)) return FACTION_MASTER_URLS[id] ?? WORLD_ART.enemies[id].body
   if (isNamedBoss(id)) return WORLD_ART.bosses[id]
   return ART_URLS[id === 'warlock' ? 'wizard' : id]
 }
-const monsterFrames = (id: MonsterId) => isFactionMonster(id) ? 6 : isNamedBoss(id) ? 3 : 1
+function monsterAtlasStyle(id: MonsterId) {
+  const master = isFactionMonster(id) && !!FACTION_MASTER_URLS[id]
+  return {
+    backgroundImage: 'url(' + monsterImage(id) + ')',
+    backgroundSize: master ? '300% 200%' : isFactionMonster(id) ? '600% 100%' : '300% 100%',
+    backgroundPosition: 'left top',
+  }
+}
 const achievementArt: Record<string, string> = {
   'first-blood': WORLD_ART.ui['achievement-flawless'],
   'first-victory': WORLD_ART.ui['achievement-explorer'],
@@ -148,9 +159,9 @@ const achievementArt: Record<string, string> = {
       <div class="es2-archive-grid"><Es2ArchiveCard v-for="mob in entries.monsters" :key="mob.id" :class="{ 'es2-locked': !mob.count }"
         :data-monster-entry="mob.id" :title="t(mob.count ? mob.label : '???')" :detail-id="mob.count ? 'monster:' + mob.id : undefined" @open="open">
         <template #art>
-          <span v-if="mob.count && monsterFrames(mob.id) > 1" class="es2-archive-atlas" data-monster-portrait role="img"
+          <span v-if="mob.count && (isFactionMonster(mob.id) || isNamedBoss(mob.id))" class="es2-archive-atlas" data-monster-portrait role="img"
             :aria-label="t('{name} 插畫', { name: t(mob.label) })"
-            :style="{ backgroundImage: 'url(' + monsterImage(mob.id) + ')', backgroundSize: (monsterFrames(mob.id) * 100) + '% 100%' }" />
+            :style="monsterAtlasStyle(mob.id)" />
           <img v-else-if="mob.count" data-monster-portrait :class="{ 'es2-warlock-portrait': mob.id === 'warlock' }" :src="monsterImage(mob.id)" :alt="t('{name} 插畫', { name: t(mob.label) })" loading="lazy" />
           <span v-else class="es2-archive-glyph" aria-hidden="true">?</span>
         </template>

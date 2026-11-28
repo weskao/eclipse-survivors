@@ -5,6 +5,7 @@ import { WORLD_ART } from '../../../game/render/es2/production-world'
 import { BOSS_ATTACKS, BOSS_DEFINITIONS, type BossAttackId } from '../../../game/content/bosses/definitions'
 import { bossAttackImageSrc } from '../../../game/content/bosses/attack-art'
 import type { AbilityId, EnemyAttack, MobType } from '../../../game/types'
+import { ENEMY_RELEASE_ART } from '../../../game/render/enemy-motion'
 import { skillImageSrc } from '../../../game/ui-art'
 import { t } from '../../../i18n'
 
@@ -49,7 +50,7 @@ function legacyGroup(id: MobType): MonsterGroup {
       stat('RNG', '攻擊觸發距離', config.ai.near[id]),
     ],
     skills: legacyAttacks[id].map(attack => ({
-      id: attack, title: t(attacks[attack].title), icon: enemyDossierArt[`../../../assets/es2/production/skills/enemy-dossier/${attack}@3x.webp`] ?? skillImageSrc(attacks[attack].art),
+      id: attack, title: t(attacks[attack].title), icon: enemyDossierArt[`../../../assets/es2/production/skills/enemy-dossier/${attack}@3x.webp`] ?? ENEMY_RELEASE_ART[attack === 'summon' ? 'necromancer' : attack] ?? skillImageSrc(attacks[attack].art),
       description: t(attacks[attack].description),
       detail: t('蓄力 {seconds} 秒', { seconds: Number((config.ai.windup[attack] + (id === 'boss' ? config.ai.bossWindupExtra : 0)).toFixed(2)) }),
     })),
