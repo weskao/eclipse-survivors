@@ -1040,11 +1040,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
 
   function listen(win: Window = window): () => void {
     const doc = win.document
+    // Unlocking removes this button, so let its native click land before changing the menu.
+    const isMenuAudioButton = (target: EventTarget | null): boolean =>
+      target instanceof Element && !!target.closest('button[data-es2-audio-unlock]')
     const onKeyDown = (e: KeyboardEvent): void => {
       if (ui.settingsOpen) {
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
+      if ((e.code === 'Enter' || e.code === 'Space') && isMenuAudioButton(e.target)) return
       if (((s.mode === 'menu' || s.mode === 'result') && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
@@ -1082,10 +1086,10 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     // pointerup. Starting resume on touch-down can leave a restricted promise
     // pending before the browser has granted transient user activation.
     const onPointerDown = (e: PointerEvent): void => {
-      if (e.pointerType !== 'touch' && e.pointerType !== 'pen') wakeAudio()
+      if (e.pointerType !== 'touch' && e.pointerType !== 'pen' && !isMenuAudioButton(e.target)) wakeAudio()
     }
     const onPointerUp = (e: PointerEvent): void => {
-      if (e.pointerType === 'touch' || e.pointerType === 'pen') wakeAudio()
+      if ((e.pointerType === 'touch' || e.pointerType === 'pen') && !isMenuAudioButton(e.target)) wakeAudio()
     }
     // Click covers touch, mouse and keyboard activation, including teleported dialogs.
     // Explicitly managed controls already play their semantic cue in the engine.
