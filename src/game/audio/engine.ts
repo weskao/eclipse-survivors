@@ -290,12 +290,16 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
 
   const wake = (): void => {
     const recovering = interrupted || (ac !== null && ac.state !== 'running' && ac.state !== 'closed')
+    // A pending Web Audio resume is not a media interruption. In the lobby,
+    // a suspended SFX context alone says nothing about the playing media score.
+    // Preserve forced recovery for actual OS interruptions and battle recovery,
+    // but do it at most once per pending resume.
+    const restartMedia = interrupted || (!resumePending && contextWasRunning &&
+      (String(ac?.state) === 'interrupted' || (mode !== 'menu' && recovering)))
     interrupted = false
     try {
-      // Mobile media can remain unpaused yet silent after an OS interruption.
-      // Re-establish the HTMLMediaElement path on the next trusted gesture.
       const track = activeTrack()
-      if (recovering && musicOn && track && !track.paused) track.pause()
+      if (restartMedia && musicOn && musicVolume > 0 && track && !track.paused) track.pause()
       if (!ac || ac.state === 'closed') {
         const created = createContext()
         if (!created) { playScore(); return }

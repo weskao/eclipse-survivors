@@ -657,6 +657,57 @@ describe('dispose', () => {
 })
 
 describe('interruption edge cases', () => {
+  it.each([false, true])('keeps menu BGM continuous through repeated gestures during a deferred SFX resume (previously running: %s)', async previouslyRunning => {
+    const menuBgm = new FakeBgm()
+    const audio = createAudioSystem({ bgm, menuBgm, storage: null, createContext: () => ctx })
+    if (previouslyRunning) audio.wake()
+    ctx.state = 'suspended'
+    let finish!: () => void
+    let resumes = 0
+    ctx.resume = () => new Promise<void>(resolve => {
+      resumes++
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    menuBgm.currentTime = 12
+    audio.wake()
+    audio.playSfx('hero-select')
+    audio.wake()
+    audio.playSfx('select')
+    expect(menuBgm.pauseCalls).toBe(0)
+    expect(menuBgm.playCalls).toBe(1)
+    expect(menuBgm.currentTime).toBe(12)
+    expect(resumes).toBe(1)
+    finish()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(menuBgm.paused).toBe(false)
+    expect(ctx.sources).toHaveLength(1)
+    audio.dispose()
+  })
+
+  it('restarts interrupted battle media only once while resume is pending', async () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    const pauses = bgm.pauseCalls
+    const plays = bgm.playCalls
+    audio.wake()
+    audio.wake()
+    audio.wake()
+    expect(bgm.pauseCalls - pauses).toBe(1)
+    expect(bgm.playCalls - plays).toBe(1)
+    finish()
+    await Promise.resolve()
+    audio.dispose()
+  })
+
+
   it('restarts a stuck media element after the context suspends without a visibility event', () => {
     const audio = make()
     audio.wake()
