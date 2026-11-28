@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-orb-awakening-study-c",
+      "pose": "transform",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/abyss-phase2-orb-awakening-study-c.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "7cfe9f6e-8be5-4688-821a-7e21c2ca4983",
+        "originalPngSha256": "486e507b0378d97d9f9f3860df3119b0d99eb4c334bebe775fb760cc27797cf3",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        62,
+        54,
+        1262,
+        1227
+      ],
+      "alphaAnyBounds": [
+        32,
+        51,
+        1272,
+        1286
+      ],
+      "alphaExtent": [
+        1200,
+        1173
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        30,
+        22,
+        1230,
+        1195
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        19,
+        1240,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        62,
+        54,
+        56,
+        91
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "a19268ceea4896703c4a20e73da2089e0abfa1bf1304728a9c00c67c99ddeaae",
+      "gitBlobSha1": "85267fe97f66b56986c74ec5cf184861461f4d1a",
+      "webpCompressedBytes": 799676,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Alternative two-handed orb awakening; not a replacement for Batch 25 or consecutive frame. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-orb-cast-study-a",
+      "pose": "attack",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/abyss-phase2-orb-cast-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "fbd5008d-827b-42ab-a376-6431b9c57ffb",
+        "originalPngSha256": "0e43b3767281a00fddc37a23ee6652b91b3910d6ee013ddd1ef2d59263b84aca",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        52,
+        65,
+        1242,
+        1265
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1280,
+        1286
+      ],
+      "alphaExtent": [
+        1190,
+        1200
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        20,
+        33,
+        1210,
+        1233
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1248,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        52,
+        65,
+        76,
+        53
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "fff5b6fcd759dde8d34c9707fa7322c771afcf1b801de81650041b20b3cbc63f",
+      "gitBlobSha1": "be87cc777661d8af097dec85425d48387e5f24f9",
+      "webpCompressedBytes": 869202,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Extended arm orb casting; exact attack, direction and timing unapproved. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    }
+  ]
+}

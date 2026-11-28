@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-awakening-study-a",
+      "pose": "transform",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/frost-phase2-awakening-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "56cfbed9-46fd-4fac-9951-aa4b0b39d3f7",
+        "originalPngSha256": "14f27a7a91a4e86760881fe79cab94ec9941f6aec68210ea5128aadfea35f07c",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        73,
+        37,
+        1241,
+        1273
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1286,
+        1286
+      ],
+      "alphaExtent": [
+        1168,
+        1236
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        41,
+        5,
+        1209,
+        1241
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        73,
+        37,
+        77,
+        45
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "73f91267a20bdf63cb594bfa47c585639bc40c05d30c9125caf91e1cd43e006a",
+      "gitBlobSha1": "642192796d84c255b3746a1145d1c55ecc08c84a",
+      "webpCompressedBytes": 1038348,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Raised staff, ice ribbons; additional armor detail, effect edge clipping risk. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-glide-study-a",
+      "pose": "move",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/frost-phase2-glide-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "08022b48-af1b-42f1-aa44-404c14e08f19",
+        "originalPngSha256": "ba7393443fd607cbd9ccd2889e389bd0328d211528f5a92298910f6243db285f",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        44,
+        72,
+        1265,
+        1226
+      ],
+      "alphaAnyBounds": [
+        32,
+        41,
+        1286,
+        1286
+      ],
+      "alphaExtent": [
+        1221,
+        1154
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        12,
+        40,
+        1233,
+        1194
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        9,
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        44,
+        72,
+        53,
+        92
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "21cfc3c6ad321e24e443b44e55cc5f0892feacad013c0713032fdf6e59ea5938",
+      "gitBlobSha1": "5ee3daafcce3edb2a6ba99a2bfae0f502cb7265f",
+      "webpCompressedBytes": 773738,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Sideward floating pose; staff, armor and direction require review. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    }
+  ]
+}
