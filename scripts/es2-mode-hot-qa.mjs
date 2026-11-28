@@ -32,14 +32,18 @@ export async function assertModeHotLayout(page, label) {
       return { contained:r.width>0 && r.height>0 && r.left>=c.left-1 && r.right<=c.right+1 && r.top>=c.top-1 && r.bottom<=c.bottom+1,
         right: c.right-r.right, top:r.top-c.top, stable, overlap:[title,image,duration,info].filter(Boolean).some(overlaps),
         pointer:getComputedStyle(el).pointerEvents, animation:getComputedStyle(el,'::after').animationName,
-        flame:getComputedStyle(el,'::before').animationName, reduced }
+        flame:[...el.querySelectorAll('.es2-mode-hot-flame')].map(node=>getComputedStyle(node).animationName),
+        embers:[...el.querySelectorAll('.es2-mode-hot-ember')].map(node=>getComputedStyle(node).animationName), reduced }
     })
     assert.ok(layout.contained && layout.stable && !layout.overlap && layout.pointer==='none' &&
       Math.abs(layout.right-9)<=1 && Math.abs(layout.top-6)<=1, label + ': HOT layout ' + JSON.stringify(layout))
-    if (layout.reduced) assert.equal(layout.animation + '/' + layout.flame, 'none/none', label + ': reduced motion HOT')
+    assert.equal(layout.flame.length, 3, label + ': layered flame')
+    assert.equal(layout.embers.length, 3, label + ': ember particles')
+    if (layout.reduced) assert.ok([layout.animation, ...layout.flame, ...layout.embers].every(name=>name==='none'), label + ': reduced motion HOT')
     else {
       assert.match(layout.animation, /^es2-mode-hot-sweep(?:-|$)/)
-      assert.match(layout.flame, /^es2-mode-hot-flame(?:-|$)/)
+      assert.ok(layout.flame.every(name=>/^es2-mode-hot-flame(?:-|$)/.test(name)), label + ': animated flame layers')
+      assert.ok(layout.embers.every(name=>/^es2-mode-hot-ember(?:-|$)/.test(name)), label + ': animated embers')
     }
   }
 }

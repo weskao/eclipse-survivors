@@ -26,9 +26,16 @@ const minutes = computed(() => Math.ceil((props.duration ?? 0) / 60))
 }
 [data-es2-mode-time-value] { font-size:clamp(18px,calc(1.15rem * var(--es2-ui-scale,1)),28px); }
 [data-es2-mode-time-unit] { font-size:11px; font-weight:700; letter-spacing:.045em; color:#d4dfec; }
-.es2-mode-time--endless [data-es2-mode-time-value] { font-size:clamp(26px,calc(1.65rem * var(--es2-ui-scale,1)),36px); line-height:1; }
+.es2-mode-time--endless {
+  display:flex; align-items:center; justify-content:center; align-content:normal;
+  padding-block:0; gap:0;
+}
+.es2-mode-time--endless [data-es2-mode-time-value] {
+  display:block; flex:none; margin:0; padding:0;
+  font-size:clamp(26px,calc(1.65rem * var(--es2-ui-scale,1)),36px); line-height:1;
+}
 @media(orientation:landscape) and (max-height:520px) {
-  .es2-mode-time { min-width:34px; padding:2px 4px; }
+  .es2-mode-time { min-width:34px; padding-inline:4px; }
 }
 @media(forced-colors:active) {
   .es2-mode-time { background:Canvas; color:CanvasText; border-color:CanvasText; }

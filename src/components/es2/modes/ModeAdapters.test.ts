@@ -5,6 +5,7 @@ import { getLocale, setLocale, t } from '../../../i18n'
 import { nextTick } from 'vue'
 import Es2ModeSigil from './Es2ModeSigil.vue'
 import Es2ModeHotBadge from './Es2ModeHotBadge.vue'
+import Es2ModeDuration from './Es2ModeDuration.vue'
 import { MODES } from '../../../meta/modes'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -24,6 +25,10 @@ describe('shared HOT expedition badge', () => {
     await wrapper.setProps({ hot: true })
     const badge = wrapper.get('[data-es2-mode-hot]')
     expect(badge.text()).toBe('HOT')
+    expect(badge.get('.es2-mode-hot-fire').attributes('aria-hidden')).toBe('true')
+    expect(badge.findAll('.es2-mode-hot-flame')).toHaveLength(3)
+    expect(badge.findAll('.es2-mode-hot-ember')).toHaveLength(3)
+    expect(badge.find('canvas').exists()).toBe(false)
     await wrapper.setProps({ hot: false })
     expect(wrapper.find('[data-es2-mode-hot]').exists()).toBe(false)
   })
@@ -43,6 +48,22 @@ describe('shared HOT expedition badge', () => {
     expect(wrapper.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
     await boss.get('[data-es2-mode-hot]').trigger('click')
     expect(wrapper.emitted('select')).toEqual([['boss-rush']])
+  })
+})
+
+describe('shared duration badge', () => {
+  it('uses one centered value for unlimited time and restores the unit for finite runs', async () => {
+    const wrapper = mount(Es2ModeDuration, { props: { duration: null } })
+    wrappers.push(wrapper)
+    expect(wrapper.classes()).toContain('es2-mode-time--endless')
+    expect(wrapper.get('[data-es2-mode-time-value]').text()).toBe('∞')
+    expect(wrapper.find('[data-es2-mode-time-unit]').exists()).toBe(false)
+    const css = readFileSync(resolve('src/components/es2/modes/Es2ModeDuration.vue'), 'utf8')
+    expect(css).toMatch(/\.es2-mode-time--endless\s*\{[^}]*display:flex;[^}]*align-items:center;[^}]*justify-content:center;/)
+    await wrapper.setProps({ duration: 480 })
+    expect(wrapper.classes()).not.toContain('es2-mode-time--endless')
+    expect(wrapper.get('[data-es2-mode-time-value]').text()).toBe('8')
+    expect(wrapper.get('[data-es2-mode-time-unit]').text()).toBe('MIN')
   })
 })
 

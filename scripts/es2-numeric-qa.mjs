@@ -31,8 +31,11 @@ export async function assertModeDurations(page, label) {
     const info = card.parentElement.querySelector('.es2-mode-detail-trigger')
     const i = info?.getBoundingClientRect()
     const font = parseFloat(getComputedStyle(value).fontSize)
+    const endless = chip.classList.contains('es2-mode-time--endless')
+    const centered = !endless || (Math.abs((v.top+v.bottom-t.top-t.bottom)/2)<=1 &&
+      Math.abs((v.left+v.right-t.left-t.right)/2)<=1 && !unit)
     return { mode:card.dataset.mode ?? card.dataset.objectiveMode, text:value.textContent, font,
-      valid: !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
+      centered, valid: centered && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
         && i.bottom <= c.bottom+1 && t.bottom <= i.top+1 && Math.abs((t.left+t.right-i.left-i.right)/2) <= 1
         && font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
         && t.left>=c.left-1 && t.right<=c.right+1 && t.top>=c.top-1 && t.bottom<=c.bottom+1
