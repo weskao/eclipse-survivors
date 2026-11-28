@@ -372,6 +372,16 @@ try {
           name + ': archive selection is inaccessible')
         assert.ok(inside(await page.locator('[data-es2-return-lobby]').evaluate(rect), width, height),
           name + ': return navigation clips viewport')
+        const hallInsets = await page.locator('.es2-hall-navigation').evaluate(nav => {
+          const back = nav.querySelector('[data-es2-return-lobby]')
+          const wallet = nav.querySelector('[data-es2-ember-wallet]')
+          const top = nav.getBoundingClientRect().top
+          const css = getComputedStyle(nav)
+          return { back: back.getBoundingClientRect().top - top, wallet: wallet.getBoundingClientRect().top - top,
+            expected: parseFloat(css.paddingTop) + parseFloat(css.borderTopWidth), padding: parseFloat(css.paddingTop) }
+        })
+        assert.ok(hallInsets.padding >= 4 && Math.abs(hallInsets.back - hallInsets.expected) <= 1 &&
+          Math.abs(hallInsets.wallet - hallInsets.expected) <= 1, name + ': hall controls must share the same top inset')
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
       }
