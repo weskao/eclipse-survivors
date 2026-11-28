@@ -18,11 +18,11 @@ interface Voice {
  * musical offset; a short gain crossfade replaces abrupt track restarts.
  */
 export function createCinematicMusic(
-  opts: Pick<AudioSystemOptions, 'bossTracks' | 'warningTrack' | 'victoryTrack' | 'loadMusic'>,
+  opts: Pick<AudioSystemOptions, 'bossTracks' | 'warningTrack' | 'victoryTrack' | 'defeatTrack' | 'loadMusic'>,
   context: () => AudioContextLike | null,
   musicBus: () => GainLike | null,
   allowed: () => boolean,
-  onVictoryScheduled?: () => void,
+  onResultScheduled?: () => void,
 ): {
   readonly playingBoss: boolean
   readonly resultFallback: boolean
@@ -44,9 +44,13 @@ export function createCinematicMusic(
   const cached = new Map<string, Promise<BufferLike | null>>()
   const failed = new Set<string>()
 
+  const resultTrack = (): string | undefined =>
+    resultTheme === 'victory' ? opts.victoryTrack : resultTheme === 'defeat' ? opts.defeatTrack : undefined
   const wanted = (): { key: string; url: string; loop: boolean } | null => {
-    if (resultTheme) return resultTheme === 'victory' && opts.victoryTrack
-      ? { key: 'result:victory', url: opts.victoryTrack, loop: false } : null
+    if (resultTheme) {
+      const url = resultTrack()
+      return url ? { key: 'result:' + resultTheme, url, loop: false } : null
+    }
     if (bossId) {
       const url = opts.bossTracks?.[bossId]?.[phase - 1]
       return url ? { key: 'boss:' + bossId + ':' + phase, url, loop: true } : null
@@ -127,14 +131,17 @@ export function createCinematicMusic(
         voice = { key: next.key, source, gain, started: now + 0.02,
           offset: startOffset, duration, loop: next.loop }
         paused = null
-        if (next.key === 'result:victory') onVictoryScheduled?.()
+        if (next.key.startsWith('result:')) onResultScheduled?.()
       } catch { failed.add(next.url) }
     })
   }
 
   return {
     get playingBoss() { return !!(voice && voice.key.startsWith('boss:')) },
-    get resultFallback() { return !opts.victoryTrack || failed.has(opts.victoryTrack) },
+    get resultFallback() {
+      const url = resultTrack()
+      return !url || failed.has(url)
+    },
     result(theme) {
       if (theme === resultTheme) return
       resultTheme = theme

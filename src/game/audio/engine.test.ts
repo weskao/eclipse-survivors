@@ -534,6 +534,57 @@ describe('sampled orchestral expedition victory', () => {
   })
 })
 
+describe('sampled expedition defeat lament', () => {
+  const tracks = { victoryTrack: 'victory.wav', defeatTrack: '/audio/eclipse-defeat.wav' }
+
+  it('plays the finite pre-rendered lament on the music bus instead of the synth', async () => {
+    const requested: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx, ...tracks,
+      loadMusic: async url => { requested.push(url); return ctx.createBuffer(2, 480000, 24000) },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setResultTheme?.('defeat')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(requested).toEqual(['/audio/eclipse-defeat.wav'])
+    const source = ctx.sources.at(-1)!
+    expect(source.loop).toBe(false)
+    expect(ctx.gains.at(-1)?.targets[0]).toBe(ctx.gains[1])
+    audio.tick('result')
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.onScreen('menu')
+    expect(source.stoppedAt).not.toBeNull()
+  })
+
+  it('falls back to the finite synth lament if the file is unavailable', async () => {
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx, ...tracks, loadMusic: async () => null,
+    })
+    audio.wake()
+    audio.setResultTheme?.('defeat')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    audio.tick('result')
+    expect(ctx.sources).toHaveLength(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('does not request the defeat file on victory', async () => {
+    const requested: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx, ...tracks,
+      loadMusic: async url => { requested.push(url); return ctx.createBuffer(2, 480000, 24000) },
+    })
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(requested).toEqual(['victory.wav'])
+  })
+})
+
 describe('toggles', () => {
   it('reads initial values and persists on|off', () => {
     const storage = new MemStorage()
@@ -1203,7 +1254,8 @@ describe('opt-in DEV result audio diagnostics', () => {
       return node
     } })
     const audio = createAudioSystem({ bgm, storage: null, createContext: () => context,
-      victoryTrack: 'victory.wav', loadMusic: async () => context.createBuffer(2, 48000, 48000) })
+      victoryTrack: 'victory.wav', defeatTrack: 'defeat.wav',
+      loadMusic: async () => context.createBuffer(2, 48000, 48000) })
     try {
       audio.wake()
       audio.onScreen('play')
@@ -1215,7 +1267,7 @@ describe('opt-in DEV result audio diagnostics', () => {
       expect(log).toHaveBeenCalledWith('[Audio][Result]', expect.objectContaining({
         outcome, audioContext: 'running', bgmEnabled: true, bgmVolume: 100,
         bgmScheduled: true, sfxEnabled: true, sfxVolume: 100, sfxScheduled: true,
-        bgmSource: outcome === 'victory' ? 'victory.wav' : 'synth',
+        bgmSource: outcome + '.wav',
         bgmSignal: expect.objectContaining({ peak: 0.25, rmsMax: 0.25 }),
         sfxSignal: expect.objectContaining({ peak: 0.125, rmsMax: 0.125 }),
       }))
