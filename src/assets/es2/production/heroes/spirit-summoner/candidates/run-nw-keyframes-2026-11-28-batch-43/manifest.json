@@ -1,0 +1,78 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "NW",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 1,
+  "sourceProvenance": {
+    "referenceCommit": "928bbca7fa601f2d1859db0155e24eb422501f6e",
+    "battleAssetPath": "src/assets/es2/production/heroes/spirit-summoner/run-attack@3x.webp",
+    "referenceConditioningVerified": false,
+    "generationIds": [
+      "4431011a-fc6b-4c67-832e-a62d9d2d2e64"
+    ]
+  },
+  "frames": [
+    {
+      "id": "run-northwest-staff-back-identity-b",
+      "file": "run-northwest-staff-back-identity-b@3x.webp",
+      "sourceFile": "run-northwest-staff-back-identity-b-source.webp",
+      "bytes": 362136,
+      "sourceBytes": 1045164,
+      "webpSHA256": "7cc33b8a88418a4ac52219ae130e104b95a5f80bc54519ddf60ff0e58f7636c6",
+      "sourceSHA256": "7bc59f0edce282ae0badb8689b665645371b45a3f62957c48d3c994fbdddbc4c",
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          147,
+          7,
+          1113,
+          1242
+        ],
+        "coreExtent": [
+          966,
+          1235
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          114,
+          36,
+          657,
+          730
+        ],
+        "coreExtent": [
+          543,
+          694
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.5614035087719298,
+      "mirror": false,
+      "footAnchor": null
+    }
+  ],
+  "reviewNotes": [
+    "Independent candidate poses; no sequence timing or foot anchor approval. W/NW labels are proposed, not validated.",
+    "Battle identity, equipment, facing and stride consistency remain pending. Exact image conditioning was not verified.",
+    "Pillow lossless WebP; Polytool not executed. No upscaling; downsample and transparent pad to 768px.",
+    "Do not promote to gameplay or treat as a complete run cycle."
+  ]
+}

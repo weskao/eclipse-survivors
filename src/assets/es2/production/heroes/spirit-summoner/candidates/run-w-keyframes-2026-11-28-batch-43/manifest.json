@@ -1,0 +1,78 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "W",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 1,
+  "sourceProvenance": {
+    "referenceCommit": "928bbca7fa601f2d1859db0155e24eb422501f6e",
+    "battleAssetPath": "src/assets/es2/production/heroes/spirit-summoner/run-attack@3x.webp",
+    "referenceConditioningVerified": false,
+    "generationIds": [
+      "988cc65a-013d-4a7e-94fc-c6fc21c1d2fb"
+    ]
+  },
+  "frames": [
+    {
+      "id": "run-west-long-stride-identity-b",
+      "file": "run-west-long-stride-identity-b@3x.webp",
+      "sourceFile": "run-west-long-stride-identity-b-source.webp",
+      "bytes": 385074,
+      "sourceBytes": 1114524,
+      "webpSHA256": "6178945a9a8941b19bf4b5ba41990d346344ec5eb0e1023c546782c325f36bd6",
+      "sourceSHA256": "22426fac22e1eb80af390449502426e37069bef10cbc77da26ce54aeb05b9ec6",
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          95,
+          23,
+          1192,
+          1202
+        ],
+        "coreExtent": [
+          1097,
+          1179
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          85,
+          45,
+          701,
+          707
+        ],
+        "coreExtent": [
+          616,
+          662
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.5614035087719298,
+      "mirror": false,
+      "footAnchor": null
+    }
+  ],
+  "reviewNotes": [
+    "Independent candidate poses; no sequence timing or foot anchor approval. W/NW labels are proposed, not validated.",
+    "Battle identity, equipment, facing and stride consistency remain pending. Exact image conditioning was not verified.",
+    "Pillow lossless WebP; Polytool not executed. No upscaling; downsample and transparent pad to 768px.",
+    "Do not promote to gameplay or treat as a complete run cycle."
+  ]
+}

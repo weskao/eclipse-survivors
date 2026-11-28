@@ -1,0 +1,126 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "run",
+  "direction": "W",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 2,
+  "sourceProvenance": {
+    "referenceCommit": "928bbca7fa601f2d1859db0155e24eb422501f6e",
+    "battleAssetPath": "src/assets/es2/production/heroes/shadowblade/run-attack@3x.webp",
+    "referenceConditioningVerified": false,
+    "generationIds": [
+      "5a8c7420-92b8-48a8-a16a-9faf0d52b4b6",
+      "fafb88dc-530f-47e7-83f0-bfd21bf847c3"
+    ]
+  },
+  "frames": [
+    {
+      "id": "run-west-lunge-identity-a",
+      "file": "run-west-lunge-identity-a@3x.webp",
+      "sourceFile": "run-west-lunge-identity-a-source.webp",
+      "bytes": 324406,
+      "sourceBytes": 922334,
+      "webpSHA256": "bf239fdb75debf8fa9903b78631562fcb2b624ec8235354a3ab0f8c8f413f3e5",
+      "sourceSHA256": "530d5cdb1763d4b2cce259e499554694c817a33ce0c99997877c9381d0d577cd",
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          28,
+          188,
+          1215,
+          1119
+        ],
+        "coreExtent": [
+          1187,
+          931
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          48,
+          137,
+          714,
+          660
+        ],
+        "coreExtent": [
+          666,
+          523
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.5614035087719298,
+      "mirror": false,
+      "footAnchor": null
+    },
+    {
+      "id": "run-west-long-stride-identity-a",
+      "file": "run-west-long-stride-identity-a@3x.webp",
+      "sourceFile": "run-west-long-stride-identity-a-source.webp",
+      "bytes": 326920,
+      "sourceBytes": 931436,
+      "webpSHA256": "bcc36db04bc6329f641c33edc3af1f136562943e86bbb6990769e7b70a293b1c",
+      "sourceSHA256": "d5a9a7ce18499d2cbde4b09aba1c44400ee1fef41144ef360217e078bcba829b",
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          13,
+          184,
+          1236,
+          1096
+        ],
+        "coreExtent": [
+          1223,
+          912
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          39,
+          135,
+          726,
+          647
+        ],
+        "coreExtent": [
+          687,
+          512
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.5614035087719298,
+      "mirror": false,
+      "footAnchor": null
+    }
+  ],
+  "reviewNotes": [
+    "Independent candidate poses; no sequence timing or foot anchor approval. W/NW labels are proposed, not validated.",
+    "Battle identity, equipment, facing and stride consistency remain pending. Exact image conditioning was not verified.",
+    "Pillow lossless WebP; Polytool not executed. No upscaling; downsample and transparent pad to 768px.",
+    "Do not promote to gameplay or treat as a complete run cycle."
+  ]
+}
