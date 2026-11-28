@@ -51,10 +51,15 @@ export async function assertModeDurations(page, label) {
       parseFloat(cardStyle.paddingBottom)<=6
     const scale = parseFloat(getComputedStyle(card).getPropertyValue('--es2-ui-scale')) || 1
     const compact = scale > 1 || c.height <= 112
+    const copyCentered = Math.abs((copy.top+copy.bottom-c.top-c.bottom)/2)<=1
+    const summary = card.querySelector('.es2-mode-copy small')
+    const summaryStyle = getComputedStyle(summary)
+    const summaryFits = summary.scrollWidth <= summary.clientWidth+1 &&
+      (scale > 1 || summary.clientWidth < 200 || summary.getBoundingClientRect().height <= parseFloat(summaryStyle.lineHeight)+1)
     const inline = !unit || (v.right<=unit.getBoundingClientRect().left+1 &&
       Math.abs((v.top+v.bottom-unit.getBoundingClientRect().top-unit.getBoundingClientRect().bottom)/2)<=1)
     return { mode:card.dataset.mode ?? card.dataset.objectiveMode, text:value.textContent, font,
-      height:c.height, centered, plain, corner, rightAligned, bottomAligned, compact, inline, valid: centered && plain && corner && rightAligned && bottomAligned && compact && inline && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
+      height:c.height, centered, plain, corner, rightAligned, bottomAligned, compact, copyCentered, summaryFits, inline, valid: centered && plain && corner && rightAligned && bottomAligned && compact && copyCentered && summaryFits && inline && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
         && i.bottom <= c.bottom+1 && t.top >= i.bottom-1
         && font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
         && t.left>=c.left-1 && t.right<=c.right+1 && t.top>=c.top-1 && t.bottom<=c.bottom+1

@@ -44,14 +44,18 @@ export const MODES: Record<RunModeId, ModeConfig> = {
 export const getMode = (id: RunModeId): ModeConfig => MODES[id]
 
 // Compact presentation copy for both the board and selected-expedition dock.
-const objectiveBriefs: Readonly<Record<ObjectiveModeId, string>> = {
-  'boss-rush': '依序挑戰五位首領，敵人逐戰增強。',
-  'endless-eclipse': '無盡求生，迎戰週期性星蝕事件。',
-  'relic-hunt': '回收四件聖物，擊敗守護首領。',
-  'cursed-expedition': '承受輪替詛咒，擊敗兩位守衛。',
-  'chaos-arena': '突破八波遭遇戰，挑戰混沌首領。',
+const modeBriefs: Readonly<Record<RunModeId, string>> = {
+  'quick': '150 秒決戰 · 擊敗首領',
+  'standard': '征服深淵魔王',
+  'endless': '魔物愈戰愈強',
+  'challenge': '強敵侵襲 · 高壓求生',
+  'boss-rush': '五位首領 · 逐戰增強',
+  'endless-eclipse': '無盡求生 · 星蝕事件',
+  'relic-hunt': '四件聖物 · 擊敗守護者',
+  'cursed-expedition': '輪替詛咒 · 兩位守衛',
+  'chaos-arena': '八波激戰 · 混沌首領',
 }
-export const getModeBrief = (id: RunModeId): string => isObjectiveModeId(id) ? objectiveBriefs[id] : MODES[id].description
+export const getModeBrief = (id: RunModeId): string => modeBriefs[id]
 
 /** A timed victory requires the boss death event, never just a cleared mob array. */
 export function hasWonRun(

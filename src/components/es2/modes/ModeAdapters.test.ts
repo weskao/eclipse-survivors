@@ -63,12 +63,37 @@ describe('shared HOT expedition badge', () => {
   })
 })
 
+describe('compact expedition card summaries', () => {
+  it('renders concise bilingual summaries on all nine cards', async () => {
+    const previous = getLocale()
+    const wrapper = mount(ModeChooser, { props: { value: 'quick' } })
+    wrappers.push(wrapper)
+    const expected = [["quick","150 秒決戰 · 擊敗首領","150s · Defeat the boss"],["standard","征服深淵魔王","Slay the Abyssal Demon Lord"],["endless","魔物愈戰愈強","Ever-stronger monsters"],["challenge","強敵侵襲 · 高壓求生","Survive stronger foes"],["boss-rush","五位首領 · 逐戰增強","Five escalating bosses"],["endless-eclipse","無盡求生 · 星蝕事件","Survive eclipse events"],["relic-hunt","四件聖物 · 擊敗守護者","4 relics · Slay the guardian"],["cursed-expedition","輪替詛咒 · 兩位守衛","Rotating curses · 2 guardians"],["chaos-arena","八波激戰 · 混沌首領","Eight waves · Chaos boss"]] as const
+    try {
+      for (const locale of ['zh-TW', 'en'] as const) {
+        setLocale(locale)
+        await nextTick()
+        for (const [id, zh, en] of expected) {
+          const card = wrapper.get(`[data-es2-mode-id="${id}"]`)
+          expect(card.get('.es2-mode-copy small').text()).toBe(locale === 'en' ? en : zh)
+        }
+      }
+    } finally { setLocale(previous) }
+  })
+  it('centers the title and summary together without increasing the card height', () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    expect(css).toContain('.es2-expedition-board .es2-mode-card>.es2-mode-copy{grid-column:2;align-self:center}')
+    expect(css).toContain('padding:5px 8px 5px 6px;')
+    expect(css).toContain('--es2-mode-card-min-height:88px')
+  })
+})
+
 describe('shared duration badge', () => {
   it('keeps the borderless card duration below the hero Info corner without affecting the dock', () => {
     const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
     const duration = readFileSync(resolve('src/components/es2/modes/Es2ModeDuration.vue'), 'utf8')
-    expect(css).toContain('.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:end;justify-self:end;min-width:0;margin-block-start:32px}')
-    expect(css).toContain('padding:12px 8px 5px 6px;')
+    expect(css).toContain('.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:end;justify-self:end;min-width:0;margin-block-start:39px}')
+    expect(css).toContain('padding:5px 8px 5px 6px;')
     expect(css).toContain('minmax(44px,max-content)')
     expect(css).not.toContain('--es2-hot-inline-end:48px')
     expect(duration).toMatch(/\.es2-mode-time:not\(\.es2-mode-time--compact\)\s*\{[^}]*display:inline-flex;[^}]*align-items:center;/)
