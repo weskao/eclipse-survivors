@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/generate-menu-theme.mjs && node scripts/generate-victory-theme.mjs && vite",
-    "build": "node scripts/generate-menu-theme.mjs && node scripts/generate-victory-theme.mjs && vite build",
+    "dev": "node scripts/generate-menu-theme.mjs && node scripts/generate-victory-theme.mjs && node scripts/generate-defeat-theme.mjs && vite",
+    "build": "node scripts/generate-menu-theme.mjs && node scripts/generate-victory-theme.mjs && node scripts/generate-defeat-theme.mjs && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && vue-tsc --noEmit -p tsconfig.node.json",
-    "test": "node --test scripts/check-release-version.test.mjs scripts/generate-menu-theme.test.mjs scripts/generate-victory-theme.test.mjs scripts/compose-boss-ost.test.mjs scripts/es2-hero-video-config.test.mjs scripts/generate-hero-special-sfx.test.mjs && vitest run",
+    "test": "node --test scripts/check-release-version.test.mjs scripts/generate-menu-theme.test.mjs scripts/generate-victory-theme.test.mjs scripts/generate-defeat-theme.test.mjs scripts/compose-boss-ost.test.mjs scripts/es2-hero-video-config.test.mjs scripts/generate-hero-special-sfx.test.mjs && vitest run",
     "check-release": "node scripts/check-release.mjs"
   },
   "dependencies": {

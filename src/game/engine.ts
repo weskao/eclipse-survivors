@@ -228,6 +228,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     bossTracks: bossTrackUrls,
     warningTrack: import.meta.env.BASE_URL + 'audio/boss/arrival-warning.mp3',
     victoryTrack: import.meta.env.BASE_URL + 'audio/eclipse-victory.wav',
+    defeatTrack: import.meta.env.BASE_URL + 'audio/eclipse-defeat.wav',
   })
   // The original audio owner provides the context and buses. Never start a second BGM.
   // Older injected AudioSystem fakes retain their original behaviour unchanged.
