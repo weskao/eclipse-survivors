@@ -272,13 +272,16 @@ No gameplay implementation or asset admission is claimed by the planning checkbo
 - [ ] Real owned/equipped progression, signature/resonance purchase and run effects; enable purchase only after persistence and runtime integration.
 - [ ] Actual responsive matrix, keyboard and touch behavior, motion and audio quality; SVG legibility and CI.
 
-### Deferred — separate future workstream; do not implement here
-- [ ] Design late-game monster ecology, elite combinations and bosses.
-- [ ] Design new chapter mechanics and distinct progression objectives.
-- [ ] Design additional mode selection, challenge tiers and endgame difficulties matched to mature skill builds.
-- [ ] Balance reward/time/risk and performance with early/mid/late build simulations.
-- [ ] Plan subsequent art, animations, sounds, UI and actual gameplay TDD/QA in separately authorized branches.
-See [deferred endgame scope](docs/es4/deferred-endgame-scope.md). Existing enemy/chapter/mode/difficulty implementation stays unchanged in this skill-tree workstream.
+### Deferred endgame — transferred to ES5 planning; no ES4 gameplay implementation
+
+- [x] Consolidate the deferred **design and planning** work into the [ES5 design specification](docs/superpowers/specs/2026-11-28-es5-eclipse-ascension-design.md) and [master implementation plan](docs/superpowers/plans/2026-11-28-es5-00-master-plan.md). This is documentation only; all runtime, balance, art and QA tasks remain open.
+- Monster ecology, elite combinations and bosses → ES5 W02–03.
+- New chapter mechanics and progression objectives → ES5 W05–06.
+- Mode selection, challenge tiers and mature-build difficulty → ES5 W00–01, W04–05.
+- Reward/time/risk, early/mid/late simulations and performance → ES5 W00, W07–08.
+- Art, animation, sound, UI and gameplay TDD/QA → ES5 W02–08, with continuous W08 gates.
+
+See [deferred endgame scope](docs/es4/deferred-endgame-scope.md) and the ES5 section below. Existing enemy/chapter/mode/difficulty implementation stays unchanged in this skill-tree workstream.
 
 Catalog and SVG source created; full CI and runtime transactions are not yet verified. Do not enable talent purchases until the authoritative runtime is ready.
 
@@ -352,3 +355,23 @@ Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`
 - [x] Delete all 25 superseded boss-attack SVG files, plus any temporary SVGs created for these 31 dossier skills. Audit other direct and indirect consumers (including preloads, Canvas/GPU rendering, asset tests and documentation). If an affected SVG is shared by another feature, migrate that consumer to WebP first. Do not delete unrelated SVG assets outside this scope. (Consumers: `attack-art.ts` glob + dossier fallback, `render.ts` `loadSprites` → Canvas and Pixi `bossVfxImages`; no docs/manifests referenced them.)
 - [ ] Verify that no superseded SVG files or runtime SVG references remain, every affected ID resolves to a valid 3× WebP, and no missing-image or decode errors occur. Run typecheck, build, unit tests, responsive browser QA (desktop hover and Info dialog, mobile Info dialog), and actual Boss combat telegraph/impact QA across graphics quality settings. Only mark this section complete after migration, physical deletion and verification all pass.
 
+## ES5 — Eclipse Ascension / 暮蝕昇華：戰鬥生態與終局進化 (2026-11-28)
+
+**Status: PLANNING STORED — implementation not started.** Owner-approved direction: dual-track C (D0–D2 power fantasy, D3–D5 mastery challenge), full legitimate permanent talents in both tracks with separate standardized Apex Trials, and semi-open chapters. All numeric candidates require measured approval. The original ES4 design snapshot was `e561550c3473d175661d5c7d4552020c830a282f`; documents are stored on ES4 at parent `1084ed56f759154b84bb5545bb8d07619bad1a1a` for handoff, not authorization to change gameplay. Reconcile against the accepted ES4 runtime before ES5 implementation.
+
+- [x] Consolidate ES4 deferred scope and owner-approved ES5 direction into the [document index](docs/es5/README.md), [design spec](docs/superpowers/specs/2026-11-28-es5-eclipse-ascension-design.md), [master plan](docs/superpowers/plans/2026-11-28-es5-00-master-plan.md) and nine Wave plans.
+- [ ] **G0:** Accept ES4 runtime, save/migration, QA and rollout gates; authorize the separate ES5 integration branch; pin execution HEAD and verify baseline.
+- [ ] **[W00 — Balance Foundation](docs/superpowers/plans/2026-11-28-es5-wave-00-balance-foundation.md):** six heroes × five investment stages × nine existing modes × three policies × ten seeds = 8,100 proposed simulations; paired DPS/TTK, Q/proc/mitigation, XP, embers/min, pressure and performance.
+- [ ] **[W01 — Hero & Talent Balance](docs/superpowers/plans/2026-11-28-es5-wave-01-hero-talent-balance.md):** all 77 permanent nodes (5 legacy + 72 ES4), six Q skills, caps, stacking, hero identity and build viability; no hidden enemy power scaling.
+- [ ] **[W02 — Monster Ecology](docs/superpowers/plans/2026-11-28-es5-wave-02-monster-ecology.md):** E01–10, EL01–08, EN01–08, readable counters, threat budget, actor cap; original art identity and runtime QA.
+- [ ] **[W03 — Boss Evolution](docs/superpowers/plans/2026-11-28-es5-wave-03-boss-evolution.md):** B01–04, preserve 25 attacks and propose 12 mythic mechanics, exactly-once damage multipliers and phase transition regression; safe routes, audiovisual QA.
+- [ ] **[W04 — Difficulty & Oaths](docs/superpowers/plans/2026-11-28-es5-wave-04-difficulty-oaths.md):** D0–D5, A01–12, compatible run config, unlocks, additive capped multipliers, D1 parity, feature flag, responsive UI.
+- [ ] **[W05 — Endgame Modes](docs/superpowers/plans/2026-11-28-es5-wave-05-endgame-modes.md):** M01–07, 18 staged hero trials, mythic rush, endless abyss, Build Lab, AT01–04 standardized loadouts; no mutation of actual Hall or wallet, no untrusted public ranking.
+- [ ] **[W06 — World Expansion](docs/superpowers/plans/2026-11-28-es5-wave-06-world-expansion.md):** semi-open progression, WLD01–06, Chapter III then IV, B05/06, preserve existing unlocks; separate detailed geometry, asset and encounter approval.
+- [ ] **[W07 — Progression & Economy](docs/superpowers/plans/2026-11-28-es5-wave-07-progression-economy.md):** existing Twilight Embers only, measure early/mid/mature investment and risk-adjusted rewards, idempotent receipts, cosmetic rewards and local records; cloud/ranking trust gate.
+- [ ] **[W08 — Release Readiness](docs/superpowers/plans/2026-11-28-es5-wave-08-release-readiness.md):** QA01–15, RED/GREEN/refactor, `make verify`, exact-HEAD CI, RWD, actual device/audio/art and performance; release A/B/C separately.
+- [ ] Remove temporary ES5 feature policy only after approved permanent rollout, migration and rollback verification. No automatic merge, PR or deploy.
+
+**Cross-wave acceptance:** W00 measures the ES4 power increase before W01–04 tuning; W02/03/04 and W05/06 must use those same legal investment fixtures (fresh, legacy max, early, mid, mature) and identical paired seeds. W07 verifies reward/min and time-to-upgrade across both tracks without forcing high difficulty. W08 independently checks all six heroes, legacy flag-off parity, D1 baseline, Apex isolation and semi-open chapter persistence. No test, simulation, asset or release gate is marked passed by this planning commit.
+
+**Dependency order:** G0 → W00 → W04 T1 and W07 T1/T2 interfaces → W01/02/03 → finish W04 (Release A) → W05/07 (Release B) → W06 (Release C); W08 continuous. See master plan for exact branch ownership and task dependencies. Original ES3, ES4 and art/QA items retain their existing states; historical CI evidence is not a claim about current HEAD.
