@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
 import { computed } from 'vue'
+import Es2ModeSigil from './Es2ModeSigil.vue'
 import { getObjectiveMode } from '../../../game/content/modes/definitions'
 import { evaluateObjective, getObjectiveDifficulty, type ObjectiveState } from '../../../game/content/objectives/evaluator'
 
@@ -23,7 +24,7 @@ const progressLabel = computed(() => result.value.progress.required === null
 
 <template>
   <section class="es2-mode-progress" :aria-label="t('ES2 模式進度')" aria-live="polite">
-    <header><span>{{ t(rule.title) }}</span><strong>{{ t(outcome) }}</strong></header>
+    <header><span class="es2-mode-progress-name"><Es2ModeSigil :mode="state.mode" class="es2-mode-progress-sigil" /><span>{{ t(rule.title).split(' · ')[0] }}</span></span><strong>{{ t(outcome) }}</strong></header>
     <div class="es2-mode-progress-detail">
       <span>{{ t(result.progress.label) }}</span>
       <output>{{ t(progressLabel) }}</output>
@@ -46,7 +47,9 @@ const progressLabel = computed(() => result.value.progress.required === null
   border: 1px solid #8b715e; border-radius: 0.65rem; background: #201a2ad9; color: #f4e8d8; }
 .es2-mode-progress header, .es2-mode-progress-detail { display: flex; justify-content: space-between;
   align-items: baseline; flex-wrap: wrap; gap: 0.3rem; }
-.es2-mode-progress header span { font-weight: 700; }
+.es2-mode-progress-name { display:flex; align-items:center; gap:5px; min-width:0; max-width:100%; font-weight:700; overflow-wrap:anywhere; }
+.es2-mode-progress-name .es2-mode-progress-sigil { width:24px; font-size:16px; }
+.es2-mode-progress header { align-items:center; }
 .es2-mode-progress header strong { color: #e9c17c; font-size: 0.8rem; }
 .es2-mode-progress-detail { margin: 0.5rem 0; font-size: 0.8rem; }
 .es2-mode-progress-detail output { font-variant-numeric: tabular-nums; }

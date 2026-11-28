@@ -8,6 +8,7 @@ import { JOB } from '../../../game/constants'
 import { emptyProfile } from '../../../meta/profile'
 import { setLocale, getLocale } from '../../../i18n'
 import AudioControl from '../../AudioControl.vue'
+import { MODES } from '../../../meta/modes'
 
 const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
 const hudCss = readFileSync(resolve('src/styles/es2/hud.css'), 'utf8')
@@ -295,22 +296,24 @@ describe('homepage menu layout across devices', () => {
   it('shares the icon and visual identity for all nine modes on both lobby pages', async () => {
     const wrapper = menu()
     const brief = wrapper.get('[data-es2-expedition-summary]')
-    const cases = [
-      ['quick', '✦'], ['standard', '♜'], ['endless', '∞'], ['challenge', 'ϟ'],
-      ['boss-rush', '♛'], ['endless-eclipse', '☾'], ['relic-hunt', '◇'],
-      ['cursed-expedition', '✧'], ['chaos-arena', '✵'],
-    ] as const
+    const cases = Object.values(MODES).map(mode => mode.id)
     for (const page of ['heroes', 'modes'] as const) {
       expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe(page)
-      for (const [id, glyph] of cases) {
+      for (const id of cases) {
         await wrapper.setProps({ runMode: id })
         const card = wrapper.get(`[data-mode="${id}"], [data-objective-mode="${id}"]`)
         expect(card.attributes('aria-checked')).toBe('true')
         expect(card.attributes('data-es2-mode-theme')).toBe(id)
         expect(brief.attributes('data-es2-mode-theme')).toBe(id)
-        for (const icon of [card.get('.es2-mode-sigil'), brief.get('.es2-mode-sigil')]) {
-          expect(icon.text()).toBe(glyph)
+        const cardIcon = card.get('.es2-mode-sigil')
+        const dockIcon = brief.get('.es2-mode-sigil')
+        const src = cardIcon.get('img').attributes('src')
+        expect(src).toContain(id + '@3x.webp')
+        expect(dockIcon.get('img').attributes('src')).toBe(src)
+        for (const icon of [cardIcon, dockIcon]) {
           expect(icon.attributes('aria-hidden')).toBe('true')
+          expect(icon.get('img').attributes('alt')).toBe('')
+          expect(icon.text()).toBe('')
         }
         expect(css).toContain(`[data-es2-mode-theme="${id}"]`)
         expect(brief.get('[data-es2-mode-summary]').text()).not.toBe('')
@@ -320,7 +323,9 @@ describe('homepage menu layout across devices', () => {
     expect(css).toContain('.es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}')
   })
   it('uses a shared hexagonal icon, matching title color and duration chip', () => {
-    expect(css).toMatch(/\.es2-mode-sigil\{[^}]*aspect-ratio:1[^}]*clip-path:polygon\([^}]*color:var\(--es2-mode-accent,/)
+    expect(css).toContain('.es2-menu .es2-mode-mark{width:48px')
+    expect(css).toContain('.es2-menu .es2-expedition-sigil{width:56px')
+    expect(css).toMatch(/@media \(max-width:460px\) and \(orientation:portrait\)\{[^@]*\.es2-menu \.es2-mode-grid,[^{}]*\.es2-menu \.es2-objective-grid\{grid-template-columns:minmax\(0,1fr\)/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-name\{[^}]*color:var\(--es2-mode-accent\)[^}]*font:800/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-duration\{[^}]*display:inline-block[^}]*border:1px solid[^}]*font-variant-numeric:tabular-nums/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-meta\{[^}]*font:500 max\(\.6875rem/)

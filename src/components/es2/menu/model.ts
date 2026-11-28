@@ -3,7 +3,7 @@ import type { RunModeId } from '../../../meta/types'
 import { upgradeKeyIndex } from '../../../game/input'
 import type { MasteryStatChange } from '../../../game/content/heroes/mastery-preview'
 
-/** Shared expedition icon identity for chooser cards and the selected-mode dock. */
+/** Shared fallback glyphs for mode art; rendered exclusively by Es2ModeSigil. */
 export const MODE_SIGILS: Readonly<Record<RunModeId, string>> = {
   quick: '✦', standard: '♜', endless: '∞', challenge: 'ϟ',
   'boss-rush': '♛', 'endless-eclipse': '☾', 'relic-hunt': '◇',

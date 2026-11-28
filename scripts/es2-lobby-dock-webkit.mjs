@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { webkit } from 'playwright'
+import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
 
 const target = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const directory = 'artifacts/es2-mobile-browser'
@@ -79,6 +80,7 @@ async function verifyDock(page, stage) {
       await assertPaint(page, selector, stage + (bottom ? '-scrolled' : '-top'))
     }
   }
+  await assertExpeditionModeIcons(page, stage, { cards: await page.locator('.es2-mode-section').isVisible() })
   await page.screenshot({ path: directory + '/webkit-dock-' + stage + '.png' })
   await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
 }

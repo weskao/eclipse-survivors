@@ -88,7 +88,7 @@ onBeforeUnmount(() => {
       <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice', 'es2-dialog-preferences': variant === 'settings', 'es2-dialog-result': variant === 'result' }]"
         role="dialog" aria-modal="true" :aria-labelledby="headingId" tabindex="-1" @pointerdown.stop>
         <header class="es2-dialog-header">
-          <div><span class="es2-eyebrow">✦ ECLIPSE SURVIVORS ✦</span><h2 :id="headingId">{{ title }}</h2><p v-if="subtitle">{{ subtitle }}</p></div>
+          <div><span class="es2-eyebrow">✦ ECLIPSE SURVIVORS ✦</span><h2 :id="headingId" :class="{ 'es2-dialog-title-with-leading': $slots['title-leading'] }"><slot name="title-leading" /><span v-if="$slots['title-leading']">{{ title }}</span><template v-else>{{ title }}</template></h2><p v-if="subtitle">{{ subtitle }}</p></div>
           <div class="es2-dialog-header-actions"><slot name="header-actions" /><button v-if="dismissible" type="button" class="es2-close" :aria-label="t('關閉對話視窗')" @click="emit('cancel')">×</button></div>
         </header>
         <div class="es2-dialog-body"><slot /></div>

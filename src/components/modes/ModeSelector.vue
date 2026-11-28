@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../i18n'
+import Es2ModeSigil from '../es2/modes/Es2ModeSigil.vue'
 import { MODES, modeIds } from '../../meta/modes'
 import type { RunModeId } from '../../meta/types'
 
@@ -18,7 +19,7 @@ const emit = defineEmits<{ select: [mode: RunModeId] }>()
         :aria-checked="id === value"
         @click="emit('select', id)"
       >
-        <span class="mode-icon" aria-hidden="true">{{ id === 'quick' ? '✦' : id === 'standard' ? '♜' : id === 'endless' ? '∞' : '⚡' }}</span>
+        <Es2ModeSigil :mode="id" class="mode-icon" />
         <span class="mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
         <span class="mode-duration">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
       </button>

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { chromium } from 'playwright'
+import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
 
 const base = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const destination = 'artifacts/es2-mobile-browser'
@@ -345,6 +346,20 @@ try {
       })
       assert.deepEqual(entryOffenders, [], name + ': expedition cards clip during the first entry frame')
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
+      await assertExpeditionModeIcons(page, name + ': expedition selection', { cards: true })
+      if (['portrait-320', 'landscape-844', 'desktop-1440'].includes(name)) {
+        const brief = page.locator('[data-es2-expedition-summary]')
+        const initial = await brief.getAttribute('data-run-mode')
+        const cards = page.locator('[data-mode], [data-objective-mode]')
+        const ids = await cards.evaluateAll(nodes => nodes.map(node => node.dataset.mode ?? node.dataset.objectiveMode))
+        for (const id of [...ids, initial]) {
+          await page.locator(`[data-mode="${id}"], [data-objective-mode="${id}"]`).click()
+          assert.equal(await brief.getAttribute('data-run-mode'), id)
+          await assertExpeditionModeIcons(page, name + ': ' + id, { cards: true })
+        }
+        await page.mouse.move(0, 0)
+        await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
+      }
       if (hoverCapable) {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
         const card = page.locator('[data-objective-mode="boss-rush"]')
@@ -353,12 +368,21 @@ try {
         const tip = page.locator('[data-es2-hover-details]')
         await tip.waitFor({ state: 'visible' })
         assert.match(await tip.innerText(), /首領連戰|Boss Rush/i)
+        assert.equal(await tip.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
         assert.ok(inside(await tip.evaluate(rect), width, height), name + ': mode tooltip clips')
         assert.equal(await card.getAttribute('aria-checked'), before)
         await page.keyboard.press('Escape')
         await tip.waitFor({ state: 'hidden' })
       } else {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
+        const card = page.locator('[data-objective-mode="boss-rush"]')
+        await page.locator('[data-es2-mode-details="boss-rush"]').click()
+        const info = page.locator('.es2-dialog[role="dialog"]')
+        await info.waitFor({ state: 'visible' })
+        assert.equal(await info.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
+        await info.locator('.es2-close').click()
+        await info.waitFor({ state: 'hidden' })
+        await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
       }
       await verifyDock()
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
@@ -461,6 +485,7 @@ try {
       }
       await page.locator('[data-es2-expedition-navigation]').click()
       assert.equal(await page.locator('[data-es2-expedition-summary]').getAttribute('data-run-mode'), 'boss-rush')
+      await assertExpeditionModeIcons(page, name + ': boss rush in English at 125%')
       assert.match(await page.locator('[data-es2-mode-summary]').innerText(), /five increasingly powerful bosses/i)
       await verifyDock()
       await page.screenshot({ path: destination + '/' + name + '-portal-boss-rush-125.png', animations: 'disabled' })

@@ -29,9 +29,19 @@ describe('expedition result screen fits with overflow fallback', () => {
     const report = dialog.querySelector('.es2-result > .es2-result-report')!
     expect(banner.querySelector('.es2-result-hero img')).not.toBeNull()
     expect(banner.querySelector('.es2-result-status')).not.toBeNull()
+    expect(banner.querySelector('.es2-result-mode .es2-mode-sigil img')?.getAttribute('src')).toContain('quick@3x.webp')
     expect(report.querySelector('.es2-result-stats')?.children).toHaveLength(6)
     expect(report.querySelector('.es2-reward-strip')).not.toBeNull()
     expect(report.querySelector('.es2-result-cloud')).not.toBeNull()
+    wrapper.unmount()
+  })
+
+  it('shows the actual mode art on both victory and defeat, including a mode switch', async () => {
+    const wrapper = mount(Es2Result, { props: { active: true, still: true, ending: '勝利', summary: '', result: run }, attachTo: document.body })
+    const image = () => document.body.querySelector('.es2-result-mode .es2-mode-sigil img')
+    expect(image()?.getAttribute('src')).toContain('quick@3x.webp')
+    await wrapper.setProps({ result: { ...run, mode: 'boss-rush', victory: false } })
+    expect(image()?.getAttribute('src')).toContain('boss-rush@3x.webp')
     wrapper.unmount()
   })
 

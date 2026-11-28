@@ -28,7 +28,7 @@ Each requirement lives in exactly one file, never a copy here and in a rule. Rul
 | BOSS CRUD: original score, phase music, per-attack cinematic SFX | `.claude/rules/boss-music-production.md` |
 | BOSS arrival countdown UI, BOSS phase body size | `.claude/rules/boss-visuals.md` |
 | Combat feedback, skill growth, encounters, reward experience and game-feel acceptance | `.claude/rules/game-feel.md` |
-| Lobby, Adventurer Hall, hero selection panels, last expedition selection, hero cosmetic cards (every new or updated hero) | `.claude/rules/hero-lobby.md` |
+| Lobby, Adventurer Hall, hero selection panels, last expedition selection, hero cosmetic cards, **expedition mode CRUD and shared mode icon contract (every new or updated mode)** | `.claude/rules/hero-lobby.md` |
 | Unlocked playtest (`make *-unlocked`, `VITE_ES2_UNLOCKED`), anything that could ship a test unlock | `.claude/rules/unlock-separation.md` |
 | Version bump, `CHANGELOG.md`, release, GitHub Pages deploy, DEV-only QA surfaces | `docs/release-process.md` |
 | Skill CRUD, ability option, projectile, enemy bullet, damage feedback, attack animation — read **before** implementation | `es2-combat-visual-fidelity` skill |

@@ -15,10 +15,11 @@ import HeroActiveSummary from '../hero-roster/HeroActiveSummary.vue'
 import Es2DetailSurface from './Es2DetailSurface.vue'
 import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
+import Es2ModeSigil from '../modes/Es2ModeSigil.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
-import { formatDuration, MODE_SIGILS, type MenuView } from './model'
+import { formatDuration, type MenuView } from './model'
 const props = withDefaults(defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean; archiveView?: MenuView }>(), { archiveView: 'main' })
 const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
@@ -152,7 +153,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
               <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" :data-es2-mode-theme="id" class="es2-mode-card" data-ui-sfx="managed"
                 :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
                 @click="emit('mode', id)" @keydown="moveMode($event, id)">
-                <span class="es2-mode-mark es2-mode-sigil" aria-hidden="true">{{ MODE_SIGILS[id] }}</span>
+                <Es2ModeSigil :mode="id" class="es2-mode-mark" />
                 <span class="es2-mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
                 <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
               </button>
@@ -171,7 +172,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
           :title="expeditionActionTitle"
           :aria-label="`${expeditionActionLabel} — ${expeditionActionTitle} · ${modeTitle} ${modeDuration} · ${modeBrief}`"
           data-ui-sfx="select" @click="toggleExpeditionPage">
-          <span class="es2-expedition-sigil es2-mode-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
+          <Es2ModeSigil :mode="runMode" class="es2-expedition-sigil" />
           <span class="es2-mobile-selected-mode" aria-live="polite">
             <span class="es2-expedition-kicker">{{ t('目前遠征') }}</span>
             <strong class="es2-expedition-name">{{ modeTitle }}</strong>
