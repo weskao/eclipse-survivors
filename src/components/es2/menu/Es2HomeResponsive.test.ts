@@ -288,6 +288,7 @@ describe('phone homepage viewport-first navigation', () => {
           const copy = brief.text()
           const label = brief.attributes('aria-label')
           expect(brief.find('.es2-expedition-hero, [data-es2-selected-hero]').exists()).toBe(false)
+          expect(brief.get('[data-es2-mode-summary]').text()).not.toBe('')
           await wrapper.setProps({ heroId: 'shadowblade' })
           expect(brief.text()).toBe(copy)
           expect(brief.attributes('aria-label')).toBe(label)
