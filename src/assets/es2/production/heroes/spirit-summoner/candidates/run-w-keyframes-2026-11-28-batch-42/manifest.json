@@ -1,0 +1,81 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "W",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 1,
+  "sourceProvenance": {
+    "referenceCommit": "18abf07e5a0e3780dce23230bc2e48eac53e0741",
+    "portraitPath": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "generationId": "6569f816-246e-4d76-948b-b03ed9a5ccc7",
+    "referenceConditioningVerified": false,
+    "fullSourceRelativePath": "../run-w-keyframes-2026-11-28-batch-42/source-pair.webp",
+    "fullSourceSHA256": "08a83143fb15c2157acca38cf50ef0a9a423740e470d02bc204571058801aa20"
+  },
+  "frames": [
+    {
+      "id": "run-west-stride-identity-a",
+      "file": "run-west-stride-identity-a@3x.webp",
+      "sourceFile": "run-west-stride-identity-a-source.webp",
+      "bytes": 349626,
+      "sourceBytes": 885940,
+      "webpSHA256": "0a09a56f262350cdfd81a3fe53606aab54c88da99fd9eb67478ccd4400b915b0",
+      "sourceSHA256": "d47c7fad3eae6873958688ab1980db9c66d6ca2e13ff8d98a6580a1dbe7564b4",
+      "sourcePixels": [
+        768,
+        1024
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          36,
+          5,
+          751,
+          971
+        ],
+        "coreExtent": [
+          715,
+          966
+        ],
+        "boundaryMaxAlpha": 7
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          145,
+          36,
+          636,
+          700
+        ],
+        "coreExtent": [
+          491,
+          664
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.6875,
+      "mirror": false,
+      "footAnchor": null
+    }
+  ],
+  "reviewNotes": [
+    "Independent candidate pose only; not a four- or ten-frame sequence.",
+    "Face, crown, white floral sleeves, blue waist and strapped heels visually resemble canonical portrait; exact identity and staff handedness not verified.",
+    "NW facing is a rear-left candidate, not yet gameplay-validated.",
+    "Low-alpha source boundary residual retained. No source pixels intentionally removed except separation at midpoint.",
+    "Pillow lossless WebP, visible RGBA and all alpha bytes verified; Polytool not executed.",
+    "No upscaling. Preview uses 0.6875 downsampling and transparent padding."
+  ]
+}
