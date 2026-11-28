@@ -32,9 +32,8 @@ export async function assertModeDurations(page, label) {
     const i = info?.getBoundingClientRect()
     const font = parseFloat(getComputedStyle(value).fontSize)
     const endless = chip.classList.contains('es2-mode-time--endless')
-    const centered = Math.abs((t.top+t.bottom-c.top-c.bottom)/2)<=1 &&
-      (!endless || (Math.abs((v.top+v.bottom-t.top-t.bottom)/2)<=1 &&
-      Math.abs((v.left+v.right-t.left-t.right)/2)<=1 && !unit))
+    const centered = !endless || (Math.abs((v.top+v.bottom-t.top-t.bottom)/2)<=1 &&
+      Math.abs((v.left+v.right-t.left-t.right)/2)<=1 && !unit)
     const icon = info?.querySelector('span')
     const heroInfo = document.querySelector('.es2-hero-detail-trigger')
     const infoStyle = info && getComputedStyle(info)
@@ -48,17 +47,24 @@ export async function assertModeDurations(page, label) {
     const cardStyle = getComputedStyle(card)
     const rightAligned = Math.abs(c.right-t.right-parseFloat(cardStyle.borderRightWidth)-parseFloat(cardStyle.paddingRight))<=1 &&
       parseFloat(cardStyle.paddingRight)<=9
+    const bottomAligned = Math.abs(c.bottom-t.bottom-parseFloat(cardStyle.borderBottomWidth)-parseFloat(cardStyle.paddingBottom))<=1 &&
+      parseFloat(cardStyle.paddingBottom)<=6
+    const scale = parseFloat(getComputedStyle(card).getPropertyValue('--es2-ui-scale')) || 1
+    const compact = scale > 1 || c.height <= 112
     const inline = !unit || (v.right<=unit.getBoundingClientRect().left+1 &&
       Math.abs((v.top+v.bottom-unit.getBoundingClientRect().top-unit.getBoundingClientRect().bottom)/2)<=1)
     return { mode:card.dataset.mode ?? card.dataset.objectiveMode, text:value.textContent, font,
-      centered, plain, corner, rightAligned, inline, valid: centered && plain && corner && rightAligned && inline && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
+      height:c.height, centered, plain, corner, rightAligned, bottomAligned, compact, inline, valid: centered && plain && corner && rightAligned && bottomAligned && compact && inline && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
         && i.bottom <= c.bottom+1 && t.top >= i.bottom-1
         && font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
         && t.left>=c.left-1 && t.right<=c.right+1 && t.top>=c.top-1 && t.bottom<=c.bottom+1
-        && copy.right<=t.left+1 && v.width<=t.width+1 && chip.scrollWidth<=chip.clientWidth+1
+        && copy.right<=t.left+1 && copy.right<=i.left+1 && copy.top>=c.top-1 && copy.bottom<=c.bottom+1
+        && v.width<=t.width+1 && chip.scrollWidth<=chip.clientWidth+1
         && getComputedStyle(value).fontFamily.includes('Eclipse Numerals') }
   }))
   assert.equal(cards.length,9,label + ': missing expedition time chips and info controls')
+  const heights = cards.map(card=>card.height)
+  assert.ok(Math.max(...heights)-Math.min(...heights)<=1, label + ': expedition card heights differ ' + JSON.stringify(cards.map(({mode,height})=>({mode,height}))))
   assert.deepEqual(cards.filter(card=>!card.valid),[],label + ': duration readability or overflow')
 }
 
