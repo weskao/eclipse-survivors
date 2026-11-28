@@ -46,6 +46,8 @@ export const BOSS_NATIVE_KEYFRAMES = {
   frostAwakening: ['batch-24/frost-sovereign/transform/frost-crystal-awakening-key-a.webp', 1235, 1407, 610, 1346],
   abyssAwakeningPhase2: ['batch-25/abyss-monarch/transform/abyss-phase2-awakening-key-a.webp', 1376, 1263, 643.5, 1218],
   abyssAwakeningPhase2B: ['batch-25/abyss-monarch/transform/abyss-phase2-awakening-key-b.webp', 1359, 1278, 668.5, 1223],
+  frostAwakeningPhase2: ['batch-27/frost-sovereign/transform/frost-phase2-awakening-study-a.webp', 1318, 1318, 657, 1273],
+  seraphAwakeningPhase2: ['batch-27/eclipse-seraph/transform/seraph-phase2-awakening-study-a.webp', 1318, 1318, 660, 1277],
   // Not wired: batch-24 frost-glide-key-a (directional move, direction/phase unapproved) and
   // batch-26 titan studies (armor/horn/skirt identity mismatch); both stay QA_PENDING review art.
 } as const
@@ -84,6 +86,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
     return null
   }
   if (snapshot.id === 'frost-sovereign') {
+    if (motion.phase === 2 && motion.pose === 'transform') return 'frostAwakeningPhase2'
     if (motion.phase === 3 && motion.pose === 'death') return 'frostDeath'
     if (motion.phase === 3 && motion.pose === 'transform') return 'frostAwakening'
     if (motion.phase !== 1) return null
@@ -96,6 +99,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
     return null
   }
   if (snapshot.id === 'eclipse-seraph') {
+    if (motion.phase === 2 && motion.pose === 'transform') return 'seraphAwakeningPhase2'
     if (motion.phase === 3) {
       if (motion.pose === 'death') return 'seraphDeath'
       if (motion.pose === 'idle') return 'seraphIdle'
