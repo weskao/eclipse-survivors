@@ -1,0 +1,71 @@
+{
+  "id": "slime",
+  "variant": "preferred",
+  "path": "slime-death-preferred@3x.webp",
+  "sourcePath": "slime-death-preferred-source.png",
+  "sourceGenerationId": "990ae9e6-0f96-421c-bd55-0ed25dbdbd50",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "nativeSourceCellPixels": 627,
+  "sourceContentBounds": [
+    [
+      39,
+      160,
+      618,
+      593
+    ],
+    [
+      40,
+      318,
+      593,
+      596
+    ],
+    [
+      55,
+      334,
+      608,
+      585
+    ],
+    [
+      37,
+      412,
+      591,
+      586
+    ]
+  ],
+  "sourceSha256": "3e09fc91f0e47fea15eccb969d53e541f1be3da37a9182a78448b588f51ba831",
+  "sha256": "71493099fba0bb7d9a3b7ab9f76acdddb61ec9e27561777f9baaba3ecbead7b8",
+  "bytes": 142576,
+  "width": 872,
+  "height": 872,
+  "rows": 2,
+  "columns": 2,
+  "frames": 4,
+  "frameWidth": 436,
+  "frameHeight": 436,
+  "gutter": 8,
+  "contentCellPixels": 420,
+  "scale": 3,
+  "displayMaximumPx": 139,
+  "alpha": true,
+  "native3x": true,
+  "upscaled": false,
+  "status": "QA_PENDING",
+  "visualReview": "pending",
+  "browserReview": "pending",
+  "canonicalReference": {
+    "path": "src/assets/slime.webp",
+    "gitBlobSha": "83e2ad2568f43fc8df3cd0b11b089ddfad6cc7ee",
+    "commit": "0f4bbb8b342bc06b3b03c7c0361ccf0175cb7015"
+  },
+  "frameOrder": [
+    "hit",
+    "collapse",
+    "puddle",
+    "residue"
+  ],
+  "anchor": "bottom center, common 404px content baseline",
+  "admission": "candidate only; no runtime replacement"
+}

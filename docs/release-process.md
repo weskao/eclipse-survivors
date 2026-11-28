@@ -46,11 +46,21 @@ The project currently uses **B. GitHub Actions** as its only deployment path. Op
 - The upload-to-deploy handoff waits until the Pages artifact is visible to GitHub Actions. Avoid rerunning an old failed Pages workflow attempt: reruns can create duplicate `github-pages` artifacts. Use a fresh `main` run instead.
 - To redeploy manually: select **Actions → Verify and publish Eclipse Survivors → Run workflow**, and choose the `main` branch.
 
+## Development-only QA surfaces
+
+- `pnpm dev` / `make dev` keep C104 reference boards, enemy/boss/biome and UI art inspection galleries, content showcase and explicitly enabled candidate previews available for review.
+- `pnpm build` / `make build` exclude QA-only UI components, styles, original PNG/WebP contact sheets, and isolated review-only assets from `dist/`. Real compendium, achievements, canonical gameplay art, music and platform icons remain.
+- QA galleries are tested against Vite DEV, not production preview. `pnpm check-release` rejects both copied and hashed review-only assets and QA UI code/styles before deployment. Never use query strings or CSS hiding as a substitute for excluding development modules from the release artifact.
+
 ## Versioned release
+
+**Version progression (mandatory):** Each new published release advances exactly one patch step from the latest published GitHub Release. Use `MAJOR.MINOR.PATCH`, with PATCH limited to 0–99. When PATCH is 99, increment MINOR by one and reset PATCH to 0. Do not skip versions, roll back, or automatically increment MAJOR. For example: `1.2.3 → 1.2.4 → … → 1.2.98 → 1.2.99 → 1.3.0 → 1.3.1`. Existing historical releases are not rewritten. The same version may be redeployed without creating a duplicate Release.
+
+The release workflow verifies this rule against the latest published GitHub Release before building or deploying a main push. If the previous Release cannot be retrieved, the check fails rather than guessing. To check locally, run `node scripts/check-release-version.mjs v1.2.99 1.3.0`. The boundary and rejection cases run as part of `pnpm test`.
 
 1. Confirm that the game features being announced are actually implemented in `src/`.
 2. Update `CHANGELOG.md` to describe only features players can currently experience, in both Traditional Chinese and English.
-   - Set the `version` in `package.json` to the upcoming release version (for example, `0.0.4`). Vite's `define` (`__APP_VERSION__`) displays this value in the version bar on the character selection screen.
+   - Set the `version` in `package.json` to the upcoming release version (for example, `1.2.1` after `1.2.0`), following the mandatory progression above. Vite's `define` (`__APP_VERSION__`) displays this value in the version bar on the character selection screen.
    - The `version` in `package.json` must match the latest `## [x.y.z]` entry in `CHANGELOG.md`. A Vitest test enforces this, and `pnpm check-release` checks the built output in `dist/`.
    - Before committing, run `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm check-release` locally in that order, and ensure they all pass.
 3. After the full checks pass, commit the version and changelog updates to `main` when authorized. A regular push to `main` starts the deployment workflow.

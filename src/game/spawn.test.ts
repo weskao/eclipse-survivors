@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { sceneBonus, spawnInterval, spawnMob, tickSpawning } from './spawn'
+import { sceneBonus, spawnInterval, spawnMob, spawnOpeningWave, tickSpawning } from './spawn'
+import { createFactionBridge } from './content/enemies/integration'
+import { summonBossMinions } from './bosses/phases'
 import { MAX_MOBS } from './constants'
 import { dist, seeded, setRandom } from './math'
 import { createHero, createState } from './state'
 import type { GameHooks, GameState } from './types'
+import { nearbyObstacles, pointIsClear } from './world'
 
 const spyHooks = () => ({ sfx: vi.fn(), message: vi.fn(), offerUpgrades: vi.fn(), end: vi.fn() }) satisfies GameHooks
 
@@ -106,4 +109,116 @@ describe('boss-cap regression', () => {
     expect(s.mobs.filter(m => m.type === 'boss')).toHaveLength(1)
     expect(hooks.message).toHaveBeenCalledWith('⚠ 魔王降臨！')
   })
+})
+
+describe('ES3 live encounter pacing', () => {
+  it('intensifies ordinary assault spawns and eases the reward phase without changing the underlying spawn curve', () => {
+    const s = setup()
+    setRandom(seeded(12))
+    s.time = 20
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.spawnT).toBeLessThan(spawnInterval(s.time, s.currentScene))
+    s.time = 35; s.spawnT = 0
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.spawnT).toBeGreaterThan(spawnInterval(s.time, s.currentScene))
+    s.time = 42; s.spawnT = 0
+    const count = s.mobs.length
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.mobs).toHaveLength(count)
+  })
+})
+
+describe('ES3 ordinary encounter composition reaches live spawning', () => {
+  it('actually spawns lightweight swarm foes and later elite heavy foes instead of using random legacy composition', () => {
+    const s = setup()
+    s.runMode = 'endless'
+    s.bossSpawned = true
+    setRandom(() => 0.99)
+    s.time = 20
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.mobs.length).toBeGreaterThan(0)
+    expect(s.mobs.every(mob => mob.type === 'slime' || mob.type === 'bat')).toBe(true)
+    s.mobs = []; s.spawnT = 0; s.time = 110
+    tickSpawning(s, 0.016, spyHooks())
+    expect(s.mobs.some(mob => mob.elite && mob.type === 'golem')).toBe(true)
+  })
+})
+
+describe('ES3 single live ordinary spawn owner', () => {
+  it('only schedules faction reinforcements from a spawn pulse, never during recovery or beyond the shared cap', () => {
+    const s = setup(), bridge = createFactionBridge({ random: seeded(9) })
+    setRandom(seeded(8))
+    s.time = 8.1; s.spawnT = 1
+    tickSpawning(s, .016, spyHooks(), undefined, 0, bridge)
+    expect(bridge.runtime.enemies).toHaveLength(0)
+    s.spawnT = 0
+    tickSpawning(s, .016, spyHooks(), undefined, 0, bridge)
+    expect(bridge.runtime.enemies).toHaveLength(1)
+    s.time = 42; s.spawnT = 0
+    tickSpawning(s, .016, spyHooks(), undefined, 1, bridge)
+    expect(bridge.runtime.enemies).toHaveLength(1)
+    s.time = 49; s.spawnT = 0
+    while (s.mobs.length < MAX_MOBS - 1) spawnMob(s, undefined, 1)
+    tickSpawning(s, .016, spyHooks(), undefined, 1, bridge)
+    expect(s.mobs.length + bridge.runtime.enemies.length).toBe(MAX_MOBS)
+  })
+})
+
+it('reserves the shared actor budget for boss summons including faction actors', () => {
+  const s = setup(); spawnMob(s, 'boss')
+  const boss = s.mobs[0]!
+  summonBossMinions(s, boss, MAX_MOBS - 1)
+  expect(s.mobs).toHaveLength(1)
+})
+
+it('drives all seven assault compositions and recovery through the production spawn pulse', () => {
+  for (let cycle = 0; cycle < 7; cycle++) {
+    const s = setup(); s.runMode = 'endless'; s.bossSpawned = true; s.time = cycle * 48 + 20
+    setRandom(seeded(42 + cycle))
+    for (let i = 0; i < 8; i++) { s.spawnT = 0; tickSpawning(s, .016, spyHooks()); s.time += .2 }
+    const expected = [['slime','bat'],['goblin'],['golem','goblin'],['slime','warlock'],['golem'],['goblin'],['goblin','warlock']][cycle]!
+    expect(s.mobs.length).toBeGreaterThan(0)
+    expect(s.mobs.every(m => expected.includes(m.type))).toBe(true)
+    if (cycle === 5) expect(s.mobs.every(m => m.rewardXpMultiplier === 1.5)).toBe(true)
+  }
+  const s = setup(); s.runMode = 'endless'; s.time = 42; s.spawnT = 0; tickSpawning(s,.016,spyHooks()); expect(s.mobs).toHaveLength(0)
+})
+
+it('uses seeded live encounter selection rather than always using seed zero',()=>{
+  const s=setup(); s.runMode='endless'; s.directorSeed=4; s.time=20; s.bossSpawned=true
+  setRandom(seeded(9)); tickSpawning(s,.016,spyHooks())
+  expect(s.mobs.length).toBeGreaterThan(0)
+  expect(s.mobs.every(m=>m.type==='golem')).toBe(true)
+})
+it('gives treasure-rush faction enemies the same advertised reward multiplier',()=>{
+  const s=setup(), bridge=createFactionBridge({random:seeded(1)})
+  s.runMode='endless';s.bossSpawned=true;s.time=5*48+20
+  setRandom(seeded(8))
+  tickSpawning(s,.016,spyHooks(),undefined,0,bridge)
+  const e=bridge.runtime.enemies[0]!
+  expect(e.rewardXpMultiplier).toBe(1.5)
+  const before=s.stars.length
+  bridge.hitFaction(s,e,10000,s.hero!.x,s.hero!.y,spyHooks())
+  expect(s.stars.length).toBe(before+1)
+  expect(s.stars.at(-1)!.value).toBeGreaterThan(0)
+})
+
+it('keeps opening legacy and faction actors clear of authored terrain without moving the hero', () => {
+  const obstacle = nearbyObstacles(0, 0, 0, 1000)[0]!
+  expect(obstacle).toBeDefined()
+  // Force the original first legacy candidate directly into the obstacle.
+  const legacy = setup(); legacy.hero!.x = obstacle.x - 243; legacy.hero!.y = obstacle.y
+  setRandom(() => 0)
+  spawnOpeningWave(legacy)
+  expect(legacy.mobs).toHaveLength(12)
+  expect(legacy.mobs.every(mob => pointIsClear(0, mob, mob.r))).toBe(true)
+  expect(legacy.hero!.x).toBe(obstacle.x - 243)
+  // The old cardinal faction placement independently hits the same obstacle.
+  const faction = setup(); faction.hero!.x = obstacle.x - 320; faction.hero!.y = obstacle.y
+  const bridge = createFactionBridge({ random: seeded(9) })
+  setRandom(seeded(12))
+  spawnOpeningWave(faction, bridge)
+  expect(bridge.runtime.enemies).toHaveLength(4)
+  expect(bridge.runtime.enemies.every(enemy => pointIsClear(0, enemy, enemy.radius))).toBe(true)
+  expect(faction.hero!.x).toBe(obstacle.x - 320)
 })

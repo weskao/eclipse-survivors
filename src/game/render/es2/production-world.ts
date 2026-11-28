@@ -2,10 +2,41 @@ import { BIOME_IDS, type BiomeId } from '../../content/biomes'
 import { BOSS_DEFINITIONS, type BossId } from '../../content/bosses/definitions'
 import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import type { Ctx2D } from '../ctx'
+import type { MobType, TreasureTier } from '../../types'
+import es3ArtManifest from '../../../assets/es3/production/manifest.json'
+import { bossPhaseVisualScale, measureBossPhaseLayouts, type BossPhaseLayout } from './boss-phase-layout'
+export { BOSS_BASE_DRAW_PX, bossPhaseVisualScale } from './boss-phase-layout'
 import { BOSS_NATIVE_KEYFRAMES, registerBossNativeKeyframe, type NativeBossKeyframe } from './boss-native-keyframes'
 
 /** Vite resolves all URLs at build time. The browser only fetches a bitmap when it is used. */
 const urls = import.meta.glob('../../../assets/es2/production/{enemies,bosses,biomes,ui}/*.webp', {
+  eager: true, query: '?url', import: 'default',
+}) as Record<string, string>
+
+// ES3 additions are separate from the 49 owner-approved ES2 assets. A missing
+// upload never breaks the existing art; Vite resolves supplied WebPs on build.
+const es3Urls = import.meta.glob('../../../assets/es3/production/ui/*.webp', {
+  eager: true, query: '?url', import: 'default',
+}) as Record<string, string>
+export const ES3_EPIC_TREASURE_URL = es3Urls['../../../assets/es3/production/ui/treasure-epic@3x.webp']
+const LEGACY_DEATH_IDS = ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const
+// The mismatched dissolve sheets load only once approved (gate below). Lazy DEV-only loaders keep
+// their bytes out of release builds; approving one means lifting this DEV scope and the
+// check-release guard together.
+const es3DeathSheetLoaders = import.meta.env.DEV
+  ? import.meta.glob('../../../assets/es3/production/enemies/*-death-dissolve@3x.webp', {
+    query: '?url', import: 'default',
+  }) as Record<string, () => Promise<string>>
+  : {}
+export const ES3_DEATH_SHEET_LOADERS: Partial<Record<MobType, () => Promise<string>>> = {}
+for (const id of LEGACY_DEATH_IDS) {
+  const loadSheet = es3DeathSheetLoaders[`../../../assets/es3/production/enemies/${id}-death-dissolve@3x.webp`]
+  if (loadSheet) ES3_DEATH_SHEET_LOADERS[id] = loadSheet
+}
+
+// The owner requested normal gameplay integration of these five identity-matched
+// atlases. The older mismatched sheets remain blocked by their separate QA gate.
+const nativeDeathUrls = import.meta.glob('../../../assets/es3/production/enemies/candidates/*/*-death-preferred@3x.webp', {
   eager: true, query: '?url', import: 'default',
 }) as Record<string, string>
 
@@ -16,6 +47,40 @@ const bossQaLoaders = import.meta.env.DEV
   }) as Record<string, () => Promise<string>>
   : {}
 const bossQaInsets = new WeakMap<HTMLImageElement, number>()
+const bossLayouts = new WeakMap<HTMLImageElement, { src: string; cell: number; inset: number; phases: readonly BossPhaseLayout[] }>()
+
+/** Cache only three small geometry records per decoded atlas; invalidate on source swap. */
+export function cacheBossPhaseLayouts(image: HTMLImageElement, rgba: Uint8ClampedArray, inset = 0): void {
+  bossLayouts.delete(image)
+  const cell = image.naturalHeight
+  if (image.naturalWidth !== cell * 3) return
+  const phases = measureBossPhaseLayouts(rgba, cell, inset)
+  if (phases) bossLayouts.set(image, { src: image.src, cell, inset, phases })
+}
+
+export function bossFrameLayout(image: HTMLImageElement, phase: 1 | 2 | 3, sourceInset?: number): BossPhaseLayout | undefined {
+  const cached = bossLayouts.get(image)
+  const inset = sourceInset ?? (image.naturalHeight === 756 ? bossQaInsets.get(image) ?? 0 : 0)
+  return cached && cached.src === image.src && cached.cell === image.naturalHeight && cached.inset === inset
+    ? cached.phases[phase - 1] : undefined
+}
+
+function prepareBossPhaseLayouts(image: HTMLImageElement): void {
+  bossLayouts.delete(image)
+  const cell = image.naturalHeight
+  if (!image.complete || cell < 192 || image.naturalWidth !== cell * 3 || typeof document === 'undefined') return
+  // A temporary readback canvas is created only on image decode, not during combat frames.
+  try {
+    const canvas = document.createElement('canvas')
+    canvas.width = image.naturalWidth; canvas.height = cell
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return
+    ctx.drawImage(image, 0, 0)
+    cacheBossPhaseLayouts(image, ctx.getImageData(0, 0, canvas.width, cell).data,
+      cell === 756 ? bossQaInsets.get(image) ?? 0 : 0)
+    canvas.width = canvas.height = 0
+  } catch { /* Preserve the original phase rendering if pixel readback is unavailable. */ }
+}
 // Isolated reference atlases are loaded only for an explicit development motion review.
 const bossMotionSourceLoaders = import.meta.env.DEV
   ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/*-attack-source-reference.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
@@ -28,7 +93,7 @@ const bossSheetQaLoaders = import.meta.env.DEV
 
 // Native source candidates are opt-in DEV diagnostics, never release assets.
 const bossNativeQaLoaders = import.meta.env.DEV
-  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-*/infernal-titan/**/*.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
+  ? import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-*/*/**/*.webp', { query: '?url', import: 'default' }) as Record<string, () => Promise<string>>
   : {}
 
 const src = (category: 'enemies' | 'bosses' | 'biomes' | 'ui', name: string): string => {
@@ -83,9 +148,19 @@ export const WORLD_ART = Object.freeze({
   ui: Object.fromEntries(WORLD_UI_IDS.map(id => [id, src('ui', id)])) as Record<WorldUiId, string>,
 })
 
+/** Shared reward-art identity for both choice dialogs, including cursed override. */
+export function treasureArtUrl(tier: TreasureTier = 'common', cursed = false): string {
+  if (cursed || tier === 'cursed') return WORLD_ART.ui['treasure-cursed']
+  if (tier === 'epic') return ES3_EPIC_TREASURE_URL ?? WORLD_ART.ui['treasure-rare']
+  return WORLD_ART.ui[`treasure-${tier}`]
+}
+
 export interface WorldRuntimeImages {
   /** Reuse authored treasure art in live world events. */
   chest: HTMLImageElement
+  chests?: Partial<Record<import('../../types').TreasureTier, HTMLImageElement>>
+  enemyDeaths?: Partial<Record<MobType, HTMLImageElement>>
+  magnet?: HTMLImageElement
   bosses: Record<BossId, HTMLImageElement>
   bossMotionReference?: { id: BossId; image: HTMLImageElement }
   bossNativeKeyframes?: Partial<Record<NativeBossKeyframe, HTMLImageElement>>
@@ -94,7 +169,7 @@ export interface WorldRuntimeImages {
 }
 
 /** Allocate world and common treasure images once on engine mount, never during rAF. */
-export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' | 'native' = false): WorldRuntimeImages {
+export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () => new Image(), reviewBossId?: BossId, reviewMotion: boolean | 'sheet' | 'native' = false, useNativeEnemyDeaths = true): WorldRuntimeImages {
   const load = (url: string): HTMLImageElement => {
     const image = makeImage()
     image.src = url
@@ -102,7 +177,9 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   const loadBoss = (id: BossId): HTMLImageElement => {
     const candidatePath = `../../../assets/es2/production/bosses/candidates/${id}-phases-native3x-QA-PENDING.webp`
-    const image = load(WORLD_ART.bosses[id])
+    const image = makeImage()
+    image.onload = () => prepareBossPhaseLayouts(image)
+    image.src = WORLD_ART.bosses[id]
     const loadCandidate = import.meta.env.DEV && reviewMotion !== 'native' && reviewBossId === id ? bossQaLoaders[candidatePath] : undefined
     if (loadCandidate) {
       void loadCandidate().then(url => {
@@ -123,14 +200,15 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
   let bossMotionReference: WorldRuntimeImages['bossMotionReference']
   let bossNativeKeyframes: WorldRuntimeImages['bossNativeKeyframes']
-  if (import.meta.env.DEV && reviewMotion === 'native' && reviewBossId === 'infernal-titan') {
-    bossNativeKeyframes = {}
+  if (import.meta.env.DEV && reviewMotion === 'native' && reviewBossId) {
     for (const key of Object.keys(BOSS_NATIVE_KEYFRAMES) as NativeBossKeyframe[]) {
       const [path] = BOSS_NATIVE_KEYFRAMES[key]
+      if (!path.includes(`/${reviewBossId}/`)) continue
       const loadSource = bossNativeQaLoaders['../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path]
       if (!loadSource) continue
       const image = makeImage()
       registerBossNativeKeyframe(image, key)
+      bossNativeKeyframes ??= {}
       bossNativeKeyframes[key] = image
       void loadSource().then(url => { image.src = url }).catch(() => { /* static fallback */ })
     }
@@ -144,10 +222,43 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
       void loadSource().then(url => { image.src = url }).catch(() => { /* static fallback */ })
     }
   }
+  const chest = load(WORLD_ART.ui['treasure-common'])
+  const rare = load(WORLD_ART.ui['treasure-rare'])
+  const epic = ES3_EPIC_TREASURE_URL ? load(ES3_EPIC_TREASURE_URL) : rare
+  if (epic !== rare) epic.onerror = () => { epic.onerror = null; epic.src = WORLD_ART.ui['treasure-rare'] }
+  const enemyDeaths: NonNullable<WorldRuntimeImages['enemyDeaths']> = {}
+  // Never substitute a character's established appearance with an unreviewed atlas.
+  for (const id of LEGACY_DEATH_IDS) {
+    const loadSheet = ES3_DEATH_SHEET_LOADERS[id]
+    const entry = es3ArtManifest.assets.find(asset => asset.id === id)
+    if (!loadSheet || entry?.status !== 'approved' || entry.visualReview !== 'approved') continue
+    const image = makeImage()
+    enemyDeaths[id] = image
+    void loadSheet().then(url => { image.src = url }).catch(() => { delete enemyDeaths[id] })
+  }
+  if (useNativeEnemyDeaths) {
+    for (const id of LEGACY_DEATH_IDS) {
+      const path = es3ArtManifest.nativeDeathRuntime[id]
+      const url = nativeDeathUrls['../../../assets/es3/production/' + path]
+      if (!url) continue
+      const fallback = enemyDeaths[id]
+      const image = makeImage()
+      image.onerror = () => {
+        if (fallback) enemyDeaths[id] = fallback
+        else delete enemyDeaths[id]
+      }
+      enemyDeaths[id] = image
+      image.src = url
+    }
+  }
+  const legendary = load(WORLD_ART.ui['treasure-legendary'])
+  const cursed = load(WORLD_ART.ui['treasure-cursed'])
   return {
     bossMotionReference,
     bossNativeKeyframes,
-    chest: load(WORLD_ART.ui['treasure-common']),
+    chest, chests: { common: chest, rare, epic, legendary, cursed },
+    enemyDeaths,
+    magnet: load(WORLD_ART.ui['hud-xp']),
     bosses: Object.fromEntries((Object.keys(WORLD_ART.bosses) as BossId[]).map(id =>
       [id, loadBoss(id)])) as Record<BossId, HTMLImageElement>,
     ground: Object.fromEntries(BIOME_IDS.map(id =>
@@ -157,26 +268,20 @@ export function loadWorldRuntimeImages(makeImage: () => HTMLImageElement = () =>
   }
 }
 
-/** Shared authored body display width before phase growth. */
-export const BOSS_BASE_DRAW_PX = 255
-
-/** Scale art only; collision geometry and source rects remain unchanged. */
-export function bossPhaseVisualScale(phase: 1 | 2 | 3): number {
-  return phase === 3 ? 1.24 : phase === 2 ? 1.12 : 1
-}
-
 export function drawProductionBossFrame(
   ctx: Ctx2D, image: HTMLImageElement, phase: 1 | 2 | 3, width: number, height: number,
   sourceInset?: number,
 ): boolean {
   if (!image.complete || image.naturalHeight < 192 || image.naturalWidth !== image.naturalHeight * 3 || !Number.isInteger(phase) || phase < 1 || phase > 3) return false
   const inset = sourceInset ?? (image.naturalHeight === 756 ? bossQaInsets.get(image) ?? 0 : 0)
-  const side = Math.min(width, height) * bossPhaseVisualScale(phase)
+  const base = Math.min(width, height)
+  const layout = bossFrameLayout(image, phase, inset)
+  const side = base * (layout?.scale ?? bossPhaseVisualScale(phase))
   const sourceSide = image.naturalHeight - inset * 2
   if (!Number.isFinite(side) || side <= 0 || !Number.isInteger(inset) || inset < 0 || sourceSide <= 0) return false
   ctx.drawImage(
     image, (phase - 1) * image.naturalHeight + inset, inset, sourceSide, sourceSide,
-    -side / 2, -side + 4, side, side,
+    layout ? base * layout.x : -side / 2, layout ? 4 + base * layout.y : 4 - side, side, side,
   )
   return true
 }
@@ -190,5 +295,25 @@ export function drawProductionEnemyFrame(
   if (!Number.isFinite(side) || side <= 0) return false
   const sourceSide = image.naturalHeight
   ctx.drawImage(image, slot * sourceSide, 0, sourceSide, sourceSide, -side / 2, -side + 4, side, side)
+  return true
+}
+
+
+/** Four fixed row-major cells, each with an eight-pixel transparent gutter. */
+export function drawEs3EnemyDeath(
+  ctx: Ctx2D, image: HTMLImageElement, remaining: number, total: number, width: number, height: number, reduceFlashing = false,
+): boolean {
+  if (!image.complete || image.naturalWidth !== 872 || image.naturalHeight !== 872 ||
+      !Number.isFinite(remaining) || !Number.isFinite(total) || total <= 0 || remaining <= 0) return false
+  const progress = Math.max(0, Math.min(1, 1 - remaining / total))
+  const frame = Math.min(3, Math.floor(progress * 4))
+  const side = Math.min(width, height)
+  if (!Number.isFinite(side) || side <= 0) return false
+  ctx.save()
+  // Dissolve art is already transparent; taper only the last quarter.
+  ctx.globalAlpha *= Math.min(1, (1 - progress) * 4) * (reduceFlashing && frame === 3 ? .55 : 1)
+  ctx.drawImage(image, (frame % 2) * 436 + 8, Math.floor(frame / 2) * 436 + 8,
+    420, 420, -side / 2, 4 - side, side, side)
+  ctx.restore()
   return true
 }

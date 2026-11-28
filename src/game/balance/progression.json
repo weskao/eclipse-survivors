@@ -1,5 +1,6 @@
 {
   "initialXp": 15,
+  "initialXpByMode": { "quick": 12, "standard": 14, "endless": 13, "challenge": 15, "boss-rush": 12, "endless-eclipse": 13, "relic-hunt": 12, "cursed-expedition": 15, "chaos-arena": 12 },
   "growthMultiplier": 1.26,
   "growthFlat": 6.5,
   "rarityWeights": {

@@ -49,11 +49,10 @@ try {
       await page.goto(url, { waitUntil: 'domcontentloaded' })
       await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
       await page.locator('.es2-hall-links button').first().click()
-      const modal = page.locator('.es2-dialog[role="dialog"]')
-      await modal.waitFor({ state: 'visible' })
-      await modal.evaluate(e => Promise.all(e.getAnimations().map(a => a.finished)))
-      await page.locator('.es2-archive-tabs button').nth(4).click()
+      await page.locator('[data-es2-archive-page]').waitFor({ state: 'visible' })
+      await page.locator('.es2-hall-links button').nth(4).click()
       const gallery = page.locator('[data-es2-world-ui]')
+      await gallery.first().waitFor({ state: 'visible', timeout: 30000 })
       assert.equal(await gallery.count(), 17, name + ': expected 17 distinct gallery entries')
       const record = { name, gallery: [], achievements: [], hud: [], rarity: [] }
       for (const asset of assets) {
@@ -79,7 +78,7 @@ try {
       }
       await achievements.first().scrollIntoViewIfNeeded()
       await page.screenshot({ path: dir + '/' + name + '-achievements.png', animations: 'disabled' })
-      await page.locator('.es2-close').click()
+      await page.locator('[data-es2-return-lobby]').click()
       await page.locator('.es2-start').click()
       await page.locator('.es2-hud--active').waitFor({ state: 'visible', timeout: 30000 })
       const hud = page.locator('.es2-hud__health-head img.es2-world-hud-icon')
@@ -91,6 +90,92 @@ try {
       await page.evaluate(() => { if (!window.__test) throw new Error('Game test API unavailable'); window.__test.level() })
       const rarity = page.locator('img[data-es2-rarity-icon]')
       await rarity.first().waitFor({ state: 'visible', timeout: 30000 })
+      const choice = page.locator('.es2-dialog-choice')
+      await choice.evaluate(e => Promise.all(e.getAnimations().map(a => a.finished)))
+      const scroll = await choice.evaluate(element => {
+        const body = element.querySelector('.es2-dialog-body')
+        const scene = body.querySelector('.es2-selection-scene')
+        const bodyRect = body.getBoundingClientRect()
+        const sceneRect = scene.getBoundingClientRect()
+        const styles = getComputedStyle(body)
+        const required = Math.max(0, sceneRect.bottom - bodyRect.top + body.scrollTop - body.clientHeight)
+        element.scrollTop = element.scrollHeight
+        body.scrollTop = body.scrollHeight
+        const result = { outer: element.scrollTop, inner: body.scrollTop, required,
+          range: body.scrollHeight - body.clientHeight, horizontal: body.scrollWidth - body.clientWidth,
+          overflowY: styles.overflowY, overscroll: styles.overscrollBehaviorY }
+        body.scrollTop = 0
+        return result
+      })
+      assert.equal(scroll.outer, 0, name + ': outer choice dialog must never scroll')
+      assert.equal(scroll.overflowY, 'auto', name + ': scrolling must be conditional')
+      assert.equal(scroll.overscroll, 'none', name + ': no scroll bounce or chaining')
+      assert.ok(scroll.horizontal <= 1, name + ': choice content horizontally overflows')
+      if (scroll.required <= 1 || name === 'desktop-1440')
+        assert.ok(scroll.inner <= 1, name + ': unnecessary scrolling: ' + JSON.stringify(scroll))
+      else
+        assert.ok(scroll.inner > 0 && Math.abs(scroll.inner - scroll.range) <= 1,
+          name + ': overflowing content is not reachable: ' + JSON.stringify(scroll))
+      record.choiceScroll = scroll
+      if (!touch) {
+        const cards = choice.locator('.es2-choice:not(:disabled)')
+        await page.mouse.move(0, 0)
+        await cards.evaluateAll(rows => Promise.all(rows.flatMap(row => row.getAnimations().filter(a => a.effect?.getComputedTiming().endTime !== Infinity).map(a => a.finished.catch(() => {})))))
+        const card = cards.nth(1)
+        const measureHover = () => card.evaluate(el => {
+          const b = el.getBoundingClientRect(), body = el.closest('.es2-dialog-body').getBoundingClientRect()
+          const outer = el.closest('.es2-dialog').getBoundingClientRect()
+          const hit = document.elementFromPoint(b.left + b.width / 2, b.top + 1)
+          return { top: b.top, bottom: b.bottom, clipTop: body.top, clipBottom: body.bottom,
+            hit: !!hit && el.contains(hit), outerHeight: outer.height, outerTop: outer.top }
+        })
+        const idle = await measureHover()
+        await card.hover()
+        await page.waitForFunction(() => {
+          const el = document.querySelector('.es2-dialog-choice .es2-choice:hover:not(:disabled)')
+          return !!el && getComputedStyle(el).transform === 'matrix(1, 0, 0, 1, 0, -3)'
+        })
+        const hovered = await measureHover()
+        assert.ok(hovered.top <= idle.top - 2.5, name + ': card should lift on hover')
+        assert.ok(hovered.top >= hovered.clipTop + 1 && hovered.bottom <= hovered.clipBottom + 1 && hovered.hit,
+          name + ': hover rim clipped by scroll body: ' + JSON.stringify(hovered))
+        assert.ok(Math.abs(hovered.outerHeight - idle.outerHeight) <= 1 && Math.abs(hovered.outerTop - idle.outerTop) <= 1,
+          name + ': hover must not resize or move dialog')
+        await page.screenshot({ path: dir + '/' + name + '-choice-hover.png' })
+        await page.mouse.move(0, 0)
+        record.choiceHover = hovered
+      }
+      if (touch && width < height) {
+        record.portraitArt = await choice.locator('.es2-card-art').evaluateAll(async frames => (await Promise.all(frames.map(async frame => {
+          const image = frame.querySelector('img')
+          if (!image) return null
+          await image.decode()
+          const picture = frame.querySelector('picture')
+          const pictureStyle = getComputedStyle(picture)
+          const f = frame.getBoundingClientRect(), i = image.getBoundingClientRect()
+          const style = getComputedStyle(image)
+          const x = f.left + frame.clientLeft + frame.clientWidth / 2
+          const y = f.top + frame.clientTop + frame.clientHeight / 2
+          return { x: Math.abs(x - (i.left + i.right) / 2), y: Math.abs(y - (i.top + i.bottom) / 2),
+            width: i.width, height: i.height, fit: style.objectFit, position: style.objectPosition,
+            frameWidth: frame.clientWidth, frameHeight: frame.clientHeight,
+            picturePosition: pictureStyle.position, pictureDisplay: pictureStyle.display,
+            pictureAlign: pictureStyle.alignItems, pictureJustify: pictureStyle.justifyContent }
+        }))).filter(Boolean))
+        assert.ok(record.portraitArt.length > 0, name + ': no choice illustrations')
+        for (const art of record.portraitArt) {
+          assert.ok(art.width > 0 && art.height > 0 && art.x <= 1 && art.y <= 1,
+            name + ': illustration not centered in its left frame: ' + JSON.stringify(art))
+          assert.equal(art.picturePosition, 'absolute', name + ': portrait rules overridden by skill polish')
+          assert.equal(art.pictureDisplay, 'flex')
+          assert.equal(art.pictureAlign, 'center')
+          assert.equal(art.pictureJustify, 'center')
+          assert.ok(art.width <= art.frameWidth + 1 && art.height <= art.frameHeight + 1,
+            name + ': illustration clips outside frame: ' + JSON.stringify(art))
+          assert.equal(art.fit, 'contain')
+          assert.equal(art.position, '50% 50%')
+        }
+      }
       if (width > height && height <= 520) {
         const cards = page.locator('.es2-dialog-choice .es2-skill-card')
         assert.ok(await cards.count() >= 1, name + ': missing real skill cards')
@@ -122,7 +207,7 @@ try {
               text.scrollWidth <= text.clientWidth + 2, name + ': clipped card text: ' + JSON.stringify(g))
           }
         }
-        const body = await modal.locator('.es2-dialog-body').evaluate(element => ({
+        const body = await choice.locator('.es2-dialog-body').evaluate(element => ({
           height: element.clientHeight, scrollHeight: element.scrollHeight,
           overflow: getComputedStyle(element).overflowY,
         }))
@@ -131,7 +216,7 @@ try {
         record.skillCards = geometry
       }
       for (let i = 0; i < await rarity.count(); i++) {
-        // Every card is vertically scrollable on small phones; check its visible position after scrolling.
+        // If necessary, scroll each card into view to verify its artwork.
         await rarity.nth(i).scrollIntoViewIfNeeded()
         record.rarity.push(await measure(rarity.nth(i), name + '/rarity/' + i, width, height))
       }
@@ -148,7 +233,7 @@ try {
     } finally { await context.close() }
   }
   await writeFile(dir + '/report.json', JSON.stringify({
-    source: 'real Chromium production build', commit: process.env.GITHUB_SHA ?? null,
+    source: 'real Chromium Vite DEV art inspection and live game', commit: process.env.GITHUB_SHA ?? null,
     approval: 'technical QA only; human visual approval required', evidence,
   }, null, 2) + '\n')
 } finally { await browser.close() }

@@ -87,7 +87,35 @@
       "counterDamagePerRank": 0.135,
       "lowHpThreshold": 0.4,
       "lowHpDamageBase": 1.35,
-      "lowHpDamagePerRank": 0.07
+      "lowHpDamagePerRank": 0.07,
+      "retributionRange": 175,
+      "retributionTargets": 5,
+      "retributionMinAbsorb": 8,
+      "retributionAbsorbRatio": 1.25,
+      "retributionRatioPerRank": 0.2
+    }
+  },
+  "classicActive": {
+    "knight": {
+      "cooldown": 11,
+      "reach": 190,
+      "targets": 8,
+      "damageMultiplier": 2.1,
+      "invSeconds": 0.65
+    },
+    "ranger": {
+      "cooldown": 9,
+      "reach": 460,
+      "targets": 3,
+      "damageMultiplier": 3,
+      "invSeconds": 0
+    },
+    "wizard": {
+      "cooldown": 13,
+      "reach": 250,
+      "targets": 6,
+      "damageMultiplier": 2.4,
+      "invSeconds": 0
     }
   }
 }

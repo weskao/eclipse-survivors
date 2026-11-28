@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "37a6d1661454f4ad3985f865f5987ea29b246dbf",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-slam-recovery-study-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/titan-slam-recovery-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "d9365204-1c7b-4582-89d7-dc8464a8b1f3",
+        "originalPngSha256": "1a0c0b0b12af9f217a043afe80acecd00743d88fc090f872ec20b42a055ee85a",
+        "canonicalReferenceHead": "37a6d1661454f4ad3985f865f5987ea29b246dbf",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        63,
+        46,
+        1333,
+        1188
+      ],
+      "alphaAnyBounds": [
+        60,
+        42,
+        1343,
+        1197
+      ],
+      "alphaExtent": [
+        1270,
+        1142
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        31,
+        14,
+        1301,
+        1156
+      ],
+      "originalAlphaAnyBounds": [
+        28,
+        10,
+        1311,
+        1165
+      ],
+      "sourceEdgeMargins": [
+        63,
+        46,
+        43,
+        75
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "6673611bc268568b643e8d8d09ece62a8a030df980160c5b208aacfca946ffbb",
+      "webpCompressedBytes": 570106,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Independent pose study, not a verified edit or animation sequence. Rock body and eclipse core retained, armor, horn size and skirt silhouette differ from canonical. Transparent padding only, no scaling; cannot restore clipped pixels. 1898px production extent not met."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-stride-transition-study-a",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/titan-stride-transition-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "b31afc26-0ab3-45c3-943b-4fa64ab93c23",
+        "originalPngSha256": "ec064d96a957c5f33d9f0d045d3e0188bee155afe7f44de1516c28dc553ff81c",
+        "canonicalReferenceHead": "37a6d1661454f4ad3985f865f5987ea29b246dbf",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1378,
+      "cellHeight": 1261,
+      "frameRects": [
+        [
+          0,
+          0,
+          1378,
+          1261
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        689.0,
+        630.5
+      ],
+      "alphaBounds": [
+        48,
+        46,
+        1324,
+        1217
+      ],
+      "alphaAnyBounds": [
+        32,
+        41,
+        1328,
+        1229
+      ],
+      "alphaExtent": [
+        1276,
+        1171
+      ],
+      "actualSourceResolution": [
+        1378,
+        1261
+      ],
+      "originalGeneratedResolution": [
+        1314,
+        1197
+      ],
+      "originalAlpha128Bounds": [
+        16,
+        14,
+        1292,
+        1185
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        9,
+        1296,
+        1197
+      ],
+      "sourceEdgeMargins": [
+        48,
+        46,
+        54,
+        44
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "784922fd3732543ae1738991011a7c39cc61e409f49d6ca4e102640b349d03ad",
+      "webpCompressedBytes": 529446,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Independent pose study, not a verified edit or animation sequence. Rock body and eclipse core retained, armor, horn size and skirt silhouette differ from canonical. Transparent padding only, no scaling; cannot restore clipped pixels. 1898px production extent not met."
+    }
+  ],
+  "missing": [
+    "identity and clipping review",
+    "phase and direction approval",
+    "coherent animation sequence",
+    "browser visual QA",
+    "1898px production extent"
+  ]
+}

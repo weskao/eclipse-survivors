@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "Downsample longest side to 704 pixels and center-pad to 768; no upscaling or mirroring. Original pixels preserved in source files.",
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "encoding": "Pillow lossless WebP exact=True; decoded RGBA compared; official Polytool not run",
+  "frames": [
+    {
+      "id": "barrier-counterstrike-identity-a",
+      "description": "Right-facing shield counterstrike; original red shield and sword; review armor, halo and continuity. Left pose rejected due to halo at top edge.",
+      "sourceFile": "barrier-counterstrike-identity-a-source.webp",
+      "sourceSHA256": "e6fed163b3d2a9b7d51bd54c462746c1b69e278d46fe2be58cbf6c86a2ad07ad",
+      "sourceBytes": 693812,
+      "sourceCellPixels": [
+        974,
+        887
+      ],
+      "file": "barrier-counterstrike-identity-a@3x.webp",
+      "webpSHA256": "db415d448e0ace97cde6850ea3f7b9423ed541dbc231fe9d915c0f9bd695683a",
+      "bytes": 398102,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        63
+      ],
+      "resizedPixels": [
+        704,
+        641
+      ],
+      "scale": 0.7227926078028748,
+      "sourceAlphaBounds": [
+        0,
+        10,
+        961,
+        887
+      ],
+      "coreAlphaBounds": [
+        76,
+        48,
+        958,
+        850
+      ],
+      "coreExtent": [
+        882,
+        802
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        32,
+        70,
+        727,
+        704
+      ],
+      "outputCoreAlphaBounds": [
+        87,
+        98,
+        724,
+        677
+      ],
+      "outputCoreExtent": [
+        637,
+        579
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA per encoded file, output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "e9affa54-1f85-4417-9718-bb923eeea8ab",
+        "originalPNGSHA256": "26ed2600b5d94fbf6cf04d9df352ec70146668c4b9107364c6bdb5feb48e0749",
+        "originalPixels": [
+          1774,
+          887
+        ],
+        "cropRect": [
+          800,
+          0,
+          1774,
+          887
+        ],
+        "canonicalPortrait": "src/assets/es2/production/heroes/crimson-paladin-portrait@3x.webp",
+        "portraitBlobSHA": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+        "referenceCommit": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "referenceMethod": "Canonical GitHub portrait visually inspected; direct image conditioning not independently verified.",
+        "originalSheet": "barrier-counterstrike-identity-a-original-sheet.webp",
+        "originalSheetSHA256": "02938da46e933463ace7ae803d205032c0b7b85ef1903126ae67c8bd665c85d3",
+        "originalSheetBytes": 1309546
+      },
+      "notes": "Right-facing shield counterstrike; original red shield and sword; review armor, halo and continuity. Left pose rejected due to halo at top edge."
+    }
+  ],
+  "reviewNotes": [
+    "Independent poses, not an approved sequence.",
+    "Core bounds are alpha-based and include solid equipment/effects; not proof of body detail or identity.",
+    "Do not replace existing art or admit to gameplay before identity, edge, scale, handedness, anchors, continuity and conversion QA."
+  ]
+}

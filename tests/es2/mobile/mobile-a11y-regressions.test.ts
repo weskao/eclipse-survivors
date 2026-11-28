@@ -115,17 +115,17 @@ describe('mobile input cancellation and focus regressions', () => {
 })
 
 describe('accessibility settings labels and keyboard controls', () => {
-  it('provides distinct accessible names and pressed states for stateful switches', async () => {
+  it('provides distinct accessible names and checked states for stateful switches', async () => {
     const wrapper = mount(AccessibilitySettings, {
       props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES },
     })
     mounted.push(wrapper)
-    const flash = wrapper.get('button[aria-label="降低閃光"]')
-    const color = wrapper.get('button[aria-label="色覺輔助"]')
-    const damage = wrapper.get('button[aria-label="傷害數字"]')
-    expect(flash.attributes('aria-pressed')).toBe('false')
-    expect(color.attributes('aria-pressed')).toBe('false')
-    expect(damage.attributes('aria-pressed')).toBe('true')
+    const flash = wrapper.get('button[role="switch"][aria-label="降低閃光"]')
+    const color = wrapper.get('button[role="switch"][aria-label="色覺輔助"]')
+    const damage = wrapper.get('button[role="switch"][aria-label="傷害數字"]')
+    expect(flash.attributes('aria-checked')).toBe('false')
+    expect(color.attributes('aria-checked')).toBe('false')
+    expect(damage.attributes('aria-checked')).toBe('true')
     await color.trigger('click')
     expect(wrapper.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ colorblindIndicators: true })
     expect(wrapper.get('[role="group"][aria-label="減少動態"]')).toBeTruthy()

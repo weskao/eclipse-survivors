@@ -1,6 +1,14 @@
 import type { AbilityId, SkillRarity } from '../../../game/types'
+import type { RunModeId } from '../../../meta/types'
 import { upgradeKeyIndex } from '../../../game/input'
 import type { MasteryStatChange } from '../../../game/content/heroes/mastery-preview'
+
+/** Shared expedition icon identity for chooser cards and the selected-mode dock. */
+export const MODE_SIGILS: Readonly<Record<RunModeId, string>> = {
+  quick: '✦', standard: '♜', endless: '∞', challenge: 'ϟ',
+  'boss-rush': '♛', 'endless-eclipse': '☾', 'relic-hunt': '◇',
+  'cursed-expedition': '✧', 'chaos-arena': '✵',
+}
 
 export type MenuView = 'main' | 'relics' | 'progression' | 'monsters' | 'skills' | 'achievements'
 export type ChoiceKind = 'level' | 'evolution' | 'treasure'
@@ -18,6 +26,7 @@ export interface MenuChoice {
   maxLevel?: number
   requirements?: string
   evolution?: boolean
+  cursed?: boolean
   disabled?: boolean
 }
 export interface RelicEntry extends MenuChoice { owned?: boolean; effect?: string }
@@ -29,6 +38,8 @@ export function shortcutIndex(event: KeyInput, length: number): number {
   const index = upgradeKeyIndex(event.code)
   return index >= 0 && index < length ? index : -1
 }
+/** Taps starting this soon after cards appear were aimed at combat controls, not a card. */
+export const CHOICE_ARM_MS = 500
 export function nextIndex(current: number, direction: -1 | 1, count: number): number {
   return count <= 0 ? -1 : (current + direction + count) % count
 }

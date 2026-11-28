@@ -1,0 +1,243 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "NW",
+  "sourceDirection": "NW",
+  "mirrorAllowed": false,
+  "native3x": "core_height_threshold_pass_visual_unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    676,
+    653,
+    582,
+    656
+  ],
+  "footBottomsStatus": "Alpha >=128 bottom proxy only; verify anatomical foot and anchor at runtime.",
+  "alphaBounds": [
+    [
+      103,
+      76,
+      689,
+      689
+    ],
+    [
+      78,
+      71,
+      681,
+      689
+    ],
+    [
+      87,
+      74,
+      689,
+      661
+    ],
+    [
+      78,
+      73,
+      675,
+      681
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        138,
+        9,
+        541,
+        606
+      ],
+      "coreExtent": [
+        403,
+        597
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "clearedMarginPixels": 196,
+      "footBottomProxy": 676,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        103,
+        76,
+        689,
+        689
+      ]
+    },
+    {
+      "index": 1,
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        124,
+        7,
+        565,
+        583
+      ],
+      "coreExtent": [
+        441,
+        576
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "clearedMarginPixels": 238,
+      "footBottomProxy": 653,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        78,
+        71,
+        681,
+        689
+      ]
+    },
+    {
+      "index": 2,
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        113,
+        7,
+        546,
+        512
+      ],
+      "coreExtent": [
+        433,
+        505
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "clearedMarginPixels": 482,
+      "footBottomProxy": 582,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        87,
+        74,
+        689,
+        661
+      ]
+    },
+    {
+      "index": 3,
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        124,
+        7,
+        547,
+        586
+      ],
+      "coreExtent": [
+        423,
+        579
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "clearedMarginPixels": 347,
+      "footBottomProxy": 656,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        78,
+        73,
+        675,
+        681
+      ]
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "b1240aa79a91f4addddcf144e9533a3e69dee160919be2f9e7db3b46b5880e07",
+  "originalPNGSHA256": "9c41c5f3b2ab6181655e400da3d4a1f0c125b9741a1a20943831bdc73e867f9a",
+  "atlasFile": "run-nw-4frames@3x.webp",
+  "webpSHA256": "9b2ee41fca3ff2361f320833470f8284819c5e0c72ccf662fac62252bd54840b",
+  "bytes": 655648,
+  "sourceProvenance": {
+    "generationId": "fdc60e1e-9966-47eb-8c60-f28aae7fb449",
+    "reference": "repository spirit-summoner-portrait@3x.webp and N run candidate at 819191383c89d8e300f024870a8215f45292c0a4",
+    "sourceFile": "a_clean_transparent_background_sprite_sheet_no_te.png"
+  },
+  "encoding": "Pillow WebP quality=100, review only; official Polytool not executed",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "No resizing, no mirror, only alpha=1 outer margin pixels removed from padded derivative.",
+    "Original image shows right-hand staff and blue-white robes; verify character identity, equipment, continuity and foot anchors in gameplay.",
+    "Four frames only; does not satisfy 10-frame production target.",
+    "Polytool and cwebp unavailable; review candidate only."
+  ]
+}

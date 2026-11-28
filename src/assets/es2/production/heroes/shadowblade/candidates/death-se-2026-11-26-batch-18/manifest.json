@@ -1,0 +1,299 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "death",
+  "direction": "SE",
+  "sourceDirection": "SE",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": null,
+  "sourceRects": [
+    [
+      0,
+      0,
+      627,
+      700
+    ],
+    [
+      627,
+      0,
+      627,
+      700
+    ],
+    [
+      0,
+      700,
+      621,
+      554
+    ],
+    [
+      621,
+      700,
+      633,
+      554
+    ]
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    704,
+    704,
+    704,
+    704
+  ],
+  "footBottomsStatus": "Opaque silhouette lower-bound proxy only; not verified anatomical anchors; do not use as runtime anchors.",
+  "alphaBounds": [
+    [
+      116,
+      65,
+      682,
+      705
+    ],
+    [
+      73,
+      196,
+      670,
+      705
+    ],
+    [
+      81,
+      304,
+      688,
+      705
+    ],
+    [
+      73,
+      454,
+      698,
+      715
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "sourceRect": [
+        0,
+        0,
+        627,
+        700
+      ],
+      "paddingOffset": [
+        70,
+        48
+      ],
+      "coreAlphaBounds": [
+        47,
+        18,
+        611,
+        656
+      ],
+      "coreExtent": [
+        564,
+        638
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        116,
+        65,
+        682,
+        705
+      ]
+    },
+    {
+      "index": 1,
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "sourceRect": [
+        627,
+        0,
+        627,
+        700
+      ],
+      "paddingOffset": [
+        70,
+        54
+      ],
+      "coreAlphaBounds": [
+        5,
+        143,
+        597,
+        650
+      ],
+      "coreExtent": [
+        592,
+        507
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        73,
+        196,
+        670,
+        705
+      ]
+    },
+    {
+      "index": 2,
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "sourceRect": [
+        0,
+        700,
+        621,
+        554
+      ],
+      "paddingOffset": [
+        73,
+        180
+      ],
+      "coreAlphaBounds": [
+        10,
+        125,
+        613,
+        524
+      ],
+      "coreExtent": [
+        603,
+        399
+      ],
+      "sourceBoundaryMaxAlpha": 9,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        81,
+        304,
+        688,
+        705
+      ]
+    },
+    {
+      "index": 3,
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "sourceRect": [
+        621,
+        700,
+        633,
+        554
+      ],
+      "paddingOffset": [
+        67,
+        178
+      ],
+      "coreAlphaBounds": [
+        6,
+        277,
+        627,
+        526
+      ],
+      "coreExtent": [
+        621,
+        249
+      ],
+      "sourceBoundaryMaxAlpha": 11,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        73,
+        454,
+        698,
+        715
+      ]
+    }
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "75067357821b07902177adb0320e1fc6eceea4b892641923c7b2612ef2116453",
+  "originalPNGSHA256": "6abf1d2412972ef24bd96f05ad99817559c3c59105593c04a6d7abf8aa15c851",
+  "atlasFile": "death-se-4frames@3x.webp",
+  "webpSHA256": "54a743d1f73cbd7378528f4cdea9abec0f0d65ac9bdf85097900a021a659310b",
+  "bytes": 602590,
+  "sourceProvenance": {
+    "generationId": "90966396-c9b4-48c3-b408-803ea3fa3c6d",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "7fa3809361ac3aa840243cd3d5bd7f9b2d6978c3",
+    "originalFile": "a_clean_transparent_background_sprite_sheet_a_hig.png"
+  },
+  "encoding": "Pillow WebP quality=100 method=3; review only; Polytool not executed",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "Four distinct poses: recoil, kneel, collapse, side-lying. Not the final 8-frame death sequence.",
+    "Nonuniform original source quadrants divided at actual transparent gaps; no pixels resized, rotated or mirrored. All source pixels retained in the padded atlas. Low-alpha boundary pixels remain visible; check weapon glow edges at gameplay size.",
+    "SE is provisional; verify camera direction, canonical equipment, anatomical ground contact, and death-state scale. The falling pose intentionally gets shorter.",
+    "Official Polytool installation blocked by GitHub DNS; cwebp absent and apt cannot locate package. Do not activate before official encoding/provenance and visual review."
+  ]
+}

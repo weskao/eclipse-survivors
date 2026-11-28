@@ -140,3 +140,14 @@ describe('applyUpgrade', () => {
     expect(hooks.message.mock.calls).toEqual([['殞星之力覺醒！'], ['連鎖雷擊激活！']])
   })
 })
+
+it('emits distinct evolution feedback exactly once on successful transformation', () => {
+  const { s, hero } = setup()
+  hero.skills.frost = 3
+  hero.skills.chain = 3
+  const hooks = spyHooks()
+  expect(applyUpgrade(s, 'frozen-thunderstorm', hooks)).toBe(true)
+  expect(applyUpgrade(s, 'frozen-thunderstorm', hooks)).toBe(false)
+  expect(hooks.sfx.mock.calls.filter(([cue]) => cue === 'evolution')).toHaveLength(1)
+  expect(s.impactWaves).toHaveLength(1)
+})

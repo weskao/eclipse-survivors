@@ -23,8 +23,29 @@ describe('Makefile development and release shortcuts', () => {
     expect(unlocked).toMatch(/phone-unlocked: export VITE_ES2_UNLOCKED := 1/)
   })
 
+  it('passes embers=N to the Vite dev server only', () => {
+    const makefile = readFileSync(resolve(cwd, 'Makefile'), 'utf8')
+    expect(makefile).toMatch(/ifdef embers\ndev dev-unlocked phone phone-unlocked: export VITE_ES2_EMBERS := \$\(embers\)\nendif/)
+    const config = readFileSync(resolve(cwd, 'vite.config.ts'), 'utf8')
+    expect(config).toMatch(/command === 'serve' && raw !== undefined/)
+  })
+
   it('dispatches the existing locked main-branch Pages release workflow', () => {
     expect(make('deploy')).toContain('gh workflow run release.yml --ref main')
     expect(make('deploy')).not.toContain('VITE_ES2_UNLOCKED')
+  })
+
+  it('deploys the local build to Netlify behind the gate; skip_tests=1 skips only unit tests', () => {
+    const full = make('deploy-netlify')
+    expect(full).toContain('pnpm test')
+    expect(full).toContain('netlify deploy --prod --dir dist')
+    expect(full).not.toContain('VITE_ES2_UNLOCKED')
+    const skipped = make('deploy-netlify', 'skip_tests=1')
+    expect(skipped).not.toContain('pnpm test')
+    for (const step of ['pnpm typecheck', 'pnpm build', 'pnpm check-release']) {
+      expect(skipped.indexOf(step)).toBeGreaterThan(-1)
+      expect(skipped.indexOf(step)).toBeLessThan(skipped.indexOf('netlify deploy'))
+    }
+    expect(make('deploy-netlify', 'skip_tests=0')).toContain('pnpm test')
   })
 })

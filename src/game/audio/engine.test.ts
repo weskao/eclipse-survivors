@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { BgmElement, SettingsStorage } from './types'
 import { createAudioSystem } from './engine'
 import { FakeAudioContext } from './fakeAudio'
@@ -148,7 +148,7 @@ describe('independent, persisted audio volumes', () => {
     audio.setSfxVolume(40)
     expect(ctx.gains[0]!.gain.setTargetAtTime).toBeDefined()
     expect(ctx.gains[0]!.gain.value).toBeCloseTo(0.52)
-    expect(bgm.volume).toBeCloseTo(0.19)
+    expect(bgm.volume).toBeCloseTo(0.2375)
     expect(audio.musicOn).toBe(true)
     expect(audio.sfxOn).toBe(true)
     audio.toggleMusic('play')
@@ -157,6 +157,44 @@ describe('independent, persisted audio volumes', () => {
     audio.setSfxVolume(70)
     expect(audio.musicOn).toBe(false)
     expect(audio.sfxOn).toBe(false)
+  })
+
+  it('raises both battle buses by 25% without changing menu or result levels', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    const sfx = ctx.gains[0]!.gain
+    const music = ctx.gains[1]!.gain
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.65)
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.8125)
+    expect(bgm.volume).toBeCloseTo(0.475)
+    audio.onScreen('level')
+    audio.setMusicVolume(50)
+    audio.setSfxVolume(40)
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.40625)
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.26)
+    expect(bgm.volume).toBeCloseTo(0.2375)
+    audio.toggleMusic('level')
+    audio.toggleSfx()
+    expect(music.calls.at(-1)?.args[0]).toBe(0)
+    expect(sfx.calls.at(-1)?.args[0]).toBe(0)
+    audio.toggleMusic('level')
+    audio.toggleSfx()
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.40625)
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.26)
+    audio.onScreen('result')
+    expect(music.calls.at(-1)?.args[0]).toBeCloseTo(0.325)
+    expect(sfx.calls.at(-1)?.args[0]).toBeCloseTo(0.208)
+    audio.onScreen('menu')
+    expect(bgm.volume).toBeCloseTo(0.19)
+  })
+
+  it('uses the boosted mix when the first gesture starts in battle', () => {
+    const audio = make()
+    audio.onScreen('play')
+    audio.wake()
+    expect(ctx.gains[0]!.gain.value).toBeCloseTo(0.65)
+    expect(ctx.gains[1]!.gain.value).toBeCloseTo(0.8125)
   })
 
   it('restores the previous audible level from zero when toggling sound on', () => {
@@ -213,6 +251,48 @@ describe('playSfx', () => {
     expect(ctx.oscillators).toHaveLength(0)
   })
 
+  it('plays one cached hero confirmation sample with no generic tone, and honors cooldown and mute', () => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 10
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const sample = ctx.sources[0]!.buffer
+    expect(sample?.duration).toBeCloseTo(.44, 3)
+    ctx.currentTime = 10.1
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(1)
+    ctx.currentTime = 10.3
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(2)
+    expect(ctx.sources[1]!.buffer).toBe(sample)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 11
+    audio.playSfx('hero-select')
+    expect(ctx.sources).toHaveLength(2)
+    expect(created).toBe(1)
+  })
+
+  it.each(['legendaryReveal', 'legendaryClaim'] as const)('plays one cached %s Foley buffer without a generic tone', cue => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 20
+    audio.playSfx(cue)
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const sample = ctx.sources[0]!.buffer
+    ctx.currentTime = 22
+    audio.playSfx(cue)
+    expect(ctx.sources[1]!.buffer).toBe(sample)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 24
+    audio.playSfx(cue)
+    expect(ctx.sources).toHaveLength(2)
+  })
+
   it('plays one oscillator per tone with the original pitch math', () => {
     const audio = make()
     audio.wake()
@@ -243,7 +323,7 @@ describe('playSfx', () => {
     expect(ctx.oscillators).toHaveLength(3)
   })
 
-  it('adds the noise burst only for knight, dash, hurt, boss', () => {
+  it('adds a single noise or sampled source for knight, dash, hurt, boss', () => {
     const audio = make()
     audio.wake()
     ctx.currentTime = 100
@@ -297,18 +377,26 @@ describe('tick', () => {
     expect(ctx.oscillators).toHaveLength(0)
   })
 
-  it('battle tune only in play mode while bgm is paused', () => {
+  it('continues the fallback battle tune through level selection but not pause', () => {
     const audio = make()
     audio.wake()
-    audio.tick('level')
     audio.tick('paused')
     expect(ctx.oscillators).toHaveLength(0)
     bgm.paused = false
     audio.tick('play')
+    audio.tick('level')
     expect(ctx.oscillators).toHaveLength(0)
     bgm.paused = true
     audio.tick('play')
-    expect(ctx.oscillators.length).toBeGreaterThan(0)
+    const before = ctx.oscillators.length
+    expect(before).toBeGreaterThan(0)
+    ctx.currentTime = 2
+    audio.tick('level')
+    expect(ctx.oscillators.length).toBeGreaterThan(before)
+    const during = ctx.oscillators.length
+    ctx.currentTime = 4
+    audio.tick('paused')
+    expect(ctx.oscillators).toHaveLength(during)
   })
 
   it('resetBattleClock restarts the tune clock from currentTime + delay', () => {
@@ -446,6 +534,57 @@ describe('sampled orchestral expedition victory', () => {
   })
 })
 
+describe('sampled expedition defeat lament', () => {
+  const tracks = { victoryTrack: 'victory.wav', defeatTrack: '/audio/eclipse-defeat.wav' }
+
+  it('plays the finite pre-rendered lament on the music bus instead of the synth', async () => {
+    const requested: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx, ...tracks,
+      loadMusic: async url => { requested.push(url); return ctx.createBuffer(2, 480000, 24000) },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setResultTheme?.('defeat')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(requested).toEqual(['/audio/eclipse-defeat.wav'])
+    const source = ctx.sources.at(-1)!
+    expect(source.loop).toBe(false)
+    expect(ctx.gains.at(-1)?.targets[0]).toBe(ctx.gains[1])
+    audio.tick('result')
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.onScreen('menu')
+    expect(source.stoppedAt).not.toBeNull()
+  })
+
+  it('falls back to the finite synth lament if the file is unavailable', async () => {
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx, ...tracks, loadMusic: async () => null,
+    })
+    audio.wake()
+    audio.setResultTheme?.('defeat')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    audio.tick('result')
+    expect(ctx.sources).toHaveLength(0)
+    expect(ctx.oscillators.length).toBeGreaterThan(0)
+  })
+
+  it('does not request the defeat file on victory', async () => {
+    const requested: string[] = []
+    const audio = createAudioSystem({
+      bgm, storage: null, createContext: () => ctx, ...tracks,
+      loadMusic: async url => { requested.push(url); return ctx.createBuffer(2, 480000, 24000) },
+    })
+    audio.wake()
+    audio.setResultTheme?.('victory')
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(requested).toEqual(['victory.wav'])
+  })
+})
+
 describe('toggles', () => {
   it('reads initial values and persists on|off', () => {
     const storage = new MemStorage()
@@ -507,13 +646,18 @@ describe('toggles', () => {
 })
 
 describe('onScreen', () => {
-  it('level lowers bgm volume to .20; play restores .38 and plays', () => {
+  it('keeps the same media track, volume and position through level selection', async () => {
     const audio = make()
-    audio.onScreen('level')
-    expect(bgm.volume).toBe(0.2)
     audio.onScreen('play')
-    expect(bgm.volume).toBe(0.38)
+    bgm.currentTime = 42
+    audio.onScreen('level')
+    await Promise.resolve()
+    expect(bgm.paused).toBe(false)
+    expect(bgm.volume).toBeCloseTo(0.475)
+    expect(bgm.currentTime).toBe(42)
+    audio.onScreen('play')
     expect(bgm.playCalls).toBe(1)
+    expect(bgm.currentTime).toBe(42)
   })
 
   it('does not play bgm when music is off', () => {
@@ -564,13 +708,85 @@ describe('dispose', () => {
 })
 
 describe('interruption edge cases', () => {
-  it('restarts a stuck media element after the context suspends without a visibility event', () => {
+  it.each([false, true])('keeps menu BGM continuous through repeated gestures during a deferred SFX resume (previously running: %s)', async previouslyRunning => {
+    const menuBgm = new FakeBgm()
+    const audio = createAudioSystem({ bgm, menuBgm, storage: null, createContext: () => ctx })
+    if (previouslyRunning) audio.wake()
+    ctx.state = 'suspended'
+    let finish!: () => void
+    let resumes = 0
+    ctx.resume = () => new Promise<void>(resolve => {
+      resumes++
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    menuBgm.currentTime = 12
+    audio.wake()
+    audio.playSfx('hero-select')
+    audio.wake()
+    audio.playSfx('select')
+    expect(menuBgm.pauseCalls).toBe(0)
+    expect(menuBgm.playCalls).toBe(1)
+    expect(menuBgm.currentTime).toBe(12)
+    expect(resumes).toBe(1)
+    finish()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(menuBgm.paused).toBe(false)
+    expect(ctx.sources).toHaveLength(1)
+    audio.dispose()
+  })
+
+  it.each(['play', 'level'] as const)('keeps healthy %s media continuous through repeated gestures while resume is pending', async mode => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    if (mode === 'level') audio.onScreen(mode)
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    const pauses = bgm.pauseCalls
+    const plays = bgm.playCalls
+    audio.wake()
+    audio.wake()
+    audio.wake()
+    expect(bgm.pauseCalls - pauses).toBe(0)
+    expect(bgm.playCalls - plays).toBe(0)
+    finish()
+    await Promise.resolve()
+    audio.dispose()
+  })
+
+  it('restarts interrupted battle media only once while resume is pending', async () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    ctx.state = 'interrupted' as AudioContextState
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    const pauses = bgm.pauseCalls
+    const plays = bgm.playCalls
+    audio.wake()
+    audio.wake()
+    audio.wake()
+    expect(bgm.pauseCalls - pauses).toBe(1)
+    expect(bgm.playCalls - plays).toBe(1)
+    finish()
+    await Promise.resolve()
+    audio.dispose()
+  })
+
+  it('restarts a stuck media element after actual WebKit interruption without a visibility event', () => {
     const audio = make()
     audio.wake()
     audio.onScreen('play')
     expect(bgm.playCalls).toBe(1)
-    // Some mobile browsers report media as still playing while sound is silent.
-    ctx.state = 'suspended'
+    // WebKit can report media as still playing after an actual OS interruption.
+    ctx.state = 'interrupted' as AudioContextState
     bgm.paused = false
     audio.wake()
     expect(bgm.pauseCalls).toBeGreaterThan(0)
@@ -600,7 +816,7 @@ describe('original boss score replaces battle music', () => {
     audio.setBossTheme?.(null)
     audio.setCombatIntensity('combat')
     for (let i = 0; i < 40; i++) audio.tick('play')
-    expect(bgm.volume).toBeCloseTo(0.35)
+    expect(bgm.volume).toBeCloseTo(0.4375)
   })
 })
 
@@ -625,10 +841,17 @@ describe('cinematic sampled boss music', () => {
     expect(loaded).toContain('warning.mp3')
     const warning = ctx.sources.at(-1)
     expect(warning?.startedAt).not.toBeNull()
+    expect(ctx.gains[1]!.gain.calls.at(-1)?.args[0]).toBeCloseTo(0.8125)
+    for (let i = 0; i < 40; i++) audio.tick('play')
+    expect(bgm.volume).toBeCloseTo(0.15)
     audio.setBossTheme?.('frost-sovereign', 1)
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(loaded).toContain('frost-p1.mp3')
     expect(warning?.stoppedAt).not.toBeNull()
+    const bossVoice = ctx.gains.at(-1)!
+    expect(ctx.sources.at(-1)?.targets[0]).toBe(bossVoice)
+    expect(bossVoice.targets[0]).toBe(ctx.gains[1])
+    expect(bossVoice.gain.calls.at(-1)?.args[0]).toBeCloseTo(0.78)
   })
 
   it('keeps phase changes on the same audio timeline without restarting from zero', async () => {
@@ -647,6 +870,60 @@ describe('cinematic sampled boss music', () => {
     expect(ctx.sources.at(-1)?.loop).toBe(true)
   })
 
+  it.each(['suspended', 'interrupted'] as const)('preserves the live Boss source during %s context recovery and reward selection', async state => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    expect(first.loop).toBe(true)
+    ctx.currentTime = 7
+    ctx.state = state as AudioContextState
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    audio.onScreen('level')
+    audio.wake()
+    audio.tick('level')
+    audio.onScreen('play')
+    audio.wake()
+    expect(first.stoppedAt).toBeNull()
+    expect(ctx.sources).toEqual([first])
+    finish()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(first.stoppedAt).toBeNull()
+    expect(ctx.sources).toEqual([first])
+    audio.dispose()
+  })
+
+  it('honors music mute during a pending Boss context resume without recreating the source', async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    audio.setMusicVolume(0)
+    expect(first.stoppedAt).not.toBeNull()
+    finish()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources).toEqual([first])
+    audio.dispose()
+  })
+
   it('silences pre-rendered music on pause/mute and resumes without a duplicate loop', async () => {
     const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
       bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
@@ -663,5 +940,390 @@ describe('cinematic sampled boss music', () => {
     expect(ctx.sources.length).toBeGreaterThan(1)
     audio.toggleMusic('play')
     expect(ctx.sources.at(-1)?.stoppedAt).not.toBeNull()
+  })
+})
+
+describe('hero active skill audio lifetime', () => {
+  const cue = 'shadowblade-special' as const
+  const sampled = async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      loadHeroSfx: async () => ctx.createBuffer(1, 96000, 48000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+    return audio
+  }
+
+  it.each(['level', 'paused', 'result'] as const)('lets the cast finish on %s without replaying it', async mode => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const source = ctx.sources.at(-1)!
+    ctx.currentTime = .1
+    audio.onScreen(mode)
+    expect(source.stoppedAt).toBeNull()
+    expect(ctx.suspendCalls).toBe(0)
+    audio.onScreen('play')
+    expect(ctx.sources).toHaveLength(1)
+    expect(source.stoppedAt).toBeNull()
+    audio.onScreen('menu')
+    expect(source.stoppedAt).toBe(.1)
+    audio.dispose()
+  })
+
+  it('does not truncate a prior cast even if another valid cue starts before it ends', async () => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const first = ctx.sources.at(-1)!
+    ctx.currentTime = .1
+    audio.playSfx('spirit-summoner-special')
+    const second = ctx.sources.at(-1)!
+    expect(first.stoppedAt).toBeNull()
+    expect(second).not.toBe(first)
+    ctx.currentTime = .2
+    audio.onScreen('menu')
+    expect(first.stoppedAt).toBe(.2)
+    expect(second.stoppedAt).toBe(.2)
+    audio.dispose()
+  })
+
+  it('preloads the Crimson Retribution burst and layers it over an unfinished barrier cast', async () => {
+    const urls: string[] = []
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      loadHeroSfx: async url => { urls.push(url); return ctx.createBuffer(1, 48000, 48000) },
+    })
+    audio.wake()
+    audio.onScreen('play')
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+    expect(urls.some(url => url.endsWith('audio/heroes/crimson-paladin-retribution.wav'))).toBe(true)
+    audio.playSfx('crimson-paladin-special')
+    const cast = ctx.sources.at(-1)!
+    ctx.currentTime = .4
+    const oscillators = ctx.oscillators.length
+    audio.playSfx('crimson-paladin-retribution')
+    const burst = ctx.sources.at(-1)!
+    expect(burst).not.toBe(cast)
+    expect(cast.stoppedAt).toBeNull()
+    expect(ctx.oscillators).toHaveLength(oscillators) // the sample replaces, never doubles, the synth fallback
+    audio.onScreen('menu')
+    expect(burst.stoppedAt).toBe(.4)
+    audio.dispose()
+  })
+
+  it('does not stop already completed samples on returning home', async () => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const source = ctx.sources.at(-1)!
+    ctx.currentTime = 3
+    audio.onScreen('menu')
+    expect(source.stoppedAt).toBeNull()
+    audio.dispose()
+  })
+
+  it('keeps the synth fallback through overlays but cancels every remaining note on Home', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.playSfx('spirit-summoner-special')
+    const notes = [...ctx.oscillators]
+    expect(notes.length).toBeGreaterThan(1)
+    const planned = notes.map(note => note.stoppedAt)
+    ctx.currentTime = .1
+    audio.onScreen('level')
+    audio.onScreen('paused')
+    audio.onScreen('result')
+    expect(notes.map(note => note.stoppedAt)).toEqual(planned)
+    expect(ctx.oscillators).toHaveLength(notes.length)
+    audio.onScreen('menu')
+    expect(notes.every(note => note.stoppedAt === .1)).toBe(true)
+    audio.dispose()
+  })
+
+  it.each(['mute', 'volume', 'interrupt', 'dispose'] as const)('preserves the explicit %s stop policy', async action => {
+    const audio = await sampled()
+    audio.playSfx(cue)
+    const source = ctx.sources.at(-1)!
+    ctx.currentTime = .1
+    if (action === 'mute') audio.toggleSfx()
+    else if (action === 'volume') audio.setSfxVolume(0)
+    else if (action === 'interrupt') audio.interrupt()
+    else audio.dispose()
+    expect(source.stoppedAt).toBe(.1)
+    if (action !== 'dispose') audio.dispose()
+  })
+})
+
+it('plays five different claim signatures through the real audio scheduler', () => {
+  const signatures = Array.from({ length: 5 }, (_, tier) => {
+    ctx = new FakeAudioContext()
+    const audio = make()
+    audio.wake()
+    audio.playSfx('treasureClaim', tier)
+    const signature = ctx.oscillators.map(n => [n.type, n.frequency.value, n.startedAt, n.stoppedAt])
+    expect(signature.length).toBeGreaterThanOrEqual(3)
+    expect(signature.length).toBeLessThanOrEqual(6)
+    audio.dispose()
+    return JSON.stringify(signature)
+  })
+  expect(new Set(signatures).size).toBe(5)
+})
+
+describe('sampled hero hurt feedback', () => {
+  it('uses one finite cached sample, no overlapping generic tone, and respects mute', () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    ctx.currentTime = 10
+    audio.playSfx('hurt-heavy')
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const first = ctx.sources[0]!.buffer
+    ctx.currentTime = 11
+    audio.playSfx('hurt-heavy')
+    expect(ctx.sources[1]!.buffer).toBe(first)
+    ctx.currentTime = 12
+    audio.playSfx('hurt-critical')
+    expect(ctx.sources[2]!.buffer).not.toBe(first)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 13
+    audio.playSfx('hurt-extreme')
+    expect(ctx.sources).toHaveLength(3)
+  })
+})
+
+
+describe('Adventurer Hall upgrade Foley', () => {
+  it('caches finite rank/milestone samples separately and respects the existing mute setting', () => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 10
+    audio.playSfx('upgrade', 1)
+    expect(ctx.sources).toHaveLength(1)
+    expect(ctx.sources[0]!.buffer?.length).toBe(Math.ceil(48000 * .74))
+    expect(ctx.sources[0]!.loop).toBe(false)
+    const rank = ctx.sources[0]!.buffer
+    ctx.currentTime = 11
+    audio.playSfx('upgrade', 1)
+    expect(ctx.sources[1]!.buffer).toBe(rank)
+    ctx.currentTime = 12
+    audio.playSfx('upgrade', 2)
+    expect(ctx.sources[2]!.buffer?.length).toBe(Math.ceil(48000 * 1.05))
+    expect(ctx.sources[2]!.buffer).not.toBe(rank)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 13
+    audio.playSfx('upgrade', 1)
+    expect(ctx.sources).toHaveLength(3)
+  })
+})
+
+describe('Hall sampled feedback routing', () => {
+  it('plays one cached sample per Hall event, with no generic oscillators', () => {
+    const audio = make()
+    audio.wake()
+    const events = [['hover',1],['select',1],['deny',1],['upgrade',1],['upgrade',2],['upgrade',3],['upgrade',4],['upgrade',5]] as const
+    for (const [index, [cue, variant]] of events.entries()) {
+      ctx.currentTime = 10 + index * 2
+      audio.playSfx(cue, variant)
+    }
+    expect(ctx.sources).toHaveLength(8)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(new Set(ctx.sources.map(source => source.buffer)).size).toBe(8)
+    expect(ctx.sources.every(source => !source.loop)).toBe(true)
+    audio.setSfxVolume(0)
+    ctx.currentTime = 30
+    audio.playSfx('upgrade', 5)
+    expect(ctx.sources).toHaveLength(8)
+    audio.dispose()
+  })
+})
+
+describe('Rapid Hall purchases', () => {
+  it('crossfades the previous reward instead of stacking celebration audio', () => {
+    const audio = make()
+    audio.wake()
+    ctx.currentTime = 10
+    audio.playSfx('upgrade', 1)
+    ctx.currentTime = 10.2
+    audio.playSfx('upgrade', 3)
+    expect(ctx.sources).toHaveLength(2)
+    expect(ctx.sources[0]!.stoppedAt).toBeCloseTo(10.235, 3)
+    expect(ctx.sources[1]!.stoppedAt).toBeNull()
+    audio.dispose()
+  })
+})
+
+describe('audio scene ownership and deferred trusted resume', () => {
+  it.each(['victory', 'defeat'] as const)('releases the boss soundtrack on %s and restores the menu', async outcome => {
+    const menu = new FakeBgm()
+    const audio = createAudioSystem({
+      bgm, menuBgm: menu, storage: null, createContext: () => ctx,
+      bossTracks: { 'abyss-monarch': ['boss1.wav', 'boss2.wav', 'boss3.wav'] },
+      victoryTrack: 'victory.wav',
+      loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('abyss-monarch')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const boss = ctx.sources.find(source => source.loop)!
+    expect(boss).toBeDefined()
+    audio.setResultTheme?.(outcome)
+    audio.onScreen('result')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(boss.stoppedAt).not.toBeNull()
+    expect(ctx.sources.filter(source => source.loop)).toEqual([boss])
+    const before = ctx.oscillators.length
+    audio.playSfx(outcome)
+    expect(ctx.oscillators.length).toBeGreaterThan(before)
+    audio.onScreen('menu')
+    expect(menu.paused).toBe(false)
+    ctx.currentTime = 2
+    audio.playSfx('hero-select')
+    expect(ctx.sources.at(-1)?.loop).toBe(false)
+    audio.dispose()
+  })
+
+  it.each(['hero-select', 'victory', 'defeat'] as const)('preserves the first %s cue while a trusted gesture resumes the context', async cue => {
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => { finish = () => { ctx.state = 'running'; resolve() } })
+    const audio = make()
+    if (cue !== 'hero-select') { audio.setResultTheme?.(cue); audio.onScreen('result') }
+    audio.wake()
+    audio.playSfx(cue)
+    expect(ctx.oscillators).toHaveLength(0)
+    expect(ctx.sources).toHaveLength(0)
+    finish()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(ctx.oscillators.length + ctx.sources.length).toBeGreaterThan(0)
+    audio.dispose()
+  })
+
+  it.each(['menu', 'mute'] as const)('does not replay an unheard terminal cue after %s', async action => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.interrupt()
+    audio.onScreen('result')
+    audio.setResultTheme?.('defeat')
+    audio.playSfx('defeat')
+    expect(ctx.oscillators).toHaveLength(0)
+    if (action === 'menu') audio.onScreen('menu')
+    else { audio.setSfxVolume(0); audio.setSfxVolume(100) }
+    audio.wake()
+    await Promise.resolve()
+    const sfxNotes = ctx.oscillators.filter(note =>
+      ctx.gains.some(gain => note.targets.includes(gain) && gain.targets.includes(ctx.gains[0]!)))
+    expect(sfxNotes).toHaveLength(0)
+    audio.dispose()
+  })
+
+  it('never replays a pending cue after interruption or a screen change', async () => {
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => { finish = () => { ctx.state = 'running'; resolve() } })
+    const audio = make()
+    audio.wake()
+    audio.playSfx('hero-select')
+    audio.onScreen('play')
+    audio.interrupt()
+    finish()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(ctx.sources).toHaveLength(0)
+    expect(ctx.oscillators).toHaveLength(0)
+    audio.dispose()
+  })
+})
+
+describe('opt-in DEV result audio diagnostics', () => {
+  it.each(['defeat', 'victory'] as const)('reports actual %s scheduling separately from sampled bus signals', async outcome => {
+    const originalUrl = window.location.href
+    window.history.replaceState(null, '', '?audioDiagnostics=1')
+    vi.useFakeTimers()
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const analysers: Array<{ fftSize: number; getFloatTimeDomainData(data: Float32Array): void }> = []
+    const context = Object.assign(ctx, { createAnalyser() {
+      const amplitude = analysers.length === 0 ? 0.125 : 0.25
+      const node = { fftSize: 2048, getFloatTimeDomainData(data: Float32Array) {
+        data.fill(amplitude)
+      } }
+      analysers.push(node)
+      return node
+    } })
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => context,
+      victoryTrack: 'victory.wav', defeatTrack: 'defeat.wav',
+      loadMusic: async () => context.createBuffer(2, 48000, 48000) })
+    try {
+      audio.wake()
+      audio.onScreen('play')
+      audio.onScreen('result')
+      audio.setResultTheme?.(outcome)
+      audio.tick('result')
+      audio.playSfx(outcome)
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(log).toHaveBeenCalledWith('[Audio][Result]', expect.objectContaining({
+        outcome, audioContext: 'running', bgmEnabled: true, bgmVolume: 100,
+        bgmScheduled: true, sfxEnabled: true, sfxVolume: 100, sfxScheduled: true,
+        bgmSource: outcome + '.wav',
+        bgmSignal: expect.objectContaining({ peak: 0.25, rmsMax: 0.25 }),
+        sfxSignal: expect.objectContaining({ peak: 0.125, rmsMax: 0.125 }),
+      }))
+      expect(analysers).toHaveLength(2)
+      expect(ctx.gains[0]!.targets).toContain(analysers[0])
+      expect(ctx.gains[1]!.targets).toContain(analysers[1])
+      audio.onScreen('menu')
+      const count = log.mock.calls.length
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(log.mock.calls).toHaveLength(count)
+    } finally {
+      audio.dispose()
+      log.mockRestore()
+      vi.useRealTimers()
+      window.history.replaceState(null, '', originalUrl)
+    }
+  })
+
+  it('reports muted and unavailable signals without claiming playback', async () => {
+    const originalUrl = window.location.href
+    window.history.replaceState(null, '', '?audioDiagnostics=1')
+    vi.useFakeTimers()
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const audio = make()
+    try {
+      audio.wake()
+      audio.setMusicVolume(0)
+      audio.setSfxVolume(0)
+      audio.onScreen('result')
+      audio.setResultTheme?.('defeat')
+      audio.tick('result')
+      audio.playSfx('defeat')
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(log).toHaveBeenCalledWith('[Audio][Result]', expect.objectContaining({
+        outcome: 'defeat', bgmVolume: 0, sfxVolume: 0,
+        bgmScheduled: false, sfxScheduled: false, bgmSignal: null, sfxSignal: null,
+      }))
+    } finally {
+      audio.dispose()
+      log.mockRestore()
+      vi.useRealTimers()
+      window.history.replaceState(null, '', originalUrl)
+    }
+  })
+
+  it('does not attach diagnostic nodes or emit logs without opt-in', async () => {
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const createAnalyser = vi.fn()
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => Object.assign(ctx, { createAnalyser }) })
+    try {
+      audio.wake()
+      audio.onScreen('result')
+      audio.setResultTheme?.('defeat')
+      audio.tick('result')
+      expect(createAnalyser).not.toHaveBeenCalled()
+      expect(log).not.toHaveBeenCalled()
+    } finally { audio.dispose(); log.mockRestore() }
   })
 })

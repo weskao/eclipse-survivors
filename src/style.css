@@ -1,3 +1,7 @@
+/* Hide scrollbar chrome globally without disabling scrolling. */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+
 :root{--gold:#d8bb82;--cream:#ece6d6;--ink:#080c11;--edge:#b79b654f;--sub:#a4aeb3;font-family:Inter,system-ui,-apple-system,"Noto Sans TC",sans-serif;color:var(--cream);font-synthesis:none}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0e1414;touch-action:none}button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible{outline:2px solid #fae3af;outline-offset:3px}#game{display:block;width:100vw;height:100dvh}
 #hud{display:none;position:fixed;inset:0;pointer-events:none;z-index:2}#hud.active{display:block}
@@ -29,10 +33,10 @@ h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(29px,4vw,48px);lett
 .skill{background:linear-gradient(145deg,#25344fdd,#161522ef);border-color:#dabb8caa;box-shadow:0 0 12px #a09add2d,inset 0 1px 0 #fff3,0 3px 10px #0009}
 .chip{min-height:45px}.quest{filter:drop-shadow(0 1px 5px #000);text-shadow:0 2px 8px #000,0 0 14px #120f19}
 .mini-wrap{position:fixed;top:84px;right:clamp(11px,2vw,30px);width:170px;padding:7px 9px 9px;border:1px solid #c3a57790;border-radius:5px;background:linear-gradient(135deg,#101822eb,#0b1219e8);box-shadow:0 5px 27px #000a;pointer-events:none}.mini-wrap span{font-size:10px;color:#ddd0b1;font-weight:700;letter-spacing:1.2px}.mini-wrap canvas{display:block;width:152px;height:110px;margin-top:5px;border:1px solid #9e875c80;border-radius:2px;background:#151d1a}
-.boss-wrap{display:none;position:absolute;top:108px;left:50%;transform:translateX(-50%);width:min(490px,46vw);text-align:center;filter:drop-shadow(0 5px 9px #000)}.boss-wrap.show{display:block}.boss-label{color:#ffcbad;font-size:12px;font-weight:800;letter-spacing:2px;margin-bottom:6px}.boss-track{height:11px;background:#110b10;border:1px solid #cea587cc;padding:1px;box-shadow:0 0 16px #f4433555}.boss-track i{display:block;background:linear-gradient(90deg,#772c34,#cd5d55,#ffb371);height:100%;width:100%;transition:width .08s}
+.boss-wrap{display:none;position:absolute;top:108px;left:50%;transform:translateX(-50%);width:min(420px,52vw);text-align:center;filter:drop-shadow(0 5px 9px #000)}.boss-wrap.show{display:block}.boss-label{color:#ffcbad;font-size:12px;font-weight:800;letter-spacing:2px;margin-bottom:6px}.boss-track{height:13px;background:linear-gradient(180deg,#09090f,#261722 54%,#100b15);border:1px solid #765a53;border-radius:2px;padding:1px;box-shadow:inset 0 1px 4px #000d}.boss-track i{display:block;background:#a94463;height:100%;width:100%;box-shadow:inset 0 1px #fff9,inset 0 -1px #0008;transition:width .24s cubic-bezier(.22,.72,.25,1)}
 .panel{background:linear-gradient(145deg,#1a222dfa,#0a1018fd 58%,#1a1b25fc);border-color:#dec28a99}
 .job{background:linear-gradient(#333547c9,#0c141ffc)}.job.selected{box-shadow:0 0 28px #dec17965,inset 0 0 25px #dec17e1a}
-@media(max-width:760px){.mini-wrap{top:102px;right:11px;width:109px;padding:5px}.mini-wrap span{font-size:8px}.mini-wrap canvas{width:97px;height:70px}.boss-wrap{top:188px;width:76vw}.boss-label{font-size:10px;letter-spacing:.4px}.quest{top:102px;left:42%;font-size:9px;opacity:.78}.status{width:49vw}.status b{font-size:10px}.chip{min-height:37px}}
+@media(max-width:760px){.mini-wrap{top:102px;right:11px;width:109px;padding:5px}.mini-wrap span{font-size:8px}.mini-wrap canvas{width:97px;height:70px}.boss-wrap{top:188px;width:min(360px,78vw)}.boss-label{font-size:10px;letter-spacing:.4px}.quest{top:102px;left:42%;font-size:9px;opacity:.78}.status{width:49vw}.status b{font-size:10px}.chip{min-height:37px}}
 @media(max-width:360px){.mini-wrap{top:90px}.quest{top:165px;left:50%}.boss-wrap{top:199px}}
 
 /* Cinematic character select: original ruins illustration and the real in-game hero art. */
@@ -130,7 +134,7 @@ h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(29px,4vw,48px);lett
 @media (prefers-reduced-motion:reduce){#dash{transition:none}#dash:active:not(:disabled){transform:none}}
 
 /* Unified arcane sigils, ability inventory and rarity-aware level-up cards. */
-.skill-slots{max-width:min(88vw,760px);display:flex;justify-content:safe center;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#e6c88a66 transparent;padding:7px 4px}
+.skill-slots{max-width:min(88vw,760px);display:flex;justify-content:safe center;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;padding:7px 4px}
 .bottom-ui{width:min(820px,90vw);pointer-events:none}
 .skill-slots{pointer-events:auto}
 .skill-slots .skill{flex:0 0 48px;width:48px;height:49px;overflow:hidden;border-radius:9px;isolation:isolate;background:radial-gradient(circle at 38% 28%,#49556a,#121928 68%);box-shadow:inset 0 1px 0 #fff5,0 2px 12px #000b}
@@ -171,8 +175,27 @@ h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(29px,4vw,48px);lett
 #level .upgrade .portrait.skill-sigil{overflow:hidden}
 #level .upgrade .portrait .skill-art{border-radius:50%;transform:scale(1.04)}
 
-/* WebKit long-press loupe/callout and highlight must not steal game interactions.
-   Keep native menu inputs, link activation and scrollable dialogs selectable/scrollable. */
+/* The entire game document, including dialogs teleported to body, is an
+   interaction surface rather than selectable document text. Explicit descendants
+   also cover native buttons and their icon/text children in WebKit and Chromium. */
+html, body, body * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Keep genuine text-entry controls editable/selectable without disabling
+   keyboard navigation, focus, clicks, sliders or scrolling elsewhere. */
+body :is(input:not([type]), input[type="text"], input[type="search"], input[type="email"],
+  input[type="url"], input[type="tel"], input[type="password"], input[type="number"],
+  textarea, [contenteditable]:not([contenteditable="false"])),
+body [contenteditable]:not([contenteditable="false"]) * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* WebKit tap highlight must not steal game interactions. */
 #game,
 #app button,
 #app [role="button"],
@@ -184,3 +207,32 @@ h1{font-family:Georgia,"Noto Serif TC",serif;font-size:clamp(29px,4vw,48px);lett
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Shared blackened bronze boss meter frame. Caps live outside the fill's clipping region. */
+.boss-meter-frame{position:relative;box-sizing:border-box;min-width:0;margin:0 5px;padding:2px 5px;background:linear-gradient(180deg,#96715e,#352a32 27%,#17131c 55%,#4c343b 85%,#795648);border:1px solid #b28c6d;border-radius:3px;box-shadow:0 2px 4px #000b,inset 0 1px #e6bf8c55}
+.boss-meter-frame::before,.boss-meter-frame::after{content:'';position:absolute;top:50%;width:12px;height:16px;transform:translateY(-50%);z-index:2;pointer-events:none;background:linear-gradient(135deg,#dbb18b,#523c46 38%,#d3a284 50%,#482332 70%,#a97b61);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.boss-meter-frame::before{left:-6px}
+.boss-meter-frame::after{right:-6px}
+@media (max-width:700px),(orientation:landscape) and (max-height:520px){.boss-meter-frame{padding:1px 4px;margin:0 4px}.boss-meter-frame::before,.boss-meter-frame::after{width:10px;height:12px}.boss-meter-frame::before{left:-5px}.boss-meter-frame::after{right:-5px}}
+@media (prefers-reduced-motion:reduce){.boss-track i{transition:none}}
+
+/* Match the compact fixed boss HUD without changing its world-space health bar. */
+@media (orientation:landscape) and (max-height:520px){.boss-wrap{width:min(330px,38vw)}}
+
+/* Legacy hero HUD shares the same sampled transform values; XP is unchanged. */
+#hudHealthMeter{position:relative;isolation:isolate}
+#hudHealthMeter>i{position:absolute;inset:0;transform-origin:left center;transition:none}
+#hudHealthMeter>#hpBar{z-index:1;transform:scaleX(var(--hero-hp-front,var(--es2-progress,0)))}
+#hudHealthMeter>.hero-hp-trail{z-index:0;transform:scaleX(var(--hero-hp-trail,var(--es2-progress,0)));background:linear-gradient(180deg,#ffdfaa,#f2c37e 48%,#a87944);opacity:0;box-shadow:none}
+#hudHealthMeter[data-hero-hp-damage]>.hero-hp-trail{opacity:1}
+#hudHealthMeter[data-hero-hp-damage]>#hpBar{box-shadow:inset -3px 0 #fff3cf,inset 0 1px #fff8}
+
+/* The legacy boss meter consumes the same DOM sampler as the hero. */
+.boss-track:has(>#bossHealth){position:relative;isolation:isolate;overflow:hidden}
+.boss-track:has(>#bossHealth)>i{position:absolute;inset:0;transform-origin:left center;transition:none}
+.boss-track>#bossHealth{z-index:1;transform:scaleX(var(--hero-hp-front,var(--es2-progress,0)))}
+.boss-track>.hero-hp-trail{z-index:0;transform:scaleX(var(--hero-hp-trail,var(--es2-progress,0)));background:linear-gradient(180deg,#ffcfaa,#c78058 50%,#895043);opacity:0}
+.boss-track[data-hero-hp-damage]>.hero-hp-trail{opacity:.95}
+:is(#hudHealthMeter,.boss-track)[data-hp-impact]>:is(#hpBar,#bossHealth){box-shadow:inset -5px 0 #ffc27f,inset 0 1px #fff8}
+:is(#hudHealthMeter,.boss-track)[data-hp-impact="critical"]>:is(#hpBar,#bossHealth){box-shadow:inset -7px 0 #ffdc92,inset 0 1px #fff8}
+[data-es2-reduce-flashing="true"] :is(#hudHealthMeter,.boss-track)[data-hp-impact]>:is(#hpBar,#bossHealth){box-shadow:inset 0 1px #fff8}

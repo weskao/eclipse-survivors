@@ -32,6 +32,16 @@ jobs:
         with:
           node-version: '24'
           cache: pnpm
+      - name: Validate next release version
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          previous=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          current=$(node -p "require('./package.json').version")
+          node scripts/check-release-version.mjs "$previous" "$current"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Typecheck and unit tests
@@ -39,6 +49,8 @@ jobs:
           pnpm typecheck
           pnpm test
       - name: Build static site
+        env:
+          VITE_ES2_FIREBASE_CONFIG: ${{ vars.VITE_ES2_FIREBASE_CONFIG }}
         run: pnpm build
       - name: Validate release metadata and built output
         run: pnpm check-release

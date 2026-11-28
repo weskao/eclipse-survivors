@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "020e73f0e8a5c0f95beda7adc711e2af05346253",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "stride-key-c",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/stride-key-c.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "d451cd42-d07f-409b-af29-5e0c888f7060",
+        "originalPngSha256": "d19bfd0c90797834b934b9e0a0ac8aa4bdc71cbb0a8f35874e77b84b3ad08746",
+        "canonicalReferenceHead": "020e73f0e8a5c0f95beda7adc711e2af05346253"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1280,
+      "cellHeight": 1229,
+      "frameRects": [
+        [
+          0,
+          0,
+          1280,
+          1229
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        640.0,
+        614.5
+      ],
+      "alphaBounds": [
+        9,
+        11,
+        1272,
+        1220
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1280,
+        1229
+      ],
+      "alphaExtent": [
+        1263,
+        1209
+      ],
+      "actualSourceResolution": [
+        1280,
+        1229
+      ],
+      "sourceEdgeMargins": [
+        9,
+        11,
+        8,
+        9
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "85e7d42ab11af4f1480ee96c5b6369a90817eaef0e2a57ba012ace13524768b0",
+      "webpCompressedBytes": 723816,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Alternate advancing stride, open leading hand; verify leading foot and body yaw against Batch 02/04."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "stride-key-d",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/stride-key-d.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "071e46ba-55e2-4e86-aaac-89916dd18590",
+        "originalPngSha256": "7b3fd7672c4a81ca69b62f5eb55942507ff508393147d69511e864cf7ce443ff",
+        "canonicalReferenceHead": "020e73f0e8a5c0f95beda7adc711e2af05346253"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1312,
+      "cellHeight": 1199,
+      "frameRects": [
+        [
+          0,
+          0,
+          1312,
+          1199
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.0,
+        599.5
+      ],
+      "alphaBounds": [
+        16,
+        8,
+        1274,
+        1197
+      ],
+      "alphaAnyBounds": [
+        0,
+        0,
+        1292,
+        1199
+      ],
+      "alphaExtent": [
+        1258,
+        1189
+      ],
+      "actualSourceResolution": [
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        16,
+        8,
+        38,
+        2
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "1abc7d445ec7b3afade6df3a382de4843d62ee26790fd02f3d3c54fc7450751d",
+      "webpCompressedBytes": 687054,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Opposite-side foreground foot candidate; verify anatomical foot, camera direction, head and armor identity before temporal mapping."
+    }
+  ],
+  "missing": [
+    "coherent idle and alternating locomotion loop",
+    "continuous windup, attack and recovery",
+    "phase-specific transformations",
+    "terminal debris fade and death timing",
+    "direction, anchor, visual and runtime QA",
+    "three other bosses"
+  ]
+}

@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { createHero, createState } from '../../../src/game/state'
+import { BALANCE } from '../../../src/game/config'
+import { spawnOpeningWave } from '../../../src/game/spawn'
 import { step } from '../../../src/game/step'
 import { createRenderAssets, drawFrame } from '../../../src/game/render'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from '../../../src/game/render/fakes'
@@ -141,4 +144,36 @@ describe('ES2 actual engine + recording Canvas stress diagnostics', () => {
       setRandom()
     }
   })
+})
+
+it('ES3 gameplay remains identical across graphical quality and reduced motion/flashing', () => {
+  const run = (quality: 'low' | 'medium' | 'high') => {
+    setRandom(seeded(20261126))
+    const state = createStressScenario('desktop'), fake = createFakeCtx()
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    assets.presentation = () => resolvePresentationPolicy({ ...DEFAULT_ACCESSIBILITY_PREFERENCES, quality, reducedMotion: quality === 'low' ? 'on' : 'off', reducedFlashing: quality === 'low' })
+    try {
+      for (let i = 0; i < 60; i++) { step(state, 1/60, { x: 0, y: 0 }, hooks); drawFrame(fake.ctx, state, 1, assets); fake.calls.length = 0; fake.drawn.length = 0 }
+      return { time: state.time, hp: state.hero?.hp, xp: state.hero?.xp, kills: state.kill, mobs: state.mobs.map(m => [m.x,m.y,m.hp]), telemetry: state.combatTelemetry }
+    } finally { setRandom() }
+  }
+  const high = run('high'); expect(run('medium')).toEqual(high); expect(run('low')).toEqual(high)
+})
+
+it('reports deterministic mode-specific opening XP and pressure curves', () => {
+  const run = (mode: 'quick' | 'standard' | 'endless' | 'challenge') => {
+    setRandom(seeded(20261126))
+    try {
+      const s = createState(); s.mode = 'play'; s.runMode = mode; s.W = 960; s.H = 540; s.hero = createHero('knight'); s.hero.inv = 999
+      s.hero.need = BALANCE.progression.initialXpByMode[mode]
+      spawnOpeningWave(s)
+      for (let i=0; i<1801; i++) step(s, 1/60, {x: 0, y: 0}, hooks)
+      expect(s.combatTelemetry.samples).toHaveLength(3)
+      expect(s.kill).toBeGreaterThan(0)
+      return { mode, ...s.combatTelemetry, kills: s.kill, damage: s.damageDealt }
+    } finally { setRandom() }
+  }
+  for (const mode of ['quick','standard','endless','challenge'] as const) {
+    const a = run(mode); expect(run(mode)).toEqual(a); console.info('ES3_OPENING_CURVE '+JSON.stringify(a))
+  }
 })

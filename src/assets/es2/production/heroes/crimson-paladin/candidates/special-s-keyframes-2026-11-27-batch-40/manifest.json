@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "special",
+  "direction": "S",
+  "sourceDirection": "S",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": false,
+  "resampling": "Native crop, 1:1 paste into 768x768 transparent canvas; no resize or mirroring.",
+  "sourcePixels": [
+    631,
+    623
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "dfdf9c7d-90ca-4349-b83f-c767284bf9ee",
+    "originalPNGSHA256": "ad035c0d196a3b6041dad28ef72ee859b69407ebe9b71b1135ecfa80cf4528ad",
+    "canonicalPortrait": "src/assets/es2/production/heroes/crimson-paladin-portrait@3x.webp",
+    "portraitBlobSHA": "40c57775d2e3e61e524d6f86ac2bbf479728e167",
+    "referenceCommit": "2b7850cdd06c9c0edbe64872d7963a0725f00f71",
+    "referenceMethod": "Canonical portrait retrieved and visually inspected; direct image conditioning not independently verified.",
+    "originalSheet": "../special-s-keyframes-2026-11-27-batch-40/original-sheet.webp",
+    "sourceCropRect": [
+      0,
+      623,
+      631,
+      1246
+    ],
+    "originalSheetFullRGBAExact": true,
+    "originalSheetSHA256": "dcb74a05967e56b6172d18d09807976dd3d2600dfaab00c0103532a7d0d44843"
+  },
+  "encoding": "Pillow lossless WebP exact=True method=6; decoded alpha and visible RGBA checked; Polytool not run",
+  "frames": [
+    {
+      "id": "barrier-brace-identity-a",
+      "description": "Front-facing braced shield defense, provisional south-facing special keyframe.",
+      "sourceFile": "barrier-brace-identity-a-source.webp",
+      "sourceSHA256": "b68bc5a6321067abeec8215e6a5103e5551f08c6fb95f723fda3a635ad0e21f1",
+      "sourceBytes": 294426,
+      "sourceCellPixels": [
+        631,
+        623
+      ],
+      "file": "barrier-brace-identity-a@3x.webp",
+      "webpSHA256": "04e97a357413a4f93212f8b8c201fd529eb31338052f84b1f9295e3c3d0349f3",
+      "bytes": 295440,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        68,
+        72
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        631,
+        623
+      ],
+      "coreAlphaBounds": [
+        25,
+        41,
+        586,
+        567
+      ],
+      "coreExtent": [
+        561,
+        526
+      ],
+      "sourceBoundaryMaxAlpha": 1,
+      "outputAlphaBounds": [
+        68,
+        72,
+        699,
+        695
+      ],
+      "outputCoreAlphaBounds": [
+        93,
+        113,
+        654,
+        639
+      ],
+      "outputCoreExtent": [
+        561,
+        526
+      ],
+      "alphaPreserved": true,
+      "sourceFullRGBAExact": true,
+      "outputFullRGBAExact": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Facial details, armor, weapon, handedness, provisional facing, relative scale and continuity require review. Do not treat this independent pose as a complete animation."
+    }
+  ],
+  "reviewNotes": [
+    "Independent pose only, not an approved frame sequence.",
+    "Source sheet top row was not admitted: original core width below 441px.",
+    "SE run has an existing four-frame candidate; this is an additional independently authored pose for comparison, not a replacement."
+  ]
+}

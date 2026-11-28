@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from PIL import Image
 
-from scripts.es2.generate_c104_assets import generate_assets, ASSET_BOXES, UI_BOXES
+from scripts.es2.generate_c104_assets import generate_assets, ASSET_BOXES, UI_BOXES, SOURCE_FILES
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -34,9 +34,33 @@ def alpha_component_sizes(alpha):
     return sorted(areas, reverse=True)
 
 class TestC104ProductionArt(unittest.TestCase):
+    def test_source_masters_are_webp_matching_provenance(self):
+        import hashlib, json
+        images = ROOT / 'assets' / 'images'
+        self.assertEqual(sorted(images.glob('imgs*.png')), [], 'retired PNG masters must not return')
+        provenance = json.loads((ROOT / 'src/assets/es2/production/c104-provenance.json').read_text(encoding='utf-8'))
+        self.assertEqual(set(provenance['sourceAssets']), set(SOURCE_FILES))
+        for name in SOURCE_FILES:
+            with self.subTest(name=name):
+                self.assertEqual(hashlib.sha256((images / name).read_bytes()).hexdigest(),
+                                 provenance['sourceAssets'][name])
+
+    def test_source_masters_are_lossless_webp(self):
+        # Lossy masters (e.g. towebp -q 100) shift RGB under the alpha mattes and change every derived asset.
+        for name in SOURCE_FILES:
+            data = (ROOT / 'assets' / 'images' / name).read_bytes()
+            chunks, offset = [], 12
+            while offset + 8 <= len(data):
+                chunks.append(data[offset:offset + 4])
+                offset += 8 + ((int.from_bytes(data[offset + 4:offset + 8], 'little') + 1) & ~1)
+            with self.subTest(name=name):
+                self.assertEqual(data[:4] + data[8:12], b'RIFFWEBP')
+                self.assertIn(b'VP8L', chunks)
+                self.assertNotIn(b'VP8 ', chunks)
+
     def test_explicit_boxes_are_nonoverlapping_and_in_source(self):
         for source, rects in ASSET_BOXES.items():
-            with Image.open(ROOT / 'assets' / 'images' / f'imgs{source}.png') as image:
+            with Image.open(ROOT / 'assets' / 'images' / f'imgs{source}.webp') as image:
                 frames = [(key, box) for key, box in rects.items() if key.startswith('frame:')]
                 for key, (x0, y0, x1, y1) in rects.items():
                     with self.subTest(source=source, key=key):

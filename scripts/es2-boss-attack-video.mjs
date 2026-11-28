@@ -35,7 +35,7 @@ const phases = {
 }
 await mkdir(output, { recursive: true })
 const records = []
-const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] })
+const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] })
 try {
   for (const [bossId, attacksByPhase] of Object.entries(phases)) {
     const context = await browser.newContext({
@@ -116,6 +116,12 @@ try {
           bossId + ': actual Canvas did not draw all 18 motion reference cells')
       }
       await page.waitForTimeout(700)
+      record.pixiVfx = await page.evaluate(() => window.__test?.pixiVfx ?? null)
+      if (!motionQa) {
+        const required = [...new Set(attacksByPhase.flat())]
+        assert.ok(record.pixiVfx?.releasePasses > 0, bossId + ': PixiJS did not composite any real release')
+        assert.deepEqual(required.filter(id => !record.pixiVfx.attackIds.includes(id)), [], bossId + ': missing actual GPU release evidence')
+      }
       assert.equal(record.attacks.length, attacksByPhase.reduce((sum, row) => sum + row.length, 0),
         bossId + ': every phase-pattern was not captured')
       assert.deepEqual(errors, [], bossId + ': unexpected browser errors')
@@ -134,7 +140,7 @@ try {
     record.mp4 = destination
     record.bytes = size
     records.push(record)
-    console.log('CAPTURED REAL BOSS VIDEO', JSON.stringify({ bossId, bytes: size, attacks: record.attacks.length, drawnSourceSlots: record.drawnSourceSlots }))
+    console.log('CAPTURED REAL BOSS VIDEO', JSON.stringify({ bossId, bytes: size, attacks: record.attacks.length, drawnSourceSlots: record.drawnSourceSlots, pixiVfx: record.pixiVfx }))
   }
 } finally {
   await browser.close()

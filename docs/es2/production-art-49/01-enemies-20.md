@@ -15,7 +15,7 @@
 - Owned：src/assets/es2/production/enemies/**
 - 僅供追蹤的既有 consumer（不得在分工分支擅自修改）：src/game/render/es2/production-factions.ts、src/game/render/es2/production-world.ts
 - 既有測試／契約：src/game/render/es2/production-factions.test.ts、src/game/render/es2/production-world.test.ts
-- 參考來源：assets/images/imgs5.png、assets/images/imgs6.png
+- 參考來源：assets/images/imgs5.webp、assets/images/imgs6.webp
 
 ## 現有素材清單（全部已入庫；以 manifest 與 HEAD 重新確認）
 

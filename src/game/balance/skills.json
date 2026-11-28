@@ -39,11 +39,13 @@
   "area": {
     "orb": {
       "maxBlades": 8,
+      "maxRankBonusBlades": 1,
       "baseDamage": 12,
       "heroDamageRatio": 0.28,
       "hitCooldown": 0.28
     },
     "bolt": {
+      "maxRankShockSeconds": 0.65,
       "cooldownFloor": 0.45,
       "cooldownBase": 2,
       "cooldownPerRank": 0.18,
@@ -53,6 +55,7 @@
       "damageRatio": 1.4
     },
     "frost": {
+      "maxRankRangeBonus": 22,
       "cooldownFloor": 1.2,
       "cooldownBase": 5.4,
       "cooldownPerRank": 0.48,
@@ -64,6 +67,7 @@
       "slowPerRank": 0.16
     },
     "meteor": {
+      "maxRankRangeBonus": 18,
       "cooldownFloor": 1.8,
       "cooldownBase": 6,
       "cooldownPerRank": 0.46,
@@ -75,6 +79,7 @@
       "damagePerRank": 0.21
     },
     "blaze": {
+      "maxRankRangeBonus": 18,
       "cooldownFloor": 0.18,
       "cooldownBase": 0.48,
       "cooldownPerRank": 0.033,
@@ -84,6 +89,7 @@
       "damagePerRank": 0.045
     },
     "vortex": {
+      "maxRankRangeBonus": 35,
       "cooldownFloor": 2.2,
       "cooldownBase": 8,
       "cooldownPerRank": 0.6,

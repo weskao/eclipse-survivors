@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-recover-key-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/seraph-recover-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "f3d685a0-d71d-48ae-b56a-761c37f38564",
+        "originalPngSha256": "8bde29273209cdcef45a43f58b5388256f1b9493ce017501152d6fc085780f7d",
+        "canonicalReferenceHead": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1197,
+      "cellHeight": 1452,
+      "frameRects": [
+        [
+          0,
+          0,
+          1197,
+          1452
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        598.5,
+        726.0
+      ],
+      "alphaBounds": [
+        108,
+        37,
+        1070,
+        1394
+      ],
+      "alphaAnyBounds": [
+        61,
+        32,
+        1145,
+        1406
+      ],
+      "alphaExtent": [
+        962,
+        1357
+      ],
+      "actualSourceResolution": [
+        1197,
+        1452
+      ],
+      "originalGeneratedResolution": [
+        1133,
+        1388
+      ],
+      "originalAlpha128Bounds": [
+        76,
+        5,
+        1038,
+        1362
+      ],
+      "sourceEdgeMargins": [
+        108,
+        37,
+        127,
+        58
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "c1c33dd33ad67b26a3aca54ac38cb913942b9c63bba493c13a81ff3df0986b21",
+      "webpCompressedBytes": 643342,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100 (Polytool unavailable)",
+      "notes": "Unapproved redraw. Original alpha touches canvas edges; 32px transparent padding without scaling does not repair preexisting clipping. Phase, anchor, identity and continuity unapproved. 949px provisional extent passes; conservative 1898px production gate fails."
+    },
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-eclipse-idle-key-a",
+      "pose": "idle",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "idle/seraph-eclipse-idle-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "884e7eac-018e-4a0b-8441-103df1dc3860",
+        "originalPngSha256": "65b1f22cd78ab9a5215a74888db8ff59fc28b4d9d433dff5387ead7c21aa78b3",
+        "canonicalReferenceHead": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1194,
+      "cellHeight": 1456,
+      "frameRects": [
+        [
+          0,
+          0,
+          1194,
+          1456
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        597.0,
+        728.0
+      ],
+      "alphaBounds": [
+        35,
+        35,
+        1159,
+        1422
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1162,
+        1424
+      ],
+      "alphaExtent": [
+        1124,
+        1387
+      ],
+      "actualSourceResolution": [
+        1194,
+        1456
+      ],
+      "originalGeneratedResolution": [
+        1130,
+        1392
+      ],
+      "originalAlpha128Bounds": [
+        3,
+        3,
+        1127,
+        1390
+      ],
+      "sourceEdgeMargins": [
+        35,
+        35,
+        35,
+        34
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "18401fd40715b7b5d5188a86ad8db3d2dc70b45b6181c996a383e9d6eb93f4b7",
+      "webpCompressedBytes": 879208,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100 (Polytool unavailable)",
+      "notes": "Unapproved redraw. Original alpha touches canvas edges; 32px transparent padding without scaling does not repair preexisting clipping. Phase, anchor, identity and continuity unapproved. 949px provisional extent passes; conservative 1898px production gate fails."
+    },
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-ascension-key-a",
+      "pose": "transform",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/seraph-ascension-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "f9e23c2f-060f-4ff2-b074-af1c7b76c6aa",
+        "originalPngSha256": "4153731a437b5242e040193496b47dad1d485e014cb13aba8cbfa63e4a35c57d",
+        "canonicalReferenceHead": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1263,
+      "cellHeight": 1376,
+      "frameRects": [
+        [
+          0,
+          0,
+          1263,
+          1376
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        631.5,
+        688.0
+      ],
+      "alphaBounds": [
+        39,
+        33,
+        1227,
+        1342
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1231,
+        1344
+      ],
+      "alphaExtent": [
+        1188,
+        1309
+      ],
+      "actualSourceResolution": [
+        1263,
+        1376
+      ],
+      "originalGeneratedResolution": [
+        1199,
+        1312
+      ],
+      "originalAlpha128Bounds": [
+        7,
+        1,
+        1195,
+        1310
+      ],
+      "sourceEdgeMargins": [
+        39,
+        33,
+        36,
+        34
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "646fedfe69b3b267077d0619a1779baa4118345b8cbf84c4d010cddf41355376",
+      "webpCompressedBytes": 1129684,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100 (Polytool unavailable)",
+      "notes": "Unapproved redraw. Original alpha touches canvas edges; 32px transparent padding without scaling does not repair preexisting clipping. Phase, anchor, identity and continuity unapproved. 949px provisional extent passes; conservative 1898px production gate fails."
+    }
+  ],
+  "missing": [
+    "identity and phase review",
+    "coherent animation sequences",
+    "hover anchor review",
+    "browser visual QA",
+    "1898px production extent"
+  ]
+}

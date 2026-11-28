@@ -51,7 +51,7 @@ const PATCH = {
   bell: { partials: [.69,.20,.08], attack: .005, release: .53, vibrato: 0 },
 }
 
-function addVoice(left, right, pitch, start, length, amount, instrument, pan = 0) {
+export function addVoice(left, right, pitch, start, length, amount, instrument, pan = 0) {
   const patch = PATCH[instrument]
   const from = Math.max(0, Math.round(start * SAMPLE_RATE))
   const until = Math.min(left.length, Math.round((start + length) * SAMPLE_RATE))
@@ -77,7 +77,7 @@ function addVoice(left, right, pitch, start, length, amount, instrument, pan = 0
   }
 }
 
-function percussion(left, right, start, kind, amount) {
+export function percussion(left, right, start, kind, amount) {
   const length = kind === 'cymbal' ? 1.65 : kind === 'roll' ? .75 : .7
   const from = Math.round(start * SAMPLE_RATE)
   let seed = (0x146f2d31 ^ from) >>> 0
@@ -161,10 +161,16 @@ export function renderVictoryTheme() {
       addVoice(left, right, 91, start + 2 * BEAT, 2 * BEAT + 1.1, .09, 'bell', .52)
     }
   }
+  return masterWav(left, right, DURATION)
+}
+
+/** Room, closing fade, loudness/peak normalization and 16-bit stereo WAV encoding. */
+export function masterWav(left, right, duration) {
+  const count = left.length
   const [wetL, wetR] = addRoom(left, right)
   let peak = 0, power = 0
   for (let i = 0; i < count; i++) {
-    const fade = Math.min(1, Math.max(0, (DURATION - i / SAMPLE_RATE) / .5))
+    const fade = Math.min(1, Math.max(0, (duration - i / SAMPLE_RATE) / .5))
     wetL[i] *= fade; wetR[i] *= fade
     peak = Math.max(peak, Math.abs(wetL[i]), Math.abs(wetR[i]))
     power += (wetL[i] ** 2 + wetR[i] ** 2) / 2

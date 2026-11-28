@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, productionHeroPoseReady, productionHeroFrameAnchor, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
+import { drawProductionHeroFrame, loadProductionHeroes, productionHeroPoseRect, productionHeroMotionRect, productionHeroPoseReady, productionHeroFrameAnchor, PRODUCTION_HERO_POSE_SOURCES } from './production-heroes'
 import type { HeroAnimation } from '../animation'
 import type { Ctx2D } from '../ctx'
 
@@ -9,9 +9,16 @@ function anim(overrides: Partial<HeroAnimation> = {}): HeroAnimation {
 const ids = ['shadowblade', 'spirit-summoner', 'crimson-paladin'] as const
 function capture() {
   const calls: unknown[][] = []
-  const ctx = { save: () => {}, restore: () => {}, scale: () => {}, translate: () => {},
+  const ctx = { save: () => {}, restore: () => {}, scale: () => {}, translate: () => {}, rotate: () => {},
     drawImage: (...args: unknown[]) => { calls.push(args) } } as unknown as Ctx2D
   return { ctx, calls }
+}
+type Crop = { crop: number; y: number; alpha: number }
+/** Crops grouped by source cell: a gait-walked held cell is one layer of several crops. */
+const layers = (images: Crop[]) => {
+  const out = new Map<string, number>()
+  for (const { crop, y, alpha } of images) out.set(`${Math.floor(crop / 448)},${Math.floor(y / 448)}`, alpha)
+  return [...out].map(([cell, alpha]) => ({ cell, alpha }))
 }
 
 describe('ES2 split 448px character 3x motion atlas mapping', () => {
@@ -68,13 +75,47 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
       const running = productionHeroPoseRect(anim({ pose: 'run', direction: 0, frame: i, count: 8 }))
       expect(running.sheet).toBe('action')
       expect([running.x, running.y]).toEqual([(i % 4) * 448, Math.floor(i / 4) * 448])
-      const attacking = productionHeroPoseRect(anim({ pose: 'attack', direction: 4, phase: (i + 0.01) / 8 }))
+      const attacking = productionHeroPoseRect(anim({ pose: 'attack', direction: 0, phase: (i + 0.01) / 8 }))
       expect(attacking.sheet).toBe('action')
-      expect(attacking.mirror).toBe(true)
+      expect(attacking.mirror).toBe(false)
       expect([attacking.x, attacking.y]).toEqual([(i % 4) * 448, Math.floor((i + 8) / 4) * 448])
       const special = productionHeroPoseRect(anim({ pose: 'cast', direction: 0, phase: (i + 0.01) / 8, special: true }))
       expect(special.sheet).toBe('special')
       expect([special.x, special.y]).toEqual([(i % 4) * 448, Math.floor(i / 4) * 448])
+    }
+  })
+
+  it('holds the independently authored west guard for unapproved production motion instead of swapping weapon hands', () => {
+    for (const pose of ['run', 'dash', 'attack', 'cast'] as const) {
+      for (const special of [false, true]) {
+        const sample = anim({ pose, direction: 4, frame: 3, count: 8, phase: .5, special })
+        expect(productionHeroPoseRect(sample)).toEqual({
+          sheet: 'direction', x: 0, y: 1344, width: 448, height: 448, mirror: false,
+        })
+        expect(productionHeroMotionRect(sample)).toEqual({
+          x: 0, y: 384, width: 384, height: 384, mirror: false,
+        })
+        for (const heroId of ids) {
+          const direction = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+          const action = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+          const hero = { complete: true, naturalWidth: 900, naturalHeight: 900, heroId,
+            poseAtlases: { direction, action, special: action } } as unknown as HTMLImageElement
+          const { ctx, calls } = capture()
+          expect(drawProductionHeroFrame(ctx, hero, sample, 117, 147)).toBe(true)
+          expect(calls.every(call => call[0] === direction)).toBe(true)
+          if (pose === 'attack' || pose === 'cast') {
+            expect(calls).toHaveLength(1)
+            expect(calls[0]!.slice(1, 5)).toEqual([8, 1352, 432, 432])
+          }
+          // Run/dash walk the same held cell through the shared gait, never leaving it.
+          for (const [, x, y, w, h] of calls as number[][]) {
+            expect(x).toBeGreaterThanOrEqual(8 - 1e-6)
+            expect(y).toBeGreaterThanOrEqual(1352 - 1e-6)
+            expect(x! + w!).toBeLessThanOrEqual(440 + 1e-6)
+            expect(y! + h!).toBeLessThanOrEqual(1784 + 1e-6)
+          }
+        }
+      }
     }
   })
 
@@ -135,15 +176,15 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     }
   })
 
-  it('blends discrete walk frames and heading changes instead of abruptly replacing them', () => {
+  it.each(['spirit-summoner', 'crimson-paladin'] as const)('blends discrete walk frames and heading changes for %s', heroId => {
     const atlas = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
     const hero = { complete: true, naturalWidth: 900, naturalHeight: 900,
-      poseAtlases: { direction: atlas, action: atlas }, heroId: 'shadowblade' } as unknown as HTMLImageElement
-    const images: { crop: number; alpha: number }[] = []
+      poseAtlases: { direction: atlas, action: atlas }, heroId } as unknown as HTMLImageElement
+    const images: Crop[] = []
     const ctx = {
       globalAlpha: 1, save: () => {}, restore: () => {},
-      scale: () => {},
-      drawImage: (...args: unknown[]) => { images.push({ crop: Number(args[1]), alpha: ctx.globalAlpha }) },
+      scale: () => {}, translate: () => {}, rotate: () => {},
+      drawImage: (...args: unknown[]) => { images.push({ crop: Number(args[1]), y: Number(args[2]), alpha: ctx.globalAlpha }) },
     } as unknown as Ctx2D
     expect(drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', frame: 0, count: 8 }), 108, 134, undefined, 0)).toBe(true)
     images.length = 0
@@ -155,11 +196,39 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 6, frame: 2, count: 8 }), 108, 134, undefined, 0.080)
     images.length = 0
     drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 6, frame: 2, count: 8 }), 108, 134, undefined, 0.140)
-    expect(images).toHaveLength(2)
-    expect(images.reduce((sum, x) => sum + x.alpha, 0)).toBeCloseTo(1)
+    expect(layers(images)).toHaveLength(2)
+    expect(layers(images).reduce((sum, x) => sum + x.alpha, 0)).toBeCloseTo(1)
     images.length = 0
     drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 6, frame: 2, count: 8 }), 108, 134, undefined, 0.300)
+    expect(layers(images)).toEqual([{ cell: '2,3', alpha: 1 }])
+    expect(ctx.globalAlpha).toBe(1)
+  })
+
+  it('smooths Shadowblade movement but cuts heading and action boundaries to avoid ghost blades', () => {
+    const atlas = { complete: true, naturalWidth: 1792, naturalHeight: 1792 } as HTMLImageElement
+    const hero = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      poseAtlases: { direction: atlas, action: atlas }, heroId: 'shadowblade' } as unknown as HTMLImageElement
+    const images: Crop[] = []
+    const ctx = { globalAlpha: 1, save: () => {}, restore: () => {}, scale: () => {}, translate: () => {}, rotate: () => {},
+      drawImage: (...args: unknown[]) => { images.push({ crop: Number(args[1]), y: Number(args[2]), alpha: ctx.globalAlpha }) },
+    } as unknown as Ctx2D
+    const draw = (time: number, overrides: Partial<HeroAnimation>) => {
+      images.length = 0
+      expect(drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', count: 8, ...overrides }), 108, 134, undefined, time)).toBe(true)
+    }
+    draw(0, { frame: 0 })
+    draw(.016, { frame: 1 })
+    expect(images).toHaveLength(2)
+    expect(images.reduce((sum, image) => sum + image.alpha, 0)).toBeCloseTo(1)
+    draw(.080, { direction: 6, frame: 2 })
+    expect(layers(images)).toEqual([{ cell: '2,3', alpha: 1 }])
+    draw(.140, { direction: 6, frame: 2 })
+    expect(layers(images)).toEqual([{ cell: '2,3', alpha: 1 }])
+    draw(.160, { direction: 6, pose: 'attack', phase: .4 })
+    expect(images).toEqual([{ crop: 904, y: 1352, alpha: 1 }])
+    draw(.180, { direction: 0, pose: 'attack', phase: .4 })
     expect(images).toHaveLength(1)
+    expect(images[0]?.alpha).toBe(1)
     expect(ctx.globalAlpha).toBe(1)
   })
 
@@ -174,6 +243,23 @@ describe('ES2 split 448px character 3x motion atlas mapping', () => {
     calls.length = 0
     drawProductionHeroFrame(ctx, hero, anim({ pose: 'run', direction: 4, reducedMotion: true }), 117, 147, undefined, 0.02)
     expect(calls).toHaveLength(1)
+  })
+
+  it.each(ids)('preserves %s baked equipment when a westward directional sheet is pending', heroId => {
+    const portrait = { complete: true, naturalWidth: 900, naturalHeight: 900,
+      heroId, poseAtlases: {} } as unknown as HTMLImageElement
+    for (const direction of [3, 4, 5]) {
+      for (const reducedMotion of [false, true]) {
+        const flips: number[] = []
+        const { ctx, calls } = capture()
+        ctx.scale = (x: number) => { if (x < 0) flips.push(x) }
+        expect(drawProductionHeroFrame(ctx, portrait,
+          anim({ pose: 'run', direction, reducedMotion }), 117, 147, undefined, 0)).toBe(true)
+        expect(calls.length).toBeGreaterThan(0)
+        expect(calls.every(call => call[0] === portrait)).toBe(true)
+        expect(flips).toEqual([])
+      }
+    }
   })
 
   it('falls back to its own portrait when split sheets are not decoded yet', () => {

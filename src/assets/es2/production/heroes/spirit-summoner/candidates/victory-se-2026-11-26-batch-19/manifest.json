@@ -1,0 +1,301 @@
+{
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "victory",
+  "direction": "SE",
+  "sourceDirection": "SE",
+  "directionStatus": "provisional front/three-quarter view, visual QA required",
+  "mirrorAllowed": false,
+  "status": "QA_PENDING",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "native3x": "unverified",
+  "sourceResolution": [
+    1199,
+    1312
+  ],
+  "sourcePixels": [
+    1199,
+    1312
+  ],
+  "sourceCellPixels": null,
+  "sourceRects": [
+    [
+      0,
+      0,
+      614,
+      622
+    ],
+    [
+      614,
+      0,
+      585,
+      622
+    ],
+    [
+      0,
+      622,
+      614,
+      690
+    ],
+    [
+      614,
+      622,
+      585,
+      690
+    ]
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "columns": 2,
+  "rows": 2,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameCount": 4,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    704,
+    704,
+    704,
+    704
+  ],
+  "footBottomsStatus": "opaque silhouette proxy; not anatomical foot anchors",
+  "alphaBounds": [
+    [
+      77,
+      104,
+      691,
+      718
+    ],
+    [
+      91,
+      96,
+      676,
+      718
+    ],
+    [
+      77,
+      61,
+      691,
+      751
+    ],
+    [
+      91,
+      60,
+      668,
+      750
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRect": [
+        0,
+        0,
+        614,
+        622
+      ],
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        77,
+        96
+      ],
+      "coreAlphaBounds": [
+        52,
+        77,
+        500,
+        609
+      ],
+      "coreExtent": [
+        448,
+        532
+      ],
+      "sourceBoundaryMaxAlpha": 3,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        77,
+        104,
+        691,
+        718
+      ]
+    },
+    {
+      "index": 1,
+      "sourceRect": [
+        614,
+        0,
+        585,
+        622
+      ],
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        91,
+        96
+      ],
+      "coreAlphaBounds": [
+        34,
+        9,
+        540,
+        609
+      ],
+      "coreExtent": [
+        506,
+        600
+      ],
+      "sourceBoundaryMaxAlpha": 9,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        91,
+        96,
+        676,
+        718
+      ]
+    },
+    {
+      "index": 2,
+      "sourceRect": [
+        0,
+        622,
+        614,
+        690
+      ],
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        77,
+        61
+      ],
+      "coreAlphaBounds": [
+        30,
+        26,
+        571,
+        644
+      ],
+      "coreExtent": [
+        541,
+        618
+      ],
+      "sourceBoundaryMaxAlpha": 3,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        77,
+        61,
+        691,
+        751
+      ]
+    },
+    {
+      "index": 3,
+      "sourceRect": [
+        614,
+        622,
+        585,
+        690
+      ],
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        91,
+        60
+      ],
+      "coreAlphaBounds": [
+        39,
+        108,
+        503,
+        645
+      ],
+      "coreExtent": [
+        464,
+        537
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "footBottomProxy": 704,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        91,
+        60,
+        668,
+        750
+      ]
+    }
+  ],
+  "resampled": false,
+  "sourceFile": "source.webp",
+  "atlasFile": "victory-se-4frames@3x.webp",
+  "sourceSHA256": "5823283c20699f00a896c8e01b9c450b5f100789e6f4ffa0c1a6a4cfa56ff054",
+  "webpSHA256": "ce6f2314e663bd37303537a923c754e66ef20825332baa382bc1f60f46333514",
+  "originalPNGSHA256": "5fa12fd2b32d2e70f8db10263c4398e5a706f179b5d3cf9055162101819896b7",
+  "bytes": 1103666,
+  "encoding": "Pillow WebP quality=100 method=3; review only; Polytool not run",
+  "sourceProvenance": {
+    "generationId": "0da317f4-e900-4b99-82f9-2c9ad7cfb8ed",
+    "originalFile": "a_high_detail_fantasy_game_sprite_sheet_concept.png",
+    "origin": "new",
+    "canonicalPortrait": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+    "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "referenceCommit": "b8aa2148d6bac0e4aecccd60320dde1a94ff7e3f"
+  },
+  "reviewNotes": [
+    "4 distinct candidate poses, not the final full animation. No resampling, mirroring or alpha deletion; all original source pixels retained by nonuniform source rectangles.",
+    "Source boundary may have low-alpha glow. Verify actual face, weapons, direction, cloth and VFX against the canonical portrait; victory staff mist and paladin outer glow need review.",
+    "Native 3x unverified: alpha bounds include equipment/effects, not anatomy; low death pose is intentional. Validate at 1x game size.",
+    "Official conversion blocked: GitHub DNS unavailable, no cwebp/towebp installed. Review encoding only, no runtime activation."
+  ]
+}

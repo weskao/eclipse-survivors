@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "special",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 1,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": true,
+  "resampling": "Downsample longest side to 704 pixels and center-pad to 768; no upscaling or mirroring. Original pixels preserved in source files.",
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "encoding": "Pillow lossless WebP exact=True; decoded RGBA compared; official Polytool not run",
+  "frames": [
+    {
+      "id": "summon-release-identity-a",
+      "description": "Raised orb staff, open free hand and summoned wisps. Faint glow at original boundary; verify staff handedness, hair ornaments and continuity.",
+      "sourceFile": "summon-release-identity-a-source.webp",
+      "sourceSHA256": "eb66e861e362087d8d7309ccf901ddacaf9483c935ae27cf1ab71c2fd839edc5",
+      "sourceBytes": 1558242,
+      "sourceCellPixels": [
+        1254,
+        1254
+      ],
+      "file": "summon-release-identity-a@3x.webp",
+      "webpSHA256": "430a22cae68703669c8063afbd3df59a363e132be039bf346fa31557e734ba35",
+      "bytes": 565052,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        32,
+        32
+      ],
+      "resizedPixels": [
+        704,
+        704
+      ],
+      "scale": 0.5614035087719298,
+      "sourceAlphaBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "coreAlphaBounds": [
+        120,
+        6,
+        1170,
+        1247
+      ],
+      "coreExtent": [
+        1050,
+        1241
+      ],
+      "sourceBoundaryMaxAlpha": 7,
+      "outputAlphaBounds": [
+        32,
+        32,
+        736,
+        736
+      ],
+      "outputCoreAlphaBounds": [
+        99,
+        35,
+        689,
+        732
+      ],
+      "outputCoreExtent": [
+        590,
+        697
+      ],
+      "alphaPreserved": true,
+      "alphaPreservedAgainst": "Staged RGBA per encoded file, output downsampled",
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "ac820a9b-f936-4090-b544-ff5264371281",
+        "originalPNGSHA256": "c4a12d6efa59b34f98ca39cf34454ba8215641a9c7a07d1b01a951268cad1729",
+        "originalPixels": [
+          1254,
+          1254
+        ],
+        "cropRect": null,
+        "canonicalPortrait": "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+        "portraitBlobSHA": "a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+        "referenceCommit": "d58ce5590051b6a7dccd219e6fe5bf325c6dfee7",
+        "referenceMethod": "Canonical GitHub portrait visually inspected; direct image conditioning not independently verified."
+      },
+      "notes": "Raised orb staff, open free hand and summoned wisps. Faint glow at original boundary; verify staff handedness, hair ornaments and continuity."
+    }
+  ],
+  "reviewNotes": [
+    "Independent poses, not an approved sequence.",
+    "Core bounds are alpha-based and include solid equipment/effects; not proof of body detail or identity.",
+    "Do not replace existing art or admit to gameplay before identity, edge, scale, handedness, anchors, continuity and conversion QA."
+  ]
+}

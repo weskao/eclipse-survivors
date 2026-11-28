@@ -1,0 +1,62 @@
+# Eclipse Survivors — ES3 runtime art upload
+
+目標：`weskao/eclipse-survivors` / `feature/es3-combat-juice-power-pacing-rewards`。
+程式串接 commit：`8f721a100d7f797440f5a9e61e68339455a2302d`。
+
+## 放置方式
+將本 ZIP 解壓至專案根目錄（ZIP 的 `src/` 與專案的 `src/` 合併）。不覆蓋任何原有 ES2 美術。
+
+```sh
+git switch feature/es3-combat-juice-power-pacing-rewards
+git pull --ff-only
+unzip -o ~/Downloads/es3-runtime-art-upload.zip -d .
+git add src/assets/es3/production
+git diff --cached --stat
+git commit -m 'art(es3): import epic chest and legacy enemy dissolution atlases'
+git push origin feature/es3-combat-juice-power-pacing-rewards
+```
+
+ZIP 內說明檔為 README-ES3-ART.md，不會覆蓋專案 README.md。若只想解壓素材，可用：
+
+```sh
+unzip -o ~/Downloads/es3-runtime-art-upload.zip 'src/*' -d .
+```
+
+**建議使用上面這條只解壓 `src/*` 的指令。**
+
+## 素材規格
+- Epic 寶箱：240×240 透明 WebP，原始 1254×1254；UI / 地圖共用。
+- 五張 Legacy 敵人：872×872、2×2 格，每格 436×436、8px gutter、有效內容 420×420；原生每格 627×627，無上採樣。
+- 順序：左上 → 右上 → 左下 → 右下；死亡時一次播放，不循環；沿用遊戲既有死亡時間及 1× 顯示尺度。
+- 各檔 SHA-256、尺寸、大小、來源與 QA 狀態見 `src/assets/es3/production/manifest.json`。
+
+## 驗收
+```sh
+pnpm test
+pnpm typecheck
+pnpm build
+pnpm check-release
+```
+確認地圖上的史詩寶箱及遺物選擇卡使用紫晶圖；擊殺 slime/bat/goblin/golem/warlock 可看到四階段消散；Boss、Faction 與存活敵人不被替換；Reduced Motion 維持既有簡化路徑。
+
+## 限制
+目前未以專案原始角色圖作為生成參照，素材的形象一致性、個別原始格邊界（可能有觸邊或鄰格內容）、死亡動作與實機視覺皆尚未驗收；所有項目維持 QA_PENDING。8px gutter 可防止運行時採樣跨格，但不能證明原始生成圖沒有跨格。這是五種 Legacy 敵人消散動畫，不是 10 種 Faction 敵人的素材，也不包含獨立受擊或倒地分鏡。原始 PNG 已存在於對話，保留其 SHA-256 供追溯。
+
+## Canonical character identity
+The five legacy dissolution sheets are retained as QA_PENDING candidates, not automatically loaded. Normal gameplay continues to use the existing canonical actor art and bounded procedural death presentation. Only an owner-reviewed, identity-matched atlas may be activated by setting both `status` and `visualReview` to `approved` in the manifest. The Epic chest remains independent of enemy/hero/boss identity. Do not replace canonical hero, faction or boss art to satisfy this batch.
+
+## Native death atlas — normal gameplay
+The owner requested actual integration on 2026-11-27. The five exact identity-matched paths in `manifest.json#nativeDeathRuntime` now load once with normal gameplay in development and production builds; no QA URL flag required. The earlier mismatched atlas files stay blocked. Individual candidate review fields remain pending rather than recording a fabricated human approval. If a native file is missing, still decoding or fails to decode, use canonical procedural death presentation. Reduced Motion bypasses the death atlas. Original living sprites, hero and boss art, hitboxes, reward logic and simulation clocks remain unchanged.
+
+## ES3-only asset disposition (2026-11-27, 27 of 27)
+Inventory: `git diff --name-status feature/es2-release-readiness-integration HEAD -- '*.webp' '*.png'`. Every status stays QA_PENDING; nothing here is promoted.
+
+| Assets (count) | Disposition | Consumer / reason |
+|---|---|---|
+| `combat/hit-{normal,heavy,critical,elemental,evolved,hero}@3x.webp` (6) | Wired | `src/game/render/hit-impact.ts` (`preloadHitImpactArt`, `drawHitImpact`), called from `render/effects.ts` and `render/es2/combat-vfx.ts`; tests: `hit-impact.test.ts`, `es3-runtime-art.test.ts` |
+| `ui/treasure-epic@3x.webp` (1) | Wired | `ES3_EPIC_TREASURE_URL` → `loadWorldRuntimeImages().chests.epic`, with fallback to rare on error |
+| `enemies/candidates/{slime,bat,goblin,golem}-death-native3x-*/…-preferred@3x.webp` (4) | Wired | `manifest.json#nativeDeathRuntime` → `loadWorldRuntimeImages().enemyDeaths` → `drawEs3EnemyDeath`; procedural fallback on decode failure (the warlock candidate is shared with es2, so it is outside this es3-only inventory) |
+| `enemies/{slime,bat,goblin,golem,warlock}-death-dissolve@3x.webp` (5) | Not wired | Identity-mismatched sheets, superseded by the native candidates. They load only after `status` and `visualReview` are both `approved`, through lazy DEV-only loaders (`ES3_DEATH_SHEET_LOADERS`), so they stay out of release builds (`check-release` guard) |
+| `enemies/candidates/*/…-preferred-source.png` (4) and `golem-death-generated-original.png` (1) | Not wired (source-only) | Provenance masters, hash-checked by `es3-runtime-art.test.ts`. Nothing imports them, and `check-release` rejects them in `dist/` |
+| `assets/skill-icons/candidates/vortex-refinement/assets/skill-icons/{blade-tempest,infernal-singularity}@3x{,-animated}.webp` (4) | Not wired | Manifest status is `CANDIDATE_PENDING_POLYTOOL_AND_IN_GAME_QA`: encoded without Polytool, and the animated files are 5.1 and 6.6 MB against a 1.2 MB budget (`size_budget_pass: false`). Installing them would silently replace the current canonical icons (different SHA-256) at the same `ui-art.ts` paths. The owner must accept them explicitly |
+| `…/vortex-refinement/review-only/*-latest-authored-313px-animated.webp` (2) | Not wired (review-only) | 313 px, below native 3×, with a nonuniform seam. Kept out of `dist/` by the `candidates/` copy filter and the `check-release` guard |

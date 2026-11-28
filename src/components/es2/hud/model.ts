@@ -82,6 +82,7 @@ export function projectCombatHud(
   // A stale or unauthenticated feed cannot persist across runs/screens when the host supplies a snapshot key.
   const live: CombatHudFeed = !expectedSnapshot || (feed.snapshot?.runId === expectedSnapshot.runId &&
     feed.snapshot.sequence === expectedSnapshot.sequence) ? feed : {}
+  const combo = hud.combo ?? live.combo
   const bossPhase = live.boss?.phase
   const bossTotal = live.boss?.totalPhases
   const totalPhases = bossTotal !== undefined && validCount(bossTotal) ? bossTotal : undefined
@@ -124,7 +125,7 @@ export function projectCombatHud(
     })),
     wave: live.wave && validCount(live.wave.number) ? { ...live.wave,
       ...(live.wave.progressPct !== undefined ? { progressPct: percent(live.wave.progressPct) } : {}) } : undefined,
-    combo: live.combo && Number.isSafeInteger(live.combo.count) && live.combo.count > 1 ? live.combo : undefined,
+    combo: combo && Number.isSafeInteger(combo.count) && combo.count > 1 ? combo : undefined,
     relics: (live.relics ?? []).filter(relic => relic.id && relic.title).slice(0, MAX_RELICS),
     statuses: (live.statuses ?? []).filter(status =>
       status.id && status.title && (status.remainingSeconds === undefined ||

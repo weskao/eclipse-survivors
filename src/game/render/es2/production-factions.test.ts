@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../../state'
-import { createFactionRuntime, spawnFactionEnemy } from '../../content/enemies/runtime'
+import { cleanupFactionEnemies, createFactionRuntime, damageFactionEnemy, spawnFactionEnemy, tickFactionEnemies } from '../../content/enemies/runtime'
+import { ENEMY_DEFINITIONS, type FactionKind } from '../../content/enemies/definitions'
 import { createFakeCtx } from '../fakes'
 import { drawLiveFactionArt, loadProductionFactionArt, FACTION_VISUAL_SIZE, type FactionArtwork } from './production-factions'
 
@@ -155,4 +156,86 @@ describe('ten live faction sprites use exact six-cell art on the world Canvas', 
     images.phantom.body=loaded(576,96);enemy.hp=0
     expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(0)
   })
+})
+
+it('renders a cosmetic faction death from the original body art, without retaining an active actor or warning', () => {
+  const state=createState(); resetRun(state);state.W=900;state.H=600
+  const runtime=createFactionRuntime()
+  const enemy=spawnFactionEnemy(runtime,'shadow-assassin',120,110)!
+  enemy.hp=0
+  enemy.deathVisual=.28
+  const image=loaded(576,96)
+  const images={ 'shadow-assassin':{body:image,telegraph:loaded(96,96)} } as FactionArtwork
+  const {ctx,drawn}=createFakeCtx()
+  expect(drawLiveFactionArt(ctx,state,runtime,images,0,0)).toBe(1)
+  expect(drawn).toHaveLength(1)
+})
+
+it.each(Object.keys(ENEMY_DEFINITIONS) as FactionKind[])('keeps %s idle art still under Reduced Motion without removing attack cues', kind => {
+  const s = createState(); resetRun(s); s.W = 900; s.H = 600
+  const runtime = createFactionRuntime()
+  const enemy = spawnFactionEnemy(runtime, kind, 120, 110)!
+  const body = loaded(576, 96), warning = loaded(96, 96)
+  const art = { [kind]: { body, telegraph: warning } } as FactionArtwork
+  const sample = (clock: number, reduced: boolean) => {
+    s.worldClock = clock
+    const { ctx } = createFakeCtx()
+    const calls: unknown[][] = []
+    ctx.drawImage = (...args: unknown[]) => { calls.push(args) }
+    expect(drawLiveFactionArt(ctx, s, runtime, art, 0, 0, undefined, reduced)).toBe(1)
+    return calls
+  }
+  const cell = (calls: unknown[][]) => calls.find(args => args[0] === body)?.slice(1, 5)
+  expect(cell(sample(0, false))).not.toEqual(cell(sample(.2, false)))
+  expect(cell(sample(0, true))).toEqual(cell(sample(.2, true)))
+  enemy.state = 'windup'
+  const windup = sample(.2, true)
+  expect(cell(windup)).toEqual([192, 0, 96, 96])
+  expect(windup.some(args => args[0] === warning)).toBe(true)
+  enemy.state = 'attack'
+  expect(cell(sample(.2, true))).toEqual([288, 0, 96, 96])
+})
+
+it.each(Object.keys(ENEMY_DEFINITIONS) as FactionKind[])('renders real %s hit, windup, release, fallen pose and expiry', kind => {
+  const state = createState(); resetRun(state); state.W = 900; state.H = 600
+  const runtime = createFactionRuntime()
+  const enemy = spawnFactionEnemy(runtime, kind, 200, 220)!
+  const body = loaded(576, 96), warning = loaded(96, 96)
+  const art = { [kind]: { body, telegraph: warning } } as FactionArtwork
+  const arena = { runtime, hero: { x: 250, y: 220 }, width: 900, height: 600, onHeroDamage: () => true }
+  const sample = (reduced = false) => {
+    const fake = createFakeCtx()
+    const frames: unknown[][] = []
+    const original = fake.ctx.drawImage.bind(fake.ctx)
+    fake.ctx.drawImage = (...args: unknown[]) => { frames.push(args); Reflect.apply(original, fake.ctx, args) }
+    drawLiveFactionArt(fake.ctx, state, runtime, art, 0, 0, undefined, reduced)
+    return { ...fake, frames }
+  }
+  const slot = (sampled: ReturnType<typeof sample>) => sampled.frames.find(args => args[0] === body)?.slice(1, 5)
+  expect(damageFactionEnemy(runtime, enemy, 1, 150, 220)).toBeGreaterThan(0)
+  expect(enemy.hitTime).toBeCloseTo(.24)
+  // Sample after the recoil has advanced but before starting the actual attack.
+  enemy.state = 'recover'; enemy.timer = .1
+  tickFactionEnemies(arena, .05)
+  expect(sample().calls).toContain('rotate')
+  expect(sample(true).calls).not.toContain('rotate')
+  tickFactionEnemies(arena, .06)
+  enemy.phaseCooldown = 10 // Do not replace Phantom's attack with its separate phase ability.
+  tickFactionEnemies(arena, .01)
+  expect(enemy.state).toBe('windup')
+  expect(slot(sample(true))).toEqual([192, 0, 96, 96])
+  expect(sample(true).drawn).toContain(warning)
+  tickFactionEnemies(arena, enemy.timer + .001)
+  expect(enemy.releaseFx).toBeGreaterThan(.16)
+  expect(slot(sample(true))).toEqual([288, 0, 96, 96])
+  expect(damageFactionEnemy(runtime, enemy, enemy.hp * 10, 150, 220)).toBeGreaterThan(0)
+  cleanupFactionEnemies(runtime)
+  expect(runtime.enemies).not.toContain(enemy)
+  expect(runtime.fallen).toContain(enemy)
+  expect(slot(sample())).toEqual([384, 0, 96, 96])
+  expect(sample().drawn).not.toContain(warning)
+  expect(sample(true).drawn).not.toContain(body)
+  tickFactionEnemies(arena, (enemy.deathVisualTotal ?? .46) + .01)
+  expect(runtime.fallen).not.toContain(enemy)
+  expect(sample().drawn).not.toContain(body)
 })

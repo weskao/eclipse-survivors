@@ -1,0 +1,301 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "run",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "sourceResolution": [
+    1254,
+    1254
+  ],
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    651,
+    630,
+    645,
+    643
+  ],
+  "footBottomsStatus": "Core alpha proxy only; not anatomical foot positions. Original cell offsets preserved.",
+  "alphaBounds": [
+    [
+      70,
+      79,
+      697,
+      697
+    ],
+    [
+      70,
+      70,
+      683,
+      697
+    ],
+    [
+      70,
+      70,
+      697,
+      697
+    ],
+    [
+      70,
+      70,
+      691,
+      677
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "sourceRect": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        9,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        16,
+        102,
+        586,
+        581
+      ],
+      "coreExtent": [
+        570,
+        479
+      ],
+      "footAnchor": null,
+      "footBottomProxy": 651,
+      "outputAlphaBounds": [
+        70,
+        79,
+        697,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "3a6f684658c6e49602729a3192a37fcf9f17cd0b4ee347cc8092e623152b1c3a"
+    },
+    {
+      "index": 1,
+      "sourceRect": [
+        627,
+        0,
+        627,
+        627
+      ],
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        613,
+        627
+      ],
+      "coreAlphaBounds": [
+        9,
+        78,
+        598,
+        560
+      ],
+      "coreExtent": [
+        589,
+        482
+      ],
+      "footAnchor": null,
+      "footBottomProxy": 630,
+      "outputAlphaBounds": [
+        70,
+        70,
+        683,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "9fb32ac65c49c4f6fc87040ae9d4897bcf414326da63d5e0cb1ff592ca7fa44a"
+    },
+    {
+      "index": 2,
+      "sourceRect": [
+        0,
+        627,
+        627,
+        627
+      ],
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        22,
+        54,
+        612,
+        575
+      ],
+      "coreExtent": [
+        590,
+        521
+      ],
+      "footAnchor": null,
+      "footBottomProxy": 645,
+      "outputAlphaBounds": [
+        70,
+        70,
+        697,
+        697
+      ],
+      "sourceFrameRGBA_SHA256": "b7402f5f6e1f8ce33125d2f8969ab9dfa3c5b10e210f4a775d58398be522f597"
+    },
+    {
+      "index": 3,
+      "sourceRect": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        621,
+        607
+      ],
+      "coreAlphaBounds": [
+        2,
+        80,
+        592,
+        573
+      ],
+      "coreExtent": [
+        590,
+        493
+      ],
+      "footAnchor": null,
+      "footBottomProxy": 643,
+      "outputAlphaBounds": [
+        70,
+        70,
+        691,
+        677
+      ],
+      "sourceFrameRGBA_SHA256": "d8864d375aecc39d17c7a2b1ed788343ec6b2ca9285afde9099b0786feb59847"
+    }
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "95125b26c90a73c07c1cc67b846d1fc46bb05d800d8e8642760cd31d16989803",
+  "originalPNGSHA256": "e938be41dac3816e55922ac687be1adfefcdc95613bcbc353453a6dd12df0feb",
+  "atlasFile": "run-e-4frames@3x.webp",
+  "webpSHA256": "48e0102a33a787e709eac623522f8979da9ac063b7bfa4ec49b1cc24b3e611e6",
+  "bytes": 535414,
+  "sourceProvenance": {
+    "generationId": "afda6b3f-3588-4bba-b036-dca8918563da",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "020517c3e01cc6a23fa683a152dc84c33bd84b57",
+    "existingRunReference": "src/assets/es2/production/heroes/shadowblade/candidates/east-2026-11-23/run-east-4frames@3x.webp",
+    "existingRunBlobSHA": "9c8cbbff9e09abd0b991d029ce3ace64a32d759a"
+  },
+  "encoding": "Pillow WebP quality=100 method=3, review only; official Polytool installation failed (GitHub DNS, cwebp unavailable)",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "Four distinct new candidate poses. Not a complete 10-frame run cycle; no temporal continuity with the earlier atlas assumed. Validate equipment geometry, body scale, anatomical foot anchors and sequence before combining.",
+    "Original fixed quadrants retained without scaling or pixel deletion. Internal source seam alpha max 3 (vertical), 1 (horizontal). All output cells have at least 70px transparent padding.",
+    "Decoded WebP alpha exactly matches staged alpha; RGB is lossy. Native 3x visual evidence pending.",
+    "Official towebp not executed; do not mark gameplay eligible."
+  ]
+}

@@ -36,7 +36,8 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
     get size() { return cache.size + portraitCache.size },
     drawSpecialization(ctx, source, anim, width, height) {
       if (!source.complete || source.naturalWidth !== 900 || source.naturalHeight !== 900) return false
-      if (anim.reducedMotion || !['run', 'dash', 'attack', 'cast'].includes(anim.pose)) {
+      // Run/dash gait is a few live crops (cheaper than a per-octant 3x bake); only strikes are cached.
+      if (anim.reducedMotion || (anim.pose !== 'attack' && anim.pose !== 'cast')) {
         drawPortraitMotion(ctx, source, anim, width, height)
         return true
       }
@@ -101,7 +102,6 @@ export function createHeroSheets(makeCanvas: MakeCanvas): {
         model.moveAmount = 1
         for (let frame = 0; frame < anim.count; frame++) {
           const phase = frame / Math.max(1, anim.count - 1)
-          model.step = pose === 'run' ? frame * TAU / anim.count : 0
           // Explicitly clear every frame to prevent previously drawn projectile
           // or staff glows from leaking into the next atlas cell.
           context.clearRect(stride * frame, 0, stride, frameHeight)

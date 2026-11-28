@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "fd780bae09049f17d768e75d071d2a8f014993b2",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "shadow-orb-windup-key-a",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/shadow-orb-windup-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "2347e83a-1622-454d-a819-cb3fcdc9ab65",
+        "originalPngSha256": "751f4baa774ff81006692d45974cdc05345cf347ed46c613c9302794b182bd72",
+        "canonicalReferenceHead": "fd780bae09049f17d768e75d071d2a8f014993b2"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1303,
+      "cellHeight": 1207,
+      "frameRects": [
+        [
+          0,
+          0,
+          1303,
+          1207
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        651.5,
+        603.5
+      ],
+      "alphaBounds": [
+        111,
+        14,
+        1193,
+        1194
+      ],
+      "alphaAnyBounds": [
+        0,
+        5,
+        1257,
+        1199
+      ],
+      "alphaExtent": [
+        1082,
+        1180
+      ],
+      "actualSourceResolution": [
+        1303,
+        1207
+      ],
+      "sourceEdgeMargins": [
+        111,
+        14,
+        110,
+        13
+      ],
+      "safeMargin16px": false,
+      "native3xApproved": false,
+      "sha256": "c18e31ba471f9ceafca6248a64937a33ed5b9cd57d53368fa25c66e62f35e234",
+      "webpCompressedBytes": 720530,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Isolated shadow-orb casting anticipation candidate; phase and specific attack assignment not approved. Compare canonical crown, eclipse halo, robe silhouette, and center/hover anchor. Top and bottom alpha128 margins are below 16 px; keep QA_PENDING."
+    }
+  ],
+  "missing": [
+    "idle and hovering locomotion",
+    "attack-specific release and recovery",
+    "hurt and phase-specific transformations",
+    "death sequence",
+    "direction, hover anchor, visual and runtime QA"
+  ]
+}

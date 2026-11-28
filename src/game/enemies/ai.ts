@@ -23,6 +23,7 @@ function warn(e: Mob, hero: Hero, kind: EnemyBrain['attack']): void {
   ai.aimX = hero.x
   ai.aimY = hero.y
   ai.attack = kind
+  ai.releaseFx = 0
   ai.state = 'windup'
   ai.timer = WINDUP[kind] + (e.type === 'boss' ? AI.bossWindupExtra : 0)
 }
@@ -40,6 +41,7 @@ function projectile(s: GameState, e: Mob, direction: number, speed: number): voi
   const b: EnemyProjectile = {
     x: e.x, y: e.y - 8, vx: Math.cos(base) * speed, vy: Math.sin(base) * speed,
     radius: e.type === 'boss' ? AI.projectileRadius.boss : AI.projectileRadius.default, damage: e.dmg, life: AI.projectileLifetime,
+    attackRank: e.type === 'boss' ? 'boss' : e.elite ? 'elite' : 'ordinary',
   }
   s.enemyShots.push(b)
 }
@@ -57,8 +59,9 @@ function fire(s: GameState, e: Mob): void {
 function resolveStrike(s: GameState, e: Mob, hooks: GameHooks): void {
   if (e.hp <= 0 || !s.hero) return
   const ai = brain(e), hero = s.hero
+  ai.releaseFx = 0.32
   if (ai.attack === 'bolt') fire(s, e)
-  else if (ai.attack === 'summon') summonBossMinions(s, e)
+  else if (ai.attack === 'summon') summonBossMinions(s, e, hooks.otherLivingActors?.() ?? 0)
   else if (ai.attack === 'slam') {
     const radius = e.type === 'boss' ? AI.slamRadius.boss : e.elite ? AI.slamRadius.elite : AI.slamRadius.default
     if (dist(hero.x - ai.aimX, hero.y - ai.aimY) <= radius + AI.slamContactMargin) damageHero(s, e.dmg, hooks, e)
@@ -106,10 +109,16 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
     if (e.hp <= 0) continue
     e.hit -= dt
     e.phase += dt * 5
+    if (e.visualPhase !== undefined) {
+      const held = Math.min(dt, e.visualHold ?? 0)
+      e.visualHold = Math.max(0, (e.visualHold ?? 0) - dt)
+      e.visualPhase += (dt - held) * 5
+    }
     e.stagger = Math.max(0, e.stagger - dt)
     e.slow = Math.max(0, e.slow - dt)
     if (e.type === 'boss') updateBossPhase(s, e, hooks)
     const ai = brain(e)
+    if (ai.releaseFx) ai.releaseFx = Math.max(0, ai.releaseFx - dt)
     if (ai.state === 'recover') {
       ai.timer -= dt
       if (ai.timer <= 0) ai.state = 'approach'
@@ -129,6 +138,7 @@ export function tickEnemies(s: GameState, dt: number, hooks: GameHooks): void {
       if (ai.timer <= 0) {
         if (ai.attack === 'dive' || ai.attack === 'pounce') {
           ai.state = 'attack'; ai.timer = ai.attack === 'dive' ? AI.attackDuration.dive : AI.attackDuration.pounce
+          ai.releaseFx = 0.32
         }
         else resolveStrike(s, e, hooks)
       }
@@ -173,7 +183,7 @@ export function tickEnemyProjectiles(s: GameState, dt: number, hooks: GameHooks)
     const dot = dx * dx + dy * dy
     const t = Math.max(0, Math.min(1, ((hero.x - x) * dx + (hero.y - y) * dy) / Math.max(0.0001, dot)))
     if (p.life > 0 && hero.hp > 0 && dist(hero.x - (x + dx * t), hero.y - (y + dy * t)) < p.radius + AI.projectileContactMargin) {
-      damageHero(s, p.damage, hooks)
+      damageHero(s, p.damage, hooks, undefined, { rank: p.attackRank, angle: Math.atan2(p.vy, p.vx) })
       p.life = 0
     }
   }

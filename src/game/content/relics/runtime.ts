@@ -1,5 +1,5 @@
 import { BALANCE } from '../../config'
-import type { ContentEvent, GameState } from '../../types'
+import type { ContentEvent, GameState, TreasureTier } from '../../types'
 import { RELIC_BY_ID, RELIC_CUES, RELICS, type RelicBonuses, type RelicDefinition, type RelicId, type RelicStat } from './catalog'
 
 export type RelicFeedback = (cue: (typeof RELIC_CUES)[keyof typeof RELIC_CUES], relic?: RelicDefinition) => void
@@ -12,6 +12,7 @@ const EMPTY_BONUSES: Readonly<RelicBonuses> = Object.freeze({})
 export interface TreasureOffer {
   readonly chestId: number
   readonly options: readonly RelicId[]
+  readonly tier?: TreasureTier
 }
 interface RunRelics {
   readonly inventory: Map<RelicId, number>
@@ -36,7 +37,7 @@ export function inventorySnapshot(state: GameState): Readonly<{ items: readonly 
   const run = getRun(state)
   return { items: Array.from(run.inventory, ([id, stacks]) => ({ id, stacks })), capacity: RELIC_CAPACITY,
     rerolls: run.rerolls, banishes: run.banishes, banished: [...run.banished],
-    pending: run.pending ? { chestId: run.pending.chestId, options: [...run.pending.options] } : null }
+    pending: run.pending ? { ...run.pending, options: [...run.pending.options] } : null }
 }
 function recompute(run: RunRelics): void {
   const stats: RelicBonuses = {}
@@ -76,31 +77,39 @@ function eligible(run: RunRelics, avoid: ReadonlySet<RelicId> = new Set()): Reli
     (run.inventory.get(relic.id) ?? 0) < relic.maxStacks &&
     (run.inventory.has(relic.id) || run.inventory.size < RELIC_CAPACITY))
 }
-function weightedOptions(run: RunRelics, rng: () => number, avoid: ReadonlySet<RelicId> = new Set()): RelicId[] {
+function weightedOptions(run: RunRelics, rng: () => number, avoid: ReadonlySet<RelicId> = new Set(), tier?: TreasureTier): RelicId[] {
   const pool = eligible(run, avoid)
   const choices: RelicId[] = []
   while (choices.length < 3 && pool.length) {
-    const total = pool.reduce((sum, def) => sum + def.weight, 0)
+    // First slot advertises the chest tier when available. Always offer a non-cursed alternative if eligible.
+    const matching = choices.length === 0 && tier && tier !== 'common'
+      ? pool.filter(def => tier === 'cursed' ? def.cursed : def.rarity === tier && !def.cursed)
+      : choices.length === 1 && tier && !choices.some(id => !RELIC_BY_ID.get(id)!.cursed)
+        ? pool.filter(def => !def.cursed) : pool
+    const candidates = matching.length ? matching : pool
+    const total = candidates.reduce((sum, def) => sum + def.weight, 0)
     const sample = rng()
     if (!Number.isFinite(sample)) throw new Error('Invalid treasure RNG sample')
     let roll = Math.min(1 - Number.EPSILON, Math.max(0, sample)) * total
-    let index = pool.findIndex(def => (roll -= def.weight) < 0)
-    if (index < 0) index = pool.length - 1
-    choices.push(pool.splice(index, 1)[0]!.id)
+    let index = candidates.findIndex(def => (roll -= def.weight) < 0)
+    if (index < 0) index = candidates.length - 1
+    const picked = candidates[index]!
+    pool.splice(pool.indexOf(picked), 1)
+    choices.push(picked.id)
   }
   return choices
 }
 /** chestId must be a strictly increasing world-event serial. Same/old chests never pay twice. */
-export function openTreasure(state: GameState, chestId: number, rng: () => number, feedback?: RelicFeedback): TreasureOffer | null {
+export function openTreasure(state: GameState, chestId: number, rng: () => number, feedback?: RelicFeedback, tier?: TreasureTier): TreasureOffer | null {
   const run = getRun(state)
   if (!state.hero || run.pending || !Number.isSafeInteger(chestId) || chestId <= run.lastChestId) return null
   // Invalid random samples must not permanently consume the world chest serial.
-  const options = weightedOptions(run, rng)
+  const options = weightedOptions(run, rng, undefined, tier)
   run.lastChestId = chestId
   if (!options.length) return null
-  run.pending = { chestId, options }
+  run.pending = { chestId, options, ...(tier ? { tier } : {}) }
   feedback?.(RELIC_CUES.chestOpen)
-  return { chestId, options: [...options] }
+  return { ...run.pending, options: [...options] }
 }
 export function claimTreasure(state: GameState, chestId: number, id: RelicId, feedback?: RelicFeedback): boolean {
   const run = getRun(state)
@@ -123,11 +132,11 @@ export function rerollTreasure(state: GameState, chestId: number, rng: () => num
   if (!run.pending || run.pending.chestId !== chestId || run.rerolls <= 0) return null
   const old = new Set(run.pending.options)
   // Prefer new choices; if all remaining items are already shown, a reroll is not charged.
-  const options = weightedOptions(run, rng, old)
+  const options = weightedOptions(run, rng, old, run.pending.tier)
   if (!options.length) return null
   run.rerolls--
-  run.pending = { chestId, options }
-  return { chestId, options: [...options] }
+  run.pending = { ...run.pending, options }
+  return { ...run.pending, options: [...options] }
 }
 export function banishTreasure(state: GameState, chestId: number, id: RelicId): boolean {
   const run = getRun(state)
@@ -135,7 +144,7 @@ export function banishTreasure(state: GameState, chestId: number, id: RelicId): 
       run.banishes <= 0 || run.inventory.has(id) || run.banished.has(id)) return false
   run.banishes--
   run.banished.add(id)
-  run.pending = { chestId, options: run.pending.options.filter(option => option !== id) }
+  run.pending = { ...run.pending, options: run.pending.options.filter(option => option !== id) }
   return true
 }
 export interface AttackContext {

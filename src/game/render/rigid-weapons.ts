@@ -1,8 +1,18 @@
-import type { Hero, JobId } from '../types'
+import type { Hero, JobId, Point } from '../types'
 import type { HeroAnimation } from './animation'
 import type { Ctx2D } from './ctx'
+import { gaitTorsoPoint, sampleGait, type GaitPoint } from './gait'
 import { sampleWeaponRig } from './weapon-rig'
 import { domCanvas, type MakeCanvas } from './sprites'
+
+const torsoScratch: GaitPoint = { x: 0, y: 0, rotation: 0 }
+/** Where the running torso (lean, pelvis bob) carries a hand; zero outside run/dash. */
+function torsoAt(anim: HeroAnimation, hand: Point, height: number): GaitPoint {
+  const g = sampleGait(anim, true)
+  if (g) return gaitTorsoPoint(g, hand.x, hand.y, height, torsoScratch)
+  torsoScratch.x = torsoScratch.y = torsoScratch.rotation = 0
+  return torsoScratch
+}
 
 type ImageSource = HTMLImageElement | HTMLCanvasElement
 type Polygon = readonly (readonly [number, number])[]
@@ -157,9 +167,10 @@ export function drawRigidWeapon(
   const turn = (job === 'ranger' && action ? posed.aim * .45 : 0)
     + (job === 'wizard' && action ? posed.aim * .35 : 0)
     + posed.bladeAngle - rest.bladeAngle
+  const torso = torsoAt(anim, posed.hand, height)
   ctx.save()
-  ctx.translate(pivotX + posed.hand.x - rest.hand.x, pivotY + posed.hand.y - rest.hand.y)
-  ctx.rotate(turn)
+  ctx.translate(pivotX + posed.hand.x - rest.hand.x + torso.x, pivotY + posed.hand.y - rest.hand.y + torso.y)
+  ctx.rotate(turn + torso.rotation)
   ctx.drawImage(layers.weapon, -layers.grip[0] * rigidWidth, -layers.grip[1] * height, rigidWidth, height)
   ctx.restore()
 }
@@ -181,13 +192,13 @@ export function drawLoadedProjectile(
   const rigidWidth = height * layers.projectile.width / layers.projectile.height
   ctx.save()
   // Arrow follows the bow grip. Caster's held charge follows the spell hand.
-  if (job === 'ranger') {
-    const rest = sampleWeaponRig(job, hero, { ...anim, pose: 'idle', phase: 0 })
-    const posed = sampleWeaponRig(job, hero, anim)
-    ctx.translate(posed.hand.x - rest.hand.x, posed.hand.y - rest.hand.y)
-  } else {
-    ctx.globalAlpha *= anim.actionStage === 'windup' ? 0.74 : 1
-  }
+  const rest = sampleWeaponRig(job, hero, { ...anim, pose: 'idle', phase: 0 })
+  const posed = sampleWeaponRig(job, hero, anim)
+  const from = job === 'ranger' ? rest.hand : rest.supportHand
+  const to = job === 'ranger' ? posed.hand : posed.supportHand
+  const torso = torsoAt(anim, to, height)
+  ctx.translate(to.x - from.x + torso.x, to.y - from.y + torso.y)
+  if (job !== 'ranger') ctx.globalAlpha *= anim.actionStage === 'windup' ? 0.74 : 1
   ctx.drawImage(layers.projectile, -rigidWidth / 2, -height + 4, rigidWidth, height)
   ctx.restore()
 }

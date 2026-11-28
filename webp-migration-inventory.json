@@ -1,0 +1,125 @@
+{
+  "baseline": "8f7205c9599b79f4d14012b2ac0e09af7cc52988",
+  "sources": [
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/ne-2026-11-24-batch-4/source.webp",
+      "previousPNG": "src/assets/es2/production/heroes/shadowblade/candidates/ne-2026-11-24-batch-4/source.png",
+      "previousPNGPresentInGit": true,
+      "originalPNGSHA256": "d1bf8fbc82441b02040cd3b763cbcb5fad21d112c08e42069b2157aa1f442e2a",
+      "originalGitBlob": "01b7d56958f0020d715f207fd74fea39a0922755",
+      "webpSHA256": "5dbfda661c8686a36562caccca62111a865e5a6905bfb579b3c0e4ace523607d",
+      "decodedRGBASHA256": "9d7190cf3e0849cb60f9272dce27866d6c2fd5ce44bdc9bb18f431cf5d5b9fb2",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 774540,
+      "lossless": true,
+      "exactDecodedRGBA": true,
+      "resampled": false
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/nw-2026-11-24-batch-4/source.webp",
+      "previousPNG": "src/assets/es2/production/heroes/shadowblade/candidates/nw-2026-11-24-batch-4/source.png",
+      "previousPNGPresentInGit": true,
+      "originalPNGSHA256": "6a0b173740bfa50c7d5231f5f5cb86dd82b4e97bf324f9cb40fe8ccdb8e21098",
+      "originalGitBlob": "d5ae3e63c11b48cea5e147a628517213e58c826f",
+      "webpSHA256": "79ffeb9ce64ffb699d7b555eb8925ec705fc7e7bfbf3a4bf17e5cb81fce0ab14",
+      "decodedRGBASHA256": "110759a0ab7a79ed19f5214a914011e31cde1a51338cab7c69cce572e779d10f",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 836680,
+      "lossless": true,
+      "exactDecodedRGBA": true,
+      "resampled": false
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/n-2026-11-24-batch-4/source.webp",
+      "previousPNG": "src/assets/es2/production/heroes/spirit-summoner/candidates/n-2026-11-24-batch-4/source.png",
+      "previousPNGPresentInGit": true,
+      "originalPNGSHA256": "7e8fa4b23629a23ad2726549be2f57545e80ad37a2215e174ba4104c4517a66e",
+      "originalGitBlob": "5ab7b812369f678c13d32715f27b57f8301183f1",
+      "webpSHA256": "4c200b78650a87079ab0c723e498c95089043dfe2074a64c616b969d50e7d33a",
+      "decodedRGBASHA256": "57315776c591334af71c2e9c92db220d1fb12a78e36076d628d87ed523965ae8",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 875708,
+      "lossless": true,
+      "exactDecodedRGBA": true,
+      "resampled": false
+    },
+    {
+      "path": "src/assets/es2/production/heroes/crimson-paladin/candidates/n-2026-11-24-batch-4/source.webp",
+      "previousPNG": "src/assets/es2/production/heroes/crimson-paladin/candidates/n-2026-11-24-batch-4/source.png",
+      "previousPNGPresentInGit": true,
+      "originalPNGSHA256": "e0bf4856b3e93e87a30d7b564d6ad7a0e60e422621e54cadbb154960bfac0817",
+      "originalGitBlob": "ccfcb22075cde3401392838e02d3faee63dc0423",
+      "webpSHA256": "d7d2561be466674104f39a778a428941fffd05784903bd4924d9f326902220e2",
+      "decodedRGBASHA256": "958db304a2233ccd05d4bd30f5920054a8d9a20e91860f7b6f1732dba7d41c62",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 800502,
+      "lossless": true,
+      "exactDecodedRGBA": true,
+      "resampled": false
+    },
+    {
+      "path": "src/assets/es2/production/heroes/shadowblade/candidates/n-2026-11-24-batch-5/source.webp",
+      "previousPNG": "src/assets/es2/production/heroes/shadowblade/candidates/n-2026-11-24-batch-5/source.png",
+      "previousPNGPresentInGit": true,
+      "originalPNGSHA256": "8486745646c7d27db9eb4a3f4e7de70960634bbb5f8fb9d9bfb4c64084b55504",
+      "originalGitBlob": "742b15e65f8a0150c34b01f4798df203109e7947",
+      "webpSHA256": "7ec309f5247b8cee9932de86e43a137824bca08f82df2bf932672c7f8e5a7b40",
+      "decodedRGBASHA256": "0474fd8b65f06937cd93ef95803f38105159026fa1637cbed2a2c44fd092fbc7",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 616300,
+      "lossless": true,
+      "exactDecodedRGBA": true,
+      "resampled": false
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-5/source.webp",
+      "previousPNG": "src/assets/es2/production/heroes/spirit-summoner/candidates/ne-2026-11-24-batch-5/source.png",
+      "previousPNGPresentInGit": true,
+      "originalPNGSHA256": "97a8f892e5592cab2f5feb78087eb819061b59c21a084220f7f91587ec5a9ee6",
+      "originalGitBlob": "641c93fc481fcf6dcd181282d02738255cf4eef8",
+      "webpSHA256": "a5327ba064dd733d5a1c106ba490537770f6803afb16b42496b7fb3f2ff2a1b5",
+      "decodedRGBASHA256": "16e05dc1d68987edca38faef0c820b03374447795bb5a6609ae84065a6b5f76b",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1054548,
+      "lossless": true,
+      "exactDecodedRGBA": true,
+      "resampled": false
+    },
+    {
+      "path": "src/assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-6/source.webp",
+      "previousPNG": "src/assets/es2/production/heroes/spirit-summoner/candidates/nw-2026-11-24-batch-6/source.png",
+      "previousPNGPresentInGit": false,
+      "originalPNGSHA256": "b7f571ba108ab71ee29497481ed4227e7dc00612de5aa775fb7f066c4b2a6f26",
+      "originalGitBlob": "a74c3a2bd6c989832410c7d6bc9b3f78f22528f8",
+      "webpSHA256": "c3be06c71ad208ebbc06ae03eb576ee321ee6f991a5a473f1df5de0d86ace4b7",
+      "decodedRGBASHA256": "6657e4472d2ca5fdba4d0809c86cf79e1ee7d9fae95dd0d03074922d61a6153e",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1159896,
+      "lossless": true,
+      "exactDecodedRGBA": true,
+      "resampled": false
+    }
+  ],
+  "newCandidate": "src/assets/es2/production/heroes/crimson-paladin/candidates/ne-2026-11-24-batch-7/manifest.json"
+}

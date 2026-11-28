@@ -59,6 +59,9 @@ describe('compact portrait combat HUD regression', () => {
     expect(toggle.attributes('aria-expanded')).toBe('false')
     expect(toggle.attributes('aria-controls')).toBe('es2-combat-info-panel')
     expect(toggle.attributes('aria-label')).toBeTruthy()
+    expect(toggle.element.children).toHaveLength(1)
+    expect(toggle.get('svg').attributes('aria-hidden')).toBe('true')
+    expect(toggle.text()).toBe('') // No invisible text flex item pushing the icon off center.
     expect(wrapper.get('#es2-combat-info-panel').attributes('data-es2-info-panel')).toBeDefined()
     expect(wrapper.findAll('[data-es2-status="slow"]')).toHaveLength(1)
     expect(wrapper.findAll('[data-es2-relic="rune"]')).toHaveLength(1)
@@ -133,5 +136,18 @@ describe('compact portrait combat HUD regression', () => {
     expect(special).toContain('joystickSide?:')
     expect(special).toContain('data-side')
     expect(app).toContain(':joystick-side="accessibilityPreferences.joystickSide"')
+  })
+
+  it('uses the compact portrait special button in phone landscape wider than 760px instead of clipping it', () => {
+    const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    // 812×375 / 932×430 phones: the 160px desktop button overflowed the 100px landscape column.
+    expect(special).toMatch(/@media \(max-width: 760px\), \(orientation: landscape\) and \(max-height: 440px\) \{\s*\.es2-hero-special__button \{ min-width: 66px; width: 66px;/)
+  })
+
+  it('keeps the special button in place when stealth/barrier/spirit status chips appear after a cast', () => {
+    const special = readFileSync(resolve(process.cwd(), 'src/components/es2/hero-roster/HeroSpecialAction.vue'), 'utf8')
+    // Chips in the button's flex row pushed it 25–115px on cast; they must sit outside the flow.
+    expect(special).toMatch(/<div class="es2-hero-special__statuses">\s*<span v-if="snapshot\.stealth/)
+    expect(special).toMatch(/\.es2-hero-special__statuses \{ position: absolute;/)
   })
 })

@@ -1,7 +1,7 @@
 import { BALANCE } from '../../config'
 import { HERO_MASTERY_DESCRIPTIONS } from './mastery-preview'
 import { damageHero, hit } from '../../combat'
-import { impact, burst } from '../../fx'
+import { impact } from '../../fx'
 import { random as simulationRandom } from '../../math'
 import { createHero } from '../../state'
 import type { ContentId, GameHooks, GameState, JobId, Mob, SfxCue } from '../../types'
@@ -41,7 +41,9 @@ export interface HeroSelectionDefinition {
   readonly startingEquipment: string
   readonly progressionAbility: ContentId
   readonly passive: string
+  /** Translation template; pass `specialParams` to `t()` wherever it is displayed. */
   readonly special: string
+  readonly specialParams?: Readonly<Record<string, number>>
   readonly specialCooldown: number
   readonly animation: Readonly<{ idle: string; attack: string; special: string }>
   readonly audio: Readonly<{ attack: SfxCue; special: SfxCue }>
@@ -85,7 +87,8 @@ export const HERO_DEFINITIONS: Readonly<Record<SpecializationId, HeroSelectionDe
     stats: BALANCE.heroes.special['crimson-paladin'],
     startingAbility: 'heroes:crimson-guard', startingEquipment: '緋紅聖盾', progressionAbility: 'heroes:crimson-vow',
     passive: '緋紅韌性：受到傷害減少 14%，受傷時有冷卻的近距離反擊。',
-    special: '血誓屏障：犧牲少量生命換取 3.5 秒的吸收護盾；生命低時反擊更強。',
+    special: '血誓屏障：犧牲少量生命換取 {seconds} 秒的吸收護盾；屏障到期或破碎時引爆緋紅報復，依吸收的傷害重創周圍敵人。',
+    specialParams: { seconds: BALANCE.heroes.specialEffects['crimson-paladin'].barrierSeconds },
     specialCooldown: BALANCE.heroes.specialCooldowns['crimson-paladin'],
     animation: { idle: 'shield-vigil', attack: 'shield-counter', special: 'crimson-aegis' },
     audio: { attack: 'knight', special: 'crimson-paladin-special' },
@@ -97,7 +100,7 @@ const HERO_LIST = Object.values(HERO_DEFINITIONS)
 /** The existing registry stores these starting abilities and upgrade levels per run. */
 const abilities: ContentAbility[] = HERO_LIST.flatMap((def): ContentAbility[] => [
   {
-    id: def.startingAbility, kind: 'weapon', icon: '✦', iconSrc: def.specialIconSrc, title: def.label + ' · ' + def.special,
+    id: def.startingAbility, kind: 'weapon', icon: '✦', iconSrc: def.specialIconSrc, title: def.label + ' · ' + def.special.split('：')[0],
     desc: def.passive, rarity: 'rare', maxLevel: 1,
     eligible: () => false, // The adapter grants this at run initialization, never in random rolls.
   },
@@ -122,6 +125,9 @@ export interface SpecializationSnapshot {
   readonly companions: readonly CompanionKind[]
 }
 
+export interface CastTarget { readonly x: number; readonly y: number }
+const NO_TARGETS: readonly CastTarget[] = Object.freeze([])
+
 export interface HeroSpecializationAdapter {
   readonly id: SpecializationId
   /** Run AFTER the integration-owned resetRun; does not change global or shared types. */
@@ -144,6 +150,8 @@ export interface HeroSpecializationAdapter {
   /** Route incoming damage through guards, mitigation, legacy damage and counter in that order. */
   receiveDamage(amount: number): number
   snapshot(): SpecializationSnapshot
+  /** World positions of the enemies the last successful cast struck (VFX only; empty for the barrier). */
+  castTargets(): readonly CastTarget[]
 }
 
 const SHADOW = BALANCE.heroes.specialEffects.shadowblade
@@ -173,6 +181,10 @@ function nearby(state: GameState, reach: number, limit: number): Mob[] {
   return selected.map(entry => entry.mob)
 }
 
+// Captured before hit() so knockback or death cannot move the visual contact point.
+const strikePoints = (mobs: readonly Mob[]): readonly CastTarget[] =>
+  mobs.length ? Object.freeze(mobs.map(m => Object.freeze({ x: m.x, y: m.y }))) : NO_TARGETS
+
 /**
  * Per-engine, per-run closure. No module-global mutable state and no changes to JobId
  * or GameState. The integration branch owns engine lifecycle, damage and input wiring.
@@ -189,8 +201,10 @@ export function createHeroSpecializationAdapter(
   let stealth = 0
   let barrier = 0
   let barrierLife = 0
+  let absorbed = 0
   let counterCooldown = 0
   let companionTimer = 0
+  let lastTargets = NO_TARGETS
 
   const alive = () => state.mode === 'play' && !!state.hero && state.hero.hp > 0
   const upgrades = () => state.content.levels[def.progressionAbility] ?? 0
@@ -203,7 +217,8 @@ export function createHeroSpecializationAdapter(
   return {
     id,
     reset(): void {
-      cooldown = stealth = barrier = barrierLife = counterCooldown = companionTimer = 0
+      cooldown = stealth = barrier = barrierLife = absorbed = counterCooldown = companionTimer = 0
+      lastTargets = NO_TARGETS
       lastCritical = false
       state.choice = def.legacyArtJob
       state.hero = createHero(def.legacyArtJob)
@@ -218,8 +233,22 @@ export function createHeroSpecializationAdapter(
       cooldown = Math.max(0, cooldown - dt)
       stealth = Math.max(0, stealth - dt)
       counterCooldown = Math.max(0, counterCooldown - dt)
-      barrierLife = Math.max(0, barrierLife - dt)
-      if (barrierLife === 0) barrier = 0
+      if (barrierLife > 0) {
+        barrierLife = Math.max(0, barrierLife - dt)
+        // Crimson Retribution: detonate once when the ward expires or breaks. Deferred to the
+        // tick so the burst never re-enters hit() from inside an enemy's damage path.
+        if (barrierLife === 0 || barrier <= 0) {
+          const stored = absorbed
+          barrierLife = barrier = absorbed = 0
+          if (stored >= PALADIN.retributionMinAbsorb) {
+            const hero = state.hero!
+            const damage = stored * (PALADIN.retributionAbsorbRatio + upgrades() * PALADIN.retributionRatioPerRank)
+            for (const enemy of nearby(state, PALADIN.retributionRange, PALADIN.retributionTargets)) hit(state, enemy, damage, hooks)
+            impact(state, hero.x, hero.y, PALADIN.retributionRange, '#ff8a6a', 1.6)
+            hooks.sfx('crimson-paladin-retribution')
+          }
+        }
+      }
       if (id !== 'spirit-summoner') return
       companionTimer -= dt
       if (companionTimer > 0) return
@@ -243,20 +272,22 @@ export function createHeroSpecializationAdapter(
       if (id === 'shadowblade') {
         stealth = SHADOW.stealthSeconds
         hero.inv = Math.max(hero.inv, 0.7)
-        for (const enemy of nearby(state, SHADOW.specialReach, SHADOW.specialHits)) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), hooks)
-        impact(state, hero.x, hero.y, 95, '#aa8eff', 0.7)
-        burst(state, hero.x, hero.y, '#8666ef', 12)
+        const struck = nearby(state, SHADOW.specialReach, SHADOW.specialHits)
+        lastTargets = strikePoints(struck)
+        for (const enemy of struck) hit(state, enemy, hero.damage * (SHADOW.specialDamageBase + upgrades() * SHADOW.specialDamagePerRank), hooks)
       } else if (id === 'spirit-summoner') {
-        for (const enemy of nearby(state, SPIRIT.companionRange, 3)) hit(state, enemy, hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank), hooks)
+        const struck = nearby(state, SPIRIT.companionRange, 3)
+        lastTargets = strikePoints(struck)
+        for (const enemy of struck) hit(state, enemy, hero.damage * (SPIRIT.specialDamageBase + upgrades() * SPIRIT.specialDamagePerRank), hooks)
         hero.hp = Math.min(hero.max, hero.hp + SPIRIT.specialHeal)
-        impact(state, hero.x, hero.y, 115, '#95eaff', 0.9)
       } else {
         const cost = Math.min(Math.max(0, hero.hp - 1), Math.ceil(hero.max * PALADIN.healthCostRatio))
         hero.hp -= cost
         state.damageTaken += cost
         barrier = PALADIN.barrierBase + hero.level * PALADIN.barrierPerHeroLevel + upgrades() * PALADIN.barrierPerRank
+        lastTargets = NO_TARGETS
         barrierLife = PALADIN.barrierSeconds
-        impact(state, hero.x, hero.y, 105, '#ed6178', 1)
+        absorbed = 0
       }
       hooks.sfx(def.audio.special)
       return true
@@ -284,6 +315,7 @@ export function createHeroSpecializationAdapter(
       const reduced = amount * (1 - PALADIN.baseReduction - Math.min(PALADIN.extraReductionCap, upgrades() * PALADIN.reductionPerRank))
       const absorb = barrierLife > 0 ? Math.min(barrier, reduced) : 0
       barrier -= absorb
+      absorbed += absorb
       return Math.max(0, reduced - absorb)
     },
     afterDamage(amount: number): void {
@@ -320,6 +352,7 @@ export function createHeroSpecializationAdapter(
     snapshot(): SpecializationSnapshot {
       return { cooldown, stealth, barrier, barrierSeconds: barrierLife, companions: companions() }
     },
+    castTargets: () => lastTargets,
   }
 }
 

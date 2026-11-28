@@ -1,17 +1,14 @@
 # Responsive ES2 gameplay UI contract
 
 - Check desktop, mobile portrait, mobile landscape, tablets, short screens, safe areas, English/Traditional Chinese and browser zoom.
-- Prioritize combat: HP, real boss health, timer and input controls stay visible. Do not permanently obscure the center battlefield with secondary objectives or status details.
-- Mobile portrait <=700px: use the single existing CombatHud information drawer; start collapsed and allow explicit expand, close, outside-pointer dismissal, Escape, resize/orientation dismissal.
-- On touch tablets up to 1100 CSS px, reuse the same information drawer so the permanent equipment bar never competes with joystick, dash or hero special actions. Pointer-capable desktops retain their full HUD.
-- Do not clone UI projections, notices, timers or simulation systems. Reuse authoritative HUD content and modal components.
-- Respect the configured joystick side and touch scale. Touch targets should reach at least 44 CSS px; the special action stays clear of dash/joystick.
 - Use existing ES2 accessible dialogs and custom dropdowns rather than browser-native picker popups. Modal layering must exceed combat HUD and protect keyboard focus.
+- Hide scrollbar chrome globally in `src/style.css` (both axes, standard and WebKit); keep wheel, touch, keyboard and programmatic scrolling. Do not add component-level scrollbar styles or use `overflow:hidden` merely to hide the scrollbar.
 - Use flex/grid, safe-area insets and 100dvh. Keep panels internally scrollable, translated strings wrap and art remains fully visible.
 - Honor interfaceScale, reduced-motion and reduced-flashing settings. Avoid extra per-frame UI computations.
-- Avoid touching character identity, character assets or combat engine for HUD-only layout changes.
 - Add regression tests before production code, confirm RED, then GREEN and review. Verify portrait expanded/collapsed, boss/wave, simultaneous notices, touch controls both joystick sides, home/pause and real viewport bounds.
 - Generated UI mockups are conceptual, not browser evidence. Do not claim runtime visual QA, video or full CI success without actual outputs. Never weaken production-art acceptance tests.
+
+Path-scoped companions, read when the situation applies: `hud-layout.md` (combat HUD, information drawer, touch controls) and `hero-lobby.md` (lobby, hall navigation, hero selection panel contract).
 
 ## Universal UI and player-focused visual design
 
@@ -25,3 +22,19 @@ These requirements are mandatory for **every** new/edited player-facing feature 
 - **Minimum text size (UX audit, 2026-11-24):** player-facing text on mobile, including the HUD, is at least about **11 CSS px**. The audit measured hero stats at 9.4 px, hero numbers at 7.7 px, mode times at 9.3 px and HUD labels at 8 px.
 - **Responsive implementation:** Base rules on available width **and height**, including orientation and foldable changes. Reuse shared HTML classes, component architecture and style tokens; never maintain parallel copies of the same game behavior merely to support a device. Touch controls need at least 44 × 44 CSS px hit targets; preserve focus/keyboard behavior, ARIA labels, reduced motion, interfaceScale, high-contrast states and bilingual wrapping.
 - **Real browser evidence:** Verify representative viewport sizes such as 320×640, 375×812, 640×320, 812×375, 360×800 (folded), 720×850 (unfolded), 768×1024, 1024×768 and 1440×900, with hinge/window segments if supported. Add screenshots and assert start/primary action visibility, art scaling when space exists, no horizontal overflow, no text/image clipping, no unwanted element intersections and bilingual usability; visually inspect screenshots before claiming QA success.
+
+- **Non-selectable game UI:** Disable native text selection and WebKit long-press text callouts across all rendered game UI (including labels, close icons, buttons, HUD, and body-teleported dialogs). Keep real text-entry controls editable/selectable. Use shared CSS rather than canceling pointer, keyboard or context-menu events; preserve focus, scrolling, normal activation and accessible semantics. Include browser regression checks for both the lobby and dialogs.
+
+- **Context previews:** Hover dossiers must not intercept clicks, wheel scrolling, or hover on neighboring selectable cards. Prefer placement outside the full card board; compact desktop fallback remains pointer-transparent. Always keep explicit Info buttons available for readable, scrollable full details on desktop and touch. Test real pointer transitions without first dismissing the prior tooltip.
+
+- **Shared skill value columns:** Hero, monster and Boss skill summaries use a content-sized, right-aligned trailing numeric column across the entire row height, capped at 40% of the row width (5px horizontal padding full, 3px compact, no dividing border). Only cooldown, damage and other skill metrics may occupy that column; names and descriptions wrap exclusively in the leading content region. Keep numeric groups readable and never move them below descriptions on narrow layouts. Reuse Es2SkillSummary; test actual row geometry in desktop hover and touch dialogs.
+
+- **Reward-card hover:** For level-up, treasure and evolution choices, reserve hover/focus paint room from existing dialog gaps/padding. Never enlarge the outer dialog, remove necessary scrolling or clip lifted card borders. Keep entry animation transforms independent of the hover transform and verify the real hovered card's bounds and unchanged dialog height.
+
+- **Shared reward picker:** Level-up, treasure and evolution choices reuse Es2ChoiceDialog / Es2ChoiceCards. Keep the card grid and transient treasure overlay inside the scrollable dialog body; keep the single shared `.es2-hint` row in Es2Dialog's existing non-shrinking actions footer, outside the card scrollport so tall cards, hover paint and reveal art cannot cover it. Treasure and evolution always render the same centered checkbox-only footer in both locales, including still, skipped and reduced motion/flashing; only level-up shows the generic card/number instruction. Empty special offers show their empty-state message in the subtitle. The reveal-skip control is a `role="checkbox"` (44px target), persisted as `AccessibilityPreferences.skipRewardReveal`; checking skips the running reveal, unchecking never replays it. Short touch landscape may hide the level instruction but not the checkbox. The tier's own `treasureArtUrl` chest overlay remains absolutely positioned, pointer-events none and aria-hidden, removed when skipped or still, hidden for reduced motion/flashing. Reroll and settings stay in the shared header; never add a duplicate footer or spacer. Retain rarity, claim rules, responsive scrolling and hover bleed.
+
+- **Lobby dock action:** Prefer short localized destination labels (Modes / Heroes, 模式 / 英雄) on one line, with a separate vertically centered arrow. Preserve full action text in the accessible name and tooltip. Allow wrapping only if needed for extreme widths or enlarged text; never truncate or shrink the font to fit. Keep the existing silhouette and responsive layout; validate both directions and languages.
+
+- **Archive cards:** All relic, skill, monster/Boss and achievement cards reuse `Es2ArchiveCard` and its centered `.es2-archive-art` slot, shared title and Info action. Only art source, rarity, discovery state and supplemental text vary. Center placeholders and atlas frames too; preserve original aspect ratio, discovery gating, and independent Info hit targets. Validate image/slot geometry across the responsive matrix.
+
+- **Result reveal and navigation:** victory and defeat share a bounded animation clock; click/tap the report or skip control to settle all values immediately. Honor reduced motion/flashing, never replay the same run, cancel frames on exit. Keep pinned actions and allow report-only scrolling if needed for small or zoomed displays. The destination lobby shell must be opaque on its first paint; animate child content only, never expose the previous combat canvas during menu entry.

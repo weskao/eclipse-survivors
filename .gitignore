@@ -6,3 +6,6 @@ node_modules/
 dist/
 __pycache__/
 public/audio/eclipse-overture.wav
+.env
+.env.local
+.firebase/

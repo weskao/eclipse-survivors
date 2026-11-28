@@ -6,6 +6,7 @@
  * See ./INTEGRATION.md for the handoff contract.
  */
 import { MAX_MOBS } from '../../constants'
+import { BALANCE } from '../../config'
 import { getMode } from '../../../meta/modes'
 import { getObjectiveMode, objectiveModeIds, type ObjectiveModeId } from '../modes/definitions'
 import type { RunModeId } from '../../../meta/types'
@@ -53,6 +54,8 @@ const MINI_BOSS_FIRST = 60
 const MINI_BOSS_INTERVAL = 80
 const MAX_SPAWN_BUDGET = 10
 const PATTERNS = ['swarm', 'elite', 'ranged'] as const
+const ENCOUNTERS = ['swarm-rush', 'encirclement', 'elite-invasion', 'ranged-assault', 'titan-march', 'treasure-rush', 'eclipse-surge'] as const
+export type OrdinaryEncounter = typeof ENCOUNTERS[number] | 'mixed' | 'recovery'
 const STAGES = [
   { stage: 'build-up', from: 0, to: 14 },
   { stage: 'assault', from: 14, to: 34 },
@@ -66,6 +69,7 @@ export type SpawnRole = 'normal' | 'mini-boss' | 'boss'
 
 export interface WaveSnapshot {
   readonly stage: WaveStage
+  readonly encounter: OrdinaryEncounter
   readonly pattern: WavePattern
   readonly cycle: number
   readonly startsAt: number
@@ -150,12 +154,14 @@ export function describeWave(mode: WaveModeId, seed: number, timeSeconds: number
   validTime(timeSeconds)
   if (!Number.isSafeInteger(seed)) throw new RangeError('Wave seed must be a safe integer')
   const config = schedule(mode)
-  const cycle = Math.floor(timeSeconds / WAVE_CYCLE_SECONDS)
-  const offset = timeSeconds - cycle * WAVE_CYCLE_SECONDS
+  const cycleSeconds = BALANCE.modes.waveCycleSeconds[mode]
+  const scale = cycleSeconds / WAVE_CYCLE_SECONDS
+  const cycle = Math.floor(timeSeconds / cycleSeconds)
+  const offset = (timeSeconds - cycle * cycleSeconds) / scale
   const phase = STAGES.find(p => offset >= p.from && offset < p.to)!
   let stage: WaveStage = phase.stage
-  let startsAt = cycle * WAVE_CYCLE_SECONDS + phase.from
-  let endsAt = cycle * WAVE_CYCLE_SECONDS + phase.to
+  let startsAt = cycle * cycleSeconds + phase.from * scale
+  let endsAt = cycle * cycleSeconds + phase.to * scale
   if (mode === 'chaos-arena') {
     // Eight explicit readiness gates, with recovery between encounters.
     let waveIndex = -1
@@ -201,7 +207,8 @@ export function describeWave(mode: WaveModeId, seed: number, timeSeconds: number
     (mode === 'challenge' || mode === 'chaos-arena' ? 1 : 0) : 0), MAX_SPAWN_BUDGET)
   const interval = stage === 'assault' ? 3.6 : 5.5
   const spawnIntervalSeconds = interval / config.spawnFrequency
-  return { stage, pattern, cycle, startsAt, endsAt, danger, spawnBudget, spawnIntervalSeconds }
+  const encounter: OrdinaryEncounter = stage === 'assault' ? ENCOUNTERS[(cycle + (seed % ENCOUNTERS.length) + ENCOUNTERS.length) % ENCOUNTERS.length]! : stage === 'recovery' ? 'recovery' : 'mixed'
+  return { stage, encounter, pattern, cycle, startsAt, endsAt, danger, spawnBudget, spawnIntervalSeconds }
 }
 
 /** Small integer mixer; generated once per spawn pulse, never in an animation frame loop. */

@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import { createState, resetRun } from '../state'
-import type { GameState, Mob, MobType } from '../types'
+import type { GameHooks, GameState, Mob, MobType } from '../types'
+import { createBossEncounterController } from '../content/bosses/controller'
+import { hit } from '../combat'
 import { createFakeCtx, fakeArtwork, fakeCanvasFactory } from './fakes'
 import { createRenderAssets, drawFrame, drawMiniMap } from './index'
+import { drawCharacter } from './characters'
+import { createFactionBridge } from '../content/enemies/integration'
+import { ENEMY_DEFINITIONS, type FactionKind } from '../content/enemies/definitions'
+import { spawnFactionEnemy } from '../content/enemies/runtime'
+import { FACTION_VISUAL_SIZE, type FactionArtwork } from './es2/production-factions'
+import { DEFAULT_ACCESSIBILITY_PREFERENCES } from '../content/accessibility/preferences'
+import { resolvePresentationPolicy } from '../content/accessibility/presentation'
 
 const mob = (type: MobType, x: number, y: number, over: Partial<Mob> = {}): Mob => ({
   x, y, type, hp: 5, max: 10, r: 20, speed: 50, dmg: 1, phase: 1.3, hit: 0, slow: 0, stagger: 0, kx: 0, ky: 0, ...over,
@@ -49,6 +58,95 @@ function busyState(): GameState {
 }
 
 describe('smooth Canvas enemy and boss health bars', () => {
+  it('hides full-health overhead bars by default and shows every live enemy kind when enabled', () => {
+    const s = busyState()
+    s.cameraKick = 0
+    const kinds: MobType[] = ['slime', 'bat', 'goblin', 'golem', 'warlock']
+    s.mobs = kinds.map((type, i) => mob(type, i * 30, 50, { hp: 10, max: 10, summonedByBoss: i === 0 }))
+    s.mobs.push(mob('goblin', 0, 80, { hp: 20, max: 20, elite: true }),
+      mob('boss', 100, 100, { hp: 100, max: 100 }),
+      mob('slime', 0, 50, { hp: 0 }), mob('slime', 5000, 5000))
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const factions = createFactionBridge({ random: () => 0 })
+    assets.factions = factions
+    const body = { complete: true, naturalWidth: 576, naturalHeight: 96 } as HTMLImageElement
+    const warning = { complete: true, naturalWidth: 96, naturalHeight: 96 } as HTMLImageElement
+    const factionKinds = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
+    assets.factionArtwork = Object.fromEntries(factionKinds.map(kind => [kind, { body, telegraph: warning }])) as FactionArtwork
+    for (const [i, kind] of factionKinds.entries())
+      spawnFactionEnemy(factions.runtime, kind, i * 20 - 100, 100, i === 0 ? { affix: 'armored' } : {})
+    spawnFactionEnemy(factions.runtime, 'phantom', 0, 100, { summonedBy: 1 })
+    spawnFactionEnemy(factions.runtime, 'fire-imp', 0, 100)!.hp = 0
+    spawnFactionEnemy(factions.runtime, 'fire-imp', 5000, 5000)
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number }[] = []
+    ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
+    const borders: string[] = []
+    ctx.strokeRect = () => { borders.push(String(ctx.strokeStyle)) }
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(0)
+    expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(0)
+    let showFullEnemyHealthBars = true
+    assets.presentation = () => resolvePresentationPolicy({ ...DEFAULT_ACCESSIBILITY_PREFERENCES, showFullEnemyHealthBars })
+    fills.length = 0
+    borders.length = 0
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(kinds.length + factionKinds.length)
+    expect(fills.filter(f => f.color === '#b697fa')).toHaveLength(2)
+    expect(borders.filter(color => color === '#d6a4f3')).toHaveLength(2)
+    expect(fills.filter(f => f.color === '#a94463' && f.width === 202)).toHaveLength(1)
+    showFullEnemyHealthBars = false
+    fills.length = 0
+    s.mobs[0]!.hp = 5
+    factions.runtime.enemies[0]!.hp /= 2
+    s.worldClock += .05
+    drawFrame(ctx, s, 1, assets)
+    expect(fills.filter(f => f.color === '#78d8a0')).toHaveLength(0)
+    expect(fills.filter(f => f.color === '#eac95f')).toHaveLength(1)
+    expect(fills.filter(f => f.color === '#d78ee9')).toHaveLength(1)
+  })
+
+  it('shares faction damage trails, healing and reduced motion with legacy bars', () => {
+    const s = busyState()
+    s.mobs = []
+    s.cameraKick = 0
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const factions = createFactionBridge({ random: () => 0 })
+    assets.factions = factions
+    const kind = 'shadow-assassin'
+    const body = { complete: true, naturalWidth: 576, naturalHeight: 96 } as HTMLImageElement
+    assets.factionArtwork = { [kind]: { body, telegraph: body } } as FactionArtwork
+    const enemy = spawnFactionEnemy(factions.runtime, kind, 0, 100)!
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number }[] = []
+    ctx.fillRect = (_x, _y, width) => { fills.push({ color: String(ctx.fillStyle), width }) }
+    const frame = () => { fills.length = 0; drawFrame(ctx, s, 1, assets) }
+    const width = FACTION_VISUAL_SIZE[kind] * 0.58 - 2
+    frame()
+    expect(fills.some(f => f.color === '#78d8a0')).toBe(false)
+    enemy.hp = enemy.max / 4
+    s.worldClock += 0.05
+    frame()
+    const front = fills.find(f => f.color === '#ed9851')!.width
+    expect(front).toBeGreaterThan(width / 4)
+    expect(front).toBeLessThan(width)
+    expect(fills.find(f => f.color === '#f2c37e')!.width).toBeGreaterThan(front)
+    enemy.hp = enemy.max
+    s.worldClock += 0.05
+    frame()
+    expect(fills.find(f => f.color === '#78d8a0')!.width).toBeLessThan(width)
+    expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
+    assets.prefersReducedMotion = () => true
+    enemy.hp = enemy.max / 2
+    frame()
+    expect(fills.find(f => f.color === '#eac95f')?.width).toBeCloseTo(width / 2)
+    expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
+    expect(enemy.hp).toBe(enemy.max / 2)
+    enemy.hp = enemy.max
+    frame()
+    expect(fills.some(f => f.color === '#78d8a0')).toBe(false)
+  })
+
   it('retains a short damage trail and eases the front fill without changing actual HP', () => {
     const s = busyState()
     const enemy = mob('goblin', 0, 50, { hp: 10, max: 10 })
@@ -68,13 +166,13 @@ describe('smooth Canvas enemy and boss health bars', () => {
     boss.hp = 25
     s.worldClock += 0.05
     drawFrame(ctx, s, 1, assets)
-    const enemyFill = fills.find(item => item.color === '#e98275')
-    const bossFill = fills.find(item => item.color === '#ce63a5')
+    const enemyFill = fills.find(item => item.color === '#ed9851' && item.width < 100)
+    const bossFill = fills.find(item => item.color === '#d35048' && item.width > 100)
     expect(enemyFill).toBeDefined()
     expect(bossFill).toBeDefined()
     expect(fills.some(item => item.color === '#f2c37e')).toBe(true)
     expect(enemyFill!.width).toBeGreaterThan(30 * 0.4)
-    expect(bossFill!.width).toBeGreaterThan(186 * 0.25)
+    expect(bossFill!.width).toBeGreaterThan(202 * 0.25)
     expect(enemy.hp).toBe(4)
     expect(boss.hp).toBe(25)
     // A fully restored normal enemy keeps its bar until the visual fill reaches 100%.
@@ -82,7 +180,7 @@ describe('smooth Canvas enemy and boss health bars', () => {
     s.worldClock += 0.05
     fills.length = 0
     drawFrame(ctx, s, 1, assets)
-    expect(fills.some(item => item.color === '#e98275')).toBe(true)
+    expect(fills.some(item => item.color === '#78d8a0')).toBe(true)
   })
 })
 
@@ -276,7 +374,10 @@ describe('biome renderer contracts', () => {
     expect(titlePositions(run, 640, 320)).toEqual([])
     expect(titlePositions(run, 812, 375)).toEqual([])
     expect(titlePositions(run, 701, 900)).toEqual([34])
-    expect(titlePositions(run, 901, 520)).toEqual([34])
+    expect(titlePositions(run, 901, 520)).toEqual([])
+    expect(titlePositions(run, 924, 412)).toEqual([])
+    expect(titlePositions(run, 1100, 520)).toEqual([])
+    expect(titlePositions(run, 1101, 520)).toEqual([34])
     expect(titlePositions(menuState(), 375, 812)).toEqual([34])
   })
 
@@ -306,4 +407,159 @@ describe('biome renderer contracts', () => {
     drawFrame(world.ctx, s, 1, assets)
     expect(world.calls.filter(x => x === 'fillText').length).toBeGreaterThan(1)
   })
+})
+
+
+describe('ES3 authored legacy enemy dissolution in the live renderer', () => {
+  it('samples each of the four isolated atlas cells, once per fallen actor, at the existing visual scale', () => {
+    const s = busyState()
+    s.cameraKick = 0
+    s.mobs = []
+    const corpse = mob('golem', 0, 50, { hp: 0, deathVisual: 1, deathVisualTotal: 1 })
+    s.fallenMobs = [corpse]
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const atlas = { complete: true, naturalWidth: 872, naturalHeight: 872 } as HTMLImageElement
+    assets.productionWorld = { ground: {}, decor: {}, bosses: {}, enemyDeaths: { golem: atlas } } as unknown as NonNullable<typeof assets.productionWorld>
+    const { ctx } = createFakeCtx()
+    const crops: unknown[][] = []
+    ctx.drawImage = (...args: unknown[]) => { if (args[0] === atlas) crops.push(args.slice(1)) }
+    for (const remaining of [1, .7, .4, .1]) {
+      corpse.deathVisual = remaining
+      drawFrame(ctx, s, 1, assets)
+    }
+    expect(crops.map(a => a.slice(0, 4))).toEqual([[8,8,420,420],[444,8,420,420],[8,444,420,420],[444,444,420,420]])
+    for (const crop of crops) {
+      const [, , , , x, y, w, h] = crop as number[]
+      expect(w).toBe(h)
+      expect(w).toBeLessThanOrEqual(139)
+      expect(x).toBe(-w! / 2)
+      expect(y! + h!).toBe(4)
+    }
+    const before = crops.length
+    corpse.hp = 1
+    s.fallenMobs = []
+    s.mobs = [corpse]
+    drawFrame(ctx, s, 1, assets)
+    expect(crops).toHaveLength(before)
+  })
+})
+
+describe('hero foot health bar uses the live renderer cache', () => {
+  it('animates damage, clears the trail on healing, then hides after reaching full', () => {
+    const s = busyState(); s.mode = 'play'; s.mobs = []; s.cameraKick = 0
+    const hero = s.hero!; hero.dash = 0; hero.inv = 0; hero.dashCd = -1
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const { ctx } = createFakeCtx()
+    const fills: { color: string; width: number; height: number }[] = []
+    ctx.fillRect = (_x, _y, width, height) => { fills.push({ color: String(ctx.fillStyle), width, height }) }
+    const paint = () => { fills.length = 0; drawFrame(ctx, s, 1, assets) }
+    paint()
+    expect(fills.some(f => f.color === '#d65854' && f.height === 6)).toBe(false)
+    hero.hp = hero.max * .5; s.worldClock += .04; paint()
+    const fill = fills.find(f => f.color === '#d65854' && f.height === 6)!
+    expect(fill.width).toBeGreaterThan(28)
+    expect(fill.width).toBeLessThan(56)
+    expect(fills.some(f => f.color === '#f2c37e' && f.width > fill.width)).toBe(true)
+    hero.hp = hero.max; s.worldClock += .04; paint()
+    expect(fills.some(f => f.color === '#d65854' && f.height === 6)).toBe(true)
+    expect(fills.some(f => f.color === '#f2c37e')).toBe(false)
+    for (let j = 0; j < 100; j++) { s.worldClock += .02; paint() }
+    expect(fills.some(f => f.color === '#d65854' && f.height === 6)).toBe(false)
+  })
+})
+
+
+
+describe('ES3 canonical enemy death presentation', () => {
+  it('uses the original bitmap and a stable, actor-specific death pose instead of continued idle motion', () => {
+    const s = busyState()
+    const art = fakeArtwork(true)
+    const sprites = {}
+    const kinds = ['slime', 'bat', 'goblin', 'golem', 'warlock'] as const
+    const poses = kinds.map(type => {
+      const e = mob(type, 80, 80, { hp: 0, phase: 0, kx: 1, ky: 0, deathVisual: .14, deathVisualTotal: .28 })
+      const sample = (clock: number) => {
+        s.worldClock = clock
+        const f = createFakeCtx()
+        const transforms: number[][] = []
+        f.ctx.translate = (x, y) => { transforms.push([x, y]) }
+        f.ctx.scale = (x, y) => { transforms.push([x, y]) }
+        f.ctx.rotate = angle => { transforms.push([angle]) }
+        drawCharacter(f.ctx, s, art, sprites, e, 0, 0)
+        expect(f.drawn).toEqual([art[type === 'warlock' ? 'wizard' : type]])
+        expect([e.x, e.y, e.hp, e.deathVisual]).toEqual([80, 80, 0, .14])
+        return transforms
+      }
+      const first = sample(1)
+      expect(sample(8)).toEqual(first)
+      return JSON.stringify(first)
+    })
+    expect(new Set(poses).size).toBe(kinds.length)
+  })
+})
+
+
+describe('ES3 production boss body motion', () => {
+  it('moves the original phase atlas with the live warning pose, holds only the body on hit, and honors reduced motion', () => {
+    const s = busyState(); s.mode = 'play'; s.mobs = []; s.cameraKick = 0
+    s.hero!.x = 0; s.hero!.y = 0; s.hero!.inv = 100
+    const controller = createBossEncounterController()
+    const hooks: GameHooks = { sfx() {}, message() {}, end() {}, offerUpgrades() {},
+      content: (state, event) => controller.onContentEvent(state, event, hooks) }
+    const boss = controller.spawn(s, 'infernal-titan', { x: 150, y: 0 }, hooks)!
+    const assets = createRenderAssets(fakeArtwork(true), fakeCanvasFactory().make)
+    const atlas = { complete: true, naturalWidth: 576, naturalHeight: 192 } as HTMLImageElement
+    assets.productionWorld = { ground: {}, decor: {}, bosses: { 'infernal-titan': atlas } } as unknown as NonNullable<typeof assets.productionWorld>
+    assets.bosses = controller; assets.cameraShakeEnabled = () => false
+    const sample = () => {
+      const { ctx } = createFakeCtx()
+      const transforms: number[][] = []
+      const stack: number[] = []
+      let pose: number[][] | undefined
+      ctx.save = () => { stack.push(transforms.length) }
+      ctx.restore = () => { transforms.length = stack.pop() ?? 0 }
+      ctx.scale = (x, y) => { transforms.push([x, y]) }
+      ctx.rotate = angle => { transforms.push([angle]) }
+      ctx.drawImage = (...args: unknown[]) => { if (args[0] === atlas) pose = transforms.slice() }
+      drawFrame(ctx, s, 1, assets)
+      expect(pose).toBeDefined()
+      return pose
+    }
+    controller.tick(s, .01, hooks)
+    const first = sample()
+    controller.tick(s, .25, hooks)
+    const windup = sample()
+    expect(windup).not.toEqual(first)
+    hit(s, boss, 1, hooks)
+    const held = sample()
+    const warningProgress = controller.snapshot(s).telegraphs[0]!.progress ?? 0
+    s.time += .02; s.worldClock += .02
+    controller.tick(s, .02, hooks)
+    expect(sample()).toEqual(held)
+    expect(controller.snapshot(s).telegraphs[0]!.progress).toBeGreaterThan(warningProgress)
+    s.time += .08; s.worldClock += .08
+    controller.tick(s, .08, hooks)
+    expect(sample()).not.toEqual(held)
+    assets.prefersReducedMotion = () => true
+    expect(sample()).toEqual(first)
+    expect(boss.x).toBe(150)
+    expect(boss.hp).toBe(boss.max - 1)
+  })
+})
+
+it('keeps living enemy art readable without a bright hit flash when Reduced Flashing is enabled', () => {
+  const s = busyState(), art = fakeArtwork(true)
+  const enemy = mob('slime', 80, 80, { hit: .12 })
+  const sample = (reducedFlashing: boolean) => {
+    const f = createFakeCtx()
+    const filters: string[] = []
+    f.ctx.drawImage = (...args: unknown[]) => {
+      if (args[0] === art.slime) filters.push(f.ctx.filter)
+    }
+    drawCharacter(f.ctx, s, art, {}, enemy, 0, 0, false, undefined, undefined, undefined, undefined, undefined, false, reducedFlashing)
+    return filters
+  }
+  expect(sample(false)).toEqual(['brightness(1.3) sepia(.25)'])
+  expect(sample(true)).toEqual(['none'])
+  expect(enemy.hit).toBe(.12)
 })

@@ -58,4 +58,28 @@ describe('ES2 three-choice rarity presentation', () => {
     }
     wrapper.unmount()
   })
+
+  it('frames only legendary cards with the animated foil and mounts one shared aura host', () => {
+    const items: MenuChoice[] = [
+      { id: 'a', title: 'A', rarity: 'legendary' },
+      { id: 'b', title: 'B', rarity: 'rare' },
+      { id: 'c', title: 'C', rarity: 'legendary' },
+    ]
+    const wrapper = mount(Es2ChoiceCards, { props: { items } })
+    expect(wrapper.findAll('[data-es3-legend-frame]')).toHaveLength(2)
+    expect(wrapper.find('[data-choice="b"] [data-es3-legend-frame]').exists()).toBe(false)
+    const hosts = wrapper.findAll('[data-es3-legend-aura]')
+    expect(hosts).toHaveLength(1)
+    expect(hosts[0]!.attributes('aria-hidden')).toBe('true')
+    wrapper.unmount()
+    const plain = mount(Es2ChoiceCards, { props: { items: [{ id: 'x', title: 'X', rarity: 'epic' }] } })
+    expect(plain.find('[data-es3-legend-aura]').exists()).toBe(false)
+    plain.unmount()
+  })
+
+  it('stops every legendary foil animation for reduced motion and flashing', () => {
+    expect(css).toMatch(/\[data-es2-reduce-motion="true"\][^{]*\.es3-legend-frame[^{]*\{[^}]*animation:none/)
+    expect(css).toMatch(/\[data-es2-reduce-flashing="true"\][^{]*\.es3-legend-frame[^{]*\{[^}]*animation:none/)
+    expect(css).toContain('.es3-legend-aura{position:absolute;inset:0;pointer-events:none')
+  })
 })

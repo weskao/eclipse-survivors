@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "73562cf2db13f06073db2bdd7ca5201002f80833",
+  "status": "QA_PENDING",
+  "assets": [
+    {
+      "id": "normal",
+      "path": "hit-normal@3x.webp",
+      "width": 480,
+      "height": 360,
+      "alpha": true,
+      "scale": 3,
+      "displayMaximumPx": [
+        160,
+        120
+      ],
+      "source": "src/assets/es2/production/skills/hit-contact.svg",
+      "sourceType": "vector-rasterization",
+      "sourceSha256": "b5f7cd3a4677359af809c7870e0e6f2448dc33b0f2516f1dfd87e8d33dc16541",
+      "palette": [
+        "#f9e9cf",
+        "#d6a46f"
+      ],
+      "sha256": "2014d76ad9dbbab94c73ad6e7e03a8994dc88fb1592a4a7cbea9a0d181134892",
+      "bytes": 52454,
+      "status": "QA_PENDING",
+      "browserReview": "pending"
+    },
+    {
+      "id": "heavy",
+      "path": "hit-heavy@3x.webp",
+      "width": 480,
+      "height": 360,
+      "alpha": true,
+      "scale": 3,
+      "displayMaximumPx": [
+        160,
+        120
+      ],
+      "source": "src/assets/es2/production/skills/hit-contact.svg",
+      "sourceType": "vector-rasterization",
+      "sourceSha256": "b5f7cd3a4677359af809c7870e0e6f2448dc33b0f2516f1dfd87e8d33dc16541",
+      "palette": [
+        "#ffe1c0",
+        "#c77b48"
+      ],
+      "sha256": "1290865e64bcc1c50a645d2db4f8b7bcb37256e6a57aeb5218c47364a9a921ab",
+      "bytes": 50384,
+      "status": "QA_PENDING",
+      "browserReview": "pending"
+    },
+    {
+      "id": "critical",
+      "path": "hit-critical@3x.webp",
+      "width": 480,
+      "height": 360,
+      "alpha": true,
+      "scale": 3,
+      "displayMaximumPx": [
+        160,
+        120
+      ],
+      "source": "src/assets/es2/production/skills/hit-critical.svg",
+      "sourceType": "vector-rasterization",
+      "sourceSha256": "6c2ae1ede58a3585baa6a9b3f3ea8bcd4c6c6376197f7b1c727ba16f4e7775f6",
+      "palette": [
+        "#fff3cd",
+        "#ee9143"
+      ],
+      "sha256": "137bb332198f4ad9065b07284db7e4ceec8d7ad42dd813abbcd529d120adcc0a",
+      "bytes": 54172,
+      "status": "QA_PENDING",
+      "browserReview": "pending"
+    },
+    {
+      "id": "elemental",
+      "path": "hit-elemental@3x.webp",
+      "width": 480,
+      "height": 360,
+      "alpha": true,
+      "scale": 3,
+      "displayMaximumPx": [
+        160,
+        120
+      ],
+      "source": "src/assets/es2/production/skills/hit-contact.svg",
+      "sourceType": "vector-rasterization",
+      "sourceSha256": "b5f7cd3a4677359af809c7870e0e6f2448dc33b0f2516f1dfd87e8d33dc16541",
+      "palette": [
+        "#d8f6ff",
+        "#53b8e7"
+      ],
+      "sha256": "9e2038f9dfc207caaf6ecee4db3744c33bf4868a541dc1dce51221605cbd9cda",
+      "bytes": 52156,
+      "status": "QA_PENDING",
+      "browserReview": "pending"
+    },
+    {
+      "id": "evolved",
+      "path": "hit-evolved@3x.webp",
+      "width": 480,
+      "height": 360,
+      "alpha": true,
+      "scale": 3,
+      "displayMaximumPx": [
+        160,
+        120
+      ],
+      "source": "src/assets/es2/production/skills/hit-critical.svg",
+      "sourceType": "vector-rasterization",
+      "sourceSha256": "6c2ae1ede58a3585baa6a9b3f3ea8bcd4c6c6376197f7b1c727ba16f4e7775f6",
+      "palette": [
+        "#ead8ff",
+        "#9463de"
+      ],
+      "sha256": "233278f9a75bf9fd966f6f38a3c751dccf55c299c9136a158a42f4a8b272110c",
+      "bytes": 55088,
+      "status": "QA_PENDING",
+      "browserReview": "pending"
+    },
+    {
+      "id": "hero",
+      "path": "hit-hero@3x.webp",
+      "width": 480,
+      "height": 360,
+      "alpha": true,
+      "scale": 3,
+      "displayMaximumPx": [
+        160,
+        120
+      ],
+      "source": "src/assets/es2/production/skills/hit-critical.svg",
+      "sourceType": "vector-rasterization",
+      "sourceSha256": "6c2ae1ede58a3585baa6a9b3f3ea8bcd4c6c6376197f7b1c727ba16f4e7775f6",
+      "palette": [
+        "#fff5c4",
+        "#d9a02b"
+      ],
+      "sha256": "2e77f23c618b7049036fb45b5c82ae954b1b3178143f0b9b8f7f5278b65e1393",
+      "bytes": 53618,
+      "status": "QA_PENDING",
+      "browserReview": "pending"
+    }
+  ]
+}

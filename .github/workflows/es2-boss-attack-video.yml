@@ -6,14 +6,15 @@ on:
       - 'scripts/es2-boss-attack-video.mjs'
       - '.github/workflows/es2-boss-attack-video.yml'
       - 'src/game/content/bosses/render.ts'
+      - 'src/game/render/pixi-vfx/**'
       - 'src/game/render/es2/boss-motion-reference.ts'
       - 'src/assets/es2/production/bosses/candidates/motion/**'
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: es2-boss-attack-video-integration
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   boss-attack-capture:
     runs-on: ubuntu-24.04

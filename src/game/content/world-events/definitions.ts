@@ -43,9 +43,9 @@ export const WORLD_EVENT_DEFINITIONS: readonly WorldEventDefinition[] = [
     choices: [
       choice('unlock', 'Unlock with runes', 'Spend 8 experience', 'Receive a vault cache token',
         [xpCost(8), loot('loot:vault-cache', 'epic')], { minXp: 8 }),
-      choice('force', 'Force the vault', 'Summon 3 guardians and defeat them in 18 seconds', 'Receive a rare cache on success',
+      choice('force', 'Force the vault', 'Summon 3 guardians and defeat them in 18 seconds', 'Receive a legendary cache on success',
         [encounter('events:vault-guards', 3)],
-        { objective: { kind: 'kill', seconds: 18, count: 3, rewards: [loot('loot:vault-guard-cache', 'rare')] } }),
+        { objective: { kind: 'kill', seconds: 18, count: 3, rewards: [loot('loot:vault-guard-cache', 'legendary')] } }),
       leave,
     ],
   },

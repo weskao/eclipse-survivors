@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "b5aa64a6c2ec11af123598b639089a9f8ccdd4f0",
+  "status": "QA_PENDING_KEYFRAME_CANDIDATES",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "glide-east-key-a",
+      "pose": "move",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/glide-east-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "b8e5def2-c085-4ed7-890e-2d3fe5e616eb",
+        "originalPngSha256": "ad13620a5bd073c2d7f43f7fd9a4be7780db5d5b75f105c0625e3e6d87fef783",
+        "canonicalReferenceHead": "b5aa64a6c2ec11af123598b639089a9f8ccdd4f0"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1313,
+      "cellHeight": 1198,
+      "frameRects": [
+        [
+          0,
+          0,
+          1313,
+          1198
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        656.5,
+        599.0
+      ],
+      "alphaBounds": [
+        51,
+        23,
+        1145,
+        1171
+      ],
+      "alphaAnyBounds": [
+        25,
+        19,
+        1181,
+        1179
+      ],
+      "alphaExtent": [
+        1094,
+        1148
+      ],
+      "actualSourceResolution": [
+        1313,
+        1198
+      ],
+      "sourceEdgeMargins": [
+        51,
+        23,
+        168,
+        27
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "89de077a0e23c0189ab3d210728e2c93c77fc6e97a39ae405b9bdc31b7bb6710",
+      "webpCompressedBytes": 414766,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "East-facing glide candidate, not an approved animation or exact source edit. Visual references: approved abyss-monarch-phases@3x.webp and existing QA_PENDING atlas. No mirror or phase assignment approved. Previous batches have identity concerns; compare the mask, crown/halo and robe proportions against canonical art before use."
+    }
+  ],
+  "missing": [
+    "idle and hovering locomotion",
+    "verified attack-specific release sequence and recovery",
+    "hurt and phase-specific transformations",
+    "death sequence",
+    "direction, hover anchor, visual and runtime QA"
+  ]
+}

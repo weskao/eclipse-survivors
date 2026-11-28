@@ -120,3 +120,7 @@ pnpm check-release
 No shared engine entry, existing AudioSystem, main branch, or deployment is
 modified here. The integration owner must bind the host port and scene/SFX
 events, and retire duplicate BGM before enabling the ES2 score in gameplay.
+
+## Battle choice continuity (live host)
+
+Level-up, treasure claim/decline/reroll and evolution share the `level` game mode. Both `play` and `level` belong to the same soundtrack session. Opening or closing a picker cannot select exploration, reset a phrase clock, change intensity/volume, replace an AudioBufferSource, pause/resume media, or restart the track. Initialize exploration only when starting a new expedition; change battle themes only from real gameplay encounter updates. Preserve SFX, explicit mute/volume, real pause, OS interruption, and results/home transitions. Test actual engine picker transitions, not only adapter mode gates.

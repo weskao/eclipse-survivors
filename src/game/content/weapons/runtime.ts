@@ -1,7 +1,8 @@
 import { BALANCE } from '../../config'
 import type { ContentContext } from '../contracts'
-import type { ContentRuntime, ContentVisualFx, GameState, Mob } from '../../types'
-import { hit } from '../../combat'
+import type { ContentRuntime, ContentVisualFx, GameState } from '../../types'
+import { hitTarget, targetRadius, type CombatTarget } from '../../combat'
+import type { FactionBridge } from '../enemies/integration'
 
 export type WeaponKey =
   | 'shadow-daggers' | 'holy-lance' | 'blood-scythe' | 'arcane-mines'
@@ -13,8 +14,8 @@ export interface Missile {
   kind: MissileKind
   x: number; y: number; vx: number; vy: number
   life: number; damage: number; radius: number; pierce: number
-  jumps: number; target?: Mob
-  visited: Set<Mob>
+  jumps: number; target?: CombatTarget
+  visited: Set<CombatTarget>
 }
 export interface Zone {
   kind: ZoneKind
@@ -26,7 +27,7 @@ export interface Beam {
   x: number; y: number; ux: number; uy: number; width: number
   range: number; life: number
 }
-export interface Link { from: Mob; to: Mob; life: number }
+export interface Link { from: CombatTarget; to: CombatTarget; life: number }
 export interface ArsenalRuntime {
   projectiles: Missile[]
   zones: Zone[]
@@ -41,7 +42,7 @@ export interface ArsenalRuntime {
   volleyX: number
   volleyY: number
   volleyAngle: number
-  orbitHits: WeakMap<Mob, number>
+  orbitHits: WeakMap<CombatTarget, number>
   chainPulse: number
   slashLife: number
   slashAngle: number
@@ -81,14 +82,18 @@ export function keepVisual(context: ContentContext, r: ArsenalRuntime): void {
 }
 
 /** Allocation-free closest-enemy query for per-tick summons and homing shots. */
-export function nearestOne(state: GameState, x: number, y: number, range: number, exclude?: Set<Mob>): Mob | undefined {
-  let best: Mob | undefined
+export function nearestOne(state: GameState, x: number, y: number, range: number, exclude?: Set<CombatTarget>, factions?: FactionBridge): CombatTarget | undefined {
+  let best: CombatTarget | undefined
   let score = Infinity
-  for (const e of state.mobs) {
+  const authored = factions?.runtime.enemies
+  const count = state.mobs.length
+  for (let i = 0; i < count + (authored?.length ?? 0); i++) {
+    const e = i < count ? state.mobs[i]! : authored![i-count]!
+    if ('state' in e && e.state === 'phase') continue
     if (e.hp <= 0 || exclude?.has(e)) continue
     const dx = e.x - x, dy = e.y - y
     const d2 = dx * dx + dy * dy
-    const reach = range + e.r
+    const reach = range + targetRadius(e)
     if (d2 <= reach * reach && d2 < score) {
       score = d2
       best = e
@@ -98,14 +103,18 @@ export function nearestOne(state: GameState, x: number, y: number, range: number
 }
 
 /** Small K insertion selection, O(mobs × limit) at fire time; no full enemy sort. */
-export function nearest(state: GameState, x: number, y: number, range: number, limit = 1, exclude?: Set<Mob>): Mob[] {
-  const found: Mob[] = []
+export function nearest(state: GameState, x: number, y: number, range: number, limit = 1, exclude?: Set<CombatTarget>, factions?: FactionBridge): CombatTarget[] {
+  const found: CombatTarget[] = []
   const scores: number[] = []
-  for (const e of state.mobs) {
+  const authored = factions?.runtime.enemies
+  const count = state.mobs.length
+  for (let i = 0; i < count + (authored?.length ?? 0); i++) {
+    const e = i < count ? state.mobs[i]! : authored![i-count]!
+    if ('state' in e && e.state === 'phase') continue
     if (e.hp <= 0 || exclude?.has(e)) continue
     const dx = e.x - x, dy = e.y - y
     const d2 = dx * dx + dy * dy
-    const reach = range + e.r
+    const reach = range + targetRadius(e)
     if (d2 > reach * reach) continue
     let at = 0
     while (at < scores.length && scores[at]! <= d2) at++
@@ -119,12 +128,18 @@ export function nearest(state: GameState, x: number, y: number, range: number, l
 
 export function area(context: ContentContext, x: number, y: number, radius: number, damage: number): number {
   let actual = 0
-  for (const e of context.state.mobs) {
+  const state = context.state, factions = context.hooks.factions?.()
+  const authored = factions?.runtime.enemies
+  const count = state.mobs.length
+  for (let i = 0; i < count + (authored?.length ?? 0); i++) {
+    const e = i < count ? state.mobs[i]! : authored![i-count]!
+    if ('state' in e && e.state === 'phase') continue
     if (e.hp <= 0) continue
-    const dx = e.x - x, dy = e.y - y, reach = radius + e.r
+    const dx = e.x - x, dy = e.y - y, reach = radius + targetRadius(e)
     if (dx * dx + dy * dy > reach * reach) continue
-    actual += Math.min(e.hp, damage)
-    hit(context.state, e, damage, context.hooks)
+    const before = e.hp
+    hitTarget(state, e, damage, context.hooks, factions, {x,y})
+    actual += before - e.hp
   }
   return actual
 }
@@ -142,16 +157,20 @@ export function addZone(r: ArsenalRuntime, zone: Zone): boolean {
 }
 
 /** First swept-circle contact; handles a shot crossing a narrow enemy in a long tick. */
-function contact(s: GameState, p: Missile, x0: number, y0: number, x1: number, y1: number):
-  { mob: Mob; t: number } | null {
+function contact(s: GameState, p: Missile, x0: number, y0: number, x1: number, y1: number, factions?: FactionBridge):
+  { mob: CombatTarget; t: number } | null {
   const dx = x1 - x0, dy = y1 - y0, length2 = dx * dx + dy * dy
-  let found: Mob | null = null
+  let found: CombatTarget | null = null
   let first = Infinity
   const minX = Math.min(x0, x1), maxX = Math.max(x0, x1)
   const minY = Math.min(y0, y1), maxY = Math.max(y0, y1)
-  for (const e of s.mobs) {
+  const authored = factions?.runtime.enemies
+  const count = s.mobs.length
+  for (let i = 0; i < count + (authored?.length ?? 0); i++) {
+    const e = i < count ? s.mobs[i]! : authored![i-count]!
+    if ('state' in e && e.state === 'phase') continue
     if (e.hp <= 0 || p.visited.has(e)) continue
-    const reach = e.r + p.radius
+    const reach = targetRadius(e) + p.radius
     if (e.x < minX - reach || e.x > maxX + reach ||
         e.y < minY - reach || e.y > maxY + reach) continue
     const ox = x0 - e.x, oy = y0 - e.y
@@ -171,10 +190,10 @@ function contact(s: GameState, p: Missile, x0: number, y0: number, x1: number, y
 }
 
 function advanceOne(context: ContentContext, p: Missile, dt: number): void {
-  const { state } = context
+  const { state } = context, factions = context.hooks.factions?.()
   if (p.kind === 'dagger' || p.kind === 'blade') {
-    if (!p.target || p.target.hp <= 0 || p.visited.has(p.target)) {
-      p.target = nearestOne(state, p.x, p.y, 520, p.visited)
+    if (!p.target || p.target.hp <= 0 || ('state' in p.target && p.target.state === 'phase') || p.visited.has(p.target)) {
+      p.target = nearestOne(state, p.x, p.y, 520, p.visited, factions)
     }
     if (!p.target) { p.life = 0; return }
     const dx = p.target.x - p.x, dy = p.target.y - p.y
@@ -190,24 +209,24 @@ function advanceOne(context: ContentContext, p: Missile, dt: number): void {
   let x0 = p.x, y0 = p.y
   // Piercing can register multiple distinct contacts in one simulation tick.
   for (let i = 0; i < 8 && p.pierce > 0; i++) {
-    const hitAt = contact(state, p, x0, y0, endX, endY)
+    const hitAt = contact(state, p, x0, y0, endX, endY, factions)
     if (!hitAt) { p.x = endX; p.y = endY; break }
     p.x = x0 + (endX - x0) * hitAt.t
     p.y = y0 + (endY - y0) * hitAt.t
     p.visited.add(hitAt.mob)
-    hit(state, hitAt.mob, p.damage, context.hooks)
+    hitTarget(state, hitAt.mob, p.damage, context.hooks, factions, {x:x0,y:y0})
     p.pierce--
     if (p.kind === 'blade' && p.jumps > 0) {
       p.jumps--
       p.pierce = 1
-      p.target = nearestOne(state, p.x, p.y, 390, p.visited)
+      p.target = nearestOne(state, p.x, p.y, 390, p.visited, factions)
       if (!p.target) p.life = 0
       break // Redirect on next tick, never double-travel in one tick.
     }
     if (p.kind === 'dagger' && p.jumps > 0) {
       p.jumps--
       p.pierce = 1
-      p.target = nearestOne(state, p.x, p.y, 520, p.visited)
+      p.target = nearestOne(state, p.x, p.y, 520, p.visited, factions)
       if (!p.target) p.life = 0
       break
     }

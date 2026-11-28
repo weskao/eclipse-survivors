@@ -20,6 +20,15 @@ describe('ES2 viewport-first dialogs', () => {
     expect(dialog).toContain('class="es2-dialog-actions"')
   })
 
+  it('constrains settings to available width while preserving vertical scrolling', () => {
+    expect(read('src/components/es2/menu/Es2Settings.vue')).toContain('variant="settings"')
+    expect(css).toMatch(/\.es2-dialog-preferences\{[^}]*min-width:0;max-width:100%;overflow:clip/)
+    expect(css).toMatch(/\.es2-dialog-preferences \.es2-dialog-body\{[^}]*overflow-x:hidden;overflow-y:auto/)
+    expect(css).toMatch(/\.es2-dialog-preferences input\[type=range\]\{[^}]*min-width:0;max-width:100%;margin-inline:0/)
+    expect(read('src/components/es2/accessibility/AccessibilitySettings.vue')).toContain('repeat(auto-fit, minmax(min(100%, 175px), 1fr))')
+    expect(read('src/components/es2/menu/Es2Select.vue')).toContain('overflow-x: hidden; overflow-y: auto')
+  })
+
   it('places level-up settings in the shared heading rather than consuming another row', () => {
     expect(dialog).toContain('<slot name="header-actions" />')
     expect(picker).toContain('<template #header-actions>')

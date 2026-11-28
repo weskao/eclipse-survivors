@@ -1,0 +1,262 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "run",
+  "direction": "NW",
+  "sourceDirection": "NW",
+  "mirrorAllowed": false,
+  "native3x": "core_height_threshold_pass_visual_unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "completeEightDirections": false,
+  "eligibleForDevWiring": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    673,
+    647,
+    672,
+    663
+  ],
+  "footBottomsStatus": "alpha>=128 bottom proxy; manual gameplay anchor review required",
+  "alphaBounds": [
+    [
+      85,
+      73,
+      689,
+      689
+    ],
+    [
+      79,
+      78,
+      681,
+      689
+    ],
+    [
+      95,
+      78,
+      689,
+      687
+    ],
+    [
+      79,
+      78,
+      681,
+      685
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        99,
+        12,
+        548,
+        603
+      ],
+      "coreExtent": [
+        449,
+        591
+      ],
+      "outputAlphaBounds": [
+        85,
+        73,
+        689,
+        689
+      ],
+      "clearedMarginPixels": 349,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 673,
+      "footAnchor": null
+    },
+    {
+      "index": 1,
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        5,
+        611,
+        619
+      ],
+      "coreAlphaBounds": [
+        80,
+        17,
+        548,
+        577
+      ],
+      "coreExtent": [
+        468,
+        560
+      ],
+      "outputAlphaBounds": [
+        79,
+        78,
+        681,
+        689
+      ],
+      "clearedMarginPixels": 31,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 647,
+      "footAnchor": null
+    },
+    {
+      "index": 2,
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        0,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        81,
+        19,
+        544,
+        602
+      ],
+      "coreExtent": [
+        463,
+        583
+      ],
+      "outputAlphaBounds": [
+        95,
+        78,
+        689,
+        687
+      ],
+      "clearedMarginPixels": 527,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 672,
+      "footAnchor": null
+    },
+    {
+      "index": 3,
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "originalAlphaBounds": [
+        0,
+        5,
+        611,
+        627
+      ],
+      "coreAlphaBounds": [
+        69,
+        23,
+        541,
+        593
+      ],
+      "coreExtent": [
+        472,
+        570
+      ],
+      "outputAlphaBounds": [
+        79,
+        78,
+        681,
+        685
+      ],
+      "clearedMarginPixels": 80,
+      "sourceBoundaryMaxAlpha": 1,
+      "footBottomProxy": 663,
+      "footAnchor": null
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "e46f4acc04c9842866a2977fb4e154807eeca8743a7b412ef39d3d22dc12cc56",
+  "originalPNGSHA256": "f91cc1ffa5ad0ea4ae2076b16c234b860ddbb1f955de48b1807a2605ea76dea4",
+  "atlasFile": "run-nw-4frames@3x.webp",
+  "webpSHA256": "42c73aa04225b802ab421d933527b0eeb026ecabe04782d7336b50bdbbc32a26",
+  "bytes": 627552,
+  "sourceProvenance": {
+    "generationId": "d6c6d02e-1886-452a-9e6e-baa77aa3175a",
+    "reference": "user supplied canonical portrait and repository character art",
+    "inputName": "赤焰聖騎士西北衝刺動畫人體藝術.png"
+  },
+  "encoding": "Pillow WebP quality 100; review only; Polytool not run",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "No resizing; 627px original cells centered on transparent 768px cells. Only alpha=1 outer 8px source margin pixels cleared in padded derivative.",
+    "Core height is an alpha-bound proxy, not manual native-detail approval. Verify equipment, identity, stride and foot anchor at game size.",
+    "Polytool install blocked by GitHub DNS and cwebp unavailable. Review only; do not mark eligible before official conversion/provenance review."
+  ]
+}

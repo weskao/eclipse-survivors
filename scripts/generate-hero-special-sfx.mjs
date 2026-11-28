@@ -5,7 +5,11 @@ import { resolve } from 'node:path'
 export const HERO_SFX_DURATION = {
   "shadowblade-special": 1.35,
   "spirit-summoner-special": 2.1,
-  "crimson-paladin-special": 1.85
+  "crimson-paladin-special": 1.85,
+  "crimson-paladin-retribution": 1.3,
+  "knight-special": 1.4,
+  "ranger-special": 1.35,
+  "wizard-special": 1.8
 }
 export function renderHeroSfx(cue, seconds) {
   const rate=32000, n=Math.round(seconds*rate), left=new Float32Array(n), right=new Float32Array(n);
@@ -32,6 +36,41 @@ export function renderHeroSfx(cue, seconds) {
     sweep(.18,.57,0,.49,101,43,3.2);noise(.15,.42,.25,.48,"air");
     for(const [i,f] of [98,146.83,196,246.94,293.66].entries()){choir(.10+i*.035,1.28-i*.045,i%2?.45:-.45,.18,f)}
     metal(.29,1.38,0,.23,392);
+  } else if(cue==="crimson-paladin-retribution"){
+    // Ward detonation: glass-metal fracture crack, low blast, fire roar, dark D-minor resonance tail.
+    noise(0,.11,0,.95,"air");sweep(0,.78,0,1,170,30,3.0);noise(0,.66,0,.72,"rumble");noise(.004,.30,0,.70,"band");
+    for(const [t,p,f] of [[0,-.5,1175],[.026,.55,1568],[.061,-.2,932],[.094,.35,1318]]){metal(t,.52,p,.34,f)}
+    noise(.05,.82,-.4,.42,"band");noise(.07,.78,.4,.38,"band");sweep(.04,.36,0,.36,560,120,3.8);
+    for(const [i,f] of [73.42,110,146.83,174.61].entries()){choir(.06+i*.02,1.05-i*.06,i%2?.4:-.4,.15,f)}
+  } else if(cue==="knight-special"){
+    // Armored lift, blade air displacement, then a dense layered ground impact at 120 ms.
+    noise(0,.12,-.36,.38,"air");sweep(.012,.13,0,.25,180,65,2.1);
+    metal(.025,.15,-.45,.16,465);noise(.055,.16,.42,.53,"air");
+    sweep(.12,.67,0,1.12,175,32,3.4);noise(.12,.48,0,.92,"rumble");noise(.12,.19,0,.88,"band");
+    for(const [t,p,f,g] of [[.12,-.46,245,.64],[.137,.46,370,.52],[.19,-.25,560,.34],[.235,.33,190,.28]]){metal(t,.83,p,g,f);noise(t,.18,p,g*.72,"band")}
+    for(const [i,f] of [98,146.83,196,293.66].entries())choir(.20+i*.035,.98-i*.025,i%2?.38:-.38,.19,f);
+    // Dust and settling pebbles are quieter than the impact.
+    for(const [t,p,f] of [[.34,-.6,430],[.42,.4,280],[.51,-.2,670]]){noise(t,.15,p,.20,"band");metal(t,.24,p,.11,f)}
+  } else if(cue==="ranger-special"){
+    // Bow tension and three tightly spaced, spatially separated releases.
+    noise(0,.075,0,.25,"air");sweep(.006,.065,0,.18,260,540,.8);
+    for(const [t,p,f] of [[.06,-.64,660],[.14,0,784],[.22,.64,988]]){
+      metal(t,.19,p,.39,f);noise(t,.13,p,.84,"air");sweep(t,.24,p,.65,1250,205,3.6);
+      // Tail and delayed impact share the same shot cadence as the GPU trajectory.
+      noise(t+.19,.19,p,.55,"band");metal(t+.21,.53,p,.35,f*.68);
+      sweep(t+.22,.24,p,.37,125,47,3.4);noise(t+.25,.16,p,.17,"air");
+    }
+    for(const [i,f] of [146.83,220,293.66].entries())choir(.29+i*.04,.81,i%2?.5:-.5,.18,f);
+    metal(.49,.61,.12,.18,1174.66);
+  } else if(cue==="wizard-special"){
+    // Inward magical pressure, staggered harmonic convergence, impact at 420 ms.
+    sweep(0,.42,0,.36,68,310,.6);noise(.02,.41,-.5,.42,"air");noise(.05,.39,.5,.43,"air");
+    for(const [i,f] of [110,164.81,261.63,311.13].entries())choir(.025+i*.07,1.38-i*.04,i%2?.55:-.55,.22,f);
+    sweep(.30,.14,0,.55,340,110,.8);metal(.34,.17,-.2,.22,880);
+    sweep(.42,.88,0,1.08,205,27,2.9);noise(.42,.68,0,.9,"rumble");noise(.42,.35,0,.84,"band");
+    for(const [t,p,f] of [[.42,-.48,392],[.45,.51,587],[.49,0,784]])metal(t,1.02,p,.47,f);
+    for(const [i,f] of [82.41,123.47,164.81,246.94].entries())choir(.48+i*.045,1.10-i*.05,i%2?.54:-.54,.24,f);
+    noise(.61,.77,-.43,.25,"air");noise(.65,.73,.46,.25,"air");
   } else throw Error("Unknown hero cast");
   // Baked stereo reflections: no live convolution, no extra nodes.
   const dryL=left.slice(),dryR=right.slice();

@@ -1,14 +1,13 @@
-name: ES2 real Chromium mobile browser smoke
+name: ES2 real Chromium and WebKit mobile browser smoke
 on:
   push:
-    branches: [feature/es2-release-readiness-integration]
+    branches: [feature/es2-release-readiness-integration, feature/es2-responsive-menu-hud-layout]
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: es2-mobile-browser-${{ github.ref }}
-  # Preserve full browser and art evidence during concurrent integration commits.
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   browser-smoke:
     runs-on: ubuntu-24.04
@@ -29,15 +28,16 @@ jobs:
           path: dist/
           retention-days: 7
           if-no-files-found: error
-      - name: Install isolated Chromium for real layout QA
+      - name: Install isolated Chromium and WebKit for real layout QA
         run: |
           npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
-          ../node_modules/.bin/playwright install --with-deps chromium
+          ../node_modules/.bin/playwright install --with-deps chromium webkit
       - name: Launch production preview and verify responsive game across desktop, tablet and phone
         run: |
           pnpm preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/es2-preview.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4173/ >/dev/null
+          node scripts/es2-lobby-dock-webkit.mjs
           node scripts/es2-mobile-browser-smoke.mjs
           node scripts/es2-responsive-layout-matrix.mjs
           node scripts/es2-world-art-browser-qa.mjs
@@ -80,12 +80,12 @@ jobs:
             src/assets/es2/production/biomes/manifest.json
             src/assets/es2/production/ui/*.webp
             src/assets/es2/production/ui/manifest.json
-            assets/images/imgs1.png
-            assets/images/imgs5.png
-            assets/images/imgs6.png
-            assets/images/imgs7.png
-            assets/images/imgs8.png
-            assets/images/imgs9.png
-            assets/images/imgs10.png
+            assets/images/imgs1.webp
+            assets/images/imgs5.webp
+            assets/images/imgs6.webp
+            assets/images/imgs7.webp
+            assets/images/imgs8.webp
+            assets/images/imgs9.webp
+            assets/images/imgs10.webp
           retention-days: 7
           if-no-files-found: error

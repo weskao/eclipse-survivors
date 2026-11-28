@@ -46,6 +46,16 @@ describe('raster spell artwork animation', () => {
     expect(fallback.get('.skill-sigil').text()).toContain('🔥')
   })
 
+  it('falls back to the original SVG if the new image fails to load', async () => {
+    const u: UpgradeDef = { id: 'speed', title: 'Speed', desc: 'Speed', icon: '✶', rarity: 'common', maxLevel: 5 }
+    const screen = mount(LevelUpOverlay, { props: { active: true, upgrades: [u] } })
+    const img = screen.get('img.skill-art')
+    await img.trigger('error')
+    expect(img.attributes('src')).toContain('speed@3x.webp')
+    await img.trigger('error')
+    expect(img.attributes('src')).toContain('speed.svg')
+  })
+
   it('uses a single animated atlas for the HUD and a static atlas in reduced motion', () => {
     const animation = readFileSync(resolve(process.cwd(), 'src/assets/ui/skill-art-atlas@3x-animated.webp'))
     expect(animation.toString('ascii', 8, 12)).toBe('WEBP')

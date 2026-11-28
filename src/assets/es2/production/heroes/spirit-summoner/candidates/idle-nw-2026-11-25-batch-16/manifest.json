@@ -1,0 +1,237 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "idle",
+  "direction": "NW",
+  "sourceDirection": "NW",
+  "directionStatus": "tentative visual facing; review before use",
+  "mirrorAllowed": false,
+  "native3x": "core_height_threshold_pass_visual_unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "completeEightDirections": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "atlasPixels": [
+    1536,
+    1536
+  ],
+  "resampled": false,
+  "columns": 2,
+  "rows": 2,
+  "frameCount": 4,
+  "cellWidth": 768,
+  "cellHeight": 768,
+  "frameRects": [
+    [
+      0,
+      0,
+      768,
+      768
+    ],
+    [
+      768,
+      0,
+      768,
+      768
+    ],
+    [
+      0,
+      768,
+      768,
+      768
+    ],
+    [
+      768,
+      768,
+      768,
+      768
+    ]
+  ],
+  "frameDuration": null,
+  "footAnchor": null,
+  "footBottoms": [
+    641,
+    637,
+    628,
+    638
+  ],
+  "footBottomsStatus": "Alpha >=128 proxy, not anatomical foot anchor",
+  "alphaBounds": [
+    [
+      70,
+      70,
+      697,
+      697
+    ],
+    [
+      70,
+      70,
+      694,
+      697
+    ],
+    [
+      70,
+      70,
+      697,
+      697
+    ],
+    [
+      70,
+      70,
+      685,
+      697
+    ]
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        118,
+        21,
+        514,
+        571
+      ],
+      "coreExtent": [
+        396,
+        550
+      ],
+      "sourceBoundaryMaxAlpha": 3,
+      "footBottomProxy": 641,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        70,
+        697,
+        697
+      ]
+    },
+    {
+      "index": 1,
+      "rect": [
+        768,
+        0,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        113,
+        21,
+        567,
+        567
+      ],
+      "coreExtent": [
+        454,
+        546
+      ],
+      "sourceBoundaryMaxAlpha": 4,
+      "footBottomProxy": 637,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        70,
+        694,
+        697
+      ]
+    },
+    {
+      "index": 2,
+      "rect": [
+        0,
+        768,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        112,
+        21,
+        567,
+        558
+      ],
+      "coreExtent": [
+        455,
+        537
+      ],
+      "sourceBoundaryMaxAlpha": 3,
+      "footBottomProxy": 628,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        70,
+        697,
+        697
+      ]
+    },
+    {
+      "index": 3,
+      "rect": [
+        768,
+        768,
+        768,
+        768
+      ],
+      "coreAlphaBounds": [
+        111,
+        12,
+        551,
+        568
+      ],
+      "coreExtent": [
+        440,
+        556
+      ],
+      "sourceBoundaryMaxAlpha": 3,
+      "footBottomProxy": 638,
+      "footAnchor": null,
+      "outputAlphaBounds": [
+        70,
+        70,
+        685,
+        697
+      ]
+    }
+  ],
+  "paddingOffset": [
+    70,
+    70
+  ],
+  "sourceFile": "source.webp",
+  "sourceSHA256": "aa8a914676719d5c62c8dd80f32e16350c4127ef1ad52bdf91fae2682ad2134e",
+  "originalPNGSHA256": "e0210899800a81fcbc0943c987b5bd14f40e9ef9a54bea558dacb98dee4a999a",
+  "atlasFile": "idle-nw-4frames@3x.webp",
+  "webpSHA256": "4031519f96ce64c4309b3d51164793236984e36882db80c8b7d9fb1a24e2fbcd",
+  "bytes": 698608,
+  "sourceProvenance": {
+    "generationId": "b6839751-5297-41d1-8d07-2d6ca6426543",
+    "reference": "canonical GitHub spirit-summoner-portrait@3x.webp visually inspected at 63b273f04f0d87b6f630b44e20ba6763414fe493; portrait blob a13cba0811ba3f969e29aaa0049f93b5162e0cbb",
+    "inputName": "a_high_resolution_fantasy_character_sprite_sheet_o.png"
+  },
+  "encoding": "Pillow WebP quality=100; REVIEW ONLY; official Polytool installation failed DNS; cwebp not found",
+  "visualQA": "QA_PENDING",
+  "runtimeIntegrationStatus": "NOT_APPLIED",
+  "reviewNotes": [
+    "No source resizing or alpha deletion; 627px cells padded to 768px.",
+    "Original per-cell outer edge alpha <=4; inspect glow clipping.",
+    "Core height is a proxy, not native 3x final approval. Verify orientation, original character identity, right-hand staff and anatomical foot anchors.",
+    "Four candidate frames; no production promotion.",
+    "Do not treat this as a new run clip."
+  ]
+}

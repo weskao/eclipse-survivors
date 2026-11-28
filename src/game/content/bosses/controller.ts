@@ -1,4 +1,7 @@
 import { damageHero } from '../../combat'
+import { impact, requestCameraKick } from '../../fx'
+import { ATTACK_PRESENTATION } from './attack-presentation'
+import choreographyProfiles from './choreography.json'
 import { BALANCE } from '../../config'
 import { summonBossMinions } from '../../bosses/phases'
 import { MAX_MOBS } from '../../constants'
@@ -33,6 +36,7 @@ export interface BossTelegraph {
 }
 
 export interface BossProjectile {
+  readonly attackId?: BossAttackId
   readonly x: number
   readonly y: number
   readonly vx: number
@@ -60,6 +64,8 @@ export interface BossEncounterObserver {
   emit?(event: BossEncounterEvent): void
   /** Original cue IDs; integration may route them to its asset-backed sound system. */
   cue?(id: BossCueId): void
+  /** Cancel stale windups/tails on phase, death or encounter teardown. */
+  cancelAttackAudio?(): void
 }
 
 /** Presentation state derived from the encounter clock; never used by collision or AI. */
@@ -70,6 +76,8 @@ export interface BossBodyMotion {
   readonly progress: number
   readonly x: number
   readonly y: number
+  /** Move/held-move only: sign of actual horizontal travel, for direction-locked art. */
+  readonly facingX?: -1 | 1
 }
 export interface BossSnapshot {
   readonly id: BossId | null
@@ -95,6 +103,7 @@ interface Windup { readonly attackId: BossAttackId; readonly telegraphs: BossTel
 interface Hazard { readonly telegraph: BossTelegraph; remaining: number; pulse: number }
 interface MutableImpact { readonly telegraph: BossTelegraph; life: number; readonly max: number }
 interface MutableProjectile {
+  attackId?: BossAttackId
   x: number; y: number; vx: number; vy: number; radius: number
   damage: number; life: number; color: string
 }
@@ -115,6 +124,12 @@ interface Encounter {
   impacts: MutableImpact[]
   readonly summoned: Set<Mob>
   rewarded: boolean
+  poiseDamage: number
+  staggeredPhase: number
+  bodyHold: number
+  heldBody?: BossBodyMotion
+  /** Presentation only: last predominantly horizontal travel sign; unset until one occurs. */
+  moveFacingX?: -1 | 1
 }
 
 /** Entire damaging geometry uses world coordinates and the same predicate as rendering. */
@@ -142,8 +157,8 @@ const BODY_DEATH_SECONDS = 1.2
 const clampBodyProgress = (value: number): number => Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0))
 
 function bodyMotion(e: Encounter): BossBodyMotion | undefined {
-  const frame = (pose: BossBodyPose, progress: number): BossBodyMotion => ({
-    pose, phase: e.phase, progress: clampBodyProgress(progress), x: e.boss.x, y: e.boss.y,
+  const frame = (pose: BossBodyPose, progress: number, facingX?: -1 | 1): BossBodyMotion => ({
+    pose, phase: e.phase, progress: clampBodyProgress(progress), x: e.boss.x, y: e.boss.y, facingX,
   })
   if (e.boss.hp <= 0 || e.rewarded) {
     if (e.deathAt === null) return undefined
@@ -152,15 +167,18 @@ function bodyMotion(e: Encounter): BossBodyMotion | undefined {
   }
   if (e.transforming && e.recovery > 0)
     return frame('transform', 1 - e.recovery / BODY_TRANSFORM_SECONDS)
+  if ((e.boss.weaknessRemaining ?? 0) > 0) return frame('hurt', 1 - e.boss.weaknessRemaining! / BALANCE.bosses.weaknessSeconds)
+  if (e.bodyHold > 0 && e.heldBody) return frame(e.heldBody.pose, e.heldBody.progress, e.heldBody.facingX)
   if (e.windup)
     return frame('windup', 1 - e.windup.remaining / BOSS_ATTACKS[e.windup.attackId].windup)
   const impact = e.impacts[e.impacts.length - 1]
-  if (impact && impact.max > 0) {
-    const progress = clampBodyProgress(1 - impact.life / impact.max)
+  // Longer cosmetic tails must not hold the actor in its old attack pose.
+  if (impact && impact.max > 0 && impact.max - impact.life < 0.56) {
+    const progress = clampBodyProgress((impact.max - impact.life) / 0.56)
     return progress < 0.5 ? frame('attack', progress * 2) : frame('recover', (progress - 0.5) * 2)
   }
   if (e.boss.hit > 0) return frame('hurt', 1 - e.boss.hit / 0.16)
-  if (e.boss.bossMoving) return frame('move', (e.state.worldClock * 1.4) % 1)
+  if (e.boss.bossMoving) return frame('move', (e.state.worldClock * 1.4) % 1, e.moveFacingX)
   if (e.recovery > 0 && e.recoveryDuration > 0)
     return frame('recover', 1 - e.recovery / e.recoveryDuration)
   return frame('idle', (e.state.worldClock * 0.65) % 1)
@@ -200,8 +218,12 @@ function pursueHero(e: Encounter, dt: number): void {
   const orbit = toward === 0 && motion.orbitSpeed > 0
     ? motion.orbitSpeed * dt * (e.turn % 2 ? 1 : -1) * slowed * staggered : 0
   if (toward === 0 && orbit === 0) return
-  e.boss.x += dx / distance * toward - dy / distance * orbit
-  e.boss.y += dy / distance * toward + dx / distance * orbit
+  const stepX = dx / distance * toward - dy / distance * orbit
+  const stepY = dy / distance * toward + dx / distance * orbit
+  e.boss.x += stepX
+  e.boss.y += stepY
+  // Hysteresis: near-vertical travel keeps the previous facing instead of popping per tick.
+  if (Math.abs(stepX) > Math.abs(stepY) * 0.5) e.moveFacingX = stepX > 0 ? 1 : -1
   e.boss.bossMoving = true
 }
 
@@ -241,6 +263,8 @@ function cleanOwnedMinions(e: Encounter): void {
 
 function clearTransient(e: Encounter): void {
   e.transforming = false
+  e.bodyHold = 0; e.heldBody = undefined; e.poiseDamage = 0
+  e.boss.weaknessRemaining = 0
   e.windup = null
   e.hazards.length = 0
   e.projectiles.length = 0
@@ -249,10 +273,10 @@ function clearTransient(e: Encounter): void {
   e.state.content.effects = e.state.content.effects.filter(fx => !fx.id.startsWith('bosses:'))
 }
 
-function strike(state: GameState, t: BossTelegraph, hooks: GameHooks): void {
+function strike(state: GameState, t: BossTelegraph, hooks: GameHooks, direct = true): void {
   const hero = state.hero
   if (!hero || t.harmless || state.mode !== 'play') return
-  if (intersectsTelegraph(t, hero.x, hero.y, HERO_HIT_RADIUS)) damageHero(state, t.damage, hooks)
+  if (intersectsTelegraph(t, hero.x, hero.y, HERO_HIT_RADIUS)) damageHero(state, t.damage, hooks, undefined, { rank: direct ? 'boss' : undefined, angle: Math.atan2(hero.y - t.y, hero.x - t.x) })
 }
 
 function advanceProjectiles(e: Encounter, dt: number, hooks: GameHooks): void {
@@ -270,7 +294,7 @@ function advanceProjectiles(e: Encounter, dt: number, hooks: GameHooks): void {
       ((hero.x - sx) * dx + (hero.y - sy) * dy) / distance2)) : 0
     const ox = hero.x - (sx + dx * t), oy = hero.y - (sy + dy * t)
     if (ox * ox + oy * oy <= (p.radius + HERO_HIT_RADIUS) ** 2) {
-      damageHero(state, p.damage, hooks)
+      damageHero(state, p.damage, hooks, undefined, { rank: 'boss', angle: Math.atan2(dy, dx) })
       p.life = 0 // Swept collision and exactly one hit for this projectile.
     }
   }
@@ -282,7 +306,7 @@ function advanceHazards(e: Encounter, dt: number, hooks: GameHooks): void {
     // A stationary zone has a warning and a visible 0.8-second damage pulse.
     h.pulse -= dt
     if (h.pulse <= 0 && h.remaining > 0) {
-      strike(e.state, h.telegraph, hooks)
+      strike(e.state, h.telegraph, hooks, false)
       h.pulse = 0.8
     }
     h.remaining -= dt
@@ -308,6 +332,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
 
   function notify(event: BossEncounterEvent): void { observer.emit?.(event) }
   function cue(id: BossCueId): void { observer.cue?.(id) }
+  function cancelTransient(e: Encounter): void { clearTransient(e); observer.cancelAttackAudio?.() }
 
   function current(state: GameState): Encounter | null {
     return encounter?.state === state ? encounter : null
@@ -318,9 +343,15 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     // Capped, deterministic release accents. The collision geometry remains untouched.
     for (const telegraph of windup.telegraphs) {
       if (e.impacts.length >= MAX_BOSS_IMPACTS) break
-      e.impacts.push({ telegraph, life: 0.56, max: 0.56 })
+      const duration = choreographyProfiles[windup.attackId].duration
+      e.impacts.push({ telegraph, life: duration, max: duration })
+      // A volley has one launch accent, not one full overlay per projectile.
+      if (attack.kind === 'projectile') break
     }
     notify({ type: 'attack', boss: e.id, phase: e.phase, attack: windup.attackId })
+    // Exactly one major release nudge, never per projectile or hazard tick.
+    const shake = ATTACK_PRESENTATION[windup.attackId].shake
+    if (shake > 0) requestCameraKick(e.state, shake)
     cue(BOSS_DEFINITIONS[e.id].attackCue)
     if (attack.kind === 'summon') {
       // Reuse the existing six-minion implementation rather than introducing
@@ -331,7 +362,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         if (minion.hp <= 0 || !e.state.mobs.includes(minion)) e.summoned.delete(minion)
       }
       const before = new Set(e.state.mobs)
-      if (e.summoned.size < MAX_OWNED_MINIONS) summonBossMinions(e.state, e.boss)
+      if (e.summoned.size < MAX_OWNED_MINIONS) summonBossMinions(e.state, e.boss, hooks.otherLivingActors?.() ?? 0)
       for (const mob of e.state.mobs) if (!before.has(mob)) e.summoned.add(mob)
       return
     }
@@ -340,7 +371,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         if (e.projectiles.length >= MAX_BOSS_PROJECTILES) break
         const speed = attack.speed ?? 220
         e.projectiles.push({
-          x: t.x, y: t.y, vx: Math.cos(t.angle) * speed, vy: Math.sin(t.angle) * speed,
+          attackId: windup.attackId, x: t.x, y: t.y, vx: Math.cos(t.angle) * speed, vy: Math.sin(t.angle) * speed,
           radius: attack.radius, damage: attack.damage,
           life: t.length / speed, color: t.color,
         })
@@ -361,6 +392,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
     const attacks = definition.phases[e.phase - 1]
     const attackId = attacks[e.turn % attacks.length]!
     e.turn++
+    e.poiseDamage = 0
     const hero = e.state.hero!
     const attack: BossAttack = BOSS_ATTACKS[attackId]
     e.windup = {
@@ -373,16 +405,17 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
   function reset(state: GameState): void {
     const e = current(state)
     if (!e) return
-    clearTransient(e)
+    cancelTransient(e)
     cleanOwnedMinions(e)
     encounter = null
   }
 
   return {
     spawn(state, id, point, hooks) {
-      if (encounter || !state.hero || state.mode !== 'play'
+      // A finalized encounter keeps its death presentation until a new boss is due.
+      if ((encounter && (encounter.state !== state || !encounter.rewarded || encounter.boss.hp > 0)) || !state.hero || state.mode !== 'play'
         || !Number.isFinite(point.x) || !Number.isFinite(point.y)
-        || state.mobs.length >= MAX_MOBS + 1
+        || state.mobs.length + (hooks.otherLivingActors?.() ?? 0) >= MAX_MOBS + 1
         || state.mobs.some(m => m.type === 'boss' && m.hp > 0)) return null
       const definition = BOSS_DEFINITIONS[id]
       if (!definition) return null
@@ -401,7 +434,7 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         state, boss, id, phase: 1, turn: 0, safeTurn: 0, recovery: 0,
         recoveryDuration: 0, transforming: false, deathAt: null,
         windup: null, hazards: [], projectiles: [], impacts: [], summoned: new Set<Mob>(),
-        rewarded: false,
+        rewarded: false, poiseDamage: 0, staggeredPhase: 0, bodyHold: 0,
       }
       hooks.sfx('boss')
       cue(definition.introCue)
@@ -417,11 +450,14 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
       // point. The integration adapter owns only this one boss's AI.
       lockLegacyBrain(e.boss)
       e.boss.bossMoving = false
+      e.bodyHold = Math.max(0, e.bodyHold - dt)
+      if (e.bodyHold === 0) e.heldBody = undefined
+      e.boss.weaknessRemaining = Math.max(0, (e.boss.weaknessRemaining ?? 0) - dt)
       const phase = phaseFor(e.boss)
       if (phase > e.phase) {
         e.phase = phase; e.boss.bossPhase = phase
         e.turn = 0
-        clearTransient(e)
+        cancelTransient(e)
         e.recovery = BODY_TRANSFORM_SECONDS
         e.transforming = true
         cue(BOSS_DEFINITIONS[e.id].transitionCue)
@@ -449,27 +485,47 @@ export function createBossEncounterController(observer: BossEncounterObserver = 
         return
       }
       if (e.recovery > 0) {
-        pursueHero(e, Math.min(dt, e.recovery))
+        if (!(e.boss.weaknessRemaining! > 0)) pursueHero(e, Math.min(dt, e.recovery))
         e.recovery = Math.max(0, e.recovery - dt)
         if (e.recovery > 0) return
       }
       e.transforming = false
       warn(e)
     },
-    onContentEvent(state, event, _hooks) {
+    onContentEvent(state, event, hooks) {
       const e = current(state)
       if (!e) return
       if (event.type === 'reset') { reset(state); return }
       if (event.type === 'scene-change' || event.type === 'run-complete') {
-        clearTransient(e)
+        cancelTransient(e)
         cleanOwnedMinions(e)
         e.recovery = 1.4
+        return
+      }
+      if (event.type === 'hit' && event.mob === e.boss && e.boss.hp > 0) {
+        if (e.bodyHold <= 0 && e.boss.lastVisualHoldAt === state.time && e.boss.visualHold) {
+          e.heldBody = bodyMotion(e)
+          e.bodyHold = e.boss.visualHold
+        }
+        // One break per phase. A telegraphed attack is never cancelled by routine hits.
+        if (!e.windup && !e.transforming && e.recovery > 0 && e.staggeredPhase !== e.phase && phaseFor(e.boss) === e.phase) {
+          e.poiseDamage += event.damage
+          if (e.poiseDamage >= e.boss.max * BALANCE.bosses.poiseDamageFraction) {
+            e.staggeredPhase = e.phase
+            e.boss.weaknessRemaining = BALANCE.bosses.weaknessSeconds
+            e.recovery = Math.max(e.recovery, BALANCE.bosses.weaknessSeconds)
+            e.recoveryDuration = e.recovery
+            impact(state, e.boss.x, e.boss.y, 135, '#e3c3ff', 2.5)
+            hooks.message('首領破防 · 傷害提升')
+            hooks.sfx('bossStagger')
+          }
+        }
         return
       }
       if (event.type !== 'kill' || event.mob !== e.boss || e.rewarded || e.boss.hp > 0) return
       e.rewarded = true
       e.deathAt = state.worldClock
-      clearTransient(e)
+      cancelTransient(e)
       cleanOwnedMinions(e)
       cue(BOSS_DEFINITIONS[e.id].deathCue)
       notify({ type: 'death', boss: e.id, phase: e.phase })

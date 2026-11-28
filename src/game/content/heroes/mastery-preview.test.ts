@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { setLocale, t } from '../../../i18n'
 import { heroMasteryPreview, HERO_MASTERY_DESCRIPTIONS } from './mastery-preview'
+import { HERO_DEFINITIONS } from './index'
 
 const rows = (id: string, level?: number, max = 3) =>
   heroMasteryPreview(id, level, max)?.map(({ before, after }) => [before, after])
@@ -15,7 +16,14 @@ describe('hero mastery upgrade preview', () => {
     expect(rows('heroes:spirit-bond', 1)).toEqual([['120%', '140%'], ['3.15', '4.3'], ['142%', '164%']])
   })
   it('shows capped mitigation and all other third-rank bonuses', () => {
-    expect(rows('heroes:crimson-vow', 2)).toEqual([['19%', '21.5%'], ['97%', '110.5%'], ['149%', '156%'], ['+28', '+42']])
+    expect(rows('heroes:crimson-vow', 2)).toEqual([['19%', '21.5%'], ['97%', '110.5%'], ['149%', '156%'], ['+28', '+42'], ['165%', '185%']])
+  })
+  it('describes the Crimson Retribution burst in both languages', () => {
+    const special = HERO_DEFINITIONS['crimson-paladin'].special
+    expect(special).toContain('緋紅報復')
+    setLocale('en', storage)
+    expect(t(special)).toContain('Crimson Retribution')
+    expect(t(special)).not.toMatch(/[㐀-鿿]/)
   })
   it('does not claim an upgrade for maxed, unknown or missing ranks', () => {
     expect(rows('heroes:crimson-vow', 3)).toBeUndefined()

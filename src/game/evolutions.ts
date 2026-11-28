@@ -1,6 +1,7 @@
 import { BALANCE } from './config'
-import { hit, nearestAlive } from './combat'
-import { impact, zigzag } from './fx'
+import { combatTargets, hitTarget, nearestCombatTargets, slowTarget } from './combat'
+import type { FactionBridge } from './content/enemies/integration'
+import { impact, pushDamageNumber, pushParticle, zigzag } from './fx'
 import { dist } from './math'
 import type { EvolutionId, GameHooks, GameState, Hero, UpgradeDef, UpgradeId } from './types'
 
@@ -31,19 +32,19 @@ export function eligibleEvolutions(hero: Hero): EvolutionDef[] {
 }
 
 /** Every evolved power has its own timer; none replaces its prerequisite attacks. */
-export function tickEvolutions(s: GameState, hooks: GameHooks): void {
+export function tickEvolutions(s: GameState, hooks: GameHooks, factions?: FactionBridge): void {
   const hero = s.hero
   if (!hero) return
   for (const evo of EVOLUTIONS) {
     if (!hero.evolutions[evo.id] || (hero.evolutionCd[evo.id] ?? 0) > 0) continue
     // A combat evolution waits for targets, while the sanctuary is useful when injured.
-    const targets = nearestAlive(s.mobs, hero)
+    const targets = nearestCombatTargets(combatTargets(s, factions), hero)
     if (evo.id !== 'guardian-sanctuary' && targets.length === 0) continue
     hero.evolutionCd[evo.id] = EVOLUTION_COOLDOWN[evo.id]
     if (evo.id === 'frozen-thunderstorm') {
       for (const target of targets.filter(e => dist(e.x - hero.x, e.y - hero.y) <= 450).slice(0, 5)) {
-        hit(s, target, hero.damage * 1.45, hooks)
-        target.slow = Math.max(target.slow, 2.4)
+        if (!hitTarget(s, target, hero.damage * 1.45, hooks, factions, hero, 'evolved')) continue
+        slowTarget(target, 2.4)
         zigzag(s, hero.x, hero.y - 40, target.x, target.y)
         impact(s, target.x, target.y, 65, '#9bf2ff', 1)
       }
@@ -55,17 +56,17 @@ export function tickEvolutions(s: GameState, hooks: GameHooks): void {
         if (d > 250) continue
         target.x += (hero.x - target.x) * 0.32
         target.y += (hero.y - target.y) * 0.32
-        hit(s, target, hero.damage * 1.9, hooks)
-        s.fx.push({ x: target.x, y: target.y, life: 0.65, max: 0.65, color: '#ff8a50', r: 12, type: 'ember', vy: -30 })
+        hitTarget(s, target, hero.damage * 1.9, hooks, factions, hero, 'evolved')
+        pushParticle(s, { x: target.x, y: target.y, life: 0.65, max: 0.65, color: '#ff8a50', r: 12, type: 'ember', vy: -30 })
       }
       hooks.sfx('vortex')
     } else if (evo.id === 'apocalypse-rain') {
       for (const center of targets.slice(0, 4)) {
         if (center.hp <= 0) continue
-        s.fx.push({ x: center.x, y: center.y, life: 0.85, max: 0.85, color: '#ff9369', r: 21, type: 'meteor' })
+        pushParticle(s, { x: center.x, y: center.y, life: 0.85, max: 0.85, color: '#ff9369', r: 21, type: 'meteor' })
         impact(s, center.x, center.y, 135, '#ff9864', 1.4)
-        for (const target of s.mobs) {
-          if (target.hp > 0 && dist(target.x - center.x, target.y - center.y) < 130) hit(s, target, hero.damage * 2.1, hooks)
+        for (const target of targets) {
+          if (target.hp > 0 && dist(target.x - center.x, target.y - center.y) < 130) hitTarget(s, target, hero.damage * 2.1, hooks, factions, center, 'evolved')
         }
       }
       hooks.sfx('meteor')
@@ -75,10 +76,12 @@ export function tickEvolutions(s: GameState, hooks: GameHooks): void {
         s.swipes.push({ x: hero.x, y: hero.y, a: i * Math.PI * 2 / 7, life: 0.3, max: 0.3, r: 110 })
       }
       for (const target of targets) {
-        if (dist(target.x - hero.x, target.y - hero.y) < 175) hit(s, target, hero.damage * 1.5, hooks)
+        if (dist(target.x - hero.x, target.y - hero.y) < 175) hitTarget(s, target, hero.damage * 1.5, hooks, factions, hero, 'evolved')
       }
     } else if (evo.id === 'guardian-sanctuary') {
+      const before = hero.hp
       hero.hp = Math.min(hero.max, hero.hp + Math.max(12, hero.max * 0.1))
+      if (hero.hp > before) pushDamageNumber(s, {x:hero.x,y:hero.y-56,life:.62,value:Math.round(hero.hp-before),boss:false,kind:'heal'})
       hero.inv = Math.max(hero.inv, 0.7)
       impact(s, hero.x, hero.y, 120, '#a4ffe5', 1.7)
     }

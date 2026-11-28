@@ -17,7 +17,7 @@ export interface BossArrivalWarning {
 
 /** Pure projection of the existing simulation clock. Never sets a wall-clock timer. */
 export function getBossArrivalWarning(
-  state: GameState, objective: ObjectiveState | null,
+  state: GameState, objective: ObjectiveState | null, timedBossId: BossId | null = null,
 ): BossArrivalWarning | null {
   if (state.mode !== 'play' ||
     state.mobs.some(mob => mob.type === 'boss' && mob.hp > 0)) return null
@@ -38,8 +38,8 @@ export function getBossArrivalWarning(
     const mode = getMode(state.runMode)
     if (state.bossSpawned || mode.victory === 'objective' || !Number.isFinite(mode.bossAt)) return null
     readyAt = mode.bossAt
-    // Non-objective encounters cycle across runs; the name is unknown here.
-    // The actual boss ID is read from the spawned actor once it exists.
+    // The engine owns the rotation; standalone legacy encounters have no authored identity.
+    bossId = timedBossId
   }
   const left = readyAt - state.time
   if (!Number.isFinite(left) || left > BOSS_WARNING_SECONDS) return null

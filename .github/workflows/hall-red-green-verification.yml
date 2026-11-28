@@ -1,0 +1,40 @@
+name: Hall upgrade Vitest Red Green
+on:
+  push:
+    branches: ['verify/hall-upgrade-red-green-1fbb9024']
+permissions:
+  contents: read
+jobs:
+  red-green:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 3
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: RED - regression test with original production implementation
+        shell: bash
+        run: |
+          git restore --source=46a9db8b5645c005d2abba1203ca51174c549cc9 -- src/components/es2/progression/HallGrowthBoard.vue src/components/es2/progression/hall-model.ts src/i18n.ts
+          set +e
+          NO_COLOR=1 pnpm exec vitest run src/components/es2/progression/ProgressionPanel.test.ts -t 'shows current and next ranks with the catalog increment' 2>&1 | tee /tmp/hall-red.log
+          result=${PIPESTATUS[0]}
+          set -e
+          test "$result" -eq 1
+          grep -F 'data-hall-rank-label' /tmp/hall-red.log
+          grep -F '1 failed' /tmp/hall-red.log
+      - name: GREEN - same test with updated production implementation
+        if: always()
+        run: |
+          git restore --source=1fbb9024320ca38c3b246474da9c22e5463bd34f -- src/components/es2/progression/HallGrowthBoard.vue src/components/es2/progression/hall-model.ts src/i18n.ts
+          pnpm exec vitest run src/components/es2/progression/ProgressionPanel.test.ts -t 'shows current and next ranks with the catalog increment'
+      - name: Run all progression tests
+        if: always()
+        run: pnpm exec vitest run src/components/es2/progression/ProgressionPanel.test.ts

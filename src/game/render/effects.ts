@@ -1,11 +1,16 @@
 import { t as translate } from '../../i18n'
-import { DASH_COOLDOWN, LOW_HP_PCT, TAU } from '../constants'
+import { BALANCE } from '../config'
+import { DASH_COOLDOWN, TAU } from '../constants'
 import { easing } from '../math'
-import type { GameState, Hero } from '../types'
+import type { GameState, Hero, NumberFx } from '../types'
 import type { Ctx2D } from './ctx'
 import type { MakeCanvas } from './sprites'
 import { softGlow } from './environment'
 import { drawProjectileSprite, type ProjectileSprites } from './projectile-art'
+import { drawEnergyMissile, drawEnergyTrail, drawZoneMotes } from './energy-art'
+import { meleeArtId, type HeroAttackSprites } from './hero-attack-art'
+import { drawHitImpact } from './hit-impact'
+import { drawHeroHealthBar, sampleHealthBar, shouldShowHealthBar, type HealthBarTarget, type HealthBarMotion } from './health-bars'
 
 const BLAZE_COLORS = ['#ffd8a0', '#ff9e4c', '#ff6b31']
 const LIGHTNING_LAYERS = [[9, '#63b7ff', 15], [4, '#b3deff', 10], [1.4, '#ffffff', 3]] as const
@@ -59,14 +64,31 @@ export function buildMagicGlow(makeCanvas: MakeCanvas): HTMLCanvasElement | null
 // Magical gems have faceted highlights and small animated coronae.
 export function drawStars(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false, gems?: GemSprites): void {
   const { W, H } = s
+  let trailBudget = 48 // Two cached fragments per visible moving gem; bounded independently of the gem cap.
   for (const star of s.stars) {
     const x = star.x + ox
     const y = star.y + oy
     if (x < -25 || x > W + 25 || y < -25 || y > H + 25) continue
     const bob = reducedMotion ? 0 : Math.sin(star.t * 4) * 3
+    const sprite = gems && (star.value > 10 ? gems.rare : gems.common)
+    if (sprite && s.hero && !reducedMotion && star.attractionSpeed && trailBudget > 0) {
+      const dx = s.hero.x - star.x, dy = s.hero.y - star.y
+      const distance = Math.hypot(dx, dy)
+      if (distance > 0) {
+        const nx = dx / distance, ny = dy / distance
+        ctx.save()
+        const alpha = ctx.globalAlpha
+        ctx.globalAlpha = alpha * 0.20
+        ctx.drawImage(sprite, x - nx * 27 - 4, y + bob - 7 - ny * 27 - 4, 8, 8)
+        ctx.globalAlpha = alpha * 0.45
+        ctx.drawImage(sprite, x - nx * 15 - 6, y + bob - 7 - ny * 15 - 6, 12, 12)
+        ctx.restore()
+        trailBudget--
+      }
+    }
     ctx.save(); ctx.translate(x, y + bob - 7); if (!reducedMotion) ctx.rotate(Math.sin(star.t * 2) * 0.11)
-    if (gems) {
-      ctx.drawImage(star.value > 10 ? gems.rare : gems.common, -16, -16, 32, 32)
+    if (sprite) {
+      ctx.drawImage(sprite, -16, -16, 32, 32)
     } else {
       // Standalone callers retain the procedural renderer without asset setup.
       ctx.shadowBlur = 12; ctx.shadowColor = star.value > 10 ? '#f8bd67' : '#75cfff'; ctx.fillStyle = star.value > 10 ? '#ffc77c' : '#8ddffe'
@@ -89,21 +111,28 @@ export function drawEchoes(ctx: Ctx2D, s: GameState, ox: number, oy: number): vo
 }
 
 /** Blaze ring, shield aura and level-up burst around the hero. */
-export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false, art?: HeroAttackSprites): void {
   const q = reducedMotion ? 0 : s.worldClock
+  const aura = (id: 'blaze-aura' | 'shield-aura' | 'sanctuary-aura', x: number, y: number, w: number, h: number, alpha: number): boolean => {
+    const image = art?.[id]
+    if (!image?.complete || image.naturalWidth <= 0) return false
+    ctx.save(); ctx.globalAlpha = alpha
+    ctx.drawImage(image, x - w / 2, y - h / 2, w, h); ctx.restore()
+    return true
+  }
   const blaze = hero.skills.blaze
-  if (blaze) {
+  if (blaze && !aura('blaze-aura', hero.x + ox, hero.y + oy - 18, 100 + blaze * 12 + (blaze >= 5 ? 36 : 0), 56 + blaze * 6 + (blaze >= 5 ? 18 : 0), 0.66 + Math.sin(q * 3) * 0.1)) {
     ctx.save(); ctx.translate(hero.x + ox, hero.y + oy); ctx.globalAlpha = 0.55
     for (let k = 0; k < 3 + blaze; k++) {
       const a = q * 3 + k * TAU / (3 + blaze)
-      const r = 38 + blaze * 5 + Math.sin(q * 5 + k) * 6
+      const r = 38 + blaze * 5 + (blaze >= 5 ? BALANCE.skills.area.blaze.maxRankRangeBonus : 0) + Math.sin(q * 5 + k) * 6
       ctx.fillStyle = BLAZE_COLORS[k % 3]!
       ctx.beginPath(); ctx.ellipse(Math.cos(a) * r, Math.sin(a) * r * 0.55 - 18, 9, 5, a, 0, TAU); ctx.fill()
     }
     ctx.restore()
   }
   const shield = hero.skills.shield
-  if (hero.evolutions['guardian-sanctuary']) {
+  if (hero.evolutions['guardian-sanctuary'] && !aura('sanctuary-aura', hero.x + ox, hero.y + oy - 13, 225, 94, 0.66)) {
     ctx.save()
     ctx.globalAlpha = 0.32 + 0.1 * Math.sin(q * 3)
     ctx.strokeStyle = '#8dffdf'
@@ -115,7 +144,7 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.stroke()
     ctx.restore()
   }
-  if (shield) {
+  if (shield && !aura('shield-aura', hero.x + ox, hero.y + oy - 14, 150 + shield * 9, 59 + shield * 5, 0.48 + Math.sin(q * 3) * 0.07)) {
     ctx.save(); ctx.globalAlpha = 0.24 + 0.09 * Math.sin(q * 4); ctx.strokeStyle = '#9fd4ff'; ctx.lineWidth = 2.6
     ctx.beginPath(); ctx.ellipse(hero.x + ox, hero.y + oy - 14, 62 + shield * 4, 24 + shield * 2, 0, 0, TAU); ctx.stroke()
     ctx.restore()
@@ -125,7 +154,9 @@ export function drawHeroAuras(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, 
     ctx.save(); ctx.globalAlpha = t * 0.9
     softGlow(ctx, hero.x + ox, hero.y + oy - 30, 120, '#fff2b4', t * 0.45)
     ctx.strokeStyle = '#ffe3a2'; ctx.lineWidth = 4
-    ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy - 24, 45 + (1 - t) * 24, 0, TAU); ctx.stroke()
+    const radius = 45 + (1 - t) * 24
+    ctx.beginPath(); ctx.arc(hero.x + ox, hero.y + oy - 24, radius, 0, TAU); ctx.stroke()
+    drawZoneMotes(ctx, hero.x + ox, hero.y + oy - 24, radius, 0, 1 - t, '#fff5d5', reducedMotion)
     ctx.restore()
     ctx.save(); ctx.globalAlpha = t; ctx.textAlign = 'center'; ctx.font = '900 28px system-ui'
     ctx.fillStyle = '#fff5d5'; ctx.strokeStyle = '#5c4722'; ctx.lineWidth = 5
@@ -138,7 +169,7 @@ const DASH_READY_FLASH = 0.28
 const STATUS_BAR_WIDTH = 56
 
 /** Foot-level dash and health readouts; a healthy hero with dash ready draws nothing. */
-export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false): void {
+export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: number, reducedMotion = false, healthBars?: WeakMap<HealthBarTarget, HealthBarMotion>, reduceFlashing = false): void {
   if (s.mode === 'menu' || s.mode === 'result' || hero.hp <= 0) return
   const x = hero.x + ox
   const y = hero.y + oy
@@ -164,51 +195,46 @@ export function drawHeroStatus(ctx: Ctx2D, s: GameState, hero: Hero, ox: number,
     ctx.stroke()
     ctx.restore()
   }
-  if (hero.hp < hero.max) {
-    const pct = hero.hp / hero.max * 100
-    const critical = pct <= LOW_HP_PCT
-    const left = x - STATUS_BAR_WIDTH / 2
-    const top = y + 22
-    ctx.save()
-    ctx.fillStyle = '#070c11d9'
-    ctx.fillRect(left, top, STATUS_BAR_WIDTH, 6)
-    ctx.fillStyle = critical ? '#ff4250' : '#d65854'
-    ctx.fillRect(left, top, STATUS_BAR_WIDTH * pct / 100, 6)
-    if (critical) {
-      // Outline keeps the critical state readable without relying on hue alone.
-      ctx.strokeStyle = '#ffe3d3'
-      ctx.lineWidth = 1
-      ctx.strokeRect(left, top, STATUS_BAR_WIDTH, 6)
-    }
-    ctx.restore()
-  }
+  const motion = sampleHealthBar(hero, s.worldClock, healthBars, reducedMotion)
+  if (shouldShowHealthBar(motion))
+    drawHeroHealthBar(ctx, motion, x, y + 22, STATUS_BAR_WIDTH, reduceFlashing)
 }
 
 // Weapon ribbons: radial gold-to-ivory gradients with trailing sparkle and wave afterglow.
-export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
-  const ribbon = ['#fff4d1', '#f8bb66', '#ff9549']
-  const widths = [7, 4, 1.4]
+export function drawSwipes(ctx: Ctx2D, s: GameState, ox: number, oy: number, sprites?: HeroAttackSprites, reduced = false): void {
+  const id = meleeArtId(s.heroId)
+  const image = sprites?.[id]
+  const color = id === 'shadowblade' ? '#cba7f6' : id === 'crimson-paladin' ? '#ff7890' : '#f8bb66'
   for (const sw of s.swipes) {
+    if (sw.life <= 0 || sw.max <= 0) continue
     const t = 1 - sw.life / sw.max
-    const x = sw.x + ox
-    const y = sw.y + oy
-    const r = sw.r + easing(t) * 32
-    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 0.75); ctx.lineCap = 'round'; ctx.shadowBlur = 13; ctx.shadowColor = '#ffc56c'
-    for (let k = 0; k < 3; k++) {
-      ctx.strokeStyle = ribbon[k]!; ctx.lineWidth = widths[k]! * (1 - t * 0.55)
-      ctx.beginPath(); ctx.arc(x, y, r - k * 5, sw.a - 1.02 - t * 0.23, sw.a + 1.2 + t * 0.18); ctx.stroke()
-    }
-    for (let j = 0; j < 5; j++) {
-      const a = sw.a - 1 + t * 2 + j * 0.11
-      ctx.fillStyle = '#ffefc8'
-      ctx.fillRect(x + Math.cos(a) * (r + 5 + j * 2), y + Math.sin(a) * (r + 5 + j * 2), 2.5, 2.5)
+    const x = sw.x + ox, y = sw.y + oy
+    const r = sw.r + easing(reduced ? 0.45 : t) * 32
+    const margin = r * 1.3
+    if (x < -margin || x > s.W + margin || y < -margin || y > s.H + margin) continue
+    ctx.save()
+    ctx.translate(x, y)
+    // A weighted knight follow-through, paired shadow cuts and deliberate paladin sweep.
+    const sweep = reduced ? 0 : (t - 0.5) * (id === 'shadowblade' ? 0.32 : id === 'crimson-paladin' ? 0.48 : 0.68)
+    ctx.rotate(sw.a + sweep)
+    ctx.globalAlpha = Math.pow(1 - t, 0.75) * (reduced ? 0.7 : 1)
+    if (image?.complete && image.naturalWidth > 0) {
+      // One textured draw replaces repeated arcs, shadow blur and five separate sparks.
+      const size = r * 2.25
+      ctx.drawImage(image, -size / 2, -size / 2, size, size)
+    } else {
+      // Tapered crescent fallback, never an opaque round-ended debug line.
+      ctx.fillStyle = color
+      ctx.beginPath(); ctx.arc(0, 0, r, -1.02, 1.2)
+      ctx.arc(0, 0, r * 0.79, 1.2, -1.02, true)
+      ctx.closePath(); ctx.fill()
     }
     ctx.restore()
   }
 }
 
 // Fast arrows leave stretched trails. Arcane bolts cast a soft violet halo.
-export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>): void {
+export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magicGlow?: HTMLCanvasElement | null, projectiles?: Partial<ProjectileSprites>, reduced = false, heroArt?: HeroAttackSprites): void {
   const { W, H } = s
   for (const b of s.shots) {
     const x = b.x + ox
@@ -224,7 +250,9 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
     const extent = Math.min(1, 14 / Math.max(1, history))
     const tx = x - (x - prevX) * extent
     const ty = y - (y - prevY) * extent
-    if (history > 2) {
+    const readyMagic = s.heroId === 'spirit-summoner' ? heroArt?.['spirit-summoner'] : projectiles?.['arcane-bolt']
+    const historicalTrail = history > 2 && !reduced && (b.kind === 'arrow' || !readyMagic?.complete || !readyMagic.naturalWidth)
+    if (historicalTrail) {
       ctx.save()
       ctx.globalAlpha = b.kind === 'arrow' ? 0.34 : 0.55
       ctx.strokeStyle = b.kind === 'arrow' ? '#f6d6a4' : '#a9a1ff'
@@ -246,18 +274,17 @@ export function drawShots(ctx: Ctx2D, s: GameState, ox: number, oy: number, magi
       ctx.strokeStyle = '#ddac77'; ctx.lineWidth = 1
       ctx.beginPath(); ctx.moveTo(-15, -4); ctx.lineTo(-11, 0); ctx.lineTo(-15, 4); ctx.stroke()
       }
-    } else if (!drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
-      if (magicGlow) {
-        ctx.drawImage(magicGlow, -28, -28, 56, 56)
-      } else {
-        // Preserve standalone renderer behavior when no prepainted asset is supplied.
-        const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 28)
-        gl.addColorStop(0, '#f2eaff'); gl.addColorStop(0.2, '#a6d8ff'); gl.addColorStop(0.44, '#937af7b9'); gl.addColorStop(1, '#9170ec00')
-        ctx.fillStyle = gl
-        ctx.beginPath(); ctx.arc(0, 0, 28, 0, TAU); ctx.fill()
+    } else {
+      const spirit = s.heroId === 'spirit-summoner'
+      if (!historicalTrail) drawEnergyTrail(ctx, b.r, b.life, spirit ? '#a7efdc' : '#c3adff', reduced)
+      const spiritImage = spirit ? heroArt?.['spirit-summoner'] : undefined
+      if (spiritImage?.complete && spiritImage.naturalWidth > 0) {
+        ctx.drawImage(spiritImage, -30, -30, 60, 60)
+      } else if (spirit || !drawProjectileSprite(ctx, projectiles, 'arcane-bolt', 60)) {
+        // Keep the cached halo, but replace the old dot-and-line fallback with a faceted core.
+        if (magicGlow) ctx.drawImage(magicGlow, -28, -28, 56, 56)
+        drawEnergyMissile(ctx, undefined, 'arcane-bolt', b.r, b.life, spirit ? '#79cfc0' : '#a88af0', spirit ? '#e6fff4' : '#f2eaff', true)
       }
-      ctx.strokeStyle = '#d6baff80'; ctx.lineWidth = 2
-      ctx.beginPath(); ctx.moveTo(-30, 0); ctx.lineTo(0, 0); ctx.stroke()
     }
     ctx.restore()
   }
@@ -268,7 +295,7 @@ export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: n
   if (!orb) return
   const q = s.worldClock
   const evolved = !!hero.evolutions['blade-tempest']
-  const n = Math.min(orb + 1 + (evolved ? 2 : 0), 8)
+  const n = Math.min(orb + 1 + (orb >= 5 ? BALANCE.skills.area.orb.maxRankBonusBlades : 0) + (evolved ? 2 : 0), BALANCE.skills.area.orb.maxBlades)
   for (let k = 0; k < n; k++) {
     const a = q * 2.7 + k * TAU / n
     const x = hero.x + ox + Math.cos(a) * 71
@@ -283,15 +310,29 @@ export function drawOrbs(ctx: Ctx2D, s: GameState, hero: Hero, ox: number, oy: n
 }
 
 // Expanding contact rings / shock waves.
-export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number): void {
+export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced = false, flashing = false, opacity = 1): void {
+  if (opacity <= 0) return
   for (const z of s.impactWaves) {
     const t = 1 - z.life / z.max
     const x = z.x + ox
     const y = z.y + oy
     const reach = z.size + 15
-    if (x < -reach || x > s.W + reach || y < -reach || y > s.H + reach) continue
-    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 1.7) * 0.85; ctx.strokeStyle = z.color; ctx.lineWidth = (1 - t) * 4.6
-    ctx.shadowColor = z.color; ctx.shadowBlur = 9
+    if (z.life <= 0 || x < -reach || x > s.W + reach || y < -reach || y > s.H + reach) continue
+    if (z.contact) {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(z.angle ?? 0)
+      ctx.globalAlpha *= opacity
+      const dedicated = drawHitImpact(ctx, z.contact, z.size, t, reduced, flashing, undefined, z.kind)
+      // Only the legacy fallback needs a color accent. Uploaded 3x variants own the whole hit.
+      if (z.kind && !reduced && !flashing && !dedicated) {
+        ctx.globalAlpha *= .6 * (1-t)
+        ctx.strokeStyle = z.color; ctx.lineWidth = 2
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(z.size * .45,0); ctx.stroke()
+      }
+      ctx.restore()
+      continue
+    }
+    ctx.save(); ctx.globalAlpha = Math.pow(1 - t, 1.7) * 0.85 * opacity * (flashing ? 0.65 : 1); ctx.strokeStyle = z.color; ctx.lineWidth = (1 - t) * 4.6
+    ctx.shadowColor = z.color; ctx.shadowBlur = reduced || flashing ? 0 : 9
     ctx.beginPath(); ctx.ellipse(x, y, 9 + z.size * easing(t), 4 + z.size * 0.36 * easing(t), 0, 0, TAU); ctx.stroke()
     ctx.restore()
   }
@@ -300,8 +341,12 @@ export function drawImpactWaves(ctx: Ctx2D, s: GameState, ox: number, oy: number
 // Branching lightning, layered core + glow, short lived to avoid clutter.
 export function drawLightning(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
   for (const l of s.lightningFx) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    for (const p of l.pts) { minX = Math.min(minX, p.x); minY = Math.min(minY, p.y); maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y) }
+    if (maxX + ox < -20 || minX + ox > s.W + 20 || maxY + oy < -20 || minY + oy > s.H + 20) continue
     ctx.save(); ctx.globalAlpha = l.life / l.max
-    for (const [w, col, blur] of reducedMotion ? [LIGHTNING_LAYERS[2]!] : LIGHTNING_LAYERS) {
+    for (let i = reducedMotion ? 2 : 0; i < LIGHTNING_LAYERS.length; i++) {
+      const [w, col, blur] = LIGHTNING_LAYERS[i]!;
       ctx.strokeStyle = col; ctx.lineWidth = w; ctx.shadowColor = col; ctx.shadowBlur = reducedMotion ? 0 : blur
       ctx.beginPath()
       l.pts.forEach((p, i) => (i ? ctx.lineTo(p.x + ox, p.y + oy) : ctx.moveTo(p.x + ox, p.y + oy)))
@@ -395,18 +440,62 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
   }
 }
 
+/** Damage-number tiers: size, fill, outline, coloured rim (silhouette cue) and punch-in pop.
+ * Escalation is carried by the number itself, as in most action RPGs, never by caption text. */
+interface NumberTier { font: string; bossFont: string; fill: string; bossFill: string; stroke: string; width: number; rim?: string; rimWidth: number; pop: number; shake: boolean }
+const tier = (size: number, bossSize: number, fill: string, stroke: string, width: number, pop: number,
+  rim?: string, shake = false, bossFill = fill): NumberTier => Object.freeze({
+  font: `900 ${size}px system-ui`, bossFont: `900 ${bossSize}px system-ui`, fill, bossFill, stroke, width,
+  rim, rimWidth: width + 6, pop, shake,
+})
+const NUMBER_TIERS = Object.freeze({
+  normal: tier(16, 21, '#fff1d0', '#151019e8', 4, .3, undefined, false, '#ffca7c'),
+  amplified: tier(20, 24, '#ffd27a', '#2a1508', 5, .3),
+  critical: tier(28, 32, '#ffb12e', '#3a1204', 6, .6, '#ff6a1a'),
+  devastating: tier(34, 38, '#fff6dc', '#3a0a04', 6, .8, '#ff3b1f', true),
+  hurt: tier(22, 22, '#ff737b', '#44121c', 5, .3),
+  hurtHeavy: tier(26, 26, '#ff9a62', '#44121c', 5, .38),
+  hurtCritical: tier(30, 30, '#ff4d6a', '#3a0710', 6, .45, '#ffd29b'),
+  hurtExtreme: tier(34, 34, '#fff0ea', '#3a0710', 6, .55, '#e0182f', true),
+})
+// Presentation thresholds only: ≥1.2× reads as a boosted hit; ≥2.4× (an upgraded crit) as devastating.
+const AMPLIFIED_AT = 1.2, DEVASTATING_AT = 2.4
+const KIND_FILL: Readonly<Record<NonNullable<NumberFx['kind']>, string>> = Object.freeze({
+  heal: '#9be9b6', elemental: '#9ae7ff', evolved: '#c6a0ff', hero: '#ffe49b', heavy: '#ffca7c',
+})
+
+function numberTier(z: NumberFx): NumberTier {
+  if (z.received) {
+    return z.severity === 'extreme' ? NUMBER_TIERS.hurtExtreme : z.severity === 'critical' ? NUMBER_TIERS.hurtCritical
+      : z.severity === 'heavy' ? NUMBER_TIERS.hurtHeavy : NUMBER_TIERS.hurt
+  }
+  const multiplier = z.multiplier ?? 1
+  return multiplier >= DEVASTATING_AT ? NUMBER_TIERS.devastating : z.critical ? NUMBER_TIERS.critical
+    : multiplier >= AMPLIFIED_AT ? NUMBER_TIERS.amplified : NUMBER_TIERS.normal
+}
+
 export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, reducedMotion = false): void {
-  for (const z of s.numberFx) {
-    const x = z.x + ox, y = z.y + oy
+  // Three bounded passes: normal, important outgoing, incoming. No sort or temporary list.
+  for (let tier = 0; tier < 3; tier++) {
+    let budget = tier === 0 ? 32 : tier === 1 ? 12 : 4
+    for (let i = s.numberFx.length - 1; i >= 0 && budget > 0; i--) {
+      const z = s.numberFx[i]!
+      if ((z.received ? 2 : z.critical || z.boss || z.kind === 'heal' || z.kind === 'evolved' || z.kind === 'hero' ? 1 : 0) !== tier) continue
+      const x = z.x + ox, y = z.y + oy
     if (x < -80 || x > s.W + 80 || y < -80 || y > s.H + 80) continue
+    budget--
     const critical = z.critical === true
     const received = z.received === true
-    const life = critical ? 0.82 : received ? 0.7 : 0.62
+    const severity = received ? z.severity : undefined
+    const style = numberTier(z)
+    const life = critical || severity ? 0.82 : received ? 0.7 : 0.62
     const progress = Math.max(0, Math.min(1, 1 - z.life / life))
     const opacity = Math.max(0, Math.min(1, z.life / (critical ? 0.28 : 0.4)))
-    // A local pop makes confirmed crits readable without another full-screen reaction.
-    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * 0.3
-    const px = Math.max(48, Math.min(s.W - 48, x))
+    // A local punch-in pop (bigger per tier) makes crits readable without a full-screen reaction.
+    const pop = reducedMotion ? 1 : 1 + Math.max(0, 1 - progress / 0.18) * style.pop
+    // Top tiers get a brief decaying horizontal jolt, folded into the one translate.
+    const shake = style.shake && !reducedMotion && progress < 0.25 ? Math.sin(progress * 90) * 3 * (1 - progress / 0.25) : 0
+    const px = Math.max(48, Math.min(s.W - 48, x)) + shake
     const py = Math.max(54, Math.min(s.H - 16, y))
     ctx.save()
     ctx.globalAlpha = opacity
@@ -414,20 +503,22 @@ export function drawNumbers(ctx: Ctx2D, s: GameState, ox: number, oy: number, re
     ctx.lineJoin = 'round'
     ctx.translate(px, py)
     if (pop !== 1) ctx.scale(pop, pop)
-    ctx.lineWidth = critical ? 6 : received ? 5 : 4
-    ctx.strokeStyle = critical ? '#321525' : received ? '#44121c' : '#151019e8'
-    if (critical) {
-      ctx.font = '900 12px system-ui'
-      ctx.strokeText(translate('暴擊!'), 0, -29)
-      ctx.fillStyle = '#fff4bf'
-      ctx.fillText(translate('暴擊!'), 0, -29)
+    // Contact kind tints only the low tiers; critical, devastating and incoming keep their tier colour.
+    const kindFill = !received && z.kind && (style === NUMBER_TIERS.normal || style === NUMBER_TIERS.amplified) ? KIND_FILL[z.kind] : undefined
+    ctx.font = z.boss || (kindFill && style === NUMBER_TIERS.normal) ? style.bossFont : style.font
+    const label = received ? `−${z.value}` : z.kind === 'heal' ? `+${z.value}` : String(z.value)
+    if (style.rim) {
+      ctx.lineWidth = style.rimWidth
+      ctx.strokeStyle = style.rim
+      ctx.strokeText(label, 0, 0)
     }
-    ctx.font = `900 ${critical ? (z.boss ? 34 : 28) : received ? 22 : (z.boss ? 21 : 16)}px system-ui`
-    const label = received ? `−${z.value}` : String(z.value)
+    ctx.lineWidth = style.width
+    ctx.strokeStyle = style.stroke
     ctx.strokeText(label, 0, 0)
-    ctx.fillStyle = received ? '#ff737b' : critical ? '#ffba45' : z.boss ? '#ffca7c' : '#fff1d0'
+    ctx.fillStyle = kindFill ?? (z.boss ? style.bossFill : style.fill)
     ctx.fillText(label, 0, 0)
     ctx.restore()
+    }
   }
 }
 

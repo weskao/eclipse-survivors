@@ -1,10 +1,14 @@
-import { damageHero, hit } from '../../combat'
-import { pushDamageNumber } from '../../fx'
+import { damageHero, emitCombatContact, hit } from '../../combat'
+import { BALANCE } from '../../config'
+import { recordKill } from '../../kill-streak'
+import { compactXpGems } from '../../xp-gems'
+import { burst, pushDamageNumber } from '../../fx'
+import { classifyHealthImpact, markHealthCritical } from '../../health-impact'
 import { clearApproach, resolveObstacleCollision } from '../../world'
 import type { GameHooks, GameState, Mob, Shot } from '../../types'
 import { ELITE_AFFIXES, ENEMY_DEFINITIONS, type FactionAffix, type FactionKind } from './definitions'
 import {
-  cleanupFactionEnemies, createFactionRuntime, damageFactionEnemy,
+  cleanupFactionEnemies, createFactionRuntime, damageFactionEnemy, factionPoseFrame,
   spawnFactionEnemy, tickFactionEnemies,
   type FactionEnemy, type FactionHit, type FactionReward,
 } from './runtime'
@@ -66,7 +70,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
   }
 
   function spawn(state: GameState, kind: FactionKind, x: number, y: number,
-    config: { affix?: FactionAffix } = {}): FactionEnemy | null {
+    config: { affix?: FactionAffix; rewardXpMultiplier?:number } = {}): FactionEnemy | null {
     if (state.mode !== 'play' || !state.hero) return null
     syncBudget(state)
     return spawnFactionEnemy(runtime, kind, x, y, config)
@@ -98,25 +102,36 @@ export function createFactionBridge(options: FactionBridgeOptions) {
   }
 
   function hitFaction(state: GameState, enemy: FactionEnemy, amount: number,
-    sourceX: number, sourceY: number, hooks: GameHooks): number {
-    if (state.mode !== 'play' || !state.hero || !runtime.enemies.includes(enemy)) return 0
-    const modified = hooks.modifyOutgoingDamage?.(amount) ?? amount
+    sourceX: number, sourceY: number, hooks: GameHooks, kind = hooks.contactKind): number {
+    if (state.mode !== 'play' || !state.hero || !runtime.enemies.includes(enemy) || enemy.hp <= 0 || enemy.state === 'phase' || !Number.isFinite(amount) || amount <= 0) return 0
+    const modified = hooks.modifyOutgoingDamage?.(amount, enemy) ?? amount
     if (!Number.isFinite(modified) || modified <= 0) return 0
     const critical = hooks.consumeCriticalHit?.() ?? false
     const applied = damageFactionEnemy(runtime, enemy, modified, sourceX, sourceY, reward => {
-      state.kill++
+      recordKill(state)
       defeated[reward.kind] = (defeated[reward.kind] ?? 0) + 1
       // The legacy XP collection path owns level progression; never award XP twice.
       state.stars.push({ x: reward.x, y: reward.y, value: reward.xp, t: 0 })
-      if (state.stars.length > 220) state.stars.splice(0, state.stars.length - 220)
+      if (state.stars.length > BALANCE.combat.starKeepLimit) compactXpGems(state.stars)
+      burst(state, reward.x, reward.y, reward.elite ? '#dab0ff' : ENEMY_DEFINITIONS[reward.kind].telegraphColor, reward.elite ? 18 : 8)
       hooks.sfx('kill')
+      if (reward.elite) hooks.contactSfx?.('eliteKill')
       options.onReward?.(reward)
     })
     if (applied > 0) {
+      if (critical) markHealthCritical(enemy)
+      const heavy = enemy.radius >= 24 || !!enemy.affix || classifyHealthImpact(applied / enemy.max) === 'heavy'
+      if ((critical || heavy) && state.time - (enemy.lastVisualHoldAt ?? -Infinity) >= BALANCE.combat.hitStopCooldownSeconds) {
+        enemy.visualFrame = factionPoseFrame(enemy, state.worldClock)
+        enemy.visualHold = critical ? BALANCE.combat.hitStopCriticalSeconds : BALANCE.combat.hitStopHeavySeconds
+        enemy.lastVisualHoldAt = state.time
+      }
       state.damageDealt += applied
       pushDamageNumber(state, { x: enemy.x, y: enemy.y - 38, life: critical ? 0.82 : 0.62,
-        value: Math.round(applied), boss: false, critical })
-      if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20 })
+        value: Math.round(applied), boss: false, critical, kind: kind ?? (heavy ? 'heavy' : undefined), multiplier: modified / amount })
+      const angle = Math.atan2(enemy.y - sourceY, enemy.x - sourceX)
+      emitCombatContact(state, hooks, enemy.x, enemy.y, enemy.radius, angle, critical, heavy, kind)
+      if (critical) hooks.content?.(state, { type: 'critical-hit', x: enemy.x, y: enemy.y - 20, angle, contactOwned: true })
       options.onHit?.(enemy, applied)
     }
     return applied
@@ -148,7 +163,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     if (state.mode !== 'play' || shot.life <= 0) return null
     const contact = shotContact(state, shot)
     if (!contact) return null
-    if (contact.kind === 'legacy') hit(state, contact.target, shot.d, hooks)
+    if (contact.kind === 'legacy') hit(state, contact.target, shot.d, hooks, source)
     else hitFaction(state, contact.target, shot.d, source.x, source.y, hooks)
     shot.life = 0
     return contact
@@ -204,7 +219,7 @@ export function createFactionBridge(options: FactionBridgeOptions) {
     const hero = state.hero
     if (!hero || state.mode !== 'play') return false
     const before = hero.hp
-    damageHero(state, amount, hooks)
+    damageHero(state, amount, hooks, undefined, { rank: info.attackRank, angle: info.angle })
     if (hero.hp >= before) return false
     if (info.status && info.duration && info.duration > 0) {
       const existing = statuses[info.status]

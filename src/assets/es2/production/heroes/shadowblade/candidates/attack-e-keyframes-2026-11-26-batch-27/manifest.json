@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "attack",
+  "direction": "E",
+  "sourceDirection": "E",
+  "mirrorAllowed": false,
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "qaGameplayApplied": false,
+  "eligibleForDevWiring": false,
+  "frameCount": 2,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "resampled": false,
+  "sourcePixels": [
+    1254,
+    1254
+  ],
+  "sourceCellPixels": [
+    627,
+    627
+  ],
+  "outputCellPixels": [
+    768,
+    768
+  ],
+  "sourceProvenance": {
+    "provider": "OpenAI ImageGen",
+    "generationId": "b5535958-e7e1-4655-b516-4333081a4895",
+    "originalPNGSHA256": "09bd04a9f07d598141290f08cda401d674d52fb1c7e87114052d28f23b35f7e4",
+    "canonicalPortrait": "src/assets/es2/production/heroes/shadowblade-portrait@3x.webp",
+    "portraitBlobSHA": "db35701203ff32e2c072b2c8099817ccd3196890",
+    "referenceCommit": "e0ef837c4c813ee0b7cec5543d97fb2d2327cbc6"
+  },
+  "encoding": "Pillow WebP quality=100 method=3 (lossy RGB, verified exact alpha); Polytool/cwebp unavailable; QA review only",
+  "frames": [
+    {
+      "id": "slash-key-a",
+      "description": "第一斬的揮擊姿勢",
+      "originalQuadrant": 1,
+      "sourceRect": [
+        627,
+        0,
+        627,
+        627
+      ],
+      "sourceFile": "slash-key-a-source.webp",
+      "sourceSHA256": "ccecd104ba69f3a246ca68bec0f28709310f26f5c50c1ac0f90712434f014a09",
+      "sourceBytes": 200526,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "file": "slash-key-a@3x.webp",
+      "webpSHA256": "9a633341c4bf09eb03a3795c66fedf49762e037735c6b47da6266ba622f111e2",
+      "bytes": 201288,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        2,
+        627,
+        627
+      ],
+      "coreAlphaBounds": [
+        12,
+        102,
+        621,
+        551
+      ],
+      "coreExtent": [
+        609,
+        449
+      ],
+      "sourceBoundaryMaxAlpha": 24,
+      "outputAlphaBounds": [
+        70,
+        72,
+        697,
+        697
+      ],
+      "alphaPreserved": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Possible faint slash effect truncation near outer right edge; core right margin only 6px."
+    },
+    {
+      "id": "recovery-key-a",
+      "description": "攻擊後的收招姿勢",
+      "originalQuadrant": 3,
+      "sourceRect": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "sourceFile": "recovery-key-a-source.webp",
+      "sourceSHA256": "b8bcb21d6e4d70f3dab5e508838b06d0ffb1ebab655b05a3a108304bacd01a7b",
+      "sourceBytes": 194350,
+      "sourceCellPixels": [
+        627,
+        627
+      ],
+      "file": "recovery-key-a@3x.webp",
+      "webpSHA256": "7f999623dd18d33e44a32e4e3967ff9779529297f86c463ab687885eb71e9e3c",
+      "bytes": 194686,
+      "frameRect": [
+        0,
+        0,
+        768,
+        768
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "paddingOffset": [
+        70,
+        70
+      ],
+      "sourceAlphaBounds": [
+        0,
+        0,
+        626,
+        627
+      ],
+      "coreAlphaBounds": [
+        17,
+        85,
+        601,
+        589
+      ],
+      "coreExtent": [
+        584,
+        504
+      ],
+      "sourceBoundaryMaxAlpha": 2,
+      "outputAlphaBounds": [
+        70,
+        70,
+        696,
+        697
+      ],
+      "alphaPreserved": true,
+      "footAnchor": null,
+      "frameDuration": null,
+      "status": "QA_PENDING",
+      "notes": "Faint alpha boundary noise; check exact silhouette and weapon handedness."
+    }
+  ],
+  "rejectedQuadrants": [
+    {
+      "index": 0,
+      "reason": "core height 414px < 441px"
+    },
+    {
+      "index": 2,
+      "reason": "solid effect crosses source right edge (alpha 145)"
+    }
+  ],
+  "reviewNotes": [
+    "Independent keyframes only. No claim of contiguous motion or 12-frame completion.",
+    "Source tile WebPs retain exact alpha, no resampling, no mirroring; original sheet SHA retained but rejected quadrants omitted from package.",
+    "Do not auto-import into live or DEV gameplay atlases. Inspect original identity, handedness, edge and timing before promotion."
+  ]
+}

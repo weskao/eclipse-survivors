@@ -3,10 +3,18 @@ import type { GameMode, SfxCue } from '../types'
 import { createBattleScore, createMenuScore } from './music'
 import { createBossScore } from './boss-score'
 import { createCinematicMusic } from './cinematic'
+import { createResultAudioDiagnostics } from './result-diagnostics'
 import { createEs2Score } from './es2/score'
 import type { BossId } from '../content/bosses/definitions'
-import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES } from './sfx'
-import type { AudioSystem, BgmElement, CombatIntensity, SettingsStorage } from './types'
+import { ATTACK_PRESENTATION } from '../content/bosses/attack-presentation'
+import { createBossAttackAudio } from './boss-attacks'
+import { NOISE_CUES, SFX_COOLDOWN, SFX_CUES, milestoneTones, treasureTones, treasureClaimTones } from './sfx'
+import { isHurtCue, renderHurtSample, type HurtCue } from './hurt-samples'
+import { hallCueKey, renderHallCue, type HallCue } from './hall-upgrade-sample'
+import { renderHeroSelectSample } from './hero-select-sample'
+import { isLegendaryCue, renderLegendaryCue, type LegendaryCue } from './legendary-sample'
+import { BOSS_PHASE_PALETTE, renderBossPhaseSample } from './boss-phase-sample'
+import { isBattleMusicMode, type AudioSystem, type BgmElement, type CombatIntensity, type SettingsStorage } from './types'
 
 // Minimal structural slice of the Web Audio API actually used, so a fake can stand in for it.
 export interface AudioParamLike {
@@ -48,6 +56,7 @@ export interface AudioContextLike {
   createBufferSource(): BufferSourceLike
   decodeAudioData?(data: ArrayBuffer): Promise<BufferLike>
   createBiquadFilter(): FilterLike
+  createAnalyser?(): Pick<AnalyserNode, 'fftSize' | 'getFloatTimeDomainData'>
 }
 
 export interface AudioSystemOptions {
@@ -58,9 +67,12 @@ export interface AudioSystemOptions {
   warningTrack?: string
   /** Pre-rendered, non-looping victory theme (falls back to ES2 synthesis on load error). */
   victoryTrack?: string
+  /** Pre-rendered, non-looping defeat lament (falls back to ES2 synthesis on load error). */
+  defeatTrack?: string
   loadMusic?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Testable loader for the short, pre-rendered hero cast samples. */
   loadHeroSfx?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
+  loadBossSfx?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Omit for `localStorage`; `null` disables persistence. */
   storage?: SettingsStorage | null
   /** Omit for `window.AudioContext ?? webkitAudioContext`. */
@@ -86,18 +98,26 @@ const defaultStorage = (): SettingsStorage | null => {
 
 const MUSIC_GAIN = 0.65
 const SFX_GAIN = 0.52
+// Raise the expedition mix together to preserve the music/SFX balance.
+const BATTLE_GAIN = 1.25
 const clampVolume = (value: number, fallback: number): number =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : fallback
-const HERO_CAST_CUES = ['shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'] as const
+const HERO_CAST_CUES = ['knight-special', 'ranger-special', 'wizard-special', 'shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special', 'crimson-paladin-retribution'] as const
 const MAX_SFX_PER_100MS = 8
-const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'boss', 'bossDefeat', 'victory', 'defeat',
-  'shadowblade-special', 'spirit-summoner-special', 'crimson-paladin-special'])
+const ESSENTIAL_SFX: ReadonlySet<SfxCue> = new Set(['start', 'pause', 'resume', 'upgrade', 'level', 'hurt', 'hurt-heavy', 'hurt-critical', 'hurt-extreme', 'boss', 'bossStagger', 'bossDefeat', 'boss-phase-2', 'boss-phase-3', 'victory', 'defeat', 'killStreak', 'evolution', 'legendaryReveal', 'legendaryClaim',
+  ...HERO_CAST_CUES])
 
 export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const { bgm, menuBgm } = opts
   const storage = opts.storage === undefined ? defaultStorage() : opts.storage
   const createContext = opts.createContext ?? defaultCreateContext
   let ac: AudioContextLike | null = null
+  let resumePending: Promise<void> | null = null
+  // Keep only a bounded set of cues from the current trusted resume attempt.
+  const pendingSfx = new Map<SfxCue, number | undefined>()
+  let pendingResultCue: 'victory' | 'defeat' | null = null
+  let contextWasRunning = false
+  let resultRecoveryAttempted = false
   let master: GainLike | null = null
   let musicBus: GainLike | null = null
   let musicOn = true
@@ -110,14 +130,27 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   let intensity: CombatIntensity = 'calm'
   let warningMix = false
   let noiseBuffer: BufferLike | null = null
+  const foleyBuffers = new Map<HurtCue | LegendaryCue | 'hero-select', BufferLike>()
+  const hallBuffers = new Map<HallCue, BufferLike>()
+  const phaseBuffers = new Map<string, BufferLike>()
+  let hallReward: { source: BufferSourceLike; gain: GainLike; endsAt: number } | null = null
   const heroCastBuffers = new Map<SfxCue, BufferLike>()
-  let heroCastVoice: BufferSourceLike | null = null
-  const stopHeroCast = (): void => {
-    const source = heroCastVoice
-    heroCastVoice = null
-    if (source && ac) {
-      try { source.stop(ac.currentTime) } catch { /* already ended */ }
+  // A cast belongs to the expedition, not the transient gameplay screen. Track both
+  // decoded one-shots and finite synth fallback notes so Home can cancel either path.
+  const heroCastVoices: { source: Pick<BufferSourceLike, 'stop'>; endsAt: number }[] = []
+  const pruneHeroCasts = (now: number): void => {
+    for (let i = heroCastVoices.length - 1; i >= 0; i--) {
+      if (heroCastVoices[i]!.endsAt <= now) heroCastVoices.splice(i, 1)
     }
+  }
+  const stopHeroCast = (): void => {
+    if (ac) {
+      pruneHeroCasts(ac.currentTime)
+      for (const { source } of heroCastVoices) {
+        try { source.stop(ac.currentTime) } catch { /* already ended */ }
+      }
+    }
+    heroCastVoices.length = 0
   }
   const preloadHeroCasts = (ctx: AudioContextLike): void => {
     heroCastBuffers.clear()
@@ -141,10 +174,23 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const bossScore = createBossScore()
   let fallbackBossId: BossId | null = null
   const cinematic = createCinematicMusic(opts, () => ac, () => musicBus,
-    () => (mode === 'play' || mode === 'result') && !interrupted && musicOn && musicVolume > 0)
+    () => (isBattleMusicMode(mode) || mode === 'result') && !interrupted && musicOn && musicVolume > 0,
+    () => diagnostics?.markMusic())
   let resultScore = createEs2Score()
   let resultScene: 'victory' | 'defeat' | null = null
   const sfxLast = new Map<SfxCue, number>()
+  const diagnostics: ReturnType<typeof createResultAudioDiagnostics> | undefined =
+    import.meta.env.DEV && typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('audioDiagnostics') === '1'
+      ? createResultAudioDiagnostics(() => ({
+        audioContext: ac?.state ?? 'unavailable',
+        interrupted, resumePending: resumePending !== null, externalScoreActive,
+        bgmEnabled: musicOn, bgmVolume: musicVolume,
+        bgmSource: resultScene && !cinematic.resultFallback
+          ? (resultScene === 'victory' ? opts.victoryTrack : opts.defeatTrack) ?? 'synth' : 'synth',
+        sfxEnabled: sfxOn, sfxVolume, sfxPending: pendingResultCue !== null,
+      }), () => ({ context: ac, music: musicBus, sfx: master }))
+      : undefined
 
   bgm.volume = 0.38
   try {
@@ -169,18 +215,29 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     }
   }
 
+  const mixGain = (): number => isBattleMusicMode(mode) ? BATTLE_GAIN : 1
+  const musicLevel = (): number => musicOn ? MUSIC_GAIN * mixGain() * musicVolume / 100 : 0
+  const sfxLevel = (): number => sfxOn ? SFX_GAIN * mixGain() * sfxVolume / 100 : 0
+  const setMode = (next: GameMode): void => {
+    const previousGain = mixGain()
+    mode = next
+    if (previousGain === mixGain() || !ac) return
+    musicBus?.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
+    master?.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
+  }
+
   const menuLevel = (): number => 0.78 * musicVolume / 100
 
   const mp3Level = (): number =>
-    (mode === 'level' ? 0.2 : intensity === 'boss' && mode === 'play' ? 0 :
-      warningMix && mode === 'play' ? 0.12 :
-      intensity === 'combat' && mode === 'play' ? 0.35 : 0.38) * musicVolume / 100
+    (intensity === 'boss' && isBattleMusicMode(mode) ? 0 :
+      warningMix && isBattleMusicMode(mode) ? 0.12 :
+      intensity === 'combat' && isBattleMusicMode(mode) ? 0.35 : 0.38) * mixGain() * musicVolume / 100
 
   bgm.volume = mp3Level()
   if (menuBgm) menuBgm.volume = menuLevel()
 
   const activeTrack = (): BgmElement | undefined =>
-    externalScoreActive ? undefined : mode === 'menu' ? menuBgm : mode === 'play' ? bgm : undefined
+    externalScoreActive ? undefined : mode === 'menu' ? menuBgm : isBattleMusicMode(mode) ? bgm : undefined
 
   const playScore = (): void => {
     const track = activeTrack()
@@ -193,7 +250,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     } catch { /* A restricted audio element must not break game input. */ }
   }
 
-  const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): void => {
+  const tone = (midi: number, at: number, dur: number, vol = 0.035, wave: OscillatorType = 'triangle', bus: 'sfx' | 'music' = 'sfx'): OscillatorLike | undefined => {
     if (!ac || !master) return
     const o = ac.createOscillator()
     const v = ac.createGain()
@@ -206,7 +263,18 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     v.connect(bus === 'music' && musicBus ? musicBus : master)
     o.start(at)
     o.stop(at + dur + 0.03)
+    return o
   }
+
+  const bossAttacks = createBossAttackAudio(() => ac, () => master,
+    () => !interrupted && sfxOn && sfxVolume > 0 && mode === 'play',
+    (id, stage) => {
+      const p = ATTACK_PRESENTATION[id]
+      const midi = 69 + 12 * Math.log2(p.pitch / 440)
+      return tone(midi + (stage === 'warning' ? 5 : 0), ac!.currentTime,
+        stage === 'warning' ? 0.35 : 0.5, stage === 'warning' ? 0.035 : 0.075,
+        p.boss === 'infernal-titan' ? 'triangle' : 'sine')
+    }, opts.loadBossSfx)
 
   // When the MP3 is playing, keep only subtle rhythmic accents from the synth.
   const combatPercussion = (midi: number, at: number, dur: number, vol: number, wave: OscillatorType, bus: 'sfx' | 'music'): void => {
@@ -239,33 +307,70 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
 
   const wake = (): void => {
     const recovering = interrupted || (ac !== null && ac.state !== 'running' && ac.state !== 'closed')
+    // In every scene a suspended SFX context alone is not a media interruption.
+    // Only explicit lifecycle interruption or WebKit's actual interrupted state
+    // can justify restarting an unpaused track, once per pending resume.
+    const restartMedia = interrupted || (!resumePending && contextWasRunning &&
+      String(ac?.state) === 'interrupted')
     interrupted = false
     try {
-      // Mobile media can remain unpaused yet silent after an OS interruption.
-      // Re-establish the HTMLMediaElement path on the next trusted gesture.
       const track = activeTrack()
-      if (recovering && musicOn && track && !track.paused) track.pause()
+      if (restartMedia && musicOn && musicVolume > 0 && track && !track.paused) track.pause()
       if (!ac || ac.state === 'closed') {
         const created = createContext()
         if (!created) { playScore(); return }
         ac = created
+        contextWasRunning = false
+        resumePending = null
+        pendingSfx.clear()
+        sfxLast.clear()
+        recentSfx.length = 0
         noiseBuffer = null
+        foleyBuffers.clear(); phaseBuffers.clear(); hallBuffers.clear(); hallReward = null
         master = ac.createGain()
-        master.gain.value = sfxOn ? SFX_GAIN * sfxVolume / 100 : 0
+        master.gain.value = sfxLevel()
         master.connect(ac.destination)
         musicBus = ac.createGain()
-        musicBus.gain.value = musicOn ? MUSIC_GAIN * musicVolume / 100 : 0
+        musicBus.gain.value = musicLevel()
         musicBus.connect(ac.destination)
         preloadHeroCasts(ac)
       }
-      if (ac.state !== 'running' && ac.state !== 'closed') {
-        void ac.resume().catch(() => { /* Browsers may require another gesture. */ })
+      if (ac.state !== 'running' && ac.state !== 'closed' && !resumePending) {
+        const ctx = ac
+        const attempt = ctx.resume()
+        resumePending = attempt
+        void attempt.then(() => {
+          if (resumePending !== attempt || ac !== ctx) {
+            if (ac === ctx && interrupted && ctx.state === 'running') void ctx.suspend().catch(() => {})
+            return
+          }
+          resumePending = null
+          const cues = [...pendingSfx]
+          pendingSfx.clear()
+          if (interrupted || ctx.state !== 'running') return
+          contextWasRunning = true
+          cinematic.sync()
+          for (const [cue, milestone] of cues) system.playSfx(cue, milestone)
+          if (mode === 'result') system.tick('result')
+        }, error => {
+          if (resumePending !== attempt) return
+          diagnostics?.markResumeError(error)
+          resumePending = null
+          pendingSfx.clear()
+        })
       }
       playScore()
       cinematic.sync()
       if (recovering && ac && resultScene) resultScore.resume(ac.currentTime)
-    } catch {
+      if (ac.state === 'running') {
+        contextWasRunning = true
+        if (recovering && mode === 'result') system.tick('result')
+      }
+    } catch (error) {
+      diagnostics?.markResumeError(error)
       ac = null
+      resumePending = null
+      pendingSfx.clear()
       master = null
       musicBus = null
     }
@@ -274,10 +379,13 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const interrupt = (): void => {
     if (interrupted) return
     interrupted = true
+    resumePending = null
+    pendingSfx.clear()
     bgm.pause()
     menuBgm?.pause()
     cinematic.stop(true)
     stopHeroCast()
+    bossAttacks.cancel()
     resultScore.interrupt()
     if (ac && ac.state === 'running') {
       void ac.suspend().catch(() => { /* Visibility can change during suspension. */ })
@@ -287,7 +395,7 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
   const running = (): AudioContextLike | null =>
     (!interrupted && ac && ac.state === 'running' ? ac : null)
 
-  return {
+  const system: AudioSystem = {
     get unlocked() { return ac !== null },
     createEs2Port() {
       return {
@@ -313,31 +421,40 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
       bgm.volume = mp3Level()
       if (menuBgm) menuBgm.volume = menuLevel()
-      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
       if (!musicVolume) { bgm.pause(); menuBgm?.pause(); cinematic.stop(true) }
       else if (musicOn) { playScore(); cinematic.sync() }
     },
     setSfxVolume(value: number) {
       sfxVolume = clampVolume(value, sfxVolume)
       if (sfxVolume > 0) previousSfxVolume = sfxVolume
-      else stopHeroCast()
+      else { pendingSfx.clear(); pendingResultCue = null; stopHeroCast(); bossAttacks.cancel() }
       try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
-      if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
     },
     wake,
     interrupt,
     setResultTheme(next) {
+      pendingResultCue = null
+      resultRecoveryAttempted = false
       resultScene = next
       resultScore.dispose()
       resultScore = createEs2Score()
-      if (next) resultScore.change(next, ac ? ac.currentTime + 0.02 : 0)
-      cinematic.result(next === 'victory')
+      if (next) {
+        resultScore.change(next, ac ? ac.currentTime + 0.02 : 0)
+        diagnostics?.start(next)
+      } else diagnostics?.stop()
+      cinematic.result(next)
     },
     setCombatIntensity(next) {
       if (intensity === next) return
       intensity = next
       battle.setIntensity(next)
-      if (next === 'boss') battle.setClock(ac ? ac.currentTime + 0.04 : 0)
+      if (next === 'boss') {
+        battle.setClock(ac ? ac.currentTime + 0.04 : 0)
+        // Silence exploration media on the actual boss beat, even if the next frame opens a picker.
+        if (isBattleMusicMode(mode)) bgm.volume = mp3Level()
+      }
     },
     setBossTheme(id: BossId | null, phase = 1) {
       // The ID comes from the actual living actor, never a predicted timer.
@@ -350,45 +467,152 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       warningMix = seconds !== null && seconds > 0 && seconds <= 15
       cinematic.warning(seconds)
     },
-    playSfx(cue) {
+    prepareBossAttackAudio(id) { bossAttacks.prepare(id) },
+    playBossAttack(id, stage) { bossAttacks.play(id, stage) },
+    cancelBossAttackAudio() { bossAttacks.cancel() },
+    playSfx(cue, milestone) {
       const ctx = running()
-      if (!sfxOn || !sfxVolume || !ctx) return
+      if (!sfxOn || !sfxVolume) return
+      if (!ctx) {
+        // Unlike transient combat/UI cues, an unheard terminal cue belongs to
+        // the current result even when suspension preceded the resume gesture.
+        if (mode === 'result' && cue === resultScene && (cue === 'victory' || cue === 'defeat')) {
+          pendingResultCue = cue
+          return
+        }
+        // resume() is asynchronous in real Chromium/WebKit. Never drop the
+        // first intentional UI action or the terminal fanfare during this gap.
+        if (resumePending && !interrupted && (mode === 'menu' || mode === 'result' || ESSENTIAL_SFX.has(cue)) &&
+            (pendingSfx.has(cue) || pendingSfx.size < MAX_SFX_PER_100MS)) pendingSfx.set(cue, milestone)
+        return
+      }
       const now = ctx.currentTime
       if (now - (sfxLast.get(cue) ?? -100) < SFX_COOLDOWN[cue]) return
       while (recentSfx.length && now - recentSfx[0]! >= 0.1) recentSfx.shift()
       if (recentSfx.length >= MAX_SFX_PER_100MS && !ESSENTIAL_SFX.has(cue)) return
       recentSfx.push(now)
       sfxLast.set(cue, now)
+      if ((cue === 'boss-phase-2' || cue === 'boss-phase-3') && master) {
+        try {
+          const boss = BOSS_PHASE_PALETTE[milestone ?? 0] ?? BOSS_PHASE_PALETTE[0]
+          const phase = cue === 'boss-phase-2' ? 2 : 3
+          const key = boss + ':' + phase
+          let buffer = phaseBuffers.get(key)
+          if (!buffer) {
+            const pcm = renderBossPhaseSample(boss, phase, ctx.sampleRate)
+            buffer = ctx.createBuffer(1, pcm.length, ctx.sampleRate)
+            buffer.getChannelData(0).set(pcm)
+            phaseBuffers.set(key, buffer)
+          }
+          const source = ctx.createBufferSource()
+          source.buffer = buffer; source.loop = false
+          source.connect(master); source.start(now)
+          return
+        } catch { /* finite layered fallback below */ }
+      }
+      if ((cue === 'hero-select' || isHurtCue(cue) || isLegendaryCue(cue)) && master) {
+        try {
+          let buffer = foleyBuffers.get(cue)
+          if (!buffer) {
+            const pcm = cue === 'hero-select' ? renderHeroSelectSample(ctx.sampleRate)
+              : isLegendaryCue(cue) ? renderLegendaryCue(ctx.sampleRate, cue) : renderHurtSample(cue, ctx.sampleRate)
+            buffer = ctx.createBuffer(1, pcm.length, ctx.sampleRate)
+            buffer.getChannelData(0).set(pcm)
+            foleyBuffers.set(cue, buffer)
+          }
+          const source = ctx.createBufferSource()
+          source.buffer = buffer
+          source.loop = false
+          source.connect(master)
+          source.start(now)
+          return // Never layer generic tones/noise on authored Foley.
+        } catch { /* use finite synth fallback only if PCM rendering/playback fails */ }
+      }
+      // Scoped Hall palette: one sample, never layer the generic synth on top.
+      const hall = hallCueKey(cue, milestone)
+      if (hall && master) {
+        try {
+          let buffer = hallBuffers.get(hall)
+          if (!buffer) {
+            const pcm = renderHallCue(ctx.sampleRate, hall)
+            buffer = ctx.createBuffer(1, pcm.length, ctx.sampleRate)
+            buffer.getChannelData(0).set(pcm)
+            hallBuffers.set(hall, buffer)
+          }
+          const source = ctx.createBufferSource()
+          source.buffer = buffer
+          source.loop = false
+          if (cue === 'upgrade') {
+            // Rapid purchases keep the latest celebration audible, with a short crossfade.
+            if (hallReward && hallReward.endsAt > now) {
+              try {
+                hallReward.gain.gain.setTargetAtTime(0, now, .008)
+                hallReward.source.stop(now + .035)
+              } catch { /* already ended */ }
+            }
+            const gain = ctx.createGain()
+            gain.gain.value = 1
+            gain.connect(master)
+            source.connect(gain)
+            hallReward = { source, gain, endsAt: now + (buffer.duration ?? buffer.getChannelData(0).length / ctx.sampleRate) }
+          } else source.connect(master)
+          source.start(now)
+          return
+        } catch { /* Preserve the finite generic fallback if PCM is unavailable. */ }
+      }
+      const heroCast = HERO_CAST_CUES.some(special => special === cue)
+      if (heroCast) pruneHeroCasts(now)
       const cast = heroCastBuffers.get(cue)
       if (cast && master) {
-        stopHeroCast()
         try {
           const source = ctx.createBufferSource()
           source.buffer = cast
           source.loop = false
           source.connect(master)
           source.start(now)
-          heroCastVoice = source
+          heroCastVoices.push({ source, endsAt: now + (cast.duration ?? cast.getChannelData(0).length / ctx.sampleRate) })
           return
         } catch { /* fall back to the bounded original cue */ }
       }
-      for (const [pitch, delay, duration, gain, wave] of SFX_CUES[cue]) tone(pitch, now + delay, duration, gain, wave)
+      const tones = milestone === undefined ? SFX_CUES[cue]
+        : cue === 'killStreak' ? milestoneTones(milestone)
+        : cue === 'treasureReveal' ? treasureTones(milestone)
+        : cue === 'treasureClaim' ? treasureClaimTones(milestone) : SFX_CUES[cue]
+      for (const [pitch, delay, duration, gain, wave] of tones) {
+        const source = tone(pitch, now + delay, duration, gain, wave)
+        if (heroCast && source) heroCastVoices.push({ source, endsAt: now + delay + duration + 0.03 })
+        if (source && mode === 'result' && cue === resultScene) diagnostics?.markSfx()
+      }
       if (NOISE_CUES.has(cue)) noiseBurst(now)
     },
     tick(mode) {
       if (externalScoreActive) return
+      // A previously running context may be suspended by the browser without a
+      // visibility event. Attempt recovery once, never unlock a fresh context
+      // or override an explicit interruption. Rejected resumes need a gesture.
+      if (mode === 'result' && resultScene && !interrupted && contextWasRunning &&
+          ac?.state === 'suspended' && !resumePending && !resultRecoveryAttempted) {
+        resultRecoveryAttempted = true
+        wake()
+      }
       const ctx = running()
+      if (ctx && mode === 'result' && pendingResultCue) {
+        const cue = pendingResultCue
+        pendingResultCue = null
+        system.playSfx(cue)
+      }
       if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }
       if (mode === 'result') {
-        if (resultScene === 'victory' && opts.victoryTrack) {
-          cinematic.sync()
-          if (!cinematic.resultFallback) return
-        }
-        if (resultScene) resultScore.schedule(ctx.currentTime, tone, 0.88)
+        // A sampled outcome track owns the result; the synth only covers a missing file.
+        cinematic.sync()
+        if (!cinematic.resultFallback) return
+        if (resultScene) resultScore.schedule(ctx.currentTime, diagnostics
+          ? (...args) => { if (tone(...args)) diagnostics.markMusic() }
+          : tone, 0.88)
         return
       }
-      if (mode !== 'play') return
+      if (!isBattleMusicMode(mode)) return
       cinematic.sync()
       if (intensity === 'boss' && !cinematic.playingBoss) {
         if (fallbackBossId) bossScore.schedule(ctx.currentTime, tone)
@@ -404,16 +628,26 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
     },
     onScreen(nextMode: GameMode) {
       const previous = mode
-      mode = nextMode
-      if (mode !== 'play') stopHeroCast()
+      if (previous !== nextMode && !(isBattleMusicMode(previous) && isBattleMusicMode(nextMode))) pendingSfx.clear()
+      setMode(nextMode)
+      // Level-up, treasure, pause/settings and result overlays must never truncate a cast.
+      // Only leaving the expedition for Home cancels it (explicit mute/OS teardown are separate).
+      if (mode === 'menu') { stopHeroCast(); bossAttacks.prepare(null) }
+      else if (mode !== 'play') bossAttacks.cancel()
+      // A picker freezes gameplay, not music. Do not restart, remix or resync the
+      // active media/cinematic score on play ↔ level (including chained rewards).
+      if (isBattleMusicMode(previous) && isBattleMusicMode(mode)) return
       if (mode !== 'result') {
+        diagnostics?.stop()
+        pendingResultCue = null
+        resultRecoveryAttempted = false
         resultScene = null
         resultScore.dispose()
         resultScore = createEs2Score()
-        cinematic.result(false)
+        cinematic.result(null)
       }
       if (mode !== 'menu') menuBgm?.pause()
-      if (mode !== 'play' && mode !== 'result') cinematic.stop(mode === 'paused' || mode === 'level')
+      if (!isBattleMusicMode(mode) && mode !== 'result') cinematic.stop(mode === 'paused')
       if (mode === 'menu' || mode === 'paused' || mode === 'result') bgm.pause()
       if (mode === 'menu') {
         intensity = 'calm'
@@ -430,21 +664,22 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       }
       bgm.volume = mp3Level()
       if (menuBgm) menuBgm.volume = menuLevel()
-      if (mode === 'play' || mode === 'menu') playScore()
-      if (mode === 'play' || mode === 'result') cinematic.sync()
+      if (isBattleMusicMode(mode) || mode === 'menu') playScore()
+      if (isBattleMusicMode(mode) || mode === 'result') cinematic.sync()
     },
     resetBattleClock(delay) {
       battle.setClock(ac ? ac.currentTime + delay : 0)
     },
     toggleMusic(screen) {
-      mode = screen
+      setMode(screen)
+      bgm.volume = mp3Level()
       if (musicVolume === 0) {
         musicVolume = previousMusicVolume
         try { storage?.setItem('eclipseMusicVolume', String(musicVolume)) } catch { /* unavailable */ }
         bgm.volume = mp3Level()
         if (menuBgm) menuBgm.volume = menuLevel()
         if (musicOn) {
-          if (ac && musicBus) musicBus.gain.setTargetAtTime(MUSIC_GAIN * musicVolume / 100, ac.currentTime, 0.06)
+          if (ac && musicBus) musicBus.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
           wake()
           cinematic.sync()
           return true
@@ -452,10 +687,10 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       }
       musicOn = !musicOn
       save('starMusic', musicOn)
-      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicOn ? MUSIC_GAIN * musicVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && musicBus) musicBus.gain.setTargetAtTime(musicLevel(), ac.currentTime, 0.06)
       if (musicOn) {
         wake()
-        if (screen === 'play') { playScore(); cinematic.sync() }
+        if (isBattleMusicMode(screen)) { playScore(); cinematic.sync() }
         const t = ac ? ac.currentTime + 0.04 : 0
         menu.setClock(t)
         battle.setClock(t)
@@ -471,25 +706,33 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         sfxVolume = previousSfxVolume
         try { storage?.setItem('eclipseSfxVolume', String(sfxVolume)) } catch { /* unavailable */ }
         if (sfxOn) {
-          if (ac && master) master.gain.setTargetAtTime(SFX_GAIN * sfxVolume / 100, ac.currentTime, 0.06)
+          if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
           wake()
           return true
         }
       }
       sfxOn = !sfxOn
       save('starSfx', sfxOn)
-      if (ac && master) master.gain.setTargetAtTime(sfxOn ? SFX_GAIN * sfxVolume / 100 : 0, ac.currentTime, 0.06)
+      if (ac && master) master.gain.setTargetAtTime(sfxLevel(), ac.currentTime, 0.06)
       if (sfxOn) wake()
-      else stopHeroCast()
+      else { pendingSfx.clear(); pendingResultCue = null; stopHeroCast(); bossAttacks.cancel() }
       return sfxOn
     },
     dispose() {
+      diagnostics?.stop()
       interrupted = true
+      resumePending = null
+      pendingSfx.clear()
+      pendingResultCue = null
+      contextWasRunning = false
+      resultRecoveryAttempted = false
       bgm.pause()
       menuBgm?.pause()
       cinematic.dispose()
       stopHeroCast()
+      bossAttacks.prepare(null)
       heroCastBuffers.clear()
+      foleyBuffers.clear(); phaseBuffers.clear(); hallBuffers.clear(); hallReward = null
       ac?.close().catch(() => {})
       ac = null
       master = null
@@ -502,4 +745,5 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       recentSfx.length = 0
     },
   }
+  return system
 }

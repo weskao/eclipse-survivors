@@ -35,10 +35,11 @@ function webpDimensions(data: Buffer): [number, number] {
 }
 
 describe('ES2 all twenty-four candidate hero motion atlases (real assets, QA only)', () => {
-  it('inventories all existing southern/East clips and six eligible northern run clips', () => {
-    expect(HERO_CANDIDATE_ATLASES).toHaveLength(24)
+  it('inventories southern/East clips, northern run clips and the Paladin batch-14 W/NE/NW', () => {
+    expect(HERO_CANDIDATE_ATLASES).toHaveLength(27)
     const found = new Set(HERO_CANDIDATE_ATLASES.map(c => c.hero + ':' + c.direction + ':' + c.pose))
-    expect(found.size).toBe(24)
+    expect(found.size).toBe(27)
+    for (const direction of ['W', 'NE', 'NW']) expect(found.has('crimson-paladin:' + direction + ':run')).toBe(true)
     for (const hero of heroes) {
       for (const pose of poses) expect(found.has(hero + ':E:' + pose)).toBe(true)
       for (const direction of ['S', 'SE', 'SW']) expect(found.has(hero + ':' + direction + ':run')).toBe(true)
@@ -72,7 +73,8 @@ describe('ES2 all twenty-four candidate hero motion atlases (real assets, QA onl
       expect(hashes.has(sha)).toBe(false)
       hashes.add(sha)
       expect('QA' in expected ? expected.QA : expected.status).toBe('QA_PENDING')
-      expect(expected.native3x).toBe('unverified')
+      // batch-14 manifests spell it 'UNVERIFIED'; same meaning, still never verified.
+      expect(expected.native3x.toLowerCase()).toBe('unverified')
       expect(expected.runtimeApplied).toBe(false)
       for (let i = 0; i < 4; i++) {
         const rect = heroCandidateRect(i, clip.cellPixels)
@@ -82,7 +84,7 @@ describe('ES2 all twenty-four candidate hero motion atlases (real assets, QA onl
         expect((rect?.y ?? 9999) + clip.cellPixels).toBeLessThanOrEqual(clip.cellPixels * 2)
       }
     }
-    expect(hashes.size).toBe(24)
+    expect(hashes.size).toBe(27)
   })
 
   it('rejects invalid playback clocks before sampling source rectangles', () => {

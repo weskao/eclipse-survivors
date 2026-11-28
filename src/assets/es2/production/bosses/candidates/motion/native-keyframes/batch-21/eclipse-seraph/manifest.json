@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "ec84bb21660927d45e6729a148616e3390e78e86",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-hurt-key-a",
+      "pose": "hurt",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/seraph-hurt-key-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "fec7f82b-4e61-4590-802c-7b7bbfc69ab7",
+        "originalPngSha256": "40b580bb034c54f67b7d16f7b41f6b7bf136e38f9e940c26682d4a13d19e0320",
+        "canonicalReferenceHead": "ec84bb21660927d45e6729a148616e3390e78e86"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1197,
+      "cellHeight": 1452,
+      "frameRects": [
+        [
+          0,
+          0,
+          1197,
+          1452
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        598.5,
+        726.0
+      ],
+      "alphaBounds": [
+        78,
+        41,
+        1116,
+        1363
+      ],
+      "alphaAnyBounds": [
+        32,
+        33,
+        1151,
+        1420
+      ],
+      "alphaExtent": [
+        1038,
+        1322
+      ],
+      "actualSourceResolution": [
+        1197,
+        1452
+      ],
+      "sourceEdgeMargins": [
+        78,
+        41,
+        81,
+        89
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "17a652e4b26b89f3776561331e89923dc00d8e4938ac706377298b262c4dd433",
+      "webpCompressedBytes": 670246,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "polytool towebp -c -q 100 (lossy WebP)",
+      "notes": "Canonical runtime and original contact-sheet P1 were inspected. ImageGen redraw; exact source-image editing operation cannot be verified. Not identity-approved. 32px transparent padding on each edge, no scaling; original visible content may already be clipped. 949px provisional extent passes, 1898px conservative production gate fails."
+    }
+  ],
+  "missing": [
+    "coherent animation sequence",
+    "phase and character identity review",
+    "safe margins and hover anchor",
+    "actual browser visual QA"
+  ]
+}

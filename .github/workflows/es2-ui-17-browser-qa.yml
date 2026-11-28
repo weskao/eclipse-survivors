@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/assets/es2/production/ui/**'
       - 'src/components/es2/menu/Es2Archive.vue'
+      - 'src/components/es2/menu/Es2DevArtGallery.vue'
       - 'src/components/es2/menu/Es2ChoiceCards.vue'
       - 'src/styles/es2/skill-polish.css'
       - 'src/styles/es2/menu.css'
@@ -20,7 +21,7 @@ permissions:
   contents: read
 concurrency:
   group: es2-ui-17-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   verify-ui:
     runs-on: ubuntu-24.04
@@ -35,13 +36,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vitest run src/assets/es2/production/ui/ui-browser-qa-contract.test.ts src/assets/es2/production/ui/ui-runtime-sizing.test.ts src/assets/es2/production/ui/treasure-icons-native3x.test.ts src/components/es2/menu/Es2MenuSystem.test.ts src/components/es2/menu/Es2SkillPolish.test.ts
       - run: pnpm build
+      - run: pnpm check-release
       - name: Install Chromium for real QA
         run: |
           npm install --prefix .. --no-save --package-lock=false playwright@1.56.1
           ../node_modules/.bin/playwright install --with-deps chromium
-      - name: Run production preview and capture actual UI layouts
+      - name: Run development art inspection and capture actual UI layouts
         run: |
-          pnpm preview --host 127.0.0.1 --port 4173 --strictPort >/tmp/es2-ui-preview.log 2>&1 &
+          pnpm dev --host 127.0.0.1 --port 4173 --strictPort >/tmp/es2-ui-preview.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4173/ >/dev/null
           node scripts/es2-ui-17-browser-qa.mjs

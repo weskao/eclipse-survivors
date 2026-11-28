@@ -74,6 +74,57 @@ describe('isolated mobile controls', () => {
 })
 
 describe('accessibility settings', () => {
+  it('uses labelled switches for all binary preferences and emits each change once', async () => {
+    const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
+    const switches = w.findAll('[role="switch"]')
+    expect(switches).toHaveLength(7)
+    const fields = ['reducedMotion', 'haptics', 'reducedFlashing', 'colorblindIndicators', 'showDamageNumbers', 'showFullEnemyHealthBars', 'showHeroLowHealthWarning'] as const
+    for (const [index, field] of fields.entries()) {
+      const toggle = switches[index]!
+      expect(toggle.attributes('aria-label')).toBeTruthy()
+      expect(toggle.text()).toBe('')
+      const before = toggle.attributes('aria-checked') === 'true'
+      await toggle.trigger('click')
+      expect(w.emitted('update:modelValue')).toHaveLength(index + 1)
+      const next = w.emitted('update:modelValue')?.at(-1)?.[0] as typeof DEFAULT_ACCESSIBILITY_PREFERENCES
+      expect(next[field]).toBe(field === 'reducedMotion' ? (before ? 'off' : 'on') : !before)
+      await w.setProps({ modelValue: next })
+      expect(toggle.attributes('aria-checked')).toBe(String(!before))
+    }
+    await w.setProps({ disabled: true })
+    expect(switches.every(toggle => toggle.attributes('disabled') !== undefined)).toBe(true)
+    await switches[1]!.trigger('click')
+    expect(w.emitted('update:modelValue')).toHaveLength(7)
+    w.unmount()
+  })
+  it('defaults full-health enemy bars off, toggles them and resets to off', async () => {
+    const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
+    const toggle = w.get('[data-testid="es2-full-enemy-health-bars"]')
+    expect(toggle.attributes('aria-checked')).toBe('false')
+    await toggle.trigger('click')
+    const next = w.emitted('update:modelValue')?.at(-1)?.[0] as typeof DEFAULT_ACCESSIBILITY_PREFERENCES
+    expect(next.showFullEnemyHealthBars).toBe(true)
+    await w.setProps({ modelValue: next })
+    expect(toggle.attributes('aria-checked')).toBe('true')
+    await toggle.trigger('click')
+    expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showFullEnemyHealthBars: false })
+    await w.get('.es2-reset').trigger('click')
+    expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showFullEnemyHealthBars: false })
+    w.unmount()
+  })
+  it('defaults hero low-health warnings on, toggles off and restores on reset', async () => {
+    const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
+    const toggle = w.get('[data-testid="es2-hero-low-health-warning"]')
+    expect(toggle.attributes('aria-checked')).toBe('true')
+    await toggle.trigger('click')
+    const next = w.emitted('update:modelValue')?.at(-1)?.[0] as typeof DEFAULT_ACCESSIBILITY_PREFERENCES
+    expect(next.showHeroLowHealthWarning).toBe(false)
+    await w.setProps({ modelValue: next })
+    expect(toggle.attributes('aria-checked')).toBe('false')
+    await w.get('.es2-reset').trigger('click')
+    expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ showHeroLowHealthWarning: true })
+    w.unmount()
+  })
   it('previews options immediately using accessible game controls', async () => {
     const w = mount(AccessibilitySettings, { props: { modelValue: DEFAULT_ACCESSIBILITY_PREFERENCES } })
     expect(w.get('[data-testid="es2-preview"]').attributes('aria-live')).toBe('polite')
@@ -84,7 +135,7 @@ describe('accessibility settings', () => {
     const scale = w.get('[data-testid="es2-ui-scale"]')
     await scale.setValue('1.2')
     expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ interfaceScale: 1.2 })
-    expect(w.get('[data-testid="es2-motion"]').attributes('aria-pressed')).toBe('false')
+    expect(w.get('[data-testid="es2-motion"]').attributes('aria-checked')).toBe('false')
     await w.get('[data-testid="es2-motion"]').trigger('click')
     expect(w.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ reducedMotion: 'on' })
     w.unmount()
