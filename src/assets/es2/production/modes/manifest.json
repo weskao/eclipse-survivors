@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "kind": "OpenAI generated original art, image 1 (original pointed metal frame)",
+    "generationId": "191d3c11-517e-453a-9287-358c34bfbad5",
+    "size": [
+      1536,
+      1024
+    ],
+    "sha256": "76f3841fb78cb06313aa977fa38ece716c55031e978c958ab6baf15540868cc9",
+    "processing": "Largest alpha-connected component per badge (alpha > 8), normalized 8–248 alpha range, retained original silhouette and aspect ratio; downsampled to 176 px height centered in a 192 px RGBA canvas; subtle luminance-only sharpening on opaque interior. No redraw or upscale."
+  },
+  "displayBasePx": 64,
+  "scale": 3,
+  "visualApproval": "pending-in-game-review",
+  "assets": [
+    {
+      "id": "quick",
+      "glyph": "✦",
+      "accent": "#c5e5ff",
+      "sourceRect": [
+        222,
+        5,
+        285,
+        326
+      ],
+      "pngSha256": "7a0ae0222e8c505c326316d1b094e8a15dcf82ca8f33ac826466081667f81113",
+      "alphaBounds": [
+        19,
+        8,
+        173,
+        184
+      ],
+      "webp": "quick@3x.webp",
+      "file": "quick@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 19582,
+      "sha256": "d7b1cc4e0aec015752c00bf2773c0fecb871edeed3928dbc8df03e6af877e0e6"
+    },
+    {
+      "id": "standard",
+      "glyph": "♜",
+      "accent": "#f3d5a1",
+      "sourceRect": [
+        626,
+        5,
+        285,
+        326
+      ],
+      "pngSha256": "e7b6ec502d633b0174b785ea844fe3917fa4bb4da12103e892b1391750c016df",
+      "alphaBounds": [
+        19,
+        8,
+        173,
+        184
+      ],
+      "webp": "standard@3x.webp",
+      "file": "standard@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 20438,
+      "sha256": "3fdc91bc327263044c4efec8165c6daff744679738dbe9eaa1602fd54b481342"
+    },
+    {
+      "id": "endless",
+      "glyph": "∞",
+      "accent": "#b5ecee",
+      "sourceRect": [
+        1029,
+        5,
+        285,
+        327
+      ],
+      "pngSha256": "2b8f3839c1f26a3242a29baca9cdf41e30456ed1819fd491c946523999623abd",
+      "alphaBounds": [
+        19,
+        8,
+        172,
+        184
+      ],
+      "webp": "endless@3x.webp",
+      "file": "endless@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 19022,
+      "sha256": "72887ccaaca3482d983a6a69bcaf5b57ec7dc0967c126c7ce3a975da7f5e2460"
+    },
+    {
+      "id": "challenge",
+      "glyph": "ϟ",
+      "accent": "#f6cb9c",
+      "sourceRect": [
+        222,
+        342,
+        286,
+        327
+      ],
+      "pngSha256": "86a62c4be170bc315e7e3beb7c9bf7c61ecb37c4f8fb67112c82257d38e64bfa",
+      "alphaBounds": [
+        19,
+        8,
+        173,
+        184
+      ],
+      "webp": "challenge@3x.webp",
+      "file": "challenge@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 19446,
+      "sha256": "62e986d8743bca4cdc431555c29e20149fcbf5efab6426fef8d3e5d7f9284b2d"
+    },
+    {
+      "id": "boss-rush",
+      "glyph": "♛",
+      "accent": "#f6b6bc",
+      "sourceRect": [
+        625,
+        342,
+        286,
+        326
+      ],
+      "pngSha256": "004b7d2ccae634092e59d513de969d515c75186e58b2bee3293f1a61b1c3e28f",
+      "alphaBounds": [
+        19,
+        8,
+        173,
+        184
+      ],
+      "webp": "boss-rush@3x.webp",
+      "file": "boss-rush@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 19232,
+      "sha256": "6be265768fb15b07012d6dfc0bb2aca5cb42d4bb69e426aec191db5a2d70a119"
+    },
+    {
+      "id": "endless-eclipse",
+      "glyph": "☾",
+      "accent": "#d9c5f8",
+      "sourceRect": [
+        1029,
+        342,
+        286,
+        326
+      ],
+      "pngSha256": "0db13d3b36adbd33c106ef3e0a6b3dd62bbeea56635cfb1a3b0df2d5c4c0720d",
+      "alphaBounds": [
+        19,
+        8,
+        173,
+        184
+      ],
+      "webp": "endless-eclipse@3x.webp",
+      "file": "endless-eclipse@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 18142,
+      "sha256": "010b02bedfee104536f723b45e65458595e8d0838c0ddd47315974132a1763a8"
+    },
+    {
+      "id": "relic-hunt",
+      "glyph": "◇",
+      "accent": "#b7ead3",
+      "sourceRect": [
+        222,
+        682,
+        286,
+        328
+      ],
+      "pngSha256": "fdc706842c9909793acf608d6c50f95a618220969e441baf49096aa18fba31fa",
+      "alphaBounds": [
+        19,
+        8,
+        172,
+        184
+      ],
+      "webp": "relic-hunt@3x.webp",
+      "file": "relic-hunt@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 18938,
+      "sha256": "625b2e6ef5816db020cee3521ab92c37e884b42f3859b67131061efafd1a7e1b"
+    },
+    {
+      "id": "cursed-expedition",
+      "glyph": "✧",
+      "accent": "#e8b8f0",
+      "sourceRect": [
+        625,
+        682,
+        286,
+        328
+      ],
+      "pngSha256": "25b3977a10eb2ec7a10b3e72121b39a460f47674482ffb9a09c92e3673035216",
+      "alphaBounds": [
+        19,
+        8,
+        172,
+        184
+      ],
+      "webp": "cursed-expedition@3x.webp",
+      "file": "cursed-expedition@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 19386,
+      "sha256": "f5c034967b18aa433ffff44e2ae3b3c1accffba2085021554d23ec4df57af55d"
+    },
+    {
+      "id": "chaos-arena",
+      "glyph": "✵",
+      "accent": "#f7c6a5",
+      "sourceRect": [
+        1029,
+        681,
+        286,
+        329
+      ],
+      "pngSha256": "51bbf01d9d64fd3a9903e58dd1e16054465f23374ff8243f319c9bb9a2ee3dae",
+      "alphaBounds": [
+        19,
+        8,
+        172,
+        184
+      ],
+      "webp": "chaos-arena@3x.webp",
+      "file": "chaos-arena@3x.webp",
+      "width": 192,
+      "height": 192,
+      "hasAlpha": true,
+      "bytes": 19932,
+      "sha256": "0bba8a3048778fb8b8f35e7555c229c136a897a7a9a457ed7b539d5bfb9e40de"
+    }
+  ],
+  "variant": "image-1-pointed-frame-refined",
+  "encoding": "Polytool towebp -c -q 100 (lossy; decoded alpha and dimensions verified)"
+}
