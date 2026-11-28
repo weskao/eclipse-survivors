@@ -68,6 +68,13 @@ describe('ES2 objective mode chooser adapter', () => {
     const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' } })
     wrappers.push(wrapper)
     expect(wrapper.findAll('[data-objective-mode]')).toHaveLength(5)
+    expect(wrapper.findAll('[data-es2-mode-details]')).toHaveLength(Object.keys(MODES).length)
+    for (const card of wrapper.findAll('[role="radio"]')) {
+      const id = card.attributes('data-es2-mode-id')
+      expect(id).toBeTruthy()
+      expect(card.element.parentElement?.querySelector('button[data-es2-mode-details]')?.getAttribute('data-es2-mode-details')).toBe(id)
+      expect(card.find('button').exists()).toBe(false)
+    }
     expect(wrapper.findAll('[role="radiogroup"]')).toHaveLength(1)
     expect(wrapper.get('[role="radiogroup"]').findAll('[role="radio"]')).toHaveLength(9)
     expect(wrapper.findAll('[data-es2-mode-chapter]')).toHaveLength(2)
@@ -144,20 +151,30 @@ describe('ES2 objective mode chooser adapter', () => {
     }
   })
 
-  it('uses the matching mode theme and same art for every expansion detail dialog', async () => {
+  it('uses the matching theme, image and three detail sections for all nine modes in both languages', async () => {
     const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' }, attachTo: document.body })
     wrappers.push(wrapper)
-    for (const card of wrapper.findAll('[data-objective-mode]')) {
-      const id = card.attributes('data-objective-mode')
-      await wrapper.get(`[data-es2-mode-details="${id}"]`).trigger('click')
-      const dialog = document.body.querySelector('[role="dialog"]')!
-      expect(dialog.getAttribute('data-es2-mode-theme')).toBe(id)
-      expect(dialog.querySelector('.es2-mode-detail-sigil img')?.getAttribute('src')).toBe(card.get('.es2-mode-sigil img').attributes('src'))
-      expect(dialog.querySelectorAll('[data-es2-mode-detail]')).toHaveLength(3)
-      ;(dialog.querySelector('.es2-close') as HTMLButtonElement).click()
-      await nextTick()
-    }
-    expect(wrapper.emitted('select')).toBeUndefined()
+    const locale = getLocale()
+    try {
+      for (const language of ['zh-TW', 'en'] as const) {
+        setLocale(language)
+        await nextTick()
+        for (const card of wrapper.findAll('[role="radio"]')) {
+          const id = card.attributes('data-es2-mode-id')
+          await wrapper.get(`[data-es2-mode-details="${id}"]`).trigger('click')
+          const dialog = document.body.querySelector('[role="dialog"]')!
+          expect(dialog.getAttribute('data-es2-mode-theme')).toBe(id)
+          expect(dialog.querySelector('.es2-mode-detail-sigil img')?.getAttribute('src')).toBe(card.get('.es2-mode-sigil img').attributes('src'))
+          expect(dialog.querySelectorAll('[data-es2-mode-detail]')).toHaveLength(3)
+          for (const block of dialog.querySelectorAll('[data-es2-mode-detail]')) expect(block.textContent?.trim().length).toBeGreaterThan(5)
+          if (id === 'endless') expect(dialog.textContent).toContain(t('沒有固定勝利終點，持續生存並累積戰績。'))
+          if (id === 'challenge') expect(dialog.textContent).toContain(String(Math.round(MODES.challenge.modifiers.enemyDamage * 100)))
+          ;(dialog.querySelector('.es2-close') as HTMLButtonElement).click()
+          await nextTick()
+        }
+      }
+      expect(wrapper.emitted('select')).toBeUndefined()
+    } finally { setLocale(locale) }
   })
 
   it('disables every mode control when the host cannot start a new run', () => {

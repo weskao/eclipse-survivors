@@ -13,7 +13,7 @@ watchPostEffect(onCleanup => {
   if (!el || !anchor) return
   const place = () => {
     const a = anchor.getBoundingClientRect()
-    const board = anchor.closest('.es2-hero-section, .es2-objective-grid, .es2-archive-grid')
+    const board = anchor.closest('.es2-hero-section, .es2-mode-grid, .es2-archive-grid')
     const boardRect = board?.getBoundingClientRect() ?? a
     const edge = 12, gap = 10
     const vw = document.documentElement.clientWidth

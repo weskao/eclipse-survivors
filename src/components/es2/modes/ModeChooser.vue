@@ -6,21 +6,19 @@ import { useHoverDetails } from '../menu/useHoverDetails'
 import Es2ModeSigil from './Es2ModeSigil.vue'
 import Es2ModeHotBadge from './Es2ModeHotBadge.vue'
 import Es2ModeDuration from './Es2ModeDuration.vue'
-import { MODES, modeIds, getModeBrief, isObjectiveModeId } from '../../../meta/modes'
+import { MODES, modeIds, getModeBrief } from '../../../meta/modes'
+import { getModeDetails } from './mode-details'
 import type { RunModeId } from '../../../meta/types'
-import { objectiveModeIds, getObjectiveMode, type ObjectiveModeId } from '../../../game/content/modes/definitions'
+import { objectiveModeIds } from '../../../game/content/modes/definitions'
 
 const props = withDefaults(defineProps<{ value: RunModeId | null; disabled?: boolean; visible?: boolean }>(), { disabled: false, visible: true })
 const emit = defineEmits<{ select: [mode: RunModeId] }>()
 const instructionId = useId()
 const groups = [
-  { id: 'classic', chapter: '第一章', title: '經典遠征', cards: modeIds.map(id => ({ id, objective: undefined })) },
-  { id: 'advanced', chapter: '第二章', title: '進階試煉', cards: objectiveModeIds.map(id => ({ id, objective: getObjectiveMode(id) })) },
+  { id: 'classic', chapter: '第一章', title: '經典遠征', cards: modeIds.map(id => ({ id, objective: false })) },
+  { id: 'advanced', chapter: '第二章', title: '進階試煉', cards: objectiveModeIds.map(id => ({ id, objective: true })) },
 ] as const
 const allIds: RunModeId[] = groups.flatMap(group => group.cards.map(card => card.id))
-function openObjectiveDetails(id: RunModeId): void {
-  if (isObjectiveModeId(id)) modeDetails.openModal(id)
-}
 const focusId = computed(() => props.value ?? allIds[0])
 async function moveMode(event: KeyboardEvent, id: RunModeId): Promise<void> {
   const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1
@@ -34,15 +32,13 @@ async function moveMode(event: KeyboardEvent, id: RunModeId): Promise<void> {
   await nextTick()
   board?.querySelector<HTMLButtonElement>(`[data-mode="${next}"], [data-objective-mode="${next}"]`)?.focus()
 }
-const modeDetails = useHoverDetails<ObjectiveModeId>('[data-objective-mode]', el =>
-  el.getAttribute('data-objective-mode') as ObjectiveModeId | null)
+const modeDetails = useHoverDetails<RunModeId>('[data-es2-mode-id], [data-es2-mode-details]', el =>
+  (el.getAttribute('data-es2-mode-id') ?? el.getAttribute('data-es2-mode-details')) as RunModeId | null)
 const { id: detailId, anchor: modeAnchor, tooltipId: modeTooltipId, events: modeHoverEvents } = modeDetails
 watch(() => props.visible, visible => { if (!visible) modeDetails.clear() })
-const detail = computed(() => detailId.value ? getObjectiveMode(detailId.value) : null)
+const detail = computed(() => detailId.value ? getModeDetails(detailId.value) : null)
 // The authored title contains both languages; display only the current one.
 const modeTitle = (id: RunModeId) => t(MODES[id].label).split(' · ')[0]!
-const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
-  ? '每 3 分鐘 +{embers} 餘燼（最高 1500）' : '勝利獎勵 {embers} 餘燼', { embers: getObjectiveMode(id).rewardEmbers })
 </script>
 
 <template>
@@ -62,8 +58,8 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
       <div class="es2-mode-grid" :class="{ 'es2-objective-grid': group.id === 'advanced' }">
         <div v-for="card in group.cards" :key="card.id" class="es2-mode-card-shell" :class="{ 'es2-objective-card-shell': card.objective }">
           <button type="button" role="radio" class="es2-mode-card" data-ui-sfx="managed"
-            :class="{ 'es2-objective-choice': card.objective, 'es2-mode-active': value === card.id, selected: value === card.id, 'es2-mode-has-info': card.objective, 'es2-mode-has-hot': MODES[card.id].hot }"
-            :data-mode="card.objective ? undefined : card.id" :data-objective-mode="card.objective?.id"
+            :class="{ 'es2-objective-choice': card.objective, 'es2-mode-active': value === card.id, selected: value === card.id, 'es2-mode-has-hot': MODES[card.id].hot }"
+            :data-es2-mode-id="card.id" :data-mode="card.objective ? undefined : card.id" :data-objective-mode="card.objective ? card.id : undefined"
             :data-es2-mode-theme="card.id" :aria-checked="value === card.id" :disabled="disabled"
             :tabindex="focusId === card.id ? 0 : -1"
             :aria-label="[modeTitle(card.id), ...(MODES[card.id].hot ? [t('熱門遠征')] : []), t(getModeBrief(card.id)), MODES[card.id].duration === null ? t('無時間限制') : t('{minutes} 分鐘', { minutes: Math.ceil((MODES[card.id].duration ?? 0) / 60) })].join(' · ')"
@@ -78,9 +74,9 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
             <Es2ModeDuration :duration="MODES[card.id].duration" />
             <Es2ModeHotBadge :hot="MODES[card.id].hot" />
           </button>
-          <button v-if="card.objective" type="button" class="es2-mode-detail-trigger" :disabled="disabled"
-            :data-es2-mode-details="card.objective.id" :data-es2-mode-theme="card.id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(card.id) })"
-            aria-haspopup="dialog" data-ui-sfx="select" @click="openObjectiveDetails(card.id)"><span aria-hidden="true">i</span></button>
+          <button type="button" class="es2-mode-detail-trigger" :disabled="disabled"
+            :data-es2-mode-details="card.id" :data-es2-mode-theme="card.id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(card.id) })"
+            aria-haspopup="dialog" data-ui-sfx="select" @click="modeDetails.openModal(card.id)"><span aria-hidden="true">i</span></button>
         </div>
       </div>
     </div>
@@ -88,18 +84,18 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
       :anchor="modeAnchor" :tooltip-id="modeTooltipId" @cancel="modeDetails.clear()" @hold="modeDetails.hold()" @leave="modeDetails.leave()">
       <template #leading><Es2ModeSigil v-if="detailId" :mode="detailId" class="es2-mode-detail-sigil" /></template>
       <div v-if="detail && detailId" class="es2-mode-detail">
-        <p class="es2-mode-detail-intro">{{ t(detail.description) }}</p>
+        <p class="es2-mode-detail-intro">{{ detail.description }}</p>
         <div class="es2-mode-detail-block" data-es2-mode-detail="objective">
           <strong>{{ t('遠征目標') }}</strong>
-          <p>{{ t(detail.victoryDescription) }}</p>
+          <p>{{ detail.victoryDescription }}</p>
         </div>
         <div class="es2-mode-detail-block" data-es2-mode-detail="rules">
           <strong>{{ t('特殊規則') }}</strong>
-          <ul><li v-for="modifier in detail.preRunModifiers" :key="modifier">{{ t(modifier) }}</li></ul>
+          <ul><li v-for="modifier in detail.preRunModifiers" :key="modifier">{{ modifier }}</li></ul>
         </div>
         <div class="es2-mode-detail-block" data-es2-mode-detail="reward">
           <strong>{{ t('獎勵') }}</strong>
-          <p>{{ rewardText(detailId) }}</p>
+          <p>{{ detail.rewardText }}</p>
         </div>
       </div>
     </Es2DetailSurface>

@@ -28,13 +28,17 @@ export async function assertModeDurations(page, label) {
     const unit = chip.querySelector('[data-es2-mode-time-unit]')
     const bounds = el => el.getBoundingClientRect()
     const c = bounds(card), t = bounds(chip), copy = bounds(card.querySelector('.es2-mode-copy')), v = bounds(value)
+    const info = card.parentElement.querySelector('.es2-mode-detail-trigger')
+    const i = info?.getBoundingClientRect()
     const font = parseFloat(getComputedStyle(value).fontSize)
     return { mode:card.dataset.mode ?? card.dataset.objectiveMode, text:value.textContent, font,
-      valid: font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
+      valid: !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
+        && i.bottom <= c.bottom+1 && t.bottom <= i.top+1 && Math.abs((t.left+t.right-i.left-i.right)/2) <= 1
+        && font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
         && t.left>=c.left-1 && t.right<=c.right+1 && t.top>=c.top-1 && t.bottom<=c.bottom+1
         && copy.right<=t.left+1 && v.width<=t.width+1 && chip.scrollWidth<=chip.clientWidth+1
         && getComputedStyle(value).fontFamily.includes('Eclipse Numerals') }
   }))
-  assert.equal(cards.length,9,label + ': missing expedition time chips')
+  assert.equal(cards.length,9,label + ': missing expedition time chips and info controls')
   assert.deepEqual(cards.filter(card=>!card.valid),[],label + ': duration readability or overflow')
 }

@@ -397,6 +397,7 @@ describe('homepage menu layout across devices', () => {
     expect(css).not.toContain('.es2-mode-detail-sigil{width:36px')
     expect(css).toContain('.es2-menu .es2-expedition-sigil{width:56px')
     expect(css).toContain('.es2-expedition-board .es2-mode-grid{grid-template-columns:minmax(0,1fr)}')
+    expect(board.findAll('[data-es2-mode-details]')).toHaveLength(9)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-name\{[^}]*color:var\(--es2-mode-accent\)[^}]*font:800/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-duration\{[^}]*display:inline-block[^}]*border:1px solid[^}]*font-variant-numeric:tabular-nums/)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-meta\{[^}]*font:500 max\(\.6875rem/)

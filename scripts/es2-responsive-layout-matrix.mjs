@@ -348,7 +348,11 @@ try {
         }
       })
       assert.deepEqual(entryOffenders, [], name + ': expedition cards clip during the first entry frame')
-      await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
+      // Larger cards must remain reachable through the menu scroll, not be
+      // squeezed to fit all nine above the fold on shorter desktops.
+      await verifyPage('[data-mode], [data-objective-mode]', 9, false)
+      const scrollable = await page.locator('.es2-menu-scroll').evaluate(el => el.scrollHeight >= el.clientHeight && getComputedStyle(el).overflowY === 'auto')
+      assert.ok(scrollable, name + ': expedition scroll access')
       await assertExpeditionModeIcons(page, name + ': expedition selection', { cards: true })
       await assertModeDurations(page, name)
       const board = page.locator('[data-es2-expedition-board]')
@@ -389,30 +393,35 @@ try {
         assert.equal(await surface.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
       }
       if (hoverCapable) {
-        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
-        const card = page.locator('[data-objective-mode="boss-rush"]')
-        const before = await card.getAttribute('aria-checked')
-        await card.hover()
-        const tip = page.locator('[data-es2-hover-details]')
-        await tip.waitFor({ state: 'visible' })
-        assert.match(await tip.innerText(), /首領連戰|Boss Rush/i)
-        await assertModeDetail(tip, card)
-        assert.ok(inside(await tip.evaluate(rect), width, height), name + ': mode tooltip clips')
-        assert.equal(await card.getAttribute('aria-checked'), before)
-        await page.keyboard.press('Escape')
-        await tip.waitFor({ state: 'hidden' })
+        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 9)
+        for (const id of ['quick', 'boss-rush']) {
+          const card = page.locator(`[data-es2-mode-id="${id}"]`)
+          const before = await card.getAttribute('aria-checked')
+          await card.hover()
+          const tip = page.locator('[data-es2-hover-details]')
+          await tip.waitFor({ state: 'visible' })
+          await assertModeDetail(tip, card)
+          assert.ok(inside(await tip.evaluate(rect), width, height), name + ': mode tooltip clips')
+          assert.equal(await card.getAttribute('aria-checked'), before)
+          await page.keyboard.press('Escape')
+          await tip.waitFor({ state: 'hidden' })
+        }
       }
       // The Info control must match the hover surface on desktop as well as touch.
       {
-        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
-        const card = page.locator('[data-objective-mode="boss-rush"]')
-        await page.locator('[data-es2-mode-details="boss-rush"]').click()
-        const info = page.locator('.es2-dialog[role="dialog"]')
-        await info.waitFor({ state: 'visible' })
-        await assertModeDetail(info, card)
-        assert.ok(inside(await info.evaluate(rect), width, height), name + ': mode dialog clips')
-        await info.locator('.es2-close').click()
-        await info.waitFor({ state: 'hidden' })
+        assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 9)
+        for (const id of ['quick', 'boss-rush']) {
+          const card = page.locator(`[data-es2-mode-id="${id}"]`)
+          const before = await card.getAttribute('aria-checked')
+          await page.locator(`[data-es2-mode-details="${id}"]`).click()
+          const info = page.locator('.es2-dialog[role="dialog"]')
+          await info.waitFor({ state: 'visible' })
+          await assertModeDetail(info, card)
+          assert.ok(inside(await info.evaluate(rect), width, height), name + ': mode dialog clips')
+          await info.locator('.es2-close').click()
+          await info.waitFor({ state: 'hidden' })
+          assert.equal(await card.getAttribute('aria-checked'), before)
+        }
         await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
       }
       await verifyDock()
