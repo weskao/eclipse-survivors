@@ -1023,7 +1023,7 @@
 /* Keep the nine expedition choices above the fixed dock on compact wide screens. */
 @media (min-width:1000px) and (min-height:700px) and (max-height:800px) {
   .es2-menu[data-es2-menu-page="modes"] .es2-menu-shell{gap:6px}
-  .es2-menu[data-es2-menu-page="modes"] .es2-expedition-board .es2-mode-grid{gap:6px}
+  .es2-menu[data-es2-menu-page="modes"] .es2-expedition-board .es2-mode-grid{column-gap:6px}
   .es2-menu[data-es2-menu-page="modes"] .es2-mode-card-shell{--es2-mode-card-pad:8px}
 }
 

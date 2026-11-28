@@ -20,20 +20,25 @@ withDefaults(defineProps<{ hot?: boolean }>(), { hot: false })
 </template>
 
 <style>
-/* Shared corner and reserved space; animation never changes layout. */
-.es2-expedition-board .es2-mode-card.es2-mode-has-hot,
-.mode-choice.es2-mode-has-hot { padding-block-start:36px; min-height:96px; }
+/* One shared gutter for corner badges, whether featured or not.
+   HOT never changes a card's padding, height, width or content tracks. */
+.es2-menu .es2-expedition-board .es2-mode-grid,
+.mode-selector .mode-grid {
+  --es2-hot-overhang:17px;
+  row-gap:calc(var(--es2-hot-overhang) + 5px);
+  padding-block-start:calc(var(--es2-hot-overhang) + 1px);
+}
 .es2-mode-hot[data-es2-mode-hot] {
-  position:absolute; inset-block-start:5px; inset-inline-end:8px; z-index:1;
+  position:absolute; inset-block-start:calc(0px - var(--es2-hot-overhang,17px)); inset-inline-end:8px; z-index:1;
   display:inline-flex; align-items:center; justify-content:center; gap:5px;
   box-sizing:border-box; overflow:hidden; white-space:nowrap; pointer-events:none;
-  padding:2px 8px 2px 5px; min-height:27px; border:1px solid #ffc278; border-radius:4px 9px 4px 9px;
+  padding:1px 7px 1px 5px; height:22px; border:1px solid #ffc278; border-radius:4px 9px 4px 9px;
   background:linear-gradient(155deg,#b53c17,#722018 70%,#9a3219);
   color:#fff4d2; font:900 12px/1.1 var(--es2-font-numeric),system-ui,sans-serif; letter-spacing:.08em;
   text-shadow:0 1px 2px #481309,0 0 4px #ff9b45; box-shadow:inset 0 1px 2px #ffd18b80,0 0 9px #ff752d65;
 }
 .es2-mode-hot-fire {
-  display:block; width:19px; height:21px; flex:none; overflow:hidden;
+  display:block; width:16px; height:18px; flex:none; overflow:hidden;
   filter:drop-shadow(0 0 2px #ff922c);
 }
 .es2-mode-hot-label { position:relative; z-index:1; }

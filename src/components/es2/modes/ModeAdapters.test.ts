@@ -18,6 +18,11 @@ const wrappers: VueWrapper[] = []
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount() })
 
 describe('shared HOT expedition badge', () => {
+  it('never changes featured card padding, size or grid placement', () => {
+    const css = readFileSync(resolve('src/components/es2/modes/Es2ModeHotBadge.vue'), 'utf8')
+    expect(css).not.toMatch(/\.es2-mode-has-hot\s*[,\{]/)
+    expect(css).toMatch(/position:absolute;\s*inset-block-start:calc\(0px - var\(--es2-hot-overhang/)
+  })
   it('renders only when enabled and reacts to the boolean without leaving a placeholder', async () => {
     const wrapper = mount(Es2ModeHotBadge, { props: { hot: false } })
     wrappers.push(wrapper)
