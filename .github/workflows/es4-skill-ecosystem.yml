@@ -53,7 +53,7 @@ jobs:
           ../node_modules/.bin/playwright install --with-deps chromium webkit
       - name: Verify real isolated Hall at representative viewports
         run: |
-          VITE_ES4_HALL=1 VITE_ES2_UNLOCKED=1 pnpm exec vite --host 127.0.0.1 --port 4173 --strictPort > /tmp/es4-hall.log 2>&1 &
+          VITE_ES2_UNLOCKED=1 pnpm exec vite --host 127.0.0.1 --port 4173 --strictPort > /tmp/es4-hall.log 2>&1 &
           for i in {1..40}; do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:4173/ >/dev/null
           node scripts/es4-hall-browser-qa.mjs

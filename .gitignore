@@ -6,6 +6,7 @@ node_modules/
 dist/
 __pycache__/
 public/audio/eclipse-overture.wav
-.env
+# .env is tracked for public Vite defaults only; keep local overrides private.
 .env.local
+.env.*.local
 .firebase/

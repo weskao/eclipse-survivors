@@ -4,6 +4,9 @@
 PNPM ?= pnpm
 PORT ?= 5173
 
+# Vite loads the tracked .env in every mode (dev, test and production build).
+# Do not export or hardcode VITE_ES4_HALL here; Vite also honors local/mode overrides.
+
 # Like Skyline Rush, desktop dev runs against disposable Auth/Firestore emulators.
 # Distinct demo projects and ports prevent accidental reuse of Skyline Rush or live data.
 JAVA21_HOME := $(shell /usr/libexec/java_home -v 21+ 2>/dev/null)
