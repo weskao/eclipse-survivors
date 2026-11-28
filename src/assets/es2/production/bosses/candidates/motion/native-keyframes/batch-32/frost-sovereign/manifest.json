@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "cc806c669ce513a7a1efa448832f96a8032a7dee",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-ice-fan-recover-study-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/frost-phase2-ice-fan-recover-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "e1f36ca8-0722-4237-94ce-b17db48af313",
+        "originalPngSha256": "4d472a9a0c1151adb00019b5c0447d5fb035854b6fde71beea5a1415df4b0b00",
+        "canonicalReferenceHead": "cc806c669ce513a7a1efa448832f96a8032a7dee",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "94a5b5f54ca5aae8adef54886f51601805cf609fbf3fbb6b5cfcf762f201dbdf"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1348,
+      "cellHeight": 1289,
+      "frameRects": [
+        [
+          0,
+          0,
+          1348,
+          1289
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        674.0,
+        644.5
+      ],
+      "alphaBounds": [
+        97,
+        38,
+        1260,
+        1243
+      ],
+      "alphaAnyBounds": [
+        63,
+        32,
+        1266,
+        1257
+      ],
+      "alphaExtent": [
+        1163,
+        1205
+      ],
+      "actualSourceResolution": [
+        1348,
+        1289
+      ],
+      "originalGeneratedResolution": [
+        1284,
+        1225
+      ],
+      "originalAlpha128Bounds": [
+        65,
+        6,
+        1228,
+        1211
+      ],
+      "originalAlphaAnyBounds": [
+        31,
+        0,
+        1234,
+        1225
+      ],
+      "sourceEdgeMargins": [
+        97,
+        38,
+        88,
+        46
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Staff lowered diagonally, free hand drawn in; early recovery study. Independent redraw, exact phase and identity unverified. Original alpha reaches edge; padding does not recover clipped pixels. No resampling. Conservative native 1898px gate not met.",
+      "sha256": "68d63fc7ac5593740eb1bc258b80d88e3714982d5d17610e77e39366706e6d13",
+      "webpCompressedBytes": 762688,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-ice-fan-recover-study-b",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/frost-phase2-ice-fan-recover-study-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "f8c640ed-eb72-46f6-a278-9e2bd38b0d0a",
+        "originalPngSha256": "122cc568c80e7ef76008afc0e37f908a00698b3a44a91d9f33e0cf8ea736d7db",
+        "canonicalReferenceHead": "cc806c669ce513a7a1efa448832f96a8032a7dee",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "182c75b610e062af7e2bbf56278b36f061be92f544bb841e3a0906c09bc03a1c"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1355,
+      "cellHeight": 1282,
+      "frameRects": [
+        [
+          0,
+          0,
+          1355,
+          1282
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        677.5,
+        641.0
+      ],
+      "alphaBounds": [
+        54,
+        55,
+        1308,
+        1223
+      ],
+      "alphaAnyBounds": [
+        32,
+        35,
+        1317,
+        1250
+      ],
+      "alphaExtent": [
+        1254,
+        1168
+      ],
+      "actualSourceResolution": [
+        1355,
+        1282
+      ],
+      "originalGeneratedResolution": [
+        1291,
+        1218
+      ],
+      "originalAlpha128Bounds": [
+        22,
+        23,
+        1276,
+        1191
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        3,
+        1285,
+        1218
+      ],
+      "sourceEdgeMargins": [
+        54,
+        55,
+        47,
+        59
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Staff angled outward, free hand near chest; alternate recovery, circular aura requires phase review. Independent redraw, exact phase and identity unverified. Original alpha reaches edge; padding does not recover clipped pixels. No resampling. Conservative native 1898px gate not met.",
+      "sha256": "333ad8a3e51138df37d8dfa82fc1e98ce19e5fb088d5b7a057fa8801656a535e",
+      "webpCompressedBytes": 766996,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-ice-fan-recover-study-c",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/frost-phase2-ice-fan-recover-study-c.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "4776322f-fdf6-48eb-abb5-a1ede367c732",
+        "originalPngSha256": "59a38bd579ae509f651839acb1d56d3fb82bd21168265ef318aa3e2ab79a72bd",
+        "canonicalReferenceHead": "cc806c669ce513a7a1efa448832f96a8032a7dee",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "ffd87f578b8aaed2fb03ba28ff8c6206536d23e151faf121a71ac8e9b7c0c576"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        47,
+        37,
+        1334,
+        1227
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1344,
+        1231
+      ],
+      "alphaExtent": [
+        1287,
+        1190
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        15,
+        5,
+        1302,
+        1195
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        47,
+        37,
+        42,
+        36
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Low staff and drawn-in free hand; possible edge clipping and visible boot; alternate review only. Independent redraw, exact phase and identity unverified. Original alpha reaches edge; padding does not recover clipped pixels. No resampling. Conservative native 1898px gate not met.",
+      "sha256": "4443365acc959a19be64ab5f1ac006701e2f0eed2821c1476afe2a45f2d20497",
+      "webpCompressedBytes": 810038,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-idle-study-a",
+      "pose": "idle",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "idle/frost-phase2-idle-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "91739246-6bf8-4c55-afa5-69876caf1c8d",
+        "originalPngSha256": "3527553db4316a4816a1f571589c23abd2a6bf282e56f9e078618f789fb42486",
+        "canonicalReferenceHead": "cc806c669ce513a7a1efa448832f96a8032a7dee",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "b8b0375c60a0fa71841f0cb5ec362290e19be8ba3429ef659a0bafcd8f99731c"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1348,
+      "cellHeight": 1289,
+      "frameRects": [
+        [
+          0,
+          0,
+          1348,
+          1289
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        674.0,
+        644.5
+      ],
+      "alphaBounds": [
+        127,
+        38,
+        1254,
+        1244
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1302,
+        1257
+      ],
+      "alphaExtent": [
+        1127,
+        1206
+      ],
+      "actualSourceResolution": [
+        1348,
+        1289
+      ],
+      "originalGeneratedResolution": [
+        1284,
+        1225
+      ],
+      "originalAlpha128Bounds": [
+        95,
+        6,
+        1222,
+        1212
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1270,
+        1225
+      ],
+      "sourceEdgeMargins": [
+        127,
+        38,
+        94,
+        45
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Upright staff and lowered hand; idle or late recovery concept; no facing or phase approved. Independent redraw, exact phase and identity unverified. Original alpha reaches edge; padding does not recover clipped pixels. No resampling. Conservative native 1898px gate not met.",
+      "sha256": "20f149010f4d92f5d112a99ee76d86e6d044718a96e5f811ef80bba92a6387d0",
+      "webpCompressedBytes": 659586,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    }
+  ],
+  "missing": [
+    "canonical identity, edge clipping and phase review",
+    "anchor and sequential motion review",
+    "browser gameplay QA",
+    "1898px conservative native production extent"
+  ]
+}
