@@ -190,10 +190,33 @@ describe('phone homepage viewport-first navigation', () => {
     await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
     expect((wrapper.get('.es2-hero-section').element as HTMLElement).style.display).not.toBe('none')
     expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
-    expect(wrapper.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('shadowblade')
+    expect(wrapper.find('[data-es2-selected-hero]').exists()).toBe(false)
     expect(wrapper.get('.es2-mobile-selected-mode').text()).toContain('首領連戰')
     await wrapper.get('.es2-start').trigger('click')
     expect(wrapper.emitted('start')).toHaveLength(1)
+  })
+
+  it('keeps the expedition brief independent of hero selection in both locales and on both pages', async () => {
+    const previous = getLocale()
+    try {
+      for (const locale of ['zh-TW', 'en'] as const) {
+        setLocale(locale)
+        const wrapper = menu({ choice: 'ranger', heroId: 'ranger', runMode: 'boss-rush' })
+        const brief = wrapper.get('[data-es2-expedition-summary]')
+        for (const page of ['heroes', 'modes'] as const) {
+          expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe(page)
+          await wrapper.setProps({ heroId: 'ranger' })
+          const copy = brief.text()
+          const label = brief.attributes('aria-label')
+          expect(brief.find('.es2-expedition-hero, [data-es2-selected-hero]').exists()).toBe(false)
+          await wrapper.setProps({ heroId: 'shadowblade' })
+          expect(brief.text()).toBe(copy)
+          expect(brief.attributes('aria-label')).toBe(label)
+          expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
+          if (page === 'heroes') await brief.trigger('click')
+        }
+      }
+    } finally { setLocale(previous) }
   })
 
   it('keeps a short localized expedition brief visible on the hero page and updates it from the selected mode', async () => {
@@ -269,11 +292,38 @@ describe('homepage menu layout across devices', () => {
     expect(css).not.toMatch(/\.es2-(?:hero|mode)-section\s*\{[^}]*--es2-scene-from:/)
   })
 
-  it.each(Object.entries({"boss-rush":"♛","endless-eclipse":"☾","relic-hunt":"◇","cursed-expedition":"✧","chaos-arena":"✵"}))('shares the %s mode icon with its selected expedition summary', (id, glyph) => {
-    const wrapper = menu({ runMode: id })
-    expect(wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`).text()).toBe(glyph)
-    expect(wrapper.get('.es2-expedition-sigil').text()).toBe(glyph)
+  it('shares the icon and visual identity for all nine modes on both lobby pages', async () => {
+    const wrapper = menu()
+    const brief = wrapper.get('[data-es2-expedition-summary]')
+    const cases = [
+      ['quick', '✦'], ['standard', '♜'], ['endless', '∞'], ['challenge', 'ϟ'],
+      ['boss-rush', '♛'], ['endless-eclipse', '☾'], ['relic-hunt', '◇'],
+      ['cursed-expedition', '✧'], ['chaos-arena', '✵'],
+    ] as const
+    for (const page of ['heroes', 'modes'] as const) {
+      expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe(page)
+      for (const [id, glyph] of cases) {
+        await wrapper.setProps({ runMode: id })
+        const card = wrapper.get(`[data-mode="${id}"], [data-objective-mode="${id}"]`)
+        expect(card.attributes('aria-checked')).toBe('true')
+        expect(card.attributes('data-es2-mode-theme')).toBe(id)
+        expect(brief.attributes('data-es2-mode-theme')).toBe(id)
+        for (const icon of [card.get('.es2-mode-sigil'), brief.get('.es2-mode-sigil')]) {
+          expect(icon.text()).toBe(glyph)
+          expect(icon.attributes('aria-hidden')).toBe('true')
+        }
+        expect(css).toContain(`[data-es2-mode-theme="${id}"]`)
+        expect(brief.get('[data-es2-mode-summary]').text()).not.toBe('')
+      }
+      if (page === 'heroes') await brief.trigger('click')
+    }
     expect(css).toContain('.es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}')
+  })
+  it('uses a shared hexagonal icon, matching title color and duration chip', () => {
+    expect(css).toMatch(/\.es2-mode-sigil\{[^}]*aspect-ratio:1[^}]*clip-path:polygon\([^}]*color:var\(--es2-mode-accent,/)
+    expect(css).toMatch(/\.es2-menu \.es2-expedition-name\{[^}]*color:var\(--es2-mode-accent\)[^}]*font:800/)
+    expect(css).toMatch(/\.es2-menu \.es2-expedition-duration\{[^}]*display:inline-block[^}]*border:1px solid[^}]*font-variant-numeric:tabular-nums/)
+    expect(css).toMatch(/\.es2-menu \.es2-expedition-meta\{[^}]*font:500 max\(\.6875rem/)
   })
 
   it('uses only a gear for settings in both languages and keeps its accessible action', async () => {
@@ -464,14 +514,13 @@ describe('lobby dock silhouette and layout', () => {
     expect(css).toContain('.es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}')
     expect(css).not.toContain('.es2-expedition-change-label:lang(en)')
   })
-  it('keeps the duration beside the mode name and groups summary and hero into one meta line', () => {
+  it('keeps the duration beside the mode name and only the summary in the meta line', () => {
     const mode = menu({ runMode: 'quick' }).get('.es2-mobile-selected-mode').element
     expect(Array.from(mode.children, child => child.className)).toEqual(
       ['es2-expedition-kicker', 'es2-expedition-name', 'es2-expedition-duration', 'es2-expedition-meta'])
     expect(Array.from(mode.querySelector('.es2-expedition-meta')!.children, child => child.className)).toEqual(
-      ['es2-expedition-description', 'es2-expedition-hero'])
-    // CJK text breaks between any two glyphs; keep-all keeps 「曙鋼騎士」 whole while English still wraps at spaces.
-    expect(css).toContain('.es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}')
+      ['es2-expedition-description'])
+    expect(css).not.toContain('.es2-expedition-hero')
   })
   it('cuts both dock buttons as forward chevrons from one shared tip instead of hexagon slabs', () => {
     expect(css).toContain('.es2-menu .es2-menu-actions{--es2-dock-tip:16px;grid-template-columns:minmax(0,1fr) fit-content(52%);')
