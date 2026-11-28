@@ -37,6 +37,16 @@ const minutes = computed(() => modeDurationMinutes(props.duration))
 @media(orientation:landscape) and (max-height:520px) {
   .es2-mode-time { min-width:34px; padding-inline:4px; }
 }
+/* Borderless typography on cards; the compact dock keeps its existing chip. */
+.es2-mode-time:not(.es2-mode-time--compact) {
+  border:0; background:none; padding:0; min-height:0; gap:3px;
+}
+.es2-mode-time:not(.es2-mode-time--compact):not(.es2-mode-time--endless) [data-es2-mode-time-value] {
+  font-size:clamp(22px,calc(1.375rem * var(--es2-ui-scale,1)),30px);
+}
+.es2-mode-time:not(.es2-mode-time--compact) [data-es2-mode-time-unit] {
+  letter-spacing:.08em; line-height:1.1;
+}
 /* Same palette and markup as the cards, inline variant for the short lobby dock. */
 .es2-mode-time--compact {
   display:inline-flex; align-items:center; justify-content:center; vertical-align:middle;

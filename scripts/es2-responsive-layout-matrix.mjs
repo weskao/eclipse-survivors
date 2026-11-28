@@ -517,6 +517,8 @@ try {
       // The actual selection, not an authored mock, must update the visible brief on returning to the hero page.
       await page.locator('[data-es2-expedition-navigation]').click()
       await page.locator('[data-objective-mode="boss-rush"]').click()
+      await assertModeDurations(page, name + ': English 125%')
+      await assertModeHotLayout(page, name + ': English 125%')
       if (hoverCapable) {
         const tip = page.locator('[data-es2-hover-details]')
         await tip.waitFor({ state: 'visible' })

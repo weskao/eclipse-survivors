@@ -57,6 +57,13 @@ describe('shared HOT expedition badge', () => {
 })
 
 describe('shared duration badge', () => {
+  it('centers the borderless card duration and reuses the hero Info corner without affecting the dock', () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    const duration = readFileSync(resolve('src/components/es2/modes/Es2ModeDuration.vue'), 'utf8')
+    expect(css).toContain('.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:center;')
+    expect(css).not.toContain('.es2-expedition-board .es2-mode-card-shell .es2-mode-detail-trigger{')
+    expect(duration).toMatch(/\.es2-mode-time:not\(\.es2-mode-time--compact\)\s*\{[^}]*border:0;[^}]*background:none;/)
+  })
   it('uses one centered value for unlimited time and restores the unit for finite runs', async () => {
     const wrapper = mount(Es2ModeDuration, { props: { duration: null } })
     wrappers.push(wrapper)

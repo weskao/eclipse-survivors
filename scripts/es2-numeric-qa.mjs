@@ -32,11 +32,21 @@ export async function assertModeDurations(page, label) {
     const i = info?.getBoundingClientRect()
     const font = parseFloat(getComputedStyle(value).fontSize)
     const endless = chip.classList.contains('es2-mode-time--endless')
-    const centered = !endless || (Math.abs((v.top+v.bottom-t.top-t.bottom)/2)<=1 &&
-      Math.abs((v.left+v.right-t.left-t.right)/2)<=1 && !unit)
+    const centered = Math.abs((t.top+t.bottom-c.top-c.bottom)/2)<=1 &&
+      (!endless || (Math.abs((v.top+v.bottom-t.top-t.bottom)/2)<=1 &&
+      Math.abs((v.left+v.right-t.left-t.right)/2)<=1 && !unit))
+    const icon = info?.querySelector('span')
+    const heroInfo = document.querySelector('.es2-hero-detail-trigger')
+    const infoStyle = info && getComputedStyle(info)
+    const heroStyle = heroInfo && getComputedStyle(heroInfo)
+    const plain = getComputedStyle(chip).borderTopWidth === '0px' &&
+      getComputedStyle(chip).backgroundImage === 'none'
+    const corner = !!i && Math.abs(i.top-c.top)<=1 && Math.abs(i.right-c.right)<=1 &&
+      infoStyle.paddingTop==='5px' && icon?.getBoundingClientRect().width===22 &&
+      (!heroStyle || infoStyle.paddingTop===heroStyle.paddingTop)
     return { mode:card.dataset.mode ?? card.dataset.objectiveMode, text:value.textContent, font,
-      centered, valid: centered && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
-        && i.bottom <= c.bottom+1 && t.bottom <= i.top+1 && Math.abs((t.left+t.right-i.left-i.right)/2) <= 1
+      centered, plain, corner, valid: centered && plain && corner && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
+        && i.bottom <= c.bottom+1 && t.right <= i.left+1
         && font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
         && t.left>=c.left-1 && t.right<=c.right+1 && t.top>=c.top-1 && t.bottom<=c.bottom+1
         && copy.right<=t.left+1 && v.width<=t.width+1 && chip.scrollWidth<=chip.clientWidth+1

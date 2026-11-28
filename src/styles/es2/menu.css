@@ -1198,21 +1198,18 @@
 .es2-expedition-chapter-heading h3{margin:0;font-size:calc(.93rem * var(--es2-ui-scale,1));line-height:1.25;color:#e9d9b9}
 .es2-expedition-chapter-heading::after{content:'';height:1px;flex:1;min-width:12px;background:linear-gradient(90deg,#b69b6455,transparent)}
 .es2-expedition-chapter[data-es2-mode-chapter="advanced"] .es2-expedition-chapter-heading>span:first-child{color:#d3b4ef}
-.es2-expedition-board .es2-mode-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:10px}
-.es2-mode-card-shell{--es2-mode-card-pad:11px;--es2-mode-rail-width:48px;position:relative;display:flex;min-width:0}
-.es2-expedition-board .es2-mode-card{position:relative;display:grid;grid-template-columns:var(--es2-mode-card-sigil-size) minmax(0,1fr) var(--es2-mode-rail-width);grid-template-rows:minmax(44px,1fr) 44px;align-items:center;min-width:0;min-height:112px;gap:4px 10px;padding:var(--es2-mode-card-pad);border-color:color-mix(in srgb,var(--es2-mode-ink) 56%,#526171);background:linear-gradient(125deg,color-mix(in srgb,var(--es2-mode-ink) 25%,#162536),#0e1928 90%);border-radius:4px 15px 4px 15px}
+.es2-expedition-board .es2-mode-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:10px}
+.es2-mode-card-shell{--es2-mode-card-pad:8px;--es2-hot-inline-end:48px;position:relative;display:flex;min-width:0}
+.es2-expedition-board .es2-mode-card{position:relative;display:grid;grid-template-columns:var(--es2-mode-card-sigil-size) minmax(0,1fr) minmax(42px,max-content);align-items:center;min-width:0;min-height:112px;gap:8px;padding:var(--es2-mode-card-pad) 44px var(--es2-mode-card-pad) 6px;border-color:color-mix(in srgb,var(--es2-mode-ink) 56%,#526171);background:linear-gradient(125deg,color-mix(in srgb,var(--es2-mode-ink) 25%,#162536),#0e1928 90%);border-radius:4px 15px 4px 15px}
 .es2-expedition-board .es2-mode-card:hover{border-color:var(--es2-mode-accent);background:linear-gradient(125deg,color-mix(in srgb,var(--es2-mode-ink) 46%,#162536),#142133)}
 .es2-expedition-board .es2-mode-card.es2-mode-active{border-color:#e8c47d;box-shadow:inset 0 0 0 1px #e8c47d,0 0 12px #d6b16b32;background:linear-gradient(120deg,color-mix(in srgb,var(--es2-mode-ink) 45%,#493a2b),#192a3c 85%)}
 .es2-expedition-board .es2-mode-card:disabled{opacity:.55;cursor:not-allowed}
 .es2-expedition-board .es2-mode-card:focus-visible{outline:2px solid #ffdf9a;outline-offset:2px}
-/* Duration and Info share the same right-hand axis. Info remains a sibling
-   button, not an interactive control nested inside the mode radio. */
-.es2-expedition-board .es2-mode-card>.es2-mode-sigil{grid-column:1;grid-row:1 / span 2}
-.es2-expedition-board .es2-mode-card>.es2-mode-copy{grid-column:2;grid-row:1 / span 2;align-self:center}
-.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;grid-row:1;align-self:end;justify-self:stretch;min-width:0;min-height:44px}
-.es2-expedition-board .es2-mode-card-shell .es2-mode-detail-trigger{top:auto;bottom:calc(var(--es2-mode-card-pad) + 1px);right:calc(var(--es2-mode-card-pad) + (var(--es2-mode-rail-width) - 44px)/2 + 1px);place-items:center;padding:0}
-.es2-expedition-board .es2-mode-card-shell .es2-mode-detail-trigger span{width:26px;height:26px;font-size:16px;transition:background .18s,border-color .18s}
-@media(prefers-reduced-motion:reduce){.es2-expedition-board .es2-mode-detail-trigger span{transition:none}}
+/* The Info corner uses the existing hero/mode trigger rule. Reserve its
+   independent 44px hit area; the duration occupies the centered content row. */
+.es2-expedition-board .es2-mode-card>.es2-mode-sigil{grid-column:1}
+.es2-expedition-board .es2-mode-card>.es2-mode-copy{grid-column:2;align-self:center}
+.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:center;justify-self:center;min-width:0}
 
 .es2-expedition-board .es2-mode-card{transition:background .2s,border-color .2s,box-shadow .2s}
 .es2-expedition-board .es2-mode-card .es2-mode-sigil{transition:transform .22s ease,filter .22s ease}
