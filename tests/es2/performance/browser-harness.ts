@@ -6,6 +6,9 @@ import { createState, resetRun } from '../../../src/game/state'
 import { hit } from '../../../src/game/combat'
 import { step } from '../../../src/game/step'
 import type { GameHooks, Mob } from '../../../src/game/types'
+import { ENEMY_DEFINITIONS, type FactionKind } from '../../../src/game/content/enemies/definitions'
+import { cleanupFactionEnemies, createFactionRuntime, damageFactionEnemy, spawnFactionEnemy, tickFactionEnemies } from '../../../src/game/content/enemies/runtime'
+import { drawLiveFactionArt, loadProductionFactionArt } from '../../../src/game/render/es2/production-factions'
 import { inventorySnapshot } from '../../../src/game/content/relics/runtime'
 import { createRenderAssets, drawFrame } from '../../../src/game/render'
 import { drawHitImpact, preloadHitImpactArt } from '../../../src/game/render/hit-impact'
@@ -184,6 +187,69 @@ function verifyLiveDeaths(art: Artwork, world: WorldRuntimeImages): void {
   canvas.width = canvas.height = 0
 }
 
+// Real decoded faction sources, the actual runtime and the production Canvas adapter.
+// Keep this outside the timed performance workload.
+async function verifyFactionArt(): Promise<string[]> {
+  const art = loadProductionFactionArt()
+  const kinds = Object.keys(ENEMY_DEFINITIONS) as FactionKind[]
+  await Promise.all(Object.values(art).flatMap(pair =>
+    [pair.body, pair.telegraph, ...(pair.highResBody ? [pair.highResBody] : [])].map(image => image.decode())))
+  const s = createState(); resetRun(s); s.W = 900; s.H = 600
+  const canvas = document.createElement('canvas')
+  canvas.width = s.W; canvas.height = s.H
+  const ctx = canvas.getContext('2d')!
+  const original = ctx.drawImage.bind(ctx)
+  let calls: { image: CanvasImageSource; crop: number[]; alpha: number }[] = []
+  ctx.drawImage = ((...args: Parameters<CanvasRenderingContext2D['drawImage']>) => {
+    calls.push({ image: args[0], crop: args.slice(1, 5) as number[], alpha: ctx.globalAlpha })
+    original(...args)
+  }) as CanvasRenderingContext2D['drawImage']
+  try {
+    for (const kind of kinds) {
+      const runtime = createFactionRuntime()
+      const enemy = spawnFactionEnemy(runtime, kind, 200, 220)!
+      const arena = { runtime, hero: { x: 250, y: 220 }, width: s.W, height: s.H, onHeroDamage: () => true }
+      const pair = art[kind], body = pair.highResBody ?? pair.body
+      const side = pair.highResBody ? 512 : body.naturalHeight
+      const draw = (motion = false, flashing = false) => {
+        calls = []; ctx.clearRect(0, 0, s.W, s.H)
+        drawLiveFactionArt(ctx, s, runtime, art, 0, 0, undefined, motion, false, flashing)
+        return calls.find(call => call.image === body)
+      }
+      const cell = (call: ReturnType<typeof draw>) => call
+        ? call.crop[0]! / side + (pair.highResBody ? call.crop[1]! / side * 3 : 0) : -1
+      s.worldClock = 0
+      if (![0, 1].includes(cell(draw()))) throw new Error('Missing live faction idle art: ' + kind)
+      if (damageFactionEnemy(runtime, enemy, 1, 150, 220) <= 0) throw new Error('Faction hit failed: ' + kind)
+      enemy.state = 'recover'; enemy.timer = .1
+      tickFactionEnemies(arena, .05)
+      if (!draw()) throw new Error('Faction hit art missing: ' + kind)
+      tickFactionEnemies(arena, .06)
+      enemy.phaseCooldown = 10
+      tickFactionEnemies(arena, .01)
+      if (cell(draw(false, true)) !== 2 || !calls.some(call => call.image === pair.telegraph))
+        throw new Error('Faction windup art/cue missing: ' + kind)
+      tickFactionEnemies(arena, enemy.timer + .001)
+      if (cell(draw()) !== 3) throw new Error('Faction release art missing: ' + kind)
+      if (damageFactionEnemy(runtime, enemy, enemy.hp * 10, 150, 220) <= 0)
+        throw new Error('Faction death hit failed: ' + kind)
+      cleanupFactionEnemies(runtime)
+      if (runtime.enemies.includes(enemy) || !runtime.fallen.includes(enemy) || cell(draw()) !== 4)
+        throw new Error('Faction fallen art missing: ' + kind)
+      if (calls.some(call => call.image === pair.telegraph) || draw(true))
+        throw new Error('Faction fallen actor retained warning or reduced-motion animation: ' + kind)
+      const duration = enemy.deathVisualTotal ?? .46
+      tickFactionEnemies(arena, duration * .75)
+      const fading = draw()
+      if (!fading || fading.alpha <= 0 || fading.alpha >= 1)
+        throw new Error('Faction dissolve alpha missing: ' + kind)
+      tickFactionEnemies(arena, duration)
+      if (runtime.fallen.includes(enemy) || draw()) throw new Error('Faction fallen actor did not expire: ' + kind)
+    }
+    return kinds
+  } finally { canvas.width = canvas.height = 0 }
+}
+
 // Actual engine event/claim, production Vue dialog and decoded reveal images.
 async function verifyTreasureReveals(): Promise<string[]> {
   const tiers = ['rare', 'epic', 'legendary'] as const
@@ -285,6 +351,7 @@ async function run() {
   }
   const contactArt = await verifyContactArt()
   const nativeDeathArt = await verifyNativeDeathArt(art)
+  const factionArt = await verifyFactionArt()
   const treasureReveals = await verifyTreasureReveals()
   const heapBefore = heap()
   for (let i = 0; i < 30; i++) {
@@ -311,7 +378,7 @@ async function run() {
     label: 'ES2_REAL_CHROMIUM_CANVAS_PERFORMANCE_NOT_PHYSICAL_DEVICE',
     platform: navigator.userAgent, preset, viewport: [s.W, s.H], dpr,
     initialMobs: 130, liveMobs: s.mobs.length,
-    frames: 120, contactArt, nativeDeathArt, liveDeathLifecycle: true, treasureReveals,
+    frames: 120, contactArt, nativeDeathArt, liveDeathLifecycle: true, factionArt, treasureReveals,
     simulationMs: distribution(simMs),
     canvas2dRenderMs: distribution(renderMs),
     requestAnimationFrameIntervalMs: distribution(rafIntervalsMs),
