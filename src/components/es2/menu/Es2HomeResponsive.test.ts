@@ -190,10 +190,34 @@ describe('phone homepage viewport-first navigation', () => {
     await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
     expect((wrapper.get('.es2-hero-section').element as HTMLElement).style.display).not.toBe('none')
     expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
-    expect(wrapper.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('shadowblade')
+    expect(wrapper.find('[data-es2-selected-hero]').exists()).toBe(false)
     expect(wrapper.get('.es2-mobile-selected-mode').text()).toContain('首領連戰')
     await wrapper.get('.es2-start').trigger('click')
     expect(wrapper.emitted('start')).toHaveLength(1)
+  })
+
+  it('keeps the expedition brief independent of hero selection on both lobby pages in both locales', async () => {
+    const locale = getLocale()
+    try {
+      for (const language of ['zh-TW', 'en'] as const) {
+        setLocale(language)
+        const wrapper = menu({ choice: 'ranger', heroId: 'ranger', runMode: 'boss-rush' })
+        const brief = wrapper.get('[data-es2-expedition-summary]')
+        for (const page of ['heroes', 'modes'] as const) {
+          expect(wrapper.get('[data-es2-menu-page]').attributes('data-es2-menu-page')).toBe(page)
+          await wrapper.setProps({ heroId: 'ranger' })
+          const copy = brief.text()
+          const label = brief.attributes('aria-label')
+          expect(brief.find('.es2-expedition-hero, [data-es2-selected-hero]').exists()).toBe(false)
+          expect(brief.get('[data-es2-mode-summary]').text()).not.toBe('')
+          await wrapper.setProps({ heroId: 'shadowblade' })
+          expect(brief.text()).toBe(copy)
+          expect(brief.attributes('aria-label')).toBe(label)
+          expect(wrapper.get('[data-hero-id="shadowblade"]').attributes('aria-pressed')).toBe('true')
+          if (page === 'heroes') await brief.trigger('click')
+        }
+      }
+    } finally { setLocale(locale) }
   })
 
   it('keeps a short localized expedition brief visible on the hero page and updates it from the selected mode', async () => {

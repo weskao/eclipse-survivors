@@ -105,6 +105,11 @@
 }
 .es2-dialog-actions{display:flex;flex-shrink:0;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:24px;padding-top:18px;border-top:1px solid var(--es2-line)}
 .es2-dialog-actions button{min-width:130px}
+/* Reward controls are outside the card scrollport; reserve their own height and hover clearance. */
+.es2-dialog-choice > .es2-dialog-actions{flex:0 0 auto;min-width:0;justify-content:center;margin-top:8px;padding-top:4px;border-top:0}
+.es2-dialog-choice > .es2-dialog-actions .es2-hint{margin:0;max-width:100%}
+.es2-dialog-choice > .es2-dialog-actions .es3-skip-reveal{flex:0 1 auto;min-width:44px;max-width:100%}
+@media (hover:hover) and (pointer:fine){.es2-dialog-choice > .es2-dialog-body{margin-block-end:0}}
 .es2-tone-legendary{border-color:#f2ce83;box-shadow:0 30px 90px #000b,0 0 40px #d8aa5a4a}
 .es2-tone-victory{border-color:#edca80}
 .es2-tone-defeat{border-color:#c18488}
@@ -281,7 +286,11 @@
   .es2-settings h3{margin:0 0 6px}
   .es2-slider-row{padding:4px 0}
 }
-@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){.es2-dialog-choice .es2-hint{display:none}}
+@media (orientation:landscape) and (max-height:520px){.es2-dialog-choice > .es2-dialog-actions{margin-top:4px;padding-top:2px}}
+@media (orientation:landscape) and (max-height:520px) and (pointer:coarse){
+  .es2-dialog-choice > .es2-dialog-actions:not(:has(.es3-skip-reveal)){display:none}
+  .es2-dialog-choice > .es2-dialog-actions .es2-hint-text{display:none}
+}
 
 /* Locale-safe wrapping: longer English and large zh-TW text must not widen cards or dialogs. */
 .es2-menu .es2-hero-copy > strong,
@@ -493,7 +502,6 @@
 .es2-menu-action-bar .es2-start{width:100%;margin:0}
 .es2-menu-action-bar>.es2-hint{margin:0}
 .es2-mobile-selected-mode{margin:0;text-align:center;color:var(--es2-muted);font:400 max(.6875rem,calc(.82rem * var(--es2-ui-scale,1)))/1.3 system-ui,sans-serif;overflow-wrap:anywhere}
-.es2-mobile-selected-mode [data-es2-selected-hero]{color:var(--es2-gold);font-weight:700}
 @media (horizontal-viewport-segments: 2){
   .es2-menu-action-bar{padding-left:max(calc(env(viewport-segment-left 1 0) + 12px),env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
   .es2-hero-section,.es2-mode-section{column-gap:max(12px,calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0) + 12px))}
@@ -611,14 +619,12 @@
   clip-path:polygon(50% 0,100% 25%,100% 72%,50% 100%,0 72%,0 25%);
   color:#d8e7fa;font:700 24px/1 Georgia,serif;text-shadow:0 0 9px #8fb6e680
 }
-/* Row 1: name + duration; row 2: summary · hero. Words wrap whole, never ellipsis-clipped. */
+/* Row 1: name + duration; row 2: summary. Words wrap whole, never ellipsis-clipped. */
 .es2-menu .es2-expedition-brief .es2-mobile-selected-mode{flex:1;min-width:0;display:block;text-align:start;overflow-wrap:break-word}
 .es2-menu .es2-expedition-kicker{display:block;margin-bottom:2px;color:#9bb1cb;font:700 max(.6875rem,calc(.7rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;letter-spacing:.04em}
 .es2-menu .es2-expedition-duration{margin-inline-start:7px;color:#bccadb;font:700 max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
 .es2-menu .es2-expedition-name{color:#f1f5fb;font:700 max(.9rem,calc(1.2rem * var(--es2-ui-scale,1)))/1.16 Georgia,'Noto Serif TC',serif}
 .es2-menu .es2-expedition-meta{display:block;margin-top:2px;color:#e1e3e7;font:400 max(.6875rem,calc(.79rem * var(--es2-ui-scale,1)))/1.28 system-ui,sans-serif}
-.es2-menu .es2-expedition-hero{font-weight:600;word-break:keep-all}
-.es2-menu .es2-expedition-hero::before{content:'·';margin-inline:6px;color:#7f94ae;font-weight:700}
 .es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;padding:5px 7px 5px 10px;border:1px solid #6f87a6;border-radius:999px;background:#0b1422b3;color:#d2e1f3;font:700 max(.6875rem,calc(.77rem * var(--es2-ui-scale,1)))/1.2 system-ui,sans-serif;text-align:start;transition:border-color .18s ease-out,background-color .18s ease-out,color .18s ease-out}
 .es2-expedition-change-label{min-width:0;overflow-wrap:anywhere}
 .es2-expedition-change-arrow{justify-self:end;align-self:center;line-height:1;font-size:1.15em;flex:none;transition:transform .18s cubic-bezier(.2,.8,.2,1)}
@@ -769,12 +775,16 @@
 }
 
 /* The hall is a primary destination, not a modal on top of another menu. */
-.es2-menu--archive .es2-menu-scroll{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+/* Keep safe-area padding outside the scrollport; keep the navigation's internal responsive padding. */
+.es2-menu--archive{padding-top:env(safe-area-inset-top,0px)}
+.es2-menu--archive .es2-menu-scroll{padding-top:0;padding-bottom:max(16px,env(safe-area-inset-bottom))}
 .es2-menu [data-es2-lobby-content][hidden]{display:none}
 .es2-menu--archive .es2-hall-navigation{
   position:sticky;top:0;z-index:8;background:linear-gradient(110deg,#121e2c,#152334 65%,#0f1925);
   box-shadow:0 7px 18px #050a1266;backdrop-filter:none
 }
+.es2-menu--archive .es2-hall-heading{align-items:flex-start}
+.es2-menu--archive .es2-hall-heading__title{display:flex}
 .es2-hall-heading__title{min-width:0;flex:1;overflow-wrap:anywhere}
 .es2-menu .es2-return-lobby{
   min-height:44px;padding:4px 12px;display:inline-flex;align-items:center;gap:7px;
