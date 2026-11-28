@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { BgmElement, SettingsStorage } from './types'
 import { createAudioSystem } from './engine'
 import { FakeAudioContext } from './fakeAudio'
+import { HERO_SELECT_SECONDS } from './hero-select-sample'
 
 class FakeBgm implements BgmElement {
   paused = true
@@ -260,7 +261,7 @@ describe('playSfx', () => {
     expect(ctx.oscillators).toHaveLength(0)
     expect(ctx.sources[0]!.loop).toBe(false)
     const sample = ctx.sources[0]!.buffer
-    expect(sample?.duration).toBeCloseTo(.44, 3)
+    expect(sample?.duration).toBeCloseTo(HERO_SELECT_SECONDS, 3)
     ctx.currentTime = 10.1
     audio.playSfx('hero-select')
     expect(ctx.sources).toHaveLength(1)
