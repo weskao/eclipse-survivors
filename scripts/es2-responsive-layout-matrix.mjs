@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
-import { assertNumericFont, assertModeDurations } from './es2-numeric-qa.mjs'
+import { assertNumericFont, assertModeDurations, assertDockDuration } from './es2-numeric-qa.mjs'
 import { assertModeHotLayout } from './es2-mode-hot-qa.mjs'
 
 const base = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
@@ -151,6 +151,7 @@ try {
         assert.deepEqual(layout.offenders, [], name + ': choices outside visible menu')
       }
       const verifyDock = async () => {
+        await assertDockDuration(page, name)
         const actionLayout = await page.locator('.es2-expedition-change').evaluate(action => {
           const label = action.querySelector('.es2-expedition-change-label')
           const arrow = action.querySelector('.es2-expedition-change-arrow')

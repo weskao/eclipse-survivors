@@ -62,6 +62,20 @@ function menu(props: Record<string, unknown> = {}) {
 }
 
 describe('classic expedition duration', () => {
+  it('shares the card duration value, unit and accessible label with the compact dock for every mode', async () => {
+    for (const mode of Object.values(MODES)) {
+      const wrapper = menu({ runMode: mode.id })
+      await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+      const card = wrapper.get(`[data-es2-mode-id="${mode.id}"] .es2-mode-time`)
+      const dock = wrapper.get('.es2-expedition-duration')
+      expect(dock.classes()).toContain('es2-mode-time--compact')
+      expect(dock.get('[data-es2-mode-time-value]').text()).toBe(card.get('[data-es2-mode-time-value]').text())
+      expect(dock.find('[data-es2-mode-time-unit]').exists()).toBe(mode.duration !== null)
+      if (mode.duration !== null) expect(dock.get('[data-es2-mode-time-unit]').text()).toBe('MIN')
+      expect(dock.attributes('aria-label')).toBe(card.attributes('aria-label'))
+      expect(dock.text()).not.toContain(':')
+    }
+  })
   it('separates a readable infinity symbol or numeric duration from its unit', async () => {
     const wrapper = menu({ runMode: 'quick' })
     await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
@@ -399,7 +413,7 @@ describe('homepage menu layout across devices', () => {
     expect(css).toContain('.es2-expedition-board .es2-mode-grid{grid-template-columns:minmax(0,1fr)}')
     expect(board.findAll('[data-es2-mode-details]')).toHaveLength(9)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-name\{[^}]*color:var\(--es2-mode-accent\)[^}]*font:800/)
-    expect(css).toMatch(/\.es2-menu \.es2-expedition-duration\{[^}]*display:inline-block[^}]*border:1px solid[^}]*font-variant-numeric:tabular-nums/)
+    expect(css).not.toContain('.es2-menu .es2-expedition-duration{')
     expect(css).toMatch(/\.es2-menu \.es2-expedition-meta\{[^}]*font:500 max\(\.6875rem/)
   })
 
@@ -593,7 +607,7 @@ describe('lobby dock silhouette and layout', () => {
   })
   it('keeps the duration beside the mode name and only the summary in the meta line', () => {
     const mode = menu({ runMode: 'quick' }).get('.es2-mobile-selected-mode').element
-    expect(Array.from(mode.children, child => child.className)).toEqual(
+    expect(Array.from(mode.children, child => child.classList.contains('es2-expedition-duration') ? 'es2-expedition-duration' : child.className)).toEqual(
       ['es2-expedition-kicker', 'es2-expedition-name', 'es2-expedition-duration', 'es2-expedition-meta'])
     expect(Array.from(mode.querySelector('.es2-expedition-meta')!.children, child => child.className)).toEqual(
       ['es2-expedition-description'])

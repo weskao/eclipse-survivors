@@ -624,7 +624,6 @@
 /* Row 1: name + duration; row 2: summary. Words wrap whole, never ellipsis-clipped. */
 .es2-menu .es2-expedition-brief .es2-mobile-selected-mode{flex:1;min-width:0;display:block;text-align:start;overflow-wrap:break-word}
 .es2-menu .es2-expedition-kicker{display:block;margin-bottom:3px;color:#bdcde1;font:700 max(.6875rem,calc(.72rem * var(--es2-ui-scale,1)))/1.2 var(--es2-font-numeric), system-ui,sans-serif;letter-spacing:.06em}
-.es2-menu .es2-expedition-duration{display:inline-block;margin-inline-start:6px;padding:2px 5px;vertical-align:middle;border:1px solid #60768c;border-radius:4px;background:#0b1422b3;color:#e5edf8;font:700 max(.6875rem,calc(.73rem * var(--es2-ui-scale,1)))/1.2 var(--es2-font-numeric), system-ui,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
 .es2-menu .es2-expedition-name{color:var(--es2-mode-accent);font:800 max(1rem,calc(1.3rem * var(--es2-ui-scale,1)))/1.2 var(--es2-font-numeric), Georgia,'Noto Serif TC',serif;overflow-wrap:anywhere;text-shadow:0 1px 3px #0b101b}
 .es2-menu .es2-expedition-meta{display:block;margin-top:3px;color:#e0e9f4;font:500 max(.6875rem,calc(.84rem * var(--es2-ui-scale,1)))/1.35 var(--es2-font-numeric), system-ui,sans-serif}
 .es2-menu .es2-expedition-change{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;flex:0 1 auto;min-width:0;max-width:30%;padding:5px 7px 5px 10px;border:1px solid #6f87a6;border-radius:999px;background:#21364f;color:#eef5ff;font:700 max(.6875rem,calc(.8rem * var(--es2-ui-scale,1)))/1.2 var(--es2-font-numeric), system-ui,sans-serif;text-align:start;transition:border-color .18s ease-out,background-color .18s ease-out,color .18s ease-out}
@@ -710,7 +709,6 @@
   .es2-menu .es2-expedition-brief{border:1px solid ButtonText}
   .es2-menu .es2-expedition-change{border-color:ButtonText}
   .es2-menu .es2-expedition-name{color:ButtonText;text-shadow:none}
-  .es2-menu .es2-expedition-duration{border-color:ButtonText;color:ButtonText;background:ButtonFace}
 }
 /* A small pointed-arch doorway with warm light inside; static paint, no idle animation. */
 .es2-menu .es2-portal-decoration{

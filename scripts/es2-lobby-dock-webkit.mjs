@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { webkit } from 'playwright'
 import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
-import { assertNumericFont, assertModeDurations } from './es2-numeric-qa.mjs'
+import { assertNumericFont, assertModeDurations, assertDockDuration } from './es2-numeric-qa.mjs'
 import { assertModeHotLayout } from './es2-mode-hot-qa.mjs'
 
 const target = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
@@ -84,6 +84,7 @@ async function verifyDock(page, stage) {
   }
   const cardsVisible = await page.locator('.es2-mode-section').isVisible()
   await assertExpeditionModeIcons(page, stage, { cards: cardsVisible })
+  await assertDockDuration(page, stage)
   if (cardsVisible) {
     await assertModeDurations(page, stage)
     await assertModeHotLayout(page, stage)

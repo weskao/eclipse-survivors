@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { t } from '../../../i18n'
+import { modeDurationMinutes, modeDurationLabel } from './mode-duration'
 
-const props = defineProps<{ duration: number | null }>()
-const minutes = computed(() => Math.ceil((props.duration ?? 0) / 60))
+const props = withDefaults(defineProps<{ duration: number | null; compact?: boolean }>(), { compact: false })
+const minutes = computed(() => modeDurationMinutes(props.duration))
 </script>
 
 <template>
-  <span class="es2-mode-time" :class="{ 'es2-mode-time--endless': duration === null }"
-    :aria-label="duration === null ? t('無時間限制') : t('{minutes} 分鐘', { minutes })">
+  <span class="es2-mode-time" :class="{ 'es2-mode-time--endless': duration === null, 'es2-mode-time--compact': compact }"
+    :aria-label="modeDurationLabel(duration)">
     <span data-es2-mode-time-value aria-hidden="true">{{ duration === null ? '∞' : minutes }}</span>
     <span v-if="duration !== null" data-es2-mode-time-unit aria-hidden="true">MIN</span>
   </span>
@@ -36,6 +36,18 @@ const minutes = computed(() => Math.ceil((props.duration ?? 0) / 60))
 }
 @media(orientation:landscape) and (max-height:520px) {
   .es2-mode-time { min-width:34px; padding-inline:4px; }
+}
+/* Same palette and markup as the cards, inline variant for the short lobby dock. */
+.es2-mode-time--compact {
+  display:inline-flex; align-items:center; justify-content:center; vertical-align:middle;
+  min-width:0; min-height:24px; margin-inline-start:6px; padding:2px 5px; gap:4px;
+}
+.es2-mode-time--compact [data-es2-mode-time-value] {
+  font-size:clamp(13px,calc(.9rem * var(--es2-ui-scale,1)),18px); line-height:1;
+}
+.es2-mode-time--compact [data-es2-mode-time-unit] { font-size:11px; line-height:1; }
+.es2-mode-time--compact.es2-mode-time--endless [data-es2-mode-time-value] {
+  font-size:clamp(20px,calc(1.25rem * var(--es2-ui-scale,1)),24px);
 }
 @media(forced-colors:active) {
   .es2-mode-time { background:Canvas; color:CanvasText; border-color:CanvasText; }

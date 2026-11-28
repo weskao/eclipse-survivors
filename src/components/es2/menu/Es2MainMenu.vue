@@ -17,9 +17,11 @@ import Es2DetailSurface from './Es2DetailSurface.vue'
 import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
 import Es2ModeSigil from '../modes/Es2ModeSigil.vue'
+import Es2ModeDuration from '../modes/Es2ModeDuration.vue'
+import { modeDurationLabel } from '../modes/mode-duration'
 import { modeIds, MODES, getModeBrief } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
-import { formatDuration, type MenuView } from './model'
+import type { MenuView } from './model'
 const props = withDefaults(defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean; archiveView?: MenuView }>(), { archiveView: 'main' })
 const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
@@ -54,8 +56,7 @@ const detailRole = computed(() => detailClassic.value?.role ?? detailSpecializat
 const selectedMode = computed(() => MODES[props.runMode])
 const modeTitle = computed(() => t(selectedMode.value.label).split(' · ')[0]!)
 const modeBrief = computed(() => t(getModeBrief(props.runMode)))
-const modeDuration = computed(() => selectedMode.value.duration === null
-  ? '∞' : formatDuration(selectedMode.value.duration))
+const modeDuration = computed(() => modeDurationLabel(selectedMode.value.duration))
 const page = ref<'heroes' | 'modes'>('heroes')
 // Compact destination labels; retain the full action for accessibility and tooltips.
 const expeditionActionLabel = computed(() => t(page.value === 'heroes' ? '模式' : '英雄'))
@@ -145,7 +146,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
           <span class="es2-mobile-selected-mode" aria-live="polite">
             <span class="es2-expedition-kicker">{{ t('目前遠征') }}</span>
             <strong class="es2-expedition-name">{{ modeTitle }}</strong>
-            <span class="es2-expedition-duration">{{ modeDuration }}</span>
+            <Es2ModeDuration class="es2-expedition-duration" :duration="selectedMode.duration" compact />
             <span class="es2-expedition-meta">
               <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
             </span>

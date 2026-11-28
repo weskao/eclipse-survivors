@@ -45,3 +45,22 @@ export async function assertModeDurations(page, label) {
   assert.equal(cards.length,9,label + ': missing expedition time chips and info controls')
   assert.deepEqual(cards.filter(card=>!card.valid),[],label + ': duration readability or overflow')
 }
+
+export async function assertDockDuration(page, label) {
+  const summary = page.locator('[data-es2-expedition-summary]')
+  const id = await summary.getAttribute('data-run-mode')
+  const card = page.locator(`[data-es2-mode-id="${id}"] .es2-mode-time`)
+  const dock = summary.locator('.es2-expedition-duration')
+  const value = await dock.locator('[data-es2-mode-time-value]').textContent()
+  assert.equal(value, await card.locator('[data-es2-mode-time-value]').textContent(), label + ': card/dock duration')
+  assert.equal(await dock.getAttribute('aria-label'), await card.getAttribute('aria-label'))
+  assert.equal(await dock.locator('[data-es2-mode-time-unit]').count(), value === '∞' ? 0 : 1)
+  if (value !== '∞') assert.equal(await dock.locator('[data-es2-mode-time-unit]').textContent(), 'MIN')
+  const layout = await dock.evaluate(el => {
+    const b = el.getBoundingClientRect(), p = el.closest('.es2-mobile-selected-mode').getBoundingClientRect()
+    const v = el.querySelector('[data-es2-mode-time-value]').getBoundingClientRect()
+    return { fits:b.width>0 && b.height>0 && b.left>=p.left-1 && b.right<=p.right+1 &&
+      el.scrollWidth<=el.clientWidth+1, centered:Math.abs((v.top+v.bottom-b.top-b.bottom)/2)<=1 }
+  })
+  assert.ok(layout.fits && layout.centered, label + ': dock duration geometry ' + JSON.stringify(layout))
+}

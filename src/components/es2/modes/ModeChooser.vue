@@ -6,6 +6,7 @@ import { useHoverDetails } from '../menu/useHoverDetails'
 import Es2ModeSigil from './Es2ModeSigil.vue'
 import Es2ModeHotBadge from './Es2ModeHotBadge.vue'
 import Es2ModeDuration from './Es2ModeDuration.vue'
+import { modeDurationLabel } from './mode-duration'
 import { MODES, modeIds, getModeBrief } from '../../../meta/modes'
 import { getModeDetails } from './mode-details'
 import type { RunModeId } from '../../../meta/types'
@@ -62,7 +63,7 @@ const modeTitle = (id: RunModeId) => t(MODES[id].label).split(' · ')[0]!
             :data-es2-mode-id="card.id" :data-mode="card.objective ? undefined : card.id" :data-objective-mode="card.objective ? card.id : undefined"
             :data-es2-mode-theme="card.id" :aria-checked="value === card.id" :disabled="disabled"
             :tabindex="focusId === card.id ? 0 : -1"
-            :aria-label="[modeTitle(card.id), ...(MODES[card.id].hot ? [t('熱門遠征')] : []), t(getModeBrief(card.id)), MODES[card.id].duration === null ? t('無時間限制') : t('{minutes} 分鐘', { minutes: Math.ceil((MODES[card.id].duration ?? 0) / 60) })].join(' · ')"
+            :aria-label="[modeTitle(card.id), ...(MODES[card.id].hot ? [t('熱門遠征')] : []), t(getModeBrief(card.id)), modeDurationLabel(MODES[card.id].duration)].join(' · ')"
             @click="emit('select', card.id)" @keydown="moveMode($event, card.id)">
             <Es2ModeSigil :mode="card.id" :class="card.objective ? 'es2-objective-sigil' : 'es2-mode-mark'" />
             <span class="es2-mode-copy">
