@@ -686,11 +686,33 @@ describe('interruption edge cases', () => {
     audio.dispose()
   })
 
+  it.each(['play', 'level'] as const)('keeps healthy %s media continuous through repeated gestures while resume is pending', async mode => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    if (mode === 'level') audio.onScreen(mode)
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    const pauses = bgm.pauseCalls
+    const plays = bgm.playCalls
+    audio.wake()
+    audio.wake()
+    audio.wake()
+    expect(bgm.pauseCalls - pauses).toBe(0)
+    expect(bgm.playCalls - plays).toBe(0)
+    finish()
+    await Promise.resolve()
+    audio.dispose()
+  })
+
   it('restarts interrupted battle media only once while resume is pending', async () => {
     const audio = make()
     audio.wake()
     audio.onScreen('play')
-    ctx.state = 'suspended'
+    ctx.state = 'interrupted' as AudioContextState
     let finish!: () => void
     ctx.resume = () => new Promise<void>(resolve => {
       finish = () => { ctx.state = 'running'; resolve() }
@@ -707,14 +729,13 @@ describe('interruption edge cases', () => {
     audio.dispose()
   })
 
-
-  it('restarts a stuck media element after the context suspends without a visibility event', () => {
+  it('restarts a stuck media element after actual WebKit interruption without a visibility event', () => {
     const audio = make()
     audio.wake()
     audio.onScreen('play')
     expect(bgm.playCalls).toBe(1)
-    // Some mobile browsers report media as still playing while sound is silent.
-    ctx.state = 'suspended'
+    // WebKit can report media as still playing after an actual OS interruption.
+    ctx.state = 'interrupted' as AudioContextState
     bgm.paused = false
     audio.wake()
     expect(bgm.pauseCalls).toBeGreaterThan(0)
@@ -796,6 +817,60 @@ describe('cinematic sampled boss music', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(ctx.sources.at(-1)?.offset).toBeGreaterThan(6)
     expect(ctx.sources.at(-1)?.loop).toBe(true)
+  })
+
+  it.each(['suspended', 'interrupted'] as const)('preserves the live Boss source during %s context recovery and reward selection', async state => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    expect(first.loop).toBe(true)
+    ctx.currentTime = 7
+    ctx.state = state as AudioContextState
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    audio.onScreen('level')
+    audio.wake()
+    audio.tick('level')
+    audio.onScreen('play')
+    audio.wake()
+    expect(first.stoppedAt).toBeNull()
+    expect(ctx.sources).toEqual([first])
+    finish()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(first.stoppedAt).toBeNull()
+    expect(ctx.sources).toEqual([first])
+    audio.dispose()
+  })
+
+  it('honors music mute during a pending Boss context resume without recreating the source', async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    audio.setMusicVolume(0)
+    expect(first.stoppedAt).not.toBeNull()
+    finish()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources).toEqual([first])
+    audio.dispose()
   })
 
   it('silences pre-rendered music on pause/mute and resumes without a duplicate loop', async () => {

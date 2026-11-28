@@ -89,10 +89,13 @@ export function createCinematicMusic(
   const sync = (): void => {
     const ctx = context()
     const next = wanted()
-    if (!next || !ctx || ctx.state !== 'running' || !allowed()) {
+    if (!next || !ctx || ctx.state === 'closed' || !allowed()) {
       if (voice || loading) stop(!!next)
       return
     }
+    // A suspended context freezes its own audio clock. Keep the live source
+    // (and pending phase intent) until resume; don't restart/fade it on a tap.
+    if (ctx.state !== 'running') return
     if (voice?.key === next.key || loading === next.key || failed.has(next.url)) return
     const previous = voice
     const offset = paused?.key === next.key ? paused.offset

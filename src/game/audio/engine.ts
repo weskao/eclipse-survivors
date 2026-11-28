@@ -290,12 +290,11 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
 
   const wake = (): void => {
     const recovering = interrupted || (ac !== null && ac.state !== 'running' && ac.state !== 'closed')
-    // A pending Web Audio resume is not a media interruption. In the lobby,
-    // a suspended SFX context alone says nothing about the playing media score.
-    // Preserve forced recovery for actual OS interruptions and battle recovery,
-    // but do it at most once per pending resume.
+    // In every scene a suspended SFX context alone is not a media interruption.
+    // Only explicit lifecycle interruption or WebKit's actual interrupted state
+    // can justify restarting an unpaused track, once per pending resume.
     const restartMedia = interrupted || (!resumePending && contextWasRunning &&
-      (String(ac?.state) === 'interrupted' || (mode !== 'menu' && recovering)))
+      String(ac?.state) === 'interrupted')
     interrupted = false
     try {
       const track = activeTrack()
