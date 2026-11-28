@@ -61,6 +61,19 @@ function menu(props: Record<string, unknown> = {}) {
   return wrapper
 }
 
+describe('homepage expedition recommendation', () => {
+  it('renders the HOT component only on enabled modes, regardless of selection', async () => {
+    const wrapper = menu({ runMode: 'quick' })
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    const enabled = Object.values(MODES).filter(mode => mode.hot).map(mode => mode.id)
+    const marked = wrapper.findAll('[data-mode], [data-objective-mode]')
+      .filter(card => card.find('[data-es2-mode-hot]').exists())
+      .map(card => card.attributes('data-mode') ?? card.attributes('data-objective-mode'))
+    expect(marked).toEqual(enabled)
+    expect(marked).toEqual(['boss-rush'])
+  })
+})
+
 describe('homepage game title', () => {
   it('updates the title when switching locale without remounting', async () => {
     const locale = getLocale()

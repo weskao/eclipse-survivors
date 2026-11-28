@@ -347,6 +347,26 @@ try {
       assert.deepEqual(entryOffenders, [], name + ': expedition cards clip during the first entry frame')
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
       await assertExpeditionModeIcons(page, name + ': expedition selection', { cards: true })
+      const hot = page.locator('[data-objective-mode="boss-rush"] [data-es2-mode-hot]')
+      assert.equal(await page.locator('[data-es2-mode-hot]:visible').count(), 1, name + ': exactly one HOT badge')
+      const hotLayout = await hot.evaluate(el => {
+        const card = el.closest('[data-objective-mode]')
+        const title = card.querySelector('.es2-objective-heading strong')
+        const image = card.querySelector('.es2-mode-sigil')
+        const info = card.parentElement.querySelector('.es2-mode-detail-trigger span')
+        const r = el.getBoundingClientRect(), c = card.getBoundingClientRect()
+        const overlaps = node => {
+          const b = node.getBoundingClientRect()
+          return Math.min(r.right,b.right)-Math.max(r.left,b.left) > 1 && Math.min(r.bottom,b.bottom)-Math.max(r.top,b.top) > 1
+        }
+        return { contained:r.width > 0 && r.height > 0 && r.left >= c.left-1 && r.right <= c.right+1 && r.top >= c.top-1 && r.bottom <= c.bottom+1,
+          overlap:[title,image,info].some(overlaps), pointer:getComputedStyle(el).pointerEvents,
+          animation:getComputedStyle(el,'::after').animationName,
+          reduced:matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.es2ReduceMotion === 'true' || document.documentElement.dataset.es2ReduceFlashing === 'true' }
+      })
+      assert.ok(hotLayout.contained && !hotLayout.overlap && hotLayout.pointer === 'none', name + ': HOT badge overlap ' + JSON.stringify(hotLayout))
+      if (hotLayout.reduced) assert.equal(hotLayout.animation, 'none', name + ': reduced motion HOT')
+      else assert.match(hotLayout.animation, /^es2-mode-hot-sweep(?:-|$)/, name + ': HOT sweep')
       if (['portrait-320', 'landscape-844', 'desktop-1440'].includes(name)) {
         const brief = page.locator('[data-es2-expedition-summary]')
         const initial = await brief.getAttribute('data-run-mode')

@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import ModeChooser from './ModeChooser.vue'
-import { getLocale, setLocale } from '../../../i18n'
+import { getLocale, setLocale, t } from '../../../i18n'
 import { nextTick } from 'vue'
 import Es2ModeSigil from './Es2ModeSigil.vue'
+import Es2ModeHotBadge from './Es2ModeHotBadge.vue'
 import { MODES } from '../../../meta/modes'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -14,6 +15,33 @@ import { advanceObjective, createObjectiveState } from '../../../game/content/ob
 
 const wrappers: VueWrapper[] = []
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount() })
+
+describe('shared HOT expedition badge', () => {
+  it('renders only when enabled and reacts to the boolean without leaving a placeholder', async () => {
+    const wrapper = mount(Es2ModeHotBadge, { props: { hot: false } })
+    wrappers.push(wrapper)
+    expect(wrapper.find('[data-es2-mode-hot]').exists()).toBe(false)
+    await wrapper.setProps({ hot: true })
+    const badge = wrapper.get('[data-es2-mode-hot]')
+    expect(badge.text()).toBe('HOT')
+    await wrapper.setProps({ hot: false })
+    expect(wrapper.find('[data-es2-mode-hot]').exists()).toBe(false)
+  })
+
+  it('currently marks only boss rush without changing selection', async () => {
+    const wrapper = mount(ModeChooser, { props: { value: 'relic-hunt' } })
+    wrappers.push(wrapper)
+    expect(Object.values(MODES).filter(mode => mode.hot).map(mode => mode.id)).toEqual(['boss-rush'])
+    expect(wrapper.findAll('[data-es2-mode-hot]')).toHaveLength(1)
+    const boss = wrapper.get('[data-objective-mode="boss-rush"]')
+    expect(boss.get('[data-es2-mode-hot]').text()).toBe('HOT')
+    expect(boss.attributes('aria-label')).toContain(t('熱門遠征'))
+    expect(boss.attributes('aria-checked')).toBe('false')
+    expect(wrapper.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
+    await boss.get('[data-es2-mode-hot]').trigger('click')
+    expect(wrapper.emitted('select')).toEqual([['boss-rush']])
+  })
+})
 
 describe('ES2 objective mode chooser adapter', () => {
   it('renders exactly five accessible choices without replacing four legacy modes', async () => {

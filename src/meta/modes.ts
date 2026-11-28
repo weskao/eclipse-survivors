@@ -4,6 +4,8 @@ import { getObjectiveMode, objectiveModeIds, type ObjectiveModeId } from '../gam
 
 export interface ModeConfig {
   id: RunModeId
+  /** Presentation only; true enables the shared HOT recommendation badge. */
+  hot?: boolean
   label: string
   description: string
   duration: number | null
@@ -32,7 +34,7 @@ export const MODES: Record<RunModeId, ModeConfig> = {
   standard: { id: 'standard', label: '王國征途', description: '8 分鐘遠征 · 征服深淵魔王', duration: BALANCE.modes.classic.standard.duration, bossAt: BALANCE.modes.classic.standard.bossAt, victory: 'timed-boss', modifiers: normal },
   endless: { id: 'endless', label: '無盡生存', description: '沒有時間限制 · 魔物愈來愈強', duration: BALANCE.modes.classic.endless.duration, bossAt: BALANCE.modes.classic.endless.bossAt, victory: 'endless', modifiers: { ...normal, spawnFrequency: BALANCE.modes.classic.endless.spawnFrequency } },
   challenge: { id: 'challenge', label: '詛咒試煉', description: '210 秒 · 強敵侵襲與高壓戰鬥', duration: BALANCE.modes.classic.challenge.duration, bossAt: BALANCE.modes.classic.challenge.bossAt, victory: 'timed-boss', modifiers: { enemyHp: BALANCE.modes.classic.challenge.enemyHp, enemyDamage: BALANCE.modes.classic.challenge.enemyDamage, spawnFrequency: BALANCE.modes.classic.challenge.spawnFrequency } },
-  'boss-rush': objectiveConfig('boss-rush'),
+  'boss-rush': { ...objectiveConfig('boss-rush'), hot: true },
   'endless-eclipse': objectiveConfig('endless-eclipse'),
   'relic-hunt': objectiveConfig('relic-hunt'),
   'cursed-expedition': objectiveConfig('cursed-expedition'),

@@ -4,6 +4,8 @@ import { computed } from 'vue'
 import Es2DetailSurface from '../menu/Es2DetailSurface.vue'
 import { useHoverDetails } from '../menu/useHoverDetails'
 import Es2ModeSigil from './Es2ModeSigil.vue'
+import Es2ModeHotBadge from './Es2ModeHotBadge.vue'
+import { MODES } from '../../../meta/modes'
 import { objectiveModeIds, getObjectiveMode, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 
 withDefaults(defineProps<{ value: ObjectiveModeId | null; disabled?: boolean }>(), { disabled: false })
@@ -27,13 +29,13 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
         type="button" role="radio" class="es2-objective-choice" data-ui-sfx="managed"
         :data-objective-mode="id" :data-es2-mode-theme="id" :disabled="disabled"
         :aria-checked="value === id"
-        :aria-label="[modeTitle(id), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"
+        :aria-label="[modeTitle(id), ...(MODES[id].hot ? [t('熱門遠征')] : []), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"
         :class="{ selected: value === id }"
         @click="emit('select', id)"
       >
         <span class="es2-objective-heading">
           <Es2ModeSigil :mode="id" class="es2-objective-sigil" />
-          <strong>{{ modeTitle(id) }}</strong>
+          <span class="es2-mode-title-line"><strong>{{ modeTitle(id) }}</strong><Es2ModeHotBadge :hot="MODES[id].hot" /></span>
         </span>
         <span>{{ t(getObjectiveMode(id).description) }}</span>
         <small>{{ t(getObjectiveMode(id).victoryDescription) }}</small>

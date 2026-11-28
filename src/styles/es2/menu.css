@@ -81,6 +81,8 @@
 [data-es2-mode-theme][aria-checked="true"] :is(.es2-mode-copy strong,.es2-objective-heading strong){color:var(--es2-mode-accent)}
 .es2-mode-copy{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
 .es2-mode-copy strong{font-size:.97rem}
+.es2-mode-title-line{display:flex;align-items:center;flex-wrap:wrap;gap:3px 6px;min-width:0;max-width:100%}
+.es2-mode-title-line>strong{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .es2-mode-copy small{font:400 .75rem/1.5 system-ui,sans-serif;color:var(--es2-muted)}
 .es2-mode-time{font:700 .6875rem system-ui,sans-serif;color:#d4c4a6;white-space:nowrap}
 .es2-start{width:100%;min-height:59px;font-size:1.13rem!important}
