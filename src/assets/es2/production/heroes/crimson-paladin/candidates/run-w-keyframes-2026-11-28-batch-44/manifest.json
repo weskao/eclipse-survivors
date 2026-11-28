@@ -1,0 +1,307 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "run",
+  "direction": "W",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 5,
+  "sourceProvenance": {
+    "referenceCommit": "d501ac730227281e2c656eb5cb55ecc1a25b50e6",
+    "battleAssetPath": "src/assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp",
+    "battleAssetBlob": "9550f00691d585623a64151c880393723454fe82",
+    "referenceConditioningVerified": false,
+    "generationIds": [
+      "6f6dd832-d040-4178-89db-322bfcdd4f7b",
+      "b6138059-de38-4603-9c95-0d0b85e3b6d4"
+    ],
+    "sourceSheet": {
+      "file": "source-sheet-a.webp",
+      "pixels": [
+        1262,
+        1246
+      ],
+      "sha256": "57c95f86d9677d9c145891c2998dd5ddf89bc8a949bc9d3053d3fb07c3415439",
+      "bytes": 1138272
+    }
+  },
+  "frames": [
+    {
+      "id": "run-west-battle-a01",
+      "file": "run-west-battle-a01@3x.webp",
+      "sourceFile": "run-west-battle-a01-source.webp",
+      "bytes": 285318,
+      "sourceBytes": 285700,
+      "webpSHA256": "fa826a5b37ddf4d40d3b1f9882778cce8bbce3b4f21691bfcaa380c5f41da3f6",
+      "sourceSHA256": "977d45fbad2699b7f1e5221b12f6f1b67ae2494298b78e02de248e7aed695f24",
+      "sourcePixels": [
+        629,
+        610
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          40,
+          17,
+          591,
+          556
+        ],
+        "coreExtent": [
+          551,
+          539
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          109,
+          96,
+          660,
+          635
+        ],
+        "coreExtent": [
+          551,
+          539
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        0,
+        0,
+        629,
+        610
+      ]
+    },
+    {
+      "id": "run-west-battle-a02",
+      "file": "run-west-battle-a02@3x.webp",
+      "sourceFile": "run-west-battle-a02-source.webp",
+      "bytes": 265188,
+      "sourceBytes": 264322,
+      "webpSHA256": "37fcf7bc1c1be9c2d6ca131299185a8f12f9fac4da03e44a30d9fe510f681932",
+      "sourceSHA256": "229cfd46afae2ca76bcf8a7677ebd204de04d550c193f59319819c920d6688e1",
+      "sourcePixels": [
+        633,
+        610
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          19,
+          22,
+          589,
+          569
+        ],
+        "coreExtent": [
+          570,
+          547
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          86,
+          101,
+          656,
+          648
+        ],
+        "coreExtent": [
+          570,
+          547
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        629,
+        0,
+        1262,
+        610
+      ]
+    },
+    {
+      "id": "run-west-battle-a03",
+      "file": "run-west-battle-a03@3x.webp",
+      "sourceFile": "run-west-battle-a03-source.webp",
+      "bytes": 277470,
+      "sourceBytes": 275828,
+      "webpSHA256": "cbbd0ebf923836fce7a6cdd6aa456028125c513e5221daefb526df000f6704a9",
+      "sourceSHA256": "a80558e8209f7fe0bc3ddd2044cd829566361b2292d6aa415c40ab9e31a9a0e8",
+      "sourcePixels": [
+        629,
+        636
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          20,
+          7,
+          618,
+          532
+        ],
+        "coreExtent": [
+          598,
+          525
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          89,
+          73,
+          687,
+          598
+        ],
+        "coreExtent": [
+          598,
+          525
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        0,
+        610,
+        629,
+        1246
+      ]
+    },
+    {
+      "id": "run-west-battle-a04",
+      "file": "run-west-battle-a04@3x.webp",
+      "sourceFile": "run-west-battle-a04-source.webp",
+      "bytes": 280056,
+      "sourceBytes": 279472,
+      "webpSHA256": "2d9c84ec7a40caca0b37b69a02811b57c6cbe1474a8624ec2e97a9a30a127a84",
+      "sourceSHA256": "eeabe16992acbd1e8cfcdeeb12252eb7546aef8d7e6ee7cf992f6db0847b0d5b",
+      "sourcePixels": [
+        633,
+        636
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          24,
+          11,
+          615,
+          571
+        ],
+        "coreExtent": [
+          591,
+          560
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          91,
+          77,
+          682,
+          637
+        ],
+        "coreExtent": [
+          591,
+          560
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        629,
+        610,
+        1262,
+        1246
+      ]
+    },
+    {
+      "id": "run-west-battle-b01",
+      "file": "run-west-battle-b01@3x.webp",
+      "sourceFile": "run-west-battle-b01-source.webp",
+      "bytes": 363466,
+      "sourceBytes": 1072382,
+      "webpSHA256": "0f6c5c7ee6de2907f9e813c30d8fe568bf47582248ba79faefc65bdb99e396be",
+      "sourceSHA256": "b4aa9ae97b8563729a89a0c02181f4a31c25d972c90087f5509218ad5715c18b",
+      "sourcePixels": [
+        1278,
+        1230
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          126,
+          26,
+          1218,
+          1159
+        ],
+        "coreExtent": [
+          1092,
+          1133
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          101,
+          59,
+          703,
+          684
+        ],
+        "coreExtent": [
+          602,
+          625
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.5508607198748043,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "B",
+      "sourceCrop": null
+    }
+  ],
+  "reviewNotes": [
+    "A01\u2013A04 are four distinct poses from one sheet; B01 is a separate alternate, not a fifth consecutive frame. Do not combine as a verified animation.",
+    "Battle reference has blonde hair, red ribbon, silver-gold armor, red cape and shield. Facial, shield emblem, equipment handedness, relative body scale and foot anchors require review.",
+    "Pillow lossless WebP verified for alpha and visible RGBA; transparent RGB is not asserted. Polytool not executed. No upscaling or mirroring.",
+    "Do not promote to gameplay until sequence and identity approval."
+  ]
+}
