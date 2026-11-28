@@ -11,7 +11,7 @@ Status: DESIGN_REVIEW. Historical proposed Wave checklist, superseded for releas
 - [ ] W05: M01–M07, AT01–AT04; 18 trials staged; sandbox isolation, standardized builds, no unverified public leaderboard.
 - [ ] W06: semi-open chapter progression, WLD01–06, Chapter III then IV, B05/B06; separate detailed asset/encounter design and acceptance.
 - [ ] W07: valid receipts, base reward rules, economy measurements, cosmetic/first-clear rewards, local records; cloud and ranking trust review.
-- [ ] W08: QA01–15, RED/GREEN evidence, CI exact HEAD, device and art/audio QA; release A/B/C gates.
+- [ ] W08: QA01–15, RED/GREEN evidence, CI exact HEAD, device and art/audio QA; independent Stage gates (current roadmap).
 - [ ] Review/remove ES5 rollout switch only after permanent release and rollback readiness; explicit merge/deploy authorization.
 
 Evidence format: `task id | SHA | RED command/link | GREEN command/link | browser/device/art | paired balance report | status/blocker`. Keep deferred/manual items unchecked; preserve existing ES3/ES4 entries and their gates.

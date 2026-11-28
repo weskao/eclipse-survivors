@@ -60,7 +60,7 @@
 
 **Files:** Modify existing browser scripts under `scripts/` and shared UI only if regression; new `tests/es2/mobile/es5-player-flow.test.ts`, `docs/es5/browser-qa.md`
 
-**Interfaces:** Player flow hero→chapter→mode→tier→oath→start→Q/touch→choice→boss→result→home.
+**Interfaces:** Player flow hero→chapter→mode→start→Q/touch→choice→boss→result→home; add tier/oath only once the active Stage exposes them.
 
 - [ ] **Step 1 — RED: add named tests in `tests/es2/mobile/es5-player-flow.test.ts`**
   - `start_reachable`: portrait/landscape/foldable/tablet safe-area and no occluded CTA
@@ -94,21 +94,21 @@
 
 **Files:** Modify `TODO.md`, `CHANGELOG.md`, release version files only as approved for release, `docs/es5/release-evidence.md`; existing workflows and `docs/release-process.md`; new `tests/es2/integration/es5-release-gate.test.ts`
 
-**Interfaces:** Evidence row taskId/SHA/RED/GREEN/CI/device/asset/data/status; feature release A/B/C allowlist.
+**Interfaces:** Evidence row taskId/SHA/RED/GREEN/CI/device/asset/data/status; active Stage scope allowlist.
 
 - [ ] **Step 1 — RED: add named tests in `tests/es2/integration/es5-release-gate.test.ts`**
-  - `feature_scope`: A excludes unapproved B/C, disabled features not exposed
+  - `feature_scope`: active Stage excludes all unapproved later content; disabled features not exposed
   - `exact_sha`: stale/cancelled/skipped evidence not counted passing
   - `art_gate`: existing manual/art acceptance not weakened
   - `version_rule`: +0.0.1 with 99 carry per existing release process
 
 - [ ] **Step 2 — Run focused RED**: `pnpm exec vitest run tests/es2/integration/es5-release-gate.test.ts`. Record exact failing assertions; an already-passing regression case is retained but not represented as RED. Establish a meaningful failing case for new behavior before implementation.
-- [ ] **Step 3 — Minimal implementation:** Run `make verify`, both flag builds, exact HEAD CI only if authorized; update TODO per evidence, get owner release signoff; no automatic merge or deploy. Remove rollout switch only in separate approved migration after rollback readiness.
+- [ ] **Step 3 — Minimal implementation:** Run `make verify`, both flag builds when a rollout flag actually exists, exact HEAD CI only if authorized; update TODO per evidence, get owner release signoff; no automatic merge or deploy. Remove rollout switch only in separate approved migration after rollback readiness.
 - [ ] **Step 4 — GREEN / REFACTOR:** `pnpm exec vitest run tests/es2/integration/es5-release-gate.test.ts`; require exit 0 and all named cases passing. Refactor only within the owning module; rerun focused tests, then `pnpm typecheck` (exit 0). Capture logs and any QA artifact in the evidence ledger.
 - [ ] **Step 5 — Commit:** `git add -- <reviewed task files>` (substitute exact paths listed above; inspect `git diff --cached`), then `git commit -m "docs: record es5 release readiness evidence"`. No unrelated files.
 
 ## Wave acceptance / handoff
 
-- [ ] For each A/B/C, all applicable QA01–15 pass, actual human/physical/asset gates accepted, full CI at exact HEAD. Record remaining blockers; never claim a release complete on partial or stale evidence.
+- [ ] For each independent Stage, all applicable QA01–15 pass, actual human/physical/asset gates accepted, full CI at exact HEAD. Record remaining blockers; never claim a release complete on partial or stale evidence.
 - [ ] Run `make verify`; record exact command status and latest-SHA CI if authorized to push. Capture unresolved manual, asset, data or runtime gates; do not mark the Wave complete unless required gates pass.
 - [ ] Update ES5 section of TODO.md only for evidenced tasks; include baseline and candidate SHA, paired results, flags and open issues. Review spec coverage, named tests, type consistency and dependency contracts before requesting integration.

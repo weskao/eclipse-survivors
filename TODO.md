@@ -379,7 +379,7 @@ Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`
 ## ES5 — Release Stages (independent player releases)
 
 - [x] Document the staged delivery strategy, Balance JSON ownership and Stage 01 plan; documentation only.
-- [ ] G0 — ES4 release readiness and authorized develop integration (see above; no duplicate G0 evidence).
+G0 prerequisite: use the single G0 checkbox in the ES5 Wave section above; no duplicate status.
 
 [Roadmap / Balance ownership / evidence rules](docs/es5/release-stages.md) · [Stage 01 plan](docs/superpowers/plans/2026-11-28-es5-stage-01-combat-balance.md). The following Stage gates are not implementation claims. Wave checkboxes above are aggregate views; keep them open until all mapped work is verified.
 

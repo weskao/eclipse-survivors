@@ -4,7 +4,7 @@
 
 **Goal:** Deliver dual-track play with full permanent growth, separate standardized Apex Trials and semi-open chapters, in staged testable releases.
 
-**Architecture:** Keep one engine and authoritative balance/receipt/director pipeline. Wave 04 supplies immutable run configuration to the other waves; Wave 00 supplies measured evidence and Wave 08 continuously checks integration. Split work by file ownership and merge only on approval.
+**Architecture:** Keep one engine and authoritative balance/receipt/director pipeline. Wave 04 supplies immutable run configuration only when a Stage actually introduces difficulty; Wave 00 supplies measured evidence and Wave 08 continuously checks integration. Split work by file ownership and merge only on approval.
 
 **Tech Stack:** Node 24, pnpm 11.22.0, Vue 3, TypeScript, Vite, Vitest, Canvas 2D/PixiJS 8.
 
