@@ -52,12 +52,6 @@ const detailSpecialization = computed(() => detailHero.value && detailHero.value
 const detailStats = computed(() => detailClassic.value ? JOB[detailClassic.value.id] : detailSpecialization.value?.stats)
 const detailName = computed(() => detailClassic.value?.name ?? detailSpecialization.value?.label ?? '')
 const detailRole = computed(() => detailClassic.value?.role ?? detailSpecialization.value?.subtitle ?? '')
-const selectedHeroLabel = computed(() => {
-  const selected = props.heroId ?? props.choice
-  return heroes.find(hero => hero.id === selected)?.name
-    ?? Object.values(HERO_DEFINITIONS).find(hero => hero.id === selected)?.label
-    ?? selected
-})
 // Compact UI copy, not a second source of gameplay rules. Classic modes already have short descriptions.
 const objectiveBriefs: Readonly<Record<ObjectiveModeId, string>> = {
   'boss-rush': '依序挑戰五位首領，敵人逐戰增強。',
@@ -175,7 +169,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
           data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"
           :aria-controls="page === 'heroes' ? 'es2ExpeditionPage' : 'es2HeroPage'"
           :title="expeditionActionTitle"
-          :aria-label="`${expeditionActionLabel} — ${expeditionActionTitle} · ${modeTitle} ${modeDuration} · ${modeBrief} · ${t(selectedHeroLabel)}`"
+          :aria-label="`${expeditionActionLabel} — ${expeditionActionTitle} · ${modeTitle} ${modeDuration} · ${modeBrief}`"
           data-ui-sfx="select" @click="toggleExpeditionPage">
           <span class="es2-expedition-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
           <span class="es2-mobile-selected-mode" aria-live="polite">
@@ -184,7 +178,6 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
             <span class="es2-expedition-duration">{{ modeDuration }}</span>
             <span class="es2-expedition-meta">
               <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
-              <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
             </span>
           </span>
           <span class="es2-expedition-change">
