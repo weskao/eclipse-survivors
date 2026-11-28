@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "b61f3961bcbeeb9c19cfaad860bf2615564cf375",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-hurt-study-a",
+      "pose": "hurt",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/frost-phase2-hurt-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "e9423281-8493-4197-836a-3bcdd6ba0b42",
+        "originalPngSha256": "29375040456f5cf1e5e9eb7fc5f840585c6b8a10eae68f4d7251a0f71eafff72",
+        "canonicalReferenceHead": "b61f3961bcbeeb9c19cfaad860bf2615564cf375",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        55,
+        81,
+        1226,
+        1266
+      ],
+      "alphaAnyBounds": [
+        32,
+        41,
+        1280,
+        1286
+      ],
+      "alphaExtent": [
+        1171,
+        1185
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        23,
+        49,
+        1194,
+        1234
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        9,
+        1248,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        55,
+        81,
+        92,
+        52
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "8743da028e9da9c6da38308e3d4861f3ce12d5aaaac30f612f4a27d6610e8f2f",
+      "webpCompressedBytes": 762488,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Proposed phase 2 hurt alternate pose. Staff and masked helmet retained; armor and robe ornament differ. Not a verified source edit or sequential animation. Original faint alpha touches canvas edges; 32px padding does not restore clipping. No resampling; conservative 1898px gate not met."
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-hurt-study-b",
+      "pose": "hurt",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/frost-phase2-hurt-study-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "7ca824d7-a43f-4d1c-9b64-87ed91f369c2",
+        "originalPngSha256": "f70a4a7cf3d93980fa3c711e94d93b111b6728c9f25b963b0974b8f229c0e4b4",
+        "canonicalReferenceHead": "b61f3961bcbeeb9c19cfaad860bf2615564cf375",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1359,
+      "cellHeight": 1278,
+      "frameRects": [
+        [
+          0,
+          0,
+          1359,
+          1278
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        679.5,
+        639.0
+      ],
+      "alphaBounds": [
+        73,
+        118,
+        1308,
+        1214
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1327,
+        1246
+      ],
+      "alphaExtent": [
+        1235,
+        1096
+      ],
+      "actualSourceResolution": [
+        1359,
+        1278
+      ],
+      "originalGeneratedResolution": [
+        1295,
+        1214
+      ],
+      "originalAlpha128Bounds": [
+        41,
+        86,
+        1276,
+        1182
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1295,
+        1214
+      ],
+      "sourceEdgeMargins": [
+        73,
+        118,
+        51,
+        64
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "36b93989a91252a91c0039e3c886519b9ac42c748a248c3926721bb6725580f0",
+      "webpCompressedBytes": 803962,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Proposed phase 2 hurt alternate pose. Staff and masked helmet retained; armor and robe ornament differ. Not a verified source edit or sequential animation. Original faint alpha touches canvas edges; 32px padding does not restore clipping. No resampling; conservative 1898px gate not met."
+    }
+  ],
+  "missing": [
+    "identity and clipping review",
+    "phase and anchor approval",
+    "coherent animation sequence",
+    "browser visual QA",
+    "1898px production extent"
+  ]
+}
