@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { BgmElement, SettingsStorage } from './types'
 import { createAudioSystem } from './engine'
 import { FakeAudioContext } from './fakeAudio'
@@ -657,13 +657,85 @@ describe('dispose', () => {
 })
 
 describe('interruption edge cases', () => {
-  it('restarts a stuck media element after the context suspends without a visibility event', () => {
+  it.each([false, true])('keeps menu BGM continuous through repeated gestures during a deferred SFX resume (previously running: %s)', async previouslyRunning => {
+    const menuBgm = new FakeBgm()
+    const audio = createAudioSystem({ bgm, menuBgm, storage: null, createContext: () => ctx })
+    if (previouslyRunning) audio.wake()
+    ctx.state = 'suspended'
+    let finish!: () => void
+    let resumes = 0
+    ctx.resume = () => new Promise<void>(resolve => {
+      resumes++
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    menuBgm.currentTime = 12
+    audio.wake()
+    audio.playSfx('hero-select')
+    audio.wake()
+    audio.playSfx('select')
+    expect(menuBgm.pauseCalls).toBe(0)
+    expect(menuBgm.playCalls).toBe(1)
+    expect(menuBgm.currentTime).toBe(12)
+    expect(resumes).toBe(1)
+    finish()
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(menuBgm.paused).toBe(false)
+    expect(ctx.sources).toHaveLength(1)
+    audio.dispose()
+  })
+
+  it.each(['play', 'level'] as const)('keeps healthy %s media continuous through repeated gestures while resume is pending', async mode => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    if (mode === 'level') audio.onScreen(mode)
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    const pauses = bgm.pauseCalls
+    const plays = bgm.playCalls
+    audio.wake()
+    audio.wake()
+    audio.wake()
+    expect(bgm.pauseCalls - pauses).toBe(0)
+    expect(bgm.playCalls - plays).toBe(0)
+    finish()
+    await Promise.resolve()
+    audio.dispose()
+  })
+
+  it('restarts interrupted battle media only once while resume is pending', async () => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    ctx.state = 'interrupted' as AudioContextState
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    const pauses = bgm.pauseCalls
+    const plays = bgm.playCalls
+    audio.wake()
+    audio.wake()
+    audio.wake()
+    expect(bgm.pauseCalls - pauses).toBe(1)
+    expect(bgm.playCalls - plays).toBe(1)
+    finish()
+    await Promise.resolve()
+    audio.dispose()
+  })
+
+  it('restarts a stuck media element after actual WebKit interruption without a visibility event', () => {
     const audio = make()
     audio.wake()
     audio.onScreen('play')
     expect(bgm.playCalls).toBe(1)
-    // Some mobile browsers report media as still playing while sound is silent.
-    ctx.state = 'suspended'
+    // WebKit can report media as still playing after an actual OS interruption.
+    ctx.state = 'interrupted' as AudioContextState
     bgm.paused = false
     audio.wake()
     expect(bgm.pauseCalls).toBeGreaterThan(0)
@@ -745,6 +817,60 @@ describe('cinematic sampled boss music', () => {
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(ctx.sources.at(-1)?.offset).toBeGreaterThan(6)
     expect(ctx.sources.at(-1)?.loop).toBe(true)
+  })
+
+  it.each(['suspended', 'interrupted'] as const)('preserves the live Boss source during %s context recovery and reward selection', async state => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    expect(first.loop).toBe(true)
+    ctx.currentTime = 7
+    ctx.state = state as AudioContextState
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    audio.onScreen('level')
+    audio.wake()
+    audio.tick('level')
+    audio.onScreen('play')
+    audio.wake()
+    expect(first.stoppedAt).toBeNull()
+    expect(ctx.sources).toEqual([first])
+    finish()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(first.stoppedAt).toBeNull()
+    expect(ctx.sources).toEqual([first])
+    audio.dispose()
+  })
+
+  it('honors music mute during a pending Boss context resume without recreating the source', async () => {
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => ctx,
+      bossTracks: tracks, loadMusic: async () => ctx.createBuffer(2, 480000, 24000),
+    })
+    audio.wake()
+    audio.onScreen('play')
+    audio.setBossTheme?.('eclipse-seraph', 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const first = ctx.sources.at(-1)!
+    ctx.state = 'suspended'
+    let finish!: () => void
+    ctx.resume = () => new Promise<void>(resolve => {
+      finish = () => { ctx.state = 'running'; resolve() }
+    })
+    audio.wake()
+    audio.setMusicVolume(0)
+    expect(first.stoppedAt).not.toBeNull()
+    finish()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(ctx.sources).toEqual([first])
+    audio.dispose()
   })
 
   it('silences pre-rendered music on pause/mute and resumes without a duplicate loop', async () => {
@@ -1024,6 +1150,25 @@ describe('audio scene ownership and deferred trusted resume', () => {
     audio.dispose()
   })
 
+  it.each(['menu', 'mute'] as const)('does not replay an unheard terminal cue after %s', async action => {
+    const audio = make()
+    audio.wake()
+    audio.onScreen('play')
+    audio.interrupt()
+    audio.onScreen('result')
+    audio.setResultTheme?.('defeat')
+    audio.playSfx('defeat')
+    expect(ctx.oscillators).toHaveLength(0)
+    if (action === 'menu') audio.onScreen('menu')
+    else { audio.setSfxVolume(0); audio.setSfxVolume(100) }
+    audio.wake()
+    await Promise.resolve()
+    const sfxNotes = ctx.oscillators.filter(note =>
+      ctx.gains.some(gain => note.targets.includes(gain) && gain.targets.includes(ctx.gains[0]!)))
+    expect(sfxNotes).toHaveLength(0)
+    audio.dispose()
+  })
+
   it('never replays a pending cue after interruption or a screen change', async () => {
     ctx.state = 'suspended'
     let finish!: () => void
@@ -1039,5 +1184,94 @@ describe('audio scene ownership and deferred trusted resume', () => {
     expect(ctx.sources).toHaveLength(0)
     expect(ctx.oscillators).toHaveLength(0)
     audio.dispose()
+  })
+})
+
+describe('opt-in DEV result audio diagnostics', () => {
+  it.each(['defeat', 'victory'] as const)('reports actual %s scheduling separately from sampled bus signals', async outcome => {
+    const originalUrl = window.location.href
+    window.history.replaceState(null, '', '?audioDiagnostics=1')
+    vi.useFakeTimers()
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const analysers: Array<{ fftSize: number; getFloatTimeDomainData(data: Float32Array): void }> = []
+    const context = Object.assign(ctx, { createAnalyser() {
+      const amplitude = analysers.length === 0 ? 0.125 : 0.25
+      const node = { fftSize: 2048, getFloatTimeDomainData(data: Float32Array) {
+        data.fill(amplitude)
+      } }
+      analysers.push(node)
+      return node
+    } })
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => context,
+      victoryTrack: 'victory.wav', loadMusic: async () => context.createBuffer(2, 48000, 48000) })
+    try {
+      audio.wake()
+      audio.onScreen('play')
+      audio.onScreen('result')
+      audio.setResultTheme?.(outcome)
+      audio.tick('result')
+      audio.playSfx(outcome)
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(log).toHaveBeenCalledWith('[Audio][Result]', expect.objectContaining({
+        outcome, audioContext: 'running', bgmEnabled: true, bgmVolume: 100,
+        bgmScheduled: true, sfxEnabled: true, sfxVolume: 100, sfxScheduled: true,
+        bgmSource: outcome === 'victory' ? 'victory.wav' : 'synth',
+        bgmSignal: expect.objectContaining({ peak: 0.25, rmsMax: 0.25 }),
+        sfxSignal: expect.objectContaining({ peak: 0.125, rmsMax: 0.125 }),
+      }))
+      expect(analysers).toHaveLength(2)
+      expect(ctx.gains[0]!.targets).toContain(analysers[0])
+      expect(ctx.gains[1]!.targets).toContain(analysers[1])
+      audio.onScreen('menu')
+      const count = log.mock.calls.length
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(log.mock.calls).toHaveLength(count)
+    } finally {
+      audio.dispose()
+      log.mockRestore()
+      vi.useRealTimers()
+      window.history.replaceState(null, '', originalUrl)
+    }
+  })
+
+  it('reports muted and unavailable signals without claiming playback', async () => {
+    const originalUrl = window.location.href
+    window.history.replaceState(null, '', '?audioDiagnostics=1')
+    vi.useFakeTimers()
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const audio = make()
+    try {
+      audio.wake()
+      audio.setMusicVolume(0)
+      audio.setSfxVolume(0)
+      audio.onScreen('result')
+      audio.setResultTheme?.('defeat')
+      audio.tick('result')
+      audio.playSfx('defeat')
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(log).toHaveBeenCalledWith('[Audio][Result]', expect.objectContaining({
+        outcome: 'defeat', bgmVolume: 0, sfxVolume: 0,
+        bgmScheduled: false, sfxScheduled: false, bgmSignal: null, sfxSignal: null,
+      }))
+    } finally {
+      audio.dispose()
+      log.mockRestore()
+      vi.useRealTimers()
+      window.history.replaceState(null, '', originalUrl)
+    }
+  })
+
+  it('does not attach diagnostic nodes or emit logs without opt-in', async () => {
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const createAnalyser = vi.fn()
+    const audio = createAudioSystem({ bgm, storage: null, createContext: () => Object.assign(ctx, { createAnalyser }) })
+    try {
+      audio.wake()
+      audio.onScreen('result')
+      audio.setResultTheme?.('defeat')
+      audio.tick('result')
+      expect(createAnalyser).not.toHaveBeenCalled()
+      expect(log).not.toHaveBeenCalled()
+    } finally { audio.dispose(); log.mockRestore() }
   })
 })

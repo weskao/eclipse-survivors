@@ -16,7 +16,7 @@ Each requirement lives in exactly one file, never a copy here and in a rule. Rul
 | Combat HUD, information drawer, touch controls | `.claude/rules/hud-layout.md` |
 | Settings, menus, dropdowns, dialogs, pickers (no native browser UI) | `.claude/rules/no-native-ui.md` |
 | Visible text, ARIA/`alt` labels, reward names (`en` / `zh-TW`) | `.claude/rules/bilingual-copy.md` |
-| UI interaction, flow, music transition, hero active skill SFX | `.claude/rules/ui-audio.md` |
+| Any audio-affecting UI, lobby / in-battle input, BGM continuity, performance, music transition, hero active skill SFX | `.claude/rules/ui-audio.md` |
 | Any gameplay number, including 「永久強化」/暮光餘燼 | `.claude/rules/game-balance-config.md` |
 | Game logic, AI, combat, collisions, world, rendering, VFX, perf-critical UI | `.claude/rules/realtime-performance.md` |
 | Any effect, projectile, particle, skill card, HUD treatment, character/BOSS visual (§8 VFX gate, §9 single-owner rendering) | `.claude/rules/rendering-budget.md` |
@@ -76,5 +76,6 @@ Hero, monster and boss information surfaces must use `Es2DetailSurface`, `Es2Sta
 - Keep each identity locked (generic unknown placeholder, no image/name/stats/Info or hover) until its own recorded defeat. Use exact faction and Boss counters through the existing idempotent run settlement, profile migration and account-scoped storage. Do not infer specific Boss discoveries from historical aggregate counts. Preserve existing saves and isolated unlocked DEV testing.
 - Reuse actual runtime artwork and first authored frame, not a full atlas or unrelated portrait. Warlock uses the same tinted wizard artwork as combat until a dedicated runtime asset is approved. Legacy boss.webp remains a combat fallback and is not an orphan; delete any superseded art only after all references are migrated. Center achievements and monster art in the shared archive slot.
 
-### Continuous battle BGM through reward selection
-- Treat `play` and `level` as one soundtrack session: opening, closing, skipping, claiming, declining or rerolling level/treasure/evolution choices must not reset scene, mix, clocks or replace the active music source. New-run initialization and genuine live encounter changes own music scene selection; picker UI only owns its SFX. Preserve explicit user mute and OS interruption handling. Cover real engine transitions for Boss and ordinary combat, including the frames before the next intensity update.
+## Mandatory uninterrupted soundtrack acceptance (lobby and combat)
+
+Every change to UI, input, animation, rendering, combat or audio must satisfy the [audio continuity and mobile performance gate](.claude/rules/ui-audio.md#continuous-soundtrack-and-mobile-performance) before claiming completion. This includes ordinary encounters, Boss phases and reward selection. Use the [browser QA procedure](.claude/skills/es-browser-qa/SKILL.md) for physical-device evidence.

@@ -51,6 +51,9 @@ function tap(id: string): void {
 }
 watch(() => [props.active, uniqueItems.value.map(item => item.id).join('|'), props.kind], () => {
   selecting.value = false
+  // The parent owns the persisted preference; a new offer must read it even
+  // when an earlier optimistic checkbox change did not update the prop.
+  skipChecked.value = !!props.skipReveal
   revealSkipped.value = skipChecked.value
   shownAt = performance.now()
   earlyTap = false
