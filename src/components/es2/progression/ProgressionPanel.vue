@@ -156,5 +156,10 @@ const masteryProgress = computed(() => {
 .hall-category-tabs button>span:first-child{color:#e3c28d;font-size:1rem;flex:none}
 /* One row on every width: phones stack the icon over a wrapping label instead of a 2x2 grid. */
 @media(max-width:560px){.hall-category-tabs{gap:3px;padding:3px;margin-bottom:8px}.hall-category-tabs button{flex-direction:column;gap:1px;padding:3px 2px;font-size:max(11px,.72rem);line-height:1.2;text-align:center}.hall-category-tabs button>span:first-child{font-size:.85rem}}
-@media(orientation:landscape) and (max-height:400px){.hall-category-tabs{gap:3px;padding:2px;margin-bottom:6px}.hall-category-tabs button{gap:4px;padding:2px 5px;font-size:max(11px,.7rem);line-height:1.15}}
+@media(orientation:landscape) and (max-height:520px){
+  .es2-progression-section{margin-top:6px}
+  .hall-category-tabs{gap:3px;padding:2px;margin-bottom:4px}
+  .hall-category-tabs button{flex-direction:row;gap:4px;padding:2px 5px;font-size:max(11px,.75rem);line-height:1.15;min-height:44px}
+  .es2-progression-caption{margin:3px 0;font-size:.78rem;line-height:1.3}
+}
 </style>

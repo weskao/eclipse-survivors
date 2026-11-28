@@ -67,7 +67,7 @@ watch(() => props.nodes, (nodes, previous) => {
       <template v-for="(row, rowIndex) in rows" :key="rowIndex">
         <div v-if="tree && rowIndex > 0" class="hall-links" aria-hidden="true">
           <div v-for="edge in hallEdges(rows[rowIndex - 1] ?? [], row)" :key="edge.id"
-            :data-hall-edge="edge.id" :data-active="String(edge.active)" :data-revealed="String(upgraded?.revealed.includes(edge.id) ?? false)" class="hall-edge"
+            :data-hall-edge="edge.id" :data-route-up="String(edge.to < edge.from)" :data-active="String(edge.active)" :data-revealed="String(upgraded?.revealed.includes(edge.id) ?? false)" class="hall-edge"
             :style="{ '--from': edge.from + '%', '--to': edge.to + '%', '--left': Math.min(edge.from, edge.to) + '%', '--width': Math.abs(edge.from - edge.to) + '%', '--route-origin': edge.to < edge.from ? 'right' : 'left' }">
             <i></i><i></i><i></i>
           </div>
@@ -308,9 +308,9 @@ watch(() => props.nodes, (nodes, previous) => {
 @media(min-width:600px),(orientation:landscape) and (min-width:560px) and (max-height:520px){
   .hall-detail{position:sticky;top:8px;max-height:calc(100dvh - 16px);overflow-y:auto;overscroll-behavior:contain}
 }
-/* Compact dock (phones, touch, screens <=800px tall so the buy action stays on the first screen): one stat line "current → next" beside the
-   title, the action below; long copy folds behind ⓘ. Locked nodes keep their requirement. */
-@media(max-width:739px),(hover:none) and (pointer:coarse),(max-height:800px){
+/* Compact dock only for narrow/touch or genuinely short landscape viewports.
+   Desktop keeps its full effect comparison and description. */
+@media(max-width:739px),(hover:none) and (pointer:coarse),(orientation:landscape) and (max-height:520px){
   .hall-detail{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px 10px;padding:8px 10px}
   .hall-detail-heading{display:contents}
   .hall-detail .hall-detail-emblem{grid-row:1/span 2;width:44px;height:44px;padding:4px}
@@ -334,6 +334,37 @@ watch(() => props.nodes, (nodes, previous) => {
   .hall-detail-title,.hall-comparison{grid-column:1}
   .hall-detail-toggle{grid-column:2}
   .hall-detail-title strong{font-size:.92rem}
+}
+/* Landscape: transpose the existing graph, preserving all four authoritative
+   edges and the same buttons, rank state, purchase event, and focus order. */
+@media(orientation:landscape) and (min-width:560px) and (max-height:520px){
+  .hall-growth{grid-template-columns:minmax(0,1fr) minmax(200px,36%);gap:8px;align-items:start}
+  .hall-growth--tree{--hall-medallion:46px}
+  .hall-growth--tree .hall-map{display:flex;align-items:stretch;padding:5px;min-width:0}
+  .hall-growth--tree .hall-row{display:grid;flex:1 1 0;grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(var(--columns,2),minmax(0,1fr));width:auto;max-width:none;margin:0;align-items:center;gap:2px;min-width:0}
+  .hall-growth--tree .hall-row--single{grid-template-rows:1fr}
+  .hall-growth--tree .hall-links{flex:0 0 14px;width:14px;height:auto;max-width:none;margin:0;align-self:stretch}
+  .hall-growth--tree .hall-edge i:nth-child(1){left:0;top:var(--from);width:50%;height:2px}
+  .hall-growth--tree .hall-edge i:nth-child(2){left:50%;top:var(--left);width:2px;height:max(2px,var(--width))}
+  .hall-growth--tree .hall-edge i:nth-child(3){left:50%;top:var(--to);width:50%;height:2px;bottom:auto}
+  .hall-growth--tree .hall-edge[data-revealed="true"] i:first-child::after,.hall-growth--tree .hall-edge[data-revealed="true"] i:nth-child(3)::after{animation-name:hall-route-across;transform-origin:left center}
+  .hall-growth--tree .hall-edge[data-revealed="true"] i:nth-child(2)::after{animation-name:hall-route-down;transform-origin:center top}
+  .hall-growth--tree .hall-edge[data-revealed="true"][data-route-up="true"] i:nth-child(2)::after{transform-origin:center bottom}
+  .hall-growth--tree .hall-inspect{padding:3px 2px;gap:2px;min-height:44px}
+  .hall-growth--tree .hall-inspect strong{font-size:max(11px,.74rem);line-height:1.2}
+  .hall-growth--tree .hall-status{font-size:max(11px,.7rem);line-height:1.2}
+  .hall-growth--tree .hall-ring{margin:1px 0 5px;padding:6px}
+  .hall-growth--tree .hall-ring::before{inset:6px}
+  .hall-detail{position:sticky;top:8px;max-height:none;overflow:visible;gap:5px;padding:8px}
+  .hall-detail-body[data-expanded="true"]{max-height:clamp(48px,20dvh,100px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  .hall-detail-body[data-expanded="true"]::-webkit-scrollbar{display:none}
+  .hall-detail .hall-confirm{min-height:44px;margin:0}
+  .hall-detail-toggle{width:44px;height:44px}
+}
+/* Wide fine-pointer screens retain the complete inspector; the buy action
+   remains a single explicit operation below the current/next values. */
+@media(min-width:740px) and (min-height:521px) and (hover:hover) and (pointer:fine){
+  .hall-growth{grid-template-columns:minmax(0,1fr) minmax(230px,34%)}
 }
 @media(max-width:599px) and (orientation:portrait){
   .hall-detail{position:sticky;bottom:0;padding-bottom:max(8px,env(safe-area-inset-bottom));border-top:2px solid #e7c58b;border-radius:14px 14px 6px 6px;box-shadow:0 -10px 24px #050a10cc,inset 0 1px #f5d09b22}

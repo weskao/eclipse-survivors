@@ -528,6 +528,22 @@ try {
           assert.equal(await page.locator('[data-hall-close], .hall-detail--floating').count(), 0, name + ': upgrade sheet must not need opening')
           assert.ok(inside(await buy.evaluate(rect), width, height), name + ': purchase action must be on the first screen')
           await clear(rowIds[0], 'first-screen')
+          if (graph && width >= 560 && width > height && height <= 520) {
+            const columns = await growth.locator('.hall-row').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().left))
+            assert.ok(columns.every((x, index) => index === 0 || x > columns[index - 1] + 8), name + ': short landscape research must advance left to right')
+            await clear(rowIds.flat(), 'landscape-first-screen')
+            const buttons = await growth.locator('.hall-inspect, [data-hall-confirm], [data-hall-detail-toggle]').evaluateAll(items => items.filter(el => el.getClientRects().length).map(el => ({ w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height })))
+            assert.ok(buttons.every(b => b.w >= 44 && b.h >= 44), name + ': landscape hall targets must be at least 44 CSS px')
+            const toggle = details.locator('[data-hall-detail-toggle]')
+            await toggle.click()
+            assert.ok(await details.locator('.hall-description').isVisible(), name + ': landscape details must expand on demand')
+            assert.ok(inside(await buy.evaluate(rect), width, height), name + ': expanded description hides purchase')
+            await toggle.click()
+          }
+          if (!mobile && width >= 740 && height > 520) {
+            assert.ok(await details.locator('.hall-description').isVisible(), name + ': desktop descriptions should not collapse because of window height')
+            assert.equal(await details.locator('[data-hall-detail-toggle]').isVisible(), false, name + ': desktop must not require an extra info click')
+          }
           if (height >= 844 || (!mobile && height >= 900)) {
             await clear(rowIds.flat(), 'tall-screen')
             // Skins and reset live below the tree; only the tree + dock must fit the first screen.
