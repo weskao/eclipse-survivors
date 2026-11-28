@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-heavy-punch-windup-study-a",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/titan-heavy-punch-windup-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "7d3308e7-91ee-4f69-9e76-1f1df90fb056",
+        "originalPngSha256": "6276045819da5a59ae8611bd82fa1111f91ee064617b9151c42bc1d6e467c245",
+        "canonicalReferenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        46,
+        45,
+        1228,
+        1277
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1272,
+        1286
+      ],
+      "alphaExtent": [
+        1182,
+        1232
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        14,
+        13,
+        1196,
+        1245
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1240,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        46,
+        45,
+        90,
+        41
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "6d8fbeae07954cb3a43c576d3441d4a8dc4868f735d127e012f28b0eb0e2a658",
+      "webpCompressedBytes": 781750,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Raised fist study; phase and attack not approved. Independent redraw. Exact canonical identity and phase not verified; original edge clipping possible, transparent padding cannot restore pixels. No scaling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-heavy-punch-release-study-a",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/titan-heavy-punch-release-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "2659fbdb-1b2f-4f69-9e76-1f1df90fb056",
+        "originalPngSha256": "1a9d0ff0800f0d3b3962d283163195b0b6e185433a126d8dba6274cf8ff46c13",
+        "canonicalReferenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        48,
+        47,
+        1270,
+        1271
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1286,
+        1286
+      ],
+      "alphaExtent": [
+        1222,
+        1224
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        16,
+        15,
+        1238,
+        1239
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        48,
+        47,
+        48,
+        47
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "5b9d9eb414a82151a62c0dde8b766c6659c8a27c3edceca5929cc6e256fe6cab",
+      "webpCompressedBytes": 871178,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Foreshortened forward strike; phase and attack not approved. Independent redraw. Exact canonical identity and phase not verified; original edge clipping possible, transparent padding cannot restore pixels. No scaling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-heavy-punch-recovery-study-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/titan-heavy-punch-recovery-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "c1563660-b064-40eb-a392-517ca994f409",
+        "originalPngSha256": "e02f1b310f31c7525b8b10625ebc8f60d9dbdf2513e4c843a9a334d2117a04fd",
+        "canonicalReferenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        53,
+        40,
+        1325,
+        1215
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1328,
+        1219
+      ],
+      "alphaExtent": [
+        1272,
+        1175
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        21,
+        8,
+        1293,
+        1183
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1296,
+        1187
+      ],
+      "sourceEdgeMargins": [
+        53,
+        40,
+        51,
+        48
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "8e3815831b0b2e820e484a0808083f585082f0faae700db7a9a9d257578faf36",
+      "webpCompressedBytes": 783726,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Ground-braced recovery alternate; not a verified sequence. Independent redraw. Exact canonical identity and phase not verified; original edge clipping possible, transparent padding cannot restore pixels. No scaling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-heavy-punch-release-study-b",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/titan-heavy-punch-release-study-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "03c9cbc8-767c-40eb-8db8-745a8eb68bca",
+        "originalPngSha256": "237b4a577958c0e7cdba4169ee5aea7d9a3708c5b94445a17512e66c76a649de",
+        "canonicalReferenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        90,
+        38,
+        1333,
+        1216
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1336,
+        1231
+      ],
+      "alphaExtent": [
+        1243,
+        1178
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        58,
+        6,
+        1301,
+        1184
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1304,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        90,
+        38,
+        43,
+        47
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "e77cd17b492626170144bf370a32408dd1c55154f18795ebb5f3522ae22c509e",
+      "webpCompressedBytes": 717146,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Alternate punch, not a sequential frame; horn tip near edge. Independent redraw. Exact canonical identity and phase not verified; original edge clipping possible, transparent padding cannot restore pixels. No scaling. Conservative 1898px gate not met."
+    }
+  ],
+  "missing": [
+    "identity and clipping review",
+    "phase/direction and anchor approval",
+    "coherent animation sequence",
+    "browser visual QA",
+    "1898px production extent"
+  ]
+}

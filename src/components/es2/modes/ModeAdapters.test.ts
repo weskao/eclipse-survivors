@@ -3,6 +3,12 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 import ModeChooser from './ModeChooser.vue'
 import { getLocale, setLocale } from '../../../i18n'
 import { nextTick } from 'vue'
+import Es2ModeSigil from './Es2ModeSigil.vue'
+import { MODES } from '../../../meta/modes'
+import { readFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { resolve } from 'node:path'
+import ModeSelector from '../../modes/ModeSelector.vue'
 import ModeProgress from './ModeProgress.vue'
 import { advanceObjective, createObjectiveState } from '../../../game/content/objectives/evaluator'
 
@@ -14,10 +20,9 @@ describe('ES2 objective mode chooser adapter', () => {
     const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' } })
     wrappers.push(wrapper)
     expect(wrapper.findAll('[data-objective-mode]')).toHaveLength(5)
-    const sigils = {"boss-rush":"♛","endless-eclipse":"☾","relic-hunt":"◇","cursed-expedition":"✧","chaos-arena":"✵"}
-    for (const [id, glyph] of Object.entries(sigils)) {
+    for (const id of ['boss-rush', 'endless-eclipse', 'relic-hunt', 'cursed-expedition', 'chaos-arena']) {
       const icon = wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`)
-      expect(icon.text()).toBe(glyph)
+      expect(icon.get('img').attributes('src')).toContain(id + '@3x.webp')
       expect(icon.attributes('aria-hidden')).toBe('true')
       expect(wrapper.get(`[data-objective-mode="${id}"] .es2-objective-heading strong`).text()).toBeTruthy()
     }
@@ -43,6 +48,8 @@ describe('ES2 objective mode chooser adapter', () => {
       await wrapper.get('[data-es2-mode-details="endless-eclipse"]').trigger('click')
       const dialog = document.body.querySelector('[role="dialog"]')!
       expect(dialog.querySelector('h2')?.textContent).toBe('永恆星蝕')
+      expect(dialog.querySelector('.es2-mode-sigil img')?.getAttribute('src')).toBe(
+        wrapper.get('[data-objective-mode="endless-eclipse"] .es2-mode-sigil img').attributes('src'))
       expect(dialog.textContent).toContain('每 180 秒')
       expect(wrapper.emitted('select')).toBeUndefined()
       setLocale('en')
@@ -72,6 +79,7 @@ describe('ES2 live objective HUD adapter', () => {
     const wrapper = mount(ModeProgress, { props: { state } })
     wrappers.push(wrapper)
     expect(wrapper.attributes('aria-live')).toBe('polite')
+    expect(wrapper.get('.es2-mode-sigil img').attributes('src')).toContain('boss-rush@3x.webp')
     expect(wrapper.text()).toContain('連續首領擊敗')
     expect(wrapper.text()).toContain('0 / 5')
     expect(wrapper.find('[role="progressbar"]').attributes('aria-valuemax')).toBe('5')
@@ -97,5 +105,57 @@ describe('ES2 live objective HUD adapter', () => {
     await wrapper.setProps({ state: advanceObjective(active, { type: 'player-defeated' }) })
     expect(wrapper.text()).toContain('挑戰失敗')
     expect(wrapper.text()).toContain('預估餘燼')
+  })
+})
+
+describe('shared expedition art contract', () => {
+  it('requires one verified 3x WebP for every authoritative mode, including future modes', async () => {
+    const dir = resolve('src/assets/es2/production/modes')
+    const manifest = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8')) as {
+      scale: number; displayBasePx: number; assets: { id: string; file: string; width: number; height: number; hasAlpha: boolean; bytes: number; sha256: string }[]
+    }
+    const ids = Object.values(MODES).map(mode => mode.id).sort()
+    expect(manifest.assets.map(asset => asset.id).sort()).toEqual(ids)
+    expect(manifest.scale).toBe(3)
+    expect(manifest.displayBasePx).toBe(64)
+    const wrapper = mount(Es2ModeSigil, { props: { mode: 'quick' } })
+    wrappers.push(wrapper)
+    for (const mode of Object.values(MODES)) {
+      await wrapper.setProps({ mode: mode.id })
+      const asset = manifest.assets.find(item => item.id === mode.id)!
+      expect(asset.file).toBe(mode.id + '@3x.webp')
+      expect([asset.width, asset.height, asset.hasAlpha]).toEqual([192, 192, true])
+      const bytes = readFileSync(resolve(dir, asset.file))
+      expect(bytes.subarray(0, 4).toString()).toBe('RIFF')
+      expect(bytes.subarray(8, 12).toString()).toBe('WEBP')
+      expect(bytes.length).toBe(asset.bytes)
+      expect(createHash('sha256').update(bytes).digest('hex')).toBe(asset.sha256)
+      expect(wrapper.get('img').attributes('src')).toContain(asset.file)
+    }
+  })
+  it('shows only a same-size skeleton until load, never an old glyph or endless error animation', async () => {
+    const wrapper = mount(Es2ModeSigil, { props: { mode: 'boss-rush' } })
+    wrappers.push(wrapper)
+    const state = () => wrapper.get('img').attributes('data-es2-image-state')
+    expect(state()).toBe('loading')
+    expect(wrapper.text()).toBe('')
+    await wrapper.get('img').trigger('load')
+    expect(state()).toBe('loaded')
+    await wrapper.setProps({ mode: 'quick' })
+    expect(state()).toBe('loading')
+    expect(wrapper.get('img').attributes('src')).toContain('quick@3x.webp')
+    await wrapper.get('img').trigger('error')
+    expect(state()).toBe('error')
+    expect(wrapper.text()).toBe('')
+    await wrapper.setProps({ mode: 'boss-rush' })
+    expect(state()).toBe('loading')
+    await wrapper.get('img').trigger('load')
+    expect(state()).toBe('loaded')
+    expect(wrapper.text()).toBe('')
+  })
+  it('reuses the same art in the retained classic selector', () => {
+    const wrapper = mount(ModeSelector, { props: { value: 'quick' } })
+    wrappers.push(wrapper)
+    expect(wrapper.get('[data-mode="quick"] .es2-mode-sigil img').attributes('src')).toContain('quick@3x.webp')
   })
 })

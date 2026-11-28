@@ -2,6 +2,7 @@
 import { formatNumber, t } from '../../../i18n'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import HeroPortrait from '../hero-roster/HeroPortrait.vue'
+import Es2ModeSigil from '../modes/Es2ModeSigil.vue'
 import { MODES } from '../../../meta/modes'
 import { ACHIEVEMENTS as META_ACHIEVEMENTS } from '../../../game/content/meta/catalog'
 import { ACHIEVEMENTS as LEGACY_ACHIEVEMENTS } from '../../../meta/achievements'
@@ -90,7 +91,7 @@ const stats = computed(() => props.result ? [
         <span class="es2-result-crown" aria-hidden="true">{{ victory ? '♛' : '⚔' }}</span>
         <div class="es2-result-hero"><HeroPortrait v-if="result" :hero-id="result.specializationId ?? result.hero" :alt="t('本次遠征英雄：{name}', { name: heroName })" /></div>
         <p class="es2-result-status">{{ t(victory ? '✦ 勝利 · 黎明重現 ✦' : '✧ 戰敗 · 長夜未盡 ✧') }}</p>
-        <p v-if="result" class="es2-result-mode">{{ t(MODES[result.mode].label) }}</p>
+        <p v-if="result" class="es2-result-mode" :data-es2-mode-theme="result.mode"><Es2ModeSigil :mode="result.mode" class="es2-result-mode-sigil" /><span>{{ t(MODES[result.mode].label).split(' · ')[0] }}</span></p>
       </div>
       <div class="es2-result-report">
         <div class="es2-stat-strip es2-result-stats"><div v-for="(entry,index) in stats" :key="entry.id" :data-result-stat="entry.id" :style="{ '--result-delay': Math.min(index,5)*65 + 'ms' }"><b :aria-label="entry.format(entry.value)" :data-result-target="entry.format(entry.value)">{{ entry.format(count(entry.value,Math.min(index,5)*.025,entry.decimal)) }}</b><small>{{ t(entry.title) }}</small></div></div>

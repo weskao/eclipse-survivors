@@ -50,7 +50,8 @@ describe('App', () => {
       expect(second.get('[data-es2-mode-summary]').text()).toBeTruthy()
       expect(second.get('[data-hero-id="spirit-summoner"]').attributes('aria-pressed')).toBe('true')
       expect(second.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
-      expect(second.get('[data-es2-selected-hero]').attributes('data-es2-selected-hero')).toBe('spirit-summoner')
+      expect(second.find('[data-es2-selected-hero]').exists()).toBe(false)
+      expect(second.get('[data-es2-expedition-summary] img').attributes('src')).toContain('relic-hunt@3x.webp')
     } finally { second.unmount() }
   })
 

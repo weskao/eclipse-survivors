@@ -416,3 +416,33 @@ describe('Hall upgrade detail presentation', () => {
     wrapper.unmount()
   })
 })
+
+describe('Hall upgrade feedback without layout shift', () => {
+  it('uses non-interactive button feedback only after a committed purchase, including the maximum rank', async () => {
+    const state = createMetaState()
+    state.embers = 50_000
+    state.research.power = 3
+    const wrapper = mount(ProgressionPanel, { props: { state, hero: 'knight', status: 'ready' } })
+    try {
+      const board = wrapper.get('.hall-growth--tree')
+      const button = () => board.get('[data-hall-confirm]')
+      const feedback = () => button().find('[data-hall-confirm-fx]')
+      expect(feedback().exists()).toBe(false)
+      await button().trigger('click')
+      expect(feedback().exists()).toBe(false)
+      const first = buyResearch(state, 'power').state
+      await wrapper.setProps({ state: first })
+      expect(feedback().attributes('aria-hidden')).toBe('true')
+      expect(feedback().attributes('data-hall-confirm-fx')).toBe('4')
+      expect(feedback().attributes('data-milestone')).toBe('false')
+      expect(board.find('.hall-success').exists()).toBe(false)
+      expect(board.get('[data-hall-announcement]').classes()).toContain('hall-announcement')
+      expect(button().attributes('disabled')).toBeUndefined()
+      await button().trigger('click')
+      await wrapper.setProps({ state: buyResearch(first, 'power').state })
+      expect(feedback().attributes('data-hall-confirm-fx')).toBe('5')
+      expect(feedback().attributes('data-milestone')).toBe('true')
+      expect(button().attributes('disabled')).toBeDefined()
+    } finally { wrapper.unmount() }
+  })
+})

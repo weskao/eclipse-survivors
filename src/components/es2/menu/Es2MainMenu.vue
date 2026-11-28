@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
+import { vImageShimmer } from '../../shared/image-shimmer'
 import Es2EmberWallet from './Es2EmberWallet.vue'
 import { computed, nextTick, ref, useTemplateRef, watch, watchPostEffect } from 'vue'
 import { JOB } from '../../../game/constants'
@@ -15,10 +16,11 @@ import HeroActiveSummary from '../hero-roster/HeroActiveSummary.vue'
 import Es2DetailSurface from './Es2DetailSurface.vue'
 import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
+import Es2ModeSigil from '../modes/Es2ModeSigil.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
-import { formatDuration, MODE_SIGILS, type MenuView } from './model'
+import { formatDuration, type MenuView } from './model'
 const props = withDefaults(defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean; archiveView?: MenuView }>(), { archiveView: 'main' })
 const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
@@ -52,12 +54,6 @@ const detailSpecialization = computed(() => detailHero.value && detailHero.value
 const detailStats = computed(() => detailClassic.value ? JOB[detailClassic.value.id] : detailSpecialization.value?.stats)
 const detailName = computed(() => detailClassic.value?.name ?? detailSpecialization.value?.label ?? '')
 const detailRole = computed(() => detailClassic.value?.role ?? detailSpecialization.value?.subtitle ?? '')
-const selectedHeroLabel = computed(() => {
-  const selected = props.heroId ?? props.choice
-  return heroes.find(hero => hero.id === selected)?.name
-    ?? Object.values(HERO_DEFINITIONS).find(hero => hero.id === selected)?.label
-    ?? selected
-})
 // Compact UI copy, not a second source of gameplay rules. Classic modes already have short descriptions.
 const objectiveBriefs: Readonly<Record<ObjectiveModeId, string>> = {
   'boss-rush': '依序挑戰五位首領，敵人逐戰增強。',
@@ -125,7 +121,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
 <template>
   <main class="es2-menu" :class="{ 'es2-menu--archive': archiveView !== 'main' }" :data-es2-menu-page="page"
     :aria-label="t('Eclipse Survivors 主選單')">
-    <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
+    <div class="es2-menu-backdrop" aria-hidden="true"><img v-image-shimmer="ART_URLS.courtyard" :src="ART_URLS.courtyard" alt="" /><img v-image-shimmer="sceneIllustration" class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div ref="menu" class="es2-menu-scroll">
       <div class="es2-menu-shell">
         <header class="es2-menu-header">
@@ -155,10 +151,10 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
           <section v-show="page === 'modes'" id="es2ExpeditionPage" class="es2-mode-section" aria-labelledby="es2ModeTitle">
             <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
             <div class="es2-mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
-              <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" class="es2-mode-card" data-ui-sfx="managed"
+              <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" :data-es2-mode-theme="id" class="es2-mode-card" data-ui-sfx="managed"
                 :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
                 @click="emit('mode', id)" @keydown="moveMode($event, id)">
-                <span class="es2-mode-mark" aria-hidden="true">{{ MODE_SIGILS[id] }}</span>
+                <Es2ModeSigil :mode="id" class="es2-mode-mark" />
                 <span class="es2-mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
                 <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
               </button>
@@ -172,19 +168,18 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
     <div v-show="archiveView === 'main'" ref="actionBar" class="es2-menu-action-bar">
       <div class="es2-menu-actions">
         <button class="es2-expedition-navigation es2-expedition-brief" type="button"
-          data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode"
+          data-es2-expedition-navigation data-es2-expedition-summary :data-run-mode="runMode" :data-es2-mode-theme="runMode"
           :aria-controls="page === 'heroes' ? 'es2ExpeditionPage' : 'es2HeroPage'"
           :title="expeditionActionTitle"
-          :aria-label="`${expeditionActionLabel} — ${expeditionActionTitle} · ${modeTitle} ${modeDuration} · ${modeBrief} · ${t(selectedHeroLabel)}`"
+          :aria-label="`${expeditionActionLabel} — ${expeditionActionTitle} · ${modeTitle} ${modeDuration} · ${modeBrief}`"
           data-ui-sfx="select" @click="toggleExpeditionPage">
-          <span class="es2-expedition-sigil" aria-hidden="true">{{ MODE_SIGILS[runMode] }}</span>
+          <Es2ModeSigil :mode="runMode" class="es2-expedition-sigil" />
           <span class="es2-mobile-selected-mode" aria-live="polite">
             <span class="es2-expedition-kicker">{{ t('目前遠征') }}</span>
             <strong class="es2-expedition-name">{{ modeTitle }}</strong>
             <span class="es2-expedition-duration">{{ modeDuration }}</span>
             <span class="es2-expedition-meta">
               <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
-              <span class="es2-expedition-hero" :data-es2-selected-hero="heroId ?? choice">{{ t(selectedHeroLabel) }}</span>
             </span>
           </span>
           <span class="es2-expedition-change">

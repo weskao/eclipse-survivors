@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "bossId": "infernal-titan",
+  "referenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-phase2-slam-recovery-study-a",
+      "pose": "recover",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/titan-phase2-slam-recovery-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "f0b0ebd6-0eaa-4db8-9beb-486ef6335f54",
+        "originalPngSha256": "f88332859ac8a243855b852896de5dc0e979a09e6a58f7f02505dc5e31d06fa4",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        129,
+        52,
+        1217,
+        1181
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1286,
+        1286
+      ],
+      "alphaExtent": [
+        1088,
+        1129
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        97,
+        20,
+        1185,
+        1149
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1254,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        129,
+        52,
+        101,
+        137
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "5b78ffd1975f8bde78c73aa6899e78fce004fff3ec8538b6d89e10979941e3c6",
+      "gitBlobSha1": "d754525d1f6e868a64b20b502b0fbae8831b30ab",
+      "webpCompressedBytes": 808088,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Low fist braced pose; halo, rock armor and phase review needed. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "infernal-titan",
+      "id": "titan-phase2-stride-study-a",
+      "pose": "move",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "move/titan-phase2-stride-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "c2d6fd11-7652-4eeb-942b-59e7395753d2",
+        "originalPngSha256": "43f57edd99e22a9bf1c1443c344ec5770ae1635465dd583c99532af48018290b",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "59db59f3f2ed0e0053b543172d33e05c98058846b8c23c6499f0ccd7932e7235",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        110,
+        34,
+        1226,
+        1234
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1276,
+        1286
+      ],
+      "alphaExtent": [
+        1116,
+        1200
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        78,
+        2,
+        1194,
+        1202
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1244,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        110,
+        34,
+        92,
+        84
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "195e706e81bc0562a0faaffa99bc5aff0d4933f49246287ade081bbf2e78603c",
+      "gitBlobSha1": "87598fd5fcdb735c9b6df5d601e2ba4d8da4a2cb",
+      "webpCompressedBytes": 719044,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Cross-step pose with halo; distinct from prior studies, not a verified walk cycle. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    }
+  ]
+}

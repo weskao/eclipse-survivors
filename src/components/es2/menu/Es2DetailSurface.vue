@@ -65,13 +65,14 @@ watchPostEffect(onCleanup => {
     <aside :id="tooltipId" ref="panel" class="es2-hover-details" data-es2-hover-details role="tooltip"
       :style="position" @pointerenter="emit('hold')" @pointerleave="emit('leave')">
       <header class="es2-hover-details__header">
-        <span class="es2-hover-details__seal" aria-hidden="true">✧</span>
+        <slot name="leading"><span class="es2-hover-details__seal" aria-hidden="true">✧</span></slot>
         <div><h2>{{ title }}</h2><p v-if="subtitle">{{ subtitle }}</p></div>
       </header>
       <div class="es2-hover-details__body"><slot /></div>
     </aside>
   </Teleport>
   <Es2Dialog v-else :active="active" :title="title" :subtitle="subtitle" @cancel="emit('cancel')">
+    <template v-if="$slots.leading" #title-leading><slot name="leading" /></template>
     <slot />
   </Es2Dialog>
 </template>

@@ -3,7 +3,7 @@ import { t } from '../../../i18n'
 import { computed } from 'vue'
 import Es2DetailSurface from '../menu/Es2DetailSurface.vue'
 import { useHoverDetails } from '../menu/useHoverDetails'
-import { MODE_SIGILS } from '../menu/model'
+import Es2ModeSigil from './Es2ModeSigil.vue'
 import { objectiveModeIds, getObjectiveMode, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 
 withDefaults(defineProps<{ value: ObjectiveModeId | null; disabled?: boolean }>(), { disabled: false })
@@ -25,14 +25,14 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
       <div v-for="id in objectiveModeIds" :key="id" class="es2-objective-card-shell">
       <button
         type="button" role="radio" class="es2-objective-choice" data-ui-sfx="managed"
-        :data-objective-mode="id" :disabled="disabled"
+        :data-objective-mode="id" :data-es2-mode-theme="id" :disabled="disabled"
         :aria-checked="value === id"
         :aria-label="[modeTitle(id), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"
         :class="{ selected: value === id }"
         @click="emit('select', id)"
       >
         <span class="es2-objective-heading">
-          <span class="es2-objective-sigil" aria-hidden="true">{{ MODE_SIGILS[id] }}</span>
+          <Es2ModeSigil :mode="id" class="es2-objective-sigil" />
           <strong>{{ modeTitle(id) }}</strong>
         </span>
         <span>{{ t(getObjectiveMode(id).description) }}</span>
@@ -47,6 +47,7 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
     </div>
     <Es2DetailSurface :active="detail !== null" :title="detailId ? modeTitle(detailId) : ''"
       :anchor="modeAnchor" :tooltip-id="modeTooltipId" @cancel="modeDetails.clear()" @hold="modeDetails.hold()" @leave="modeDetails.leave()">
+      <template #leading><Es2ModeSigil v-if="detailId" :mode="detailId" class="es2-mode-detail-sigil" /></template>
       <div v-if="detail && detailId" class="es2-hero-detail-content">
         <p>{{ t(detail.description) }}</p>
         <p>{{ t(detail.victoryDescription) }}</p>
@@ -69,13 +70,7 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
   background: #211d2b; cursor: pointer; }
 .es2-objective-choice strong { font-size: 1rem; min-width:0; overflow-wrap:anywhere; }
 .es2-objective-choice .es2-objective-heading { display:flex; align-items:center; gap:6px; min-width:0; }
-.es2-objective-choice .es2-objective-sigil {
-  display:grid; place-items:center; flex:0 0 auto; width:clamp(20px,2.6vw,32px); aspect-ratio:1;
-  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
-  background:linear-gradient(145deg,#8d6a40,#342b35 65%,#70573a);
-  color:#ffe3a6; font:700 clamp(15px,1.8vw,21px)/1 Georgia,serif; text-shadow:0 0 7px #e8b87070;
-}
-.es2-objective-choice.selected .es2-objective-sigil { background:linear-gradient(145deg,#af844b,#68492c 65%,#9b713c); color:#fff4cf; }
+.es2-objective-sigil { width:40px; font-size:24px; line-height:1; }
 .es2-objective-choice span { font-size: 0.83rem; line-height: 1.45; }
 .es2-objective-choice small { color: #c3b3a7; font-size: 0.75rem; line-height: 1.4; }
 .es2-objective-choice .modifier { color: #e1d1b6; }

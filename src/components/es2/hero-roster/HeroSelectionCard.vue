@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { vImageShimmer } from '../../shared/image-shimmer'
 import { getHeroActiveDefinition } from '../../../game/content/heroes/classic-active'
 import { t } from '../../../i18n'
 import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
@@ -41,7 +42,7 @@ const accessibleName = computed(() => {
       :style="specialization ? undefined : cosmeticStyle(cosmetic)"
       :aria-pressed="selected" :disabled="disabled" :aria-label="accessibleName"
       @click="!disabled && emit('select')" @keydown="!disabled && emit('keydown', $event)">
-      <span v-if="specialization" class="es2-hero-action-preview"
+      <span v-if="specialization" v-image-shimmer="PRODUCTION_HERO_POSE_SOURCES[specialization.id].action" class="es2-hero-action-preview"
         :style="{ backgroundImage: 'url(' + PRODUCTION_HERO_POSE_SOURCES[specialization.id].action + ')' }" aria-hidden="true"></span>
       <HeroPortrait :class="specialization ? 'es2-roster__portrait' : undefined" :hero-id="heroId"
         :alt="t(specialization ? '{name} 角色插畫' : '{name} 原始角色插畫', { name: t(name) })" />

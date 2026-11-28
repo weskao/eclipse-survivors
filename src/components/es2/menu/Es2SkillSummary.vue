@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { vImageShimmer } from '../../shared/image-shimmer'
 defineProps<{
   icon: string; title: string; detail?: string; detailLabel?: string; description?: string
   eyebrow?: string; owner?: string; compact?: boolean; iconAlt?: string
@@ -7,7 +8,7 @@ defineProps<{
 <template>
   <span class="es2-active-summary" :data-compact="compact ? 'true' : undefined" :data-has-detail="detail ? 'true' : undefined">
     <span class="es2-active-summary__main">
-      <img data-hero-skill-icon class="es2-active-summary__icon" :src="icon" :alt="iconAlt ?? ''"
+      <img v-image-shimmer="icon" data-hero-skill-icon class="es2-active-summary__icon" :src="icon" :alt="iconAlt ?? ''"
         width="44" height="44" decoding="async" loading="lazy" draggable="false" />
       <span class="es2-active-summary__copy">
         <span v-if="owner" class="es2-active-summary__hero">{{ owner }}</span>

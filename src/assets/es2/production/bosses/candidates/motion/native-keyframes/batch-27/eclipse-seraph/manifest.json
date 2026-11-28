@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-phase2-awakening-study-a",
+      "pose": "transform",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "transform/seraph-phase2-awakening-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "1f052fb5-12b4-4c4e-bdf1-4f661cc8be68",
+        "originalPngSha256": "c7dcc4cb2e035beaad21c0ee71d1880de7666bff4008c19590d5d572716f374b",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        50,
+        36,
+        1270,
+        1277
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1285,
+        1286
+      ],
+      "alphaExtent": [
+        1220,
+        1241
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        18,
+        4,
+        1238,
+        1245
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1253,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        50,
+        36,
+        48,
+        41
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "bb1e1ed992872615a390c9e5f456c3cc325d602375062eee51ac75e80e836227",
+      "gitBlobSha1": "f3cd622509ac5a7e28981f532651098f13f80c2b",
+      "webpCompressedBytes": 944730,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Raised hands, violet wing illumination; halo tip may be clipped, costume and face review needed. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-phase2-cast-study-a",
+      "pose": "attack",
+      "phase": null,
+      "proposedPhase": 2,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/seraph-phase2-cast-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "76623b9a-05d9-4223-96b4-adbdca02d78b",
+        "originalPngSha256": "b6232c863ccbbeb99eff097fe295b7b1e38425b9c7595f0b356b6cb48eb8acf3",
+        "canonicalReferenceHead": "a034c30333bd87b2cc0105825597b1c32fff0d9e",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1318,
+      "cellHeight": 1318,
+      "frameRects": [
+        [
+          0,
+          0,
+          1318,
+          1318
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        659.0,
+        659.0
+      ],
+      "alphaBounds": [
+        74,
+        36,
+        1247,
+        1211
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1276,
+        1286
+      ],
+      "alphaExtent": [
+        1173,
+        1175
+      ],
+      "actualSourceResolution": [
+        1318,
+        1318
+      ],
+      "originalGeneratedResolution": [
+        1254,
+        1254
+      ],
+      "originalAlpha128Bounds": [
+        42,
+        4,
+        1215,
+        1179
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1244,
+        1254
+      ],
+      "sourceEdgeMargins": [
+        74,
+        36,
+        71,
+        107
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "66b0dc3108bc80cc2cd114192fb90bfed29eb9aea4260b4c94bca9115bc151e8",
+      "gitBlobSha1": "8784819e8b7a21cc0ee3302e6ae2f6cf1223ae1f",
+      "webpCompressedBytes": 781080,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4 alpha_quality=100",
+      "notes": "Outstretched hand cast; no specific attack mapping approved. Independent redraw, not verified exact canonical edit or animation frame sequence. Source alpha touches at least one edge. 32px transparent padding cannot recover clipped source. No resampling. Conservative 1898px gate not met."
+    }
+  ]
+}

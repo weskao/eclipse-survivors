@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { chromium } from 'playwright'
+import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
 
 const target = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const directory = 'artifacts/es2-mobile-browser'
@@ -175,19 +176,21 @@ try {
       await page.locator('[data-es2-expedition-navigation]').click()
       assert.equal(await page.locator('.es2-mode-section').isVisible(), true)
       assert.equal(await page.locator('[data-mode]:visible, [data-objective-mode]:visible').count(), 9)
-      const objectiveIcons = await page.locator('[data-objective-mode] .es2-objective-sigil:visible').evaluateAll(icons =>
-        icons.map(icon => {
-          const a = icon.getBoundingClientRect()
-          const b = icon.closest('button').getBoundingClientRect()
-          const title = icon.nextElementSibling.getBoundingClientRect()
-          return { glyph: icon.textContent.trim(), width: a.width, height: a.height,
-            contained: a.left >= b.left && a.right <= b.right && a.top >= b.top && a.bottom <= b.bottom,
-            separate: a.right <= title.left + 1 }
-        }))
-      assert.equal(objectiveIcons.length, 5, viewport.name + ': all objective mode icons must be visible')
-      assert.equal(new Set(objectiveIcons.map(icon => icon.glyph)).size, 5)
-      assert.ok(objectiveIcons.every(icon => icon.width >= 18 && icon.height >= 18 && icon.contained && icon.separate),
-        viewport.name + ': objective mode icon clipped or overlapping title ' + JSON.stringify(objectiveIcons))
+      const brief = page.locator('[data-es2-expedition-summary]')
+      const initialMode = await brief.getAttribute('data-run-mode')
+      const checkModeIdentity = async (id) => {
+        await page.waitForFunction(mode => document.querySelector('[data-es2-expedition-summary]')?.getAttribute('data-run-mode') === mode, id)
+        await assertExpeditionModeIcons(page, viewport.name + ': ' + id, { cards: true })
+        assert.equal(await page.locator(`[data-mode="${id}"], [data-objective-mode="${id}"]`).getAttribute('aria-checked'), 'true')
+        assert.equal(await brief.locator('[data-es2-selected-hero]').count(), 0)
+      }
+      await checkModeIdentity(initialMode)
+      const alternative = initialMode === 'boss-rush' ? 'quick' : 'boss-rush'
+      await page.locator(`[data-mode="${alternative}"], [data-objective-mode="${alternative}"]`).click()
+      await checkModeIdentity(alternative)
+      await assertHomepage('mode identity after switching')
+      await page.locator(`[data-mode="${initialMode}"], [data-objective-mode="${initialMode}"]`).click()
+      await checkModeIdentity(initialMode)
       assert.equal(await page.locator('.es2-hero-section').isVisible(), false)
       await assertHomepage('expedition selection')
       await page.screenshot({ path: `${directory}/${viewport.name}-menu-objectives.png`, animations: 'disabled' })

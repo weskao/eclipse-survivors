@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { chromium } from 'playwright'
+import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
 
 const base = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const destination = 'artifacts/es2-mobile-browser'
@@ -345,6 +346,20 @@ try {
       })
       assert.deepEqual(entryOffenders, [], name + ': expedition cards clip during the first entry frame')
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
+      await assertExpeditionModeIcons(page, name + ': expedition selection', { cards: true })
+      if (['portrait-320', 'landscape-844', 'desktop-1440'].includes(name)) {
+        const brief = page.locator('[data-es2-expedition-summary]')
+        const initial = await brief.getAttribute('data-run-mode')
+        const cards = page.locator('[data-mode], [data-objective-mode]')
+        const ids = await cards.evaluateAll(nodes => nodes.map(node => node.dataset.mode ?? node.dataset.objectiveMode))
+        for (const id of [...ids, initial]) {
+          await page.locator(`[data-mode="${id}"], [data-objective-mode="${id}"]`).click()
+          assert.equal(await brief.getAttribute('data-run-mode'), id)
+          await assertExpeditionModeIcons(page, name + ': ' + id, { cards: true })
+        }
+        await page.mouse.move(0, 0)
+        await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
+      }
       if (hoverCapable) {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
         const card = page.locator('[data-objective-mode="boss-rush"]')
@@ -353,12 +368,21 @@ try {
         const tip = page.locator('[data-es2-hover-details]')
         await tip.waitFor({ state: 'visible' })
         assert.match(await tip.innerText(), /首領連戰|Boss Rush/i)
+        assert.equal(await tip.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
         assert.ok(inside(await tip.evaluate(rect), width, height), name + ': mode tooltip clips')
         assert.equal(await card.getAttribute('aria-checked'), before)
         await page.keyboard.press('Escape')
         await tip.waitFor({ state: 'hidden' })
       } else {
         assert.equal(await page.locator('[data-es2-mode-details]:visible').count(), 5)
+        const card = page.locator('[data-objective-mode="boss-rush"]')
+        await page.locator('[data-es2-mode-details="boss-rush"]').click()
+        const info = page.locator('.es2-dialog[role="dialog"]')
+        await info.waitFor({ state: 'visible' })
+        assert.equal(await info.locator('.es2-mode-sigil img').getAttribute('src'), await card.locator('.es2-mode-sigil img').getAttribute('src'))
+        await info.locator('.es2-close').click()
+        await info.waitFor({ state: 'hidden' })
+        await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
       }
       await verifyDock()
       await verifyPage('[data-es2-hall-navigation] button', 5, true)
@@ -461,6 +485,7 @@ try {
       }
       await page.locator('[data-es2-expedition-navigation]').click()
       assert.equal(await page.locator('[data-es2-expedition-summary]').getAttribute('data-run-mode'), 'boss-rush')
+      await assertExpeditionModeIcons(page, name + ': boss rush in English at 125%')
       assert.match(await page.locator('[data-es2-mode-summary]').innerText(), /five increasingly powerful bosses/i)
       await verifyDock()
       await page.screenshot({ path: destination + '/' + name + '-portal-boss-rush-125.png', animations: 'disabled' })
@@ -481,6 +506,25 @@ try {
           name + ': archive selection is inaccessible')
         assert.ok(inside(await page.locator('[data-es2-return-lobby]').evaluate(rect), width, height),
           name + ': return navigation clips viewport')
+        // Scroll the real shared hall surface; its sticky navigation must not expose a strip above it.
+        const hallHeader = await page.locator('.es2-menu-scroll').evaluate(el => {
+          const nav = el.querySelector('.es2-hall-navigation')
+          const heading = nav.querySelector('.es2-hall-heading')
+          const previous = el.scrollTop
+          el.scrollTop = el.scrollHeight
+          const scroller = el.getBoundingClientRect(), header = nav.getBoundingClientRect()
+          const result = {
+            stuck: el.scrollTop > 0 && header.top <= scroller.top + parseFloat(getComputedStyle(el).paddingTop) + 1,
+            offset: header.top - scroller.top,
+            scrollPadding: parseFloat(getComputedStyle(el).paddingTop),
+            headingGap: heading.getBoundingClientRect().top - header.top - parseFloat(getComputedStyle(nav).borderTopWidth),
+          }
+          el.scrollTop = previous
+          return result
+        })
+        assert.equal(hallHeader.scrollPadding, 0, name + ': archive scrollport must have no top padding')
+        assert.ok(Math.abs(hallHeader.headingGap) <= 1, name + ': archive navigation has redundant top spacing')
+        if (hallHeader.stuck) assert.ok(Math.abs(hallHeader.offset) <= 1, name + ': sticky hall navigation exposes background above it')
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
         const uncentered = await archivePage.locator('.es2-archive-card').evaluateAll(cards => cards.flatMap(card => {
@@ -528,6 +572,22 @@ try {
           assert.equal(await page.locator('[data-hall-close], .hall-detail--floating').count(), 0, name + ': upgrade sheet must not need opening')
           assert.ok(inside(await buy.evaluate(rect), width, height), name + ': purchase action must be on the first screen')
           await clear(rowIds[0], 'first-screen')
+          if (graph && width >= 560 && width > height && height <= 520) {
+            const columns = await growth.locator('.hall-row').evaluateAll(rows => rows.map(row => row.getBoundingClientRect().left))
+            assert.ok(columns.every((x, index) => index === 0 || x > columns[index - 1] + 8), name + ': short landscape research must advance left to right')
+            await clear(rowIds.flat(), 'landscape-first-screen')
+            const buttons = await growth.locator('.hall-inspect, [data-hall-confirm], [data-hall-detail-toggle]').evaluateAll(items => items.filter(el => el.getClientRects().length).map(el => ({ w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height })))
+            assert.ok(buttons.every(b => b.w >= 44 && b.h >= 44), name + ': landscape hall targets must be at least 44 CSS px')
+            const toggle = details.locator('[data-hall-detail-toggle]')
+            await toggle.click()
+            assert.ok(await details.locator('.hall-description').isVisible(), name + ': landscape details must expand on demand')
+            assert.ok(inside(await buy.evaluate(rect), width, height), name + ': expanded description hides purchase')
+            await toggle.click()
+          }
+          if (!mobile && width >= 740 && height > 520) {
+            assert.ok(await details.locator('.hall-description').isVisible(), name + ': desktop descriptions should not collapse because of window height')
+            assert.equal(await details.locator('[data-hall-detail-toggle]').isVisible(), false, name + ': desktop must not require an extra info click')
+          }
           if (height >= 844 || (!mobile && height >= 900)) {
             await clear(rowIds.flat(), 'tall-screen')
             // Skins and reset live below the tree; only the tree + dock must fit the first screen.

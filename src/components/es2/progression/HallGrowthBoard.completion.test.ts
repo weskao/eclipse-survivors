@@ -84,10 +84,12 @@ it.each(['keystone','signature','resonance'] as const)('plays a distinct %s cere
 it('keeps the confirmation and ceremony status outside the foldable detail body',async()=>{
   const wrapper=mount(HallGrowthBoard,{props:{nodes:[node('power',4)]}})
   try{
+    const announcement = wrapper.get('[data-hall-detail] [role="status"]')
+    expect(announcement.text()).toBe('')
     await wrapper.get('[data-hall-confirm]').trigger('click')
     await wrapper.setProps({nodes:[node('power',5)]})
-    expect(wrapper.get('[data-hall-detail]').find('.hall-success').exists()).toBe(true)
-    expect(wrapper.get('.hall-detail-body').find('.hall-success').exists()).toBe(false)
+    expect(announcement.text()).toContain('5 / 5')
+    expect(wrapper.get('.hall-detail-body').find('[role="status"]').exists()).toBe(false)
     expect(wrapper.get('.hall-detail-body').find('[data-hall-confirm]').exists()).toBe(false)
   }finally{wrapper.unmount()}
 })

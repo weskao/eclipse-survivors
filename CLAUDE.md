@@ -53,10 +53,11 @@ Each requirement lives in exactly one file, never a copy here and in a rule. Rul
 | Knight/ranger/wizard sprites, rigid weapons, held projectiles, body atlas | `.claude/rules/hero-weapon-rendering.md` |
 | Raster image generation or delivery (Polytool `towebp`, WebP only) | `.claude/rules/webp-assets.md` |
 | Images: commit real asset files first, code consumer second | `.claude/rules/asset-workflow.md` |
+| **Every homepage image** (including new image consumers): shared size/shape-matched shimmer, native load/error, no legacy expedition glyph | `.claude/rules/hero-lobby.md` — Shared homepage image loading |
 | BOSS CRUD: original score, phase music, per-attack cinematic SFX | `.claude/rules/boss-music-production.md` |
 | BOSS arrival countdown UI, BOSS phase body size | `.claude/rules/boss-visuals.md` |
 | Combat feedback, skill growth, encounters, reward experience and game-feel acceptance | `.claude/rules/game-feel.md` |
-| Lobby, Adventurer Hall, hero selection panels, last expedition selection, hero cosmetic cards (every new or updated hero) | `.claude/rules/hero-lobby.md` |
+| Lobby, Adventurer Hall, hero selection panels, last expedition selection, hero cosmetic cards (every new or updated hero), **expedition mode CRUD and shared mode icon contract (every new or updated mode)** | `.claude/rules/hero-lobby.md` |
 | ES4 Adventurer Hall skill trees, temporary SVG, final WebP, hero talents, attunement, graph and audiovisual UX | `docs/es4/hall-ui-art-contract.md`, `docs/superpowers/specs/2026-11-27-es4-skill-ecosystem-design.md`, `docs/superpowers/plans/2026-11-27-es4-skill-ecosystem.md` |
 | Post-ES4 endgame chapters, monster ecology, mode selection, difficulty and reward design | `docs/es4/deferred-endgame-scope.md` (separate future workstream; not part of skill-tree implementation) |
 | Unlocked playtest (`make *-unlocked`, `VITE_ES2_UNLOCKED`), anything that could ship a test unlock | `.claude/rules/unlock-separation.md` |

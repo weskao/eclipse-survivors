@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '../i18n'
+import Es2ModeSigil from './es2/modes/Es2ModeSigil.vue'
 import { computed } from 'vue'
 import { ACHIEVEMENTS } from '../meta/achievements'
 import { MODES } from '../meta/modes'
@@ -25,7 +26,7 @@ const duration = computed(() => {
       <span class="result-kicker">{{ t("✦ ECLIPSE SURVIVORS · EXPEDITION REPORT ✦") }}</span>
       <div class="result-emblem" aria-hidden="true">{{ runResult?.victory ? '♛' : '⚔' }}</div>
       <h2 id="ending">{{ t(ending) }}</h2>
-      <p class="result-mode">{{ t(runResult ? MODES[runResult.mode].label : '遠征結算') }}</p>
+      <p class="result-mode"><Es2ModeSigil v-if="runResult" :mode="runResult.mode" class="result-mode-sigil" /><span>{{ t(runResult ? MODES[runResult.mode].label : '遠征結算').split(' · ')[0] }}</span></p>
       <p id="summary">{{ t(summary) }}</p>
       <div v-if="runResult" class="result-stats">
         <div><small>{{ t("存活時間") }}</small><strong>{{ duration }}</strong></div>
