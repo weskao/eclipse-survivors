@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import ModeChooser from './ModeChooser.vue'
-import { getLocale, setLocale } from '../../../i18n'
+import { getLocale, setLocale, t } from '../../../i18n'
 import { nextTick } from 'vue'
 import Es2ModeSigil from './Es2ModeSigil.vue'
+import Es2ModeHotBadge from './Es2ModeHotBadge.vue'
+import Es2ModeDuration from './Es2ModeDuration.vue'
 import { MODES } from '../../../meta/modes'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -15,11 +17,110 @@ import { advanceObjective, createObjectiveState } from '../../../game/content/ob
 const wrappers: VueWrapper[] = []
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount() })
 
+describe('shared HOT expedition badge', () => {
+  it('never changes featured card padding, size or grid placement', () => {
+    const css = readFileSync(resolve('src/components/es2/modes/Es2ModeHotBadge.vue'), 'utf8')
+    expect(css).not.toMatch(/\.es2-mode-has-hot\s*[,\{]/)
+    expect(css).toMatch(/position:absolute;\s*inset-block-start:calc\(0px - var\(--es2-hot-overhang/)
+    expect(css).toContain('--es2-hot-overhang:12px')
+    const menuCss = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    expect(menuCss).toContain('.es2-expedition-board .es2-mode-detail-trigger{padding-block-start:15px}')
+    expect(menuCss).toContain('min-height:124px;gap:8px;')
+  })
+  it('renders only when enabled and reacts to the boolean without leaving a placeholder', async () => {
+    const wrapper = mount(Es2ModeHotBadge, { props: { hot: false } })
+    wrappers.push(wrapper)
+    expect(wrapper.find('[data-es2-mode-hot]').exists()).toBe(false)
+    await wrapper.setProps({ hot: true })
+    const badge = wrapper.get('[data-es2-mode-hot]')
+    expect(badge.text()).toBe('HOT')
+    expect(badge.get('.es2-mode-hot-fire').attributes('aria-hidden')).toBe('true')
+    expect(badge.findAll('.es2-mode-hot-flame')).toHaveLength(3)
+    expect(badge.findAll('.es2-mode-hot-ember')).toHaveLength(3)
+    expect(badge.find('canvas').exists()).toBe(false)
+    await wrapper.setProps({ hot: false })
+    expect(wrapper.find('[data-es2-mode-hot]').exists()).toBe(false)
+  })
+
+  it('currently marks only boss rush without changing selection', async () => {
+    const wrapper = mount(ModeChooser, { props: { value: 'relic-hunt' } })
+    wrappers.push(wrapper)
+    expect(Object.values(MODES).filter(mode => mode.hot).map(mode => mode.id)).toEqual(['boss-rush'])
+    expect(wrapper.findAll('[data-es2-mode-hot]')).toHaveLength(1)
+    const boss = wrapper.get('[data-objective-mode="boss-rush"]')
+    expect(boss.get('[data-es2-mode-hot]').text()).toBe('HOT')
+    expect(boss.get(':scope > [data-es2-mode-hot]').exists()).toBe(true)
+    expect(boss.find('.es2-mode-title-line [data-es2-mode-hot]').exists()).toBe(false)
+    expect(boss.classes()).toContain('es2-mode-has-hot')
+    expect(boss.attributes('aria-label')).toContain(t('熱門遠征'))
+    expect(boss.attributes('aria-checked')).toBe('false')
+    expect(wrapper.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
+    await boss.get('[data-es2-mode-hot]').trigger('click')
+    expect(wrapper.emitted('select')).toEqual([['boss-rush']])
+  })
+})
+
+describe('shared duration badge', () => {
+  it('centers the borderless card duration and reuses the hero Info corner without affecting the dock', () => {
+    const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    const duration = readFileSync(resolve('src/components/es2/modes/Es2ModeDuration.vue'), 'utf8')
+    expect(css).toContain('.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:center;justify-self:end;')
+    expect(css).not.toContain('--es2-hot-inline-end:48px')
+    expect(duration).toMatch(/\.es2-mode-time:not\(\.es2-mode-time--compact\)\s*\{[^}]*display:inline-flex;[^}]*align-items:center;/)
+    expect(css).not.toContain('.es2-expedition-board .es2-mode-card-shell .es2-mode-detail-trigger{')
+    expect(duration).toMatch(/\.es2-mode-time:not\(\.es2-mode-time--compact\)\s*\{[^}]*border:0;[^}]*background:none;/)
+  })
+  it('uses one centered value for unlimited time and restores the unit for finite runs', async () => {
+    const wrapper = mount(Es2ModeDuration, { props: { duration: null } })
+    wrappers.push(wrapper)
+    expect(wrapper.classes()).toContain('es2-mode-time--endless')
+    expect(wrapper.get('[data-es2-mode-time-value]').text()).toBe('∞')
+    expect(wrapper.find('[data-es2-mode-time-unit]').exists()).toBe(false)
+    const css = readFileSync(resolve('src/components/es2/modes/Es2ModeDuration.vue'), 'utf8')
+    expect(css).toMatch(/\.es2-mode-time--endless\s*\{[^}]*display:flex;[^}]*align-items:center;[^}]*justify-content:center;/)
+    await wrapper.setProps({ duration: 480 })
+    expect(wrapper.classes()).not.toContain('es2-mode-time--endless')
+    expect(wrapper.get('[data-es2-mode-time-value]').text()).toBe('8')
+    expect(wrapper.get('[data-es2-mode-time-unit]').text()).toBe('MIN')
+  })
+})
+
 describe('ES2 objective mode chooser adapter', () => {
-  it('renders exactly five accessible choices without replacing four legacy modes', async () => {
+  it('uses the fixed badge slot for a future classic or advanced featured mode', () => {
+    const ids = ['quick', 'endless-eclipse'] as const
+    const previous = ids.map(id => MODES[id].hot)
+    try {
+      ids.forEach(id => { MODES[id].hot = true })
+      const wrapper = mount(ModeChooser, { props: { value: 'quick' } })
+      wrappers.push(wrapper)
+      for (const id of ids) {
+        const card = wrapper.get(`[data-mode="${id}"], [data-objective-mode="${id}"]`)
+        expect(card.classes()).toContain('es2-mode-has-hot')
+        expect(card.get(':scope > [data-es2-mode-hot]').text()).toBe('HOT')
+        expect(card.find('.es2-mode-title-line [data-es2-mode-hot]').exists()).toBe(false)
+      }
+    } finally {
+      ids.forEach((id, i) => { MODES[id].hot = previous[i] })
+    }
+  })
+  it('renders all nine choices in one radio group', async () => {
     const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' } })
     wrappers.push(wrapper)
     expect(wrapper.findAll('[data-objective-mode]')).toHaveLength(5)
+    expect(wrapper.findAll('[data-es2-mode-details]')).toHaveLength(Object.keys(MODES).length)
+    for (const card of wrapper.findAll('[role="radio"]')) {
+      const id = card.attributes('data-es2-mode-id')
+      expect(id).toBeTruthy()
+      expect(card.element.parentElement?.querySelector('button[data-es2-mode-details]')?.getAttribute('data-es2-mode-details')).toBe(id)
+      expect(card.find('button').exists()).toBe(false)
+    }
+    expect(wrapper.findAll('[role="radiogroup"]')).toHaveLength(1)
+    expect(wrapper.get('[role="radiogroup"]').findAll('[role="radio"]')).toHaveLength(9)
+    expect(wrapper.findAll('[data-es2-mode-chapter]')).toHaveLength(2)
+    expect(wrapper.findAll('[role="radio"][aria-checked="true"]')).toHaveLength(1)
+    expect(wrapper.findAll('[role="radio"][tabindex="0"]')).toHaveLength(1)
+    expect(wrapper.findAll('.es2-mode-radio')).toHaveLength(0)
+    expect(wrapper.get('[aria-checked="true"]').classes()).toContain('es2-mode-active')
     for (const id of ['boss-rush', 'endless-eclipse', 'relic-hunt', 'cursed-expedition', 'chaos-arena']) {
       const icon = wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`)
       expect(icon.get('img').attributes('src')).toContain(id + '@3x.webp')
@@ -30,11 +131,27 @@ describe('ES2 objective mode chooser adapter', () => {
     expect(wrapper.text()).toContain('永恆星蝕')
     expect(wrapper.text()).toContain('聖物追獵')
     expect(wrapper.text()).toContain('詛咒遠征')
-    expect(wrapper.findAll('.es2-objective-choice .modifier')).toHaveLength(15)
-    expect(wrapper.find('[data-objective-mode="endless-eclipse"] .reward').text()).toContain('每 3 分鐘')
+    expect(wrapper.findAll('.es2-objective-choice .modifier')).toHaveLength(0)
+    expect(wrapper.get('[data-objective-mode="endless-eclipse"] [data-es2-mode-time-value]').text()).toBe('∞')
     await wrapper.find('[data-objective-mode="chaos-arena"]').trigger('click')
     expect(wrapper.emitted('select')).toEqual([['chaos-arena']])
     expect(wrapper.find('[data-objective-mode="boss-rush"]').attributes('aria-checked')).toBe('true')
+  })
+
+  it('moves across chapters with one selected value and wraps keyboard navigation', async () => {
+    const wrapper = mount(ModeChooser, { props: { value: 'challenge' }, attachTo: document.body })
+    wrappers.push(wrapper)
+    await wrapper.get('[data-mode="challenge"]').trigger('keydown', { key: 'ArrowRight' })
+    expect(wrapper.emitted('select')).toEqual([['boss-rush']])
+    await wrapper.setProps({ value: 'boss-rush' })
+    expect(wrapper.findAll('[aria-checked="true"]')).toHaveLength(1)
+    expect(wrapper.get('[data-mode="challenge"]').attributes('aria-checked')).toBe('false')
+    expect(wrapper.get('[data-objective-mode="boss-rush"]').attributes('tabindex')).toBe('0')
+    await wrapper.get('[data-objective-mode="boss-rush"]').trigger('keydown', { key: 'ArrowLeft' })
+    expect(wrapper.emitted('select')?.at(-1)).toEqual(['challenge'])
+    await wrapper.setProps({ value: 'quick' })
+    await wrapper.get('[data-mode="quick"]').trigger('keydown', { key: 'ArrowLeft' })
+    expect(wrapper.emitted('select')?.at(-1)).toEqual(['chaos-arena'])
   })
 
   it('shows one localized title and opens full mode details without changing selection', async () => {
@@ -50,11 +167,19 @@ describe('ES2 objective mode chooser adapter', () => {
       expect(dialog.querySelector('h2')?.textContent).toBe('永恆星蝕')
       expect(dialog.querySelector('.es2-mode-sigil img')?.getAttribute('src')).toBe(
         wrapper.get('[data-objective-mode="endless-eclipse"] .es2-mode-sigil img').attributes('src'))
+      expect(dialog.getAttribute('data-es2-mode-theme')).toBe('endless-eclipse')
+      expect(dialog.querySelector('[data-es2-mode-detail="objective"] strong')?.textContent).toBe('遠征目標')
+      expect(dialog.querySelector('[data-es2-mode-detail="rules"] strong')?.textContent).toBe('特殊規則')
+      expect(dialog.querySelectorAll('[data-es2-mode-detail="rules"] li')).toHaveLength(3)
+      expect(dialog.querySelector('[data-es2-mode-detail="reward"] strong')?.textContent).toBe('獎勵')
       expect(dialog.textContent).toContain('每 180 秒')
       expect(wrapper.emitted('select')).toBeUndefined()
       setLocale('en')
       await nextTick()
       expect(dialog.querySelector('h2')?.textContent).toBe('Endless Eclipse')
+      expect(dialog.querySelector('[data-es2-mode-detail="objective"] strong')?.textContent).toBe('Expedition objective')
+      expect(dialog.querySelector('[data-es2-mode-detail="rules"] strong')?.textContent).toBe('Special rules')
+      expect(dialog.querySelector('[data-es2-mode-detail="reward"] strong')?.textContent).toBe('Reward')
       expect(dialog.textContent).toContain('Complete an eclipse event every 180 seconds')
       expect(wrapper.get('[data-es2-mode-details="endless-eclipse"]').attributes('aria-label')).toBe('View mode details: Endless Eclipse')
       ;(dialog.querySelector('.es2-close') as HTMLButtonElement).click()
@@ -65,11 +190,37 @@ describe('ES2 objective mode chooser adapter', () => {
     }
   })
 
+  it('uses the matching theme, image and three detail sections for all nine modes in both languages', async () => {
+    const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' }, attachTo: document.body })
+    wrappers.push(wrapper)
+    const locale = getLocale()
+    try {
+      for (const language of ['zh-TW', 'en'] as const) {
+        setLocale(language)
+        await nextTick()
+        for (const card of wrapper.findAll('[role="radio"]')) {
+          const id = card.attributes('data-es2-mode-id')
+          await wrapper.get(`[data-es2-mode-details="${id}"]`).trigger('click')
+          const dialog = document.body.querySelector('[role="dialog"]')!
+          expect(dialog.getAttribute('data-es2-mode-theme')).toBe(id)
+          expect(dialog.querySelector('.es2-mode-detail-sigil img')?.getAttribute('src')).toBe(card.get('.es2-mode-sigil img').attributes('src'))
+          expect(dialog.querySelectorAll('[data-es2-mode-detail]')).toHaveLength(3)
+          for (const block of dialog.querySelectorAll('[data-es2-mode-detail]')) expect(block.textContent?.trim().length).toBeGreaterThan(5)
+          if (id === 'endless') expect(dialog.textContent).toContain(t('沒有固定勝利終點，持續生存並累積戰績。'))
+          if (id === 'challenge') expect(dialog.textContent).toContain(String(Math.round(MODES.challenge.modifiers.enemyDamage * 100)))
+          ;(dialog.querySelector('.es2-close') as HTMLButtonElement).click()
+          await nextTick()
+        }
+      }
+      expect(wrapper.emitted('select')).toBeUndefined()
+    } finally { setLocale(locale) }
+  })
+
   it('disables every mode control when the host cannot start a new run', () => {
     const wrapper = mount(ModeChooser, { props: { value: null, disabled: true } })
     wrappers.push(wrapper)
     expect(wrapper.findAll('button').every(button => button.attributes('disabled') !== undefined)).toBe(true)
-    expect(wrapper.findAll('[role="radio"]')).toHaveLength(5)
+    expect(wrapper.findAll('[role="radio"]')).toHaveLength(9)
   })
 })
 

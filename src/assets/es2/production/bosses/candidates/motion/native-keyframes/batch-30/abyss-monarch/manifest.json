@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "bossId": "abyss-monarch",
+  "referenceHead": "9a5f002d4271955197923bdcaafa53d449a0fafa",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-shadow-orb-release-study-b",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/abyss-phase2-shadow-orb-release-study-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "28311a7e-9a74-4cf2-bfe1-ebbdf92ef8fc",
+        "originalPngSha256": "015bd4c8bd10f0f1d4d2b67a9c378829c8e8bf640f989423ad7f8fc630144a12",
+        "canonicalReferenceHead": "9a5f002d4271955197923bdcaafa53d449a0fafa",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1600,
+      "cellHeight": 1088,
+      "frameRects": [
+        [
+          0,
+          0,
+          1600,
+          1088
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        800.0,
+        544.0
+      ],
+      "alphaBounds": [
+        141,
+        35,
+        1461,
+        1054
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1504,
+        1056
+      ],
+      "alphaExtent": [
+        1320,
+        1019
+      ],
+      "actualSourceResolution": [
+        1600,
+        1088
+      ],
+      "originalGeneratedResolution": [
+        1536,
+        1024
+      ],
+      "originalAlpha128Bounds": [
+        109,
+        3,
+        1429,
+        1022
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1472,
+        1024
+      ],
+      "sourceEdgeMargins": [
+        141,
+        35,
+        139,
+        34
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "453ac558987fbc83e69118b98a0c8e957b1ba898419658bef0f0f1afcd1fc145",
+      "webpCompressedBytes": 548738,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Open arms and orbiting orbs; release study, diffuse aura requires visual QA. Independent redraw, canonical atlas inspected but not a verified image edit. Original alpha reaches edge; padding cannot restore any clipped pixels. No scaling. Conservative 1898px gate not met. Polytool conversion still pending."
+    },
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-shadow-orb-recover-study-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/abyss-phase2-shadow-orb-recover-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "edb744a2-ff38-457c-8df6-800712b17e30",
+        "originalPngSha256": "28fc7b484329eb779a9bad843f81914dcedaa2886bd555689402cf7da11d2376",
+        "canonicalReferenceHead": "9a5f002d4271955197923bdcaafa53d449a0fafa",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1353,
+      "cellHeight": 1285,
+      "frameRects": [
+        [
+          0,
+          0,
+          1353,
+          1285
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        676.5,
+        642.5
+      ],
+      "alphaBounds": [
+        40,
+        38,
+        1312,
+        1247
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1321,
+        1253
+      ],
+      "alphaExtent": [
+        1272,
+        1209
+      ],
+      "actualSourceResolution": [
+        1353,
+        1285
+      ],
+      "originalGeneratedResolution": [
+        1289,
+        1221
+      ],
+      "originalAlpha128Bounds": [
+        8,
+        6,
+        1280,
+        1215
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1289,
+        1221
+      ],
+      "sourceEdgeMargins": [
+        40,
+        38,
+        41,
+        38
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "3e7775fcb149f72595649e5f3f3e2758a100fa0a31b52fc7d946e0ce43d97d81",
+      "webpCompressedBytes": 601160,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Lowered open hands; proposed recovery, not an approved sequential frame. Independent redraw, canonical atlas inspected but not a verified image edit. Original alpha reaches edge; padding cannot restore any clipped pixels. No scaling. Conservative 1898px gate not met. Polytool conversion still pending."
+    },
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-shadow-orb-windup-study-a",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/abyss-phase2-shadow-orb-windup-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "9e98c704-90cf-4854-aed6-97ecd6000c8a",
+        "originalPngSha256": "19cdee2ea72d19451ecfc9f313f3b8edd38c85ffb1e3c8e1135b98da99b391ad",
+        "canonicalReferenceHead": "9a5f002d4271955197923bdcaafa53d449a0fafa",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1342,
+      "cellHeight": 1294,
+      "frameRects": [
+        [
+          0,
+          0,
+          1342,
+          1294
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        671.0,
+        647.0
+      ],
+      "alphaBounds": [
+        39,
+        47,
+        1303,
+        1258
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1310,
+        1262
+      ],
+      "alphaExtent": [
+        1264,
+        1211
+      ],
+      "actualSourceResolution": [
+        1342,
+        1294
+      ],
+      "originalGeneratedResolution": [
+        1278,
+        1230
+      ],
+      "originalAlpha128Bounds": [
+        7,
+        15,
+        1271,
+        1226
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1278,
+        1230
+      ],
+      "sourceEdgeMargins": [
+        39,
+        47,
+        39,
+        36
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "c2b957d29117d5bebd0243883ebafeae6a1740b1deb24671760b6a6f631f6349",
+      "webpCompressedBytes": 749076,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "One raised arm and large orb; windup study, handedness and exact phase unverified. Independent redraw, canonical atlas inspected but not a verified image edit. Original alpha reaches edge; padding cannot restore any clipped pixels. No scaling. Conservative 1898px gate not met. Polytool conversion still pending."
+    },
+    {
+      "bossId": "abyss-monarch",
+      "id": "abyss-phase2-shadow-orb-windup-study-b",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/abyss-phase2-shadow-orb-windup-study-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "424264af-31a9-4f33-89c5-291b57372ec2",
+        "originalPngSha256": "304cd6fef14ecdab6ebe7e3c336c47a9e6bb92a3769e8688cf0b670a8ca72f18",
+        "canonicalReferenceHead": "9a5f002d4271955197923bdcaafa53d449a0fafa",
+        "canonicalReferenceSha256": "546c059559e95155f9aac0b4fc2561953fb83bd556d227e0664c7f5b77216023",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        52,
+        38,
+        1309,
+        1217
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1324,
+        1231
+      ],
+      "alphaExtent": [
+        1257,
+        1179
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        20,
+        6,
+        1277,
+        1185
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1292,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        52,
+        38,
+        67,
+        46
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "640655c3ed6f7c7ca2e08dffbfbca2ced243c75384ad60779d0a36bcee9f2adc",
+      "webpCompressedBytes": 688358,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Two raised hands, alternate windup; not an approved consecutive frame. Independent redraw, canonical atlas inspected but not a verified image edit. Original alpha reaches edge; padding cannot restore any clipped pixels. No scaling. Conservative 1898px gate not met. Polytool conversion still pending."
+    }
+  ],
+  "missing": [
+    "identity and clipping review",
+    "phase/direction and anchor approval",
+    "coherent animation sequence",
+    "browser visual QA",
+    "1898px production extent",
+    "Polytool conversion",
+    "Abyss hurt/death and Frost Sovereign remaining studies not delivered"
+  ]
+}

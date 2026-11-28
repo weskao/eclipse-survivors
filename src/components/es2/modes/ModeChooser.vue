@@ -1,83 +1,105 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
-import { computed } from 'vue'
+import { computed, nextTick, watch, useId } from 'vue'
 import Es2DetailSurface from '../menu/Es2DetailSurface.vue'
 import { useHoverDetails } from '../menu/useHoverDetails'
 import Es2ModeSigil from './Es2ModeSigil.vue'
-import { objectiveModeIds, getObjectiveMode, type ObjectiveModeId } from '../../../game/content/modes/definitions'
+import Es2ModeHotBadge from './Es2ModeHotBadge.vue'
+import Es2ModeDuration from './Es2ModeDuration.vue'
+import { modeDurationLabel } from './mode-duration'
+import { MODES, modeIds, getModeBrief } from '../../../meta/modes'
+import { getModeDetails } from './mode-details'
+import type { RunModeId } from '../../../meta/types'
+import { objectiveModeIds } from '../../../game/content/modes/definitions'
 
-withDefaults(defineProps<{ value: ObjectiveModeId | null; disabled?: boolean }>(), { disabled: false })
-const emit = defineEmits<{ select: [mode: ObjectiveModeId] }>()
-const modeDetails = useHoverDetails<ObjectiveModeId>('[data-objective-mode]', el =>
-  el.getAttribute('data-objective-mode') as ObjectiveModeId | null)
+const props = withDefaults(defineProps<{ value: RunModeId | null; disabled?: boolean; visible?: boolean }>(), { disabled: false, visible: true })
+const emit = defineEmits<{ select: [mode: RunModeId] }>()
+const instructionId = useId()
+const groups = [
+  { id: 'classic', chapter: '第一章', title: '經典遠征', cards: modeIds.map(id => ({ id, objective: false })) },
+  { id: 'advanced', chapter: '第二章', title: '進階試煉', cards: objectiveModeIds.map(id => ({ id, objective: true })) },
+] as const
+const allIds: RunModeId[] = groups.flatMap(group => group.cards.map(card => card.id))
+const focusId = computed(() => props.value ?? allIds[0])
+async function moveMode(event: KeyboardEvent, id: RunModeId): Promise<void> {
+  const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1
+    : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0
+  if (!direction || props.disabled) return
+  const board = (event.currentTarget as HTMLElement | null)?.closest('[data-es2-expedition-board]')
+  event.preventDefault()
+  const next = allIds[(allIds.indexOf(id) + direction + allIds.length) % allIds.length]
+  if (!next) return
+  emit('select', next)
+  await nextTick()
+  board?.querySelector<HTMLButtonElement>(`[data-mode="${next}"], [data-objective-mode="${next}"]`)?.focus()
+}
+const modeDetails = useHoverDetails<RunModeId>('[data-es2-mode-id], [data-es2-mode-details]', el =>
+  (el.getAttribute('data-es2-mode-id') ?? el.getAttribute('data-es2-mode-details')) as RunModeId | null)
 const { id: detailId, anchor: modeAnchor, tooltipId: modeTooltipId, events: modeHoverEvents } = modeDetails
-const detail = computed(() => detailId.value ? getObjectiveMode(detailId.value) : null)
+watch(() => props.visible, visible => { if (!visible) modeDetails.clear() })
+const detail = computed(() => detailId.value ? getModeDetails(detailId.value) : null)
 // The authored title contains both languages; display only the current one.
-const modeTitle = (id: ObjectiveModeId) => t(getObjectiveMode(id).title).split(' · ')[0]!
-const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
-  ? '每 3 分鐘 +{embers} 餘燼（最高 1500）' : '勝利獎勵 {embers} 餘燼', { embers: getObjectiveMode(id).rewardEmbers })
+const modeTitle = (id: RunModeId) => t(MODES[id].label).split(' · ')[0]!
 </script>
 
 <template>
-  <section class="es2-objective-chooser" :aria-label="t('ES2 擴充遠征模式')">
-    <header><span>{{ t("CHAPTER II · MODES") }}</span><h2>{{ t("選擇遠征試煉") }}</h2></header>
-    <div class="es2-objective-grid" v-on="modeHoverEvents" role="radiogroup" :aria-label="t('ES2 遠征模式')">
-      <div v-for="id in objectiveModeIds" :key="id" class="es2-objective-card-shell">
-      <button
-        type="button" role="radio" class="es2-objective-choice" data-ui-sfx="managed"
-        :data-objective-mode="id" :data-es2-mode-theme="id" :disabled="disabled"
-        :aria-checked="value === id"
-        :aria-label="[modeTitle(id), t(getObjectiveMode(id).description), t(getObjectiveMode(id).victoryDescription), ...getObjectiveMode(id).preRunModifiers.map(modifier => t(modifier))].join(' · ')"
-        :class="{ selected: value === id }"
-        @click="emit('select', id)"
-      >
-        <span class="es2-objective-heading">
-          <Es2ModeSigil :mode="id" class="es2-objective-sigil" />
-          <strong>{{ modeTitle(id) }}</strong>
-        </span>
-        <span>{{ t(getObjectiveMode(id).description) }}</span>
-        <small>{{ t(getObjectiveMode(id).victoryDescription) }}</small>
-        <small v-for="modifier in getObjectiveMode(id).preRunModifiers" :key="modifier" class="modifier">◈ {{ t(modifier) }}</small>
-        <small class="reward">✦ {{ rewardText(id) }}</small>
-      </button>
-      <button type="button" class="es2-mode-detail-trigger" :disabled="disabled"
-        :data-es2-mode-details="id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(id) })"
-        aria-haspopup="dialog" data-ui-sfx="select" @click="modeDetails.openModal(id)"><span aria-hidden="true">i</span></button>
+  <div class="es2-expedition-board" data-es2-expedition-board role="radiogroup"
+    :aria-label="t('選擇遠征命運')" :aria-describedby="instructionId" v-on="modeHoverEvents">
+    <div class="es2-expedition-board-header">
+      <div><h2 id="es2ModeTitle">{{ t('選擇遠征命運') }}</h2>
+        <p :id="instructionId">{{ t('從 {count} 種遠征中選擇 1 種', { count: allIds.length }) }}</p></div>
+      <span class="es2-expedition-current" :data-es2-mode-theme="value ?? undefined">
+        <span>{{ t('目前遠征') }}<strong>{{ value ? modeTitle(value) : '—' }}</strong></span>
+      </span>
+    </div>
+    <div v-for="group in groups" :key="group.id" class="es2-expedition-chapter" :data-es2-mode-chapter="group.id">
+      <div class="es2-expedition-chapter-heading">
+        <span>{{ t(group.chapter) }}</span><h3>{{ t(group.title) }}</h3><span class="es2-chapter-count">{{ t('{count} 種模式', { count: group.cards.length }) }}</span>
+      </div>
+      <div class="es2-mode-grid" :class="{ 'es2-objective-grid': group.id === 'advanced' }">
+        <div v-for="card in group.cards" :key="card.id" class="es2-mode-card-shell" :class="{ 'es2-objective-card-shell': card.objective }">
+          <button type="button" role="radio" class="es2-mode-card" data-ui-sfx="managed"
+            :class="{ 'es2-objective-choice': card.objective, 'es2-mode-active': value === card.id, selected: value === card.id, 'es2-mode-has-hot': MODES[card.id].hot }"
+            :data-es2-mode-id="card.id" :data-mode="card.objective ? undefined : card.id" :data-objective-mode="card.objective ? card.id : undefined"
+            :data-es2-mode-theme="card.id" :aria-checked="value === card.id" :disabled="disabled"
+            :tabindex="focusId === card.id ? 0 : -1"
+            :aria-label="[modeTitle(card.id), ...(MODES[card.id].hot ? [t('熱門遠征')] : []), t(getModeBrief(card.id)), modeDurationLabel(MODES[card.id].duration)].join(' · ')"
+            @click="emit('select', card.id)" @keydown="moveMode($event, card.id)">
+            <Es2ModeSigil :mode="card.id" :class="card.objective ? 'es2-objective-sigil' : 'es2-mode-mark'" />
+            <span class="es2-mode-copy">
+              <span class="es2-mode-title-line" :class="{ 'es2-objective-heading': card.objective }">
+                <strong>{{ modeTitle(card.id) }}</strong>
+              </span>
+              <small>{{ t(getModeBrief(card.id)) }}</small>
+            </span>
+            <Es2ModeDuration :duration="MODES[card.id].duration" />
+            <Es2ModeHotBadge :hot="MODES[card.id].hot" />
+          </button>
+          <button type="button" class="es2-mode-detail-trigger" :disabled="disabled"
+            :data-es2-mode-details="card.id" :data-es2-mode-theme="card.id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(card.id) })"
+            aria-haspopup="dialog" data-ui-sfx="select" @click="modeDetails.openModal(card.id)"><span aria-hidden="true">i</span></button>
+        </div>
       </div>
     </div>
-    <Es2DetailSurface :active="detail !== null" :title="detailId ? modeTitle(detailId) : ''"
+    <Es2DetailSurface :active="detail !== null" :title="detailId ? modeTitle(detailId) : ''" :mode-theme="detailId ?? undefined"
       :anchor="modeAnchor" :tooltip-id="modeTooltipId" @cancel="modeDetails.clear()" @hold="modeDetails.hold()" @leave="modeDetails.leave()">
       <template #leading><Es2ModeSigil v-if="detailId" :mode="detailId" class="es2-mode-detail-sigil" /></template>
-      <div v-if="detail && detailId" class="es2-hero-detail-content">
-        <p>{{ t(detail.description) }}</p>
-        <p>{{ t(detail.victoryDescription) }}</p>
-        <p v-for="modifier in detail.preRunModifiers" :key="modifier">◈ {{ t(modifier) }}</p>
-        <p>✦ {{ rewardText(detailId) }}</p>
+      <div v-if="detail && detailId" class="es2-mode-detail">
+        <p class="es2-mode-detail-intro">{{ detail.description }}</p>
+        <div class="es2-mode-detail-block" data-es2-mode-detail="objective">
+          <strong>{{ t('遠征目標') }}</strong>
+          <p>{{ detail.victoryDescription }}</p>
+        </div>
+        <div class="es2-mode-detail-block" data-es2-mode-detail="rules">
+          <strong>{{ t('特殊規則') }}</strong>
+          <ul><li v-for="modifier in detail.preRunModifiers" :key="modifier">{{ modifier }}</li></ul>
+        </div>
+        <div class="es2-mode-detail-block" data-es2-mode-detail="reward">
+          <strong>{{ t('獎勵') }}</strong>
+          <p>{{ detail.rewardText }}</p>
+        </div>
       </div>
     </Es2DetailSurface>
-  </section>
+  </div>
 </template>
 
-<style scoped>
-.es2-objective-chooser { color: #f1e4d3; width: 100%; }
-.es2-objective-chooser header { margin-bottom: 0.85rem; }
-.es2-objective-chooser header span { color: #c6a875; font-size: 0.7rem; letter-spacing: 0.16em; }
-.es2-objective-chooser h2 { font-size: 1.3rem; margin: 0.35rem 0; }
-.es2-objective-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: 0.7rem; }
-.es2-objective-card-shell { position: relative; display: flex; min-width: 0; }
-.es2-objective-choice { width: 100%; display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; padding: 1rem;
-  text-align: left; color: inherit; border: 1px solid #6b584c; border-radius: 0.7rem;
-  background: #211d2b; cursor: pointer; }
-.es2-objective-choice strong { font-size: 1rem; min-width:0; overflow-wrap:anywhere; }
-.es2-objective-choice .es2-objective-heading { display:flex; align-items:center; gap:6px; min-width:0; }
-.es2-objective-sigil { width:40px; font-size:24px; line-height:1; }
-.es2-objective-choice span { font-size: 0.83rem; line-height: 1.45; }
-.es2-objective-choice small { color: #c3b3a7; font-size: 0.75rem; line-height: 1.4; }
-.es2-objective-choice .modifier { color: #e1d1b6; }
-.es2-objective-choice .reward { color: #dfbe7f; }
-.es2-objective-choice.selected { border-color: #edc679; background: #302538; box-shadow: inset 0 0 0 1px #edc679; }
-.es2-objective-choice:focus-visible { outline: 3px solid #edc679; outline-offset: 3px; }
-.es2-objective-choice:disabled { cursor: not-allowed; opacity: 0.55; }
-@media (max-width: 560px) { .es2-objective-grid { grid-template-columns: 1fr; } }
-@media (prefers-reduced-motion: reduce) { .es2-objective-choice { transition: none; } }
-</style>

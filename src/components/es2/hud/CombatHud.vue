@@ -343,7 +343,7 @@ const skillDescription = (skill: (typeof view.value.skills)[number]): string =>
 .es2-hud__relic { position: relative; }
 .es2-hud__relic-stack {
   position: absolute; right: 0; bottom: 0; padding: 0 2px;
-  border-radius: 3px; background: #070b13e8; color: #fff4d1; font: 700 10px/1.25 system-ui;
+  border-radius: 3px; background: #070b13e8; color: #fff4d1; font: 700 10px/1.25 var(--es2-font-numeric), system-ui;
 }
 .es2-world-hud-icon{width:15px;height:15px;object-fit:contain;vertical-align:middle;margin-right:4px}
 .es2-hud__cooldown-icon{position:absolute;right:2px;top:2px;width:15px;height:15px;object-fit:contain;pointer-events:none;z-index:2}

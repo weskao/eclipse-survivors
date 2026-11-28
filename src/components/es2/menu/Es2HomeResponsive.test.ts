@@ -61,6 +61,47 @@ function menu(props: Record<string, unknown> = {}) {
   return wrapper
 }
 
+describe('classic expedition duration', () => {
+  it('shares the card duration value, unit and accessible label with the compact dock for every mode', async () => {
+    for (const mode of Object.values(MODES)) {
+      const wrapper = menu({ runMode: mode.id })
+      await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+      const card = wrapper.get(`[data-es2-mode-id="${mode.id}"] .es2-mode-time`)
+      const dock = wrapper.get('.es2-expedition-duration')
+      expect(dock.classes()).toContain('es2-mode-time--compact')
+      expect(dock.get('[data-es2-mode-time-value]').text()).toBe(card.get('[data-es2-mode-time-value]').text())
+      expect(dock.find('[data-es2-mode-time-unit]').exists()).toBe(mode.duration !== null)
+      if (mode.duration !== null) expect(dock.get('[data-es2-mode-time-unit]').text()).toBe('MIN')
+      expect(dock.attributes('aria-label')).toBe(card.attributes('aria-label'))
+      expect(dock.text()).not.toContain(':')
+    }
+  })
+  it('separates a readable infinity symbol or numeric duration from its unit', async () => {
+    const wrapper = menu({ runMode: 'quick' })
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    for (const id of ['quick', 'standard', 'endless', 'challenge'] as const) {
+      const time = wrapper.get(`[data-mode="${id}"] .es2-mode-time`)
+      const duration = MODES[id].duration
+      expect(time.get('[data-es2-mode-time-value]').text()).toBe(duration === null ? '∞' : String(Math.ceil(duration / 60)))
+      expect(time.find('[data-es2-mode-time-unit]').exists()).toBe(duration !== null)
+      expect(time.attributes('aria-label')).toBeTruthy()
+    }
+  })
+})
+
+describe('homepage expedition recommendation', () => {
+  it('renders the HOT component only on enabled modes, regardless of selection', async () => {
+    const wrapper = menu({ runMode: 'quick' })
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    const enabled = Object.values(MODES).filter(mode => mode.hot).map(mode => mode.id)
+    const marked = wrapper.findAll('[data-mode], [data-objective-mode]')
+      .filter(card => card.find('[data-es2-mode-hot]').exists())
+      .map(card => card.attributes('data-mode') ?? card.attributes('data-objective-mode'))
+    expect(marked).toEqual(enabled)
+    expect(marked).toEqual(['boss-rush'])
+  })
+})
+
 describe('homepage game title', () => {
   it('updates the title when switching locale without remounting', async () => {
     const locale = getLocale()
@@ -247,6 +288,7 @@ describe('phone homepage viewport-first navigation', () => {
           const copy = brief.text()
           const label = brief.attributes('aria-label')
           expect(brief.find('.es2-expedition-hero, [data-es2-selected-hero]').exists()).toBe(false)
+          expect(brief.get('[data-es2-mode-summary]').text()).not.toBe('')
           await wrapper.setProps({ heroId: 'shadowblade' })
           expect(brief.text()).toBe(copy)
           expect(brief.attributes('aria-label')).toBe(label)
@@ -357,14 +399,22 @@ describe('homepage menu layout across devices', () => {
       }
       if (page === 'heroes') await brief.trigger('click')
     }
-    expect(css).toContain('.es2-objective-choice>:not(.es2-objective-heading):not(.reward){display:none}')
+    const board = wrapper.get('[data-es2-expedition-board]')
+    expect(board.findAll('[role="radiogroup"]')).toHaveLength(0)
+    expect(board.attributes('role')).toBe('radiogroup')
+    expect(board.findAll('[role="radio"]')).toHaveLength(9)
+    expect(board.findAll('[aria-checked="true"]')).toHaveLength(1)
+    expect(board.findAll('.es2-mode-radio')).toHaveLength(0)
   })
-  it('uses a shared hexagonal icon, matching title color and duration chip', () => {
-    expect(css).toContain('.es2-menu .es2-mode-mark{width:48px')
+  it('uses a shared responsive card/detail emblem size, matching title color and duration chip', () => {
+    expect(css).toContain('.es2-mode-sigil:is(.es2-mode-mark,.es2-objective-sigil,.es2-mode-detail-sigil){width:var(--es2-mode-card-sigil-size)')
+    for (const size of [48, 40, 36, 30]) expect(css).toContain('--es2-mode-card-sigil-size:' + size + 'px')
+    expect(css).not.toContain('.es2-mode-detail-sigil{width:36px')
     expect(css).toContain('.es2-menu .es2-expedition-sigil{width:56px')
-    expect(css).toMatch(/@media \(max-width:460px\) and \(orientation:portrait\)\{[^@]*\.es2-menu \.es2-mode-grid,[^{}]*\.es2-menu \.es2-objective-grid\{grid-template-columns:minmax\(0,1fr\)/)
+    expect(css).toContain('.es2-expedition-board .es2-mode-grid{grid-template-columns:minmax(0,1fr)}')
+    expect(board.findAll('[data-es2-mode-details]')).toHaveLength(9)
     expect(css).toMatch(/\.es2-menu \.es2-expedition-name\{[^}]*color:var\(--es2-mode-accent\)[^}]*font:800/)
-    expect(css).toMatch(/\.es2-menu \.es2-expedition-duration\{[^}]*display:inline-block[^}]*border:1px solid[^}]*font-variant-numeric:tabular-nums/)
+    expect(css).not.toContain('.es2-menu .es2-expedition-duration{')
     expect(css).toMatch(/\.es2-menu \.es2-expedition-meta\{[^}]*font:500 max\(\.6875rem/)
   })
 
@@ -415,8 +465,8 @@ describe('homepage menu layout across devices', () => {
 
   it.each([
     '.es2-hero-stat-label', '.es2-hero-stat-value',
-    '.es2-mode-time', '#gameVersion', '.es2-hero-selection', '.es2-roster__selection',
-    '.es2-mode-copy strong', '.es2-objective-choice strong',
+    '#gameVersion', '.es2-hero-selection', '.es2-roster__selection',
+    '.es2-mode-copy strong',
   ])('keeps explicitly sized %s text at least 11 CSS px', selector => {
     const fontSizes = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
       .filter(([, selectors]) => selectors!.includes(selector))
@@ -558,7 +608,7 @@ describe('lobby dock silhouette and layout', () => {
   })
   it('keeps the duration beside the mode name and only the summary in the meta line', () => {
     const mode = menu({ runMode: 'quick' }).get('.es2-mobile-selected-mode').element
-    expect(Array.from(mode.children, child => child.className)).toEqual(
+    expect(Array.from(mode.children, child => child.classList.contains('es2-expedition-duration') ? 'es2-expedition-duration' : child.className)).toEqual(
       ['es2-expedition-kicker', 'es2-expedition-name', 'es2-expedition-duration', 'es2-expedition-meta'])
     expect(Array.from(mode.querySelector('.es2-expedition-meta')!.children, child => child.className)).toEqual(
       ['es2-expedition-description'])

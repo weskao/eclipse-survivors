@@ -17,10 +17,11 @@ import Es2DetailSurface from './Es2DetailSurface.vue'
 import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
 import Es2ModeSigil from '../modes/Es2ModeSigil.vue'
-import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
-import { modeIds, MODES } from '../../../meta/modes'
+import Es2ModeDuration from '../modes/Es2ModeDuration.vue'
+import { modeDurationLabel } from '../modes/mode-duration'
+import { modeIds, MODES, getModeBrief } from '../../../meta/modes'
 import type { Profile, RunModeId } from '../../../meta/types'
-import { formatDuration, type MenuView } from './model'
+import type { MenuView } from './model'
 const props = withDefaults(defineProps<{ choice: JobId; heroId?: HeroId; runMode: RunModeId; version: string; profile?: Profile; needsAudioUnlock?: boolean; archiveView?: MenuView }>(), { archiveView: 'main' })
 const titleParts = computed(() => t('暮境遠征').toUpperCase().split(' '))
 const biomeScenes = [
@@ -30,8 +31,6 @@ const sceneIllustration = computed(() => {
   const index = Math.max(0, modeIds.indexOf(props.runMode))
   return WORLD_ART.biomes[biomeScenes[index % biomeScenes.length]!].scene
 })
-const objectiveSelection = computed<ObjectiveModeId | null>(() => objectiveModeIds.includes(props.runMode as ObjectiveModeId)
-  ? props.runMode as ObjectiveModeId : null)
 const emit = defineEmits<{
   select: [hero: JobId]; selectHero: [hero: HeroId]; mode: [mode: RunModeId]; start: []; navigate: [view: MenuView]; settings: []; enableAudio: []
 }>()
@@ -54,20 +53,10 @@ const detailSpecialization = computed(() => detailHero.value && detailHero.value
 const detailStats = computed(() => detailClassic.value ? JOB[detailClassic.value.id] : detailSpecialization.value?.stats)
 const detailName = computed(() => detailClassic.value?.name ?? detailSpecialization.value?.label ?? '')
 const detailRole = computed(() => detailClassic.value?.role ?? detailSpecialization.value?.subtitle ?? '')
-// Compact UI copy, not a second source of gameplay rules. Classic modes already have short descriptions.
-const objectiveBriefs: Readonly<Record<ObjectiveModeId, string>> = {
-  'boss-rush': '依序挑戰五位首領，敵人逐戰增強。',
-  'endless-eclipse': '無盡求生，迎戰週期性星蝕事件。',
-  'relic-hunt': '回收四件聖物，擊敗守護首領。',
-  'cursed-expedition': '承受輪替詛咒，擊敗兩位守衛。',
-  'chaos-arena': '突破八波遭遇戰，挑戰混沌首領。',
-}
 const selectedMode = computed(() => MODES[props.runMode])
 const modeTitle = computed(() => t(selectedMode.value.label).split(' · ')[0]!)
-const modeBrief = computed(() => t(objectiveSelection.value
-  ? objectiveBriefs[objectiveSelection.value] : selectedMode.value.description))
-const modeDuration = computed(() => selectedMode.value.duration === null
-  ? '∞' : formatDuration(selectedMode.value.duration))
+const modeBrief = computed(() => t(getModeBrief(props.runMode)))
+const modeDuration = computed(() => modeDurationLabel(selectedMode.value.duration))
 const page = ref<'heroes' | 'modes'>('heroes')
 // Compact destination labels; retain the full action for accessibility and tooltips.
 const expeditionActionLabel = computed(() => t(page.value === 'heroes' ? '模式' : '英雄'))
@@ -95,16 +84,6 @@ watchPostEffect(onCleanup => {
   observer.observe(bar, { box: 'border-box' })
   onCleanup(() => observer.disconnect())
 })
-async function moveMode(event: KeyboardEvent, id: RunModeId): Promise<void> {
-  const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0
-  if (!direction) return
-  event.preventDefault()
-  const next = modeIds[(modeIds.indexOf(id) + direction + modeIds.length) % modeIds.length]
-  if (!next) return
-  emit('mode', next)
-  await nextTick()
-  document.querySelector<HTMLButtonElement>(`.es2-mode-card[data-mode="${next}"]`)?.focus({ preventScroll: false })
-}
 // Bring the whole chosen card into view on both axes; data-es2-reduce-motion already merges the OS and in-game preference.
 // Optional call: jsdom (unit tests) has no scrollIntoView.
 function revealHero(id: HeroId): void {
@@ -149,17 +128,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
             <HeroRoster :selected-id="heroId ?? choice" @select="selectSpecialization" @details="heroDetails.openModal($event)" />
           </section>
           <section v-show="page === 'modes'" id="es2ExpeditionPage" class="es2-mode-section" aria-labelledby="es2ModeTitle">
-            <div class="es2-section-heading"><span>{{ t('02 / 遠征') }}</span><h2 id="es2ModeTitle">{{ t("選擇遠征命運") }}</h2><p>{{ t("每一條道路都通往不同的試煉。") }}</p></div>
-            <div class="es2-mode-grid" role="radiogroup" :aria-label="t('遠征模式')">
-              <button v-for="id in modeIds" :key="id" type="button" role="radio" :data-mode="id" :data-es2-mode-theme="id" class="es2-mode-card" data-ui-sfx="managed"
-                :aria-checked="runMode === id" :class="{ 'es2-mode-active': runMode === id }"
-                @click="emit('mode', id)" @keydown="moveMode($event, id)">
-                <Es2ModeSigil :mode="id" class="es2-mode-mark" />
-                <span class="es2-mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
-                <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
-              </button>
-            </div>
-            <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />
+            <ModeChooser :value="runMode" :visible="page === 'modes' && archiveView === 'main'" @select="emit('mode', $event)" />
           </section>
         </div>
         <slot v-if="archiveView !== 'main'" name="archive" />
@@ -177,7 +146,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
           <span class="es2-mobile-selected-mode" aria-live="polite">
             <span class="es2-expedition-kicker">{{ t('目前遠征') }}</span>
             <strong class="es2-expedition-name">{{ modeTitle }}</strong>
-            <span class="es2-expedition-duration">{{ modeDuration }}</span>
+            <Es2ModeDuration class="es2-expedition-duration" :duration="selectedMode.duration" compact />
             <span class="es2-expedition-meta">
               <span class="es2-expedition-description" data-es2-mode-summary>{{ modeBrief }}</span>
             </span>

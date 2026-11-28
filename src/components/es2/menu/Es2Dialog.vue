@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
+import type { RunModeId } from '../../../meta/types'
 import { upgradeKeyIndex } from '../../../game/input'
 import { nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 const props = withDefaults(defineProps<{
-  active: boolean; title: string; subtitle?: string; dismissible?: boolean
+  active: boolean; title: string; subtitle?: string; dismissible?: boolean; modeTheme?: RunModeId
   wide?: boolean; variant?: 'default' | 'choice' | 'settings' | 'result'; tone?: 'neutral' | 'legendary' | 'victory' | 'defeat'
 }>(), { dismissible: true, wide: false, variant: 'default', tone: 'neutral' })
 const emit = defineEmits<{ cancel: []; shortcut: [event: KeyboardEvent] }>()
@@ -85,7 +86,7 @@ onBeforeUnmount(() => {
 <template>
   <Teleport to="body">
     <div v-if="active" class="es2-backdrop" :class="{ 'es2-backdrop-preferences': variant === 'settings' }" @pointerdown.self="onOutside" @click.stop>
-      <section ref="dialog" class="es2-dialog" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice', 'es2-dialog-preferences': variant === 'settings', 'es2-dialog-result': variant === 'result' }]"
+      <section ref="dialog" class="es2-dialog" :data-es2-mode-theme="modeTheme" :class="[`es2-tone-${tone}`, { 'es2-dialog-wide': wide, 'es2-dialog-choice': variant === 'choice', 'es2-dialog-preferences': variant === 'settings', 'es2-dialog-result': variant === 'result' }]"
         role="dialog" aria-modal="true" :aria-labelledby="headingId" tabindex="-1" @pointerdown.stop>
         <header class="es2-dialog-header">
           <div><span class="es2-eyebrow">✦ ECLIPSE SURVIVORS ✦</span><h2 :id="headingId" :class="{ 'es2-dialog-title-with-leading': $slots['title-leading'] }"><slot name="title-leading" /><span v-if="$slots['title-leading']">{{ title }}</span><template v-else>{{ title }}</template></h2><p v-if="subtitle">{{ subtitle }}</p></div>

@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { webkit } from 'playwright'
 import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
+import { assertNumericFont, assertModeDurations, assertDockDuration } from './es2-numeric-qa.mjs'
+import { assertModeHotLayout } from './es2-mode-hot-qa.mjs'
 
 const target = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const directory = 'artifacts/es2-mobile-browser'
@@ -80,7 +82,13 @@ async function verifyDock(page, stage) {
       await assertPaint(page, selector, stage + (bottom ? '-scrolled' : '-top'))
     }
   }
-  await assertExpeditionModeIcons(page, stage, { cards: await page.locator('.es2-mode-section').isVisible() })
+  const cardsVisible = await page.locator('.es2-mode-section').isVisible()
+  await assertExpeditionModeIcons(page, stage, { cards: cardsVisible })
+  await assertDockDuration(page, stage)
+  if (cardsVisible) {
+    await assertModeDurations(page, stage)
+    await assertModeHotLayout(page, stage)
+  }
   await page.screenshot({ path: directory + '/webkit-dock-' + stage + '.png' })
   await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
 }
@@ -92,6 +100,7 @@ try {
     const page = await context.newPage()
     try {
       await page.goto(target, { waitUntil: 'domcontentloaded' })
+      await assertNumericFont(page, locale)
       await verifyDock(page, locale + '-portrait')
       await page.locator('[data-es2-expedition-navigation]').tap()
       assert.equal(await page.locator('.es2-menu').getAttribute('data-es2-menu-page'), 'modes')

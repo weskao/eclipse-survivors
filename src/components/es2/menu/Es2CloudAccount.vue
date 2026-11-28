@@ -147,9 +147,9 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
 @media (hover: hover) and (pointer: fine) {
   .es2-cloud-trigger.es2-cloud-profile-trigger:hover { border-color: #e7c38b; box-shadow: 0 0 10px #e7c38338; }
 }
-.es2-cloud-avatar { display: grid; place-items: center; flex: 0 0 auto; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 25%, #51445c, #242236 75%); color: #ffdf9e; font: 700 1rem/1 system-ui, sans-serif; }
+.es2-cloud-avatar { display: grid; place-items: center; flex: 0 0 auto; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 25%, #51445c, #242236 75%); color: #ffdf9e; font: 700 1rem/1 var(--es2-font-numeric), system-ui, sans-serif; }
 .es2-cloud-avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.es2-cloud-status-mark { display: inline-grid; place-items: center; flex: 0 0 auto; width: 15px; height: 15px; border-radius: 50%; border: 2px solid #121a28; background: #929ba8; color: #121a28; font: 800 10px/1 system-ui, sans-serif; }
+.es2-cloud-status-mark { display: inline-grid; place-items: center; flex: 0 0 auto; width: 15px; height: 15px; border-radius: 50%; border: 2px solid #121a28; background: #929ba8; color: #121a28; font: 800 10px/1 var(--es2-font-numeric), system-ui, sans-serif; }
 .es2-cloud-profile-trigger .es2-cloud-status-mark { position: absolute; right: -1px; bottom: -1px; }
 .es2-cloud-status-mark[data-state="synced"] { background: #94d5ad; }
 .es2-cloud-status-mark[data-state="syncing"], .es2-cloud-status-mark[data-state="loading"] { background: #f1cb86; }
@@ -197,7 +197,7 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
 .es2-cloud-wallet-actions, .es2-cloud-confirm { display: flex; flex-wrap: wrap; gap: .5rem; }
 .es2-cloud-wallet-actions button, .es2-cloud-confirm button { flex: 1 1 auto; min-height: 44px; min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; padding: .6rem .75rem; }
 .es2-cloud-sync { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; color: #ffdf9e; background: #3a3044; border-color: #b799697d; }
-.es2-cloud-action-icon { font: 700 1.2rem/1 system-ui, sans-serif; }
+.es2-cloud-action-icon { font: 700 1.2rem/1 var(--es2-font-numeric), system-ui, sans-serif; }
 .es2-cloud-conflict-note, .es2-cloud-confirm p, .es2-cloud-scope { color: #bfc9d4; font-size: max(.75rem, calc(.8rem * var(--es2-ui-scale, 1))); line-height: 1.5; }
 .es2-cloud-confirm p { flex: 1 0 100%; color: #f6c6b4; }
 .es2-cloud-scope { padding-inline: .25rem; }

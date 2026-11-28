@@ -1,0 +1,78 @@
+{
+  "status": "QA_PENDING",
+  "hero": "shadowblade",
+  "heroId": "shadowblade",
+  "pose": "run",
+  "direction": "NW",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 1,
+  "sourceProvenance": {
+    "referenceCommit": "928bbca7fa601f2d1859db0155e24eb422501f6e",
+    "battleAssetPath": "src/assets/es2/production/heroes/shadowblade/run-attack@3x.webp",
+    "referenceConditioningVerified": false,
+    "generationIds": [
+      "ce1d914b-caf9-4a46-9a16-d9f27b3a6d38"
+    ]
+  },
+  "frames": [
+    {
+      "id": "run-northwest-stride-identity-a",
+      "file": "run-northwest-stride-identity-a@3x.webp",
+      "sourceFile": "run-northwest-stride-identity-a-source.webp",
+      "bytes": 337966,
+      "sourceBytes": 970710,
+      "webpSHA256": "1f51572ac43ab3bbad0c0aa64310dc5e576ebfcbf2f99ff5ac6930352ffb0a6f",
+      "sourceSHA256": "c0cd888bb4db7a4d5bc555e9b7abf00ea34e51500160090f62a85f46dc6b332a",
+      "sourcePixels": [
+        1254,
+        1254
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          31,
+          27,
+          1226,
+          1226
+        ],
+        "coreExtent": [
+          1195,
+          1199
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          49,
+          47,
+          720,
+          721
+        ],
+        "coreExtent": [
+          671,
+          674
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.5614035087719298,
+      "mirror": false,
+      "footAnchor": null
+    }
+  ],
+  "reviewNotes": [
+    "Independent candidate poses; no sequence timing or foot anchor approval. W/NW labels are proposed, not validated.",
+    "Battle identity, equipment, facing and stride consistency remain pending. Exact image conditioning was not verified.",
+    "Pillow lossless WebP; Polytool not executed. No upscaling; downsample and transparent pad to 768px.",
+    "Do not promote to gameplay or treat as a complete run cycle."
+  ]
+}

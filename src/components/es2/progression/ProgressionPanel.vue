@@ -163,12 +163,12 @@ const masteryProgress = computed(() => {
 :global([data-es2-reduce-motion="true"] .hall-mastery-track .hall-xp-sheen),:global([data-es2-reduce-flashing="true"] .hall-mastery-track .hall-xp-sheen){display:none}
 
 .hall-category-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:4px;margin-bottom:12px;border:1px solid #a5885255;border-radius:8px;background:#111c28}
-.hall-category-tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:44px;padding:5px 7px;color:#bfc9d4;background:#1b2a39;border:1px solid #6b7a8545;border-radius:5px;font:600 .8rem/1.3 system-ui;overflow-wrap:anywhere;cursor:pointer}
+.hall-category-tabs button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:44px;padding:5px 7px;color:#bfc9d4;background:#1b2a39;border:1px solid #6b7a8545;border-radius:5px;font:600 .8rem/1.3 var(--es2-font-numeric), system-ui;overflow-wrap:anywhere;cursor:pointer}
 .hall-category-tabs button[aria-selected="true"]{color:#ffe4ae;border-color:#d6b575;background:linear-gradient(145deg,#594731,#29303a);box-shadow:inset 0 -2px #e5bd79}
 .hall-category-tabs button:focus-visible{outline:2px solid #ffe0a0;outline-offset:1px}
 .hall-category-tabs button>span:first-child{color:#e3c28d;font-size:1rem;flex:none}
 .hall-research-nav{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 10px;border-bottom:1px solid #a5885255}
-.hall-research-nav button{min-height:44px;flex:1;border:0;border-bottom:2px solid transparent;background:none;color:#b9c1c9;font:600 .85rem system-ui;cursor:pointer;padding:5px}
+.hall-research-nav button{min-height:44px;flex:1;border:0;border-bottom:2px solid transparent;background:none;color:#b9c1c9;font:600 .85rem var(--es2-font-numeric), system-ui;cursor:pointer;padding:5px}
 .hall-research-nav button[aria-pressed=true]{color:#f5d28e;border-color:#d5ae70;background:linear-gradient(0deg,#d8b16c15,transparent)}
 .hall-research-nav small{font-size:.66rem;color:#c6b391}
 .hall-research-nav button:focus-visible{outline:2px solid #ffde9d;outline-offset:1px}

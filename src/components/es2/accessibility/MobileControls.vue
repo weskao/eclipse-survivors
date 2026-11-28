@@ -230,7 +230,7 @@ onBeforeUnmount(() => {
   background: radial-gradient(circle at 33% 25%, #6c6473, #2a2d3c 65%, #151821);
   box-shadow: 0 0 0 5px #d6b17824, 0 7px 17px #000b;
   color: #fff0cf;
-  font: 800 clamp(11px, 2.6vw, 15px)/1.3 system-ui, sans-serif;
+  font: 800 clamp(11px, 2.6vw, 15px)/1.3 var(--es2-font-numeric), system-ui, sans-serif;
   text-shadow: 0 1px 5px #000c;
 }
 .es2-dash span { display: block; color: #f4c67b; font-size: 18px; }

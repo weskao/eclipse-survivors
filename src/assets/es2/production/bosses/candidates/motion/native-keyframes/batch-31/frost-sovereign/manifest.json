@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "bossId": "frost-sovereign",
+  "referenceHead": "9498458cb7e44b63fdf0d91dd064ff7550d00e67",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-ice-fan-ready-study-a",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/frost-phase2-ice-fan-ready-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "24364672-20f5-40fc-902b-cce2d3a56f4d",
+        "originalPngSha256": "9f6aa8015aeb64cd86dfe1d9fcaef2930a2934c367c761eb12bc328208ac777b",
+        "canonicalReferenceHead": "9498458cb7e44b63fdf0d91dd064ff7550d00e67",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "2780c1802b58e2260e55d1988f5f51ba80385a72c977b04c1552aacf83e147b9"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        156,
+        37,
+        1161,
+        1215
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1326,
+        1231
+      ],
+      "alphaExtent": [
+        1005,
+        1178
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        124,
+        5,
+        1129,
+        1183
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1294,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        156,
+        37,
+        215,
+        48
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Staff upright; proposed ready/early windup. Canonical visual motifs reviewed, exact identity and phase not verified. Original alpha touches edge; padding cannot recover clipped pixels. No resampling. 1898px native gate not met.",
+      "sha256": "de174f337ed574696116a20102cbfae45c89e6534fa9a3fc9c4323d3832f4473",
+      "webpCompressedBytes": 682076,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-ice-fan-windup-study-a",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/frost-phase2-ice-fan-windup-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "156eb119-8365-4d6c-b576-5d3c5d157ab8",
+        "originalPngSha256": "e3285d53a1332955d6064b944c9061989263cb30eb785adffc8d8f2b0f067692",
+        "canonicalReferenceHead": "9498458cb7e44b63fdf0d91dd064ff7550d00e67",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "3a3a2f682b3d0b191b0cf436330d64f372a42ac2b101e3b8ba54a47e9476933c"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1338,
+      "cellHeight": 1299,
+      "frameRects": [
+        [
+          0,
+          0,
+          1338,
+          1299
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        669.0,
+        649.5
+      ],
+      "alphaBounds": [
+        118,
+        38,
+        1202,
+        1245
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1292,
+        1267
+      ],
+      "alphaExtent": [
+        1084,
+        1207
+      ],
+      "actualSourceResolution": [
+        1338,
+        1299
+      ],
+      "originalGeneratedResolution": [
+        1274,
+        1235
+      ],
+      "originalAlpha128Bounds": [
+        86,
+        6,
+        1170,
+        1213
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1260,
+        1235
+      ],
+      "sourceEdgeMargins": [
+        118,
+        38,
+        136,
+        54
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Raised staff; independent candidate, not a sequential frame. Canonical visual motifs reviewed, exact identity and phase not verified. Original alpha touches edge; padding cannot recover clipped pixels. No resampling. 1898px native gate not met.",
+      "sha256": "c036575cfa590d678ab67ced5f6316e96c88646e09accd5f0b5114abcc26e132",
+      "webpCompressedBytes": 763856,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-ice-fan-windup-study-b",
+      "pose": "windup",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "windup/frost-phase2-ice-fan-windup-study-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "b57b7ff3-704c-49a6-927e-c6314774d1d3",
+        "originalPngSha256": "e2a3d7f779248859c4c84255b8c515b8484753ae7d7bb0396f1fc91c3cca586c",
+        "canonicalReferenceHead": "9498458cb7e44b63fdf0d91dd064ff7550d00e67",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "f13d1cd240dd8607f7b5aa704f0ee3d9c05779a314bac881d3072d8912bef38b"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1342,
+      "cellHeight": 1294,
+      "frameRects": [
+        [
+          0,
+          0,
+          1342,
+          1294
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        671.0,
+        647.0
+      ],
+      "alphaBounds": [
+        183,
+        44,
+        1098,
+        1245
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1286,
+        1262
+      ],
+      "alphaExtent": [
+        915,
+        1201
+      ],
+      "actualSourceResolution": [
+        1342,
+        1294
+      ],
+      "originalGeneratedResolution": [
+        1278,
+        1230
+      ],
+      "originalAlpha128Bounds": [
+        151,
+        12,
+        1066,
+        1213
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1254,
+        1230
+      ],
+      "sourceEdgeMargins": [
+        183,
+        44,
+        244,
+        49
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Alternate raised staff; independent candidate. Canonical visual motifs reviewed, exact identity and phase not verified. Original alpha touches edge; padding cannot recover clipped pixels. No resampling. 1898px native gate not met.",
+      "sha256": "07821d279a22e90445189a0b1d074d9ed4a21d992dc75bdbfb60fba83182f265",
+      "webpCompressedBytes": 644774,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    },
+    {
+      "bossId": "frost-sovereign",
+      "id": "frost-phase2-ice-fan-release-study-a",
+      "pose": "attack",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "attack/frost-phase2-ice-fan-release-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "f8893395-88a5-45d2-9547-ae32be23d364",
+        "originalPngSha256": "d53bc6900708c03a87433c8572f94661da0937900a16a4fbda1982f9251dc032",
+        "canonicalReferenceHead": "9498458cb7e44b63fdf0d91dd064ff7550d00e67",
+        "canonicalReferenceSha256": "aded9d53c76c5484946051290e37965c6759a43cef3e1468608c26ed99236281",
+        "editOperationVerified": false,
+        "stagedPngSha256": "9806e43b43d9a16420d041aa0e2f4c06372d6dc4b5feb4431cf41daca0b480cb"
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1367,
+      "cellHeight": 1271,
+      "frameRects": [
+        [
+          0,
+          0,
+          1367,
+          1271
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        683.5,
+        635.5
+      ],
+      "alphaBounds": [
+        111,
+        59,
+        1290,
+        1217
+      ],
+      "alphaAnyBounds": [
+        32,
+        41,
+        1334,
+        1239
+      ],
+      "alphaExtent": [
+        1179,
+        1158
+      ],
+      "actualSourceResolution": [
+        1367,
+        1271
+      ],
+      "originalGeneratedResolution": [
+        1303,
+        1207
+      ],
+      "originalAlpha128Bounds": [
+        79,
+        27,
+        1258,
+        1185
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        9,
+        1302,
+        1207
+      ],
+      "sourceEdgeMargins": [
+        111,
+        59,
+        77,
+        54
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "notes": "Free hand extends ice shards; possible release pose; effects need separation review. Canonical visual motifs reviewed, exact identity and phase not verified. Original alpha touches edge; padding cannot recover clipped pixels. No resampling. 1898px native gate not met.",
+      "sha256": "e431b09ac9b0c91ead8df9e0563aa9af6dd438866ecaddabc1e497df14a97958",
+      "webpCompressedBytes": 677714,
+      "encoding": "Local macOS towebp -q 100; WebP header dimensions and alpha flag checked; decoded alpha and visual QA pending"
+    }
+  ],
+  "missing": [
+    "identity and original clipping review",
+    "phase and anchor approval",
+    "coherent sequence including recovery",
+    "browser visual QA",
+    "1898px conservative production extent"
+  ]
+}

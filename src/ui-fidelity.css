@@ -15,7 +15,7 @@
   display:grid;place-items:center;width:24px;height:24px;
   border:1px solid #bea67d83;border-radius:7px;
   background:linear-gradient(150deg,#344457e8,#111923ea);
-  color:#c9bb9b;font:800 15px/1 Georgia,serif;box-shadow:0 2px 8px #0008;
+  color:#c9bb9b;font:800 15px/1 var(--es2-font-numeric), Georgia,serif;box-shadow:0 2px 8px #0008;
 }
 #menu .job .portrait{position:relative;isolation:isolate;overflow:visible}
 #menu .job .portrait img{position:relative;z-index:1;object-fit:contain}

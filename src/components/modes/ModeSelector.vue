@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { t } from '../../i18n'
 import Es2ModeSigil from '../es2/modes/Es2ModeSigil.vue'
+import Es2ModeDuration from '../es2/modes/Es2ModeDuration.vue'
+import Es2ModeHotBadge from '../es2/modes/Es2ModeHotBadge.vue'
 import { MODES, modeIds } from '../../meta/modes'
 import type { RunModeId } from '../../meta/types'
 
@@ -15,13 +17,14 @@ const emit = defineEmits<{ select: [mode: RunModeId] }>()
       <button
         v-for="id in modeIds" :key="id"
         type="button" role="radio"
-        :data-mode="id" class="mode-choice" :class="{ selected: id === value }"
+        :data-mode="id" class="mode-choice" :class="{ selected: id === value, 'es2-mode-has-hot': MODES[id].hot }"
         :aria-checked="id === value"
         @click="emit('select', id)"
       >
         <Es2ModeSigil :mode="id" class="mode-icon" />
-        <span class="mode-copy"><strong>{{ t(MODES[id].label) }}</strong><small>{{ t(MODES[id].description) }}</small></span>
-        <span class="mode-duration">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
+        <span class="mode-copy"><span class="es2-mode-title-line"><strong>{{ t(MODES[id].label) }}</strong></span><small>{{ t(MODES[id].description) }}</small></span>
+        <Es2ModeDuration :duration="MODES[id].duration" />
+        <Es2ModeHotBadge :hot="MODES[id].hot" />
       </button>
     </div>
   </section>

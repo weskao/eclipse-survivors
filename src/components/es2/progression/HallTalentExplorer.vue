@@ -179,26 +179,26 @@ function changeTree(id:string){if(trees.some(x=>x===id))selectTree(id as Tree)}
 .es4-constellation{color:#e8d8bd;min-width:0;background:radial-gradient(ellipse at 50% 0%,#28374766,transparent 65%);border-top:1px solid #a58a5355;padding:12px 0;animation:es4-enter .2s ease-out both}
 .es4-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .es4-heading h3{margin:3px 0;color:#edcf98;font-size:clamp(1rem,2.2vw,1.4rem);letter-spacing:.045em}
-.es4-heading small{color:#b9a17a;font:600 .65rem system-ui;letter-spacing:.12em}
-.es4-preview{font:600 .72rem system-ui;color:#c0b69e;border-bottom:1px solid #9b8761;padding:4px}
+.es4-heading small{color:#b9a17a;font:600 .65rem var(--es2-font-numeric), system-ui;letter-spacing:.12em}
+.es4-preview{font:600 .72rem var(--es2-font-numeric), system-ui;color:#c0b69e;border-bottom:1px solid #9b8761;padding:4px}
 .es4-tree-nav{display:flex;align-items:stretch;gap:4px;border-bottom:1px solid #94794e55}
-.es4-tree-nav button{flex:1;min-width:0;min-height:44px;padding:6px;border:0;border-bottom:2px solid transparent;background:none;color:#b9c1c9;font:600 .82rem/1.3 system-ui;cursor:pointer;overflow-wrap:anywhere}
+.es4-tree-nav button{flex:1;min-width:0;min-height:44px;padding:6px;border:0;border-bottom:2px solid transparent;background:none;color:#b9c1c9;font:600 .82rem/1.3 var(--es2-font-numeric), system-ui;cursor:pointer;overflow-wrap:anywhere}
 .es4-tree-nav button[aria-selected=true]{color:#f3d69e;border-color:#e4be7b;background:linear-gradient(0deg,#dfb77218,transparent)}
 .es4-medallions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:12px 0}
-.es4-medallions button{border:0;background:none;min-width:0;min-height:44px;color:#b8c3cd;display:grid;justify-items:center;align-content:start;gap:5px;padding:4px 2px;font:600 .77rem/1.3 system-ui;text-align:center;overflow-wrap:anywhere;cursor:pointer}
+.es4-medallions button{border:0;background:none;min-width:0;min-height:44px;color:#b8c3cd;display:grid;justify-items:center;align-content:start;gap:5px;padding:4px 2px;font:600 .77rem/1.3 var(--es2-font-numeric), system-ui;text-align:center;overflow-wrap:anywhere;cursor:pointer}
 .es4-medal{display:grid;place-items:center;width:48px;max-width:100%;aspect-ratio:1;border-radius:50%;background:radial-gradient(ellipse at 43% 25%,#364755,#101924 78%);border:2px solid var(--medal-color);box-shadow:0 0 0 2px #161e27,inset 0 0 8px #0009;transition:transform .17s,box-shadow .17s}
 .es4-medal img{width:76%;height:76%;object-fit:contain}
 .es4-medallions button[aria-selected=true]{color:#f3d69e}
 .es4-medallions button[aria-selected=true] .es4-medal{border-color:#f3d69e;box-shadow:0 0 0 2px #7a6041,0 0 11px var(--medal-color),inset 0 0 8px #0009}
 .es4-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.es4-tools h4{margin:0;color:var(--es4-accent);font:700 .9rem system-ui}
-.es4-tools h4 small{font:400 .72rem system-ui;color:#b5bec5}
+.es4-tools h4{margin:0;color:var(--es4-accent);font:700 .9rem var(--es2-font-numeric), system-ui}
+.es4-tools h4 small{font:400 .72rem var(--es2-font-numeric), system-ui;color:#b5bec5}
 .es4-view{display:flex;gap:2px;border:1px solid #a58a5355;border-radius:999px;padding:2px}
-.es4-view button{min-height:40px;min-width:44px;padding:4px 12px;border:0;border-radius:999px;background:none;color:#bdc6ce;font:600 .76rem system-ui;cursor:pointer}
+.es4-view button{min-height:40px;min-width:44px;padding:4px 12px;border:0;border-radius:999px;background:none;color:#bdc6ce;font:600 .76rem var(--es2-font-numeric), system-ui;cursor:pointer}
 .es4-view button[aria-pressed=true]{background:#b18b4b30;color:#f8dca2}
 .es4-tools input{min-height:44px;width:100%;border:1px solid #927b55;border-radius:6px;background:#101923;color:#ebdfcc;padding:8px;font:inherit}
 .es4-attunement{border-top:1px solid #94794e55;padding:10px 0;margin-top:12px}.es4-attunement h4{color:#edcf98;margin:0}.es4-equip{min-height:44px;margin:4px;padding:6px 10px;border:1px solid #927b55;background:#18232e;color:#e8d8bd;border-radius:6px}.es4-equip[aria-pressed=true]{border-color:#f3d69e;background:#54452f}.es4-equip:disabled{opacity:.55}
-.es4-notice{font:400 .76rem/1.45 system-ui;color:#c1b49a;margin:8px 0 10px}
+.es4-notice{font:400 .76rem/1.45 var(--es2-font-numeric), system-ui;color:#c1b49a;margin:8px 0 10px}
 .es4-constellation :deep(.hall-confirm){border-radius:4px 14px;background:linear-gradient(150deg,#54452f,#252d35);border-color:#8f7850}
 .es4-constellation :deep(.hall-confirm:disabled){color:#b6b9bb;background:#252e35}
 .es4-constellation :deep(.hall-ring-metal){box-shadow:inset 0 0 0 1px #111b25,inset 0 2px 4px #0009}

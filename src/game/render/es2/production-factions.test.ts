@@ -239,3 +239,25 @@ it.each(Object.keys(ENEMY_DEFINITIONS) as FactionKind[])('renders real %s hit, w
   expect(runtime.fallen).not.toContain(enemy)
   expect(sample().drawn).not.toContain(body)
 })
+
+it('suppresses decorative faction motes under Reduced Flashing but preserves the warning geometry and live art', () => {
+  const s = createState(); resetRun(s); s.W = 900; s.H = 600
+  const runtime = createFactionRuntime()
+  const enemy = spawnFactionEnemy(runtime, 'fire-imp', 200, 220)!
+  enemy.state = 'windup'; enemy.timer = .2; enemy.aimX = 250; enemy.aimY = 220
+  const body = loaded(1260, 210), warning = loaded(150, 150)
+  const art = { 'fire-imp': { body, telegraph: warning } }
+  const before = JSON.stringify(runtime)
+  const sample = (flashing: boolean) => {
+    const f = createFakeCtx()
+    drawLiveFactionArt(f.ctx, s, runtime, art, 0, 0, undefined, false, false, flashing)
+    return f
+  }
+  const normal = sample(false), quiet = sample(true)
+  expect(normal.calls).toContain('fill')
+  expect(quiet.calls).not.toContain('fill')
+  expect(quiet.calls).toContain('arc')
+  expect(quiet.calls).toContain('stroke')
+  expect(quiet.drawn).toEqual([body, warning])
+  expect(JSON.stringify(runtime)).toBe(before)
+})

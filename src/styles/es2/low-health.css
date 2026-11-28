@@ -119,7 +119,7 @@
   border-radius: 50% 50% 45% 45%;
   background: linear-gradient(145deg, #705021, #241922);
   color: #ffe4ad;
-  font: 800 16px/1 system-ui, sans-serif;
+  font: 800 16px/1 var(--es2-font-numeric), system-ui, sans-serif;
   text-shadow: 0 1px 2px #000d;
   box-shadow: 0 1px 5px #000d, 0 0 7px #f3ba5670;
   pointer-events: none;
