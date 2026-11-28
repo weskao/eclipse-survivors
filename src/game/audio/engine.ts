@@ -67,6 +67,8 @@ export interface AudioSystemOptions {
   warningTrack?: string
   /** Pre-rendered, non-looping victory theme (falls back to ES2 synthesis on load error). */
   victoryTrack?: string
+  /** Pre-rendered, non-looping defeat lament (falls back to ES2 synthesis on load error). */
+  defeatTrack?: string
   loadMusic?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
   /** Testable loader for the short, pre-rendered hero cast samples. */
   loadHeroSfx?: (url: string, ctx: AudioContextLike) => Promise<BufferLike | null>
@@ -184,8 +186,8 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
         audioContext: ac?.state ?? 'unavailable',
         interrupted, resumePending: resumePending !== null, externalScoreActive,
         bgmEnabled: musicOn, bgmVolume: musicVolume,
-        bgmSource: resultScene === 'victory' && opts.victoryTrack && !cinematic.resultFallback
-          ? opts.victoryTrack : 'synth',
+        bgmSource: resultScene && !cinematic.resultFallback
+          ? (resultScene === 'victory' ? opts.victoryTrack : opts.defeatTrack) ?? 'synth' : 'synth',
         sfxEnabled: sfxOn, sfxVolume, sfxPending: pendingResultCue !== null,
       }), () => ({ context: ac, music: musicBus, sfx: master }))
       : undefined
@@ -602,10 +604,9 @@ export function createAudioSystem(opts: AudioSystemOptions): AudioSystem {
       if (!musicOn || !musicVolume || !ctx) return
       if (mode === 'menu') { if (!menuBgm) menu.schedule(ctx.currentTime, tone); return }
       if (mode === 'result') {
-        if (resultScene === 'victory' && opts.victoryTrack) {
-          cinematic.sync()
-          if (!cinematic.resultFallback) return
-        }
+        // A sampled outcome track owns the result; the synth only covers a missing file.
+        cinematic.sync()
+        if (!cinematic.resultFallback) return
         if (resultScene) resultScore.schedule(ctx.currentTime, diagnostics
           ? (...args) => { if (tone(...args)) diagnostics.markMusic() }
           : tone, 0.88)
