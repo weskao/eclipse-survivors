@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "bossId": "eclipse-seraph",
+  "referenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+  "status": "QA_PENDING",
+  "runtimeReady": false,
+  "native3xApproved": false,
+  "minimumSourceExtentPx": 949,
+  "frames": [
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-phase2-recover-study-a",
+      "pose": "recover",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "recover/seraph-phase2-recover-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "c2eb780a-ba51-41e6-885f-ee807d9390bf",
+        "originalPngSha256": "17c0b5d059032eb3dd8dd143733e1ee2b995945799b4df67abbbd406d6d0f095",
+        "canonicalReferenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        46,
+        37,
+        1334,
+        1206
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1344,
+        1231
+      ],
+      "alphaExtent": [
+        1288,
+        1169
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        14,
+        5,
+        1302,
+        1174
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1312,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        46,
+        37,
+        42,
+        57
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "1468cfed0803629c142d2160d15635d7a6711aecdba95a2b870db617d5b47bcf",
+      "webpCompressedBytes": 877128,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Proposed recovery; hands lowered, wing tips and halo near original edge. Independent redraw. Exact canonical identity and phase not verified; original edge clipping possible, transparent padding cannot restore pixels. No scaling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-phase2-hurt-study-a",
+      "pose": "hurt",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/seraph-phase2-hurt-study-a.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "31322242-d8aa-4d0c-ac7f-35c794b56121",
+        "originalPngSha256": "ebcda429765ba0ebd10c9554c3d74004cb16c33993a1a8939c06578516ac4413",
+        "canonicalReferenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        52,
+        41,
+        1328,
+        1216
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1333,
+        1231
+      ],
+      "alphaExtent": [
+        1276,
+        1175
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        20,
+        9,
+        1296,
+        1184
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1301,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        52,
+        41,
+        48,
+        47
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "0078560e9cd04c234c91ef05faeb07040c17b6236d1cbb3dbac2897dd426629c",
+      "webpCompressedBytes": 772690,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Proposed recoil; costume and exposed armored legs differ from canonical. Independent redraw. Exact canonical identity and phase not verified; original edge clipping possible, transparent padding cannot restore pixels. No scaling. Conservative 1898px gate not met."
+    },
+    {
+      "bossId": "eclipse-seraph",
+      "id": "seraph-phase2-hurt-study-b",
+      "pose": "hurt",
+      "phase": null,
+      "direction": null,
+      "mirrorAllowed": false,
+      "source": "hurt/seraph-phase2-hurt-study-b.webp",
+      "sourceProvenance": {
+        "provider": "OpenAI ImageGen",
+        "generationId": "43950fad-1845-46f4-a711-6ddd3b06bb38",
+        "originalPngSha256": "c8d00be3b735a794eaf66ad0e1ed84775660af4452bc1fde93c34dc0d447296e",
+        "canonicalReferenceHead": "061b2817639f0a6e501ebe8d5c372f60f4922f42",
+        "canonicalReferenceSha256": "d399d64a21969d75827f528882c0e99b55a651ff3843ca2e69ada63ce5296148",
+        "editOperationVerified": false
+      },
+      "frameCount": 1,
+      "columns": 1,
+      "rows": 1,
+      "cellWidth": 1376,
+      "cellHeight": 1263,
+      "frameRects": [
+        [
+          0,
+          0,
+          1376,
+          1263
+        ]
+      ],
+      "frameDuration": null,
+      "footAnchor": null,
+      "centerAnchor": [
+        688.0,
+        631.5
+      ],
+      "alphaBounds": [
+        58,
+        36,
+        1321,
+        1221
+      ],
+      "alphaAnyBounds": [
+        32,
+        32,
+        1332,
+        1231
+      ],
+      "alphaExtent": [
+        1263,
+        1185
+      ],
+      "actualSourceResolution": [
+        1376,
+        1263
+      ],
+      "originalGeneratedResolution": [
+        1312,
+        1199
+      ],
+      "originalAlpha128Bounds": [
+        26,
+        4,
+        1289,
+        1189
+      ],
+      "originalAlphaAnyBounds": [
+        0,
+        0,
+        1300,
+        1199
+      ],
+      "sourceEdgeMargins": [
+        58,
+        36,
+        55,
+        42
+      ],
+      "safeMargin16px": true,
+      "native3xApproved": false,
+      "sha256": "e0214b1d60538574e2585acff055630af467a0eb3fca9e93e355e13b73198de3",
+      "webpCompressedBytes": 733236,
+      "visualQAStatus": "QA_PENDING",
+      "runtimeReady": false,
+      "encoding": "Pillow/libwebp lossy quality=100 method=4; decoded alpha verified identical",
+      "notes": "Alternate recoil; not a sequential frame. Independent redraw. Exact canonical identity and phase not verified; original edge clipping possible, transparent padding cannot restore pixels. No scaling. Conservative 1898px gate not met."
+    }
+  ],
+  "missing": [
+    "identity and clipping review",
+    "phase/direction and anchor approval",
+    "coherent animation sequence",
+    "browser visual QA",
+    "1898px production extent"
+  ]
+}
