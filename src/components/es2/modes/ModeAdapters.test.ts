@@ -5,7 +5,6 @@ import { getLocale, setLocale } from '../../../i18n'
 import { nextTick } from 'vue'
 import Es2ModeSigil from './Es2ModeSigil.vue'
 import { MODES } from '../../../meta/modes'
-import { MODE_SIGILS } from '../menu/model'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
@@ -119,7 +118,6 @@ describe('shared expedition art contract', () => {
     expect(manifest.assets.map(asset => asset.id).sort()).toEqual(ids)
     expect(manifest.scale).toBe(3)
     expect(manifest.displayBasePx).toBe(64)
-    expect(Object.keys(MODE_SIGILS).sort()).toEqual(ids)
     const wrapper = mount(Es2ModeSigil, { props: { mode: 'quick' } })
     wrappers.push(wrapper)
     for (const mode of Object.values(MODES)) {
@@ -135,17 +133,25 @@ describe('shared expedition art contract', () => {
       expect(wrapper.get('img').attributes('src')).toContain(asset.file)
     }
   })
-  it('falls back only after load failure and retries the art after a mode switch', async () => {
+  it('shows only a same-size skeleton until load, never an old glyph or endless error animation', async () => {
     const wrapper = mount(Es2ModeSigil, { props: { mode: 'boss-rush' } })
     wrappers.push(wrapper)
-    await wrapper.get('img').trigger('error')
-    expect(wrapper.find('img').exists()).toBe(false)
-    expect(wrapper.text()).toBe(MODE_SIGILS['boss-rush'])
+    const state = () => wrapper.get('img').attributes('data-es2-image-state')
+    expect(state()).toBe('loading')
+    expect(wrapper.text()).toBe('')
+    await wrapper.get('img').trigger('load')
+    expect(state()).toBe('loaded')
     await wrapper.setProps({ mode: 'quick' })
+    expect(state()).toBe('loading')
     expect(wrapper.get('img').attributes('src')).toContain('quick@3x.webp')
+    await wrapper.get('img').trigger('error')
+    expect(state()).toBe('error')
     expect(wrapper.text()).toBe('')
     await wrapper.setProps({ mode: 'boss-rush' })
-    expect(wrapper.get('img').attributes('src')).toContain('boss-rush@3x.webp')
+    expect(state()).toBe('loading')
+    await wrapper.get('img').trigger('load')
+    expect(state()).toBe('loaded')
+    expect(wrapper.text()).toBe('')
   })
   it('reuses the same art in the retained classic selector', () => {
     const wrapper = mount(ModeSelector, { props: { value: 'quick' } })

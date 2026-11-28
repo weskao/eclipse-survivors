@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { t } from '../../../i18n'
+import { vImageShimmer } from '../../shared/image-shimmer'
 import Es2EmberWallet from './Es2EmberWallet.vue'
 import { computed, nextTick, ref, useTemplateRef, watch, watchPostEffect } from 'vue'
 import { JOB } from '../../../game/constants'
@@ -120,7 +121,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
 <template>
   <main class="es2-menu" :class="{ 'es2-menu--archive': archiveView !== 'main' }" :data-es2-menu-page="page"
     :aria-label="t('Eclipse Survivors 主選單')">
-    <div class="es2-menu-backdrop" aria-hidden="true"><img :src="ART_URLS.courtyard" alt="" /><img class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
+    <div class="es2-menu-backdrop" aria-hidden="true"><img v-image-shimmer="ART_URLS.courtyard" :src="ART_URLS.courtyard" alt="" /><img v-image-shimmer="sceneIllustration" class="es2-menu-scene" :src="sceneIllustration" data-es2-biome-scene alt="" decoding="async" /></div>
     <div ref="menu" class="es2-menu-scroll">
       <div class="es2-menu-shell">
         <header class="es2-menu-header">

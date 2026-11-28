@@ -8,12 +8,49 @@ import { JOB } from '../../../game/constants'
 import { emptyProfile } from '../../../meta/profile'
 import { setLocale, getLocale } from '../../../i18n'
 import AudioControl from '../../AudioControl.vue'
+import { defineComponent, nextTick as flushImageUpdate, ref } from 'vue'
+import { vImageShimmer } from '../../shared/image-shimmer'
 import { MODES } from '../../../meta/modes'
 
 const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
 const hudCss = readFileSync(resolve('src/styles/es2/hud.css'), 'utf8')
 const hudSource = readFileSync(resolve('src/components/es2/hud/CombatHud.vue'), 'utf8')
 const wrappers: VueWrapper[] = []
+
+describe('shared homepage image loading', () => {
+  it('applies one loading-state contract to every initial lobby image and action atlas', async () => {
+    const wrapper = menu()
+    for (const image of wrapper.findAll('.es2-menu img')) {
+      expect(['loading', 'loaded', 'error']).toContain(image.attributes('data-es2-image-state'))
+    }
+    expect(wrapper.findAll('.es2-hero-action-preview[data-es2-image-state]')).toHaveLength(3)
+    const portrait = wrapper.get('[data-hero="ranger"] img')
+    await portrait.trigger('load')
+    expect(portrait.attributes('data-es2-image-state')).toBe('loaded')
+    const skill = wrapper.get('[data-hero="ranger"] [data-hero-skill-icon]')
+    await skill.trigger('error')
+    expect(skill.attributes('data-es2-image-state')).toBe('error')
+  })
+
+  it('resets a reused image on source change without replacing its DOM or dimensions', async () => {
+    const source = ref('/first.webp')
+    const wrapper = mount(defineComponent({
+      directives: { imageShimmer: vImageShimmer },
+      setup: () => ({ source }),
+      template: '<img v-image-shimmer="source" :src="source" width="44" height="44" alt="" />',
+    }))
+    wrappers.push(wrapper)
+    const img = wrapper.get('img')
+    await img.trigger('load')
+    expect(img.attributes('data-es2-image-state')).toBe('loaded')
+    source.value = '/second.webp'
+    await flushImageUpdate()
+    expect(img.attributes('data-es2-image-state')).toBe('loading')
+    expect(wrapper.get('img').element).toBe(img.element)
+    expect(img.attributes('width')).toBe('44')
+    expect(img.attributes('height')).toBe('44')
+  })
+})
 afterEach(() => { for (const wrapper of wrappers.splice(0)) wrapper.unmount() })
 
 function menu(props: Record<string, unknown> = {}) {

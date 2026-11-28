@@ -25,6 +25,7 @@ Each requirement lives in exactly one file, never a copy here and in a rule. Rul
 | Knight/ranger/wizard sprites, rigid weapons, held projectiles, body atlas | `.claude/rules/hero-weapon-rendering.md` |
 | Raster image generation or delivery (Polytool `towebp`, WebP only) | `.claude/rules/webp-assets.md` |
 | Images: commit real asset files first, code consumer second | `.claude/rules/asset-workflow.md` |
+| **Every homepage image** (including new image consumers): shared size/shape-matched shimmer, native load/error, no legacy expedition glyph | `.claude/rules/hero-lobby.md` — Shared homepage image loading |
 | BOSS CRUD: original score, phase music, per-attack cinematic SFX | `.claude/rules/boss-music-production.md` |
 | BOSS arrival countdown UI, BOSS phase body size | `.claude/rules/boss-visuals.md` |
 | Combat feedback, skill growth, encounters, reward experience and game-feel acceptance | `.claude/rules/game-feel.md` |

@@ -1,0 +1,43 @@
+/* One image skeleton owner. No changes to the image's geometry, click area or audio. */
+:is([data-es2-image-state="loading"], [data-es2-image-state="error"]),
+.es2-mode-sigil:has(> img:is([data-es2-image-state="loading"], [data-es2-image-state="error"]))::before {
+  background-color: #202b3b !important;
+  background-image: linear-gradient(110deg, transparent 25%, #8396b331 48%, transparent 72%) !important;
+  background-size: 220% 100% !important;
+  background-position: 100% 0;
+  background-repeat: no-repeat !important;
+  color: transparent;
+  text-shadow: none;
+}
+[data-es2-image-state="loading"],
+.es2-mode-sigil:has(> img[data-es2-image-state="loading"])::before {
+  animation: es2-image-shimmer 1.5s ease-in-out 4 !important;
+}
+[data-es2-image-state="error"],
+.es2-mode-sigil:has(> img[data-es2-image-state="error"])::before {
+  animation: none !important;
+  background-image: none !important;
+}
+/* Suppress the browser's broken-image badge without changing existing layout. */
+img[data-es2-image-state="error"] { content: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"); }
+/* The real 192px art includes transparent margins and pointed frame. Shape only
+   the placeholder; the loaded WebP is never masked. */
+.es2-mode-sigil { position: relative; }
+.es2-mode-sigil:has(> img:is([data-es2-image-state="loading"], [data-es2-image-state="error"]))::before {
+  content: "";
+  position: absolute;
+  inset: 4% 9%;
+  clip-path: polygon(50% 0, 86% 9%, 100% 30%, 94% 72%, 50% 100%, 6% 72%, 0 30%, 14% 9%);
+  pointer-events: none;
+}
+.es2-mode-sigil > img:is([data-es2-image-state="loading"], [data-es2-image-state="error"]) { visibility: hidden; }
+@keyframes es2-image-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  [data-es2-image-state="loading"],
+  .es2-mode-sigil:has(> img[data-es2-image-state="loading"])::before { animation: none !important; }
+}
+:is([data-es2-reduce-motion="true"], [data-es2-reduce-flashing="true"]) [data-es2-image-state="loading"],
+:is([data-es2-reduce-motion="true"], [data-es2-reduce-flashing="true"]) .es2-mode-sigil:has(> img[data-es2-image-state="loading"])::before { animation: none !important; }

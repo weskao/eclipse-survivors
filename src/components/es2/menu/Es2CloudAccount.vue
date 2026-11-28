@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { vImageShimmer } from '../../shared/image-shimmer'
 import googleSignInIcon from '../../../assets/ui/google-sign-in.webp'
 import { t, formatNumber } from '../../../i18n'
 import type { useCloudWallet, AccountNotice } from '../../../cloud/use-cloud-wallet'
@@ -76,7 +77,7 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
         <p data-es2-result-cloud-status :data-confirmed="cloud.confirmed.value">{{ t(resultMessage) }}</p>
       </div>
       <button v-if="!cloud.user.value" type="button" class="es2-secondary es2-google-signin" data-es2-result-google-login data-ui-sfx="select"
-        :disabled="!cloud.available.value || cloud.busy.value" @click="activate"><img :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" />{{ t('使用 Google 登入') }}</button>
+        :disabled="!cloud.available.value || cloud.busy.value" @click="activate"><img v-image-shimmer="googleSignInIcon" :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" />{{ t('使用 Google 登入') }}</button>
       <button v-else-if="cloud.status.value === 'error' || cloud.status.value === 'conflict'" type="button" class="es2-secondary" data-es2-result-cloud-retry data-ui-sfx="select"
         :disabled="cloud.busy.value" @click="cloud.sync()"><Es2CloudSymbol state="syncing" /> {{ t('立即同步') }}</button>
     </div>
@@ -90,26 +91,26 @@ function restore() { confirmRestore.value = false; void props.cloud.sync(true) }
     :disabled="!cloud.user.value && (!cloud.available.value || cloud.busy.value)" @click="activate">
     <template v-if="cloud.user.value">
       <span class="es2-cloud-avatar" data-es2-profile-avatar aria-hidden="true">
-        <img v-if="avatarUrl" :key="avatarUrl" :src="avatarUrl" alt="" referrerpolicy="no-referrer" @error="failedPhoto = photoUrl" />
+        <img v-image-shimmer="avatarUrl" v-if="avatarUrl" :key="avatarUrl" :src="avatarUrl" alt="" referrerpolicy="no-referrer" @error="failedPhoto = photoUrl" />
         <span v-else>{{ avatarInitial }}</span>
       </span>
       <span class="es2-cloud-status-mark" data-es2-profile-status :data-state="accountStatus" aria-hidden="true">{{ statusGlyph }}</span>
     </template>
     <template v-else>
-      <img :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" /><span class="es2-cloud-trigger-label">{{ t('Google 登入') }}</span>
+      <img v-image-shimmer="googleSignInIcon" :src="googleSignInIcon" class="es2-cloud-emblem" alt="" aria-hidden="true" /><span class="es2-cloud-trigger-label">{{ t('Google 登入') }}</span>
     </template>
   </button>
   <Es2Dialog v-if="!result && cloud.user.value" :active="open" :title="t('帳號')" @cancel="close">
     <div class="es2-cloud-card">
       <div v-if="cloud.user.value" class="es2-cloud-identity">
         <span class="es2-cloud-avatar es2-cloud-avatar-large" aria-hidden="true">
-          <img v-if="avatarUrl" :key="avatarUrl" :src="avatarUrl" alt="" referrerpolicy="no-referrer" @error="failedPhoto = photoUrl" />
+          <img v-image-shimmer="avatarUrl" v-if="avatarUrl" :key="avatarUrl" :src="avatarUrl" alt="" referrerpolicy="no-referrer" @error="failedPhoto = photoUrl" />
           <span v-else>{{ avatarInitial }}</span>
         </span>
         <div class="es2-cloud-identity-copy">
           <strong>{{ cloud.user.value.displayName?.trim() || t('Google 帳號') }}</strong>
           <small v-if="cloud.user.value.email">{{ cloud.user.value.email }}</small>
-          <span class="es2-cloud-provider"><img :src="googleSignInIcon" alt="" aria-hidden="true" />{{ t('Google 帳號') }}</span>
+          <span class="es2-cloud-provider"><img v-image-shimmer="googleSignInIcon" :src="googleSignInIcon" alt="" aria-hidden="true" />{{ t('Google 帳號') }}</span>
         </div>
       </div>
       <section class="es2-cloud-wallet" data-es2-cloud-wallet-panel :aria-label="t('暮光餘燼')">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { vImageShimmer } from '../../shared/image-shimmer'
 import { ART_URLS } from '../../../game/art'
 import { HERO_DEFINITIONS, isSpecializationId } from '../../../game/content/heroes'
 import shadowFallback from '../../../game/content/heroes/portraits/shadowblade.svg?url'
@@ -22,7 +23,7 @@ const fallback = computed(() => isSpecializationId(props.heroId)
 </script>
 
 <template>
-  <img :src="failed ? fallback : source" :alt="alt" :data-es2-specialization="isSpecializationId(heroId) ? '' : undefined"
+  <img v-image-shimmer="failed ? fallback : source" :src="failed ? fallback : source" :alt="alt" :data-es2-specialization="isSpecializationId(heroId) ? '' : undefined"
     decoding="async" draggable="false"
     @error="failed = true" />
 </template>
