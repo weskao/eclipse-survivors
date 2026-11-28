@@ -1203,7 +1203,7 @@
 .es2-expedition-chapter[data-es2-mode-chapter="advanced"] .es2-expedition-chapter-heading>span:first-child{color:#d3b4ef}
 .es2-expedition-board .es2-mode-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));grid-auto-rows:1fr;gap:10px}
 .es2-mode-card-shell{position:relative;display:flex;min-width:0}
-.es2-expedition-board .es2-mode-card{position:relative;display:grid;grid-template-columns:var(--es2-mode-card-sigil-size) minmax(0,1fr) minmax(44px,max-content);align-items:center;min-width:0;min-height:max(88px,calc(var(--es2-mode-card-min-height) * var(--es2-ui-scale,1)));gap:0 8px;padding:12px 8px 5px 6px;border-color:color-mix(in srgb,var(--es2-mode-ink) 56%,#526171);background:linear-gradient(125deg,color-mix(in srgb,var(--es2-mode-ink) 25%,#162536),#0e1928 90%);border-radius:4px 15px 4px 15px}
+.es2-expedition-board .es2-mode-card{position:relative;display:grid;grid-template-columns:var(--es2-mode-card-sigil-size) minmax(0,1fr) minmax(44px,max-content);align-items:center;min-width:0;min-height:max(88px,calc(var(--es2-mode-card-min-height) * var(--es2-ui-scale,1)));gap:0 8px;padding:5px 8px 5px 6px;border-color:color-mix(in srgb,var(--es2-mode-ink) 56%,#526171);background:linear-gradient(125deg,color-mix(in srgb,var(--es2-mode-ink) 25%,#162536),#0e1928 90%);border-radius:4px 15px 4px 15px}
 .es2-expedition-board .es2-mode-card:hover{border-color:var(--es2-mode-accent);background:linear-gradient(125deg,color-mix(in srgb,var(--es2-mode-ink) 46%,#162536),#142133)}
 .es2-expedition-board .es2-mode-card.es2-mode-active{border-color:#e8c47d;box-shadow:inset 0 0 0 1px #e8c47d,0 0 12px #d6b16b32;background:linear-gradient(120deg,color-mix(in srgb,var(--es2-mode-ink) 45%,#493a2b),#192a3c 85%)}
 .es2-expedition-board .es2-mode-card:disabled{opacity:.55;cursor:not-allowed}
@@ -1211,8 +1211,8 @@
 /* Compact cards reserve the 44px Info target in the trailing column.
    The inline duration sits below it, without forcing a taller centered row. */
 .es2-expedition-board .es2-mode-card>.es2-mode-sigil{grid-column:1}
-.es2-expedition-board .es2-mode-card>.es2-mode-copy{grid-column:2;align-self:start}
-.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:end;justify-self:end;min-width:0;margin-block-start:32px}
+.es2-expedition-board .es2-mode-card>.es2-mode-copy{grid-column:2;align-self:center}
+.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:end;justify-self:end;min-width:0;margin-block-start:39px}
 /* Move only the visible Info glyph below the overlaid HOT; the 44px hit
    target stays in the hero-card corner and the duration stays below it. */
 .es2-expedition-board .es2-mode-detail-trigger{padding-block-start:15px}
