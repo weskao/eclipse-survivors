@@ -156,7 +156,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(selectBossNativeKeyframe(at('frost-sovereign', 'recover', 'ice-fan'))).toBe('frostRecover')
     expect(selectBossNativeKeyframe(at('frost-sovereign', 'hurt', 'ice-fan'))).toBe('frostHurt')
     expect(selectBossNativeKeyframe(at('frost-sovereign', 'recover', 'frost-patch'))).toBeNull()
-    expect(selectBossNativeKeyframe(at('frost-sovereign', 'hurt', 'ice-fan', 2))).toBeNull()
+    expect(selectBossNativeKeyframe(at('frost-sovereign', 'hurt', 'ice-fan', 2))).toBe('frostHurtPhase2')
     expect(selectBossNativeKeyframe(at('abyss-monarch', 'idle', 'shadow-fan'))).toBe('abyssIdle')
     expect(selectBossNativeKeyframe(at('frost-sovereign', 'attack', 'ice-fan'))).toBe('frostRelease')
     expect(selectBossNativeKeyframe(at('frost-sovereign', 'attack', 'frost-patch'))).toBeNull()
@@ -501,6 +501,25 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
       'batch-27/eclipse-seraph/transform/seraph-phase2-awakening-study-a.webp',
     ])
   })
+  it('reviews the Batch 28 Frost hurt pose only in phase 2', () => {
+    const base = snapshot('hurt', 'ice-fan', 'frost-sovereign')
+    const state: BossSnapshot = { ...base, phase: 2, bodyMotion: { ...base.bodyMotion!, phase: 2 } }
+    expect(selectBossNativeKeyframe(state)).toBe('frostHurtPhase2')
+    expect(selectBossNativeKeyframe(base)).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, phase: 1, bodyMotion: { ...state.bodyMotion!, phase: 1 } })).toBe('frostHurt')
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, pose: 'move' } })).toBeNull()
+    expect(selectBossNativeKeyframe({ ...state, bodyMotion: { ...state.bodyMotion!, progress: NaN } })).toBeNull()
+    const image = { complete: true, naturalWidth: 1318, naturalHeight: 1318 } as HTMLImageElement
+    registerBossNativeKeyframe(image, 'frostHurtPhase2')
+    const calls: unknown[][] = []
+    const ctx = { drawImage: (...args: unknown[]) => calls.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(ctx, image, state, 300)).toBe(true)
+    expect(calls[0]?.slice(1)).toEqual([0, 0, 1318, 1318, -160.125, -312.5, 329.5, 329.5])
+    expect(drawBossNativeKeyframe(ctx, image, base, 300)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, image, state, 300, true)).toBe(false)
+    expect(drawBossNativeKeyframe(ctx, { complete: false } as HTMLImageElement, state, 300)).toBe(false)
+    expect(calls).toHaveLength(1)
+  })
   it('loads only the selected boss keyframes in explicit mode 3, preserving canonical static art', async () => {
     // Cold Vite ?url transforms of a dozen 1.2k WebPs exceed waitFor's 1 s default.
     const LOAD_WAIT = { timeout: 15_000 }
@@ -518,7 +537,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     }, LOAD_WAIT)
     expect(seraph.bosses['eclipse-seraph'].src).toBe(WORLD_ART.bosses['eclipse-seraph'])
     const frost = loadWorldRuntimeImages(makeImage, 'frost-sovereign', 'native')
-    const frostKeys = (['frostWindup', 'frostRecover', 'frostHurt', 'frostRelease', 'frostDeath', 'frostAwakening', 'frostAwakeningPhase2'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
+    const frostKeys = (['frostWindup', 'frostRecover', 'frostHurt', 'frostRelease', 'frostDeath', 'frostAwakening', 'frostAwakeningPhase2', 'frostHurtPhase2'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
     expect(Object.keys(frost.bossNativeKeyframes ?? {})).toEqual(frostKeys)
     await vi.waitFor(() => {
       for (const key of frostKeys)

@@ -48,6 +48,7 @@ export const BOSS_NATIVE_KEYFRAMES = {
   abyssAwakeningPhase2B: ['batch-25/abyss-monarch/transform/abyss-phase2-awakening-key-b.webp', 1359, 1278, 668.5, 1223],
   frostAwakeningPhase2: ['batch-27/frost-sovereign/transform/frost-phase2-awakening-study-a.webp', 1318, 1318, 657, 1273],
   seraphAwakeningPhase2: ['batch-27/eclipse-seraph/transform/seraph-phase2-awakening-study-a.webp', 1318, 1318, 660, 1277],
+  frostHurtPhase2: ['batch-28/frost-sovereign/hurt/frost-phase2-hurt-study-a.webp', 1318, 1318, 640.5, 1266],
   // Not wired: batch-24 frost-glide-key-a (directional move, direction/phase unapproved) and
   // batch-26 titan studies (armor/horn/skirt identity mismatch); both stay QA_PENDING review art.
 } as const
@@ -87,6 +88,7 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
   }
   if (snapshot.id === 'frost-sovereign') {
     if (motion.phase === 2 && motion.pose === 'transform') return 'frostAwakeningPhase2'
+    if (motion.phase === 2 && motion.pose === 'hurt') return 'frostHurtPhase2'
     if (motion.phase === 3 && motion.pose === 'death') return 'frostDeath'
     if (motion.phase === 3 && motion.pose === 'transform') return 'frostAwakening'
     if (motion.phase !== 1) return null
