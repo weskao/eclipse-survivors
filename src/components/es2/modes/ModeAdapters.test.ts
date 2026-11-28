@@ -25,7 +25,10 @@ describe('shared HOT expedition badge', () => {
     expect(css).toContain('--es2-hot-overhang:12px')
     const menuCss = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
     expect(menuCss).toContain('.es2-expedition-board .es2-mode-detail-trigger{padding-block-start:15px}')
-    expect(menuCss).toContain('min-height:124px;gap:8px;')
+    expect(menuCss).toContain('grid-auto-rows:1fr')
+    expect(menuCss).toContain('--es2-mode-card-min-height:88px')
+    expect(menuCss).toContain('min-height:max(88px,calc(var(--es2-mode-card-min-height) * var(--es2-ui-scale,1)))')
+    expect(menuCss).not.toContain('min-height:124px;gap:8px;')
   })
   it('renders only when enabled and reacts to the boolean without leaving a placeholder', async () => {
     const wrapper = mount(Es2ModeHotBadge, { props: { hot: false } })
@@ -49,7 +52,7 @@ describe('shared HOT expedition badge', () => {
     expect(wrapper.findAll('[data-es2-mode-hot]')).toHaveLength(1)
     const boss = wrapper.get('[data-objective-mode="boss-rush"]')
     expect(boss.get('[data-es2-mode-hot]').text()).toBe('HOT')
-    expect(boss.find(':scope > [data-es2-mode-hot]').exists()).toBe(true)
+    expect(boss.get(':scope > [data-es2-mode-hot]').exists()).toBe(true)
     expect(boss.find('.es2-mode-title-line [data-es2-mode-hot]').exists()).toBe(false)
     expect(boss.classes()).toContain('es2-mode-has-hot')
     expect(boss.attributes('aria-label')).toContain(t('熱門遠征'))
@@ -61,10 +64,12 @@ describe('shared HOT expedition badge', () => {
 })
 
 describe('shared duration badge', () => {
-  it('centers the borderless card duration and reuses the hero Info corner without affecting the dock', () => {
+  it('keeps the borderless card duration below the hero Info corner without affecting the dock', () => {
     const css = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
     const duration = readFileSync(resolve('src/components/es2/modes/Es2ModeDuration.vue'), 'utf8')
-    expect(css).toContain('.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:center;justify-self:end;')
+    expect(css).toContain('.es2-expedition-board .es2-mode-card>.es2-mode-time{grid-column:3;align-self:end;justify-self:end;min-width:0;margin-block-start:32px}')
+    expect(css).toContain('padding:12px 8px 5px 6px;')
+    expect(css).toContain('minmax(44px,max-content)')
     expect(css).not.toContain('--es2-hot-inline-end:48px')
     expect(duration).toMatch(/\.es2-mode-time:not\(\.es2-mode-time--compact\)\s*\{[^}]*display:inline-flex;[^}]*align-items:center;/)
     expect(css).not.toContain('.es2-expedition-board .es2-mode-card-shell .es2-mode-detail-trigger{')
