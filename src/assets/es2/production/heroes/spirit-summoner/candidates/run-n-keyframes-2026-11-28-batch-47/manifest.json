@@ -1,0 +1,231 @@
+{
+  "status": "QA_PENDING",
+  "hero": "spirit-summoner",
+  "heroId": "spirit-summoner",
+  "pose": "run",
+  "direction": "N",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 4,
+  "sourceProvenance": {
+    "referenceCommit": "a72a6975c9bb55a827aa4c13467f4c89dcf5cd34",
+    "battleAssetPath": "src/assets/es2/production/heroes/spirit-summoner/run-attack@3x.webp",
+    "battleAssetBlob": "ba76263022c05cb164bd25191bbc60fcc8a22d7c",
+    "inspectedReferencePaths": [
+      "src/assets/es2/production/heroes/spirit-summoner-portrait@3x.webp",
+      "src/assets/es2/production/heroes/spirit-summoner/candidates/run-nw-keyframes-2026-11-28-batch-43/run-northwest-staff-back-identity-b@3x.webp"
+    ],
+    "referenceConditioningVerified": false,
+    "generationIds": [
+      "066fd90c-17aa-4ddc-a38a-2ca34acb5c1f",
+      "d2a8a2ab-5345-4913-8b7f-d4c35d2d53cc",
+      "c299ec5e-bc65-4922-84ab-9c95b7f6a7a9",
+      "8a7179a2-af4b-49c6-aa23-517a26412aed"
+    ]
+  },
+  "frames": [
+    {
+      "id": "run-north-battle-a01",
+      "file": "run-north-battle-a01@3x.webp",
+      "sourceFile": "run-north-battle-a01-source.webp",
+      "sourcePixels": [
+        1266,
+        1242
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          168,
+          11,
+          1034,
+          1202
+        ],
+        "coreExtent": [
+          866,
+          1191
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          128,
+          48,
+          605,
+          703
+        ],
+        "coreExtent": [
+          477,
+          655
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.55,
+      "mirror": false,
+      "footAnchor": null,
+      "generationId": "066fd90c-17aa-4ddc-a38a-2ca34acb5c1f",
+      "bytes": 220698,
+      "webpSHA256": "4f433acb2d55c25c786b05c27935ccc903910d07a90e152051e439d7c133c70f",
+      "sourceBytes": 612782,
+      "sourceSHA256": "8271ea10ff63526f0694ad797cb98c37bb5c0d063ee22cb7e5adcfba1ee16cd4"
+    },
+    {
+      "id": "run-north-battle-a02",
+      "file": "run-north-battle-a02@3x.webp",
+      "sourceFile": "run-north-battle-a02-source.webp",
+      "sourcePixels": [
+        1269,
+        1240
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          202,
+          3,
+          1040,
+          1192
+        ],
+        "coreExtent": [
+          838,
+          1189
+        ],
+        "boundaryMaxAlpha": 16
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          146,
+          45,
+          607,
+          699
+        ],
+        "coreExtent": [
+          461,
+          654
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.55,
+      "mirror": false,
+      "footAnchor": null,
+      "generationId": "d2a8a2ab-5345-4913-8b7f-d4c35d2d53cc",
+      "bytes": 185424,
+      "webpSHA256": "4d9318522c8a078f4ac3865ef06baf1b44c1bd83beba7ade82e2f52a6d8ed519",
+      "sourceBytes": 487724,
+      "sourceSHA256": "8b68fb41325c85c57a78ae6064dfc09655149396649fe27764d6df51021d16e3"
+    },
+    {
+      "id": "run-north-battle-a03",
+      "file": "run-north-battle-a03@3x.webp",
+      "sourceFile": "run-north-battle-a03-source.webp",
+      "sourcePixels": [
+        1272,
+        1236
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          208,
+          57,
+          1060,
+          1165
+        ],
+        "coreExtent": [
+          852,
+          1108
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          150,
+          76,
+          618,
+          685
+        ],
+        "coreExtent": [
+          468,
+          609
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.55,
+      "mirror": false,
+      "footAnchor": null,
+      "generationId": "c299ec5e-bc65-4922-84ab-9c95b7f6a7a9",
+      "bytes": 193588,
+      "webpSHA256": "aa985853931eb710eca7f6fbf686c28350898f398300c905346679b1c229d351",
+      "sourceBytes": 525532,
+      "sourceSHA256": "6895182d2a5ec019cf3f34d4f7d65be57904110138fd236b3b782d172a665b5d"
+    },
+    {
+      "id": "run-north-battle-a04",
+      "file": "run-north-battle-a04@3x.webp",
+      "sourceFile": "run-north-battle-a04-source.webp",
+      "sourcePixels": [
+        1261,
+        1247
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          231,
+          4,
+          1017,
+          1201
+        ],
+        "coreExtent": [
+          786,
+          1197
+        ],
+        "boundaryMaxAlpha": 10
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          164,
+          43,
+          597,
+          701
+        ],
+        "coreExtent": [
+          433,
+          658
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": true,
+      "scale": 0.55,
+      "mirror": false,
+      "footAnchor": null,
+      "generationId": "8a7179a2-af4b-49c6-aa23-517a26412aed",
+      "bytes": 171190,
+      "webpSHA256": "9a1a6850f24a6877b3f136af79487359c896eb2453c992dc98fb1a4f588515f0",
+      "sourceBytes": 456772,
+      "sourceSHA256": "18bd7d1f78e091ac062800b99d59b928fa6a3205a57ef82aa22d271cc59b9557"
+    }
+  ],
+  "reviewNotes": [
+    "Independent N-facing pose studies, not consecutive frames or a complete cycle. Several poses share the same leg phase.",
+    "Identity visually compared against retrieved portrait and NW candidate; battle atlas bytes unavailable. Staff handedness and exact costume continuity require review.",
+    "Original RGBA retained; common 0.55 downsample with transparent padding, no upscaling/mirroring. Source alpha near edge in some frames; review possible clipping.",
+    "Do not promote to gameplay until visual review, foot anchors, timing and sequence continuity are validated."
+  ]
+}
