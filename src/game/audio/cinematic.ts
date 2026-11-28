@@ -22,6 +22,7 @@ export function createCinematicMusic(
   context: () => AudioContextLike | null,
   musicBus: () => GainLike | null,
   allowed: () => boolean,
+  onVictoryScheduled?: () => void,
 ): {
   readonly playingBoss: boolean
   readonly resultFallback: boolean
@@ -89,10 +90,13 @@ export function createCinematicMusic(
   const sync = (): void => {
     const ctx = context()
     const next = wanted()
-    if (!next || !ctx || ctx.state !== 'running' || !allowed()) {
+    if (!next || !ctx || ctx.state === 'closed' || !allowed()) {
       if (voice || loading) stop(!!next)
       return
     }
+    // A suspended context freezes its own audio clock. Keep the live source
+    // (and pending phase intent) until resume; don't restart/fade it on a tap.
+    if (ctx.state !== 'running') return
     if (voice?.key === next.key || loading === next.key || failed.has(next.url)) return
     const previous = voice
     const offset = paused?.key === next.key ? paused.offset
@@ -123,6 +127,7 @@ export function createCinematicMusic(
         voice = { key: next.key, source, gain, started: now + 0.02,
           offset: startOffset, duration, loop: next.loop }
         paused = null
+        if (next.key === 'result:victory') onVictoryScheduled?.()
       } catch { failed.add(next.url) }
     })
   }

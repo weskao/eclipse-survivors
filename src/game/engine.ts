@@ -1065,7 +1065,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
         if (e.code === 'Escape') { e.preventDefault(); closeSettings() }
         return
       }
-      if ((s.mode === 'menu' && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
+      if (((s.mode === 'menu' || s.mode === 'result') && (audio.musicOn || audio.sfxOn)) || s.mode === 'play') wakeAudio()
       if (s.mode === 'play' && PREVENT_DEFAULT_KEYS.includes(e.code)) e.preventDefault()
       if (s.mode === 'play') keys[e.code] = true
       if (e.repeat) return
@@ -1098,7 +1098,15 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       if (es2Audio) es2Audio.interrupt()
       else audio.interrupt()
     }
-    const onPointerDown = (): void => { wakeAudio() }
+    // Mouse activation begins at pointerdown; touch/pen activation occurs on
+    // pointerup. Starting resume on touch-down can leave a restricted promise
+    // pending before the browser has granted transient user activation.
+    const onPointerDown = (e: PointerEvent): void => {
+      if (e.pointerType !== 'touch' && e.pointerType !== 'pen') wakeAudio()
+    }
+    const onPointerUp = (e: PointerEvent): void => {
+      if (e.pointerType === 'touch' || e.pointerType === 'pen') wakeAudio()
+    }
     // Click covers touch, mouse and keyboard activation, including teleported dialogs.
     // Explicitly managed controls already play their semantic cue in the engine.
     const onUiClick = (e: MouseEvent): void => {
@@ -1108,8 +1116,9 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
           control.getAttribute('aria-disabled') === 'true') return
       const cue = control.dataset.uiSfx
       if (cue === 'silent') return
-      // Keyboard activation of managed controls still needs the trusted wake.
-      if (e.detail === 0 || !audio.unlocked) wakeAudio()
+      // A context can exist but still be suspended. A completed click is a
+      // second trusted recovery opportunity, including managed and keyboard UI.
+      wakeAudio()
       if (cue === 'managed') return
       if (cue === 'hall-inspect') audio.playSfx('select', 1)
       else audio.playSfx(cue === 'select' || cue === 'scene' || cue === 'pause' ? cue : 'ui')
@@ -1128,6 +1137,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
     win.addEventListener('pagehide', onPageHide)
     doc.addEventListener('visibilitychange', onVisibility)
     doc.addEventListener('pointerdown', onPointerDown, true)
+    doc.addEventListener('pointerup', onPointerUp, true)
     doc.addEventListener('click', onUiClick, true)
     doc.addEventListener('pointerover', onPointerOver)
     return () => {
@@ -1137,6 +1147,7 @@ export function createEngine(opts: { audio?: AudioSystem; profileStore?: Profile
       win.removeEventListener('pagehide', onPageHide)
       doc.removeEventListener('visibilitychange', onVisibility)
       doc.removeEventListener('pointerdown', onPointerDown, true)
+      doc.removeEventListener('pointerup', onPointerUp, true)
       doc.removeEventListener('click', onUiClick, true)
       doc.removeEventListener('pointerover', onPointerOver)
     }
