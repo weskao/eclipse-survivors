@@ -506,6 +506,25 @@ try {
           name + ': archive selection is inaccessible')
         assert.ok(inside(await page.locator('[data-es2-return-lobby]').evaluate(rect), width, height),
           name + ': return navigation clips viewport')
+        // Scroll the real shared hall surface; its sticky navigation must not expose a strip above it.
+        const hallHeader = await page.locator('.es2-menu-scroll').evaluate(el => {
+          const nav = el.querySelector('.es2-hall-navigation')
+          const heading = nav.querySelector('.es2-hall-heading')
+          const previous = el.scrollTop
+          el.scrollTop = el.scrollHeight
+          const scroller = el.getBoundingClientRect(), header = nav.getBoundingClientRect()
+          const result = {
+            stuck: el.scrollTop > 0 && header.top <= scroller.top + parseFloat(getComputedStyle(el).paddingTop) + 1,
+            offset: header.top - scroller.top,
+            scrollPadding: parseFloat(getComputedStyle(el).paddingTop),
+            headingGap: heading.getBoundingClientRect().top - header.top - parseFloat(getComputedStyle(nav).borderTopWidth),
+          }
+          el.scrollTop = previous
+          return result
+        })
+        assert.equal(hallHeader.scrollPadding, 0, name + ': archive scrollport must have no top padding')
+        assert.ok(Math.abs(hallHeader.headingGap) <= 1, name + ': archive navigation has redundant top spacing')
+        if (hallHeader.stuck) assert.ok(Math.abs(hallHeader.offset) <= 1, name + ': sticky hall navigation exposes background above it')
         await verifySelectionPolicy('archive')
         await assertLocalizedTextFits(page, name, 'en-archive')
         const uncentered = await archivePage.locator('.es2-archive-card').evaluateAll(cards => cards.flatMap(card => {

@@ -798,10 +798,12 @@
 }
 
 /* The hall is a primary destination, not a modal on top of another menu. */
-.es2-menu--archive .es2-menu-scroll{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+/* Keep the device safe area outside the scrollport; sticky navigation must meet its top edge. */
+.es2-menu--archive{padding-top:env(safe-area-inset-top,0px)}
+.es2-menu--archive .es2-menu-scroll{padding-top:0;padding-bottom:max(16px,env(safe-area-inset-bottom))}
 .es2-menu [data-es2-lobby-content][hidden]{display:none}
 .es2-menu--archive .es2-hall-navigation{
-  position:sticky;top:0;z-index:8;background:linear-gradient(110deg,#121e2c,#152334 65%,#0f1925);
+  position:sticky;top:0;z-index:8;padding-top:0;background:linear-gradient(110deg,#121e2c,#152334 65%,#0f1925);
   box-shadow:0 7px 18px #050a1266;backdrop-filter:none
 }
 .es2-hall-heading__title{min-width:0;flex:1;overflow-wrap:anywhere}
