@@ -24,12 +24,12 @@ withDefaults(defineProps<{ hot?: boolean }>(), { hot: false })
    HOT never changes a card's padding, height, width or content tracks. */
 .es2-menu .es2-expedition-board .es2-mode-grid,
 .mode-selector .mode-grid {
-  --es2-hot-overhang:17px;
+  --es2-hot-overhang:23px;
   row-gap:calc(var(--es2-hot-overhang) + 5px);
   padding-block-start:calc(var(--es2-hot-overhang) + 1px);
 }
 .es2-mode-hot[data-es2-mode-hot] {
-  position:absolute; inset-block-start:calc(0px - var(--es2-hot-overhang,17px)); inset-inline-end:var(--es2-hot-inline-end,8px); z-index:1;
+  position:absolute; inset-block-start:calc(0px - var(--es2-hot-overhang,23px)); inset-inline-end:8px; z-index:1;
   display:inline-flex; align-items:center; justify-content:center; gap:5px;
   box-sizing:border-box; overflow:hidden; white-space:nowrap; pointer-events:none;
   padding:1px 7px 1px 5px; height:22px; border:1px solid #ffc278; border-radius:4px 9px 4px 9px;

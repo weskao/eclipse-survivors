@@ -51,7 +51,7 @@ export async function assertModeHotLayout(page, label) {
         !!el.closest('[data-es2-reduce-motion="true"],[data-es2-reduce-flashing="true"]')
       const grid = card.closest('.es2-mode-grid')
       const headingRow = grid.previousElementSibling
-      return { contained:r.width>0 && r.height>0 && r.left>=c.left-1 && r.right<=c.right+1 && r.top<c.top && r.bottom>c.top && r.bottom<=c.bottom+1,
+      return { contained:r.width>0 && r.height>0 && r.left>=c.left-1 && r.right<=c.right+1 && r.top<c.top && Math.abs(r.bottom-c.top)<=2,
         right: c.right-r.right, top:r.top-c.top, stable, unchanged,
         overlap:[title,image,duration,info,headingRow,...peers].filter(Boolean).some(overlaps),
         pointer:getComputedStyle(el).pointerEvents, animation:getComputedStyle(el,'::after').animationName,
@@ -60,7 +60,7 @@ export async function assertModeHotLayout(page, label) {
     })
     assert.ok(layout.unchanged, label + ': HOT toggle changes card or peer geometry ' + JSON.stringify(layout))
     assert.ok(layout.contained && layout.stable && !layout.overlap && layout.pointer==='none' &&
-      Math.abs(layout.right-49)<=1 && Math.abs(layout.top+16)<=1, label + ': HOT layout ' + JSON.stringify(layout))
+      Math.abs(layout.right-9)<=1 && Math.abs(layout.top+22)<=1, label + ': HOT layout ' + JSON.stringify(layout))
     assert.equal(layout.flame.length, 3, label + ': layered flame')
     assert.equal(layout.embers.length, 3, label + ': ember particles')
     if (layout.reduced) assert.ok([layout.animation, ...layout.flame, ...layout.embers].every(name=>name==='none'), label + ': reduced motion HOT')

@@ -44,9 +44,14 @@ export async function assertModeDurations(page, label) {
     const corner = !!i && Math.abs(i.top-c.top)<=1 && Math.abs(i.right-c.right)<=1 &&
       infoStyle.paddingTop==='5px' && icon?.getBoundingClientRect().width===22 &&
       (!heroStyle || infoStyle.paddingTop===heroStyle.paddingTop)
+    const cardStyle = getComputedStyle(card)
+    const rightAligned = Math.abs(c.right-t.right-parseFloat(cardStyle.borderRightWidth)-parseFloat(cardStyle.paddingRight))<=1 &&
+      parseFloat(cardStyle.paddingRight)<=9
+    const inline = !unit || (v.right<=unit.getBoundingClientRect().left+1 &&
+      Math.abs((v.top+v.bottom-unit.getBoundingClientRect().top-unit.getBoundingClientRect().bottom)/2)<=1)
     return { mode:card.dataset.mode ?? card.dataset.objectiveMode, text:value.textContent, font,
-      centered, plain, corner, valid: centered && plain && corner && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
-        && i.bottom <= c.bottom+1 && t.right <= i.left+1
+      centered, plain, corner, rightAligned, inline, valid: centered && plain && corner && rightAligned && inline && !!i && i.width >= 44 && i.height >= 44 && i.left >= c.left-1 && i.right <= c.right+1
+        && i.bottom <= c.bottom+1 && t.top >= i.bottom-1
         && font >= (value.textContent==='∞'?26:18) && (!unit || parseFloat(getComputedStyle(unit).fontSize)>=11)
         && t.left>=c.left-1 && t.right<=c.right+1 && t.top>=c.top-1 && t.bottom<=c.bottom+1
         && copy.right<=t.left+1 && v.width<=t.width+1 && chip.scrollWidth<=chip.clientWidth+1

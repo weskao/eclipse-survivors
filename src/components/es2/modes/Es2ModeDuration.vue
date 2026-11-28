@@ -39,7 +39,8 @@ const minutes = computed(() => modeDurationMinutes(props.duration))
 }
 /* Borderless typography on cards; the compact dock keeps its existing chip. */
 .es2-mode-time:not(.es2-mode-time--compact) {
-  border:0; background:none; padding:0; min-height:0; gap:3px;
+  display:inline-flex; align-items:center; justify-content:flex-end;
+  border:0; background:none; padding:0; min-width:0; min-height:0; gap:4px;
 }
 .es2-mode-time:not(.es2-mode-time--compact):not(.es2-mode-time--endless) [data-es2-mode-time-value] {
   font-size:clamp(22px,calc(1.375rem * var(--es2-ui-scale,1)),30px);
