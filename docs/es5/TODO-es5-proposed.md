@@ -1,6 +1,6 @@
 # Proposed TODO.md section — ES5 (append, do not replace existing TODO)
 
-Status: DESIGN_REVIEW. Historical proposed checklist; the live tracker is [root TODO.md](../../TODO.md). Do not append a duplicate section. Approved decisions: C dual track, full permanent growth with independent Apex, semi-open chapter progression. Numerical proposals and new content remain gated. Source e561550c; re-fetch and approve ES4 baseline first. No task below is claimed done.
+Status: DESIGN_REVIEW. Historical proposed Wave checklist, superseded for release scheduling by [release stages](release-stages.md); the live tracker is [root TODO.md](../../TODO.md). Do not append a duplicate section. Approved decisions: C dual track, full permanent growth with independent Apex, semi-open chapter progression. Numerical proposals and new content remain gated. Source e561550c; re-fetch and approve ES4 baseline first. No task below is claimed done.
 
 - [ ] ES5-G0: accept ES4 runtime/save/QA and authorize dedicated ES5 branch; pin exact HEAD and run baseline.
 - [ ] W00-01–10: deterministic simulation, six heroes/five investment states/nine modes/three policies/ten seeds, telemetry, economy, performance, report/CI.

@@ -10,11 +10,16 @@
 
 **Spec:** [../specs/2026-11-28-es5-eclipse-ascension-design.md](../specs/2026-11-28-es5-eclipse-ascension-design.md)
 
-**Branch (proposed):** `feature/es5-01-hero-talent-balance`
+**Branch:** active Stage branch in [release stages](../../es5/release-stages.md); legacy Wave branch names are superseded for execution.
 
-**Dependencies:** W00 paired baseline; W04 snapshot interface skeleton if needed; ES4 release/runtime approved.
+**Dependencies:** G0 and only the prerequisites of the assigned Release Stage; task-specific interfaces apply when that feature is actually delivered. See release-stages.md. W00 paired evidence precedes tuning.
 
 ## Global Constraints
+
+- **Release-stage authority:** follow [release stages](../../es5/release-stages.md) for branch ownership, scope, prerequisite and independent delivery. Wave tasks are technical work packages; execute only the portion assigned to the active Stage. No future-stage scaffolding or unpublished content dependency.
+- **Balance authority:** read `CLAUDE.md` and [existing balance rule](../../../.claude/rules/game-balance-config.md) before any numeric CRUD. Reuse existing `src/game/balance/*.json` domains first, register genuinely distinct new domains in `balance/index.ts`, extend `config.ts` typed validation and `balance.test.ts`; runtime reads typed `BALANCE`. Preserve existing Hall catalog ownership, public keys and save compatibility; any touched legacy tunable literal is migrated without changing value unless separately approved. No duplicated numeric owners, hot-path JSON parsing or unrelated extraction.
+- **Evidence:** use paired seeds, legal fresh/legacy/early/mid/mature builds, same policy/mode/settings; record every changed JSON path/key, old/new/unit/percent (N/A for new or zero baseline), reason, actual measured result, RED/GREEN, exact SHA CI and manual QA under `docs/es5/evidence/stage-NN/`. Root TODO is the status authority; check only verified subtasks; release-ready, merged, published and production verified are separate. Follow actual `docs/release-process.md` and scoped CLAUDE rules; no automatic deploy.
+- **Numeric scope:** Stage 01: heroes.json, combat.json, hall-effect-tuning.json, hall-talents.json (catalog ownership; audit current direct loader), meta.json, skills.json, weapons.json, evolutions.json, relics.json and progression.json as applicable. Q damage/CD/targets, proc/crit/cap and all tunable constants belong to their existing owner. Design changes await measured approval; no requirement to change every file.
 
 - Read the linked spec, current `CLAUDE.md`, `TODO.md`, `docs/es4/deferred-endgame-scope.md` and applicable `.claude/rules`; re-fetch source HEAD and reconcile drift. Paths marked new are proposals, existing paths verified against the reviewed tree or to be confirmed before edit.
 - ES4 acceptance and explicit ES5 branch authorization precede implementation. Do not change ES4, develop/main, merge, deploy, open PR or force push without authorization. No personal paths or secrets.

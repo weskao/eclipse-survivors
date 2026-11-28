@@ -360,7 +360,7 @@ Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`
 **Status: PLANNING STORED — implementation not started.** Owner-approved direction: dual-track C (D0–D2 power fantasy, D3–D5 mastery challenge), full legitimate permanent talents in both tracks with separate standardized Apex Trials, and semi-open chapters. All numeric candidates require measured approval. The original ES4 design snapshot was `e561550c3473d175661d5c7d4552020c830a282f`; documents are stored on ES4 at parent `1084ed56f759154b84bb5545bb8d07619bad1a1a` for handoff, not authorization to change gameplay. Reconcile against the accepted ES4 runtime before ES5 implementation.
 
 - [x] Consolidate ES4 deferred scope and owner-approved ES5 direction into the [document index](docs/es5/README.md), [design spec](docs/superpowers/specs/2026-11-28-es5-eclipse-ascension-design.md), [master plan](docs/superpowers/plans/2026-11-28-es5-00-master-plan.md) and nine Wave plans.
-- [ ] **G0:** Accept ES4 runtime, save/migration, QA and rollout gates; authorize the separate ES5 integration branch; pin execution HEAD and verify baseline.
+- [ ] **G0:** Accept ES4 runtime, save/migration, QA and rollout gates; authorize the active separate ES5 Stage branch from accepted develop; pin execution HEAD and verify baseline.
 - [ ] **[W00 — Balance Foundation](docs/superpowers/plans/2026-11-28-es5-wave-00-balance-foundation.md):** six heroes × five investment stages × nine existing modes × three policies × ten seeds = 8,100 proposed simulations; paired DPS/TTK, Q/proc/mitigation, XP, embers/min, pressure and performance.
 - [ ] **[W01 — Hero & Talent Balance](docs/superpowers/plans/2026-11-28-es5-wave-01-hero-talent-balance.md):** all 77 permanent nodes (5 legacy + 72 ES4), six Q skills, caps, stacking, hero identity and build viability; no hidden enemy power scaling.
 - [ ] **[W02 — Monster Ecology](docs/superpowers/plans/2026-11-28-es5-wave-02-monster-ecology.md):** E01–10, EL01–08, EN01–08, readable counters, threat budget, actor cap; original art identity and runtime QA.
@@ -369,9 +369,107 @@ Legacy enemy output directory: `src/assets/es2/production/skills/enemy-dossier/`
 - [ ] **[W05 — Endgame Modes](docs/superpowers/plans/2026-11-28-es5-wave-05-endgame-modes.md):** M01–07, 18 staged hero trials, mythic rush, endless abyss, Build Lab, AT01–04 standardized loadouts; no mutation of actual Hall or wallet, no untrusted public ranking.
 - [ ] **[W06 — World Expansion](docs/superpowers/plans/2026-11-28-es5-wave-06-world-expansion.md):** semi-open progression, WLD01–06, Chapter III then IV, B05/06, preserve existing unlocks; separate detailed geometry, asset and encounter approval.
 - [ ] **[W07 — Progression & Economy](docs/superpowers/plans/2026-11-28-es5-wave-07-progression-economy.md):** existing Twilight Embers only, measure early/mid/mature investment and risk-adjusted rewards, idempotent receipts, cosmetic rewards and local records; cloud/ranking trust gate.
-- [ ] **[W08 — Release Readiness](docs/superpowers/plans/2026-11-28-es5-wave-08-release-readiness.md):** QA01–15, RED/GREEN/refactor, `make verify`, exact-HEAD CI, RWD, actual device/audio/art and performance; release A/B/C separately.
+- [ ] **[W08 — Release Readiness](docs/superpowers/plans/2026-11-28-es5-wave-08-release-readiness.md):** QA01–15, RED/GREEN/refactor, `make verify`, exact-HEAD CI, RWD, actual device/audio/art and performance; verify each independent Release Stage separately.
 - [ ] Remove temporary ES5 feature policy only after approved permanent rollout, migration and rollback verification. No automatic merge, PR or deploy.
 
 **Cross-wave acceptance:** W00 measures the ES4 power increase before W01–04 tuning; W02/03/04 and W05/06 must use those same legal investment fixtures (fresh, legacy max, early, mid, mature) and identical paired seeds. W07 verifies reward/min and time-to-upgrade across both tracks without forcing high difficulty. W08 independently checks all six heroes, legacy flag-off parity, D1 baseline, Apex isolation and semi-open chapter persistence. No test, simulation, asset or release gate is marked passed by this planning commit.
 
-**Dependency order:** G0 → W00 → W04 T1 and W07 T1/T2 interfaces → W01/02/03 → finish W04 (Release A) → W05/07 (Release B) → W06 (Release C); W08 continuous. See master plan for exact branch ownership and task dependencies. Original ES3, ES4 and art/QA items retain their existing states; historical CI evidence is not a claim about current HEAD.
+**Dependency order:** G0 → Stage 01 → other independently releasable stages as their own prerequisites are met; W08 continuous. [Release stages](docs/es5/release-stages.md) supersede A/B/C batching. See master plan for exact branch ownership and task dependencies. Original ES3, ES4 and art/QA items retain their existing states; historical CI evidence is not a claim about current HEAD.
+
+## ES5 — Release Stages (independent player releases)
+
+- [x] Document the staged delivery strategy, Balance JSON ownership and Stage 01 plan; documentation only.
+- [ ] G0 — ES4 release readiness and authorized develop integration (see above; no duplicate G0 evidence).
+
+[Roadmap / Balance ownership / evidence rules](docs/es5/release-stages.md) · [Stage 01 plan](docs/superpowers/plans/2026-11-28-es5-stage-01-combat-balance.md). The following Stage gates are not implementation claims. Wave checkboxes above are aggregate views; keep them open until all mapped work is verified.
+
+### Stage 01 — Combat Balance & Quality
+- [ ] S01-00: Preflight — Verify accepted ES4 final SHA ancestry of develop, runtime/save/wallet/rollout and all gates. Read latest rules; record baseline; create target branch only after G0.
+- [ ] S01-01: Combat baseline — Inventory 15 JSON/catalog domains; measure six heroes × five legal investment states × existing modes; record baseline config SHA/hash and telemetry.
+- [ ] S01-02: Deterministic simulation — Reuse engine/harness; fixed seed/step/policy, smoke and 8,100 screening matrix (6×5×9×3×10), endless 15-min horizon; record actual coverage/censored runs; do not claim unrun matrix.
+- [ ] S01-03: Hero active skills — Verify six Q damage, CD, range, targets, hit parity, rejection/reset, animation/SFX; preserve original CD initially.
+- [ ] S01-04: Permanent talent audit — Audit 77 nodes/289 ranks, all effects and prerequisites, 2+1+1 attunement, actual UI/runtime parity, legacy/disabled path; preserve legitimate investment.
+- [ ] S01-05: Combat calculation — Reproduce and fix source attribution, crit, DR, heal, shield, invulnerability, cooldown, proc recursion, summon interactions, duplicate multipliers.
+- [ ] S01-06: Existing build balance — Measure weapon, skill, evolution, relic, contract, hero role and interaction viability; maintain build choice.
+- [ ] S01-07: Existing monster balance — Legacy and faction HP/ATK/speed/attack/recovery/telegraph/spawn/elite/wave pressure; no new identities, affixes or encounters.
+- [ ] S01-08: Existing boss balance — Audit BAL-01 exactly-once mode damage for contact/projectile/area/summon and BAL-02 phase correctness; preserve normal burst skip; legacy + four existing bosses, no mythic.
+- [ ] S01-09: Progression and economy — Measure XP/first upgrade/curve, cost and embers/min including losses; no unapproved cost/reward/schema/currency changes.
+- [ ] S01-10: Balance configuration & reports — Identify owner per tunable field; existing JSON only as needed; register/typed validation for touched domains, guard tests, same-seed paired report; approved tuning only.
+- [ ] S01-11: Full regression — Run focused RED/GREEN/refactor per change, balance.test.ts, make verify and all applicable regressions. Record commands and actual results.
+- [ ] S01-12: Browser/device QA — Real player path, both locales, desktop/tablet/foldable/phone portrait+landscape, numeric UI parity, music continuity, performance and applicable art/device manual gates.
+- [ ] S01-13: Documentation and changelog — Update root TODO IDs, Wave steps and Master references with evidence, bilingual player-visible changelog per release-process; version only coordinated with actual authorized release.
+- [ ] S01-14: Exact HEAD CI — Commit/push only target, check every applicable workflow at exact HEAD; canceled/stale not pass; record blockers and separate Release-ready/Published gates.
+- [ ] S01-GATE: Release-ready (all required TDD/CI/QA evidence and scope complete).
+- [ ] S01-MERGED: Authorized integration into develop, reverified.
+- [ ] S01-PUBLISHED: Authorized deployment/tag/Release verified.
+- [ ] S01-PRODUCTION: Actual public gameplay verified on desktop/mobile.
+
+### Stage 02 — Difficulty Selection
+- [ ] S02-SCOPE: D0–D2, D1 parity, unlock, eligible reward, accessible selector; no future variants; domain ownership, TDD and evidence per roadmap.
+- [ ] S02-GATE: Independently release-ready (all applicable verification).
+- [ ] S02-MERGED: Authorized integration and reverify.
+- [ ] S02-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S02-PRODUCTION: Public gameplay verified.
+
+### Stage 03 — Monster Evolution I
+- [ ] S03-SCOPE: E01–05, EL01–04, EN01–04; only complete assets and dossier; domain ownership, TDD and evidence per roadmap.
+- [ ] S03-GATE: Independently release-ready (all applicable verification).
+- [ ] S03-MERGED: Authorized integration and reverify.
+- [ ] S03-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S03-PRODUCTION: Public gameplay verified.
+
+### Stage 04 — Mythic Awakening I
+- [ ] S04-SCOPE: B01/B02, D3; mythic forms only in compatible encounters; domain ownership, TDD and evidence per roadmap.
+- [ ] S04-GATE: Independently release-ready (all applicable verification).
+- [ ] S04-MERGED: Authorized integration and reverify.
+- [ ] S04-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S04-PRODUCTION: Public gameplay verified.
+
+### Stage 05 — Monster Evolution II
+- [ ] S05-SCOPE: E06–10, EL05–08, EN05–08; domain ownership, TDD and evidence per roadmap.
+- [ ] S05-GATE: Independently release-ready (all applicable verification).
+- [ ] S05-MERGED: Authorized integration and reverify.
+- [ ] S05-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S05-PRODUCTION: Public gameplay verified.
+
+### Stage 06 — Hero Trials + Build Lab
+- [ ] S06-SCOPE: M01 six first-tier trials, then remaining 12 as independently complete; M07 isolated reward-free lab; domain ownership, TDD and evidence per roadmap.
+- [ ] S06-GATE: Independently release-ready (all applicable verification).
+- [ ] S06-MERGED: Authorized integration and reverify.
+- [ ] S06-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S06-PRODUCTION: Public gameplay verified.
+
+### Stage 07 — Mythic Awakening II
+- [ ] S07-SCOPE: B03/B04, D4–D5 and compatible A01–12; no unimplemented oath; domain ownership, TDD and evidence per roadmap.
+- [ ] S07-GATE: Independently release-ready (all applicable verification).
+- [ ] S07-MERGED: Authorized integration and reverify.
+- [ ] S07-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S07-PRODUCTION: Public gameplay verified.
+
+### Stage 08 — Endgame Expansion
+- [ ] S08-SCOPE: M02 mythic rush, M03 endless abyss, M06 chaos rotation; own receipt rules; domain ownership, TDD and evidence per roadmap.
+- [ ] S08-GATE: Independently release-ready (all applicable verification).
+- [ ] S08-MERGED: Authorized integration and reverify.
+- [ ] S08-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S08-PRODUCTION: Public gameplay verified.
+
+### Stage 09 — Apex Trials
+- [ ] S09-SCOPE: M04/M05, AT01–04 phased by actual dependencies; local fair records first; domain ownership, TDD and evidence per roadmap.
+- [ ] S09-GATE: Independently release-ready (all applicable verification).
+- [ ] S09-MERGED: Authorized integration and reverify.
+- [ ] S09-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S09-PRODUCTION: Public gameplay verified.
+
+### Stage 10 — Chapter III
+- [ ] S10-SCOPE: Chapter III, B05, semi-open unlock, own art and mechanics; domain ownership, TDD and evidence per roadmap.
+- [ ] S10-GATE: Independently release-ready (all applicable verification).
+- [ ] S10-MERGED: Authorized integration and reverify.
+- [ ] S10-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S10-PRODUCTION: Public gameplay verified.
+
+### Stage 11 — Chapter IV
+- [ ] S11-SCOPE: Chapter IV, B06, distinct mechanics, final achievements; domain ownership, TDD and evidence per roadmap.
+- [ ] S11-GATE: Independently release-ready (all applicable verification).
+- [ ] S11-MERGED: Authorized integration and reverify.
+- [ ] S11-PUBLISHED: Authorized deployment/tag/Release.
+- [ ] S11-PRODUCTION: Public gameplay verified.

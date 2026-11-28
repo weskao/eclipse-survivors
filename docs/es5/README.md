@@ -3,6 +3,8 @@
 Snapshot: 2026-11-28, ES4 HEAD `e561550c3473d175661d5c7d4552020c830a282f`. Documentation only, no gameplay changes. Owner decisions C/C/半開放章節 recorded; tuning proposals not measured or approved.
 
 Read in order:
+- [Independent release stages and Balance ownership](release-stages.md) — execution authority, supersedes old A/B/C batching.
+- [Stage 01 implementation plan](../superpowers/plans/2026-11-28-es5-stage-01-combat-balance.md)
 - [Master design spec](../superpowers/specs/2026-11-28-es5-eclipse-ascension-design.md)
 - [Master orchestration plan](../superpowers/plans/2026-11-28-es5-00-master-plan.md)
 - [Wave 00 balance foundation](../superpowers/plans/2026-11-28-es5-wave-00-balance-foundation.md)
@@ -16,4 +18,4 @@ Read in order:
 - [Wave 08 QA](../superpowers/plans/2026-11-28-es5-wave-08-release-readiness.md)
 - [TODO insert candidate](TODO-es5-proposed.md) — do not overwrite existing TODO.md.
 
-This planning package is stored in the repository; [root TODO.md](../../TODO.md) is the authoritative work tracker. The candidate TODO file is retained for provenance, not a second live tracker. This bundle does not include game code or assets. Separate future ES5 branch requires authorization per ES4 scope. `make verify` and CI only during implementation; no simulated results are claimed here.
+This planning package is stored in the repository; [root TODO.md](../../TODO.md) is the authoritative work tracker. The candidate TODO file is retained for provenance, not a second live tracker. This bundle does not include game code or assets. Each future Stage branch requires accepted develop and authorization per ES4 scope; no umbrella branch required. `make verify` and CI only during implementation; no simulated results are claimed here.
