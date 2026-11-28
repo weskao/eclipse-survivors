@@ -1,0 +1,256 @@
+{
+  "status": "QA_PENDING",
+  "hero": "crimson-paladin",
+  "heroId": "crimson-paladin",
+  "pose": "run",
+  "direction": "NW",
+  "native3x": "unverified",
+  "runtimeApplied": false,
+  "eligibleForDevWiring": false,
+  "qaGameplayApplied": false,
+  "sequenceComplete": false,
+  "continuousSequence": false,
+  "mirrorAllowed": false,
+  "frameCount": 4,
+  "sourceProvenance": {
+    "referenceCommit": "d501ac730227281e2c656eb5cb55ecc1a25b50e6",
+    "battleAssetPath": "src/assets/es2/production/heroes/crimson-paladin/run-attack@3x.webp",
+    "battleAssetBlob": "9550f00691d585623a64151c880393723454fe82",
+    "referenceConditioningVerified": false,
+    "generationIds": [
+      "0400897a-95e3-4596-8478-49ba4da57b3c"
+    ],
+    "sourceSheet": {
+      "file": "source-sheet-a.webp",
+      "pixels": [
+        1261,
+        1247
+      ],
+      "bytes": 610424,
+      "sha256": "3590f28ea44fbea9818c05f763b8060187f2512045aadbe6937448d77b31de88"
+    }
+  },
+  "frames": [
+    {
+      "id": "run-northwest-battle-a01",
+      "file": "run-northwest-battle-a01@3x.webp",
+      "sourceFile": "run-northwest-battle-a01-source.webp",
+      "sourcePixels": [
+        630,
+        623
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          92,
+          21,
+          583,
+          570
+        ],
+        "coreExtent": [
+          491,
+          549
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          161,
+          93,
+          652,
+          642
+        ],
+        "coreExtent": [
+          491,
+          549
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        0,
+        0,
+        630,
+        623
+      ],
+      "bytes": 160510,
+      "webpSHA256": "8e7ea361c07b21f9e2f244bf1d9e728af516eb072bd6b8ee6d1e034b5d9837ad",
+      "sourceBytes": 160016,
+      "sourceSHA256": "f9dad114eb387c20e922f5b3524fe26d9693e11f76666f226227dc98ab5d35d8"
+    },
+    {
+      "id": "run-northwest-battle-a02",
+      "file": "run-northwest-battle-a02@3x.webp",
+      "sourceFile": "run-northwest-battle-a02-source.webp",
+      "sourcePixels": [
+        631,
+        623
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          86,
+          6,
+          559,
+          592
+        ],
+        "coreExtent": [
+          473,
+          586
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          154,
+          78,
+          627,
+          664
+        ],
+        "coreExtent": [
+          473,
+          586
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        630,
+        0,
+        1261,
+        623
+      ],
+      "bytes": 152152,
+      "webpSHA256": "05e7c585dcf70ef7b9cb49b92431ad712a75dccdb9da3d1208a86aad55deb9a6",
+      "sourceBytes": 151602,
+      "sourceSHA256": "52689c80b5930d10fda04320fb7eca8ecc98e20583aba0d6ffc2b434cbfec6cd"
+    },
+    {
+      "id": "run-northwest-battle-a03",
+      "file": "run-northwest-battle-a03@3x.webp",
+      "sourceFile": "run-northwest-battle-a03-source.webp",
+      "sourcePixels": [
+        630,
+        624
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          84,
+          13,
+          571,
+          604
+        ],
+        "coreExtent": [
+          487,
+          591
+        ],
+        "boundaryMaxAlpha": 1
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          153,
+          85,
+          640,
+          676
+        ],
+        "coreExtent": [
+          487,
+          591
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        0,
+        623,
+        630,
+        1247
+      ],
+      "bytes": 160386,
+      "webpSHA256": "d290e9d3d345c4150e7eba40063a51e308efefcb149b3e9cadd552ef55c71aac",
+      "sourceBytes": 159868,
+      "sourceSHA256": "05089ca0dfd59de2f9327dfda6f743ed1a40711e7ed63e56c7a24df5550e193e"
+    },
+    {
+      "id": "run-northwest-battle-a04",
+      "file": "run-northwest-battle-a04@3x.webp",
+      "sourceFile": "run-northwest-battle-a04-source.webp",
+      "sourcePixels": [
+        631,
+        624
+      ],
+      "outputCellPixels": [
+        768,
+        768
+      ],
+      "sourceMetrics": {
+        "coreAlphaBounds": [
+          76,
+          14,
+          551,
+          616
+        ],
+        "coreExtent": [
+          475,
+          602
+        ],
+        "boundaryMaxAlpha": 2
+      },
+      "outputMetrics": {
+        "coreAlphaBounds": [
+          144,
+          86,
+          619,
+          688
+        ],
+        "coreExtent": [
+          475,
+          602
+        ],
+        "boundaryMaxAlpha": 0
+      },
+      "resampled": false,
+      "scale": 1,
+      "mirror": false,
+      "footAnchor": null,
+      "variant": "A",
+      "sourceCrop": [
+        630,
+        623,
+        1261,
+        1247
+      ],
+      "bytes": 145676,
+      "webpSHA256": "47842fbe28b7424aa018922946232268d1b3fe0ac5a2b88265b9d7788789f2f1",
+      "sourceBytes": 145512,
+      "sourceSHA256": "fe787942e22cb39c0c5b98a5ce87e01d797a979918f21676af301a3705fde5e1"
+    }
+  ],
+  "notes": [
+    "Independent review candidates, not a validated run cycle.",
+    "Gold hair battle variant; face, cape construction, equipment, handedness and foot anchors require review.",
+    "Native core pixels measured on PNG sources; no resizing or reflection. WebP conversion performed by user."
+  ]
+}
