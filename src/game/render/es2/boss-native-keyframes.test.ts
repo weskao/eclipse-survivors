@@ -156,7 +156,19 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     expect(selectBossNativeKeyframe(at('windup', 0))).toBe('frostPhase2Ready')
     expect(selectBossNativeKeyframe(at('windup', .5))).toBe('frostPhase2Windup')
     expect(selectBossNativeKeyframe(at('attack', .2))).toBe('frostPhase2Release')
-    expect(selectBossNativeKeyframe(at('recover', .2))).toBeNull()
+    expect(selectBossNativeKeyframe(at('recover', .2))).toBe('frostPhase2Recover')
+    expect(selectBossNativeKeyframe(at('idle', .2))).toBe('frostPhase2Idle')
+    expect(selectBossNativeKeyframe(at('recover', .2, 'glacial-ring'))).toBeNull()
+    expect(selectBossNativeKeyframe({ ...at('recover', .2), impacts: [] })).toBeNull()
+    expect(selectBossNativeKeyframe(at('idle', .2, 'ice-fan', 3))).toBeNull()
+    const recovery = { complete: true, naturalWidth: 1348, naturalHeight: 1289 } as HTMLImageElement
+    registerBossNativeKeyframe(recovery, 'frostPhase2Recover')
+    const recovered: unknown[][] = []
+    const recoveryCtx = { drawImage: (...args: unknown[]) => recovered.push(args) } as unknown as Ctx2D
+    expect(drawBossNativeKeyframe(recoveryCtx, recovery, at('recover', .2), 300)).toBe(true)
+    expect(drawBossNativeKeyframe(recoveryCtx, recovery, at('recover', .2), 300, true)).toBe(false)
+    expect(drawBossNativeKeyframe(recoveryCtx, recovery, at('recover', .2, 'glacial-ring'), 300)).toBe(false)
+    expect(recovered).toHaveLength(1)
     expect(selectBossNativeKeyframe(at('windup', .6, 'glacial-ring'))).toBeNull()
     expect(selectBossNativeKeyframe(at('attack', .2, 'rotating-shelter'))).toBeNull()
     expect(selectBossNativeKeyframe(at('attack', .2, 'ice-fan', 3))).toBeNull()
@@ -549,8 +561,8 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     const makeImage = () => ({ complete: false, src: '' }) as HTMLImageElement
     expect(loadWorldRuntimeImages(makeImage).bossNativeKeyframes).toBeUndefined()
     // Batch 12 source files are delivered independently; exercise both absence and presence.
-    const batch12 = import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/batch-12/*/**/*.webp')
-    const present = (path: string) => !path.startsWith('batch-12/') || Object.hasOwn(batch12, '../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path)
+    const optional = import.meta.glob('../../../assets/es2/production/bosses/candidates/motion/native-keyframes/{batch-12,batch-32}/*/**/*.webp')
+    const present = (path: string) => !/^batch-(12|32)\//.test(path) || Object.hasOwn(optional, '../../../assets/es2/production/bosses/candidates/motion/native-keyframes/' + path)
     const seraph = loadWorldRuntimeImages(makeImage, 'eclipse-seraph', 'native')
     const seraphKeys = (['seraphWindup', 'seraphRelease', 'seraphHurt', 'seraphDeath', 'seraphMove', 'seraphMoveB', 'seraphRecover', 'seraphIdle', 'seraphAscension', 'seraphAwakeningPhase2'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
     expect(Object.keys(seraph.bossNativeKeyframes ?? {})).toEqual(seraphKeys)
@@ -560,7 +572,7 @@ describe('DEV Infernal Titan isolated native keyframe review', () => {
     }, LOAD_WAIT)
     expect(seraph.bosses['eclipse-seraph'].src).toBe(WORLD_ART.bosses['eclipse-seraph'])
     const frost = loadWorldRuntimeImages(makeImage, 'frost-sovereign', 'native')
-    const frostKeys = (['frostWindup', 'frostRecover', 'frostHurt', 'frostRelease', 'frostDeath', 'frostAwakening', 'frostAwakeningPhase2', 'frostHurtPhase2', 'frostPhase2Ready', 'frostPhase2Windup', 'frostPhase2Release'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
+    const frostKeys = (['frostWindup', 'frostRecover', 'frostHurt', 'frostRelease', 'frostDeath', 'frostAwakening', 'frostAwakeningPhase2', 'frostHurtPhase2', 'frostPhase2Ready', 'frostPhase2Windup', 'frostPhase2Release', 'frostPhase2Recover', 'frostPhase2Idle'] as const).filter(key => present(BOSS_NATIVE_KEYFRAMES[key][0]))
     expect(Object.keys(frost.bossNativeKeyframes ?? {})).toEqual(frostKeys)
     await vi.waitFor(() => {
       for (const key of frostKeys)

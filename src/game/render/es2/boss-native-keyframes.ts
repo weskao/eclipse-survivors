@@ -53,6 +53,9 @@ export const BOSS_NATIVE_KEYFRAMES = {
   frostPhase2Ready: ['batch-31/frost-sovereign/windup/frost-phase2-ice-fan-ready-study-a.webp', 1376, 1263, 658.5, 1215],
   frostPhase2Windup: ['batch-31/frost-sovereign/windup/frost-phase2-ice-fan-windup-study-a.webp', 1338, 1299, 660, 1245],
   frostPhase2Release: ['batch-31/frost-sovereign/attack/frost-phase2-ice-fan-release-study-a.webp', 1367, 1271, 700.5, 1217],
+  // Optional Batch 32 review art: missing assets keep the canonical phase atlas.
+  frostPhase2Recover: ['batch-32/frost-sovereign/recover/frost-phase2-ice-fan-recover-study-a.webp', 1348, 1289, 678.5, 1243],
+  frostPhase2Idle: ['batch-32/frost-sovereign/idle/frost-phase2-idle-study-a.webp', 1348, 1289, 690.5, 1244],
   // Not wired: batch-24 frost-glide-key-a (directional move, direction/phase unapproved) and
   // batch-26 titan studies (armor/horn/skirt identity mismatch); both stay QA_PENDING review art.
 } as const
@@ -97,7 +100,9 @@ export function selectBossNativeKeyframe(snapshot: BossSnapshot): NativeBossKeyf
       if (motion.pose === 'windup' && snapshot.telegraphs.some(t => t.stage === 'warning' && t.attackId === 'ice-fan'))
         return motion.progress < .5 ? 'frostPhase2Ready' : 'frostPhase2Windup'
       if (motion.pose === 'attack' && snapshot.impacts?.at(-1)?.attackId === 'ice-fan') return 'frostPhase2Release'
-      return null // No phase 2 recovery art yet; keep the phase atlas.
+      if (motion.pose === 'recover' && snapshot.impacts?.at(-1)?.attackId === 'ice-fan') return 'frostPhase2Recover'
+      if (motion.pose === 'idle') return 'frostPhase2Idle'
+      return null
     }
     if (motion.phase === 3 && motion.pose === 'death') return 'frostDeath'
     if (motion.phase === 3 && motion.pose === 'transform') return 'frostAwakening'
