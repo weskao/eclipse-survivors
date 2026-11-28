@@ -361,8 +361,7 @@ watch(() => props.nodes, (nodes, previous) => {
   .hall-growth--tree .hall-ring{margin:1px 0 5px;padding:6px}
   .hall-growth--tree .hall-ring::before{inset:6px}
   .hall-detail{position:sticky;top:8px;max-height:none;overflow:visible;gap:5px;padding:8px}
-  .hall-detail-body[data-expanded="true"]{max-height:clamp(48px,20dvh,100px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
-  .hall-detail-body[data-expanded="true"]::-webkit-scrollbar{display:none}
+  .hall-detail-body[data-expanded="true"]{max-height:clamp(48px,20dvh,100px);overflow-y:auto;overscroll-behavior:contain}
   .hall-detail .hall-confirm{min-height:44px;margin:0}
   .hall-detail-toggle{width:44px;height:44px}
 }

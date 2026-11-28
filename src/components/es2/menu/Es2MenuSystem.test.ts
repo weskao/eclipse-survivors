@@ -448,7 +448,7 @@ describe('ES2 responsive and motion CSS contract', () => {
     expect(css).toContain('prefers-reduced-motion:reduce')
   })
   describe('shared scene transitions', () => {
-    const block = css.slice(css.indexOf('/* Scene transitions'))
+    const block = css.slice(css.indexOf('/* Scene transitions'), css.indexOf('/* Expedition result (victory/defeat)'))
     const ms = (token: string) => Number(block.match(new RegExp(`--es2-scene-${token}:\\s*(\\d+)ms`))?.[1])
     it('reuses one arrival keyframe with short, bounded duration tokens', () => {
       expect(block).toMatch(/@keyframes es2-scene-arrive\s*\{\s*from\s*\{\s*opacity:\s*0;\s*translate:\s*var\(--es2-scene-from, 0 0\);\s*scale:\s*var\(--es2-scene-scale, 1\);\s*\}\s*\}/)

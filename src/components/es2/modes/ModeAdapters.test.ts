@@ -49,7 +49,7 @@ describe('shared HOT expedition badge', () => {
     expect(wrapper.findAll('[data-es2-mode-hot]')).toHaveLength(1)
     const boss = wrapper.get('[data-objective-mode="boss-rush"]')
     expect(boss.get('[data-es2-mode-hot]').text()).toBe('HOT')
-    expect(boss.get(':scope > [data-es2-mode-hot]').exists()).toBe(true)
+    expect(boss.find(':scope > [data-es2-mode-hot]').exists()).toBe(true)
     expect(boss.find('.es2-mode-title-line [data-es2-mode-hot]').exists()).toBe(false)
     expect(boss.classes()).toContain('es2-mode-has-hot')
     expect(boss.attributes('aria-label')).toContain(t('熱門遠征'))
