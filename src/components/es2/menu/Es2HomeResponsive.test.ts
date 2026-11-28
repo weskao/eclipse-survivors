@@ -389,6 +389,7 @@ describe('homepage menu layout across devices', () => {
     expect(board.attributes('role')).toBe('radiogroup')
     expect(board.findAll('[role="radio"]')).toHaveLength(9)
     expect(board.findAll('[aria-checked="true"]')).toHaveLength(1)
+    expect(board.findAll('.es2-mode-radio')).toHaveLength(0)
   })
   it('uses a shared responsive card/detail emblem size, matching title color and duration chip', () => {
     expect(css).toContain('.es2-mode-sigil:is(.es2-mode-mark,.es2-objective-sigil,.es2-mode-detail-sigil){width:var(--es2-mode-card-sigil-size)')
@@ -449,7 +450,7 @@ describe('homepage menu layout across devices', () => {
   it.each([
     '.es2-hero-stat-label', '.es2-hero-stat-value',
     '#gameVersion', '.es2-hero-selection', '.es2-roster__selection',
-    '.es2-mode-copy strong', '.es2-objective-choice strong',
+    '.es2-mode-copy strong',
   ])('keeps explicitly sized %s text at least 11 CSS px', selector => {
     const fontSizes = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
       .filter(([, selectors]) => selectors!.includes(selector))

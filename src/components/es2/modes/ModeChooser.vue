@@ -62,7 +62,7 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
       <div class="es2-mode-grid" :class="{ 'es2-objective-grid': group.id === 'advanced' }">
         <div v-for="card in group.cards" :key="card.id" class="es2-mode-card-shell" :class="{ 'es2-objective-card-shell': card.objective }">
           <button type="button" role="radio" class="es2-mode-card" data-ui-sfx="managed"
-            :class="{ 'es2-objective-choice': card.objective, 'es2-mode-active': value === card.id, selected: value === card.id, 'es2-mode-has-info': card.objective }"
+            :class="{ 'es2-objective-choice': card.objective, 'es2-mode-active': value === card.id, selected: value === card.id, 'es2-mode-has-info': card.objective, 'es2-mode-has-hot': MODES[card.id].hot }"
             :data-mode="card.objective ? undefined : card.id" :data-objective-mode="card.objective?.id"
             :data-es2-mode-theme="card.id" :aria-checked="value === card.id" :disabled="disabled"
             :tabindex="focusId === card.id ? 0 : -1"
@@ -71,12 +71,12 @@ const rewardText = (id: ObjectiveModeId) => t(id === 'endless-eclipse'
             <Es2ModeSigil :mode="card.id" :class="card.objective ? 'es2-objective-sigil' : 'es2-mode-mark'" />
             <span class="es2-mode-copy">
               <span class="es2-mode-title-line" :class="{ 'es2-objective-heading': card.objective }">
-                <span class="es2-mode-radio" :data-selected="value === card.id" aria-hidden="true"></span>
-                <strong>{{ modeTitle(card.id) }}</strong><Es2ModeHotBadge :hot="MODES[card.id].hot" />
+                <strong>{{ modeTitle(card.id) }}</strong>
               </span>
               <small>{{ t(getModeBrief(card.id)) }}</small>
             </span>
             <Es2ModeDuration :duration="MODES[card.id].duration" />
+            <Es2ModeHotBadge :hot="MODES[card.id].hot" />
           </button>
           <button v-if="card.objective" type="button" class="es2-mode-detail-trigger" :disabled="disabled"
             :data-es2-mode-details="card.objective.id" :data-es2-mode-theme="card.id" :aria-label="t('查看模式詳情：{name}', { name: modeTitle(card.id) })"

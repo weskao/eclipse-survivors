@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { webkit } from 'playwright'
 import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
 import { assertNumericFont, assertModeDurations } from './es2-numeric-qa.mjs'
+import { assertModeHotLayout } from './es2-mode-hot-qa.mjs'
 
 const target = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const directory = 'artifacts/es2-mobile-browser'
@@ -83,7 +84,10 @@ async function verifyDock(page, stage) {
   }
   const cardsVisible = await page.locator('.es2-mode-section').isVisible()
   await assertExpeditionModeIcons(page, stage, { cards: cardsVisible })
-  if (cardsVisible) await assertModeDurations(page, stage)
+  if (cardsVisible) {
+    await assertModeDurations(page, stage)
+    await assertModeHotLayout(page, stage)
+  }
   await page.screenshot({ path: directory + '/webkit-dock-' + stage + '.png' })
   await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
 }

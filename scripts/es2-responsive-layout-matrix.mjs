@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
 import { assertNumericFont, assertModeDurations } from './es2-numeric-qa.mjs'
+import { assertModeHotLayout } from './es2-mode-hot-qa.mjs'
 
 const base = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const destination = 'artifacts/es2-mobile-browser'
@@ -356,26 +357,7 @@ try {
       assert.equal(await board.locator('[role="radio"]').count(), 9)
       assert.equal(await board.locator('[aria-checked="true"]').count(), 1)
       assert.equal(await board.locator('[role="radio"][tabindex="0"]').count(), 1)
-      const hot = page.locator('[data-objective-mode="boss-rush"] [data-es2-mode-hot]')
-      assert.equal(await page.locator('[data-es2-mode-hot]:visible').count(), 1, name + ': exactly one HOT badge')
-      const hotLayout = await hot.evaluate(el => {
-        const card = el.closest('[data-objective-mode]')
-        const title = card.querySelector('.es2-objective-heading strong')
-        const image = card.querySelector('.es2-mode-sigil')
-        const info = card.parentElement.querySelector('.es2-mode-detail-trigger span')
-        const r = el.getBoundingClientRect(), c = card.getBoundingClientRect()
-        const overlaps = node => {
-          const b = node.getBoundingClientRect()
-          return Math.min(r.right,b.right)-Math.max(r.left,b.left) > 1 && Math.min(r.bottom,b.bottom)-Math.max(r.top,b.top) > 1
-        }
-        return { contained:r.width > 0 && r.height > 0 && r.left >= c.left-1 && r.right <= c.right+1 && r.top >= c.top-1 && r.bottom <= c.bottom+1,
-          overlap:[title,image,info].some(overlaps), pointer:getComputedStyle(el).pointerEvents,
-          animation:getComputedStyle(el,'::after').animationName,
-          reduced:matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.es2ReduceMotion === 'true' || document.documentElement.dataset.es2ReduceFlashing === 'true' }
-      })
-      assert.ok(hotLayout.contained && !hotLayout.overlap && hotLayout.pointer === 'none', name + ': HOT badge overlap ' + JSON.stringify(hotLayout))
-      if (hotLayout.reduced) assert.equal(hotLayout.animation, 'none', name + ': reduced motion HOT')
-      else assert.match(hotLayout.animation, /^es2-mode-hot-sweep(?:-|$)/, name + ': HOT sweep')
+      await assertModeHotLayout(page, name)
       if (['portrait-320', 'landscape-844', 'desktop-1440'].includes(name)) {
         const brief = page.locator('[data-es2-expedition-summary]')
         const initial = await brief.getAttribute('data-run-mode')
@@ -392,6 +374,10 @@ try {
         await page.locator('.es2-menu-scroll').evaluate(el => { el.scrollTop = 0 })
       }
       const assertModeDetail = async (surface, card) => {
+        // Compare after the dialog's entrance animation has settled.
+        await surface.evaluate(async el => {
+          await Promise.all(el.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).map(a => a.finished.catch(() => {})))
+        })
         const a = await card.locator('.es2-mode-sigil').boundingBox()
         const b = await surface.locator('.es2-mode-detail-sigil').boundingBox()
         assert.ok(a && b && Math.abs(a.width-b.width) <= 1 && Math.abs(a.height-b.height) <= 1,

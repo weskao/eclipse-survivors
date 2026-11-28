@@ -17,13 +17,14 @@ const emit = defineEmits<{ select: [mode: RunModeId] }>()
       <button
         v-for="id in modeIds" :key="id"
         type="button" role="radio"
-        :data-mode="id" class="mode-choice" :class="{ selected: id === value }"
+        :data-mode="id" class="mode-choice" :class="{ selected: id === value, 'es2-mode-has-hot': MODES[id].hot }"
         :aria-checked="id === value"
         @click="emit('select', id)"
       >
         <Es2ModeSigil :mode="id" class="mode-icon" />
-        <span class="mode-copy"><span class="es2-mode-title-line"><strong>{{ t(MODES[id].label) }}</strong><Es2ModeHotBadge :hot="MODES[id].hot" /></span><small>{{ t(MODES[id].description) }}</small></span>
+        <span class="mode-copy"><span class="es2-mode-title-line"><strong>{{ t(MODES[id].label) }}</strong></span><small>{{ t(MODES[id].description) }}</small></span>
         <Es2ModeDuration :duration="MODES[id].duration" />
+        <Es2ModeHotBadge :hot="MODES[id].hot" />
       </button>
     </div>
   </section>

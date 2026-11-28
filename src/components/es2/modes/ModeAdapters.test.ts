@@ -35,6 +35,9 @@ describe('shared HOT expedition badge', () => {
     expect(wrapper.findAll('[data-es2-mode-hot]')).toHaveLength(1)
     const boss = wrapper.get('[data-objective-mode="boss-rush"]')
     expect(boss.get('[data-es2-mode-hot]').text()).toBe('HOT')
+    expect(boss.get(':scope > [data-es2-mode-hot]').exists()).toBe(true)
+    expect(boss.find('.es2-mode-title-line [data-es2-mode-hot]').exists()).toBe(false)
+    expect(boss.classes()).toContain('es2-mode-has-hot')
     expect(boss.attributes('aria-label')).toContain(t('熱門遠征'))
     expect(boss.attributes('aria-checked')).toBe('false')
     expect(wrapper.get('[data-objective-mode="relic-hunt"]').attributes('aria-checked')).toBe('true')
@@ -44,6 +47,23 @@ describe('shared HOT expedition badge', () => {
 })
 
 describe('ES2 objective mode chooser adapter', () => {
+  it('uses the fixed badge slot for a future classic or advanced featured mode', () => {
+    const ids = ['quick', 'endless-eclipse'] as const
+    const previous = ids.map(id => MODES[id].hot)
+    try {
+      ids.forEach(id => { MODES[id].hot = true })
+      const wrapper = mount(ModeChooser, { props: { value: 'quick' } })
+      wrappers.push(wrapper)
+      for (const id of ids) {
+        const card = wrapper.get(`[data-mode="${id}"], [data-objective-mode="${id}"]`)
+        expect(card.classes()).toContain('es2-mode-has-hot')
+        expect(card.get(':scope > [data-es2-mode-hot]').text()).toBe('HOT')
+        expect(card.find('.es2-mode-title-line [data-es2-mode-hot]').exists()).toBe(false)
+      }
+    } finally {
+      ids.forEach((id, i) => { MODES[id].hot = previous[i] })
+    }
+  })
   it('renders all nine choices in one radio group', async () => {
     const wrapper = mount(ModeChooser, { props: { value: 'boss-rush' } })
     wrappers.push(wrapper)
@@ -53,6 +73,8 @@ describe('ES2 objective mode chooser adapter', () => {
     expect(wrapper.findAll('[data-es2-mode-chapter]')).toHaveLength(2)
     expect(wrapper.findAll('[role="radio"][aria-checked="true"]')).toHaveLength(1)
     expect(wrapper.findAll('[role="radio"][tabindex="0"]')).toHaveLength(1)
+    expect(wrapper.findAll('.es2-mode-radio')).toHaveLength(0)
+    expect(wrapper.get('[aria-checked="true"]').classes()).toContain('es2-mode-active')
     for (const id of ['boss-rush', 'endless-eclipse', 'relic-hunt', 'cursed-expedition', 'chaos-arena']) {
       const icon = wrapper.get(`[data-objective-mode="${id}"] .es2-objective-sigil`)
       expect(icon.get('img').attributes('src')).toContain(id + '@3x.webp')
