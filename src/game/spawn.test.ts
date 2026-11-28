@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneBonus, spawnInterval, spawnMob, spawnOpeningWave, tickSpawning } from './spawn'
+import { ENEMY_DEFINITIONS } from './content/enemies/definitions'
+import { LEGACY_MONSTER_IDS } from './monster-catalog'
 import { createFactionBridge } from './content/enemies/integration'
 import { summonBossMinions } from './bosses/phases'
 import { MAX_MOBS } from './constants'
@@ -221,4 +223,25 @@ it('keeps opening legacy and faction actors clear of authored terrain without mo
   expect(bridge.runtime.enemies).toHaveLength(4)
   expect(bridge.runtime.enemies.every(enemy => pointIsClear(0, enemy, enemy.radius))).toBe(true)
   expect(faction.hero!.x).toBe(obstacle.x - 320)
+})
+
+it('makes all fifteen non-boss catalog identities reachable through ordinary production spawn pulses', () => {
+  const legacy = new Set<string>(), factions = new Set<string>()
+  for (const seed of [0, 1, 4]) {
+    const s = setup(), bridge = createFactionBridge({ random: seeded(seed + 42) })
+    s.runMode = 'endless'; s.directorSeed = seed; s.bossSpawned = true
+    setRandom(seeded(seed + 9))
+    spawnOpeningWave(s, bridge)
+    for (let time = 1; time <= 480; time++) {
+      for (const mob of s.mobs) legacy.add(mob.type)
+      for (const enemy of bridge.runtime.enemies) factions.add(enemy.kind)
+      // Simulate cleared waves, not a fabricated spawn: the real scheduler
+      // still decides the kind, timing, composition and safe placement.
+      s.mobs = []; bridge.runtime.enemies.length = 0
+      s.time = time; s.spawnT = 0
+      tickSpawning(s, .016, spyHooks(), undefined, 0, bridge)
+    }
+  }
+  expect([...legacy].sort()).toEqual(LEGACY_MONSTER_IDS.filter(id => id !== 'boss').sort())
+  expect([...factions].sort()).toEqual(Object.keys(ENEMY_DEFINITIONS).sort())
 })

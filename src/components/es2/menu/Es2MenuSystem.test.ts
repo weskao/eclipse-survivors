@@ -398,7 +398,7 @@ describe('ES2 main menu integration adapter', () => {
     expect(dialog.querySelector('[data-monster-stat="HP"]')?.textContent).toContain(String(BALANCE.enemies.baseHp.slime))
     expect(dialog.querySelector('[data-monster-stat="ATK"]')?.textContent).toContain(String(BALANCE.enemies.baseDamage))
     expect(dialog.querySelector('[data-monster-stat="SPD"]')?.textContent).toContain(String(BALANCE.enemies.baseSpeed.slime))
-    expect(dialog.querySelector('[data-monster-skill="pounce"] img')?.getAttribute('src')).toContain('@3x.webp')
+    expect(dialog.querySelector('[data-monster-skill="pounce"] img')?.getAttribute('src')).toContain('/enemy-release/pounce.svg')
     click('.es2-close')
     await nextTick()
     for (const boss of Object.values(BOSS_DEFINITIONS)) {
