@@ -74,6 +74,12 @@ describe('ES2 candidate review inventory', () => {
     ['crimson-paladin', 'special-w-keyframes-2026-11-27-batch-39', ['barrier-guard-identity-b']],
     ['crimson-paladin', 'special-s-keyframes-2026-11-27-batch-40', ['barrier-brace-identity-a']],
     ['crimson-paladin', 'run-se-keyframes-2026-11-27-batch-40', ['run-launch-identity-a']],
+    ['spirit-summoner', 'run-w-keyframes-2026-11-28-batch-42', ['run-west-stride-identity-a']],
+    ['spirit-summoner', 'run-nw-keyframes-2026-11-28-batch-42', ['run-northwest-stride-identity-a']],
+    ['shadowblade', 'run-w-keyframes-2026-11-28-batch-43', ['run-west-lunge-identity-a', 'run-west-long-stride-identity-a']],
+    ['shadowblade', 'run-nw-keyframes-2026-11-28-batch-43', ['run-northwest-stride-identity-a']],
+    ['spirit-summoner', 'run-w-keyframes-2026-11-28-batch-43', ['run-west-long-stride-identity-b']],
+    ['spirit-summoner', 'run-nw-keyframes-2026-11-28-batch-43', ['run-northwest-staff-back-identity-b']],
   ] as const)('preserves %s independent keyframes and their review-only gate', (hero, folder, expectedKeys) => {
     const dir = resolve(process.cwd(), 'src/assets/es2/production/heroes', hero, 'candidates', folder)
     const m = JSON.parse(readFileSync(resolve(dir, 'manifest.json'), 'utf8'))
@@ -115,11 +121,11 @@ describe('ES2 candidate review inventory', () => {
     expect(summary).toContain('8 northern and 1 West four-frame strips')
     expect(summary).toContain('24 additional pending atlases')
     expect(document.querySelector('#grid')?.getAttribute('aria-label'))
-      .toBe(`${HERO_CANDIDATE_ATLASES.length + 50} candidate review panels`)
-    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 50)
-    expect(summary).toContain('24 independent keyframes')
+      .toBe(`${HERO_CANDIDATE_ATLASES.length + 57} candidate review panels`)
+    expect(document.querySelectorAll('#grid article')).toHaveLength(HERO_CANDIDATE_ATLASES.length + 57)
+    expect(summary).toContain('31 independent keyframes')
     const keys = [...document.querySelectorAll<HTMLElement>('[data-review-kind="pending-keyframe"]')]
-    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a', 'cast-windup-identity-b', 'windup-identity-a', 'barrier-guard-identity-a', 'stealth-prepare-identity-a', 'summon-recovery-identity-a', 'stealth-strike-identity-a', 'stealth-low-transition-identity-a', 'stealth-recovery-identity-a', 'summon-release-identity-a', 'barrier-counterstrike-identity-a', 'stealth-kneel-rise-identity-a', 'ready-standing-identity-a', 'summon-forward-identity-b', 'cast-forward-identity-b', 'barrier-release-identity-a', 'barrier-guard-identity-b', 'barrier-brace-identity-a', 'run-launch-identity-a'])
+    expect(keys.map(article => article.dataset.keyframe)).toEqual(['slash-key-a', 'recovery-key-a', 'cast-release-key-a', 'windup-key-a', 'strike-key-a', 'recovery-key-a', 'cast-windup-identity-b', 'windup-identity-a', 'barrier-guard-identity-a', 'stealth-prepare-identity-a', 'summon-recovery-identity-a', 'stealth-strike-identity-a', 'stealth-low-transition-identity-a', 'stealth-recovery-identity-a', 'summon-release-identity-a', 'barrier-counterstrike-identity-a', 'stealth-kneel-rise-identity-a', 'ready-standing-identity-a', 'summon-forward-identity-b', 'cast-forward-identity-b', 'barrier-release-identity-a', 'barrier-guard-identity-b', 'barrier-brace-identity-a', 'run-launch-identity-a', 'run-west-stride-identity-a', 'run-northwest-stride-identity-a', 'run-west-lunge-identity-a', 'run-west-long-stride-identity-a', 'run-northwest-stride-identity-a', 'run-west-long-stride-identity-b', 'run-northwest-staff-back-identity-b'])
     for (const [folder, label] of [
       ['special-s-keyframes-2026-11-27-batch-37', 'shadowblade · SPECIAL · S'],
       ['idle-se-keyframes-2026-11-27-batch-37', 'shadowblade · IDLE · SE'],
@@ -153,6 +159,19 @@ describe('ES2 candidate review inventory', () => {
       expect(panels).toHaveLength(1)
       expect(panels[0]?.querySelector('h2')?.textContent).toContain(label)
       expect(panels[0]?.querySelector('canvas')?.dataset.mirrored).toBe('false')
+    }
+    for (const [hero, folder, direction, count] of [
+      ['spirit-summoner', 'run-w-keyframes-2026-11-28-batch-42', 'W', 1],
+      ['spirit-summoner', 'run-nw-keyframes-2026-11-28-batch-42', 'NW', 1],
+      ['shadowblade', 'run-w-keyframes-2026-11-28-batch-43', 'W', 2],
+      ['shadowblade', 'run-nw-keyframes-2026-11-28-batch-43', 'NW', 1],
+      ['spirit-summoner', 'run-w-keyframes-2026-11-28-batch-43', 'W', 1],
+      ['spirit-summoner', 'run-nw-keyframes-2026-11-28-batch-43', 'NW', 1],
+    ] as const) {
+      const panels = keys.filter(article => article.dataset.candidateFolder === folder &&
+        article.querySelector('h2')?.textContent?.startsWith(hero + ' · RUN · ' + direction))
+      expect(panels).toHaveLength(count)
+      expect(panels.every(article => article.querySelector('canvas')?.dataset.mirrored === 'false')).toBe(true)
     }
     const batch36 = keys.filter(article => article.dataset.candidateFolder === 'special-e-keyframes-2026-11-27-batch-36')
     expect(batch36).toHaveLength(5)
