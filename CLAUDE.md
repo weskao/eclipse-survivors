@@ -16,7 +16,7 @@ Each requirement lives in exactly one file, never a copy here and in a rule. Rul
 | Combat HUD, information drawer, touch controls | `.claude/rules/hud-layout.md` |
 | Settings, menus, dropdowns, dialogs, pickers (no native browser UI) | `.claude/rules/no-native-ui.md` |
 | Visible text, ARIA/`alt` labels, reward names (`en` / `zh-TW`) | `.claude/rules/bilingual-copy.md` |
-| Any audio-affecting UI, lobby / in-battle input, BGM continuity, performance, music transition, hero active skill SFX | `.claude/rules/ui-audio.md` |
+| Any audio-affecting UI, lobby / in-battle input, audio unlock / gesture recovery, BGM continuity, victory/defeat result music, performance, music transition, hero active skill SFX | `.claude/rules/ui-audio.md` |
 | Any gameplay number, including 「永久強化」/暮光餘燼 | `.claude/rules/game-balance-config.md` |
 | Game logic, AI, combat, collisions, world, rendering, VFX, perf-critical UI | `.claude/rules/realtime-performance.md` |
 | Any effect, projectile, particle, skill card, HUD treatment, character/BOSS visual (§8 VFX gate, §9 single-owner rendering) | `.claude/rules/rendering-budget.md` |
@@ -79,3 +79,14 @@ Hero, monster and boss information surfaces must use `Es2DetailSurface`, `Es2Sta
 ## Mandatory uninterrupted soundtrack acceptance (lobby and combat)
 
 Every change to UI, input, animation, rendering, combat or audio must satisfy the [audio continuity and mobile performance gate](.claude/rules/ui-audio.md#continuous-soundtrack-and-mobile-performance) before claiming completion. This includes ordinary encounters, Boss phases and reward selection. Use the [browser QA procedure](.claude/skills/es-browser-qa/SKILL.md) for physical-device evidence.
+
+### Audio traps fixed on 2026-11-28 (index only; the requirement text lives in `ui-audio.md`)
+
+Each symptom was fixed with a guard test in `src/game/audio/engine.test.ts` or `src/game/engine.test.ts`. Do not reintroduce the cause.
+
+- **iOS lobby music stopped or restarted after a tap.** A suspended Web Audio (SFX) context or a pending `resume()` was treated as an interrupted HTML media BGM, so `wake()` paused and replayed a healthy track. Force a media restart only after an explicit lifecycle interruption or an actual WebKit `interrupted` state, at most once per pending resume. Rule: *Independent playback and idempotent recovery*.
+- **Touch taps left the unlock waiting.** Touch/pen activation is granted on `pointerup`, not `pointerdown`. Waking on touch-down started a `resume()` without activation, and its pending promise blocked recovery. Wake on mouse `pointerdown`, touch/pen `pointerup` and every completed control click.
+- **Battle/Boss/result samples restarted on a tap.** `cinematic.sync()` stopped a live sampled source whenever the context was not `running`. A suspended context freezes its own clock, so keep the source and pending phase intent until resume; stop only on `closed`, mute or scene change.
+- **The menu audio-unlock button swallowed its own click.** Unlocking removes the button, so waking on pointerdown/keydown retargeted or suppressed the native click. Recover from that button's completed click only. Rule: *Explicit audio unlock button*.
+- **Defeat result sounded silent, victory did not.** The defeat score was a 27–196 Hz pure-sine synth that phone and laptop speakers cannot reproduce. Defeat now plays the sampled `public/audio/eclipse-defeat.wav` (`scripts/generate-defeat-theme.mjs`) through the same cinematic path as victory, with the ES2 synth as load-failure fallback. Any result or terminal music keeps most energy above 200 Hz, asserted by the generator test. Rule: *Terminal soundtrack*.
+- **Silent results could not be diagnosed.** In DEV, `?audioDiagnostics=1` logs `[Audio][Result]` bus peak/RMS, context and resume state. Rule: *DEV result audio diagnostics*.
