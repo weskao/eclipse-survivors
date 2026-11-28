@@ -128,10 +128,14 @@ watch(() => props.nodes, (nodes, previous) => {
       <div v-if="active.requirements.length" class="hall-requirements"><small>{{ t('前置條件') }}</small><p v-for="requirement in active.requirements" :key="requirement">{{ requirement }}</p></div>
       <small class="hall-status hall-detail-status" :data-state="hallNodeState(active)">{{ t(status(active)) }}</small>
       </div>
-      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview ? t('選取節點後升級') : action(active) }}</button>
-      <div v-if="upgraded?.id === active.id" role="status" class="hall-success" :key="upgraded.rank">
+      <button class="hall-buy hall-confirm" type="button" data-ui-sfx="managed" data-hall-confirm :data-hall-purchase="active.id" :data-research="active.kind === 'research' ? active.id : undefined" :data-equipment="active.kind === 'equipment' ? active.id : undefined" :data-bonus="active.kind === 'bonus' ? active.id : undefined" :disabled="isPreview || !canPurchase(active)" @click="purchase(active)">{{ isPreview ? t('選取節點後升級') : action(active) }}
+        <span v-if="upgraded?.id === active.id" :key="active.id + ':' + upgraded.rank" class="hall-confirm-fx" :data-hall-confirm-fx="upgraded.rank" :data-milestone="String(upgraded.milestone)" aria-hidden="true"></span>
+      </button>
+      <div role="status" class="hall-announcement" data-hall-announcement>
+        <template v-if="upgraded?.id === active.id">
         <span class="hall-ceremony-label">{{ t(upgraded.milestone ? '最高等階達成' : '升級成功') }} · {{ upgraded.rank }} / {{ active.maxRank }}</span>
         <span v-if="upgraded.arrived.length" data-hall-unlock-notice class="hall-unlock-notice">{{ t('新研究已開啟') }} · {{ nodes.filter(node => upgraded?.arrived.includes(node.id)).map(node => t(node.title)).join(' · ') }}</span>
+        </template>
       </div>
     </aside>
   </div>
@@ -186,7 +190,6 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-comparison b{font:700 1.1rem system-ui;font-variant-numeric:tabular-nums;color:#f7d18d}
 .hall-comparison div:last-child b{color:#b6e7b7}
 .hall-requirements p{margin-top:4px}
-.hall-success{color:#b6e7b7!important}
 .hall-ring{transition:--hall-rank-progress .62s cubic-bezier(.17,.76,.23,1),--hall-tip-angle .62s cubic-bezier(.17,.76,.23,1),box-shadow .25s}
 .hall-ring::after{content:'';position:absolute;inset:2px;z-index:5;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(112deg,transparent 31%,#e7c1841a 43%,#fff0c57a 50%,#e7c1841a 57%,transparent 69%);background-size:240% 100%;background-position:130% 0}
 .hall-node[data-selected="true"] .hall-ring{box-shadow:0 0 0 1px #cfa86c,0 0 0 2px #dfbb78,0 0 13px #d7a85b60,inset 0 1px 2px #fff2c0}
@@ -247,15 +250,17 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-node[data-hall-arrived="true"] .hall-ring{animation-duration:.85s}
 .hall-node[data-hall-arrived="true"] .hall-rank{animation:hall-arrival-label .7s .68s ease-out both}
 @keyframes hall-arrival-label{0%{box-shadow:0 0 0 #f0cc8000}35%{box-shadow:0 0 12px #f0cc80aa;color:#fff0c7}100%{box-shadow:0 2px 3px #0007}}
-.hall-success{display:grid;gap:3px;line-height:1.35;overflow-wrap:anywhere;margin:0}
-.hall-ceremony-label{font-weight:700;color:#dcefbf}
-.hall-unlock-notice{font-size:.78rem;color:#f3d498;animation:hall-notice .35s .68s ease-out both}
-@keyframes hall-notice{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-rank,.hall-unlock-notice{animation:none!important}}
+/* Keep the live announcement for assistive technology, never as a grid row.
+   Confirmation feedback is a decorative, non-interactive overlay inside the existing button. */
+.hall-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+.hall-confirm-fx{position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 2px #d4f1c5,inset 0 0 14px #9cdbad66;animation:hall-confirm-pulse .65s ease-out both}
+.hall-confirm-fx[data-milestone="true"]{box-shadow:inset 0 0 0 2px #ffe4a0,inset 0 0 22px #ffce7966;animation-duration:1s}
+@keyframes hall-confirm-pulse{0%{opacity:0}22%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.hall-node[data-hall-arrived="true"] .hall-rank{animation:none!important}.hall-confirm-fx{display:none!important}}
 :global([data-es2-reduce-motion="true"] .hall-node[data-hall-arrived="true"] .hall-rank),
-:global([data-es2-reduce-flashing="true"] .hall-node[data-hall-arrived="true"] .hall-rank),
-:global([data-es2-reduce-motion="true"] .hall-unlock-notice),
-:global([data-es2-reduce-flashing="true"] .hall-unlock-notice){animation:none!important}
+:global([data-es2-reduce-flashing="true"] .hall-node[data-hall-arrived="true"] .hall-rank){animation:none!important}
+:global([data-es2-reduce-motion="true"] .hall-confirm-fx),
+:global([data-es2-reduce-flashing="true"] .hall-confirm-fx){display:none!important}
 
 /* Shared upgrade inspector: restrained gilded surfaces, readable effect hierarchy,
    and persistent rank cues independent of the existing purchase ceremony. */
@@ -322,7 +327,7 @@ watch(() => props.nodes, (nodes, previous) => {
   .hall-comparison{grid-column:2;grid-row:2;display:flex;align-items:baseline;flex-wrap:wrap;gap:0 6px}
   .hall-comparison .hall-effect{display:block;padding:0;border:0;background:none;text-align:start}
   .hall-comparison .hall-effect b{font-size:1rem}
-  .hall-detail-body,.hall-detail .hall-confirm,.hall-detail .hall-success{grid-column:1/-1}
+  .hall-detail-body,.hall-detail .hall-confirm{grid-column:1/-1}
   .hall-detail-body[data-expanded="false"]:not([data-state="locked"]),
   .hall-detail-body[data-expanded="false"]>:not(.hall-requirements){display:none}
   .hall-detail-body[data-expanded="false"] .hall-requirements{display:flex;flex-wrap:wrap;gap:0 6px;padding:4px 8px}
