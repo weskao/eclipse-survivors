@@ -42,8 +42,9 @@ export async function assertModeDurations(page, label) {
     const plain = getComputedStyle(chip).borderTopWidth === '0px' &&
       getComputedStyle(chip).backgroundImage === 'none'
     const corner = !!i && Math.abs(i.top-c.top)<=1 && Math.abs(i.right-c.right)<=1 &&
-      infoStyle.paddingTop==='5px' && icon?.getBoundingClientRect().width===22 &&
-      (!heroStyle || infoStyle.paddingTop===heroStyle.paddingTop)
+      infoStyle.paddingTop==='15px' && icon?.getBoundingClientRect().width===22 &&
+      (!heroStyle || infoStyle.paddingRight===heroStyle.paddingRight) &&
+      !!icon && bounds(icon).top>=i.top+14 && bounds(icon).bottom<=i.bottom+1
     const cardStyle = getComputedStyle(card)
     const rightAligned = Math.abs(c.right-t.right-parseFloat(cardStyle.borderRightWidth)-parseFloat(cardStyle.paddingRight))<=1 &&
       parseFloat(cardStyle.paddingRight)<=9

@@ -22,6 +22,10 @@ describe('shared HOT expedition badge', () => {
     const css = readFileSync(resolve('src/components/es2/modes/Es2ModeHotBadge.vue'), 'utf8')
     expect(css).not.toMatch(/\.es2-mode-has-hot\s*[,\{]/)
     expect(css).toMatch(/position:absolute;\s*inset-block-start:calc\(0px - var\(--es2-hot-overhang/)
+    expect(css).toContain('--es2-hot-overhang:12px')
+    const menuCss = readFileSync(resolve('src/styles/es2/menu.css'), 'utf8')
+    expect(menuCss).toContain('.es2-expedition-board .es2-mode-detail-trigger{padding-block-start:15px}')
+    expect(menuCss).toContain('min-height:124px;gap:8px;')
   })
   it('renders only when enabled and reacts to the boolean without leaving a placeholder', async () => {
     const wrapper = mount(Es2ModeHotBadge, { props: { hot: false } })

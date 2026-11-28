@@ -51,16 +51,22 @@ export async function assertModeHotLayout(page, label) {
         !!el.closest('[data-es2-reduce-motion="true"],[data-es2-reduce-flashing="true"]')
       const grid = card.closest('.es2-mode-grid')
       const headingRow = grid.previousElementSibling
-      return { contained:r.width>0 && r.height>0 && r.left>=c.left-1 && r.right<=c.right+1 && r.top<c.top && Math.abs(r.bottom-c.top)<=2,
-        right: c.right-r.right, top:r.top-c.top, stable, unchanged,
-        overlap:[title,image,duration,info,headingRow,...peers].filter(Boolean).some(overlaps),
+      const infoIcon = info.querySelector('span')
+      const borderCenter = c.top + parseFloat(getComputedStyle(card).borderTopWidth)/2
+      const centeredOnBorder = Math.abs((r.top+r.bottom)/2-borderCenter)<=1.5
+      return { contained:r.width>0 && r.height>0 && r.left>=c.left-1 && r.right<=c.right+1 && r.top<c.top && r.bottom>c.top,
+        right: c.right-r.right, top:r.top-c.top, centeredOnBorder, stable, unchanged,
+        // HOT is decorative and pointer-transparent; the invisible part of
+        // the Info hit target may extend behind it, but its visible icon may not.
+        overlap:[title,image,duration,infoIcon,headingRow,...peers].filter(Boolean).some(overlaps),
+        infoGap:infoIcon.getBoundingClientRect().top-r.bottom,
         pointer:getComputedStyle(el).pointerEvents, animation:getComputedStyle(el,'::after').animationName,
         flame:[...el.querySelectorAll('.es2-mode-hot-flame')].map(node=>getComputedStyle(node).animationName),
         embers:[...el.querySelectorAll('.es2-mode-hot-ember')].map(node=>getComputedStyle(node).animationName), reduced }
     })
     assert.ok(layout.unchanged, label + ': HOT toggle changes card or peer geometry ' + JSON.stringify(layout))
     assert.ok(layout.contained && layout.stable && !layout.overlap && layout.pointer==='none' &&
-      Math.abs(layout.right-9)<=1 && Math.abs(layout.top+22)<=1, label + ': HOT layout ' + JSON.stringify(layout))
+      Math.abs(layout.right-9)<=1 && layout.centeredOnBorder && layout.infoGap>=3, label + ': HOT layout ' + JSON.stringify(layout))
     assert.equal(layout.flame.length, 3, label + ': layered flame')
     assert.equal(layout.embers.length, 3, label + ': ember particles')
     if (layout.reduced) assert.ok([layout.animation, ...layout.flame, ...layout.embers].every(name=>name==='none'), label + ': reduced motion HOT')
