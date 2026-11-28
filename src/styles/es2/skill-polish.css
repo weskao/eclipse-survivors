@@ -63,7 +63,7 @@
   position:relative;z-index:1;align-self:flex-start;
   margin:5px 12px 0;padding:5px 10px;
   background:#07111fc9;border:1px solid var(--es2-card-border);border-radius:7px;
-  color:var(--es2-skill-rim);font:800 .77rem/1.3 system-ui,sans-serif;
+  color:var(--es2-skill-rim);font:800 .77rem/1.3 var(--es2-font-numeric), system-ui,sans-serif;
   font-variant-numeric:tabular-nums;
 }
 .es2-skill-card .es2-card-description{
@@ -110,7 +110,7 @@
 
 /* Rank comparisons: align every value and arrow; wrap labels, not the comparison group. */
 .es2-mastery-stats{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,max-content) auto minmax(0,max-content);gap:2px 5px;margin:8px 13px 0;padding:6px 0 0;border-top:1px solid var(--es2-card-border);min-width:0;container-type:inline-size}
-.es2-mastery-stat{display:grid;grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,46%);grid-template-columns:subgrid;align-items:center;gap:2px 5px;padding:2px 3px;border-radius:4px;background:#050b182b;color:var(--es2-card-description);font:500 max(11px,calc(.75rem * var(--es2-ui-scale,1)))/1.35 system-ui,sans-serif;min-width:0}
+.es2-mastery-stat{display:grid;grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,46%);grid-template-columns:subgrid;align-items:center;gap:2px 5px;padding:2px 3px;border-radius:4px;background:#050b182b;color:var(--es2-card-description);font:500 max(11px,calc(.75rem * var(--es2-ui-scale,1)))/1.35 var(--es2-font-numeric), system-ui,sans-serif;min-width:0}
 .es2-mastery-label{grid-column:1;min-width:0;overflow-wrap:anywhere}
 .es2-mastery-values{display:grid;grid-column:2/-1;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-columns:subgrid;align-items:center;gap:3px;min-width:0;font-variant-numeric:tabular-nums lining-nums;text-align:right;overflow-wrap:anywhere}
 .es2-mastery-before{grid-column:1;color:var(--es2-card-description);opacity:.8}

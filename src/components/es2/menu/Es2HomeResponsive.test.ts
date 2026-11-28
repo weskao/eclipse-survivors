@@ -61,6 +61,20 @@ function menu(props: Record<string, unknown> = {}) {
   return wrapper
 }
 
+describe('classic expedition duration', () => {
+  it('separates a readable infinity symbol or numeric duration from its unit', async () => {
+    const wrapper = menu({ runMode: 'quick' })
+    await wrapper.get('[data-es2-expedition-navigation]').trigger('click')
+    for (const id of ['quick', 'standard', 'endless', 'challenge'] as const) {
+      const time = wrapper.get(`[data-mode="${id}"] .es2-mode-time`)
+      const duration = MODES[id].duration
+      expect(time.get('[data-es2-mode-time-value]').text()).toBe(duration === null ? '∞' : String(Math.ceil(duration / 60)))
+      expect(time.find('[data-es2-mode-time-unit]').exists()).toBe(duration !== null)
+      expect(time.attributes('aria-label')).toBeTruthy()
+    }
+  })
+})
+
 describe('homepage expedition recommendation', () => {
   it('renders the HOT component only on enabled modes, regardless of selection', async () => {
     const wrapper = menu({ runMode: 'quick' })
@@ -430,7 +444,7 @@ describe('homepage menu layout across devices', () => {
 
   it.each([
     '.es2-hero-stat-label', '.es2-hero-stat-value',
-    '.es2-mode-time', '#gameVersion', '.es2-hero-selection', '.es2-roster__selection',
+    '#gameVersion', '.es2-hero-selection', '.es2-roster__selection',
     '.es2-mode-copy strong', '.es2-objective-choice strong',
   ])('keeps explicitly sized %s text at least 11 CSS px', selector => {
     const fontSizes = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]

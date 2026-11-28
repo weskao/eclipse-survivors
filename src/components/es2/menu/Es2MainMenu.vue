@@ -17,6 +17,7 @@ import Es2DetailSurface from './Es2DetailSurface.vue'
 import { useHoverDetails } from './useHoverDetails'
 import ModeChooser from '../modes/ModeChooser.vue'
 import Es2ModeSigil from '../modes/Es2ModeSigil.vue'
+import Es2ModeDuration from '../modes/Es2ModeDuration.vue'
 import Es2ModeHotBadge from '../modes/Es2ModeHotBadge.vue'
 import { objectiveModeIds, type ObjectiveModeId } from '../../../game/content/modes/definitions'
 import { modeIds, MODES } from '../../../meta/modes'
@@ -157,7 +158,7 @@ const moveHero = (event: KeyboardEvent, id: JobId): void => { void moveHeroSelec
                 @click="emit('mode', id)" @keydown="moveMode($event, id)">
                 <Es2ModeSigil :mode="id" class="es2-mode-mark" />
                 <span class="es2-mode-copy"><span class="es2-mode-title-line"><strong>{{ t(MODES[id].label) }}</strong><Es2ModeHotBadge :hot="MODES[id].hot" /></span><small>{{ t(MODES[id].description) }}</small></span>
-                <span class="es2-mode-time">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
+                <Es2ModeDuration :duration="MODES[id].duration" />
               </button>
             </div>
             <ModeChooser :value="objectiveSelection" @select="emit('mode', $event)" />

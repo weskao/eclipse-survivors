@@ -1,0 +1,16 @@
+/* Only ASCII numeric glyphs change; all existing text and fantasy faces remain intact.
+   Local upstream JetBrains Mono variable WOFF2, SIL OFL 1.1; see public/fonts. */
+@font-face {
+  font-family: "Eclipse Numerals";
+  src: url("../assets/fonts/JetBrainsMono-variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  unicode-range: U+0030-0039;
+  size-adjust: 94%;
+}
+
+:root {
+  --es2-font-numeric: "Eclipse Numerals";
+  font-variant-numeric: lining-nums tabular-nums;
+}

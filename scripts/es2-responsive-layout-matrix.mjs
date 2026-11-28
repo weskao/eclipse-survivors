@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { assertExpeditionModeIcons } from './es2-mode-icon-qa.mjs'
+import { assertNumericFont, assertModeDurations } from './es2-numeric-qa.mjs'
 
 const base = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173/'
 const destination = 'artifacts/es2-mobile-browser'
@@ -87,6 +88,7 @@ try {
     page.on('pageerror', e => errors.push(e.message))
     try {
       await page.goto(base, { waitUntil: 'domcontentloaded' })
+      await assertNumericFont(page, name)
       try {
         await page.locator('.es2-start').waitFor({ state: 'visible', timeout: 30000 })
       } catch (error) {
@@ -347,6 +349,7 @@ try {
       assert.deepEqual(entryOffenders, [], name + ': expedition cards clip during the first entry frame')
       await verifyPage('[data-mode], [data-objective-mode]', 9, width >= 1000 && height >= 700)
       await assertExpeditionModeIcons(page, name + ': expedition selection', { cards: true })
+      await assertModeDurations(page, name)
       const hot = page.locator('[data-objective-mode="boss-rush"] [data-es2-mode-hot]')
       assert.equal(await page.locator('[data-es2-mode-hot]:visible').count(), 1, name + ': exactly one HOT badge')
       const hotLayout = await hot.evaluate(el => {

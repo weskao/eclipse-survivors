@@ -78,7 +78,7 @@ const c104Gallery = (Object.keys(C104_SURFACES) as C104Category[]).flatMap(categ
 .es2-c104-source-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
 .es2-c104-source-grid figure{margin:0;padding:8px;border:1px solid #a3889455;background:#11131e;border-radius:8px}
 .es2-c104-source-grid img{display:block;width:100%;max-height:230px;object-fit:contain;aspect-ratio:1.4}
-.es2-c104-source-grid figcaption{font:500 .75rem/1.5 system-ui,sans-serif;color:#d8c9df;margin-top:5px}
+.es2-c104-source-grid figcaption{font:500 .75rem/1.5 var(--es2-font-numeric), system-ui,sans-serif;color:#d8c9df;margin-top:5px}
 .es2-world-art-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,155px),1fr));gap:12px;margin:10px 0 20px}
 .es2-world-art-card{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:8px;border:1px solid #8a67855e;background:#1b1726;border-radius:12px;padding:10px;text-align:center;color:#f2e3d1}
 .es2-world-art-card strong{font-size:.78rem;overflow-wrap:anywhere}

@@ -58,10 +58,10 @@ const sigil = computed(() => sigils[props.reveal.boss])
 .es2-phase-reveal[data-boss="eclipse-seraph"]::before { background:repeating-conic-gradient(from 8deg at 15% 50%,#ffe8a81e 0deg 2deg,transparent 3deg 18deg),radial-gradient(ellipse at 15% 50%,#b88a542c,transparent 70%); }
 .es2-phase-reveal__ornament { position:relative; display:grid; place-items:center; flex:0 0 45px; width:45px; height:45px; }
 .es2-phase-reveal__ornament svg { position:absolute; inset:0; width:100%;height:100%; opacity:.9; animation:phase-seal .85s ease-out both; }
-.es2-phase-reveal__ornament b { font:800 21px/1 Georgia,serif; color:#fff6df; text-shadow:0 0 8px var(--phase-accent); }
+.es2-phase-reveal__ornament b { font:800 21px/1 var(--es2-font-numeric), Georgia,serif; color:#fff6df; text-shadow:0 0 8px var(--phase-accent); }
 .es2-phase-reveal__copy { display:grid; flex:1; min-width:0; gap:2px; }
-.es2-phase-reveal__copy > span { color:#e3dce6; font:650 10px/1.2 system-ui,sans-serif; overflow-wrap:anywhere; }
-.es2-phase-reveal__copy strong { font:800 clamp(14px,2.1vw,21px)/1.15 Georgia,serif; color:#fff2dc; overflow-wrap:anywhere; text-shadow:0 0 8px color-mix(in srgb,var(--phase-accent) 65%,transparent); }
+.es2-phase-reveal__copy > span { color:#e3dce6; font:650 10px/1.2 var(--es2-font-numeric), system-ui,sans-serif; overflow-wrap:anywhere; }
+.es2-phase-reveal__copy strong { font:800 clamp(14px,2.1vw,21px)/1.15 var(--es2-font-numeric), Georgia,serif; color:#fff2dc; overflow-wrap:anywhere; text-shadow:0 0 8px color-mix(in srgb,var(--phase-accent) 65%,transparent); }
 .es2-phase-reveal__ranks { display:flex; gap:4px; padding-top:2px; }
 .es2-phase-reveal__ranks i { height:3px; width:23px; background:#ffffff1f; transform:skewX(-24deg); }
 .es2-phase-reveal__ranks i[data-lit="true"] { background:var(--phase-accent); }

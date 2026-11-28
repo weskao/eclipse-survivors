@@ -442,10 +442,13 @@ export function drawFx(ctx: Ctx2D, s: GameState, ox: number, oy: number, reduced
 
 /** Damage-number tiers: size, fill, outline, coloured rim (silhouette cue) and punch-in pop.
  * Escalation is carried by the number itself, as in most action RPGs, never by caption text. */
+// Numeric-only font face preserves punctuation and the normal UI fallback.
+const NUMBER_FONT_FAMILY = '"Eclipse Numerals", system-ui, sans-serif'
+
 interface NumberTier { font: string; bossFont: string; fill: string; bossFill: string; stroke: string; width: number; rim?: string; rimWidth: number; pop: number; shake: boolean }
 const tier = (size: number, bossSize: number, fill: string, stroke: string, width: number, pop: number,
   rim?: string, shake = false, bossFill = fill): NumberTier => Object.freeze({
-  font: `900 ${size}px system-ui`, bossFont: `900 ${bossSize}px system-ui`, fill, bossFill, stroke, width,
+  font: `900 ${size}px ${NUMBER_FONT_FAMILY}`, bossFont: `900 ${bossSize}px ${NUMBER_FONT_FAMILY}`, fill, bossFill, stroke, width,
   rim, rimWidth: width + 6, pop, shake,
 })
 const NUMBER_TIERS = Object.freeze({

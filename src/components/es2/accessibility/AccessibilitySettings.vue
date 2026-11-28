@@ -147,12 +147,12 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
   padding: 12px 0;
   color: #f6e8cd;
   text-align: left;
-  font-family: system-ui, sans-serif;
+  font-family: var(--es2-font-numeric), system-ui, sans-serif;
 }
 .es2-settings-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 12px; }
 .es2-settings-head > div { flex: 1 1 175px; min-width: 0; overflow-wrap: anywhere; }
 .es2-eyebrow { color: #d6b777; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; }
-.es2-settings h3 { margin: 4px 0 8px; font: 700 18px/1.4 Georgia, serif; color: #ffe4ad; }
+.es2-settings h3 { margin: 4px 0 8px; font: 700 18px/1.4 var(--es2-font-numeric), Georgia, serif; color: #ffe4ad; }
 .es2-settings p, .es2-settings small { color: #b7c5cf; font-size: 12px; line-height: 1.5; }
 .es2-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr)); gap: 14px 18px; margin: 17px 0; }
 .es2-field { display: flex; flex-direction: column; min-width: 0; gap: 7px; }
@@ -168,7 +168,7 @@ function reset(): void { update({ ...DEFAULT_ACCESSIBILITY_PREFERENCES }) }
 .es2-switch-row small { max-width: 260px; }
 .es2-switch-group { display: flex; flex: 0 1 auto; min-width: 0; max-width: 100%; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; }
 .es2-switch-row > div:first-child { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
-.es2-settings button { min-height: 44px; border: 1px solid #a9997d; border-radius: 8px; padding: 8px 12px; background: #243345; color: #e5e6e7; font: 700 12px/1.3 system-ui, sans-serif; cursor: pointer; }
+.es2-settings button { min-height: 44px; border: 1px solid #a9997d; border-radius: 8px; padding: 8px 12px; background: #243345; color: #e5e6e7; font: 700 12px/1.3 var(--es2-font-numeric), system-ui, sans-serif; cursor: pointer; }
 .es2-settings button[aria-pressed="true"] { border-color: #e9c98e; background: #534936; color: #fff0cc; box-shadow: inset 0 0 0 1px #f4c37c44; }
 .es2-settings :is(button, input):focus-visible { outline: 3px solid #ffe3a6; outline-offset: 2px; }
 .es2-settings :is(button, input):disabled { opacity: .5; cursor: not-allowed; }

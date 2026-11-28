@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { t } from '../../i18n'
 import Es2ModeSigil from '../es2/modes/Es2ModeSigil.vue'
+import Es2ModeDuration from '../es2/modes/Es2ModeDuration.vue'
 import Es2ModeHotBadge from '../es2/modes/Es2ModeHotBadge.vue'
 import { MODES, modeIds } from '../../meta/modes'
 import type { RunModeId } from '../../meta/types'
@@ -22,7 +23,7 @@ const emit = defineEmits<{ select: [mode: RunModeId] }>()
       >
         <Es2ModeSigil :mode="id" class="mode-icon" />
         <span class="mode-copy"><span class="es2-mode-title-line"><strong>{{ t(MODES[id].label) }}</strong><Es2ModeHotBadge :hot="MODES[id].hot" /></span><small>{{ t(MODES[id].description) }}</small></span>
-        <span class="mode-duration">{{ MODES[id].duration === null ? '∞' : Math.ceil((MODES[id].duration ?? 0) / 60) + ' MIN' }}</span>
+        <Es2ModeDuration :duration="MODES[id].duration" />
       </button>
     </div>
   </section>

@@ -151,7 +151,7 @@ onBeforeUnmount(() => {
   border: 1px solid #bda27b; border-radius: 9px;
   background: linear-gradient(155deg,#2e3c4d,#152232);
   box-shadow: inset 0 1px 0 #ffffff20,0 2px 8px #0005;
-  color: #fff0d2; font: 700 13px/1.35 system-ui,sans-serif; text-align: left; cursor: pointer;
+  color: #fff0d2; font: 700 13px/1.35 var(--es2-font-numeric), system-ui,sans-serif; text-align: left; cursor: pointer;
   touch-action: manipulation; }
 .es2-select-trigger span { min-width: 0; overflow-wrap: anywhere; }
 .es2-select-trigger svg { width: 18px; height: 18px; flex: none; color: #e6c48a; }
@@ -163,7 +163,7 @@ onBeforeUnmount(() => {
   overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
   list-style: none; background: linear-gradient(155deg,#263648,#111b29);
   border: 1px solid #dabd86; border-radius: 10px; color: #f8e8ce;
-  box-shadow: 0 12px 36px #000e,inset 0 1px 0 #ffffff1b; font: 650 13px/1.4 system-ui,sans-serif;
+  box-shadow: 0 12px 36px #000e,inset 0 1px 0 #ffffff1b; font: 650 13px/1.4 var(--es2-font-numeric), system-ui,sans-serif;
   touch-action: pan-y; }
 .es2-select-listbox [role="option"] { display: flex; align-items: center; justify-content: space-between;
   gap: 8px; min-height: 44px; padding: 9px 11px; border-radius: 6px;

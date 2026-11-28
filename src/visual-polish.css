@@ -295,7 +295,7 @@
   border:1px solid #dec18b;
   border-radius:4px;
   box-shadow:0 2px 6px #000a,inset 0 1px 0 #ffffff30;
-  font:700 10px/1 system-ui,sans-serif;
+  font:700 10px/1 var(--es2-font-numeric), system-ui,sans-serif;
   letter-spacing:0;
   pointer-events:none;
 }

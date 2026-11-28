@@ -163,11 +163,11 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-node[data-state="locked"] .hall-ring{filter:saturate(.42);opacity:.72}
 .hall-node[data-state="locked"] .hall-ring img{filter:saturate(.35) drop-shadow(0 2px 2px #0009)}
 .hall-node[data-state="maxed"] .hall-ring{box-shadow:0 0 0 1px #271b11,0 0 0 2px #d9b46e,0 0 13px #dfb16b55,inset 0 1px 2px #fff2c0}
-.hall-rank{position:absolute;z-index:4;bottom:-6px;left:50%;transform:translateX(-50%);min-width:38px;padding:1px 4px;border:1px solid #a98b53;border-radius:4px;background:linear-gradient(#29343c,#141d27);color:#f4d397;font:700 .69rem system-ui;white-space:nowrap;font-variant-numeric:tabular-nums;box-shadow:0 2px 3px #0007}
+.hall-rank{position:absolute;z-index:4;bottom:-6px;left:50%;transform:translateX(-50%);min-width:38px;padding:1px 4px;border:1px solid #a98b53;border-radius:4px;background:linear-gradient(#29343c,#141d27);color:#f4d397;font:700 .69rem var(--es2-font-numeric), system-ui;white-space:nowrap;font-variant-numeric:tabular-nums;box-shadow:0 2px 3px #0007}
 .hall-node[data-selected="true"] .hall-inspect{border-color:#b89a6340;background:radial-gradient(ellipse at 50% 28%,#d4b16b14,transparent 70%)}
-.hall-status{font:600 .76rem/1.4 system-ui;color:#d8bc80}
+.hall-status{font:600 .76rem/1.4 var(--es2-font-numeric), system-ui;color:#d8bc80}
 .hall-node[data-state="locked"] .hall-status,.hall-node[data-state="poor"] .hall-status{color:#b7b4ad}
-.hall-buy{position:relative;min-height:44px;width:100%;padding:5px 7px;border:1px solid #bd9d63;border-radius:5px;background:linear-gradient(#665035,#392d23);color:#fff0c9;font:600 .86rem/1.3 system-ui;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+.hall-buy{position:relative;min-height:44px;width:100%;padding:5px 7px;border:1px solid #bd9d63;border-radius:5px;background:linear-gradient(#665035,#392d23);color:#fff0c9;font:600 .86rem/1.3 var(--es2-font-numeric), system-ui;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
 .hall-buy:disabled{background:#222a31;border-color:#62605b;color:#a8afb5;cursor:not-allowed}
 .hall-buy:focus-visible,.hall-inspect:focus-visible{outline:2px solid #ffda94;outline-offset:-2px}
 .hall-links{position:relative;height:14px}
@@ -183,11 +183,11 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-detail-heading{display:flex;align-items:center;gap:10px;min-width:0}
 .hall-detail-heading img{object-fit:contain;flex:0 0 48px}
 .hall-detail-heading strong,.hall-detail-heading small{display:block}
-.hall-detail small{color:#c5b18c;font:600 .78rem/1.4 system-ui}
-.hall-detail p{margin:0;color:#d0d3d8;font:400 .86rem/1.5 system-ui}
+.hall-detail small{color:#c5b18c;font:600 .78rem/1.4 var(--es2-font-numeric), system-ui}
+.hall-detail p{margin:0;color:#d0d3d8;font:400 .86rem/1.5 var(--es2-font-numeric), system-ui}
 .hall-comparison{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-block:1px solid #9b8b6c55;min-width:0}
 .hall-comparison div{display:grid;gap:4px;min-width:0}
-.hall-comparison b{font:700 1.1rem system-ui;font-variant-numeric:tabular-nums;color:#f7d18d}
+.hall-comparison b{font:700 1.1rem var(--es2-font-numeric), system-ui;font-variant-numeric:tabular-nums;color:#f7d18d}
 .hall-comparison div:last-child b{color:#b6e7b7}
 .hall-requirements p{margin-top:4px}
 .hall-ring{transition:--hall-rank-progress .62s cubic-bezier(.17,.76,.23,1),--hall-tip-angle .62s cubic-bezier(.17,.76,.23,1),box-shadow .25s}
@@ -270,7 +270,7 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-detail-emblem img{width:100%;height:100%;min-width:0;object-fit:contain;filter:drop-shadow(0 2px 3px #0009)}
 .hall-detail-title{min-width:0;flex:1}
 .hall-detail-title strong{color:#ffe2ad;font-size:clamp(1rem,1.5vw,1.25rem);line-height:1.2;margin:3px 0}
-.hall-detail-rank{display:flex;gap:5px;align-items:center;flex-wrap:wrap;color:#e7c88e;font:600 .8rem/1.3 system-ui;font-variant-numeric:tabular-nums}
+.hall-detail-rank{display:flex;gap:5px;align-items:center;flex-wrap:wrap;color:#e7c88e;font:600 .8rem/1.3 var(--es2-font-numeric), system-ui;font-variant-numeric:tabular-nums}
 .hall-detail-pips{display:flex;gap:3px;margin-top:5px;max-width:180px}
 .hall-detail-pip{height:5px;flex:1;min-width:0;border-radius:2px;background:#39434d;border:1px solid #96836b44}
 .hall-detail-pip[data-filled="true"]{background:linear-gradient(90deg,#a67e42,#f4d795);border-color:#dfbe83;box-shadow:0 0 5px #caa36138}
@@ -286,8 +286,8 @@ watch(() => props.nodes, (nodes, previous) => {
 .hall-comparison .hall-effect{display:grid;align-content:start;gap:3px;padding:8px 6px;border:1px solid #a78c5b44;border-radius:7px;background:#121b25;min-width:0;text-align:center}
 .hall-comparison .hall-effect--next{background:linear-gradient(150deg,#263c31,#182b29);border-color:#83b69566}
 .hall-effect small{color:#d2bf9e;font-size:.73rem}
-.hall-effect-level{color:#aeb7c2;font:500 .72rem/1.2 system-ui}
-.hall-comparison .hall-effect b{color:#ffe2ad;font:750 clamp(1rem,2.1vw,1.4rem)/1.2 system-ui;overflow-wrap:anywhere}
+.hall-effect-level{color:#aeb7c2;font:500 .72rem/1.2 var(--es2-font-numeric), system-ui}
+.hall-comparison .hall-effect b{color:#ffe2ad;font:750 clamp(1rem,2.1vw,1.4rem)/1.2 var(--es2-font-numeric), system-ui;overflow-wrap:anywhere}
 .hall-comparison .hall-effect--next b{color:#a8e6ae}
 .hall-effect-arrow{align-self:center;color:#c9ae7b;font-size:1rem}
 .hall-comparison .hall-effect-gain{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;padding:4px;color:#a8e6ae}

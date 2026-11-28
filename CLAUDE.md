@@ -13,6 +13,7 @@ Each requirement lives in exactly one file, never a copy here and in a rule. Rul
 | Situation | Read and follow |
 |-----------|-----------------|
 | Any player-facing UI on every device (desktop, mobile portrait/landscape, tablet, foldable, safe-area, no occlusion, player-perspective review) | `.claude/rules/ui-responsive-layout.md` |
+| Numeric typography (HUD, countdowns, stats, damage, healing, costs, rewards, levels and numbers in mixed labels) | `.claude/rules/ui-responsive-layout.md` — Numeric typography |
 | Combat HUD, information drawer, touch controls | `.claude/rules/hud-layout.md` |
 | Settings, menus, dropdowns, dialogs, pickers (no native browser UI) | `.claude/rules/no-native-ui.md` |
 | Visible text, ARIA/`alt` labels, reward names (`en` / `zh-TW`) | `.claude/rules/bilingual-copy.md` |

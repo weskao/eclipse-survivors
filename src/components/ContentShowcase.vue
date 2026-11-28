@@ -39,7 +39,7 @@ const simulate = (event: ContentEvent): void => { engine.showcaseEmit(event); re
 </template>
 
 <style scoped>
-.content-showcase { position: fixed; bottom: 16px; left: 16px; z-index: 150; width: min(320px, calc(100vw - 32px)); padding: 12px; color: #f0e7ce; background: #101522ed; border: 1px solid #8b77bd; border-radius: 12px; font: 12px/1.5 system-ui, sans-serif; box-shadow: 0 12px 36px #0009 }
+.content-showcase { position: fixed; bottom: 16px; left: 16px; z-index: 150; width: min(320px, calc(100vw - 32px)); padding: 12px; color: #f0e7ce; background: #101522ed; border: 1px solid #8b77bd; border-radius: 12px; font: 12px/1.5 var(--es2-font-numeric), system-ui, sans-serif; box-shadow: 0 12px 36px #0009 }
 header { display: flex; justify-content: space-between; font-weight: 800; letter-spacing: .08em }
 small { color: #a9e5b3; font-size: 10px }
 p { margin: 6px 0 }

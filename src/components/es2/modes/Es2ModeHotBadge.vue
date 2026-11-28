@@ -13,7 +13,7 @@ withDefaults(defineProps<{ hot?: boolean }>(), { hot: false })
   flex:none; box-sizing:border-box; overflow:hidden; white-space:nowrap; pointer-events:none;
   padding:2px 7px 2px 5px; min-height:19px; border:1px solid #ffc278; border-radius:4px 8px 4px 8px;
   background:linear-gradient(135deg,#8b291c,#c04a24 55%,#91301b);
-  color:#fff4cf; font:800 10px/1.2 system-ui,sans-serif; letter-spacing:.085em;
+  color:#fff4cf; font:800 10px/1.2 var(--es2-font-numeric), system-ui,sans-serif; letter-spacing:.085em;
   text-shadow:0 1px 2px #4d190a; box-shadow:0 0 8px #ff87365c,inset 0 1px #ffe3a45c;
 }
 .es2-mode-hot::before {
